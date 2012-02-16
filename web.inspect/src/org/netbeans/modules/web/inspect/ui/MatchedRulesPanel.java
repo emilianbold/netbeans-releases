@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import javax.swing.*;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.util.NbBundle;
@@ -76,19 +77,14 @@ public class MatchedRulesPanel extends JPanel {
     private void update() {
         Collection<ElementHandle> selection = pageModel.getSelectedElements();
         final int selectionSize = selection.size();
-        final Map<ElementHandle, List<PageModel.RuleInfo>> ruleData = new IdentityHashMap<ElementHandle, List<PageModel.RuleInfo>>();
+        final Map<ElementHandle, List<PageModel.RuleInfo>> ruleData;
         final ElementHandle selectedElement;
         if (selectionSize == 1) {
-            // Pre-compute matched rules
             selectedElement = selection.iterator().next();
-            ElementHandle element = selectedElement;
-            while (element != null) {
-                List<PageModel.RuleInfo> rules = pageModel.getMatchedRules(element);
-                ruleData.put(element, rules);
-                element = element.getParent();
-            }
+            ruleData = collectRuleData(selectedElement);
         } else {
             selectedElement = null;
+            ruleData = null;
         }
         EventQueue.invokeLater(new Runnable() {
             @Override
@@ -156,6 +152,72 @@ public class MatchedRulesPanel extends JPanel {
         label.setVerticalAlignment(SwingConstants.CENTER);
         label.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
         return label;
+    }
+
+    /**
+     * Collects the rules that affect the specified element.
+     * 
+     * @param element element whose style information should be returned.
+     * @return map with rules that affect the specified element,
+     * the map maps parent elements to set of rules that match the
+     * (parent) element and affect the specified element.
+     */
+    private Map<ElementHandle, List<PageModel.RuleInfo>> collectRuleData(ElementHandle element) {
+        Map<ElementHandle, List<PageModel.RuleInfo>> ruleData = new IdentityHashMap<ElementHandle, List<PageModel.RuleInfo>>();
+        boolean first = true;
+        Set<String> inheritedExplicitly = new HashSet<String>();
+        while (element != null) {
+            List<PageModel.RuleInfo> matchedRules = pageModel.getMatchedRules(element);
+            List<PageModel.RuleInfo> rules;
+            if (first) {
+                // Marking all properties of the given element as inherited explicitly.
+                // This minor hack allows us not to keep the branch for the 'first'
+                // case as small as possible.
+                for (PageModel.RuleInfo rule : matchedRules) {
+                    for (Map.Entry<String,String> property : rule.getStyle().entrySet()) {
+                        String propertyName = property.getKey();
+                        inheritedExplicitly.add(propertyName);
+                    }
+                }
+                first = false;
+            }
+            
+            // Properties that the processed element inherits explicitly from the parent
+            Set<String> newInheritedExplicitly = new HashSet<String>();
+
+            // Rules that affect the deepest element - all matched rules
+            // of the deepest element and inherited rules of its parents.
+            rules = new LinkedList<PageModel.RuleInfo>();
+            for (PageModel.RuleInfo rule : matchedRules) {
+                Map<String,String> inherited = new HashMap<String,String>();
+                for (Map.Entry<String,String> property : rule.getStyle().entrySet()) {
+                    String propertyName = property.getKey();
+                    String propertyValue = property.getValue();
+                    // Consider unknown properties as inherited, better to show
+                    // them then not (despite they probably are not inherited)
+                    boolean explicitlyInherited = inheritedExplicitly.contains(propertyName);
+                    if (explicitlyInherited
+                            || !CSSUtils.isKnownProperty(propertyName)
+                            || CSSUtils.isInheritedProperty(propertyName)) {
+                        inherited.put(propertyName, propertyValue);
+                    }
+                    if (explicitlyInherited && CSSUtils.isInheritValue(propertyValue)) {
+                        newInheritedExplicitly.add(propertyName);
+                    }
+                }
+                // Do not include the rule if none of its properties affect the element
+                if (!inherited.isEmpty()) {
+                    rules.add(new PageModel.RuleInfo(
+                            rule.getSourceURL(),
+                            rule.getSelector(),
+                            inherited));
+                }
+            }
+            ruleData.put(element, rules);
+            inheritedExplicitly = newInheritedExplicitly;
+            element = element.getParent();
+        }
+        return ruleData;
     }
 
 }
