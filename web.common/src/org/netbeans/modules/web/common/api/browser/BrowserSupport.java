@@ -136,8 +136,7 @@ public final class BrowserSupport {
                                 // update browser pane
                                 browser = WebBrowsers.getInstance().getPreffered();
                                 pane.removeListener(l);
-                                pane = INST.browser.createNewBrowserPane();
-                                pane.addListener(l);
+                                pane = null;
                             }
                         }
                     }
