@@ -40,84 +40,95 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws.impl;
+package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
-import java.net.URL;
-import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import java.io.File;
+
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
+import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
+import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.spi.*;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public abstract class AbstractJaxWsStack implements WSStackImplementation<JaxWs> {  
+public class WebLogicJaxWsStack implements WSStackImplementation<JaxWs> {
+    
+    private File serverHome;
+    private String version;
     private JaxWs jaxWs;
     
-    protected AbstractJaxWsStack() {
+    public WebLogicJaxWsStack(File serverHome) {
+        this.serverHome = serverHome;
+        version = "2.1.4";
         jaxWs = new JaxWs(getUriDescriptor());
     }
-    
+
+    @Override
     public JaxWs get() {
         return jaxWs;
     }
-    
-    public WSTool getWSTool(WSStack.Tool toolId) {
-        if (toolId == JaxWs.Tool.WSIMPORT) {
-            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
-        } else if (toolId == JaxWs.Tool.WSGEN) {
-            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSGEN));
-        } else {
+
+    @Override
+    public WSStackVersion getVersion() {
+        return WSStackFactory.createWSStackVersion(version);
+    }
+
+    @Override
+    public WSTool getWSTool(Tool toolId) {
             return null;
-        }
     }
 
-    public JaxWs.UriDescriptor getUriDescriptor() {
-         return new JaxWs.UriDescriptor() {
-
-            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                if (isEjb) {
-                    return serviceName+"/"+portName; //NOI18N
-                } else {
-                    return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
-                }
-            }
-
-            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
-            }
-
-            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb); //NOI18N
-            }
-             
-         };
-    }
-    
-    public boolean isFeatureSupported(WSStack.Feature feature) {
+    @Override
+    public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxWs.Feature.TESTER_PAGE) {
+            return true;
+        } else if (feature == JaxWs.Feature.JSR109) {
             return true;
         } else {
             return false;
         }
     }
     
-    private class JaxWsTool implements WSToolImplementation {
-        JaxWs.Tool tool;
-        JaxWsTool(JaxWs.Tool tool) {
-            this.tool = tool;
-        }
+    private JaxWs.UriDescriptor getUriDescriptor() {
+        return new JaxWs.UriDescriptor() {
 
-        public String getName() {
-            return tool.getName();
-        }
+            @Override
+            public String getServiceUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                if (isEjb) {
+                    return portName+"/"+serviceName;
+                } else {
+                    return (applicationRoot.length() >0 ? applicationRoot+"/":"")+
+                        serviceName;
+                }
+            }
 
-        public URL[] getLibraries() {
+            @Override
+            public String getDescriptorUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                return getServiceUri(applicationRoot, serviceName, portName, 
+                        isEjb)+"?wsdl"; //NOI18N
+            }
             
-            return new URL[0];
-        }
-        
+            @Override
+            public String getTesterPageUri(String host, String port, 
+                    String applicationRoot, String serviceName, String portName, 
+                        boolean isEjb) 
+            {
+                String prefix = "http://"+host+":"+port+"/wls_utc/begin.do?wsdlUrl="; //NOI18N
+                return prefix+"http://"+host+":"+port+"/"+getServiceUri(
+                        applicationRoot, serviceName, portName, isEjb)+"?wsdl";   //NOI18N
+            }
+            
+        };
     }
-
+    
 }

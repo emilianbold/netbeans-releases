@@ -40,16 +40,23 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.wsstack.glassfish;
+package org.netbeans.modules.j2ee.sun.ide.j2ee;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
@@ -58,8 +65,9 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
-public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
+public class GlassFishV2JaxWsStack implements WSStackImplementation<JaxWs> {
     private static final String WEBSERVICES_TOOLS_JAR = "lib/webservices-tools.jar"; //NOI18N
     private static final String WEBSERVICES_RT_JAR = "lib/webservices-rt.jar"; //NOI18N
     
@@ -72,64 +80,130 @@ public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
     
     private File root;
     private String version;
-    private JaxRpc jaxRpc;
+    private JaxWs jaxWs;
     
-    public GlassFishV2JaxRpcStack(File root) {
+    public GlassFishV2JaxWsStack(File root) {
         this.root = root;
-        version = resolveImplementationVersion();
-        if (version == null) {
+        try {
+            version = resolveImplementationVersion();
+            if (version == null) {
+                // Default Version
+                version = "2.1.3"; // NOI18N
+            }
+        } catch (IOException ex) {
             // Default Version
-            version = "1.0.0"; // NOI18N
-        }
-        jaxRpc = new JaxRpc();
+            version = "2.1.3"; // NOI18N
+        };
+        jaxWs = new JaxWs(getUriDescriptor());
     }
 
-    public JaxRpc get() {
-        return jaxRpc;
+    @Override
+    public JaxWs get() {
+        return jaxWs;
     }
 
+    @Override
     public WSStackVersion getVersion() {
         return WSStackFactory.createWSStackVersion(version);
     }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
-        if (toolId == JaxRpc.Tool.WCOMPILE) {
-            return WSStackFactory.createWSTool(new JaxRpcTool(JaxRpc.Tool.WCOMPILE));
-        }else {
+        if (toolId == JaxWs.Tool.WSIMPORT) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
+        } else if (toolId == JaxWs.Tool.WSGEN) {
+            return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSGEN));
+        } else {
             return null;
         }
     }
 
+    private JaxWs.UriDescriptor getUriDescriptor() {
+        return new JaxWs.UriDescriptor() {
+
+            @Override
+            public String getServiceUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                if (isEjb) {
+                    return serviceName+"/"+portName; //NOI18N
+                } else {
+                    return (applicationRoot.length()>0 ? applicationRoot+"/" : 
+                        "")+serviceName; //NOI18N
+                }
+            }
+
+            @Override
+            public String getDescriptorUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                return getServiceUri(applicationRoot, serviceName, portName, 
+                        isEjb)+"?wsdl"; //NOI18N
+            }
+
+            @Override
+            public String getTesterPageUri(String host, String port, 
+                    String applicationRoot, String serviceName, String portName, 
+                    boolean isEjb) 
+            {
+                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, 
+                        serviceName, portName, isEjb)+"?Tester"; //NOI18N
+            }
+            
+        };
+    }
+
+    @Override
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxRpc.Feature.JSR109) {
+        if (feature == JaxWs.Feature.JSR109 || feature == 
+            JaxWs.Feature.SERVICE_REF_INJECTION || feature == 
+                JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT) 
+        {
             return true;
         } else {
             return false;
         }    
     }
     
-    private String resolveImplementationVersion() {
+    private String resolveImplementationVersion() throws IOException {
         // take webservices-tools.jar file
         File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);
-        File appservWsJar = new File(root, APPSERV_WS_JAR);
-       
-        if (wsToolsJar.exists() || appservWsJar.exists()) {
-            return "1.1.3"; //NOI18N
+        // alternatively take appserv-ws.jar file
+        if (!wsToolsJar.exists()) wsToolsJar = new File(root, APPSERV_WS_JAR);
+        
+        if (wsToolsJar.exists()) {            
+            JarFile jarFile = new JarFile(wsToolsJar);
+            JarEntry entry = jarFile.getJarEntry("com/sun/tools/ws/version.properties"); //NOI18N
+            if (entry != null) {
+                InputStream is = jarFile.getInputStream(entry);
+                BufferedReader r = new BufferedReader(new InputStreamReader(is));
+                String ln = null;
+                String ver = null;
+                while ((ln=r.readLine()) != null) {
+                    String line = ln.trim();
+                    if (line.startsWith("major-version=")) { //NOI18N
+                        ver = line.substring(14);
+                    }
+                }
+                r.close();
+                return ver;
+            }           
         }
         return null;
-        
     }
     
-    private class JaxRpcTool implements WSToolImplementation {
-        JaxRpc.Tool tool;
-        JaxRpcTool(JaxRpc.Tool tool) {
+    private class JaxWsTool implements WSToolImplementation {
+        JaxWs.Tool tool;
+        JaxWsTool(JaxWs.Tool tool) {
             this.tool = tool;
         }
 
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
             File wsToolsJar = new File(root, WEBSERVICES_TOOLS_JAR);  //NOI18N
             try {
@@ -137,6 +211,7 @@ public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
                     return new URL[] {
                         wsToolsJar.toURI().toURL(),     // NOI18N
                         new File(root, WEBSERVICES_RT_JAR).toURI().toURL(),           // NOI18N
+                        new File(root, TOOLS_JAR).toURI().toURL(),      //NOI18N
                         new File(root, JSTL_JAR).toURI().toURL(),       //NOI18N
                         new File(root, JAVA_EE_JAR).toURI().toURL(),    //NOI18N
                         new File(root, APPSERV_WS_JAR).toURI().toURL(), //NOI18N
@@ -145,6 +220,7 @@ public class GlassFishV2JaxRpcStack implements WSStackImplementation<JaxRpc> {
                     };
                 } else {                                                // regular appserver
                     return new URL[] {
+                        new File(root, TOOLS_JAR).toURI().toURL(),        //NOI18N
                         new File(root, JSTL_JAR).toURI().toURL(),         //NOI18N
                         new File(root, JAVA_EE_JAR).toURI().toURL(),      //NOI18N
                         new File(root, APPSERV_WS_JAR).toURI().toURL(),   //NOI18N

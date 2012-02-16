@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.wsstack.jaxws.tomcat;
+package org.netbeans.modules.tomcat5;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,11 +51,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Feature;
 import org.netbeans.modules.websvc.wsstack.api.WSStack.Tool;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackImplementation;
 import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
@@ -63,6 +64,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 /**
  *
  * @author mkuchtiak
+ * @author ads
  */
 public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     
@@ -102,10 +104,12 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
         jaxWs = new JaxWs(getUriDescriptor());
     }
 
+    @Override
     public JaxWs get() {
         return jaxWs;
     }
 
+    @Override
     public WSStackVersion getVersion() {
         return WSStackFactory.createWSStackVersion(version);
     }
@@ -145,6 +149,7 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
 //        return new File[]{};
 //    }
 
+    @Override
     public WSTool getWSTool(Tool toolId) {
         if (toolId == JaxWs.Tool.WSIMPORT && isWsit()) {
             return WSStackFactory.createWSTool(new JaxWsTool(JaxWs.Tool.WSIMPORT));
@@ -155,6 +160,7 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
         }
     }
 
+    @Override
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxWs.Feature.TESTER_PAGE) {
             return true;
@@ -230,16 +236,29 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     private JaxWs.UriDescriptor getUriDescriptor() {
         return new JaxWs.UriDescriptor() {
 
-            public String getServiceUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return (applicationRoot.length()>0 ? applicationRoot+"/" : "")+serviceName; //NOI18N
+            @Override
+            public String getServiceUri(String applicationRoot, String serviceName, 
+                    String portName, boolean isEjb) 
+            {
+                return (applicationRoot.length()>0 ? applicationRoot+"/" : 
+                    "")+serviceName; //NOI18N
             }
 
-            public String getDescriptorUri(String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return getServiceUri(applicationRoot, serviceName, portName, isEjb)+"?wsdl"; //NOI18N
+            @Override
+            public String getDescriptorUri(String applicationRoot, 
+                    String serviceName, String portName, boolean isEjb) 
+            {
+                return getServiceUri(applicationRoot, serviceName, portName, 
+                        isEjb)+"?wsdl"; //NOI18N
             }
             
-            public String getTesterPageUri(String host, String port, String applicationRoot, String serviceName, String portName, boolean isEjb) {
-                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, serviceName, portName, isEjb); //NOI18N
+            @Override
+            public String getTesterPageUri(String host, String port, 
+                    String applicationRoot, String serviceName, String portName, 
+                        boolean isEjb) 
+            {
+                return "http://"+host+":"+port+"/"+getServiceUri(applicationRoot, //NOI18N
+                        serviceName, portName, isEjb); 
             }
             
         };
@@ -251,16 +270,19 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
             this.tool = tool;
         }
 
+        @Override
         public String getName() {
             return tool.getName();
         }
 
+        @Override
         public URL[] getLibraries() {
             String[] metroLibs = getDetectedMetroLibs();
             URL[] retValue = new URL[metroLibs.length];
             try {
                 for (int i = 0; i < metroLibs.length; i++) {
-                    retValue[i] = new File(catalinaHome, metroLibs[i]).toURI().toURL();
+                    retValue[i] = new File(catalinaHome, 
+                            metroLibs[i]).toURI().toURL();
                 }
                 return retValue;
             } catch (MalformedURLException ex) {

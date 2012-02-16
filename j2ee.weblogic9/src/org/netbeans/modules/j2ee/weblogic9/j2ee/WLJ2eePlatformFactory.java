@@ -93,6 +93,9 @@ import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 import org.netbeans.modules.j2ee.weblogic9.WLPluginProperties;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport;
 import org.netbeans.modules.j2ee.weblogic9.config.WLServerLibrarySupport.WLServerLibrary;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -760,10 +763,16 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
         @Override
         public Lookup getLookup() {
             List content = new ArrayList();
-            Collections.addAll(content, new File(getPlatformRoot()), new JpaSupportImpl(this),
-                new JsxWsPoliciesSupportImpl(this), new JaxRsStackSupportImpl(this));
+            File platformRoot = new File(getPlatformRoot());
+            WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
+                    new WebLogicJaxWsStack(platformRoot), WSStack.Source.SERVER);
+            Collections.addAll(content, platformRoot, 
+                    new JpaSupportImpl(this),new JsxWsPoliciesSupportImpl(this), 
+                    new JaxRsStackSupportImpl(this), wsStack );
+           
             Lookup baseLookup = Lookups.fixed(content.toArray());
-            return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
+            return LookupProviderSupport.createCompositeLookup(baseLookup, 
+                    "J2EE/DeploymentPlugins/WebLogic9/Lookup"); //NOI18N
         }
     }
 
