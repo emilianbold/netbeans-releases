@@ -59,7 +59,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
@@ -168,7 +168,7 @@ public class RunFindBugs implements Analyzer {
                         DataObject d = DataObject.find(sourceFile);
                         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
                         Document doc = ec.openDocument();
-                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getAbridgedMessage(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
+                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
                     }
                 }
             }
@@ -204,7 +204,7 @@ public class RunFindBugs implements Analyzer {
 
     @Override
     public Image getIcon() {
-        return null;
+        return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
     }
 
     private static UserPreferences readPreferences(Preferences settings) {
