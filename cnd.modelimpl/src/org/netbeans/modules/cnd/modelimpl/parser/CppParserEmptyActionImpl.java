@@ -159,10 +159,31 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     }
 
     @Override
-    public void declaration(Token token) {
+    public void simple_type_specifier(Token token) {
     }
 
     @Override
-    public void end_declaration(Token token) {
+    public void nested_name_specifier(Token token) {
     }
+
+    @Override
+    public void simple_template_id_nocheck(Token token) {
+    }
+
+    @Override
+    public void simple_template_id(Token token) {
+    }
+
+    @Override
+    public void simple_declaration(Token token) {
+    }
+
+    @Override
+    public void end_simple_declaration(Token token) {
+    }
+
+    @Override
+    public void decl_specifier(int kind, Token token) {
+    }
+    
 }
