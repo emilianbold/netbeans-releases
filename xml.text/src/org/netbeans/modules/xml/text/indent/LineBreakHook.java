@@ -53,7 +53,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
-import org.openide.util.Exceptions;
 
 /**
  * This Typing Hook works in conjuction with the XML reformatting, which happens
@@ -227,7 +226,7 @@ public class LineBreakHook implements TypedBreakInterceptor {
         String blankLine = "\n" + 
                 IndentUtils.createIndentString(baseDoc, col + spacesPerTab) + "\n" + 
                 IndentUtils.createIndentString(baseDoc, col);
-        context.setText(blankLine, -1, col + spacesPerTab + 2, 1, blankLine.length());
+        context.setText(blankLine, -1, col + spacesPerTab + 1, 1, blankLine.length());
     }
     
     @MimeRegistration(mimeType="text/xml", service=TypedBreakInterceptor.Factory.class)
