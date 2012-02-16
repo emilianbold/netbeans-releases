@@ -59,6 +59,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -71,6 +72,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -92,50 +94,81 @@ public class RunFindBugs implements Analyzer {
     @Override
     public Iterable<? extends ErrorDescription> analyze(Collection<? extends FileObject> sourceRoots, ProgressContributor progress) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        int i = 0;
 
+        progress.start(sourceRoots.size());
+
+        for (FileObject sr : sourceRoots) {
+            result.addAll(runFindBugs(sr, null));
+            progress.progress(++i);
+        }
+
+        progress.finish();
+
+        return result;
+    }
+
+    public static List<ErrorDescription> runFindBugs(FileObject sourceRoot, Iterable<? extends String> classNames) {
+        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
+        
         try {
-            for (FileObject sr : sourceRoots) {
-                FindBugs2 engine = new FindBugs2();
-                Project p = new Project();
-                BugCollectionBugReporter r = new BugCollectionBugReporter(p);
-                Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
+            FindBugs2 engine = new FindBugs2();
+            Project p = new Project();
+            BugCollectionBugReporter r = new BugCollectionBugReporter(p);
+            Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
+            URL[] binaryRoots = BinaryForSourceQuery.findBinaryRoots(sourceRoot.toURL()).getRoots();
 
-                for (URL binary : BinaryForSourceQuery.findBinaryRoots(sr.toURL()).getRoots()) {
+            if (classNames == null) {
+                for (URL binary : binaryRoots) {
                     try {
                         p.addFile(new File(binary.toURI()).getAbsolutePath());
                     } catch (URISyntaxException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
+            } else {
+                ClassPath binary = ClassPathSupport.createClassPath(binaryRoots);
 
-                ClassPath compile = ClassPath.getClassPath(sr, ClassPath.COMPILE);
+                for (String className : classNames) {
+                    FileObject classFO = binary.findResource(className.replace('.', '/') + ".class");
 
-                for (FileObject compileRoot : compile.getRoots()) {
-                    addCompileRoot(p, compileRoot);
+                    if (classFO != null) {
+                        p.addFile(new File(classFO.toURI()).getAbsolutePath());
+                    }
                 }
 
-                r.setPriorityThreshold(Integer.MAX_VALUE);
-                r.setRankThreshold(Integer.MAX_VALUE);
-                engine.setProject(p);
-                engine.setBugReporter(r);
-                engine.setUserPreferences(readPreferences(settings));
-                engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
-                engine.execute();
+                addCompileRootAsSource(p, sourceRoot);
+            }
 
-                for (BugInstance b : r.getBugCollection().getCollection()) {
-                    if (!settings.getBoolean(b.getBugPattern().getType(), isEnabledByDefault(b.getBugPattern()))) continue;
-                    
-                    SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
+            ClassPath compile = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
 
-                    if (sourceLine != null) {
-                        FileObject sourceFile = sr.getFileObject(sourceLine.getSourcePath());
+            for (FileObject compileRoot : compile.getRoots()) {
+                addCompileRoot(p, compileRoot);
+            }
 
-                        if (sourceFile != null) {
-                            DataObject d = DataObject.find(sourceFile);
-                            EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
-                            Document doc = ec.openDocument();
-                            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getAbridgedMessage(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
-                        }
+            r.setPriorityThreshold(Integer.MAX_VALUE);
+            r.setRankThreshold(Integer.MAX_VALUE);
+            engine.setProject(p);
+            engine.setBugReporter(r);
+            engine.setUserPreferences(readPreferences(settings));
+            engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
+            engine.execute();
+
+            for (BugInstance b : r.getBugCollection().getCollection()) {
+                if (!settings.getBoolean(b.getBugPattern().getType(), isEnabledByDefault(b.getBugPattern()))) {
+                    continue;
+                }
+
+                SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
+
+                if (sourceLine != null) {
+                    FileObject sourceFile = sourceRoot.getFileObject(sourceLine.getSourcePath());
+
+                    if (sourceFile != null) {
+                        DataObject d = DataObject.find(sourceFile);
+                        EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
+                        Document doc = ec.openDocument();
+                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getAbridgedMessage(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
                     }
                 }
             }
@@ -202,7 +235,7 @@ public class RunFindBugs implements Analyzer {
         return false;
     }
 
-    private void addCompileRoot(Project p, FileObject compileRoot) {
+    private static void addCompileRoot(Project p, FileObject compileRoot) {
         Result2 sources = SourceForBinaryQuery.findSourceRoots2(compileRoot.toURL());
 
         if (sources.preferSources()) {
@@ -219,13 +252,13 @@ public class RunFindBugs implements Analyzer {
         }
     }
 
-    private void addCompileRootAsSource(Project p, FileObject source) {
+    private static void addCompileRootAsSource(Project p, FileObject source) {
         for (URL br : BinaryForSourceQuery.findBinaryRoots(source.toURL()).getRoots()) {
             addAuxCPEntry(p, br);
         }
     }
 
-    private void addAuxCPEntry(Project p, URL url) {
+    private static void addAuxCPEntry(Project p, URL url) {
         //XXX: need more reliable way
         File f = FileUtil.archiveOrDirForURL(url);
 
