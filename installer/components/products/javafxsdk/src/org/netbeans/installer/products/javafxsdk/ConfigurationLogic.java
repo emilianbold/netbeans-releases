@@ -87,8 +87,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             throws InstallationException {
         if(progress.isCanceled()) return;
         final Product product = getProduct();
-        final File sdkLocation = product.getInstallationLocation();
-        final File runtimeLocation = findRuntimeInstallationLocation();
+        File sdkLocation = product.getInstallationLocation();
+        File runtimeLocation = findRuntimeInstallationLocation();
         LogManager.log("JavaFX Runtime installation location is " + runtimeLocation);
         LogManager.log("JavaFX SDK installation location is " + sdkLocation);
         if(SystemUtils.isWindows()) {
@@ -100,18 +100,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 overallProgress.synchronizeDetails(true);
 
                 //if sdk is installed, recheck just in case
-                if (isJavaFXSDKInstalled(product, sdkLocation)) {
+                if (isJavaFXSDKInstalled(product)) {
+                    sdkLocation = getInstalledFXSDKLocation(product, sdkLocation);
+                    runtimeLocation = getInstalledFXRuntimeLocation(product, runtimeLocation);
                     LogManager.log("... JavaFX SDK " + getProduct().getVersion() +
-                            " is already installed, skipping SDK and Runtime configuration");
+                            " is already installed at " + sdkLocation + ", skipping SDK and Runtime configuration");
                 } else {
                     final Progress sdkProgress = new Progress();                                    
                     //so, don't instal runtime manually
-                    if(isJavaFXRuntimeInstalled(product, runtimeLocation)) {
-                         LogManager.log("... JavaFX Runtime is already installed, skipping its configuration");                         
+                    if(isJavaFXRuntimeInstalled(product)) {
+                        runtimeLocation = getInstalledFXRuntimeLocation(product, runtimeLocation);
+                        LogManager.log("... JavaFX Runtime is already installed at " + runtimeLocation + ", skipping its configuration");                         
                     }                                       
                     overallProgress.addChild(sdkProgress, progress.COMPLETE);                    
                     final File sdkInstaller = getSDKWindowsInstaller();
-                    results = runSDKInstallerWindows(sdkLocation, runtimeLocation, sdkInstaller, sdkProgress);
+                    if (sdkInstaller != null) {
+                        results = runSDKInstallerWindows(sdkLocation, runtimeLocation, sdkInstaller, sdkProgress);
+                    }
                 } 
 
                 if(results != null && results.getErrorCode()!=0) {
@@ -119,12 +124,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                             ResourceUtils.getString(ConfigurationLogic.class,                         
                             ERROR_SDK_INSTALL_SCRIPT_RETURN_NONZERO_KEY,
                             StringUtils.EMPTY_STRING + results.getErrorCode()));
-                }
-                if(!isJavaFXRuntimeInstalled(product, runtimeLocation)) {
-                    throw new InstallationException(DEFAULT_ERROR_RUNTIME_NOT_INSTALLED);
-                }
-                if(!isJavaFXSDKInstalled(product, sdkLocation)) {
-                    throw new InstallationException(DEFAULT_ERROR_SDK_NOT_INSTALLED);
                 }
                 } finally {
                     try {                       
@@ -213,7 +212,23 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
        
-    }   
+    }
+
+    private File getInstalledFXSDKLocation (Product product, File sdkLocation) {
+        String sdkPath = JavaFXUtils.getJavaFXSDKInstallationPath(product.getPlatforms().get(0), product.getVersion());
+        if (sdkPath != null) {
+            sdkLocation = new File(sdkPath);
+        }
+        return sdkLocation;
+    }
+
+    private File getInstalledFXRuntimeLocation (Product product, File runtimeLocation) {
+        String runtimePath = JavaFXUtils.getJavaFXRuntimeInstallationPath(product.getPlatforms().get(0), product.getVersion());
+        if (runtimePath != null) {
+            runtimeLocation = new File(runtimePath);
+        }
+        return runtimeLocation;
+    }
     
     private boolean isJavaFXRegistred(File nbLocation) throws IOException {
         return new File (nbLocation, "nb/config/JavaFX/Instances/javafx_sdk_autoregistered_instance").exists();
@@ -250,20 +265,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         return SystemUtils.executeCommand(nbLocation, commands.toArray(new String[]{})).getErrorCode() == 0;
     }
-    private  void removeJavaFXIntegration(File nbLocation) throws IOException {
-        LogManager.log("... ide location is " + nbLocation);
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/JavaFX/Instances/javafx_sdk_autoregistered_instance"));
-        FileUtils.deleteFile(new File (nbLocation, "nb/config/JavaFX/Instances/.nbattrs"));
-    }
         
     /**      
      * @param product
-     * @param installLocation
      * @return true if windows registry contains info about SDK AND installLocation is not empty
      */
-    private boolean isJavaFXSDKInstalled(Product product, File installLocation) {
-        return JavaFXUtils.isJavaFXSDKInstalled(product.getPlatforms().get(0), product.getVersion()) &&
-               !FileUtils.isEmpty(installLocation);
+    private boolean isJavaFXSDKInstalled(Product product) {
+        File location = null;
+        location = getInstalledFXSDKLocation(product, location);
+        return location != null && !FileUtils.isEmpty(location);
     }
     
     /**      
@@ -271,7 +281,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
      * @param installLocation
      * @return true if windows registry contains info about Runtime AND installLocation is not empty
      */
-    private boolean isJavaFXRuntimeInstalled(Product product, File installLocation) {
+    private boolean isJavaFXRuntimeInstalled(Product product) {
         return JavaFXUtils.isJavaFXRuntimeInstalled(product.getPlatforms().get(0), product.getVersion());
     }
 
