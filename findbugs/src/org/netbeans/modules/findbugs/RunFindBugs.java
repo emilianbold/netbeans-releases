@@ -115,11 +115,12 @@ public class RunFindBugs implements Analyzer {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
+            Class.forName("org.netbeans.modules.findbugs.NbClassFactory", true, RunFindBugs.class.getClassLoader()); //NOI18N
             FindBugs2 engine = new FindBugs2();
             Project p = new Project();
             BugCollectionBugReporter r = new BugCollectionBugReporter(p);
             Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
-            URL[] binaryRoots = BinaryForSourceQuery.findBinaryRoots(sourceRoot.toURL()).getRoots();
+            URL[] binaryRoots = CacheBinaryForSourceQuery.findCacheBinaryRoots(sourceRoot.toURL()).getRoots();
 
             if (classNames == null) {
                 for (URL binary : binaryRoots) {
@@ -133,7 +134,7 @@ public class RunFindBugs implements Analyzer {
                 ClassPath binary = ClassPathSupport.createClassPath(binaryRoots);
 
                 for (String className : classNames) {
-                    FileObject classFO = binary.findResource(className.replace('.', '/') + ".class");
+                    FileObject classFO = binary.findResource(className.replace('.', '/') + ".sig"); //NOI18N
 
                     if (classFO != null) {
                         p.addFile(new File(classFO.toURI()).getAbsolutePath());
@@ -179,6 +180,8 @@ public class RunFindBugs implements Analyzer {
                     }
                 }
             }
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (InterruptedException ex) {
@@ -260,7 +263,7 @@ public class RunFindBugs implements Analyzer {
     }
 
     private static void addCompileRootAsSource(Project p, FileObject source) {
-        for (URL br : BinaryForSourceQuery.findBinaryRoots(source.toURL()).getRoots()) {
+        for (URL br : CacheBinaryForSourceQuery.findCacheBinaryRoots(source.toURL()).getRoots()) {
             addAuxCPEntry(p, br);
         }
     }
