@@ -114,11 +114,8 @@ public final class FormatToken {
         WHITESPACE,
         EOL,
 
-        BEFORE_LINE_COMMENT,
         LINE_COMMENT,
-
         DOC_COMMENT,
-
         BLOCK_COMMENT,
 
         INDENTATION_INC,
@@ -126,6 +123,7 @@ public final class FormatToken {
 
         AFTER_STATEMENT,
         AFTER_PROPERTY,
+        AFTER_CASE,
 
         BEFORE_BINARY_OPERATOR,
         AFTER_BINARY_OPERATOR,
