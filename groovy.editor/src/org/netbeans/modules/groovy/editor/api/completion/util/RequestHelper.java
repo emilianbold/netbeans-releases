@@ -767,7 +767,8 @@ public final class RequestHelper {
             if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT && t.id() != GroovyTokenId.MEMBER_POINTER
                     && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 // is it prefix
-                if (t.id() != GroovyTokenId.IDENTIFIER) {
+                // keyword check is here because of issue #150862
+                if (t.id() != GroovyTokenId.IDENTIFIER && !t.id().primaryCategory().equals("keyword")) {
                     return null;
                 } else {
                     ts.movePrevious();
