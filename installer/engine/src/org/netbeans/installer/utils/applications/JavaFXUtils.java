@@ -51,18 +51,23 @@ import org.netbeans.installer.utils.system.windows.WindowsRegistry;
 public class JavaFXUtils {
     /////////////////////////////////////////////////////////////////////////////////
     // Static
-  
-    public static boolean isJavaFXSDKInstalled(Platform platform, Version version) {
-        return isJavaFXInstalled(platform, version, FXSDK_KEY, VERSION);
-    }
+
     public static boolean isJavaFXRuntimeInstalled(Platform platform, Version version) {
-        return isJavaFXInstalled(platform, version, FXRUNTIME_KEY, FX_VERSION);
+        return version.toString().startsWith(getFXRegistryValue(platform, version, FXRUNTIME_KEY, FX_VERSION, FX_VERSION));
     }      
+
+    public static String getJavaFXSDKInstallationPath (Platform platform, Version version) {
+        return getFXRegistryValue(platform, version, FXSDK_KEY, VERSION, FX_SDK_HOME_PATH);
+    }
+
+    public static String getJavaFXRuntimeInstallationPath (Platform platform, Version version) {
+        return getFXRegistryValue(platform, version, FXRUNTIME_INSTALLATION_KEY + version.toMicro(), null, FX_RUNTIME_INSTALLATION_PATH);
+    }
 
     /////////////////////////////////////////////////////////////////////////////////
 
-    private static boolean isJavaFXInstalled(Platform platform, Version version, String productKey, String versionKey) {
-        boolean result = false;
+    private static String getFXRegistryValue (Platform platform, Version version, String registryKey, String versionKey, String registryItemKey) {
+        String result = null;
         try {
             if(SystemUtils.isWindows()) {
                 String arch = platform.getHardwareArch();
@@ -73,19 +78,30 @@ public class JavaFXUtils {
                     LogManager.log("... changing registry mode to: " + mode);
                     winreg.setMode(mode);
                 }
-                LogManager.log("... checking if JavaFX " + version + " is already installed, key: " + productKey);
-                if(winreg.keyExists(HKLM, productKey)) {
-                    if(winreg.valueExists(HKLM, productKey, versionKey)) {
-                        final String versionValue = winreg.getStringValue(HKLM, productKey, versionKey);
-                        LogManager.log("... product with version " + versionValue + " is already installed");
-                        if(version.toString().startsWith(versionValue)) {
-                           result = true;
-                        }                        
-                    } else {
-                        LogManager.log("... cannot find Version value for this product");
+                LogManager.log("... getting JavaFX " + registryKey + " value: " + registryItemKey);
+                if (winreg.keyExists(HKLM, registryKey)) {
+                    boolean versionOK = true;
+                    if (versionKey != null) {
+                        versionOK = false;
+                        if (winreg.valueExists(HKLM, registryKey, versionKey)) {
+                            String versionValue = winreg.getStringValue(HKLM, registryKey, versionKey);
+                            LogManager.log("... product with version " + versionValue + " is already installed");
+                            if (version.toString().startsWith(versionValue)) {
+                                versionOK = true;
+                            }                        
+                        } else {
+                            LogManager.log("... cannot find " + versionKey + " value for this product");
+                        }
+                    }
+                    if (versionOK) {
+                        if (winreg.valueExists(HKLM, registryKey, registryItemKey)) {
+                            result = winreg.getStringValue(HKLM, registryKey, registryItemKey);
+                        } else {
+                            LogManager.log("... cannot find " + registryItemKey + " value for this product");
+                        }
                     }
                 } else {
-                    LogManager.log("... cannot find key for this product");
+                    LogManager.log("... cannot find " + registryKey + " for this product");
                 }
             }
         } catch (NativeException e) {
@@ -93,38 +109,6 @@ public class JavaFXUtils {
         }
         return result;
     }
-
- /* public boolean isCompatibleJDKFoundForComponent(Product product) {
-        for (WizardComponent c : product.getWizardComponents()) {
-            if (c.getClass().getName().equals(SearchForJavaAction.class.getName())) {
-                for (WizardComponent wc : product.getWizardComponents()) {
-                    try {
-                        Method m = wc.getClass().getMethod("getJdkLocationPanel");
-                        Wizard wizard = new Wizard(null, product.getWizardComponents(), -1, product, product.getClassLoader());
-                        wc.setWizard(wizard);
-                        wc.getWizard().getContext().put(product);
-                        wc.initialize();
-                        JdkLocationPanel jdkLocationPanel = (JdkLocationPanel) m.invoke(wc);
-                        if (jdkLocationPanel.getSelectedLocation().equals(new File(StringUtils.EMPTY_STRING))) {
-                            final String jreAllowed = jdkLocationPanel.getProperty(
-                                    JdkLocationPanel.JRE_ALLOWED_PROPERTY);
-                            lastWarningMessage = StringUtils.format(
-                                    getProperty("false".equals(jreAllowed) ?
-                                        WARNING_NO_COMPATIBLE_JDK_FOUND :
-                                        WARNING_NO_COMPATIBLE_JAVA_FOUND));
-
-                            LogManager.log(lastWarningMessage);
-                            return lastWarningMessage;
-                        }
-                    } catch (NoSuchMethodException e) {
-                    } catch (IllegalAccessException e) {
-                    } catch (IllegalArgumentException e) {
-                    } catch (InvocationTargetException e) {
-                    }
-                }
-            }
-        }  */
-
 
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
@@ -139,9 +123,15 @@ public class JavaFXUtils {
             "SOFTWARE\\JavaSoft\\JavaFX SDK"; // NOI18N
     public static final String FXRUNTIME_KEY =
             "SOFTWARE\\JavaSoft\\JavaFX"; // NOI18N
+    public static final String FXRUNTIME_INSTALLATION_KEY =
+            "SOFTWARE\\Oracle\\JavaFX\\"; //NOI18N
 
     public static final String VERSION
             = "Version"; // NOI18N
     public static final String FX_VERSION
             = "FXVersion"; // NOI18N
+    public static final String FX_RUNTIME_INSTALLATION_PATH
+            = "Path"; //NOI18N
+    public static final String FX_SDK_HOME_PATH
+            = "JFXSDKHome"; //NOI18N
 }

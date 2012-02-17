@@ -400,10 +400,12 @@ public final class StartTomcat extends StartServer implements ProgressObject {
                 }
 
 
-                for (StartupExtender args : StartupExtender.getExtenders(
-                        Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
-                    for (String singleArg : args.getArguments()) {
-                        sb.append(' ').append(singleArg);
+                if (command == CommandType.START) {
+                    for (StartupExtender args : StartupExtender.getExtenders(
+                            Lookups.singleton(CommonServerBridge.getCommonInstance(tm.getUri())), getMode(mode))) {
+                        for (String singleArg : args.getArguments()) {
+                            sb.append(' ').append(singleArg);
+                        }
                     }
                 }
                 javaOpts = sb.toString();
