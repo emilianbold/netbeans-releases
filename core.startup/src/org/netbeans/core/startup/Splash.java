@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,21 +44,7 @@
 
 package org.netbeans.core.startup;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Frame;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.GraphicsEnvironment;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.RenderingHints;
-import java.awt.SplashScreen;
-import java.awt.Window;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -73,20 +59,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.imageio.ImageIO;
-import javax.swing.JComponent;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.KeyStroke;
-import static javax.swing.SwingConstants.*;
-import javax.swing.SwingUtilities;
-import javax.swing.WindowConstants;
+import static javax.swing.SwingConstants.BOTTOM;
+import static javax.swing.SwingConstants.LEFT;
+import javax.swing.*;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /** A class that encapsulates all the splash screen things.
 */
@@ -240,7 +221,7 @@ public final class Splash implements Stamps.Updater {
     /**
      * Standard way how to place the window to the center of the screen.
      */
-    static final void center(Window c) {
+    static void center(Window c) {
         c.pack();
         c.setBounds(Utilities.findCenterBounds(c.getSize()));
     }
@@ -258,10 +239,12 @@ public final class Splash implements Stamps.Updater {
         return ImageUtilities.loadImage("org/netbeans/core/startup/splash.gif", true);
     }
 
+    @Override
     public void flushCaches(DataOutputStream os) throws IOException {
         ImageIO.write((BufferedImage)loadContent(false), "png", os);
     }
 
+    @Override
     public void cacheReady() {
     }
 
@@ -404,6 +387,7 @@ public final class Splash implements Stamps.Updater {
         }
 
         long next;
+        @SuppressWarnings("CallToThreadDumpStack")
         final void repaint(Rectangle r) {
             if (comp != null) {
                 comp.repaint(r);
@@ -628,6 +612,7 @@ public final class Splash implements Stamps.Updater {
             setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             setVisible (false);
             dispose();
@@ -644,6 +629,7 @@ public final class Splash implements Stamps.Updater {
             this.visible = visible;
         }
 
+        @Override
         public void run() {
             if (visible) {
                 Splash.center(splashWindow);
