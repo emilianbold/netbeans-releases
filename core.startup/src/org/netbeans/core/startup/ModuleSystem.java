@@ -353,6 +353,10 @@ public final class ModuleSystem {
             for (Module m : mgr.getModules()) {
                 if (m.getJarFile() != null) {
                     if (jar.equals(m.getJarFile())) {
+                        if (m.isAutoload() || m.isEager()) {
+                            System.err.println("Reloading autoload and eager modules is not supported, sorry! (Try Javeleon.)");
+                            return;
+                        }
                         // Hah, found it.
                         if (! m.isReloadable()) {
                             m.setReloadable(true);
