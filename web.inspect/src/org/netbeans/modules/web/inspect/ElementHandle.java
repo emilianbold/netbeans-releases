@@ -62,6 +62,10 @@ import org.w3c.dom.NodeList;
  * @author Jan Stola
  */
 public class ElementHandle {
+    /** Name of JSON attribute where ID is stored. */
+    private static final String JSON_ID = "id"; // NOI18N
+    /** Name of JSON attribute where class is stored. */
+    private static final String JSON_CLASS = "class"; // NOI18N
     /** Name of JSON attribute where parent is stored. */
     private static final String JSON_PARENT = "parent"; // NOI18N
     /** Name of JSON attribute where index of the element (in parent) is stored. */
@@ -70,6 +74,14 @@ public class ElementHandle {
     private static final String JSON_SIBLING_TAG_NAMES = "siblingTagNames"; // NOI18N
     /** Key in element's user data under which the handle is cached. */
     private static final String ELEMENT_USER_DATA_HANDLE = "handle"; // NOI18N
+    /** Name of attribute that holds element's ID. */
+    private static final String ATTR_ID = "id"; // NOI18N
+    /** Name of attribute that holds element's class. */
+    private static final String ATTR_CLASS = "class"; // NOI18N
+    /** Element's ID. */
+    private String id;
+    /** Element's class(es). */
+    private String className;
     /** Index of the element among parent's sub-elements. */
     private int indexInParent;
     /** Tag names of all parent's sub-elements. */
@@ -101,6 +113,24 @@ public class ElementHandle {
     }
 
     /**
+     * Returns element's ID.
+     * 
+     * @return element's ID.
+     */
+    public String getID() {
+        return id;
+    }
+
+    /**
+     * Returns element's class(es).
+     * 
+     * @return element's class(es).
+     */
+    public String getClassName() {
+        return className;
+    }
+
+    /**
      * Returns an element handle for its JSON representation
      * (obtained from the browser plugin).
      * 
@@ -110,6 +140,12 @@ public class ElementHandle {
     public static ElementHandle forJSONObject(JSONObject json) {
         try {
             ElementHandle handle = new ElementHandle();
+            if (json.has(JSON_ID)) {
+                handle.id = json.getUnsafeString(JSON_ID);
+            }
+            if (json.has(JSON_CLASS)) {
+                handle.className = json.getUnsafeString(JSON_CLASS);
+            }
             if (!json.isNull(JSON_PARENT)) {
                 JSONObject parent = json.getJSONObject(JSON_PARENT);
                 handle.parent = forJSONObject(parent);
@@ -143,6 +179,9 @@ public class ElementHandle {
         }
 
         ElementHandle handle = new ElementHandle();
+        String id = element.getAttribute(ATTR_ID);
+        handle.id = id.isEmpty() ? null : id;
+        handle.className = element.getAttribute(ATTR_CLASS);
         Node parentNode = element.getParentNode();
         if (parentNode.getNodeType() == Node.ELEMENT_NODE) {
             Element parentElement = (Element)parentNode;

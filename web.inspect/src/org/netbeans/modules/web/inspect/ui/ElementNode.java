@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.ui;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import javax.swing.Action;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
@@ -102,10 +103,19 @@ public class ElementNode extends AbstractNode {
      */
     void setElement(Element element) {
         this.element = element;
-        setDisplayName(element.getTagName().toLowerCase());
+        String tagName = element.getTagName().toLowerCase();
+        String selector = CSSUtils.selectorFor(ElementHandle.forElement(element), false);
+        setDisplayName(NbBundle.getMessage(ElementNode.class, "ElementNode.displayName", tagName, selector)); // NOI18N
         ((ElementLookup)getLookup()).setElement(element);
         ((ElementChildren)getChildren()).setElement(element);
         updateProperties();
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        String tagName = element.getTagName().toLowerCase();
+        String selector = CSSUtils.selectorFor(ElementHandle.forElement(element), false);
+        return NbBundle.getMessage(ElementNode.class, "ElementNode.htmlDisplayName", tagName, selector); // NOI18N
     }
 
     /**
@@ -119,7 +129,7 @@ public class ElementNode extends AbstractNode {
                 ElementHandle handle = ElementHandle.forElement(element);
                 updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
                 updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(handle));
-            } 
+            }
         });
     }
 

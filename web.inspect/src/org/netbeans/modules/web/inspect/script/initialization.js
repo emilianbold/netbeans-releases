@@ -67,7 +67,7 @@ NetBeans.selection = [];
 // NetBeans ID attributes only.
 NetBeans.getDOM = function() {
     var self = this;
-    var code = function(e,idx) {
+    var code = function(e) {
         var result = '';
         if (e.nodeType == 1) {
             // Set ID attribute if necessary
@@ -78,8 +78,11 @@ NetBeans.getDOM = function() {
             if (!e.getAttribute(self.ATTR_ARTIFICIAL)) { // skip artificial elements
                 result += '<' + e.tagName;
                 result += ' '+self.ATTR_ID+'=\"'+e[self.ATTR_ID]+'\"';
-                if (idx !== undefined) {
-                    result += ' idx=\"'+idx+'\"';
+                if (e.id && e.id !== "") {
+                    result += ' id="'+e.id+'"';
+                }
+                if (e.className && e.className !== "") {
+                    result += ' class="'+e.className+'"';
                 }
                 result += '>';
                 var i;

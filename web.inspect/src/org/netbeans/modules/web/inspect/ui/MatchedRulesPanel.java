@@ -99,7 +99,8 @@ public class MatchedRulesPanel extends JPanel {
                             title = NbBundle.getMessage(MatchedRulesPanel.class, "MatchedRulesPanel.matchedRules"); // NOI18N
                         } else {
                             String tagName = element.getTagName().toLowerCase();
-                            title = NbBundle.getMessage(MatchedRulesPanel.class, "MatchedRulesPanel.inheritedFrom", tagName); // NOI18N
+                            String selector = CSSUtils.selectorFor(element, false);
+                            title = NbBundle.getMessage(MatchedRulesPanel.class, "MatchedRulesPanel.inheritedFrom", tagName, selector); // NOI18N
                         }
                         List<PageModel.RuleInfo> rules = ruleData.get(element);
                         if (first || !rules.isEmpty()) {
