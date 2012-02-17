@@ -81,16 +81,7 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
      */
     @Override
     public boolean canSearch() {
-        final Node[] nodes = node.getChildren().getNodes(true);
-        for (int i = 0; i < nodes.length; i++) {
-            Node child = nodes[i];
-            SearchInfoDefinition searchInfo =
-                    SearchInfoDefinitionUtils.getSearchInfoDefinition(child);
-            if (searchInfo != null && searchInfo.canSearch()) {
-                return true;
-            }
-        }
-        return false;
+        return true;
     }
 
     /**
@@ -107,8 +98,9 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
         List<SearchInfo> searchInfoElements =
                 new ArrayList<SearchInfo>(nodes.length);
         for (int i = 0; i < nodes.length; i++) {
+            Node child = nodes[i];
             SearchInfo subInfo = 
-                    SearchInfoUtils.getSearchInfoForNode(node);
+                    SearchInfoUtils.getSearchInfoForNode(child);
             if (subInfo != null && subInfo.canSearch()) {
                 searchInfoElements.add(subInfo);
             }
