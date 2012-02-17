@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -55,8 +56,10 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Parameters;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
@@ -272,7 +275,26 @@ class CompatibilityUtils {
         if (legacySearchInfo != null) {
             return legacyToCurrentSearchInfo(legacySearchInfo);
         }
+        Project p = node.getLookup().lookup(Project.class);
+        if (p != null && !hasAncestorProjectNode(node.getParentNode())) {
+            return AbstractProjectSearchScope.createDefaultProjectSearchInfo(p);
+        }
         return SearchInfoUtils.getSearchInfoForNode(node);
+    }
+
+    /**
+     * Check whether there is a project node among ancestors of a node.
+     */
+    private static boolean hasAncestorProjectNode(Node node) {
+        if (node == null) {
+            return false;
+        }
+        Project p = node.getLookup().lookup(Project.class);
+        if (p != null) {
+            return true;
+        } else {
+            return hasAncestorProjectNode(node.getParentNode());
+        }
     }
 
     /**

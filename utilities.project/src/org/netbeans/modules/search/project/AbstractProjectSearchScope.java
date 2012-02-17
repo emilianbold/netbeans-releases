@@ -46,17 +46,18 @@ package org.netbeans.modules.search.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
-import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
 
 /**
@@ -100,26 +101,35 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
                 project.getLookup());
         if (prjSearchInfo != null) {
             return prjSearchInfo;
+        } else {
+            return createDefaultProjectSearchInfo(project);
         }
+    }
 
+    /**
+     * Create default search info for a project.
+     */
+    static SearchInfo createDefaultProjectSearchInfo(Project project) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(
                 Sources.TYPE_GENERIC);
 
-        SearchFilterDefinition[] filters
-                = new SearchFilterDefinition[] {SearchInfoDefinitionFactory.VISIBILITY_FILTER,
-                                                SearchInfoDefinitionFactory.SHARABILITY_FILTER};
-        if (sourceGroups.length == 1) {
-            return SearchInfoUtils.createSearchInfoForRoot(
-                    sourceGroups[0].getRootFolder(), filters);
-        } else {
-            FileObject[] rootFolders = new FileObject[sourceGroups.length];
-            for (int i = 0; i < sourceGroups.length; i++) {
-                rootFolders[i] = sourceGroups[i].getRootFolder();
-            }
-            return SearchInfoUtils.createSearchInfoForRoots(
-                                            rootFolders,
-                                            filters);
+        FileObject base = project.getProjectDirectory();
+        List<FileObject> roots = new ArrayList<FileObject>();
+        if (base != null) {
+            roots.add(base);
         }
+        for (SourceGroup sg : sourceGroups) {
+            FileObject dir = sg.getRootFolder();
+            if (base == null
+                    || (dir != null && !FileUtil.isParentOf(base, dir))) {
+                roots.add(dir);
+            }
+        }
+        FileObject[] rootArray = new FileObject[roots.size()];
+        for (int i = 0; i < roots.size(); i++) {
+            rootArray[i] = roots.get(i);
+        }
+        return SearchInfoUtils.createSearchInfoForRoots(rootArray);
     }
 }
