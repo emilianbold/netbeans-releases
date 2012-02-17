@@ -117,6 +117,15 @@ public class ModelUtils {
         return result;
     }
     
+    public static JsObject findJsObjectByName(Model model, String fqName) {
+        JsObject result = model.getGlobalObject();
+        for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
+            String token = stringTokenizer.nextToken();
+            result = result.getProperty(token);
+        }
+        return result;
+    }
+    
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();
@@ -197,7 +206,7 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<String> resolveSemiTypeOfExpression(Node expression) {
+    public static Collection<TypeUsage> resolveSemiTypeOfExpression(Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
             expression.accept(visitor);
@@ -206,16 +215,18 @@ public class ModelUtils {
         return new HashSet<String>();
     }
     
-    public static Collection<String> resolveTypeFromSemiType(JsObject object, String type) {
-        Set<String> result = new HashSet<String>();
-        if (Type.UNRESOLVED.equals(type) 
-                || Type.BOOLEAN.equals(type)
-                || Type.STRING.equals(type)
-                || Type.NUMBER.equals(type)) {
+    public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage uType) {
+        Set<TypeUsage> result = new HashSet<TypeUsage>();
+        TypeUsageImpl type = (TypeUsageImpl)uType;
+        if (type.isResolved()) {
             result.add(type);
-        } else if (Type.UNDEFINED.equals(type) && object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-            result.add(ModelUtils.createFQN(object));
-        } else if ("@this".equals(type)) {
+        } else if (Type.UNDEFINED.equals(type.getType())) {
+            if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                result.add(new TypeUsageImpl(ModelUtils.createFQN(object), type.getOffset(), true));
+            } else {
+                result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
+            }
+        } else if ("@this".equals(type.getType())) {
             JsObject parent = null;
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
@@ -223,10 +234,10 @@ public class ModelUtils {
                 parent = object.getParent();
             }
             if (parent != null) {
-                result.add(ModelUtils.createFQN(parent));
+                result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
-        } else if (type.startsWith("@new:")) {
-            String function = type.substring(5);
+        } else if (type.getType().startsWith("@new:")) {
+            String function = type.getType().substring(5);
             JsObject possible = null;
             JsObject parent = object;
             while (possible == null && parent != null) {
@@ -245,12 +256,12 @@ public class ModelUtils {
 
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
-        private final Set<String> result = new HashSet<String>();
+        private final Set<TypeUsage> result = new HashSet<TypeUsage>();
         
         public SemiTypeResolverVisitor() {
         }
         
-        public Collection<String> getSemiTypes() {
+        public Collection<TypeUsage> getSemiTypes() {
             return result;
         }
 
@@ -258,7 +269,7 @@ public class ModelUtils {
         public Node visit(IdentNode iNode, boolean onset) {
             if (onset) {
                 if (getPath().isEmpty() && iNode.getName().equals("this")) {   //NOI18N
-                    result.add("@this");                //NOI18N
+                    result.add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
                 }
             }
             return super.visit(iNode, onset);
@@ -270,13 +281,13 @@ public class ModelUtils {
             if (onset) {
                 Object value = lNode.getObject();
                 if (value instanceof Boolean) {
-                    result.add(Type.BOOLEAN);
+                    result.add(new TypeUsageImpl(Type.BOOLEAN, lNode.getStart(), true));
                 } else if (value instanceof String) {
-                    result.add(Type.STRING);
+                    result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
                 } else if (value instanceof Integer
                         || value instanceof Float
                         || value instanceof Double) {
-                    result.add(Type.NUMBER);
+                    result.add(new TypeUsageImpl(Type.NUMBER, lNode.getStart(), true));
                 }
                 return null;
             }
@@ -289,7 +300,8 @@ public class ModelUtils {
                 if (com.oracle.nashorn.parser.Token.descType(uNode.getToken()) == TokenType.NEW) {
                     if (uNode.rhs() instanceof CallNode
                         && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
-                            result.add("@new:" + ((IdentNode)((CallNode)uNode.rhs()).getFunction()).getName());
+                            IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
+                            result.add(new TypeUsageImpl("@new:" + iNode.getName(), iNode.getStart(), false));
                             return null;
                     }
                 }

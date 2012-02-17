@@ -48,7 +48,7 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class TypeImpl implements Type {
-
+        
     private final String type;
 
     public TypeImpl(String type) {
@@ -64,4 +64,19 @@ public class TypeImpl implements Type {
     public String toString() {
         return type;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof TypeImpl)) return false;
+        return type.equals(((Type)obj).getType());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 1;
+        hash = hash * 31 + (type != null ? type.hashCode() : 0);
+        return hash;
+    }
+    
 }

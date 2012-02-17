@@ -62,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
@@ -329,7 +330,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             if (type != null) {
-                Collection<String> lastTypeAssignment = type.getAssignmentTypeNames(request.anchor);
+                Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
                 if (lastTypeAssignment.isEmpty()) {
                     for (JsObject object : type.getProperties().values()) {
                         if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
@@ -338,9 +339,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                 } else {
-                    for (String objectName : lastTypeAssignment) {
+                    for (Type typeName : lastTypeAssignment) {
                         for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                            if (object.getName().equals(objectName)) {
+                            if (object.getName().equals(typeName.getType())) {
                                 for (JsObject property : object.getProperties().values()) {
                                     if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
                                             && startsWith(property.getName(), request.prefix)) {

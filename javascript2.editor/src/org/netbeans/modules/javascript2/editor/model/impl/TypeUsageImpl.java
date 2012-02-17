@@ -39,22 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
+package org.netbeans.modules.javascript2.editor.model.impl;
+
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
- * @author Martin Fousek <marfous@netbeans.org>
+ * @author Petr Pisl
  */
-public interface Type {
-    public static String BOOLEAN = "Boolean";   //NOI18N
-    public static String NUMBER = "Number";     //NOI18N
-    public static String STRING = "String";     //NOI18N
-    /**
-     * When the type is unknown / we are not able to resolve it
-     */
-    public static String UNRESOLVED = "unresolved"; //NOI18N 
-    public static String UNDEFINED = "undefined";   //NOI18N
-      
-    public String getType();
+public class TypeUsageImpl implements TypeUsage {
 
+    
+    private String type;
+    private final int offset;
+    private boolean resolved;
+    
+    public TypeUsageImpl(String type, int offset, boolean resolved) {
+        this.type = type;
+        this.offset = offset;
+        this.resolved = resolved;
+    }
+    
+    public TypeUsageImpl(String type, int offset) {
+        this(type, offset, false);
+    }
+    
+    public TypeUsageImpl(String type) {
+        this(type, -1, false);
+    }
+
+    @Override
+    public String getType() {
+        return type;
+    }
+    
+    @Override
+    public int getOffset() {
+        return offset;
+    }
+
+    public boolean isResolved() {
+        return resolved;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || !(obj instanceof TypeUsageImpl)) return false;
+        TypeUsageImpl typeUsage = (TypeUsageImpl)obj;
+        return type.equals(typeUsage.getType())
+                && offset == typeUsage.getOffset()
+                && resolved == typeUsage.isResolved();
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 2;
+        hash = hash * 31 + (type != null ? type.hashCode() : 0);
+        hash = hash * 31 + offset;
+        hash = hash * 31 + (resolved ? 1 : 0);
+        return hash;
+    }
 }

@@ -1,4 +1,4 @@
-/*
+/* 
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,22 +39,9 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model;
 
-/**
- *
- * @author Martin Fousek <marfous@netbeans.org>
- */
-public interface Type {
-    public static String BOOLEAN = "Boolean";   //NOI18N
-    public static String NUMBER = "Number";     //NOI18N
-    public static String STRING = "String";     //NOI18N
-    /**
-     * When the type is unknown / we are not able to resolve it
-     */
-    public static String UNRESOLVED = "unresolved"; //NOI18N 
-    public static String UNDEFINED = "undefined";   //NOI18N
-      
-    public String getType();
-
-}
+dvorek.getPrasatko();
+dvorek.getKocicku();
+dvorek.getPrasatko().udelejChro(dvorek.dejDefault(), "afdafa");
+dvorek.getPrasatko().udelejChro(dvorek.dejDefault(dvorek.getKocicku()), "afdafa");
+dvorek.getKocicku().udelejMau();

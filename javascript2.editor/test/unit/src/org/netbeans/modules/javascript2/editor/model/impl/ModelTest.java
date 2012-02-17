@@ -428,34 +428,49 @@ public class ModelTest extends JsTestBase {
         
         JsFunction function = (JsFunction)object.getProperty("isGood1");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.BOOLEAN));
+        Iterator<? extends TypeUsage> iterator = function.getReturnTypes().iterator();
+        TypeUsage type = iterator.next();
+        assertEquals(Type.BOOLEAN, type.getType());
         
         function = (JsFunction)object.getProperty("getSimpleDescription");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.STRING));
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.STRING, type.getType());
         
         function = (JsFunction)object.getProperty("getInteger");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.NUMBER, type.getType());
         
         function = (JsFunction)object.getProperty("getDouble");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.NUMBER, type.getType());
         
         function = (JsFunction)object.getProperty("getBigNumber");
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.NUMBER, type.getType());
         
         function = (JsFunction)object.getProperty("simpleMix");
         assertEquals(2, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains(Type.STRING));
-        assertTrue(function.getReturnTypes().contains(Type.NUMBER));
+        iterator = function.getReturnTypes().iterator();
+        type = iterator.next();
+        assertEquals(Type.STRING, type.getType());
+        type = iterator.next();
+        assertEquals(Type.NUMBER, type.getType());
         
         JsObject property = object.getProperty("isGreat");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
-        Collection<String> types = property.getAssignmentTypeNames(property.getDeclarationName().getOffsetRange().getEnd());
+        Collection<? extends TypeUsage> types = property.getAssignmentForOffset(property.getDeclarationName().getOffsetRange().getEnd());
+        iterator = types.iterator();
         assertEquals(1, types.size());
-        assertTrue(types.contains(Type.BOOLEAN));
+        type = iterator.next();
+        assertEquals(Type.BOOLEAN, type.getType());
     }
     
     
@@ -472,7 +487,9 @@ public class ModelTest extends JsTestBase {
         assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(JsElement.Kind.METHOD, function.getJSKind());
         assertEquals(1, function.getReturnTypes().size());
-        assertTrue(function.getReturnTypes().contains("Man.Address"));
+        Iterator<? extends TypeUsage> iterator = function.getReturnTypes().iterator();
+        TypeUsage type = iterator.next();
+        assertEquals("Man.Address", type.getType());
         
     }
     

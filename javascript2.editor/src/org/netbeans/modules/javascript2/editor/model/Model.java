@@ -47,8 +47,12 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -65,12 +69,15 @@ public final class Model {
 
     private final DocumentationProvider docSupport;
 
+    private final UsageBuilder usageBuilder;
+    
     private ModelVisitor visitor;
 
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
         this.docSupport = DocumentationSupport.getDocumentationProvider(parserResult);
+        this.usageBuilder = new UsageBuilder();
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -81,6 +88,7 @@ public final class Model {
             if (root != null) {
                 root.accept(visitor);
             }
+            resolveLocalTypes(getGlobalObject());
             long end = System.currentTimeMillis();
             LOGGER.log(Level.FINE, "Building model took {0}ms.", (end - start));
         }
@@ -106,6 +114,17 @@ public final class Model {
             scope = scope.getInScope();
         }
         return result;
+    }
+
+    private void resolveLocalTypes(JsObject object) {
+        if(object instanceof JsFunctionImpl) {
+            ((JsFunctionImpl)object).resolveTypes();
+        } else {
+            ((JsObjectImpl)object).resolveTypes();
+        }
+        for(JsObject property: object.getProperties().values()) {
+            resolveLocalTypes(property);
+        }
     }
 
 }

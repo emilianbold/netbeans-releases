@@ -88,6 +88,18 @@ class ModelElementFactory {
         return result;
     }
     
+    static JsFunctionImpl createVirtualFunction(JsParserResult parserResult, JsObject parentObject, Identifier name, int paramCount) {
+        List<Identifier> params = new ArrayList<Identifier>(paramCount);
+        if (paramCount == 1) {
+            params.add(new IdentifierImpl("param", OffsetRange.NONE));
+        } else {
+            for(int i = 0; i < paramCount; i++) {
+                params.add(new IdentifierImpl("param" + (i + 1), OffsetRange.NONE));
+            }
+        }
+        return new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(), parentObject, name, params);
+    }
+    
     static IdentifierImpl create(JsParserResult parserResult, IdentNode node) {
         return new IdentifierImpl(node.getName(), ModelUtils.documentOffsetRange(parserResult, node.getStart(), node.getFinish()));
     }
