@@ -110,6 +110,25 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="SuspendStatus">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>SuspendStatus</code> service which can be used by indexers to find out if
+      indexing is suspended.</summary>
+      <version major="1" minor="52"/>
+      <date day="17" month="2" year="2012"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+               The indexing is suspended by the infrastructure when high priority request like index query or execution
+               of <code>UserTask</code>, <code>ParserResultTask</code> is in progress. The <code>SuspendStatus</code>
+               allows indexers to find out that indexing is suspended or to park while it's suspended.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendedStatus"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="Context"/>
+      <issue number="208378"/>
+  </change>
   <change id="IndexingAwareParserResultTask">
       <api name="ParsingAPI"/>
       <summary>Added <code>IndexingAwareParserResultTask</code> which is a specialization of <code>ParserResultTask</code>
