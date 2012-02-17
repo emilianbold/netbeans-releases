@@ -309,7 +309,7 @@ public class FileInfoProvider {
                     // however we never report CancellationException
                 }
             }
-            return false;
+            return (getAccess() & all_mask) > 0;
         }
 
         public boolean canRead(ExecutionEnvironment env) {
