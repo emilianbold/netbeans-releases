@@ -83,6 +83,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -110,15 +111,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
-import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.SourceIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.*;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -3786,6 +3779,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         private DependenciesContext depCtx;
         protected SourceIndexers indexers = null; // is only ever filled by InitialRootsWork
+        
+        // flag that no projects are opened, and no real scanning work is expected
+        private boolean shouldDoNothing;
+        private Level   previousLevel;
 
         @org.netbeans.api.annotations.common.SuppressWarnings(
         value="DMI_COLLECTION_OF_URLS"
@@ -3809,6 +3806,47 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         public @Override String toString() {
             return super.toString() + ", useInitialState=" + useInitialState; //NOI18N
         }
+        
+        private void dumpGlobalRegistry(String n, Collection<String> pathIds) {
+            boolean printed = false;
+            for (String pathId : pathIds) {
+                GlobalPathRegistry gpr = GlobalPathRegistry.getDefault();
+                Set<ClassPath> paths = gpr.getPaths(pathId);
+                if (!paths.isEmpty() && !printed) {
+                    LOGGER.log(Level.FINE, "Dumping: {0}", n);
+                    printed = true;
+                }
+                LOGGER.log(Level.FINE, "Paths ID {0}: {1}", new Object[] { pathId, paths});
+            }
+        }
+        
+        private void checkRootCollection(Collection<? extends URL> roots) {
+            if (!shouldDoNothing || roots.isEmpty()) {
+                return;
+            }
+            boolean found = false;
+            for (URL u : roots) {
+                if (!u.getPath().contains("jsstubs/allstubs.zip")) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                return;
+            }
+            if (previousLevel == null) {
+                previousLevel = LOGGER.getLevel();
+                LOGGER.setLevel(Level.FINE);
+                LOGGER.warning("Non-empty roots encountered while no projects are opened; loglevel increased");
+                
+                Collection<? extends PathRecognizer> recogs = Lookup.getDefault().lookupAll(PathRecognizer.class);
+                PathRecognizerRegistry reg = PathRecognizerRegistry.getDefault();
+                
+                dumpGlobalRegistry("Binary Libraries", reg.getBinaryLibraryIds());
+                dumpGlobalRegistry("Libraries", reg.getLibraryIds());
+                dumpGlobalRegistry("Sources", reg.getSourceIds());
+            }
+        }
 
         @Override
         @org.netbeans.api.annotations.common.SuppressWarnings(
@@ -3820,6 +3858,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 return false;
             }
 
+            Project[] openProjects = OpenProjects.getDefault().getOpenProjects();
+            
+            shouldDoNothing = openProjects.length == 0;
+            
+            try {
             updateProgress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies")); //NOI18N
             long tm1 = System.currentTimeMillis();
             boolean restarted;
@@ -3828,17 +3871,21 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 depCtx = new DependenciesContext(scannedRoots2Dependencies, scannedBinaries2InvDependencies, scannedRoots2Peers, sourcesForBinaryRoots, useInitialState);
                 final List<URL> newRoots = new LinkedList<URL>();
                 Collection<? extends URL> c = PathRegistry.getDefault().getSources();
+                checkRootCollection(c);
                 LOGGER.log(Level.FINE, "PathRegistry.sources="); printCollection(c, Level.FINE); //NOI18N
                 newRoots.addAll(c);
 
                 c = PathRegistry.getDefault().getLibraries();
+                checkRootCollection(c);
                 LOGGER.log(Level.FINE, "PathRegistry.libraries="); printCollection(c, Level.FINE); //NOI18N
                 newRoots.addAll(c);
 
+                checkRootCollection(PathRegistry.getDefault().getBinaryLibraries());
                 depCtx.newBinariesToScan.addAll(PathRegistry.getDefault().getBinaryLibraries());                
 
                 if (useInitialState) {
                     c = PathRegistry.getDefault().getUnknownRoots();
+                    checkRootCollection(c);
                     LOGGER.log(Level.FINE, "PathRegistry.unknown="); printCollection(c, Level.FINE); //NOI18N
                     newRoots.addAll(c);
                 } // else computing the deps from scratch and so will find the 'unknown' roots
@@ -3931,6 +3978,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 depCtx.scannedBinaries.clear();
                 depCtx.oldBinaries.clear();
                 depCtx.oldRoots.clear();
+                
+                if (shouldDoNothing) {
+                    LOGGER.warning("restarted while no projects are opened. Roots = " + depCtx.newRootsToScan + " binaries = " + 
+                            depCtx.newBinariesToScan);
+                    
+                }
             }
 
             if (LOGGER.isLoggable(Level.INFO)) {
@@ -4005,6 +4058,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             TEST_LOGGER.log(Level.FINEST, "RootsWork-finished");       //NOI18N
             refreshActiveDocument();
             return finished;
+            } finally {
+                if (previousLevel != null) {
+                    LOGGER.setLevel(previousLevel);
+                    previousLevel = null;
+                }
+            }
         }
 
         protected @Override boolean isCancelledBy(final Work newWork, final Collection<? super Work> follow) {
