@@ -66,11 +66,6 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(AccessNode accessNode, boolean onset) {
-        return super.visit(accessNode, onset);
-    }
-
-    @Override
     public Node visit(Block block, boolean onset) {
         if (onset && (block instanceof FunctionNode || isScript(block)
                 || block.getStart() < block.getFinish())) {
@@ -186,21 +181,6 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(BinaryNode binaryNode, boolean onset) {
-        return super.visit(binaryNode, onset);
-    }
-
-    @Override
-    public Node visit(BreakNode breakNode, boolean onset) {
-        return super.visit(breakNode, onset);
-    }
-
-    @Override
-    public Node visit(CallNode callNode, boolean onset) {
-        return super.visit(callNode, onset);
-    }
-
-    @Override
     public Node visit(CaseNode caseNode, boolean onset) {
         // we need to mark if block is case body as blcok itself has
         // no reference to case node
@@ -213,64 +193,9 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(CatchNode catchNode, boolean onset) {
-        return super.visit(catchNode, onset);
-    }
-
-    @Override
-    public Node visit(ContinueNode continueNode, boolean onset) {
-        return super.visit(continueNode, onset);
-    }
-
-    @Override
-    public Node visit(DoWhileNode doWhileNode, boolean onset) {
-        return super.visit(doWhileNode, onset);
-    }
-
-    @Override
-    public Node visit(ExecuteNode executeNode, boolean onset) {
-        return super.visit(executeNode, onset);
-    }
-
-    @Override
-    public Node visit(ForNode forNode, boolean onset) {
-        return super.visit(forNode, onset);
-    }
-
-    @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
         visit((Block) functionNode, onset);
         return null;
-    }
-
-    @Override
-    public Node visit(IdentNode identNode, boolean onset) {
-        return super.visit(identNode, onset);
-    }
-
-    @Override
-    public Node visit(IfNode ifNode, boolean onset) {
-        return super.visit(ifNode, onset);
-    }
-
-    @Override
-    public Node visit(IndexNode indexNode, boolean onset) {
-        return super.visit(indexNode, onset);
-    }
-
-    @Override
-    public Node visit(LabelNode labeledNode, boolean onset) {
-        return super.visit(labeledNode, onset);
-    }
-
-    @Override
-    public Node visit(LineNumberNode lineNumberNode, boolean onset) {
-        return super.visit(lineNumberNode, onset);
-    }
-
-    @Override
-    public Node visit(LiteralNode literalNode, boolean onset) {
-        return super.visit(literalNode, onset);
     }
 
     @Override
@@ -319,31 +244,6 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
-    public Node visit(PhiNode phiNode, boolean onset) {
-        return super.visit(phiNode, onset);
-    }
-
-    @Override
-    public Node visit(PropertyNode propertyNode, boolean onset) {
-        return super.visit(propertyNode, onset);
-    }
-
-    @Override
-    public Node visit(ReferenceNode referenceNode, boolean onset) {
-        return super.visit(referenceNode, onset);
-    }
-
-    @Override
-    public Node visit(ReturnNode returnNode, boolean onset) {
-        return super.visit(returnNode, onset);
-    }
-
-    @Override
-    public Node visit(RuntimeNode runtimeNode, boolean onset) {
-        return super.visit(runtimeNode, onset);
-    }
-
-    @Override
     public Node visit(SwitchNode switchNode, boolean onset) {
         if (onset) {
             Token token = getNextToken(switchNode.position(), JsTokenId.BRACKET_LEFT_CURLY);
@@ -387,41 +287,6 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         return super.visit(switchNode, onset);
-    }
-
-    @Override
-    public Node visit(TernaryNode ternaryNode, boolean onset) {
-        return super.visit(ternaryNode, onset);
-    }
-
-    @Override
-    public Node visit(ThrowNode throwNode, boolean onset) {
-        return super.visit(throwNode, onset);
-    }
-
-    @Override
-    public Node visit(TryNode tryNode, boolean onset) {
-        return super.visit(tryNode, onset);
-    }
-
-    @Override
-    public Node visit(UnaryNode unaryNode, boolean onset) {
-        return super.visit(unaryNode, onset);
-    }
-
-    @Override
-    public Node visit(VarNode varNode, boolean onset) {
-        return super.visit(varNode, onset);
-    }
-
-    @Override
-    public Node visit(WhileNode whileNode, boolean onset) {
-        return super.visit(whileNode, onset);
-    }
-
-    @Override
-    public Node visit(WithNode withNode, boolean onset) {
-        return super.visit(withNode, onset);
     }
 
     private Token getToken(int offset, JsTokenId expected) {
