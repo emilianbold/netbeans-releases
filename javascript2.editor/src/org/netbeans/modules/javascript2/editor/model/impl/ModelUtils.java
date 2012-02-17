@@ -212,7 +212,7 @@ public class ModelUtils {
             expression.accept(visitor);
             return visitor.getSemiTypes();
         }
-        return new HashSet<String>();
+        return new HashSet<TypeUsage>();
     }
     
     public static Collection<TypeUsage> resolveTypeFromSemiType(JsObject object, TypeUsage uType) {
