@@ -167,7 +167,7 @@ public final class SearchIteratorTest extends NbTestCase {
         }
 
         if (filtersCount == 0) {
-            filters = null;
+            filters = new SearchFilterDefinition[0];
         } else {
             filters = new SearchFilterDefinition[filtersCount];
 
@@ -182,6 +182,7 @@ public final class SearchIteratorTest extends NbTestCase {
 
         SearchInfo searchInfo = SearchInfoUtils.createSearchInfoForRoots(
                 foldersToCheck,
+                false,
                 filters);
 
         assertTrue("project root not searchable", searchInfo.canSearch());

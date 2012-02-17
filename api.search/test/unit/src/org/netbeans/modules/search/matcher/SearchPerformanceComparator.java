@@ -248,8 +248,9 @@ public class SearchPerformanceComparator extends javax.swing.JFrame {
                 "*.java, *.txt, *.xml, *.properties, *.log", false);
 
         final SearchInfo si =
-                SearchInfoUtils.createSearchInfoForRoot(FileUtil.toFileObject(root),
-                hiddenFilter);
+                SearchInfoUtils.createSearchInfoForRoots(
+                new FileObject[] {FileUtil.toFileObject(root)},
+                false, hiddenFilter);
 
         AbstractMatcher matcher = null;
 
