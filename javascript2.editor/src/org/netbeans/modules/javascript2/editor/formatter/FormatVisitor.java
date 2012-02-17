@@ -202,7 +202,8 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(CaseNode caseNode, boolean onset) {
-        // we need to mark if block is case body
+        // we need to mark if block is case body as blcok itself has
+        // no reference to case node
         if (onset) {
             caseNodes.add(caseNode.getBody());
         } else {
