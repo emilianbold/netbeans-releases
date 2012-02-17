@@ -87,6 +87,7 @@ is divided into following sections:
             </and>
         </condition>
         <property name="run.jvmargs" value=""/>
+        <property name="run.jvmargs.ide" value=""/>
         <property name="javac.compilerargs" value=""/>
         <property name="work.dir" value="${basedir}"/>
         <condition property="no.deps">
@@ -216,6 +217,7 @@ is divided into following sections:
                     <formatter type="brief" usefile="false"/>
                     <formatter type="xml"/>
                     <jvmarg line="${run.jvmargs}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                 </junit>
             </sequential>
         </macrodef>
@@ -274,6 +276,7 @@ is divided into following sections:
                     <jvmarg line="${debug-args-line}"/>
                     <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
                     <jvmarg line="${run.jvmargs}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                     <classpath>
                         <path path="@{classpath}"/>
                     </classpath>
@@ -293,6 +296,7 @@ is divided into following sections:
             <sequential>
                 <java classname="@{classname}" dir="${work.dir}" fork="true">
                     <jvmarg line="${run.jvmargs}"/>
+                    <jvmarg line="${run.jvmargs.ide}"/>
                     <classpath>
                         <path path="${run.classpath}"/>
                     </classpath>

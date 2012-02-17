@@ -120,7 +120,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     final Progress jdkProgress = new Progress();
                     final Progress jreProgress = new Progress();
                     final Progress javadbProgress = new Progress();
-                    final boolean isFullSilentInstaller = isJDK6U15orLater() && !isJDK7(); //workaround for restart issue in jdk installer #7100937
+                    final boolean isFullSilentInstaller = isJDK6U15orLater();
                     //TODO: JavaDB feature is turned off for 64-bit OS
                     final boolean javadbBundled =
                             getProduct().getVersion().newerOrEquals(Version.getVersion("1.6.0"));
@@ -234,13 +234,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }  finally {
             try {
                 FileUtils.deleteFile(installer);
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SJ));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SS));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_ST));
-                FileUtils.deleteFile(new File(location, CAB_INSTALLER_FILE_SZ));
             } catch (IOException e) {
                 LogManager.log("Cannot delete installer file "+ installer, e);
-                
             }
         }
         
@@ -263,27 +258,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         }
     }
 
-
-    private Product getJavaFXSDKProduct() {
-            Registry bundledRegistry = new Registry();
-            try {
-                final String bundledRegistryUri = System.getProperty(
-                        Registry.BUNDLED_PRODUCT_REGISTRY_URI_PROPERTY);
-
-                bundledRegistry.loadProductRegistry(
-                        (bundledRegistryUri != null) ? bundledRegistryUri : Registry.DEFAULT_BUNDLED_PRODUCT_REGISTRY_URI);
-            } catch (InitializationException e) {
-                LogManager.log("Cannot load bundled registry", e);
-            }
-            LogManager.log("... checking if javafxsdk is bundled");
-            final List<Product> fxsdkProducts = bundledRegistry.getProducts("javafxsdk");
-            final Product javafxsdk = (fxsdkProducts.isEmpty())? null : fxsdkProducts.get(0);
-            if(javafxsdk != null) {
-                LogManager.log("javafxsdk status: " + javafxsdk.getStatus() + "; install location: " + javafxsdk.getInstallationLocation());
-            }
-            return javafxsdk;
-    }
-
     private ExecutionResults runJDKInstallerWindows(File location,
             File installer, Progress progress,
             final boolean isFullSilentInstaller,
@@ -302,13 +276,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 EMPTY_STRING;
             String installLocationOption = "/qn /norestart INSTALLDIR=" +
                     BACK_SLASH + QUOTE + location.getAbsolutePath() + BACK_SLASH + QUOTE;
-            final Product javafxsdk=getJavaFXSDKProduct();
-            if( javafxsdk != null) {
-                LogManager.log("... javafxsdk is found");
-                installLocationOption += " INSTALLDIRFXSDK=" +
-                        BACK_SLASH + QUOTE + javafxsdk.getInstallationLocation().getAbsolutePath() + BACK_SLASH + QUOTE;
-                                        // " INSTALLDIRFXRT=" + BACK_SLASH + QUOTE + javafxsdk.getProperty("javafx.runtime.installation.location") + BACK_SLASH + QUOTE;
-            }
             commands = new String [] {
                 installer.getAbsolutePath(),
                 "/s",
@@ -917,27 +884,6 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             
         }
         return id;
-    }
-
-     private static String convertPathNamesToShort(String path){
-        File pathConverter = new File(SystemUtils.getTempDirectory(), "pathConverter.cmd");
-        String result = path;
-        List <String> commands = new ArrayList <String> ();
-        commands.add("@echo off");
-        commands.add("set JPATH=" + path);
-        commands.add("for %%i in (\"%JPATH%\") do set JPATH=%%~fsi");
-        commands.add("echo %JPATH%");
-        try{
-            FileUtils.writeStringList(pathConverter, commands);
-            ExecutionResults res=SystemUtils.executeCommand(pathConverter.getAbsolutePath());
-            FileUtils.deleteFile(pathConverter);
-            result = res.getStdOut().trim();
-        } catch(IOException ioe) {
-            LogManager.log(ErrorLevel.WARNING,
-                    "Failed to convert " + path + " to a path with short names only." +
-                     "\n Exception is thrown " + ioe);
-        }
-        return result;
     }
     
     private ExecutionResults runJDKUninstallerWindows(Progress progress, File location) throws UninstallationException {
