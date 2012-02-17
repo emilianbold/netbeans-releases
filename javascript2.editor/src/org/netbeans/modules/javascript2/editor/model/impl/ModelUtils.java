@@ -249,6 +249,8 @@ public class ModelUtils {
             }
             if (possible != null) {
                 result.addAll(((JsFunction)possible).getReturnTypes());
+            } else {
+                result.add(type);
             }
         }
         return result;
