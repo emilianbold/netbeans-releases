@@ -71,6 +71,7 @@ made subject to such option by the copyright holder.
         <mapID target="results_telemetry" url="helppages/results_telemetry.html"/>
 	<mapID target="snapshots" url="helppages/snapshots.html"/>
         <mapID target="snap_taking" url="helppages/snap_taking.html"/>
+        <mapID target="heapoql" url="helppages/oqlhelp.html"/>
         
         <!-- begin CSH topics -->
         
@@ -138,9 +139,9 @@ made subject to such option by the copyright holder.
 
         <!--CSH ID for HeapWalker -->
         <mapID target="HeapWalker.HelpCtx" url="helppages/csh/view_heap.html"/>
-        <mapID target="OQLControllerUI.HelpCtx" url="helppages/oqlhelp.html"/>
-        <mapID target="text.x-oql" url="helppages/oqlhelp.html"/>
-        <mapID target="heapoql" url="helppages/oqlhelp.html"/>
+        <mapID target="OQLControllerUI.HelpCtx" url="helppages/csh/csh_view_oqlconsole.html"/>
+        <mapID target="text.x-oql" url="helppages/csh/csh_view_oqlconsole.html"/>
+        
         
         <!--CSH ID for Snapshot windows -->
         <mapID target="CpuSnapshot.HelpCtx" url="helppages/csh/view_snap_cpu.html"/>
