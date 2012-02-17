@@ -158,7 +158,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
             assert originalFile != null;
-            if(originalFile != null) {
+            if(originalFile == null) {
                 LocalHistory.LOG.log(Level.FINE, "revision {0} requested for null file", se.getDate().getTime()); // NOI18N
                 return;
             }
