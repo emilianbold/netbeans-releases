@@ -66,6 +66,8 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
     private static final int PROC_COUNT = Integer.getInteger("SourcePrefetcher.proc.count", DEFAULT_PROC_COUNT);    //NOI18N
     private static final int BUFFER_SIZE = Integer.getInteger("SourcePrefetcher.beffer.size", DEFAULT_BUFFER_SIZE); //NOI18N
     
+    /*test*/ static Boolean TEST_DO_PREFETCH;
+    
     private final Iterator<? extends CompileTuple> iterator;
     //@NotThreadSafe
     private boolean active;
@@ -225,7 +227,10 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                 PREFETCH_DISABLED}
         );
         final boolean supportsPar = procCount >= MIN_PROC && probSize > MIN_FILES;
-        if (supportsPar && !PREFETCH_DISABLED) {
+        final boolean doPrefetch = TEST_DO_PREFETCH != null?
+                TEST_DO_PREFETCH:
+                supportsPar && !PREFETCH_DISABLED;
+        if (doPrefetch) {
             LOG.log(
                 Level.FINE,
                 "Using concurrent iterator, {0} workers",    //NOI18N
