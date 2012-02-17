@@ -41,11 +41,16 @@
  */
 package org.netbeans.api.search.provider;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.impl.CompoundSearchInfo;
+import org.netbeans.api.search.provider.impl.DelegatingSearchFilter;
 import org.netbeans.api.search.provider.impl.DelegatingSearchInfo;
 import org.netbeans.api.search.provider.impl.EmptySearchInfo;
 import org.netbeans.spi.search.SearchFilterDefinition;
@@ -62,6 +67,22 @@ import org.openide.util.Parameters;
  * @author jhavlin
  */
 public final class SearchInfoUtils {
+
+    /**
+     * Filter for skipping invisible files.
+     */
+    public static final SearchFilter VISIBILITY_FILTER =
+            createVisibilityFilter();
+    /**
+     * Filter for skipping unsharable files.
+     */
+    public static final SearchFilter SHARABILITY_FILTER =
+            createSharabilityFilter();
+    /**
+     * List of default search filters.
+     */
+    public static final List<SearchFilter> DEFAULT_FILTERS =
+            createDefaultFilterList();
 
     /**
      * Gets a search info for node.
@@ -142,25 +163,76 @@ public final class SearchInfoUtils {
     }
 
     /**
-     * Create a search info for a FileObject and a set of filters.
+     * Create a search info for a FileObject. Default filters will be used.
      */
     public static @NonNull SearchInfo createSearchInfoForRoot(
-            @NonNull FileObject root, SearchFilterDefinition... filters) {
+            @NonNull FileObject root) {
 
         Parameters.notNull("root", root);                               //NOI18N
         return new DelegatingSearchInfo(
-                SearchInfoDefinitionFactory.createSearchInfo(root, filters));
+                SearchInfoDefinitionFactory.createSearchInfo(root));
     }
 
     /**
-     * Create a search info for an array of FileObjects and a set of filters.
+     * Create a search info for an array of FileObjects. Default filters will be
+     * used.
      */
     public static @NonNull SearchInfo createSearchInfoForRoots(
-            @NonNull FileObject[] roots,
-            SearchFilterDefinition... filters) {
+            @NonNull FileObject[] roots) {
 
         Parameters.notNull("roots", roots);                             //NOI18N
         return new DelegatingSearchInfo(
+                SearchInfoDefinitionFactory.createSearchInfo(roots));
+    }
+
+    /**
+     * Create a search info for an array of FileObjects.
+     *
+     * @param useDefaultFilters True if default filters should be used, false
+     * otherwise.
+     * @param extraFilters Array of extra custom filters.
+     */
+    public static @NonNull SearchInfo createSearchInfoForRoots(
+            @NonNull FileObject[] roots, boolean useDefaultFilters,
+            @NonNull SearchFilterDefinition... extraFilters) {
+
+        Parameters.notNull("roots", roots);
+
+        int defFiltersCount = useDefaultFilters
+                ? SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS.size()
+                : 0;
+        int extFiltersCount = extraFilters.length;
+        SearchFilterDefinition[] filters;
+        filters = new SearchFilterDefinition[defFiltersCount + extFiltersCount];
+        for (int i = 0; i < defFiltersCount; i++) {
+            filters[i] = SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS.get(i);
+        }
+        System.arraycopy(extraFilters, 0,
+                filters, defFiltersCount, extFiltersCount);
+        return new DelegatingSearchInfo(
                 SearchInfoDefinitionFactory.createSearchInfo(roots, filters));
+    }
+
+    private static SearchFilter createVisibilityFilter() {
+        return new DelegatingSearchFilter(
+                SearchInfoDefinitionFactory.VISIBILITY_FILTER);
+    }
+
+    /**
+     * Create sharability filter from its public definition.
+     */
+    private static SearchFilter createSharabilityFilter() {
+        return new DelegatingSearchFilter(
+                SearchInfoDefinitionFactory.SHARABILITY_FILTER);
+    }
+
+    /**
+     * Create list of default search filters.
+     */
+    private static List<SearchFilter> createDefaultFilterList() {
+        List<SearchFilter> l = new ArrayList<SearchFilter>(2);
+        l.add(SearchInfoUtils.VISIBILITY_FILTER);
+        l.add(SearchInfoUtils.SHARABILITY_FILTER);
+        return Collections.unmodifiableList(l);
     }
 }

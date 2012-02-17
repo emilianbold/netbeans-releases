@@ -247,7 +247,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
      * Sort enumeration by fila names;
      *
      */
-    private static <T extends FileObject> Enumeration<T> sortEnum(
+    static <T extends FileObject> Enumeration<T> sortEnum(
             Enumeration<T> enm) {
 
         TreeMap<String, T> map = new TreeMap<String, T>();
