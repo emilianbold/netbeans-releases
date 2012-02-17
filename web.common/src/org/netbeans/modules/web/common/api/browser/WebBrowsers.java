@@ -73,7 +73,7 @@ public final class WebBrowsers {
      */
     public static final String PROP_DEFAULT_BROWSER = "browser"; // NOI18N
     
-    private static WebBrowsers INST;
+    private static final WebBrowsers INST = new WebBrowsers();
     private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
     
     //private WebBrowserFactories fact;
@@ -134,10 +134,7 @@ public final class WebBrowsers {
     /**
      * Singleton instance of WebBrowsers class
      */
-    public static synchronized WebBrowsers getInstance() {
-        if (INST == null) {
-            INST = new WebBrowsers();
-        }
+    public static WebBrowsers getInstance() {
         return INST;
     }
     

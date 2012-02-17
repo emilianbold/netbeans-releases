@@ -64,11 +64,11 @@ public final class BrowserSupport {
     
     private WebBrowserPane pane;
     
-    private Pair currentContext;
     private URL currentURL;
     private WebBrowserPane.WebBrowserPaneListener paneListener;
     private WebBrowser browser;
     private PropertyChangeListener listener;
+    private FileObject file;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -156,14 +156,13 @@ public final class BrowserSupport {
      * 
      */
     public void load(URL url, FileObject context) {
-        FileObject file = context;
-        Project p = FileOwnerQuery.getOwner(context);
+        /*Project p = FileOwnerQuery.getOwner(context);
         if (p != null && p.getProjectDirectory().equals(file)) {
             // if context fileobject points to a project folder then keep reference just to project:
             file = null;
-        }
+        }*/
 
-        currentContext = new Pair(p, file);
+        file = context;
         currentURL = url;
         getWebBrowserPane().showURL(url);
     }
@@ -201,34 +200,25 @@ public final class BrowserSupport {
      * should be refreshed in browser.
      */
     public URL getBrowserURL(FileObject fo, boolean checkDependentFiles) {
-        Project p = FileOwnerQuery.getOwner(fo);
-        if (currentContext == null || currentURL == null) {
+        Project project = FileOwnerQuery.getOwner(fo);
+        if (file == null || currentURL == null) {
             return null;
         }
-        URL projectURL = null;
         if (checkDependentFiles) {
-            if (currentContext.file == null) {
-                if (currentContext.project != null) {
-                    // a project was "Run" and we have no idea which exact project's 
-                    // file was opened in browser;
-                    // because "fo" belongs to the project we could say
-                    // that URL corresponding for this fo is project's URL;
-                    // let's first check other opened browsers for better match and
-                    // if nothing better is found we can return project's URL
-                    projectURL = currentURL;
-                }
-            } else {
-                if (DependentFileQuery.isDependent(currentContext.file, fo)) {
-                    return currentURL;
-                }
-            }
-        } else {
-            if (fo.equals(currentContext.file)) {
+            if ( file.equals( project ) || DependentFileQuery.isDependent(file, fo)) {
+                // Two cases :
+                // - a project was "Run" and we have no idea which exact project's 
+                //   file was opened in browser;
+                //   because "fo" belongs to the project we could say
+                //   that URL corresponding for this fo is project's URL;
+                //   let's first check other opened browsers for better match and
+                //   if nothing better is found we can return project's URL
+                // - <code>file</code> depends on <code>fo</code>
                 return currentURL;
             }
-        }
-        if (projectURL != null) {
-            return projectURL;
+        } 
+        if (fo.equals(file)) {
+            return currentURL;
         }
         return null;
     }
@@ -256,24 +246,13 @@ public final class BrowserSupport {
         }
     }
     
-    
-    private static class Pair {
-        Project project;
-        FileObject file;
-        
-        public Pair(Project project, FileObject file) {
-            this.project = project;
-            this.file = file;
-        }
-    }
-    
     private class ListenerImpl implements WebBrowserPane.WebBrowserPaneListener {
 
         @Override
         public void browserEvent(WebBrowserPane.WebBrowserPaneEvent event) {
             if (event instanceof WebBrowserPane.WebBrowserPaneWasClosedEvent) {
                 currentURL = null;
-                currentContext = null;
+                file = null;
             }
         }
         
