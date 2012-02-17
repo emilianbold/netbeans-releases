@@ -167,8 +167,13 @@ public final class JFXProjectProperties {
     
     // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
-    
-    private static final String BROWSERS_FOLDER = "Services/Browsers"; // NOI18N
+
+    // folders and files
+    public static final String PROJECT_CONFIGS_DIR = "nbproject/configs"; // NOI18N
+    public static final String PROJECT_PRIVATE_CONFIGS_DIR = "nbproject/private/configs"; // NOI18N
+    public static final String PROPERTIES_FILE_EXT = "properties"; // NOI18N
+    // the following should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
+    public static final String CONFIG_PROPERTIES_FILE = "nbproject/private/config.properties"; // NOI18N
 
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -187,32 +192,13 @@ public final class JFXProjectProperties {
     }
 
     // CustomizerRun
-    private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
-    private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
-    private String activeConfig;
+    private JFXConfigs CONFIGS = null;
+    public JFXConfigs getConfigs() {
+        return CONFIGS;
+    }
+
     private Map<String,String> browserPaths = null;
 
-    public Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> getRunConfigs() {
-        return RUN_CONFIGS;
-    }    
-    public Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> getAppParameters() {
-        return APP_PARAMS;
-    }   
-    public List<Map<String,String/*|null*/>> getActiveAppParameters(String config) {
-        return APP_PARAMS.get(config);
-    }   
-    public List<Map<String,String/*|null*/>> getActiveAppParameters() {
-        return APP_PARAMS.get(activeConfig);
-    }   
-    public void setActiveAppParameters(List<Map<String,String/*|null*/>>/*|null*/ params) {
-        APP_PARAMS.put(activeConfig, params);
-    }
-    public String getActiveConfig() {
-        return activeConfig;
-    }
-    public void setActiveConfig(String config) {
-        this.activeConfig = config;
-    }
     public Map<String, String> getBrowserPaths() {
         return browserPaths;
     }
@@ -255,20 +241,6 @@ public final class JFXProjectProperties {
             return propertyValue;
         }
     }
-    public RunAsType getActiveRunAs() {
-        String runAs = configsGet(activeConfig).get(RUN_AS);
-        if(isEqualIgnoreCase(runAs, RunAsType.ASWEBSTART.getString())) {
-            return RunAsType.ASWEBSTART;
-        }
-        if(isEqualIgnoreCase(runAs, RunAsType.INBROWSER.getString())) {
-            return RunAsType.INBROWSER;
-        }
-        return RunAsType.STANDALONE;
-    }
-//    RunAsType runModel;
-//    public RunAsType getRunModel() {
-//        return runModel;
-//    }
     JToggleButton.ToggleButtonModel runStandalone;
     JToggleButton.ToggleButtonModel runAsWebStart;
     JToggleButton.ToggleButtonModel runInBrowser;
@@ -412,7 +384,7 @@ public final class JFXProjectProperties {
     }
     
     /** Keeps singleton instance of JFXProjectProperties for any fx project for which property customizer is opened at once */
-    private static Map<String, JFXProjectProperties> propInstance = new TreeMap<String, JFXProjectProperties>();
+    private static Map<String, JFXProjectProperties> propInstance = new HashMap<String, JFXProjectProperties>();
 
     /** Keeps set of category markers used to identify validity of JFXProjectProperties instance */
     private Set<String> instanceMarkers = new TreeSet<String>();
@@ -493,7 +465,7 @@ public final class JFXProjectProperties {
     }
 
     /** Keeps singleton instance of a set of preloader artifact dependencies for any fx project */
-    private static Map<String, Set<PreloaderArtifact>> prelArtifacts = new TreeMap<String, Set<PreloaderArtifact>>();
+    private static Map<String, Set<PreloaderArtifact>> prelArtifacts = new HashMap<String, Set<PreloaderArtifact>>();
     
     /** Factory method */
     private static Set<PreloaderArtifact> getPreloaderArtifacts(@NonNull Project proj) {
@@ -528,13 +500,14 @@ public final class JFXProjectProperties {
             iconDocument = fxPropGroup.createStringDocument(evaluator, ICON_FILE);
 
             // CustomizerRun
-            RUN_CONFIGS = readRunConfigs();
-            APP_PARAMS = readAppParams();
-            activeConfig = evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG); // NOI18N
+            CONFIGS = new JFXConfigs();
+            CONFIGS.read();
+            initPreloaderArtifacts(project, CONFIGS);
+            CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
             preloaderClassModel = new PreloaderClassComboBoxModel();
             
             initSigning(evaluator);
-            initResources(evaluator, project, Collections.unmodifiableMap(RUN_CONFIGS));
+            initResources(evaluator, project, CONFIGS);
             initJSCallbacks(evaluator);
         }
     }
@@ -546,6 +519,10 @@ public final class JFXProjectProperties {
                  value.equalsIgnoreCase("on"));     //NOI18N
     }
 
+    public static boolean isNonEmpty(String s) {
+        return s != null && !s.isEmpty();
+    }
+            
     public static boolean isEqual(final String s1, final String s2) {
         return (s1 == null && s2 == null) ||
                 (s1 != null && s2 != null && s1.equals(s2));
@@ -556,6 +533,11 @@ public final class JFXProjectProperties {
                 (s1 != null && s2 != null && s1.equalsIgnoreCase(s2));
     }                                   
 
+    public static boolean isEqualText(final String s1, final String s2) {
+        return ((s1 == null || s1.isEmpty()) && (s2 == null || s2.isEmpty())) ||
+                (s1 != null && s2 != null && s1.equals(s2));
+    }                                   
+    
     public static class PropertiesTableModel extends AbstractTableModel {
         
         private List<Map<String,String>> properties;
@@ -615,415 +597,7 @@ public final class JFXProjectProperties {
 
     }
     
-    /**
-     * Always returns non-null. If RUN_CONFIGS.get(config)==null, returns standalone new Map
-     */
-    public Map<String,String> configsGet(String config) {
-        Map<String,String> res = RUN_CONFIGS.get(config);
-        if(res==null) {
-            return new HashMap<String,String>();
-        }
-        return res;
-    }
-
-    /**
-     * A mess. (modified from J2SEProjectProperties)
-     */
-    Map<String/*|null*/,Map<String,String>> readRunConfigs() {
-        Map<String,Map<String,String>> m = new TreeMap<String,Map<String,String>>(new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-            }
-        });
-        Map<String,String> def = new TreeMap<String,String>();
-        EditableProperties ep = null;
-        try {
-            ep = readFromFile(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            // can be ignored
-        }
-        EditableProperties pep = null;
-        try {
-            pep = readFromFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            // can be ignored
-        }
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
-            String v = ep.getProperty(prop);
-            if (v == null) {
-                v = pep.getProperty(prop);
-            }
-            if (v != null) {
-                def.put(prop, v);
-            }
-        }
-        if(def.get(RUN_APP_WIDTH) == null) {
-            def.put(RUN_APP_WIDTH, DEFAULT_APP_WIDTH);
-        }
-        if(def.get(RUN_APP_HEIGHT) == null) {
-            def.put(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
-        }
-        m.put(null, def);
-        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configsFO != null) {
-            for (FileObject kid : configsFO.getChildren()) {
-                if (!kid.hasExt("properties")) { // NOI18N
-                    continue;
-                }
-                EditableProperties cep = null;
-                try {
-                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
-                } catch (IOException ex) {
-                    // can be ignored
-                }
-                m.put(kid.getName(), new TreeMap<String,String>(cep) );
-            }
-        }
-        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configsFO != null) {
-            for (FileObject kid : configsFO.getChildren()) {
-                if (!kid.hasExt("properties")) { // NOI18N
-                    continue;
-                }
-                Map<String,String> c = m.get(kid.getName());
-                if (c == null) {
-                    continue;
-                }
-                EditableProperties cep = null;
-                try {
-                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
-                } catch (IOException ex) {
-                    // can be ignored
-                }
-                c.putAll(new HashMap<String,String>(cep));
-            }
-        }
-        //System.err.println("readRunConfigs: " + p);
-        Set<PreloaderArtifact> prels = getPreloaderArtifacts(project);
-        prels.clear();
-        try {
-            prels.addAll(getPreloaderArtifactsFromConfigs(m));
-        } catch (IOException ex) {
-            // can be ignored
-        }
-        return m;
-    }
-
-    /**
-     * Another mess.
-     */
-    Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> readAppParams() {
-        Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> p = new TreeMap<String,List<Map<String,String/*|null*/>>/*|null*/>(new Comparator<String>() {
-            @Override
-            public int compare(String s1, String s2) {
-                return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
-            }
-        });
-        List<Map<String,String/*|null*/>>/*|null*/ def = new ArrayList<Map<String,String/*|null*/>>(); //TreeMap<String,String>();
-        EditableProperties ep = null;
-        try {
-            ep = readFromFile(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            // can be ignored
-        }
-        EditableProperties pep = null;
-        try {
-            pep = readFromFile(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        } catch (IOException ex) {
-            // can be ignored
-        }
-        
-        int index = 0;
-        while (true) {
-            Map<String,String> map = new HashMap<String,String>();
-            int numProps = 0;
-            for (String propSuffix : APP_PARAM_SUFFIXES) {
-                String propValue = ep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
-                if(propValue == null) {
-                    propValue = pep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
-                }
-                if (propValue != null) {
-                    map.put(propSuffix, propValue);
-                    numProps++;
-                }
-            }
-            if (numProps == 0) {
-                break;
-            }
-            def.add(map);
-            index++;
-        }       
-        p.put(null, def);
-
-        FileObject configsFO = project.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-        if (configsFO != null) {
-            for (FileObject kid : configsFO.getChildren()) {
-                if (!kid.hasExt("properties")) { // NOI18N
-                    continue;
-                }
-                EditableProperties cep = null;
-                try {
-                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
-                } catch (IOException ex) {
-                    // can be ignored
-                }
-                List<Map<String,String/*|null*/>>/*|null*/ params = new ArrayList<Map<String,String/*|null*/>>();
-                if(cep != null) {
-                    index = 0;
-                    while (true) {
-                        Map<String,String> map = new HashMap<String,String>();
-                        int numProps = 0;
-                        for (String propSuffix : APP_PARAM_SUFFIXES) {
-                            String propValue = cep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
-                            if (propValue != null) {
-                                map.put(propSuffix, propValue);
-                                numProps++;
-                            }
-                        }
-                        if (numProps == 0) {
-                            break;
-                        }
-                        params.add(map);
-                        index++;
-                    }
-                }
-                p.put(kid.getName(), params );
-            }
-        }
-        configsFO = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
-        if (configsFO != null) {
-            for (FileObject kid : configsFO.getChildren()) {
-                if (!kid.hasExt("properties")) { // NOI18N
-                    continue;
-                }
-                //Map<String,String> c = p.get(kid.getName());
-                List<Map<String,String/*|null*/>>/*|null*/ params = p.get(kid.getName());
-                if (params == null) {
-                    params = new ArrayList<Map<String,String/*|null*/>>();
-                    p.put(kid.getName(), params);
-                }
-                EditableProperties cep = null;
-                try {
-                    cep = readFromFile( FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
-                } catch (IOException ex) {
-                    // can be ignored
-                }
-                if(cep != null) {
-                    index = 0;
-                    while (true) {
-                        Map<String,String> map = new HashMap<String,String>();
-                        int numProps = 0;
-                        for (String propSuffix : APP_PARAM_SUFFIXES) {
-                            String propValue = cep.getProperty(APP_PARAM_PREFIX + index + "." + propSuffix);
-                            if (propValue != null) {
-                                map.put(propSuffix, propValue);
-                                numProps++;
-                            }
-                        }
-                        if (numProps == 0) {
-                            break;
-                        }
-                        params.add(map);
-                        index++;
-                    }
-                }
-                //c.putAll(new HashMap<String,String>(cep));
-            }
-        }
-        //System.err.println("readAppParams: " + p);
-        return p;
-    }
-
-    /**
-     * Gathers application parameters to one property APPLICATION_ARGS
-     * to be passed to run/debug target in build-impl.xml when Run as Standalone
-     */
-    void storeSingleParamsProperty(List<Map<String,String/*|null*/>> params,
-            EditableProperties projectProperties)
-    {
-        StringBuilder sb = new StringBuilder();
-        if(params != null) {
-            int index = 0;
-            for(Map<String,String> m : params) {
-                String name = null;
-                String value = null;
-                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[0])) {
-                        name = propSuffix.getValue();
-                    }
-                    if(propSuffix.getKey().equalsIgnoreCase(APP_PARAM_SUFFIXES[1])) {
-                        value = propSuffix.getValue();
-                    }
-                }
-                if(name != null && name.length() > 0) {
-                    if(sb.length() > 0) {
-                        sb.append(" "); // NOI18N
-                    }
-                    if(value != null && value.length() > 0) {
-                        sb.append("--"); // NOI18N
-                        sb.append(name);
-                        sb.append("="); // NOI18N
-                        sb.append(value);
-                    } else {
-                        sb.append(name);                        
-                    }
-                }
-                index++;
-            }
-        }
-        String sbs = sb.toString();
-        if (!Utilities.compareObjects(sbs, projectProperties.getProperty(APPLICATION_ARGS))) {
-            if (sbs != null && sbs.length() > 0) {
-                projectProperties.setProperty(APPLICATION_ARGS, sbs);
-                projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
-            } else {
-                projectProperties.remove(APPLICATION_ARGS);
-            }
-        }
-    }
-
-    private boolean removePropertyIfEmptyInConfig(@NonNull Map<String, String> c, @NonNull String prop, @NonNull EditableProperties props) {
-        if( !c.containsKey(prop) && props.containsKey(prop) ) {
-            props.remove(prop);
-            return true;
-        }
-        return false;
-    }
-    
-    /**
-     * A royal mess. (modified from J2SEProjectProperties)
-     */
-    void storeRunConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs,
-            Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> params,
-            EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        //System.err.println("storeRunConfigs: " + configs);
-        Map<String,String> def = configs.get(null);
-        for (String prop : new String[] {MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
-                                        RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS}) {
-            String v = def.get(prop);
-            EditableProperties ep =
-                    (//prop.equals(APPLICATION_ARGS) ||
-                    prop.equals(RUN_WORK_DIR)  ||
-                    prop.equals(RUN_IN_HTMLTEMPLATE)  ||
-                    prop.equals(RUN_IN_BROWSER)  ||
-                    prop.equals(RUN_IN_BROWSER_PATH)  ||
-                    prop.equals(RUN_AS)  ||
-                    privateProperties.containsKey(prop)) ?
-                privateProperties : projectProperties;
-            if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                if (v != null && v.length() > 0) {
-                    ep.setProperty(prop, v);
-                } else {
-                    ep.remove(prop);
-                }
-            }
-        }
-        int index = 0;
-        List<Map<String,String/*|null*/>> paramsDefault = params.get(null);
-        if(paramsDefault != null) {
-            for(Map<String,String> m : paramsDefault) {
-                for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                    String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                    String v = propSuffix.getValue();
-                    if (!Utilities.compareObjects(v, projectProperties.getProperty(prop))) {
-                        if (v != null && v.length() > 0) {
-                            projectProperties.setProperty(prop, v);
-                        } else {
-                            projectProperties.remove(prop);
-                        }
-                    }
-                }
-                index++;
-            }
-        }
-        storeSingleParamsProperty(paramsDefault, privateProperties);
-        
-        for (Map.Entry<String,Map<String,String>> entry : configs.entrySet()) {
-            String config = entry.getKey();
-            if (config == null) {
-                continue;
-            }
-            String sharedPath = "nbproject/configs/" + config + ".properties"; // NOI18N
-            String privatePath = "nbproject/private/configs/" + config + ".properties"; // NOI18N
-            Map<String,String> c = entry.getValue();
-            if (c == null) {
-                try {
-                    deleteFile(sharedPath);
-                } catch (IOException ex) {
-                    // TO DO
-                }
-                try {
-                    deleteFile(privatePath);
-                } catch (IOException ex) {
-                    // TO DO
-                }
-                continue;
-            }
-            final EditableProperties sharedCfgProps = readFromFile(sharedPath);
-            final EditableProperties privateCfgProps = readFromFile(privatePath);
-            boolean privatePropsChanged = false;
-            for (Map.Entry<String,String> entry2 : c.entrySet()) {
-                String prop = entry2.getKey();
-                String v = entry2.getValue();
-                EditableProperties ep =
-                        (//prop.equals(APPLICATION_ARGS) ||
-                         prop.equals(RUN_WORK_DIR) ||
-                         prop.equals(RUN_IN_HTMLTEMPLATE)  ||
-                         prop.equals(RUN_IN_BROWSER)  ||
-                         prop.equals(RUN_IN_BROWSER_PATH)  ||
-                         prop.equals(RUN_AS)  ||
-                         privateCfgProps.containsKey(prop)) ?
-                    privateCfgProps : sharedCfgProps;
-                if (!Utilities.compareObjects(v, ep.getProperty(prop))) {
-                    if (v != null && (v.length() > 0 || (def.get(prop) != null && def.get(prop).length() > 0))) {
-                        ep.setProperty(prop, v);
-                    } else {
-                        ep.remove(prop);
-                    }
-                    privatePropsChanged |= ep == privateCfgProps;
-                }
-            }
-            for (String prop : new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}) {
-                privatePropsChanged |= removePropertyIfEmptyInConfig(c, prop, privateCfgProps);
-            }
-//            if( !c.containsKey(RUN_IN_BROWSER) && privateCfgProps.containsKey(RUN_IN_BROWSER) ) {
-//                privateCfgProps.remove(RUN_IN_BROWSER);
-//                privatePropsChanged = true;
-//            }
-//            if( !c.containsKey(RUN_IN_BROWSER_PATH) && privateCfgProps.containsKey(RUN_IN_BROWSER_PATH) ) {
-//                privateCfgProps.remove(RUN_IN_BROWSER_PATH);
-//                privatePropsChanged = true;
-//            }
-            index = 0;
-            List<Map<String,String/*|null*/>> paramsConfig = params.get(config);
-            if(paramsConfig != null) {
-                for(Map<String,String> m : params.get(config)) {
-                    for (Map.Entry<String,String> propSuffix : m.entrySet()) {
-                        String prop = APP_PARAM_PREFIX + index + "." + propSuffix.getKey();
-                        String v = propSuffix.getValue();
-                        if (!Utilities.compareObjects(v, sharedCfgProps.getProperty(prop))) {
-                            if (v != null && v.length() > 0) {
-                                sharedCfgProps.setProperty(prop, v);
-                            } else {
-                                sharedCfgProps.remove(prop);
-                            }
-                        }
-                    }
-                    index++;
-                }
-            }
-            storeSingleParamsProperty(paramsConfig, privateCfgProps);
-            
-            saveToFile(sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
-            if (privatePropsChanged) {                              //Definition file is written, only when changed
-                saveToFile(privatePath, privateCfgProps);
-            }
-        }
-    }
-
-    private FileObject getSrcRoot(Project project)
+    private FileObject getSrcRoot(@NonNull Project project)
     {
         FileObject srcRoot = null;
         for (SourceGroup sg : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
@@ -1034,26 +608,34 @@ public final class JFXProjectProperties {
         }
         return srcRoot;
     }
+
+    private void initPreloaderArtifacts(@NonNull Project project, @NonNull JFXConfigs configs) {
+        Set<PreloaderArtifact> prels = getPreloaderArtifacts(project);
+        prels.clear();
+        try {
+            prels.addAll(getPreloaderArtifactsFromConfigs(configs));
+        } catch (IOException ex) {
+            // can be ignored
+        }
+    }
     
-    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {       
+    private Set<PreloaderArtifact> getPreloaderArtifactsFromConfigs(@NonNull JFXConfigs configs) throws IOException {       
         Set<PreloaderArtifact> preloaderArtifacts = new HashSet<PreloaderArtifact>();
         // check records on all preloaders from all configurations
-        Map<String,Map<String,String>> configsCopy = Collections.unmodifiableMap(configs);
-        for(Map.Entry<String,Map<String,String>> config : configsCopy.entrySet()) {
+        for(String config : configs.getConfigNames()) {
             
             PreloaderArtifact preloader = null;
-            Map<String,String> configCopy = config.getValue() != null ? Collections.unmodifiableMap(config.getValue()) : new TreeMap<String, String>();
-            if(!isTrue( configCopy.get(PRELOADER_ENABLED))) {
+            if(!isTrue( configs.getProperty(config, PRELOADER_ENABLED))) {
                 continue;
             }
-            String prelTypeString = configCopy.get(PRELOADER_TYPE);
+            String prelTypeString = configs.getProperty(config, PRELOADER_TYPE);
             
-            String prelProjDir = configCopy.get(PRELOADER_PROJECT);
+            String prelProjDir = configs.getProperty(config, PRELOADER_PROJECT);
             if (prelProjDir != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.PROJECT.getString())) {
                 FileObject thisProjDir = project.getProjectDirectory();
                 FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, prelProjDir);
                 File prelProjDirF = (fo == null) ? null : FileUtil.toFile(fo);                
-                if( isTrue(configCopy.get(PRELOADER_ENABLED)) && prelProjDirF != null && prelProjDirF.exists() ) {
+                if( isTrue(configs.getProperty(config, PRELOADER_ENABLED)) && prelProjDirF != null && prelProjDirF.exists() ) {
                     FileObject srcRoot = getSrcRoot(getProject());
                     if(srcRoot != null) {
                         prelProjDirF = FileUtil.normalizeFile(prelProjDirF);
@@ -1073,7 +655,7 @@ public final class JFXProjectProperties {
                 }
             }
             if(preloader == null) {
-                String prelJar = configCopy.get(PRELOADER_JAR_PATH);
+                String prelJar = configs.getProperty(config, PRELOADER_JAR_PATH);
                 if(prelJar != null && isEqualIgnoreCase(prelTypeString, PreloaderSourceType.JAR.getString())) {
                     FileObject thisProjDir = project.getProjectDirectory();
                     FileObject fo = JFXProjectUtils.getFileObject(thisProjDir, prelJar);
@@ -1097,7 +679,8 @@ public final class JFXProjectProperties {
         return preloaderArtifacts;
     }
 
-    private void updatePreloaderDependencies(Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) throws IOException {
+    @Deprecated
+    private void updatePreloaderDependencies(@NonNull JFXConfigs configs) throws IOException {
         // depeding on the currently (de)selected preloaders update project dependencies,
         // i.e., remove disabled/deleted preloader project dependencies and add enabled/added preloader project dependencies
         Set<PreloaderArtifact> preloaderArtifacts = getPreloaderArtifacts(getProject());
@@ -1134,7 +717,7 @@ public final class JFXProjectProperties {
         }
     }
     
-    private static boolean isTest(final FileObject root, final Project project) {
+    private static boolean isTest(final @NonNull FileObject root, final @NonNull Project project) {
         assert root != null;
         assert project != null;
         final ClassPath cp = ClassPath.getClassPath(root, ClassPath.COMPILE);
@@ -1149,23 +732,7 @@ public final class JFXProjectProperties {
         return false;
     }
 
-    
-    private void storeActiveConfig() throws IOException {
-        String configPath = "nbproject/private/config.properties"; // NOI18N
-        // should be J2SEConfigurationProvider.CONFIG_PROPS_PATH which is now inaccessible from here
-        if (activeConfig == null) {
-            try {
-                deleteFile(configPath);
-            } catch (IOException ex) {
-            }
-        } else {
-            final EditableProperties configProps = readFromFile(configPath);
-            configProps.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, activeConfig);
-            saveToFile(configPath, configProps);
-        }
-    }
-    
-    private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
+    private void storeRest(@NonNull EditableProperties editableProps, @NonNull EditableProperties privProps) {
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
@@ -1186,7 +753,7 @@ public final class JFXProjectProperties {
         setOrRemove(props, name, value != null ? new String(value) : null);
     }
 
-    private void setOrRemove(EditableProperties props, String name, String value) {
+    private void setOrRemove(@NonNull EditableProperties props, @NonNull String name, String value) {
         if (value != null) {
             props.setProperty(name, value);
         } else {
@@ -1194,7 +761,7 @@ public final class JFXProjectProperties {
         }
     }
         
-    public EditableProperties readFromFile(String relativePath) throws IOException {
+    public static EditableProperties readFromFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
         final EditableProperties ep = new EditableProperties(true);
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
         if(propsFO != null) {
@@ -1220,7 +787,7 @@ public final class JFXProjectProperties {
         return ep;
     }
 
-    public void deleteFile(String relativePath) throws IOException {
+    public static void deleteFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
         if(propsFO != null) {
             try {
@@ -1252,7 +819,7 @@ public final class JFXProjectProperties {
         }
     }
 
-    public void saveToFile(String relativePath, final EditableProperties ep) throws IOException {
+    public static void saveToFile(final @NonNull Project project, final @NonNull String relativePath, final @NonNull EditableProperties ep) throws IOException {
         FileObject f = project.getProjectDirectory().getFileObject(relativePath);
         final FileObject propsFO;
         if(f == null) {
@@ -1316,8 +883,8 @@ public final class JFXProjectProperties {
                     }
                     fxPropGroup.store(ep);
                     storeRest(ep, pep);
-                    storeRunConfigs(RUN_CONFIGS, APP_PARAMS, ep, pep);
-                    storeActiveConfig();
+                    CONFIGS.store(ep, pep);
+                    updatePreloaderComment(ep);
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -1344,12 +911,22 @@ public final class JFXProjectProperties {
                             os.close();
                         }
                     }
-                    updatePreloaderDependencies(Collections.unmodifiableMap(RUN_CONFIGS));
                     return null;
                 }
             });
+            updatePreloaderDependencies(CONFIGS);
+            CONFIGS.storeActive();
+
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
+        }
+    }
+    
+    private void updatePreloaderComment(EditableProperties ep) {
+        if(isTrue(ep.get(JFXProjectProperties.PRELOADER_ENABLED))) {
+            ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_use_preloader")}, false); // NOI18N    
+        } else {
+            ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_dontuse_preloader")}, false); // NOI18N    
         }
     }
 
@@ -1383,7 +960,7 @@ public final class JFXProjectProperties {
         permissionsElevated = isTrue(eval.getProperty(PERMISSIONS_ELEVATED));
     }
     
-    private void initResources (final PropertyEvaluator eval, final Project prj, final Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> configs) {
+    private void initResources (final PropertyEvaluator eval, final Project prj, final JFXConfigs configs) {
         final String lz = eval.getProperty(DOWNLOAD_MODE_LAZY_JARS); //old way, when changed rewritten to new
         final String rcp = eval.getProperty(RUN_CP);        
         final String bc = eval.getProperty(BUILD_CLASSES);        
@@ -1485,21 +1062,13 @@ public final class JFXProjectProperties {
         JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (JavaPlatform javaPlatform : installedPlatforms) {
             String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-            if (platformName.equals(activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
+            if (isEqual(platformName, activePlatform) && JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
                 editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(activePlatform));
                 editableProps.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(activePlatform));
             }
         }
     }
 
-//    private String getSelectedBrowserPath() {
-//        if (browserPaths == null) {
-//            return null;
-//        }
-//        String selectedName = configsGet(activeConfig).get(RUN_IN_BROWSER);
-//        return browserPaths.get(selectedName);
-//    }
-    
     public class PreloaderClassComboBoxModel extends DefaultComboBoxModel {
         
         private boolean filling = false;
@@ -1522,7 +1091,7 @@ public final class JFXProjectProperties {
             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
         }
         
-        public void fillFromProject(final Project project, final String select, final Map<String,String> config) {
+        public void fillFromProject(final Project project, final String select, final JFXConfigs configs, final String activeConfig) {
             final Map<FileObject,List<ClassPath>> classpathMap = JFXProjectUtils.getClassPathMap(project);
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
@@ -1542,12 +1111,15 @@ public final class JFXProjectProperties {
                             if(select != null) {
                                 setSelectedItem(select);
                             }
-                            if(config != null) {
+                            //if(activeConfig != null) {
                                 String verify = (String)getSelectedItem();
-                                if(!JFXProjectProperties.isEqual(select, verify)) {
-                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
+                                    configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
+                                    //configs.solidifyBoundedGroups(activeConfig, verify);
+//                                    configs.setProperty(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, 
+//                                            configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED));
                                 }
-                            }
+                            //}
                         }
                         if (changeListener != null) {
                             changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
@@ -1558,7 +1130,7 @@ public final class JFXProjectProperties {
             });            
         }
 
-        public void fillFromJAR(final FileObject jarFile, final String select, final Map<String,String> config) {
+        public void fillFromJAR(final FileObject jarFile, final String select, final JFXConfigs configs, final String activeConfig) {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
@@ -1570,6 +1142,8 @@ public final class JFXProjectProperties {
                             return;
                         }
                         final Set<String> appClassNames = JFXProjectUtils.getAppClassNamesInJar(jarFile, "javafx.application.Preloader"); //NOI18N    
+                        appClassNames.remove("com.javafx.main.Main"); // NOI18N
+                        appClassNames.remove("com.javafx.main.NoJavaFXFallback"); // NOI18N
                         if(appClassNames.isEmpty()) {
                             addElement(NbBundle.getMessage(JFXProjectProperties.class, "MSG_ComboNoPreloaderClassAvailable"));  // NOI18N
                         } else {
@@ -1577,12 +1151,14 @@ public final class JFXProjectProperties {
                             if(select != null) {
                                 setSelectedItem(select);
                             }
-                            if(config != null) {
+                            //if(activeConfig != null) {
                                 String verify = (String)getSelectedItem();
-                                if(!JFXProjectProperties.isEqual(select, verify)) {
-                                    config.put(JFXProjectProperties.PRELOADER_CLASS, verify);
+                                if(!isEqual(configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS), verify)) {
+                                    configs.setPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_CLASS, verify);
+//                                    configs.setProperty(activeConfig, JFXProjectProperties.PRELOADER_ENABLED, 
+//                                            configs.getPropertyTransparent(activeConfig, JFXProjectProperties.PRELOADER_ENABLED));
                                 }
-                            }
+                            //}
                         }
                         if (changeListener != null) {
                             changeListener.stateChanged (appClassNames.isEmpty() ? null : new ChangeEvent (this));
@@ -1737,4 +1313,1509 @@ public final class JFXProjectProperties {
         }
     }
 
+    /**
+     * Project configurations maintenance class
+     * 
+     * Getter/Setter naming conventions:
+     * "Property" in method name -> method deals with single properties in configuration given by parameter config
+     * "Default" in method name -> method deals with properties in default configuration
+     * "Active" in method name -> method deals with properties in currently chosen configuration
+     * "Transparent" in method name -> method deals with property in configuration fiven by parameter config if
+     *     exists, or with property in default configuration otherwise. This is to provide simple access to
+     *     union of default and non-default properties that are to be presented to users in non-default configurations
+     * "Param" in method name -> metod deals with properties representing sets of application parameters
+     */
+    public class JFXConfigs {
+        
+        private Map<String/*|null*/,Map<String,String/*|null*/>/*|null*/> RUN_CONFIGS;
+        private Map<String/*|null*/,List<Map<String,String/*|null*/>>/*|null*/> APP_PARAMS;
+        private BoundedPropertyGroups groups = new BoundedPropertyGroups();
+        private String active;
+        
+        private Comparator<String> getComparator() {
+            return new Comparator<String>() {
+                @Override
+                public int compare(String s1, String s2) {
+                    return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);
+                }
+            };
+        }
+
+        // list of all properties related to project configurations (excluding application parameter properties that are handled separately)
+        private List<String> PROJECT_PROPERTIES = Arrays.asList(new String[] {
+            MAIN_CLASS, /*APPLICATION_ARGS,*/ RUN_JVM_ARGS, 
+            PRELOADER_ENABLED, PRELOADER_TYPE, PRELOADER_PROJECT, PRELOADER_JAR_PATH, PRELOADER_JAR_FILENAME, PRELOADER_CLASS, 
+            RUN_WORK_DIR, RUN_APP_WIDTH, RUN_APP_HEIGHT, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS});
+        // list of those properties that should be stored in private.properties instead of project.properties
+        private List<String> PRIVATE_PROPERTIES = Arrays.asList(new String[] {
+            RUN_WORK_DIR, RUN_IN_HTMLTEMPLATE, RUN_IN_BROWSER, RUN_IN_BROWSER_PATH, RUN_AS});
+        // list of properties that, if set, should later not be overriden by changes in default configuration
+        // (useful for keeping pre-defined configurations that do not change unexpectedly after changes in default config)
+        // Note that the standard behavior is: when setting a default property, the property is checked in all configs
+        // and reset if its value in any non-def config is equal to that in default config
+        private List<String> STATIC_PROPERTIES = Arrays.asList(new String[] {
+            RUN_AS});
+
+        // property groups
+        private String PRELOADER_GROUP_NAME = "preloader"; // NOI18N
+        private List<String> PRELOADER_PROPERTIES = Arrays.asList(new String[] {
+            JFXProjectProperties.PRELOADER_ENABLED, JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PRELOADER_PROJECT, 
+            JFXProjectProperties.PRELOADER_JAR_PATH, JFXProjectProperties.PRELOADER_JAR_FILENAME, JFXProjectProperties.PRELOADER_CLASS});
+        private String BROWSER_GROUP_NAME = "browser"; // NOI18N
+        private List<String> BROWSER_PROPERTIES = Arrays.asList(new String[] {
+            JFXProjectProperties.RUN_IN_BROWSER, JFXProjectProperties.RUN_IN_BROWSER_PATH});
+        
+        public final List<String> getPreloaderProperties() {
+            return Collections.unmodifiableList(PRELOADER_PROPERTIES);
+        }
+        
+        public final List<String> getBrowserProperties() {
+            return Collections.unmodifiableList(BROWSER_PROPERTIES);
+        }
+
+        JFXConfigs() {
+            reset();
+            groups.defineGroup(PRELOADER_GROUP_NAME, getPreloaderProperties());
+            groups.defineGroup(BROWSER_GROUP_NAME, getBrowserProperties());
+        }
+        
+        private void reset() {
+            RUN_CONFIGS = new TreeMap<String,Map<String,String>>(getComparator());
+            APP_PARAMS = new TreeMap<String,List<Map<String,String>>>(getComparator());
+        }
+        
+        private boolean configNameWrong(String config) {
+            return config !=null && config.contains("default");
+        }
+
+        //==========================================================
+
+        public String getActive() {
+            return active;
+        }
+        public void setActive(String config) {
+            assert !configNameWrong(config);
+            active = config;
+        }
+        
+        //==========================================================
+
+        public boolean hasConfig(String config) {
+            assert !configNameWrong(config);
+            return RUN_CONFIGS.containsKey(config);
+        }
+        
+        public boolean isConfigEmpty(String config) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(configMap != null) {
+                return configMap.isEmpty();
+            }
+            return true;
+        }
+        
+        public boolean isDefaultConfigEmpty() {
+            return isConfigEmpty(null);
+        }
+        
+        public boolean isActiveConfigEmpty() {
+            return isConfigEmpty(getActive());
+        }
+
+        //----------------------------------------------------------
+
+        public Set<String> getConfigNames() {
+            return Collections.unmodifiableSet(RUN_CONFIGS.keySet());
+        }
+        
+        private Map<String,String/*|null*/> getConfigUnmodifyable(String config) {
+            assert !configNameWrong(config);
+            return Collections.unmodifiableMap(RUN_CONFIGS.get(config));
+        }
+        
+        private Map<String,String/*|null*/> getDefaultConfigUnmodifyable() {
+            return getConfigUnmodifyable(null);
+        }
+
+        private Map<String,String/*|null*/> getActiveConfigUnmodifyable() {
+            return getConfigUnmodifyable(getActive());
+        }
+
+        private Map<String,String/*|null*/> getConfig(String config) {
+            assert !configNameWrong(config);
+            return RUN_CONFIGS.get(config);
+        }
+        
+        private Map<String,String/*|null*/> getDefaultConfig() {
+            return getConfig(null);
+        }
+        
+        private Map<String,String/*|null*/> getActiveConfig() {
+            return getConfig(getActive());
+        }
+
+        private Map<String,String/*|null*/> getConfigNonNull(String config) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(configMap == null) {
+                configMap = new TreeMap<String,String>(getComparator());
+                RUN_CONFIGS.put(config, configMap);
+            }
+            return configMap;
+        }
+        
+        private Map<String,String/*|null*/> getDefaultConfigNonNull() {
+            return getConfigNonNull(null);
+        }
+        
+        private Map<String,String/*|null*/> getActiveConfigNonNull() {
+            return getConfigNonNull(getActive());
+        }
+        
+        //----------------------------------------------------------
+
+        /**
+         * Adds new and replaces existing properties
+         * @param config
+         * @param props 
+         */
+        public void addToConfig(String config, Map<String,String/*|null*/> props) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(configMap == null) {
+                configMap = new TreeMap<String,String>(getComparator());
+                RUN_CONFIGS.put(config, configMap);
+            }
+            configMap.putAll(props);
+        }
+        
+        public void addToDefaultConfig(Map<String,String/*|null*/> props) {
+            addToConfig(null, props);
+        }
+
+        public void addToActiveConfig(Map<String,String/*|null*/> props) {
+            addToConfig(getActive(), props);
+        }
+
+        public void addToConfig(String config, EditableProperties props) {
+            assert !configNameWrong(config);
+            addToConfig(config, new HashMap<String,String>(props));
+        }
+
+        public void addToDefaultConfig(EditableProperties props) {
+            addToConfig(null, props);
+        }
+        
+        public void addToActiveConfig(EditableProperties props) {
+            addToConfig(getActive(), props);
+        }
+
+        //----------------------------------------------------------
+
+        public void eraseConfig(String config) {
+            assert !configNameWrong(config);
+            assert config != null; // erasing default config not allowed
+            RUN_CONFIGS.remove(config);
+        }
+
+        //==========================================================
+
+        /**
+         * Returns true if property name is defined in configuration config, false otherwise
+         * @param config
+         * @param name
+         * @return 
+         */
+        public boolean isPropertySet(String config, @NonNull String prop) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(configMap != null) {
+                return configMap.containsKey(prop);
+            }
+            return false;
+        }
+        
+        public boolean isDefaultPropertySet(@NonNull String prop) {
+            return isPropertySet(null, prop);
+        }
+        
+        public boolean isActivePropertySet(@NonNull String prop) {
+            return isPropertySet(getActive(), prop);
+        }
+
+        /**
+         * Returns true if bounded properties exist for prop and at least
+         * one of them is set. This is to be used in updateProperty() to
+         * indicate that an empty property needs to be stored to editable properties
+         * 
+         * @param config
+         * @param prop
+         * @return 
+         */
+        private boolean isBoundedToNonemptyProperty(String config, String prop) {
+            assert !configNameWrong(config);
+            for(String name : groups.getBoundedProperties(prop)) {
+                if(isPropertySet(config, name)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Returns property value from configuration config if defined, null otherwise
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getProperty(String config, @NonNull String prop) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(configMap != null) {
+                return configMap.get(prop);
+            }
+            return null;
+        }
+        
+        public String getDefaultProperty(@NonNull String prop) {
+            return getProperty(null, prop);
+        }
+        
+        public String getActiveProperty(@NonNull String prop) {
+            return getProperty(getActive(), prop);
+        }
+
+        /**
+         * Returns property value from configuration config (if exists), or
+         * value from default config (if exists) otherwise
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getPropertyTransparent(String config, @NonNull String prop) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            String value = null;
+            if(configMap != null) {
+                value = configMap.get(prop);
+                if(value == null && config != null) {
+                    return getDefaultProperty(prop);
+                }
+            }
+            return value;
+        }
+        
+        public String getActivePropertyTransparent(@NonNull String prop) {
+            return getPropertyTransparent(getActive(), prop);
+        }
+        
+        //----------------------------------------------------------
+
+        public void setProperty(String config, @NonNull String prop, String value) {
+            setPropertyImpl(config, prop, value);
+            solidifyBoundedGroups(config, prop);
+            if(config == null) {
+                for(String c: getConfigNames()) {
+                    if(c != null && isEqual(getProperty(c, prop), value) && !STATIC_PROPERTIES.contains(prop) && isBoundedPropertiesEraseable(c, prop)) {
+                        eraseProperty(c, prop);
+                    }
+                }
+            }
+        }
+
+        private void setPropertyImpl(String config, @NonNull String prop, String value) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfigNonNull(config);
+            configMap.put(prop, value);            
+        }
+        
+        public void setDefaultProperty(@NonNull String prop, String value) {
+            setProperty(null, prop, value);
+        }
+        
+        public void setActiveProperty(@NonNull String prop, String value) {
+            setProperty(getActive(), prop, value);
+        }
+
+        public void setPropertyTransparent(String config, @NonNull String prop, String value) {
+            assert !configNameWrong(config);
+            if(config != null && isEqual(getDefaultProperty(prop), value) && (!STATIC_PROPERTIES.contains(prop) || !isPropertySet(config, prop)) && isBoundedPropertiesEraseable(config, prop)) {
+                eraseProperty(config, prop);
+            } else {
+                setProperty(config, prop, value);
+            }
+        }
+        
+        public void setActivePropertyTransparent(@NonNull String prop, String value) {
+            setPropertyTransparent(getActive(), prop, value);
+        }
+
+        //----------------------------------------------------------
+        
+        /**
+         * In non-default configurations if prop is not set, then
+         * this method sets it to a value taken from default config.
+         * The result is transparent to getPropertyTransparent(), which
+         * returns the same value before and after solidifyProperty() call.
+         * 
+         * @param config
+         * @param prop
+         * @return false if property had existed in config, true if it had been set by this method
+         */
+        public boolean solidifyProperty(String config, @NonNull String prop) {
+            if(!isPropertySet(config, prop)) {
+                if(config != null) {
+                    setPropertyImpl(config, prop, getDefaultProperty(prop));
+                } else {
+                    setPropertyImpl(null, prop, ""); // NOI18N
+                }
+                return true;
+            }
+            return false;
+        }
+        
+        /**
+         * Solidifies all properties that are in any bounded group with the 
+         * property prop
+         * 
+         * @param config
+         * @param prop
+         * @return false if nothing was solidified, true otherwise
+         */
+        public boolean solidifyBoundedGroups(String config, @NonNull String prop) {
+            boolean solidified = false;
+            for(String name : groups.getBoundedProperties(prop)) {
+                solidified |= solidifyProperty(config, name);
+            }
+            return solidified;
+        }
+        
+        //----------------------------------------------------------
+
+        public void eraseProperty(String config, @NonNull String prop) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> configMap = getConfig(config);
+            if(config != null) {
+                configMap.remove(prop);
+                for(String name : groups.getBoundedProperties(prop)) {
+                    configMap.remove(name);
+                }
+            }
+        }
+        
+        public void eraseDefaultProperty(@NonNull String prop) {
+            eraseProperty(null, prop);
+        }
+
+        public void eraseActiveProperty(@NonNull String prop) {
+            eraseProperty(getActive(), prop);
+        }
+
+        /**
+         * Returns true if property prop and all properties bounded to it
+         * can be erased harmlessly, i.e., to ensure that getPropertyTransparent()
+         * returns for each of them the same value before and after erasing
+         * 
+         * @param prop
+         * @return 
+         */
+        private boolean isBoundedPropertiesEraseable(String config, String prop) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                return false;
+            }
+            boolean canErase = true;
+            for(String name : groups.getBoundedProperties(prop)) {
+                if((isPropertySet(config, name) && !isEqual(getDefaultProperty(name), getProperty(config, name))) || STATIC_PROPERTIES.contains(name)) {
+                    canErase = false;
+                    break;
+                }
+            }
+            return canErase;
+        }
+        
+        //==========================================================
+        
+        /**
+         * Returns true if param named name is present in configuration
+         * config in any form - with value or without value
+         * @param config
+         * @param name
+         * @return 
+         */
+        public boolean hasParam(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return getParam(config, name) != null;
+        }
+
+        public boolean hasDefaultParam(@NonNull String name) {
+            return hasParam(null, name);
+        }
+        
+        public boolean hasActiveParam(@NonNull String name) {
+            return hasParam(getActive(), name);
+        }
+
+        public boolean hasParamTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            //return hasParam(config, name) || hasDefaultParam(name);
+            return getParamTransparent(config, name) != null;
+        }
+        
+        public boolean hasActiveParamTransparent(@NonNull String name) {
+            return hasParamTransparent(getActive(), name);
+        }
+        
+        //----------------------------------------------------------
+
+        /**
+         * Returns true if exactly the parameter with name name and value value
+         * is present in configuration config
+         * 
+         * @param config
+         * @param name
+         * @param value
+         * @return 
+         */
+        public boolean hasParam(String config, @NonNull String name, @NonNull String value) {
+            assert !configNameWrong(config);
+            String v = getParamValue(config, name);
+            return isEqual(v, value);
+        }
+        
+        public boolean hasDefaultParam(@NonNull String name, @NonNull String value) {
+            return hasParam(null, name, value);
+        }
+        
+        public boolean hasActiveParam(@NonNull String name, @NonNull String value) {
+            return hasParam(getActive(), name, value);
+        }
+
+        public boolean hasParamTransparent(String config, @NonNull String name, @NonNull String value) {
+            assert !configNameWrong(config);
+            String v = getParamValueTransparent(config, name);
+            return isEqual(v, value);
+        }
+
+        //----------------------------------------------------------
+
+        public boolean hasParamValue(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getParam(config, name);
+            if(param != null) {
+                if(param.containsKey(APP_PARAM_SUFFIXES[1])) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        public boolean hasDefaultParamValue(@NonNull String name) {
+            return hasParamValue(null, name);
+        }
+
+        public boolean hasActiveParamValue(@NonNull String name) {
+            return hasParamValue(getActive(), name);
+        }
+
+        public boolean hasParamValueTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return (config != null && hasParamValue(config, name)) || hasDefaultParamValue(name);
+        }
+
+        public boolean hasActiveParamValueTransparent(@NonNull String name) {
+            return hasParamValueTransparent(getActive(), name);
+        }
+        
+        //----------------------------------------------------------
+
+        /**
+         * Returns param as map if exists in configuration config, null otherwise
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public Map<String, String> getParam(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            return getParam(getParams(config), name);
+        }
+        
+        public Map<String, String> getDefaultParam(@NonNull String name) {
+            return getParam((String)null, name);
+        }
+        
+        public Map<String, String> getActiveParam(@NonNull String name) {
+            return getParam(getActive(), name);
+        }
+
+        public Map<String, String> getParamTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getParam(config, name);
+            if(param == null) {
+                param = getDefaultParam(name);
+            }
+            return param;
+        }
+        
+        public Map<String, String> getActiveParamTransparent(@NonNull String name) {
+            return getParamTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*ParamValue*()
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getParamValue(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String,String/*|null*/> param = getParam(config, name);
+            if(param != null) {
+                return param.get(APP_PARAM_SUFFIXES[1]);
+            }
+            return null;
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*ParamValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getDefaultParamValue(@NonNull String name) {
+            return getParamValue(null, name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*ParamValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getActiveParamValue(@NonNull String name) {
+            return getParamValue(getActive(), name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*ParamValue*()
+         * 
+         * @param config
+         * @param name
+         * @return 
+         */
+        public String getParamValueTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            Map<String, String> param = getParam(config, name);
+            if(param != null) {
+                return param.get(APP_PARAM_SUFFIXES[1]);
+            }
+            return getDefaultParamValue(name);
+        }
+
+        /**
+         * Note that returned null is ambiguous - may mean that there
+         * was no value defined or that it was defined and its value was null.
+         * To check this ask has*ParamValue*()
+         * 
+         * @param name
+         * @return 
+         */
+        public String getActiveParamValueTransparent(@NonNull String name) {
+            return getParamValueTransparent(getActive(), name);
+        }
+        
+        //----------------------------------------------------------
+
+        private List<Map<String,String/*|null*/>> getParams(String config) {
+            assert !configNameWrong(config);
+            return APP_PARAMS.get(config);
+        }
+
+        private List<Map<String,String/*|null*/>> getDefaultParams() {
+            return APP_PARAMS.get(null);
+        }
+                
+        private List<Map<String,String/*|null*/>> getActiveParams() {
+            return APP_PARAMS.get(getActive());
+        }
+
+        /**
+        * Returns (copy of) list of default parameters if config==default or
+        * union of default config and current config parameters otherwise
+        * 
+        * @param config current config
+        * @return union of default and current parameters
+        */
+        private List<Map<String,String/*|null*/>> getParamsTransparent(String config) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> union = JFXProjectUtils.copyList(getDefaultParams());
+            if(config != null && getParams(config) != null) {
+                for(Map<String,String> map : getParams(config)) {
+                    String name = map.get(APP_PARAM_SUFFIXES[0]);
+                    String value = map.get(APP_PARAM_SUFFIXES[1]);
+                    if(name != null && !name.isEmpty()) {
+                        Map<String, String> old = getParam(union, name);
+                        if(old != null) {
+                            old.put(APP_PARAM_SUFFIXES[0], name);
+                            old.put(APP_PARAM_SUFFIXES[1], value);
+                        } else {
+                            union.add(map);
+                        }
+                    }
+                }
+            }
+            return union;
+        }   
+        
+        public List<Map<String,String/*|null*/>> getActiveParamsTransparent() {
+            return getParamsTransparent(getActive());
+        }
+        
+        //----------------------------------------------------------
+
+        /**
+        * Gathers all parameters applicable to config configuration to one String
+        * 
+        * @param commandLine if true, formats output as if to be passed on command line, otherwise prouces comma separated list
+        * @return a String containing all parameters as if passed as command line parameters
+        */
+        public String getParamsTransparentAsString(String config, boolean commandLine) {
+            assert !configNameWrong(config);
+            return getParamsAsString(getParamsTransparent(config), commandLine);
+        }
+
+        public String getActiveParamsTransparentAsString(boolean commandLine) {
+            return getParamsAsString(getActiveParamsTransparent(), commandLine);
+        }
+
+        public String getParamsAsString(String config, boolean commandLine) {
+            return getParamsAsString(getParams(config), commandLine);
+        }
+
+        public String getActiveParamsAsString(boolean commandLine) {
+            return getParamsAsString(getActiveParams(), commandLine);
+        }
+        
+        public String getDefaultParamsAsString(boolean commandLine) {
+            return getParamsAsString(getDefaultParams(), commandLine);
+        }
+
+        private String getParamsAsString(List<Map<String,String/*|null*/>> params, boolean commandLine)
+        {
+            StringBuilder sb = new StringBuilder();
+            if(params != null) {
+                int index = 0;
+                for(Map<String,String> m : params) {
+                    String name = m.get(APP_PARAM_SUFFIXES[0]);
+                    String value = m.get(APP_PARAM_SUFFIXES[1]);
+                    if(name != null && name.length() > 0) {
+                        if(sb.length() > 0) {
+                            if(!commandLine) {
+                                sb.append(","); // NOI18N
+                            }
+                            sb.append(" "); // NOI18N
+                        }
+                        if(value != null && value.length() > 0) {
+                            if(commandLine) {
+                                sb.append("--"); // NOI18N
+                            }
+                            sb.append(name);
+                            sb.append("="); // NOI18N
+                            sb.append(value);
+                        } else {
+                            sb.append(name);                        
+                        }
+                        index++;
+                    }
+                }
+            }
+            return sb.toString();
+        }
+
+        //----------------------------------------------------------
+
+        private Map<String, String> createParam(@NonNull String name) {
+            Map<String, String> param = new TreeMap<String,String>(getComparator());
+            param.put(APP_PARAM_SUFFIXES[0], name);
+            return param;
+        }
+        
+        private Map<String, String> createParam(@NonNull String name, String value) {
+            Map<String, String> param = new TreeMap<String,String>(getComparator());
+            param.put(APP_PARAM_SUFFIXES[0], name);
+            param.put(APP_PARAM_SUFFIXES[1], value);
+            return param;
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Add (or replace if present) valueless param (i.e., argument)
+         * to configuration config
+         */
+        public void addParam(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> params = getParams(config);
+            if(params == null) {
+                params = new ArrayList<Map<String,String/*|null*/>>();
+                APP_PARAMS.put(config, params);
+            } else {
+                eraseParam(params, name);
+            }
+            params.add(createParam(name));
+        }
+        
+        public void addDefaultParam(@NonNull String name) {
+            addParam(null, name);
+        }
+
+        public void addActiveParam(@NonNull String name) {
+            addParam(getActive(), name);
+        }
+
+        public void addParamTransparent(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                addDefaultParam(name);
+            } else {
+                if(hasDefaultParam(name) && !hasDefaultParamValue(name)) {
+                    eraseParam(config, name);
+                } else {
+                    addParam(config, name);
+                }
+            }
+        }
+
+        public void addActiveParamTransparent(@NonNull String name) {
+            addParamTransparent(getActive(), name);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Add (or replace if present) named param (i.e., having a value)
+         * to configuration config
+         */
+        public void addParam(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            List<Map<String,String/*|null*/>> params = getParams(config);
+            if(params == null) {
+                params = new ArrayList<Map<String,String/*|null*/>>();
+                APP_PARAMS.put(config, params);
+            } else {
+                eraseParam(params, name);
+            }
+            params.add(createParam(name, value));
+        }
+
+        public void addDefaultParam(@NonNull String name, String value) {
+            addParam(null, name, value);
+        }
+        
+        public void addActiveParam(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            addParam(getActive(), name, value);
+        }
+
+        public void addParamTransparent(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                addDefaultParam(name, value);
+            } else {
+                if(hasDefaultParam(name, value)) {
+                    eraseParam(config, name);
+                } else {
+                    addParam(config, name, value);
+                }
+            }
+        }
+        
+        public void addActiveParamTransparent(String config, @NonNull String name, String value) {
+            assert !configNameWrong(config);
+            addParamTransparent(getActive(), name, value);
+        }
+
+        //----------------------------------------------------------
+
+        /**
+        * Updates parameters; if config==default, then simply updates default parameters,
+        * otherwise updates parameters in current config so that only those different
+        * from those in default config are stored.
+        * 
+        * @param config
+        * @param params 
+        */
+        public void setParamsTransparent(String config, List<Map<String,String/*|null*/>>/*|null*/ params) {
+            assert !configNameWrong(config);
+            if(config == null) {
+                APP_PARAMS.put(null, params);
+            } else {
+                List<Map<String,String/*|null*/>> reduct = new ArrayList<Map<String,String/*|null*/>>();
+                List<Map<String,String/*|null*/>> def = JFXProjectUtils.copyList(getDefaultParams());
+                if(params != null) {
+                    for(Map<String,String> map : params) {
+                        String name = map.get(APP_PARAM_SUFFIXES[0]);
+                        String value = map.get(APP_PARAM_SUFFIXES[1]);
+                        Map<String, String> old = getDefaultParam(name);
+                        if(old != null) {
+                            String oldValue = old.get(APP_PARAM_SUFFIXES[1]);
+                            if( !isEqual(value, oldValue) ) {
+                                reduct.add(JFXProjectUtils.copyMap(old));
+                            }
+                            def.remove(old);
+                        } else {
+                            reduct.add(JFXProjectUtils.copyMap(map));
+                        }
+                    }
+                    for(Map<String,String> map : def) {
+                        map.put(APP_PARAM_SUFFIXES[1], ""); // NOI18N
+                        reduct.add(JFXProjectUtils.copyMap(map));
+                    }
+                }
+                APP_PARAMS.put(config, reduct);
+            }
+        }
+        
+        public void setActiveParamsTransparent(List<Map<String,String/*|null*/>>/*|null*/ params) {
+            setParamsTransparent(getActive(), params);
+        }
+
+        //----------------------------------------------------------
+
+        public void eraseParam(String config, @NonNull String name) {
+            assert !configNameWrong(config);
+            eraseParam(getParams(config), name);
+        }
+
+        public void eraseDefaultParam(@NonNull String name) {
+            eraseParam((String)null, name);
+        }
+        
+        public void eraseActiveParam(@NonNull String name) {
+            eraseParam(getActive(), name);
+        }
+
+        public void eraseParams(String config) {
+            assert !configNameWrong(config);
+            APP_PARAMS.remove(config);
+        }
+
+        public void eraseDefaultParams() {
+            eraseParams(null);
+        }
+
+        public void eraseActiveParams() {
+            eraseParams(getActive());
+        }
+
+        //==========================================================
+
+        /**
+        * If paramName exists in params, returns the map representing it
+        * Returns null if param does not exist.
+        * 
+        * @param params list of application parameters (each stored in a map in keys 'name' and 'value'
+        * @param paramName parameter to be searched for
+        * @return parameter if found, null otherwise
+        */
+        private Map<String, String> getParam(List<Map<String, String>> params, String paramName) {
+            if(params != null) {
+                for(Map<String, String> map : params) {
+                    String name = map.get(APP_PARAM_SUFFIXES[0]);
+                    if(name != null && name.equals(paramName)) {
+                        return map;
+                    }
+                }
+            }
+            return null;
+        }
+        
+        private void eraseParam(List<Map<String, String>> params, String paramName) {
+            if(params != null) {
+                Map<String, String> toErase = null;
+                for(Map<String, String> map : params) {
+                    String name = map.get(APP_PARAM_SUFFIXES[0]);
+                    if(name != null && name.equals(paramName)) {
+                        toErase = map;
+                        break;
+                    }
+                }
+                if(toErase != null) {
+                    params.remove(toErase);
+                }
+            }
+        }
+
+        //==========================================================
+        
+        /**
+         * Reads configuration properties from project properties files
+         * (modified from "A mess." from J2SEProjectProperties)"
+         */
+        public void read() {
+        //Map<String/*|null*/,Map<String,String>> readRunConfigs() {
+            reset();
+            // read project properties
+            readDefaultConfig(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            // overwrite by project private properties
+            readDefaultConfig(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            // set properties that were not set but should have a value
+            addDefaultsIfMissing();
+            // add project properties read from config files
+            readNonDefaultConfigs(PROJECT_CONFIGS_DIR, true);
+            // add/overwrite project properties read from private config files
+            readNonDefaultConfigs(PROJECT_PRIVATE_CONFIGS_DIR, false);
+        }
+        
+        private void readDefaultConfig(String propsFile) {
+            EditableProperties ep = null;
+            try {
+                ep = readFromFile(project, propsFile);
+            } catch (IOException ex) {
+                // can be ignored
+            }
+            if(ep != null) {
+                for (String prop : PROJECT_PROPERTIES) {
+                    String v = ep.getProperty(prop);
+                    if (v != null) {
+                        setDefaultProperty(prop, v);
+                    }
+                }
+            }
+            extractDefaultParams(ep);
+        }
+        
+        private void addDefaultsIfMissing() {
+            if(!isDefaultPropertySet(RUN_APP_WIDTH)) {
+                setDefaultProperty(RUN_APP_WIDTH, DEFAULT_APP_WIDTH);
+            }
+            if(!isDefaultPropertySet(RUN_APP_HEIGHT)) {
+                setDefaultProperty(RUN_APP_HEIGHT, DEFAULT_APP_HEIGHT);
+            }
+        }
+        
+        private void readNonDefaultConfigs(String subDir, boolean createIfNotExists) {
+            FileObject configsFO = project.getProjectDirectory().getFileObject(subDir); // NOI18N
+            if (configsFO != null) {
+                for (FileObject kid : configsFO.getChildren()) {
+                    if (!kid.hasExt(PROPERTIES_FILE_EXT)) { // NOI18N
+                        continue;
+                    }
+                    Map<String,String> c = getConfig(kid.getName());
+                    if (c == null && !createIfNotExists) {
+                        continue;
+                    }
+                    EditableProperties cep = null;
+                    try {
+                        cep = readFromFile( project, FileUtil.getRelativePath(project.getProjectDirectory(), kid) );
+                    } catch (IOException ex) {
+                        // can be ignored
+                    }
+                    addToConfig(kid.getName(), cep);
+                    extractParams(cep, kid.getName());
+                }
+            }
+        }
+    
+        /**
+        * Extract from editable properties all properties depicting application parameters
+        * and store them as such in params. If such exist in params, then override their values.
+        * 
+        * @param ep editable properties to extract from
+        * @param params application parameters to add to / update in
+        */
+        private void extractParams(@NonNull EditableProperties ep, String config) {
+            if(ep != null) {
+                for(String prop : ep.keySet()) {
+                    if(prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[0])) {
+                        String name = ep.getProperty(prop);
+                        if(name != null) {
+                            String propV = prop.replace(APP_PARAM_SUFFIXES[0], APP_PARAM_SUFFIXES[1]);
+                            String value = ep.getProperty(propV);
+                            if(value != null) {
+                                addParam(config, name, value);
+                            } else {
+                                addParam(config, name);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        private void extractDefaultParams(@NonNull EditableProperties ep) {
+            extractParams(ep, null);
+        }
+
+        private void extractActiveParams(@NonNull EditableProperties ep) {
+            extractParams(ep, getActive());
+        }
+
+        //----------------------------------------------------------
+
+        public void storeActive() throws IOException {
+            String configPath = CONFIG_PROPERTIES_FILE;
+            if (active == null) {
+                try {
+                    deleteFile(project, configPath);
+                } catch (IOException ex) {
+                }
+            } else {
+                final EditableProperties configProps = readFromFile(project, configPath);
+                configProps.setProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG, active);
+                saveToFile(project, configPath, configProps);
+            }
+        }
+
+        //----------------------------------------------------------
+
+        /**
+         * Stores/updates configuration properties and parameters to EditableProperties in case of default
+         * config, or directly to project properties files in case of non-default configs.
+         * (modified from "A royal mess." from J2SEProjectProperties)"
+         */
+        //void storeRunConfigs
+        void store(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+
+            for (String name : PROJECT_PROPERTIES) {
+                String value = getDefaultProperty(name);
+                updateProperty(name, value, projectProperties, privateProperties, isBoundedToNonemptyProperty(null, name));
+            }
+            List<String> paramNamesUsed = new ArrayList<String>();
+            updateDefaultParamProperties(projectProperties, privateProperties, paramNamesUsed);
+            storeDefaultParamsAsCommandLine(privateProperties);
+
+            for (Map.Entry<String,Map<String,String>> entry : RUN_CONFIGS.entrySet()) {
+                String config = entry.getKey();
+                if (config == null) {
+                    continue;
+                }
+                String sharedPath = PROJECT_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
+                String privatePath = PROJECT_PRIVATE_CONFIGS_DIR + "/" + config + "." + PROPERTIES_FILE_EXT; // NOI18N
+                Map<String,String> configProps = entry.getValue();
+                if (configProps == null) {
+                    try {
+                        deleteFile(project, sharedPath);
+                    } catch (IOException ex) {
+                        // TO DO
+                    }
+                    try {
+                        deleteFile(project, privatePath);
+                    } catch (IOException ex) {
+                        // TO DO
+                    }
+                    continue;
+                }
+                final EditableProperties sharedCfgProps = readFromFile(project, sharedPath);
+                final EditableProperties privateCfgProps = readFromFile(project, privatePath);
+                boolean privatePropsChanged = false;
+                
+                for (Map.Entry<String,String> prop : configProps.entrySet()) {
+                    String name = prop.getKey();
+                    String value = prop.getValue();
+                    String defaultValue = getDefaultProperty(name);
+                    boolean storeIfEmpty = (defaultValue != null && defaultValue.length() > 0) || isBoundedToNonemptyProperty(config, name);
+                    privatePropsChanged |= updateProperty(name, value, sharedCfgProps, privateCfgProps, storeIfEmpty);
+                }
+                
+                cleanPropertiesIfEmpty((String[])PRELOADER_PROPERTIES.toArray(), config, sharedCfgProps);
+                privatePropsChanged |= cleanPropertiesIfEmpty(new String[] {RUN_IN_BROWSER, RUN_IN_BROWSER_PATH}, config, privateCfgProps);
+                privatePropsChanged |= updateParamProperties(config, sharedCfgProps, privateCfgProps, paramNamesUsed);  
+                privatePropsChanged |= storeParamsAsCommandLine(config, privateCfgProps);
+
+                saveToFile(project, sharedPath, sharedCfgProps);    //Make sure the definition file is always created, even if it is empty.
+                if (privatePropsChanged) {                              //Definition file is written, only when changed
+                    saveToFile(project, privatePath, privateCfgProps);
+                }
+            }
+        }
+
+        //----------------------------------------------------------
+
+        /**
+        * Updates the value of existing property in editable properties if value differs.
+        * If value is not set or is set empty, removes property from editable properties
+        * unless storeEmpty==true, in which case the property is preserved and set to empty
+        * in editable properties.
+        * 
+        * @param name property to be updated
+        * @param value new property value
+        * @param projectProperties project editable properties
+        * @param privateProperties private project editable properties
+        * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
+        * @return true if private properties have been edited
+        */
+        private boolean updateProperty(@NonNull String name, String value, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, boolean storeEmpty) {
+            boolean changePrivate = PRIVATE_PROPERTIES.contains(name) || privateProperties.containsKey(name);
+            EditableProperties ep = changePrivate ? privateProperties : projectProperties;
+            if(changePrivate) {
+                projectProperties.remove(name);
+            }
+            if (!Utilities.compareObjects(value, ep.getProperty(name))) {
+                if (value != null && (value.length() > 0 || storeEmpty)) {
+                    ep.setProperty(name, value);
+                } else {
+                    ep.remove(name);
+                }
+                return changePrivate;
+            }
+            return false;
+        }
+
+        /**
+        * Updates the value of existing property in editable properties if value differs.
+        * If value is not set or is set empty, removes property from editable properties.
+        *
+        * @param name property to be updated
+        * @param value new property value
+        * @param projectProperties project editable properties
+        * @param privateProperties private project editable properties
+        */
+        private boolean updateProperty(@NonNull String name, String value, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties) {
+            return updateProperty(name, value, projectProperties, privateProperties, false);
+        }
+
+        /**
+         * If property not present in config configuration, remove it from editable properties.
+         * This is to propagate property deletions in config to property files
+         * @param name
+         * @param config
+         * @param ep
+         * @return true if properties have been edited
+         */
+        private boolean cleanPropertyIfEmpty(@NonNull String name, String config, @NonNull EditableProperties ep) {
+            if(!isPropertySet(config, name)) {
+                ep.remove(name);
+                return true;
+            }
+            return false;
+        }
+
+        private boolean cleanPropertiesIfEmpty(@NonNull String[] names, String config, @NonNull EditableProperties ep) {
+            boolean updated = false;
+            for(String name : names) {
+                updated |= cleanPropertyIfEmpty(name, config, ep);
+            }
+            return updated;
+        }
+        
+        //----------------------------------------------------------
+
+        private boolean isParamNameProperty(@NonNull String prop) {
+            return prop != null && prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[0]);
+        }
+
+        private boolean isParamValueProperty(@NonNull String prop) {
+            return prop != null && prop.startsWith(APP_PARAM_PREFIX) && prop.endsWith(APP_PARAM_SUFFIXES[1]);
+        }
+        
+        private String getParamValueProperty(String paramNameProperty) {
+            if(paramNameProperty != null && isParamNameProperty(paramNameProperty)) {
+                return paramNameProperty.replace(APP_PARAM_SUFFIXES[0], APP_PARAM_SUFFIXES[1]);
+            }
+            return null;
+        }
+
+        private String getParamNameProperty(int index) {
+            return APP_PARAM_PREFIX + index + "." + APP_PARAM_SUFFIXES[0]; // NOI18N
+        }
+        
+        private String getParamValueProperty(int index) {
+            return APP_PARAM_PREFIX + index + "." + APP_PARAM_SUFFIXES[1]; // NOI18N
+        }
+        
+        private boolean isFreeParamPropertyIndex(int index, @NonNull EditableProperties ep) {
+            return !ep.containsKey(getParamNameProperty(index));
+        }
+        
+        private int getFreeParamPropertyIndex(int start, @NonNull EditableProperties ep, @NonNull EditableProperties pep, List<String> paramNamesUsed) {
+            int index = (start >= 0) ? start : 0;
+            while(index >= 0) {
+                if(isFreeParamPropertyIndex(index, ep) && isFreeParamPropertyIndex(index, pep) && (paramNamesUsed == null || !paramNamesUsed.contains(getParamNameProperty(index)))) {
+                    break;
+                }
+                index++;
+            }
+            return (index >= 0) ? index : 0;
+        }
+
+        /**
+         * Adds/updates properties representing parameters in editable properties
+         * 
+         * @param config
+         * @param projectProperties
+         * @param privateProperties
+         * @return 
+         */
+        private boolean updateParamProperties(String config, @NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, @NonNull List<String> paramNamesUsed) {
+            assert !configNameWrong(config);
+            boolean privateUpdated = false;
+            List<Map<String, String>> reduce = JFXProjectUtils.copyList(getParams(config));
+            // remove properties with indexes used before (to be replaced later by new unique property names)
+            for(String prop : paramNamesUsed) {
+                if(prop != null && prop.length() > 0) {
+                    projectProperties.remove(prop);
+                    projectProperties.remove(getParamValueProperty(prop));
+                    privateProperties.remove(prop);
+                    privateProperties.remove(getParamValueProperty(prop));
+                }
+            }
+            // delete those private param properties not present in config and log usage of the remaining
+            cleanParamPropertiesIfEmpty(config, privateProperties);
+            for(String prop : privateProperties.keySet()) {
+                if(isParamNameProperty(prop)) {
+                    paramNamesUsed.add(prop);
+                }
+            }
+            // update private properties
+            List<Map<String, String>> toEraseList = new LinkedList<Map<String, String>>();
+            for(Map<String, String> map : reduce) {
+                String name = map.get(APP_PARAM_SUFFIXES[0]);
+                String value = map.get(APP_PARAM_SUFFIXES[1]);
+                if(updateParamPropertyIfExists(name, value, privateProperties, true)) {
+                    toEraseList.add(map);
+                    privateUpdated = true;
+                }
+            }
+            for(Map<String, String> toErase : toEraseList) {
+                reduce.remove(toErase);
+            }
+            // delete those nonprivate param properties not present in reduce and log usage of the remaining
+            cleanParamPropertiesNotListed(reduce, projectProperties);
+            for(String prop : projectProperties.keySet()) {
+                if(isParamNameProperty(prop)) {
+                    paramNamesUsed.add(prop);
+                }
+            }
+            // now create new nonprivate param properties
+            int index = 0;
+            for(Map<String, String> map : reduce) {
+                String name = map.get(APP_PARAM_SUFFIXES[0]);
+                String value = map.get(APP_PARAM_SUFFIXES[1]);
+                if(name != null && name.length() > 0 && !updateParamPropertyIfExists(name, value, projectProperties, false)) {
+                    index = getFreeParamPropertyIndex(index, projectProperties, privateProperties, paramNamesUsed);
+                    exportParamProperty(map, getParamNameProperty(index), getParamValueProperty(index), projectProperties);
+                    paramNamesUsed.add(getParamNameProperty(index));
+                }
+            }
+            return privateUpdated;
+        }
+        
+        private boolean updateDefaultParamProperties(@NonNull EditableProperties projectProperties, @NonNull EditableProperties privateProperties, List<String> paramNamesUsed) {
+            return updateParamProperties(null, projectProperties, privateProperties, paramNamesUsed);
+        }
+        
+        /**
+        * Searches in properties for parameter named 'name'. If found, updates
+        * both existing param properties (for 'name' and 'value') and returns
+        * true, otherwise returns false.
+        * 
+        * @param name parameter name
+        * @param value parameter value
+        * @param properties editable properties in which to search for updateable properties
+        * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
+        * @return true if updated existing property, false otherwise
+        */
+        boolean updateParamPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
+            if(name != null && !name.isEmpty()) {
+                for(String prop : ep.keySet()) {
+                    if(isParamNameProperty(prop)) {
+                        if(isEqual(name, ep.get(prop))) {
+                            String propVal = getParamValueProperty(prop);
+                            if (value != null && (value.length() > 0 || storeEmpty)) {
+                                ep.setProperty(propVal, value);
+                            } else {
+                                ep.remove(propVal);
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /**
+        * Remove from ep all parameter related properties that represent
+        * params not present in config
+        * 
+        * @param ep editable properties
+        */
+        void cleanParamPropertiesIfEmpty(String config, EditableProperties ep) {
+            assert !configNameWrong(config);
+            List<String> toRemove = new LinkedList<String>();
+            for(String prop : ep.keySet()) {
+                if(isParamNameProperty(prop)) {
+                    String name = ep.get(prop);
+                    if(!hasParam(config, name)) {
+                        toRemove.add(prop);
+                    }
+                }
+            }
+            for(String prop : toRemove) {
+                ep.remove(prop);
+                ep.remove(getParamValueProperty(prop));
+            }
+        }
+        
+        /**
+        * Remove from ep all parameter related properties that represent
+        * params not present in props
+        * 
+        * @param ep editable properties
+        */
+        void cleanParamPropertiesNotListed(List<Map<String, String>> props, EditableProperties ep) {
+            List<String> toRemove = new LinkedList<String>();
+            for(String name : ep.keySet()) {
+                if(isParamNameProperty(name)) {
+                    boolean inProps = false;
+                    for(Map<String,String> map : props) {
+                        String prop = map.get(APP_PARAM_SUFFIXES[0]);
+                        if(isEqual(name, prop)) {
+                            inProps = true;
+                            break;
+                        }
+                    }
+                    if(!inProps) {
+                        toRemove.add(name);
+                    }
+                }
+            }
+            for(String prop : toRemove) {
+                ep.remove(prop);
+                ep.remove(getParamValueProperty(prop));
+            }
+        }
+
+        /**
+        * Store one parameter to editable properties (effectively as two properties,
+        * one for name, second for value), index is used to distinguish among
+        * parameter-property instances
+        * 
+        * @param param parameter to be stored in editable properties
+        * @param newPropName name of property to store parameter name
+        * @param newPropValue name of property to store parameter value
+        * @param ep editable properties to which param is to be stored
+        */
+        void exportParamProperty(@NonNull Map<String, String> param, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
+            String name = param.get(APP_PARAM_SUFFIXES[0]);
+            String value = param.get(APP_PARAM_SUFFIXES[1]);
+            if(name != null) {
+                ep.put(newPropName, name);
+                if(value != null && value.length() > 0) {
+                    ep.put(newPropValue, value);
+                }
+            }
+        }
+
+        /**
+        * Gathers application parameters to one property APPLICATION_ARGS
+        * to be passed to run/debug target in build-impl.xml when Run as Standalone
+        * 
+        * @param config
+        * @param ep editable properties to which to store the generated property
+        * @return true if properties have been edited
+        */
+        private boolean storeParamsAsCommandLine(String config, EditableProperties projectProperties) {
+            assert !configNameWrong(config);
+            String params = getParamsTransparentAsString(config, true);
+            if(config != null) {
+                if(isEqual(params, getDefaultParamsAsString(true))) {
+                    params = null;
+                }
+            }
+            if (!Utilities.compareObjects(params, projectProperties.getProperty(APPLICATION_ARGS))) {
+                if (params != null && params.length() > 0) {
+                    projectProperties.setProperty(APPLICATION_ARGS, params);
+                    projectProperties.setComment(APPLICATION_ARGS, new String[]{"# " + NbBundle.getMessage(JFXProjectProperties.class, "COMMENT_app_args")}, false); // NOI18N
+                } else {
+                    projectProperties.remove(APPLICATION_ARGS);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private boolean storeDefaultParamsAsCommandLine(EditableProperties projectProperties) {
+            return storeParamsAsCommandLine(null, projectProperties);
+        }
+
+        //----------------------------------------------------------
+        
+        /**
+         * For properties registered in bounded groups special
+         * handling is to be followed. Either all bounded properties
+         * must exist or none of bounded properties must exist
+         * in project configuration. The motivation is to enable
+         * treating all Preloader related properties is one pseudo-property
+         */
+        private class BoundedPropertyGroups {
+            
+            Map<String, Set<String>> groups = new HashMap<String, Set<String>>();
+                        
+            public void defineGroup(String groupName, Collection<String> props) {
+                Set<String> group = new HashSet<String>();
+                group.addAll(props);
+                groups.put(groupName, group);
+            }
+            
+            public void clearGroup(String groupName) {
+                groups.remove(groupName);
+            }
+            
+            public void clearAllGroups() {
+                groups.clear();
+            }
+            
+            /**
+             * Returns true if property prop is bound with any other properties
+             * @return 
+             */
+            public boolean isBound(String prop) {
+                for(Map.Entry<String, Set<String>> entry : groups.entrySet()) {
+                    Set<String> group = entry.getValue();
+                    if(group != null && group.contains(prop) && group.size() > 1) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+            
+            /**
+             * Returns collection of all properties from any group of which
+             * property prop is member. prop is not included in result.
+             * @param prop
+             * @return 
+             */
+            public Collection<String> getBoundedProperties(String prop) {
+                Set<String> bounded = new HashSet<String>();
+                for(Map.Entry<String, Set<String>> entry : groups.entrySet()) {
+                    Set<String> group = entry.getValue();
+                    if(group != null && group.contains(prop)) {
+                        bounded.addAll(group);
+                    }
+                }
+                bounded.remove(prop);
+                return bounded;
+            }
+            
+        }
+
+    }
+    
 }

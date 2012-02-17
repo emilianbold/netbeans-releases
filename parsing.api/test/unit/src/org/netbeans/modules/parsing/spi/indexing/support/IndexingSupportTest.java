@@ -59,11 +59,7 @@ import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Queries;
-import org.netbeans.modules.parsing.spi.indexing.Context;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
-import org.netbeans.modules.parsing.spi.indexing.Indexable;
-import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
+import org.netbeans.modules.parsing.spi.indexing.*;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -107,9 +103,32 @@ public class IndexingSupportTest extends NbTestCase {
     }
 
     public void testIndexingSupportInstances () throws Exception {
-        final Context ctx1 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
+        final Context ctx1 = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(
+                root.toURL()),
+                root.toURL(),
+                "fooIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
         assertNotNull(ctx1);
-        final Context ctx2 = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "embIndexer", 1, null, false, false, false, null);
+        final Context ctx2 = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(root.toURL()),
+                root.toURL(),
+                "embIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
         assertNotNull(ctx2);
 
         final IndexingSupport is1 = IndexingSupport.getInstance(ctx1);
@@ -123,7 +142,18 @@ public class IndexingSupportTest extends NbTestCase {
 
     public void testIndexingQuerySupport () throws Exception {
         // index
-        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
+        final Context ctx = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(root.toURL()),
+                root.toURL(),
+                "fooIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
         assertNotNull(ctx);
         final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
         final IndexingSupport is = IndexingSupport.getInstance(ctx);
@@ -195,7 +225,18 @@ public class IndexingSupportTest extends NbTestCase {
 
     public void testQuerySupportCaching() throws Exception {
         // index
-        final Context ctx = SPIAccessor.getInstance().createContext(CacheFolder.getDataFolder(root.getURL()), root.getURL(), "fooIndexer", 1, null, false, false, false, null);
+        final Context ctx = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(root.toURL()),
+                root.toURL(),
+                "fooIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
         assertNotNull(ctx);
         final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
         final IndexingSupport is = IndexingSupport.getInstance(ctx);
