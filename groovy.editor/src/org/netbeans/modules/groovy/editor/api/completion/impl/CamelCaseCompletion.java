@@ -42,10 +42,12 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
@@ -56,6 +58,10 @@ import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
  *  a) New Constructors for existing classes
  *  b) Imported, or in the CP available Types
  *
+ * FIXME:
+ *  Currently we are processing upper case only:  SB   --> StringBuilder
+ *  Ideally we would like to proceed also case:   StrB --> StringBuilder
+ * 
  * @author Martin Janicek
  */
 public class CamelCaseCompletion extends BaseCompletion {
@@ -71,10 +77,14 @@ public class CamelCaseCompletion extends BaseCompletion {
             return false;
         }
 
-
-        String prefix = request.prefix;
+        // We don't want to offer costructor generation when creating new instance
+        if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+            return false;
+        }
 
         // Are we dealing with an all-uppercase prefix?
+        String prefix = request.prefix;
+
         if (prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())) {
             ClassNode requestedClass = RequestHelper.getSurroundingClassNode(request);
 
@@ -82,15 +92,15 @@ public class CamelCaseCompletion extends BaseCompletion {
                 LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
                 return false;
             }
+            String className = NbUtilities.stripPackage(requestedClass.getName());
+            String camelCaseSignature = computeCamelCaseSignature(className);
 
-            String camelCaseSignature = computeCamelCaseSignature(requestedClass.getName());
-
-            LOG.log(Level.FINEST, "Class name          : {0}", requestedClass.getName()); // NOI18N
+            LOG.log(Level.FINEST, "Class name          : {0}", className); // NOI18N
             LOG.log(Level.FINEST, "CamelCase signature : {0}", camelCaseSignature); // NOI18N
 
             if (camelCaseSignature.startsWith(prefix)) {
                 LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
-                proposals.add(new CompletionItem.ConstructorItem(requestedClass.getName(), null, null, anchor, true));
+                proposals.add(new CompletionItem.ConstructorItem(className, "", Collections.EMPTY_LIST, anchor, true));
                 return true;
             }
 

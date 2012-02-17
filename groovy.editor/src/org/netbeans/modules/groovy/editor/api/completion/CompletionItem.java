@@ -690,12 +690,13 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class ConstructorItem extends CompletionItem {
 
-        private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
-        private boolean expand; // should this item expand to a constructor body?
+        private final boolean expand; // should this item expand to a constructor body?
+        private final String name;
         private final String paramListString;
         private final List<ParameterDescriptor> paramList;
 
+        
         public ConstructorItem(String name, String paramListString, List<ParameterDescriptor> paramList, int anchorOffset, boolean expand) {
             super(null, anchorOffset);
             this.name = name;
@@ -707,7 +708,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             if (expand) {
-                return name + " - generate"; // NOI18N
+                return name + "(" + paramListString +  ") - generate"; // NOI18N
             } else {
                 return name + "(" + paramListString +  ")";
             }
@@ -715,11 +716,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getName() {
-            if (expand) {
-                return name  + "()\n{\n}";
-            } else {
-                return name;
-            }
+            return name;
         }
 
         @Override
@@ -773,36 +770,41 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             // sb.append("${cursor}"); // NOI18N
 
-            for (ParameterDescriptor paramDesc : paramList) {
+            if (paramList != null) {
+                for (ParameterDescriptor paramDesc : paramList) {
 
-                LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
-                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
-                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
+                    LOG.log(Level.FINEST, "-------------------------------------------------------------------");
+                    LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
+                    LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                    LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
 
-                sb.append("${"); //NOI18N
+                    sb.append("${"); //NOI18N
 
-                sb.append("groovy-cc-"); // NOI18N
-                sb.append(Integer.toString(id));
+                    sb.append("groovy-cc-"); // NOI18N
+                    sb.append(Integer.toString(id));
 
-                sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc.getName());
-                sb.append("\""); // NOI18N
+                    sb.append(" default=\""); // NOI18N
+                    sb.append(paramDesc.getName());
+                    sb.append("\""); // NOI18N
 
-                sb.append("}"); //NOI18N
+                    sb.append("}"); //NOI18N
 
-                // simply hardcoded values. For testing purposes.
-                // sb.append(paramDesc.name);
+                    // simply hardcoded values. For testing purposes.
+                    // sb.append(paramDesc.name);
 
 
-                if (id < paramList.size()) {
-                    sb.append(", "); //NOI18N
+                    if (id < paramList.size()) {
+                        sb.append(", "); //NOI18N
+                    }
+
+                    id++;
                 }
-
-                id++;
             }
 
             sb.append(")");
+            if (expand) {
+                sb.append(" {\n}");
+            }
 
             LOG.log(Level.FINEST, "Template returned : {0}", sb.toString());
             return sb.toString();
