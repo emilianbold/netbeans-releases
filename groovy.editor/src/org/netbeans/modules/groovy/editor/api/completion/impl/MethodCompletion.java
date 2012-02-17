@@ -49,6 +49,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
@@ -178,7 +179,6 @@ public class MethodCompletion extends BaseCompletion {
             return false;
         }
 
-
         /*
             Here we need to figure out, whether we want to complete a variable:
 
@@ -226,10 +226,10 @@ public class MethodCompletion extends BaseCompletion {
         return javaSource;
     }
 
-    private List<? extends javax.lang.model.element.Element> getElementListForPackage(Elements elements, JavaSource javaSource, final String pkg) {
+    private List<? extends Element> getElementListForPackage(Elements elements, JavaSource javaSource, final String pkg) {
         LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
 
-        List<? extends javax.lang.model.element.Element> typelist = null;
+        List<? extends Element> typelist = null;
 
         if (elements != null && pkg != null) {
             LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
@@ -253,7 +253,6 @@ public class MethodCompletion extends BaseCompletion {
      * @return
      */
     private static List<CompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
-
         List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<CompletionItem.ParameterDescriptor>();
 
         if (exe != null) {
@@ -297,7 +296,7 @@ public class MethodCompletion extends BaseCompletion {
      * @return
      */
     public static String getParameterListForMethod(ExecutableElement exe) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         if (exe != null) {
             // generate a list of parameters
@@ -314,8 +313,7 @@ public class MethodCompletion extends BaseCompletion {
                         sb.append(", ");
                     }
 
-                    if (tm.getKind() == javax.lang.model.type.TypeKind.DECLARED
-                            || tm.getKind() == javax.lang.model.type.TypeKind.ARRAY) {
+                    if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY) {
                         sb.append(NbUtilities.stripPackage(tm.toString()));
                     } else {
                         sb.append(tm.toString());
