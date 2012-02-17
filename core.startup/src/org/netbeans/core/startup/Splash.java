@@ -393,7 +393,7 @@ public final class Splash implements Stamps.Updater {
 
             image = loadContent(about);
 
-            Font font = new Font("Dialog", Font.PLAIN, size); // NOI18N
+            Font font = new Font(bundle.getString("SplashRunningTextFontType"), Font.PLAIN, size); // NOI18N
             if (comp != null) {
                 comp.setFont(font); 
                 fm = comp.getFontMetrics(font);
