@@ -70,55 +70,10 @@ public class FormatVisitor extends NodeVisitor {
         if (onset && (block instanceof FunctionNode || isScript(block)
                 || block.getStart() < block.getFinish())) {
 
-            // indentation mark
             if (caseNodes.contains(block)) {
                 handleCaseBlock(block);
             } else {
-
-
-                Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
-                if (token != null && !isScript(block)) {
-                    FormatToken formatToken = tokenStream.getToken(ts.offset());
-                    if (formatToken != null) {
-                        FormatToken next = formatToken.next();
-                        if (next != null && (next.getKind() == FormatToken.Kind.AFTER_CASE)) {
-                            formatToken = next;
-                        }
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-                    }
-                }
-
-                if (block instanceof FunctionNode) {
-                    for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
-                        function.accept(this);
-                    }
-                }
-
-                for (Node statement : block.getStatements()) {
-                    int finish = getFinish(statement);
-                    statement.accept(this);
-
-                    token = getToken(finish, null);
-                    if (token != null) {
-                        FormatToken formatToken = tokenStream.getToken(ts.offset());
-                        if (formatToken != null) {
-                            appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
-                        }
-                    }
-                }
-
-                // put indentation mark after non white token
-                token = getToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
-                if (token != null && !isScript(block)) {
-                    FormatToken formatToken = previousNonWhiteToken(block.getStart());
-                    if (formatToken != null) {
-                        FormatToken next = formatToken.next();
-                        if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
-                            formatToken = next;
-                        }
-                        appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-                    }
-                }
+                handleStandardBlock(block);
             }
         }
 
@@ -130,7 +85,37 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    public void handleCaseBlock(Block block) {
+    private void handleStandardBlock(Block block) {
+        // indentation mark
+        Token token = getToken(block.position(), JsTokenId.BRACKET_LEFT_CURLY);
+        if (token != null && !isScript(block)) {
+            FormatToken formatToken = tokenStream.getToken(ts.offset());
+            if (formatToken != null) {
+                FormatToken next = formatToken.next();
+                if (next != null && (next.getKind() == FormatToken.Kind.AFTER_CASE)) {
+                    formatToken = next;
+                }
+                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            }
+        }
+
+        handleBlockContent(block);
+
+        // put indentation mark after non white token
+        token = getToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
+        if (token != null && !isScript(block)) {
+            FormatToken formatToken = previousNonWhiteToken(block.getStart());
+            if (formatToken != null) {
+                FormatToken next = formatToken.next();
+                if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
+                    formatToken = next;
+                }
+                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            }
+        }
+    }
+
+    private void handleCaseBlock(Block block) {
         // indentation mark
         Token token = getToken(block.position(), JsTokenId.OPERATOR_COLON);
 
@@ -145,6 +130,23 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
 
+        handleBlockContent(block);
+
+        // put indentation mark after non white token
+        token = getNextNonEmptyToken(getFinish(block));
+        if (token != null) {
+            FormatToken formatToken = previousNonWhiteToken(block.getStart());
+            if (formatToken != null) {
+                FormatToken next = formatToken.next();
+                if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
+                    formatToken = next;
+                }
+                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            }
+        }
+    }
+
+    private void handleBlockContent(Block block) {
         // functions
         if (block instanceof FunctionNode) {
             for (FunctionNode function : ((FunctionNode) block).getFunctions()) {
@@ -157,25 +159,12 @@ public class FormatVisitor extends NodeVisitor {
             int finish = getFinish(statement);
             statement.accept(this);
 
-            token = getToken(finish, null);
+            Token token = getToken(finish, null);
             if (token != null) {
                 FormatToken formatToken = tokenStream.getToken(ts.offset());
                 if (formatToken != null) {
                     appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
                 }
-            }
-        }
-
-        // put indentation mark after non white token
-        token = getNextNonEmptyToken(getFinish(block));
-        if (token != null) {
-            FormatToken formatToken = previousNonWhiteToken(block.getStart());
-            if (formatToken != null) {
-                FormatToken next = formatToken.next();
-                if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
-                    formatToken = next;
-                }
-                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
         }
     }
