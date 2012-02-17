@@ -103,7 +103,7 @@ public class FormatVisitor extends NodeVisitor {
                     int finish = getFinish(statement);
                     statement.accept(this);
 
-                    token = getToken(finish, (Set) null);
+                    token = getToken(finish, null);
                     if (token != null) {
                         FormatToken formatToken = tokenStream.getToken(ts.offset());
                         if (formatToken != null) {
@@ -162,7 +162,7 @@ public class FormatVisitor extends NodeVisitor {
             int finish = getFinish(statement);
             statement.accept(this);
 
-            token = getToken(finish, (Set) null);
+            token = getToken(finish, null);
             if (token != null) {
                 FormatToken formatToken = tokenStream.getToken(ts.offset());
                 if (formatToken != null) {
@@ -287,7 +287,7 @@ public class FormatVisitor extends NodeVisitor {
             for (Node property : objectNode.getElements()) {
                 int finish = getFinish(property);
 
-                token = getToken(finish, (Set) null);
+                token = getToken(finish, null);
                 if (token != null) {
                     FormatToken formatToken = tokenStream.getToken(ts.offset());
                     if (formatToken != null) {
@@ -424,11 +424,6 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private Token getToken(int offset, JsTokenId expected) {
-        assert expected != null;
-        return getToken(offset, Collections.singleton(expected));
-    }
-
-    private Token getToken(int offset, Set<JsTokenId> expected) {
         ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
@@ -437,10 +432,10 @@ public class FormatVisitor extends NodeVisitor {
 
         Token<?extends JsTokenId> token = ts.token();
         if (expected != null) {
-            while (!expected.contains(token.id()) && ts.movePrevious()) {
+            while (expected != token.id() && ts.movePrevious()) {
                 token = ts.token();
             }
-            if (!expected.contains(token.id())) {
+            if (expected != token.id()) {
                 return null;
             }
         }
