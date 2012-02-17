@@ -49,6 +49,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -107,15 +109,38 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
     }
     
     
-    static SourcePrefetcher create(@NonNull final Collection<? extends CompileTuple> files) {
-        return new SourcePrefetcher(getIterator(files));
+    static SourcePrefetcher create(
+            @NonNull final Collection<? extends CompileTuple> files,
+            @NonNull final SuspendStatus suspendStatus) {
+        return new SourcePrefetcher(getIterator(files, suspendStatus));
     }
     
-    private static final class NopRemoveItDecorator implements Iterator<CompileTuple> {
+    private static abstract class SuspendableIterator implements Iterator<CompileTuple> {
+        
+        private final SuspendStatus suspendStatus;
+        
+        protected SuspendableIterator(@NonNull final SuspendStatus suspendStatus) {
+            assert suspendStatus != null;
+            this.suspendStatus = suspendStatus;
+        }
+        
+        protected final void safePark() {
+            try {
+                suspendStatus.parkWhileSuspended();
+            } catch (InterruptedException ex) {
+                //NOP - safe to ignore
+            }
+        }
+    }
+    
+    private static final class NopRemoveItDecorator extends SuspendableIterator {
         
         private final Iterator<? extends CompileTuple> delegate;
         
-        private NopRemoveItDecorator(@NonNull final Iterator<? extends CompileTuple> delegate) {
+        private NopRemoveItDecorator(
+                @NonNull final Iterator<? extends CompileTuple> delegate,
+                @NonNull final SuspendStatus suspendStatus) {
+            super(suspendStatus);
             this.delegate = delegate;
         }
 
@@ -136,7 +161,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         
     }
     
-    private static final class ConcurrentIterator implements Iterator<CompileTuple> {
+    private static final class ConcurrentIterator extends SuspendableIterator {
         
         private static final RequestProcessor RP = new RequestProcessor(
                 SourcePrefetcher.class.getName(),
@@ -153,7 +178,9 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         
 
         private ConcurrentIterator(
-                @NonNull final Iterable<? extends CompileTuple> files) {
+                @NonNull final Iterable<? extends CompileTuple> files,
+                @NonNull final SuspendStatus suspendStatus) {
+            super(suspendStatus);
             this.cs = new ExecutorCompletionService<CompileTuple>(RP);
             this.sem = new Semaphore(BUFFER_SIZE);
             
@@ -161,6 +188,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                 cs.submit(new Callable<CompileTuple>() {
                     @Override
                     public CompileTuple call() throws Exception {
+                        safePark();
                         final int len = ct.jfo.prefetch();
                         if (LOG.isLoggable(Level.FINEST) && 
                             (sem.availablePermits() - len) < 0) {
@@ -187,6 +215,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             if (!hasNext()) {
                 throw new IllegalStateException("No more tuples."); //NOI18N
             }
+            safePark();
             try {
                 active = cs.take().get();
                 return active;
@@ -215,7 +244,8 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
     }
     
     private static Iterator<? extends CompileTuple> getIterator(
-            @NonNull final Collection<? extends CompileTuple> files) {
+            @NonNull final Collection<? extends CompileTuple> files,
+            @NonNull final SuspendStatus suspendStatus) {
         final int procCount = Runtime.getRuntime().availableProcessors();
         final int probSize = files.size();
         LOG.log(
@@ -235,10 +265,10 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                 Level.FINE,
                 "Using concurrent iterator, {0} workers",    //NOI18N
                 PROC_COUNT);
-            return new ConcurrentIterator(files);
+            return new ConcurrentIterator(files, suspendStatus);
         } else {
             LOG.fine("Using sequential iterator");    //NOI18N
-            return new NopRemoveItDecorator(files.iterator());
+            return new NopRemoveItDecorator(files.iterator(), suspendStatus);
         }
     }
     

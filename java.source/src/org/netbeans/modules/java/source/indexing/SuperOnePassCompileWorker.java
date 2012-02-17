@@ -76,6 +76,7 @@ import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -106,7 +107,8 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         JavacTaskImpl jt = null;
 
         boolean nop = true;
-        final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files);
+        final SuspendStatus suspendStatus = context.getSuspendStatus();
+        final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files, suspendStatus);
         while (sourcePrefetcher.hasNext())  {
             final CompileTuple tuple = sourcePrefetcher.next();
             nop = false;

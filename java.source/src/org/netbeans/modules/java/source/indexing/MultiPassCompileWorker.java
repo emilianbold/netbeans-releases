@@ -84,6 +84,7 @@ import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -135,6 +136,11 @@ final class MultiPassCompileWorker extends CompileWorker {
         while (!toProcess.isEmpty() || !bigFiles.isEmpty() || active != null) {
             if (context.isCancelled()) {
                 return null;
+            }
+            try {
+                context.getSuspendStatus().parkWhileSuspended();
+            } catch (InterruptedException ex) {
+                //NOP - safe to ignore
             }
             try {
                 if (mem.isLowMemory()) {

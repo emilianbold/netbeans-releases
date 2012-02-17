@@ -56,6 +56,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
 import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
+import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,12 +92,12 @@ public class SourcePrefetcherTest extends NbTestCase {
     }
 
     public void testWrongCallOrder() throws Exception {
-        SourcePrefetcher pf = SourcePrefetcher.create(files);
+        SourcePrefetcher pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
         while (pf.hasNext()) {
             pf.next();
             pf.remove();
         }
-        pf = SourcePrefetcher.create(files);
+        pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
         try {
             while (pf.hasNext()) {
                 pf.next();
@@ -104,7 +105,7 @@ public class SourcePrefetcherTest extends NbTestCase {
             assertTrue("Next should fail if no remove",false);
         } catch (IllegalStateException ise) {
         }
-        pf = SourcePrefetcher.create(files);
+        pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
         try {
             while (pf.hasNext()) {
                 pf.remove();
@@ -122,7 +123,7 @@ public class SourcePrefetcherTest extends NbTestCase {
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {
-            SourcePrefetcher pf = SourcePrefetcher.create(files);
+            SourcePrefetcher pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
             assertTrue(handler.isFound());
             final Deque<CompileTuple> got = new ArrayDeque<CompileTuple>(FILE_COUNT);
             while (pf.hasNext()) {
@@ -145,7 +146,7 @@ public class SourcePrefetcherTest extends NbTestCase {
         log.setLevel(Level.FINE);
         log.addHandler(handler);
         try {
-            SourcePrefetcher pf = SourcePrefetcher.create(files);
+            SourcePrefetcher pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
             assertTrue(handler.isFound());
             final Deque<CompileTuple> got = new ArrayDeque<CompileTuple>(FILE_COUNT);
             while (pf.hasNext()) {
