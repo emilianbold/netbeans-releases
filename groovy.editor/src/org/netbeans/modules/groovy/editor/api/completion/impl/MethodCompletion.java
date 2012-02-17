@@ -100,12 +100,11 @@ public class MethodCompletion extends BaseCompletion {
         // FIXME move this to separate method completeConstructors()
         if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
             LOG.log(Level.FINEST, "This looks like a constructor ...");
+
             // look for all imported types starting with prefix, which have public constructors
-            final List<String> localDefaultImports = new ArrayList<String>();
-
-            localDefaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
-
             final JavaSource javaSource = getJavaSourceFromRequest(request);
+            final List<String> defaultImports = new ArrayList<String>();
+            defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
 
             if (javaSource != null) {
 
@@ -113,8 +112,8 @@ public class MethodCompletion extends BaseCompletion {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
                         public void run(CompilationController info) {
 
-                            for (String singlePackage : localDefaultImports) {
-                                List<? extends javax.lang.model.element.Element> typelist;
+                            for (String singlePackage : defaultImports) {
+                                List<? extends Element> typelist;
 
                                 typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
 
@@ -128,9 +127,9 @@ public class MethodCompletion extends BaseCompletion {
                                 for (Element element : typelist) {
                                     // only look for classes rather than enums or interfaces
                                     if (element.getKind() == ElementKind.CLASS) {
-                                        javax.lang.model.element.TypeElement te = (javax.lang.model.element.TypeElement) element;
+                                        TypeElement te = (TypeElement) element;
 
-                                        List<? extends javax.lang.model.element.Element> enclosed = te.getEnclosedElements();
+                                        List<? extends Element> enclosed = te.getEnclosedElements();
 
                                         // we gotta get the constructors name from the type itself, since
                                         // all the constructors are named <init>.
@@ -151,11 +150,9 @@ public class MethodCompletion extends BaseCompletion {
                                                 }
                                             }
                                         }
-
                                     }
                                 }
                             }
-
                         }
                     }, true);
                 } catch (IOException ex) {
@@ -328,7 +325,6 @@ public class MethodCompletion extends BaseCompletion {
                 // simply do nothing.
             }
         }
-
         return sb.toString();
     }
 }
