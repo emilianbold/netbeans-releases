@@ -198,7 +198,8 @@ public class JsFormatter implements Formatter {
 
         FormatToken next = token.next();
         if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+                || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                || next.getKind() == FormatToken.Kind.AFTER_CASE) {
             return false;
         }
 
@@ -219,7 +220,8 @@ public class JsFormatter implements Formatter {
             if (kind == FormatToken.Kind.SOURCE_START
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
-                    || kind == FormatToken.Kind.AFTER_PROPERTY) {
+                    || kind == FormatToken.Kind.AFTER_PROPERTY
+                    || kind == FormatToken.Kind.AFTER_CASE) {
                 result = previous;
                 break;
             }
@@ -227,9 +229,11 @@ public class JsFormatter implements Formatter {
         if (result == null
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
-                || result.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+                || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
+                || result.getKind() == FormatToken.Kind.AFTER_CASE) {
             return false;
         }
+
         String text = result.getText().toString();
         return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
                 || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)

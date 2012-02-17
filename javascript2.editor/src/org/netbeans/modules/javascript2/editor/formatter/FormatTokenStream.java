@@ -86,7 +86,6 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forAny(FormatToken.Kind.DOC_COMMENT, ts.offset(), token.text()));
                     break;
                 case LINE_COMMENT:
-                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_LINE_COMMENT));
                     ret.addToken(FormatToken.forAny(FormatToken.Kind.LINE_COMMENT, ts.offset(), token.text()));
                     break;
                 case OPERATOR_GREATER:
