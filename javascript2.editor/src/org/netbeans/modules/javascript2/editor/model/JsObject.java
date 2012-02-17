@@ -59,14 +59,7 @@ public interface JsObject extends JsElement {
      * 
      * @return the object within this is declared
      */
-    public JsObject getParent();
-    
-    /**
-     * 
-     * @return if is really declared in the source
-     */
-    public boolean isDeclared();
-    
+    public JsObject getParent();  
     List<Occurrence> getOccurrences();
    
     /**
@@ -74,7 +67,9 @@ public interface JsObject extends JsElement {
      * @param offset
      * @return 
      */
-    Collection<String> getAssignmentTypeNames(int offset);
+    Collection<? extends TypeUsage> getAssignmentForOffset(int offset);
+    
+    Collection<? extends TypeUsage> getAssignments();
     
     public boolean isAnonymous();
     

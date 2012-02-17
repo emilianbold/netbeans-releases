@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.navigation;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.csl.api.ColoringAttributes;
@@ -51,6 +52,8 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -90,17 +93,37 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
         Occurrence occurrence = os.getOccurrence(caretPosition);
         if (occurrence != null) {
             range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
-            for(JsObject object: occurrence.getDeclarations()){
+            for (JsObject object : occurrence.getDeclarations()) {
                 range2Attribs.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
-                for(Occurrence oc : object.getOccurrences()) {
+                for (Occurrence oc : object.getOccurrences()) {
                     range2Attribs.put(oc.getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
-                    if(cancelled) {
+                    if (cancelled) {
                         cancelled = false;
-                        return ;
+                        return;
+                    }
+                }
+                JsObject parent = object.getParent();
+                if (parent != null) {
+                    Collection<? extends Type> types = parent.getAssignmentForOffset(caretPosition);
+                    for (Type type : types) {
+                        JsObject declaration = ModelUtils.findJsObjectByName(model, type.getType());
+                        if (declaration != null && !object.getName().equals(declaration.getName())) {
+                            declaration = declaration.getProperty(object.getName());
+                        }
+                        if (declaration != null) {
+                            range2Attribs.put(declaration.getDeclarationName().getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
+                            for (Occurrence oc : declaration.getOccurrences()) {
+                                range2Attribs.put(oc.getOffsetRange(), ColoringAttributes.MARK_OCCURRENCES);
+                                if (cancelled) {
+                                    cancelled = false;
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }
-                    
+
         }
     }
 

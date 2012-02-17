@@ -20,7 +20,7 @@ jQuery.|>CLASS:event<| = {
             |>GLOBAL:formatter<|.println("");
             |>GLOBAL:formatter<|.println("What is vissible inside function jQuery.event.customEvent.test()");
             |>GLOBAL:formatter<|.addIndent(4);
-            |>GLOBAL:formatter<|.println("this.martin.address: " + this.martin.address);
+            |>GLOBAL:formatter<|.println("this.martin.address: " + this.martin.|>FIELD:address<|);
             |>GLOBAL:formatter<|.println("this.petr: " + this.|>FIELD:petr<|);
             |>GLOBAL:formatter<|.println("this.name: " + this.name);
             |>GLOBAL:formatter<|.println("jQuery.event.name: " + jQuery.event.|>FIELD:name<|);

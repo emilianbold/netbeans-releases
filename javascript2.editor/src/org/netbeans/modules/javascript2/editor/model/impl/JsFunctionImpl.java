@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
-import java.util.HashSet;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
@@ -55,7 +54,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
 
     final private HashMap <String, JsObject> parametersByName;
     final private List<JsObject> parameters;
-    final private Set<String> returnTypes;
+    final private Set<TypeUsage> returnTypes;
     private boolean areReturnTypesResolved;
     private boolean isAnonymous;
     
@@ -70,7 +69,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             this.parameters.add(parameter);
         }
         this.isAnonymous = false;
-        this.returnTypes = new HashSet<String>();
+        this.returnTypes = new HashSet<TypeUsage>();
         setDeclared(true);
         this.areReturnTypesResolved = false;
     }
@@ -133,29 +132,39 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
 
     @Override
-    public Collection<String> getReturnTypes() {
+    public Collection<? extends TypeUsage> getReturnTypes() {
         if (!areReturnTypesResolved) {
-            Set<String> realTypes = new HashSet<String>(returnTypes.size());
-            for (String semiType : returnTypes) {
-                Collection<String> realType = ModelUtils.resolveTypeFromSemiType(this, semiType);
-                realTypes.addAll(realType);
-            }
-            returnTypes.clear();
-            returnTypes.addAll(realTypes);
-            areReturnTypesResolved = true;
+            resolveTypes();
         }
         return Collections.unmodifiableCollection(this.returnTypes);
     }    
     
-    public void addReturnType(String type) {
+    public void addReturnType(TypeUsage type) {
         this.returnTypes.add(type);
     }
     
-    public void addReturnType(Collection<String> types) {
+    public void addReturnType(Collection<TypeUsage> types) {
         this.returnTypes.addAll(types);
     }
     
     public boolean areReturnTypesEmpty() {
         return returnTypes.isEmpty();
     }
+
+    @Override
+    public void resolveTypes() {
+        super.resolveTypes();
+        Collection<TypeUsage> resolved = new ArrayList();
+        for (TypeUsage type : returnTypes) {
+            if (!((TypeUsageImpl) type).isResolved()) {
+                resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+            } else {
+                resolved.add(type);
+            }
+        }
+        returnTypes.clear();
+        returnTypes.addAll(resolved);
+    }
+    
+    
 }

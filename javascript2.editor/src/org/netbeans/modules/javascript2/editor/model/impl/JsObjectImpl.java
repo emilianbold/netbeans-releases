@@ -44,11 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
  *
@@ -60,7 +56,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     final private Identifier declarationName;
     final private JsObject parent;
     final private List<Occurrence> occurrences;
-    final private Map<Integer, Collection<String>> assignments;
+    final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
     
     public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange) {
@@ -69,7 +65,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.declarationName = name;
         this.parent = parent;
         this.occurrences = new ArrayList<Occurrence>();
-        this.assignments = new HashMap<Integer, Collection<String>>();
+        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
     }
   
@@ -153,27 +149,27 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         occurrences.add(new OccurrenceImpl(offsetRange, this));
     }
     
-    public void addAssignment(Collection<String> typeNames, int offset){
-        Collection<String> types = assignments.get(offset);
+    public void addAssignment(Collection<TypeUsage> typeNames, int offset){
+        Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
-            types = new ArrayList<String>();
+            types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
         types.addAll(typeNames);
     }
     
-    public void addAssignment(String typeName, int offset){
-        Collection<String> types = assignments.get(offset);
+    public void addAssignment(TypeUsage typeName, int offset){
+        Collection<TypeUsage> types = assignments.get(offset);
         if (types == null) {
-            types = new ArrayList<String>();
+            types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
-        types.add(typeName);
+        types.add(new TypeUsageImpl(typeName.getType(), offset));
     }
 
     @Override
-    public Collection<String> getAssignmentTypeNames(int offset) {
-        Collection<String> result = Collections.EMPTY_LIST;
+    public Collection<? extends TypeUsage> getAssignmentForOffset(int offset) {
+        Collection<? extends TypeUsage> result = Collections.EMPTY_LIST;
         int closeOffset = -1;
         for(Integer position : assignments.keySet()) {
             if (closeOffset < position && position <= offset) {
@@ -186,6 +182,16 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
 
     @Override
+    public Collection<? extends TypeUsage> getAssignments() {
+        List<TypeUsage> values;
+        values = new ArrayList<TypeUsage>();
+        for(Collection<? extends TypeUsage> types : assignments.values()) {
+            values.addAll(types);
+        }
+        return Collections.unmodifiableCollection(values);
+    }
+    
+    @Override
     public boolean isAnonymous() {
         return false;
     }
@@ -195,5 +201,22 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return hasName;
     }
     
+    public void resolveTypes() {
+        Collection<TypeUsage> resolved = new ArrayList();
+        for(Integer index: assignments.keySet()) {
+            resolved.clear();
+            Collection<TypeUsage> unresolved = assignments.get(index);
+            for (TypeUsage type : unresolved) {
+                if(!((TypeUsageImpl)type).isResolved()){
+                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+                } else {
+                    resolved.add(type);
+                }
+            }
+            unresolved.clear();
+            unresolved.addAll(resolved);
+        }
+        
+    }
     
 }

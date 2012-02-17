@@ -51,6 +51,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -271,18 +272,18 @@ public class JsStructureScanner implements StructureScanner {
             return modelElement;
         }
         
-        protected void appendTypeInfo(HtmlFormatter formatter, Collection<String> types) {
+        protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
             if (!types.isEmpty() && !types.contains(Type.UNRESOLVED)) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");
                 boolean addDelimiter = false;
-                for (String type : types) {
+                for (Type type : types) {
                     if (addDelimiter) {
                         formatter.appendText("|");
                     } else {
                         addDelimiter = true;
                     }
-                    formatter.appendHtml(type);
+                    formatter.appendHtml(type.getType());
                 }
                 formatter.appendHtml(CLOSE_FONT);
             }
@@ -372,7 +373,7 @@ public class JsStructureScanner implements StructureScanner {
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getElementHandle().getName());
-            Collection<String> types = object.getAssignmentTypeNames(object.getDeclarationName().getOffsetRange().getEnd());
+            Collection<? extends Type> types = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
             appendTypeInfo(formatter, types);
             return formatter.getText();
         }
