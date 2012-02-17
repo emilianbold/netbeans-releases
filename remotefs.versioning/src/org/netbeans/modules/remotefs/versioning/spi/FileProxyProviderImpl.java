@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -193,10 +190,15 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
             refreshFor(list.toArray(new FileProxyO[list.size()]));
         }
 
+        private static final Set<Integer> alreadyTraced = new HashSet<Integer>();
         private void softEDTAssert() {
             if (assertIt) {
                 if (SwingUtilities.isEventDispatchThread()) {
-                    LOG.log(Level.INFO, "Method cannot be called in EDT", new Exception()); //NOI18N
+                    final Exception exception = new Exception();
+                    int hashCode = Arrays.hashCode(exception.getStackTrace());
+                    if (alreadyTraced.add(hashCode)) {
+                        LOG.log(Level.INFO, "Method cannot be called in EDT", exception); //NOI18N
+                    }
                 }
             }
         }
