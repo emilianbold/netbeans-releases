@@ -133,7 +133,7 @@ public final class ConnectionManager {
                 }
             });
         }
-        restoreRecentConnectionsList();
+        restoreRecentConnectionsList();        
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -333,6 +333,7 @@ public final class ConnectionManager {
     }
 
     public static ConnectionManager getInstance() {
+        HostInfoCache.initializeIfNeeded();
         return instance;
     }
 

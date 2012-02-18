@@ -284,29 +284,42 @@ public class FileInfoProvider {
         }
         
         private boolean can(ExecutionEnvironment env, short all_mask, short grp_mask, short usr_mask) {
+
+            int userId = -1;
+            int[] groups = null;
+
             if (HostInfoUtils.isHostInfoAvailable(env)) {
                 try {
                     HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-                    if (this.uid == hostInfo.getUserId()) {
-                        return (getAccess() & usr_mask) > 0;
-                    }
-                    boolean isGroupClass = false;
-                    for (int currGid : hostInfo.getAllGroupIDs()) {
-                        if (gid == currGid) {
-                            isGroupClass = true;
-                            break;
-                        }
-                    }
-                    if (isGroupClass) {
-                        return (getAccess() & grp_mask) > 0;
-                    }
-                    return (getAccess() & all_mask) > 0;
+                    userId = hostInfo.getUserId();
+                    groups = hostInfo.getAllGroupIDs();
                 } catch (IOException ex) {
                     // should be never thrown, since we checked isHostInfoAvailable() first
                     Exceptions.printStackTrace(ex);
                 } catch (CancellationException ex) {
                     // should be never thrown, since we checked isHostInfoAvailable() first
                     // however we never report CancellationException
+                }
+            }
+            if (userId == -1) {
+                userId = HostInfoCache.getInstance().getUserId(env);
+            }
+            if (groups == null) {
+                groups = HostInfoCache.getInstance().getAllGroupIDs(env);
+            }
+
+            if (this.uid == userId) {
+                return (getAccess() & usr_mask) > 0;
+            } else if (groups != null) {
+                boolean isGroupClass = false;
+                for (int currGid : groups) {
+                    if (gid == currGid) {
+                        isGroupClass = true;
+                        break;
+                    }
+                }
+                if (isGroupClass) {
+                    return (getAccess() & grp_mask) > 0;
                 }
             }
             return (getAccess() & all_mask) > 0;
