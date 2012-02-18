@@ -54,6 +54,14 @@ Contributor(s): Andrei Badea
             <code-name-base>org.netbeans.modules.jumpto</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.search</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.core.ui</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -181,15 +189,6 @@ Contributor(s): Andrei Badea
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>6.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openidex.util</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>3</release-version>
-                        <specification-version>3.20</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
