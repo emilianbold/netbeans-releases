@@ -891,7 +891,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
 
         private void fetchOriginalContent() {
-            LOG.log(Level.WARNING, "fetching original contet for {0}", fileObject != null ? fileObject.getPath() : null);
+            LOG.log(Level.FINE, "fetching original contet for {0}", fileObject != null ? fileObject.getPath() : null);
             int serial = originalContentSerial;
             if ((originalContentBuffer != null) && (originalContentBufferSerial == serial)) {
                 return;
@@ -999,7 +999,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         Collection<File> originalFiles = new ArrayList<File>(filesToCheckout.size());
 
         for (FileObject fo : filesToCheckout) {
-            LOG.log(Level.WARNING, "checking out original file {0}", fo != null ? fo.getPath() : null);
+            LOG.log(Level.FINE, "checking out original file {0}", fo != null ? fo.getPath() : null);
             File originalFile = new File(targetTempFolder, fo.getNameExt());
             vs.getOriginalFile(VCSFileProxy.createFileProxy(fo), VCSFileProxy.createFileProxy(originalFile)); // XXX refactor the whole diff
             originalFiles.add(originalFile);
@@ -1174,7 +1174,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     /**
      * Recursively deletes the file or directory.
      *
-     * @param file file/directory to delete
+     * @param file file/directory to deletegin
      */
     private static void deleteRecursively(File file) {
         deleteRecursively(file, Level.WARNING);
