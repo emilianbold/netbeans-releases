@@ -61,7 +61,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Stola
  */
 public class Installer extends ModuleInstall {
-    /** Port of the WebSocket server for web inspection. */
+    /** Port of the WebSocket server for page inspection. */
     private static int PORT = 8010;
 
     @Override
@@ -80,32 +80,61 @@ public class Installer extends ModuleInstall {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageModel.PROP_MODEL.equals(propName)) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            boolean show = PageModel.getDefault().isValid();
-                            WindowManager manager = WindowManager.getDefault();
-                            TopComponentGroup group = manager.findTopComponentGroup("webinspect"); // NOI18N
-                            if (group == null) {
-                                Logger.getLogger(Installer.class.getName()).log(
-                                        Level.INFO, "TopComponentGroup webinspect not found!"); // NOI18N
-                            } else if (show) {
-                                group.open();
-                                TopComponent tc = manager.findTopComponent(ResourcesTC.ID);
-                                if (tc == null) {
-                                    Logger.getLogger(Installer.class.getName()).log(
-                                            Level.INFO, "TopComponent {0} not found!", ResourcesTC.ID); // NOI18N
-                                } else {
-                                    tc.requestVisible();
-                                }
-                            } else {
-                                group.close();
-                            }
-                        }
-                    });
+                    boolean show = PageModel.getDefault().isValid();
+                    setPageInspectionGroupVisible(show);
                 }
             }
         });
+    }
+
+    @Override
+    public boolean closing() {
+        setPageInspectionGroupVisible(false);
+        return true;
+    }
+
+    /**
+     * Opens/closes the page inspection window group.
+     * 
+     * @param visible determines whether the group should be closed or opened.
+     */
+    private void setPageInspectionGroupVisible(final boolean visible) {
+        if (EventQueue.isDispatchThread()) {
+            setPageInspectionGroupVisibleAWT(visible);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setPageInspectionGroupVisibleAWT(visible);
+                }
+            });
+        }
+    }
+
+    /**
+     * Opens/closes the page inspection window group. This method should
+     * be called from event-dispatch thread only.
+     * 
+     * @param visible determines whether the group should be closed or opened.
+     */
+    private void setPageInspectionGroupVisibleAWT(boolean visible) {
+        WindowManager manager = WindowManager.getDefault();
+        TopComponentGroup group = manager.findTopComponentGroup("webinspect"); // NOI18N
+        if (group == null) {
+            Logger.getLogger(Installer.class.getName()).log(
+                    Level.INFO, "TopComponentGroup webinspect not found!"); // NOI18N
+        } else if (visible) {
+            group.open();
+            TopComponent tc = manager.findTopComponent(ResourcesTC.ID);
+            if (tc == null) {
+                Logger.getLogger(Installer.class.getName()).log(
+                        Level.INFO, "TopComponent {0} not found!", ResourcesTC.ID); // NOI18N
+            } else {
+                tc.requestVisible();
+            }
+        } else {
+            group.close();
+        }        
     }
 
 }
