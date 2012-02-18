@@ -70,6 +70,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -103,6 +108,10 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
+import org.netbeans.spi.search.SearchFilterDefinition;
+import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SubTreeSearchOptions;
+import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -122,9 +131,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -152,7 +158,7 @@ public final class PhpProject implements Project {
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
-    private final FileObjectFilter fileObjectFilter = new PhpFileObjectFilter();
+    private final SearchFilterDefinition fileObjectFilter = new PhpSearchFilterDef();
 
     // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
@@ -242,7 +248,7 @@ public final class PhpProject implements Project {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public FileObjectFilter getFileObjectFilter() {
+    public SearchFilterDefinition getFileObjectFilter() {
         return fileObjectFilter;
     }
 
@@ -751,6 +757,7 @@ public final class PhpProject implements Project {
                 getHelper(),
                 getEvaluator(),
                 PhpSearchInfo.create(this),
+                new PhpSubTreeSearchOptions(),
                 InternalWebServer.createForProject(this),
                 new ProjectWebRootProviderImpl()
                 // ?? getRefHelper()
@@ -1052,19 +1059,19 @@ public final class PhpProject implements Project {
         }
     }
 
-    private static final class PhpSearchInfo implements SearchInfo.Files, PropertyChangeListener {
+    private static final class PhpSearchInfo extends SearchInfoDefinition implements PropertyChangeListener {
 
         private static final Logger LOGGER = Logger.getLogger(PhpSearchInfo.class.getName());
 
         private final PhpProject project;
         // @GuardedBy(this)
-        private SearchInfo.Files delegate = null;
+        private SearchInfo delegate = null;
 
         private PhpSearchInfo(PhpProject project) {
             this.project = project;
         }
 
-        public static SearchInfo create(PhpProject project) {
+        public static SearchInfoDefinition create(PhpProject project) {
             PhpSearchInfo phpSearchInfo = new PhpSearchInfo(project);
             project.getSourceRoots().addPropertyChangeListener(phpSearchInfo);
             project.getTestRoots().addPropertyChangeListener(phpSearchInfo);
@@ -1072,11 +1079,10 @@ public final class PhpProject implements Project {
             return phpSearchInfo;
         }
 
-        private SearchInfo.Files createDelegate() {
-            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(getSearchRoots(), true, new FileObjectFilter[]{project.getFileObjectFilter()});
-            // XXX ugly, see #178634 for more info
-            assert searchInfo instanceof SearchInfo.Files : "Unknown type: " + searchInfo.getClass().getName();
-            return (SearchInfo.Files) searchInfo;
+        private SearchInfo createDelegate() {
+            SearchInfo searchInfo = SearchInfoUtils.createSearchInfoForRoots(
+                    getRoots(), false, project.getFileObjectFilter());
+            return searchInfo;
         }
 
         @Override
@@ -1085,16 +1091,20 @@ public final class PhpProject implements Project {
         }
 
         @Override
-        public synchronized Iterator<DataObject> objectsToSearch() {
-            return getDelegate().objectsToSearch();
+        public Iterator<FileObject> filesToSearch(
+                SearchScopeOptions searchScopeOptions, 
+                SearchListener listener, 
+                TerminationFlag terminationFlag) {
+            return getDelegate().getFilesToSearch(searchScopeOptions, 
+                    listener, terminationFlag);
         }
 
         @Override
-        public Iterator<FileObject> filesToSearch() {
-            return getDelegate().filesToSearch();
+        public List<SearchRoot> getSearchRoots() {
+            return delegate.getSearchRoots();
         }
 
-        private FileObject[] getSearchRoots() {
+        private FileObject[] getRoots() {
             List<FileObject> roots = new LinkedList<FileObject>();
             addRoots(roots, project.getSourceRoots());
             addRoots(roots, project.getTestRoots());
@@ -1136,7 +1146,7 @@ public final class PhpProject implements Project {
         /**
          * @return the delegate
          */
-        private synchronized SearchInfo.Files getDelegate() {
+        private synchronized SearchInfo getDelegate() {
             if (delegate == null) {
                 delegate = createDelegate();
             }
@@ -1144,7 +1154,7 @@ public final class PhpProject implements Project {
         }
     }
 
-    private final class PhpFileObjectFilter implements FileObjectFilter {
+    private final class PhpSearchFilterDef extends SearchFilterDefinition {
 
         @Override
         public boolean searchFile(FileObject file) {
@@ -1155,15 +1165,23 @@ public final class PhpProject implements Project {
         }
 
         @Override
-        public int traverseFolder(FileObject folder) {
+        public FolderResult traverseFolder(FileObject folder) {
             if (!folder.isFolder()) {
                 throw new IllegalArgumentException("Folder expected");
             }
             if (PhpVisibilityQuery.forProject(PhpProject.this).isVisible(folder)) {
-                return TRAVERSE;
+                return FolderResult.TRAVERSE;
             }
-            return DO_NOT_TRAVERSE;
+            return FolderResult.DO_NOT_TRAVERSE;
         }
 
+    }
+
+    private final class PhpSubTreeSearchOptions extends SubTreeSearchOptions {
+
+        @Override
+        public List<SearchFilterDefinition> getFilters() {
+            return Collections.singletonList(getFileObjectFilter());
+        }
     }
 }
