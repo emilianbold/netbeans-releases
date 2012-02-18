@@ -153,6 +153,7 @@ public class RunFindBugs implements Analyzer {
             r.setPriorityThreshold(Integer.MAX_VALUE);
             r.setRankThreshold(Integer.MAX_VALUE);
             engine.setProject(p);
+            engine.setNoClassOk(true);
             engine.setBugReporter(r);
             engine.setUserPreferences(readPreferences(settings));
             engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
