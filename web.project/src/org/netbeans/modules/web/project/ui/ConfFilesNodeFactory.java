@@ -68,6 +68,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ConfigurationFilesListener;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
@@ -80,6 +81,7 @@ import org.netbeans.modules.web.project.ui.DocBaseNodeFactory.VisibilityQueryDat
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -107,9 +109,6 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  *
@@ -182,13 +181,8 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     private static Lookup createLookup(Project project) {
         if (project.getProjectDirectory().isValid()) {
             DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-            SearchInfo searchInfo = SearchInfoFactory.createSearchInfo(
-                                rootFolder.getPrimaryFile(), true,
-                                new FileObjectFilter[] {
-                                        SearchInfoFactory.VISIBILITY_FILTER,
-                                        SearchInfoFactory.SHARABILITY_FILTER}
-            );
-
+            SearchInfoDefinition searchInfo = SearchInfoDefinitionFactory.createSearchInfo(
+                                rootFolder.getPrimaryFile());
             // XXX Remove root folder after FindAction rewrite
             return Lookups.fixed(new Object[]{project, rootFolder, searchInfo});
         } else {
