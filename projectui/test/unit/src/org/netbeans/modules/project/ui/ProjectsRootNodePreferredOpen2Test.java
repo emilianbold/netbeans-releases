@@ -55,7 +55,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
 
 /** 
  *
@@ -92,18 +91,10 @@ public class ProjectsRootNodePreferredOpen2Test extends ProjectsRootNodePreferre
     
     
     private static final class MyTestProjectAdditions
-    implements SearchInfo, LogicalViewProvider {
+            implements LogicalViewProvider {
         private TestProject project;
         public MyTestProjectAdditions(TestProject project) {
             this.project = project;
-        }
-        
-        public boolean canSearch() {
-            return false;
-        }
-
-        public Iterator<DataObject> objectsToSearch() {
-            return Collections.<DataObject>emptyList().iterator();
         }
 
         public Node createLogicalView() {
