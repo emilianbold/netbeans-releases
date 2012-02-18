@@ -58,6 +58,7 @@ Context.prototype.cleanup = function() {
         }
     }
     this.socket = null;
+    this.connectedSuccessfully = false;
     if (this.port) {
         this.port.disconnect();
     }
@@ -71,7 +72,7 @@ Context.prototype.cleanup = function() {
     }
 }
 
-Context.prototype.initSocket = function() {
+Context.prototype.initSocket = function(tabId) {
     var self = this;
     this.socket = new WebSocket("ws://127.0.0.1:8010/");
     this.socket.onerror = function(e) {
@@ -79,7 +80,21 @@ Context.prototype.initSocket = function() {
         console.log(e);
         self.cleanup();
     }
+    this.socket.onopen = function() {
+        self.connectedSuccessfully = true;
+    }
     this.socket.onclose = function() {
+        if (!self.connectedSuccessfully) {
+            var message = 'Unable to connect to NetBeans!';
+            chrome.tabs.executeScript(tabId, {code: "alert('"+message+"');"}, function() {
+                var error = chrome.extension.lastError;
+                if (error) {
+                    // Attempt to show the message in the tab failed for some
+                    // reason => show the message using a standalone dialog
+                    alert(message);
+                }
+            });
+        }
         self.cleanup();
     }
     this.socket.onmessage = function(e) {
@@ -204,7 +219,7 @@ Context.inspectTab = function(info, tab, accessConfirmed) {
             this.currentContext.cleanup();
         }
         this.currentContext = new Context();
-        this.currentContext.initSocket()
+        this.currentContext.initSocket(tab.id)
         this.currentContext.initContentScript(tab.id);
     }
 }
