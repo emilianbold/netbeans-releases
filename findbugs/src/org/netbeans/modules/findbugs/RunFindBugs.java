@@ -50,13 +50,11 @@ import edu.umd.cs.findbugs.FindBugs2;
 import edu.umd.cs.findbugs.Project;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
-import java.awt.Image;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -64,10 +62,8 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
-import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -78,39 +74,17 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author lahvac
  */
-@ServiceProvider(service=Analyzer.class)
-public class RunFindBugs implements Analyzer {
+public class RunFindBugs {
 
-    private static final String PREFIX_FINDBUGS = "findbugs:";
+    public static final String PREFIX_FINDBUGS = "findbugs:";
     private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    @Override
-    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
-        Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        int i = 0;
-
-        ctx.start(sourceRoots.size());
-
-        for (FileObject sr : sourceRoots) {
-            result.addAll(runFindBugs(sr, null));
-            ctx.progress(++i);
-        }
-
-        ctx.finish();
-
-        return result;
-    }
-
     public static List<ErrorDescription> runFindBugs(FileObject sourceRoot, Iterable<? extends String> classNames) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
@@ -190,32 +164,6 @@ public class RunFindBugs implements Analyzer {
         }
 
         return result;
-    }
-
-    @Override
-    @Messages("DN_FindBugs=FindBugs")
-    public String getDisplayName() {
-        return Bundle.DN_FindBugs();
-    }
-
-    @Override
-    public String getDisplayName4Id(String id) {
-        if (!id.startsWith(PREFIX_FINDBUGS)) return null;
-        
-        id = id.substring(PREFIX_FINDBUGS.length());
-
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) return bp.getShortDescription();
-            }
-        }
-
-        return id;
-    }
-
-    @Override
-    public Image getIcon() {
-        return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
     }
 
     private static UserPreferences readPreferences(Preferences settings) {
