@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project;
+package org.netbeans.modules.web.clientproject;
 
 import java.beans.PropertyChangeListener;
 import java.net.URL;
@@ -47,7 +47,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.clientside.project.ui.ClientSideProjectLogicalView;
+import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.modules.web.common.api.browser.BrowserSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.*;
@@ -66,7 +66,7 @@ import org.openide.util.lookup.Lookups;
 
 @AntBasedProjectRegistration(
     type=ClientSideProjectType.TYPE,
-    iconResource="org/netbeans/modules/clientside/project/ui/resources/projecticon.png",
+    iconResource="org/netbeans/modules/web/clientproject/ui/resources/projecticon.png",
     sharedNamespace=ClientSideProjectType.PROJECT_CONFIGURATION_NAMESPACE,
     privateNamespace=ClientSideProjectType.PRIVATE_CONFIGURATION_NAMESPACE
 )

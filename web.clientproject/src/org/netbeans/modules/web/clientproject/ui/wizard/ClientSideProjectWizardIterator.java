@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.ui.wizard;
+package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.Component;
 import java.io.File;
@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.templates.TemplateRegistration;
-import org.netbeans.modules.clientside.project.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -62,7 +62,7 @@ import org.openide.util.NbBundle.Messages;
 
 @TemplateRegistration(folder = "Project/ClientSide", displayName = "#ClientSideProject_displayName", 
         description = "ClientSideProjectDescription.html", 
-        iconBase = "org/netbeans/modules/clientside/project/ui/resources/projecticon.png" )
+        iconBase = "org/netbeans/modules/web/clientproject/ui/resources/projecticon.png" )
 @Messages({"ClientSideProject_displayName=Client Side JavaScript Application",
             "MSG_Progress1=Creating project"})
 public class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {

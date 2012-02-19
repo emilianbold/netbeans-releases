@@ -39,25 +39,73 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project;
+package org.netbeans.modules.web.clientproject;
 
-import java.io.IOException;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ProjectGenerator;
+import java.net.URISyntaxException;
+import java.net.URL;
+import org.netbeans.modules.web.common.api.browser.BrowserSupport;
+import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author david
  */
-public class ClientSideProjectUtilities {
+public class ClientSideProjectActionProvider implements ActionProvider {
 
-    public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
-        AntProjectHelper h = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
-        return h;
+    private ClientSideProject p;
+
+    public ClientSideProjectActionProvider(ClientSideProject p) {
+        this.p = p;
     }
     
+    @Override
+    public String[] getSupportedActions() {
+        return new String[]{
+                    COMMAND_RUN_SINGLE
+                };
+    }
+
+    @Override
+    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
+        FileObject fo = getFile(context);
+        if (fo == null) {
+            return;
+        }
+        browseFile(p.getBrowserSupport(), fo);
+    }
+    
+    private static void browseFile(BrowserSupport bs, FileObject fo) {
+        URL url;
+        String urlString;
+        try {
+            url = fo.toURL();
+            urlString = url.toURI().toString();
+            // XXXXX:
+            urlString = urlString.replaceAll("file:/", "file:///");
+        } catch (URISyntaxException ex) {
+            Exceptions.printStackTrace(ex);
+            return;
+        }
+        bs.load(url, fo);
+    }
+
+    @Override
+    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        if (COMMAND_RUN_SINGLE.equals(command) && isHTMLFile(getFile(context))) {
+            return true;
+        }
+        return false;
+    }
+    
+    private FileObject getFile(Lookup context) {
+        return context.lookup(FileObject.class);
+    }
+    
+    private boolean isHTMLFile(FileObject fo) {
+        return (fo != null && "html".equals(fo.getExt()));
+    }
 }

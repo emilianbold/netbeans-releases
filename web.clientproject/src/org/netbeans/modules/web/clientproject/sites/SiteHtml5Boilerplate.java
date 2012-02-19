@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.sites;
+package org.netbeans.modules.web.clientproject.sites;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
@@ -58,14 +58,14 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name2=Mobile Boilerplate",
-        "LBL_Description2=Site template from html5boilerplate.com/mobile. Version: 3.0"})
+@NbBundle.Messages({"LBL_Name=HTML5 Boilerplate",
+        "LBL_Description=Site template from html5boilerplate.com. Version: 3.0.1"})
 @ServiceProvider(service=SiteTemplateImplementation.class)
-public class SiteMobileBoilerplate implements SiteTemplateImplementation {
+public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
 
     @Override
     public String getName() {
-        return Bundle.LBL_Name2();
+        return Bundle.LBL_Name();
     }
 
     @Override
@@ -83,7 +83,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
             @Override
             public JComponent getComponent() {
                 JPanel p = new JPanel(new BorderLayout());
-                p.add(new JLabel(Bundle.LBL_Description2()), BorderLayout.NORTH);
+                p.add(new JLabel(Bundle.LBL_Description()), BorderLayout.NORTH);
                 return p;
             }
 
@@ -107,7 +107,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     @Override
     public void apply(FileObject p, ProgressHandle handle) {
         try {
-            SiteHelper.install("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", p, handle);
+            SiteHelper.install("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", p, handle);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable ex) {
