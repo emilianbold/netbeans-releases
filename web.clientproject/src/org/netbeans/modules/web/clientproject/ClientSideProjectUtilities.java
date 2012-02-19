@@ -39,89 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.ui.wizard;
+package org.netbeans.modules.web.clientproject;
 
-import java.awt.Component;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressHandle;
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
+import java.io.IOException;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 /**
  *
+ * @author david
  */
-public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+public class ClientSideProjectUtilities {
 
-    private SiteTemplateWizard component;
-    private WizardDescriptor wizardDescriptor;
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
-
-    @Override
-    public Component getComponent() {
-        if (component == null) {
-            component = new SiteTemplateWizard(this);
-            component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
-        }
-        return component;
-    }
-
-    @Override
-    public HelpCtx getHelp() {
-        return new HelpCtx(SiteTemplateWizard.class);
-    }
-
-    @Override
-    public void readSettings(Object settings) {
-        wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
-    }
-
-    @Override
-    public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
-    }
-
-    @Override
-    public boolean isValid() {
-        getComponent();
-        return component.valid(wizardDescriptor);
-    }
-
-    @Override
-    public void addChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    protected final void fireChangeEvent() {
-        changeSupport.fireChange();
+    public static AntProjectHelper setupProject(FileObject dirFO, String name) throws IOException {
+        AntProjectHelper h = ProjectGenerator.createProject(dirFO, ClientSideProjectType.TYPE);
+        return h;
     }
     
-    @Override
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
-
-    @Override
-    public boolean isFinishPanel() {
-        return true;
-    }
-    
-    public void apply(FileObject p, ProgressHandle handle) {
-        if (component != null) {
-            component.apply(p, handle);
-        }
-    }
 }

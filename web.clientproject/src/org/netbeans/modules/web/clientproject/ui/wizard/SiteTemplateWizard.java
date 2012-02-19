@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.ui.wizard;
+package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;

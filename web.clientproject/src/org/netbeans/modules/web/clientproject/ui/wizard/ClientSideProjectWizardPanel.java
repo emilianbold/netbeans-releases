@@ -39,12 +39,74 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project;
+package org.netbeans.modules.web.clientproject.ui.wizard;
 
-public class ClientSideProjectType {
-    
-    public static final String TYPE = "org.netbeans.modules.clientside.project"; // NOI18N
-    public static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/clientside-project/1"; // NOI18N
-    static final String PRIVATE_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/clientside-project-private/1"; // NOI18N
-    
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
+
+/**
+ * Panel just asking for basic info.
+ */
+public class ClientSideProjectWizardPanel implements WizardDescriptor.Panel,
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+
+    private WizardDescriptor wizardDescriptor;
+    private ClientSideProjectPanelVisual component;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    public ClientSideProjectWizardPanel() {
+    }
+
+    public Component getComponent() {
+        if (component == null) {
+            component = new ClientSideProjectPanelVisual(this);
+            component.setName(NbBundle.getMessage(ClientSideProjectWizardPanel.class, "LBL_CreateProjectStep"));
+        }
+        return component;
+    }
+
+    public HelpCtx getHelp() {
+        return new HelpCtx(ClientSideProjectWizardPanel.class);
+    }
+
+    public boolean isValid() {
+        getComponent();
+        return component.valid(wizardDescriptor);
+    }
+
+    public final void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public final void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    protected final void fireChangeEvent() {
+        changeSupport.fireChange();
+    }
+
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read(wizardDescriptor);
+    }
+
+    public void storeSettings(Object settings) {
+        WizardDescriptor d = (WizardDescriptor) settings;
+        component.store(d);
+    }
+
+    public boolean isFinishPanel() {
+        return true;
+    }
+
+    public void validate() throws WizardValidationException {
+        getComponent();
+        component.validate(wizardDescriptor);
+    }
 }

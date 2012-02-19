@@ -39,76 +39,89 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project;
+package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.net.URISyntaxException;
-import java.net.URL;
-import org.netbeans.modules.web.common.api.browser.BrowserSupport;
-import org.netbeans.spi.project.ActionProvider;
+import java.awt.Component;
+import javax.swing.event.ChangeListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
+import org.openide.util.ChangeSupport;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author david
  */
-public class ClientSideProjectActionProvider implements ActionProvider {
+public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
+        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
-    private ClientSideProject p;
-
-    public ClientSideProjectActionProvider(ClientSideProject p) {
-        this.p = p;
-    }
+    private SiteTemplateWizard component;
+    private WizardDescriptor wizardDescriptor;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_RUN_SINGLE
-                };
-    }
 
     @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        FileObject fo = getFile(context);
-        if (fo == null) {
-            return;
+    public Component getComponent() {
+        if (component == null) {
+            component = new SiteTemplateWizard(this);
+            component.setName(NbBundle.getMessage(SiteTemplateWizard.class, "LBL_ChooseSiteStep"));
         }
-        browseFile(p.getBrowserSupport(), fo);
-    }
-    
-    private static void browseFile(BrowserSupport bs, FileObject fo) {
-        URL url;
-        String urlString;
-        try {
-            url = fo.getURL();
-            urlString = url.toURI().toString();
-            // XXXXX:
-            urlString = urlString.replaceAll("file:/", "file:///");
-        } catch (URISyntaxException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-            return;
-        }
-        bs.load(url, fo);
+        return component;
     }
 
     @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        if (COMMAND_RUN_SINGLE.equals(command) && isHTMLFile(getFile(context))) {
-            return true;
+    public HelpCtx getHelp() {
+        return new HelpCtx(SiteTemplateWizard.class);
+    }
+
+    @Override
+    public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        component.read(wizardDescriptor);
+    }
+
+    @Override
+    public void storeSettings(Object settings) {
+        WizardDescriptor d = (WizardDescriptor) settings;
+        component.store(d);
+    }
+
+    @Override
+    public boolean isValid() {
+        getComponent();
+        return component.valid(wizardDescriptor);
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    protected final void fireChangeEvent() {
+        changeSupport.fireChange();
+    }
+    
+    @Override
+    public void validate() throws WizardValidationException {
+        getComponent();
+        component.validate(wizardDescriptor);
+    }
+
+    @Override
+    public boolean isFinishPanel() {
+        return true;
+    }
+    
+    public void apply(FileObject p, ProgressHandle handle) {
+        if (component != null) {
+            component.apply(p, handle);
         }
-        return false;
-    }
-    
-    private FileObject getFile(Lookup context) {
-        return context.lookup(FileObject.class);
-    }
-    
-    private boolean isHTMLFile(FileObject fo) {
-        return (fo != null && "html".equals(fo.getExt()));
     }
 }

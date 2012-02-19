@@ -47,22 +47,27 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 
 /**
- * Single opened browser tab.
+ * Single opened browser tab. Methods on this class can be called from any thread
+ * and opening browser URL or reloading a document will be re-posted into AWT
+ * thread as necessary.
  */
 public final class WebBrowserPane {
 
     private HtmlBrowser.Impl impl;
+    private HtmlBrowser.Factory fact;
     private final List<WebBrowserPaneListener> listeners = 
         new CopyOnWriteArrayList<WebBrowserPaneListener>();
     private PropertyChangeListener listener;
     private boolean embedded;
     private HtmlBrowserComponent topComponent;
     private boolean wrapEmbeddedBrowserInTopComponent;
+    private boolean createTopComponent = false;
     
 //    WebBrowserPane(HtmlBrowserComponent comp) {
 //        this(comp.getBrowserImpl(), null, false, comp);
@@ -78,6 +83,7 @@ public final class WebBrowserPane {
             boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
     {
         this.impl = impl;
+        this.fact = fact;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
         listener = new PropertyChangeListener() {
             @Override
@@ -98,9 +104,19 @@ public final class WebBrowserPane {
             topComponent = comp;
         } else {
             if (isEmbedded() && wrapEmbeddedBrowserInTopComponent) {
-                topComponent = new HtmlBrowserComponent(fact, false, false);
+                // this needs to happen in AWT thread so let's do it later
+                createTopComponent = true;
             }
         }
+    }
+    
+    private synchronized HtmlBrowserComponent getTopComponent() {
+        if (topComponent == null && createTopComponent) {
+            // below constructor sets some TopComponent properties and needs
+            // to be therefore called in AWT thread:
+            topComponent = new HtmlBrowserComponent(fact, false, false);
+        }
+        return topComponent;
     }
 
     /**
@@ -145,11 +161,22 @@ public final class WebBrowserPane {
      * opening an additional browser window. Can be guaranteed only when NetBeans
      * plugins for external browsers are used or in case of embedded browser.
      */
-    public void showURL(URL u) {
-        if (topComponent != null) {
-            topComponent.setURLAndOpen(u);
+    public void showURL(final URL u) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                HtmlBrowserComponent comp = getTopComponent();
+                if (comp != null) {
+                    comp.setURLAndOpen(u);
+                } else {
+                    impl.setURL(u);
+                }
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
         } else {
-            impl.setURL(u);
+            SwingUtilities.invokeLater(r);
         }
     }
 
@@ -158,7 +185,17 @@ public final class WebBrowserPane {
      * when NetBeans plugins for external browsers are used or in case of embedded browser.
      */
     public void reload() {
-        impl.reloadDocument();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                impl.reloadDocument();
+            }
+        };
+        if (SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     /**

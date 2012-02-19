@@ -39,11 +39,11 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.ui;
+package org.netbeans.modules.web.clientproject.ui;
 
 import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.clientside.project.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
@@ -124,7 +124,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Image getIcon(int type) {
-            return ImageUtilities.loadImage("org/netbeans/modules/clientside/project/ui/resources/projecticon.png");
+            return ImageUtilities.loadImage("org/netbeans/modules/web/clientproject/ui/resources/projecticon.png");
         }
 
         @Override

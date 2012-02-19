@@ -39,10 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.clientside.project.sites;
+package org.netbeans.modules.web.clientproject.sites;
 
+import java.awt.BorderLayout;
 import java.io.IOException;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateCustomizer;
@@ -55,81 +58,60 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name_Initializr=Initializr"
-        })
+@NbBundle.Messages({"LBL_Name2=Mobile Boilerplate",
+        "LBL_Description2=Site template from html5boilerplate.com/mobile. Version: 3.0"})
 @ServiceProvider(service=SiteTemplateImplementation.class)
-public class SiteInitializr implements SiteTemplateImplementation {
+public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
-    private SiteTemplateCustomizerImpl customizer = new SiteTemplateCustomizerImpl();
-    
     @Override
     public String getName() {
-        return Bundle.LBL_Name_Initializr();
+        return Bundle.LBL_Name2();
     }
 
     @Override
     public SiteTemplateCustomizer getCustomizer() {
-        return customizer;
+        return new SiteTemplateCustomizer() {
+
+            @Override
+            public void addChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public void removeChangeListener(ChangeListener listener) {
+            }
+
+            @Override
+            public JComponent getComponent() {
+                JPanel p = new JPanel(new BorderLayout());
+                p.add(new JLabel(Bundle.LBL_Description2()), BorderLayout.NORTH);
+                return p;
+            }
+
+            @Override
+            public boolean isValid() {
+                return true;
+            }
+
+            @Override
+            public String getErrorMessage() {
+                return null;
+            }
+
+            @Override
+            public String getWarningMessage() {
+                return null;
+            }
+        };
     }
 
     @Override
     public void apply(FileObject p, ProgressHandle handle) {
         try {
-            SiteHelper.install(customizer.getURL(), p, handle);
+            SiteHelper.install("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", p, handle);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable ex) {
             Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private static class SiteTemplateCustomizerImpl implements SiteTemplateCustomizer {
-
-        private SiteInitializrPanel panel;
-        
-        public SiteTemplateCustomizerImpl() {
-        }
-
-        @Override
-        public void addChangeListener(ChangeListener listener) {
-        }
-
-        @Override
-        public void removeChangeListener(ChangeListener listener) {
-        }
-
-        @Override
-        public JComponent getComponent() {
-            if (panel == null) {
-                panel = new SiteInitializrPanel();
-            }
-            return panel;
-        }
-
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @Override
-        public String getErrorMessage() {
-            return null;
-        }
-
-        @Override
-        public String getWarningMessage() {
-            return null;
-        }
-        
-        public String getURL() {
-            if (panel.getUserChoice() == SiteInitializrPanel.Type.Classic) {
-                return "http://www.initializr.com/builder?h5bp-content&modernizr&h5bp-htaccess&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries";
-            }
-            if (panel.getUserChoice() == SiteInitializrPanel.Type.Reponsive) {
-                return "http://www.initializr.com/builder?izr-responsive&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript";
-            }
-            // Bootstrap:
-            return "http://www.initializr.com/builder?mode=less&boot-hero&jquerymin&h5bp-chromeframe&h5bp-analytics&h5bp-iecond&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts";
         }
     }
     
