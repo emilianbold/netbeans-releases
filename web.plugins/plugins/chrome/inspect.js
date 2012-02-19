@@ -58,7 +58,6 @@ Context.prototype.cleanup = function() {
         }
     }
     this.socket = null;
-    this.connectedSuccessfully = false;
     if (this.port) {
         this.port.disconnect();
     }
