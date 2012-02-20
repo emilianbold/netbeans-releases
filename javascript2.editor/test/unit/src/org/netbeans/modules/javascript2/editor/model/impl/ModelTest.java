@@ -493,6 +493,35 @@ public class ModelTest extends JsTestBase {
         
     }
     
+    public void testPropertyWithNew() throws Exception {
+        Model model = getModel("testfiles/model/propertyWithNew.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        
+        JsObject object = global.getProperty("view");
+        assertEquals(JsElement.Kind.VARIABLE, object.getJSKind());
+        
+        object = global.getProperty("Anonym$0");
+        assertEquals(JsElement.Kind.ANONYMOUS_OBJECT, object.getJSKind());
+        
+        JsObject property = object.getProperty("model");
+        Collection<? extends TypeUsage> types = property.getAssignmentForOffset(property.getDeclarationName().getOffsetRange().getEnd());
+        Iterator<? extends TypeUsage> iterator = types.iterator();
+        assertEquals(1, types.size());
+        
+//        JsFunction function = (JsFunction)object.getProperty("createAddress");
+//        assertEquals(2, function.getModifiers().size());
+//        assertTrue(function.getModifiers().contains(Modifier.STATIC));
+//        assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
+//        assertEquals(JsElement.Kind.METHOD, function.getJSKind());
+//        assertEquals(1, function.getReturnTypes().size());
+//        Iterator<? extends TypeUsage> iterator = function.getReturnTypes().iterator();
+//        TypeUsage type = iterator.next();
+//        assertEquals("Man.Address", type.getType());
+        
+    }
+    
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

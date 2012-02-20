@@ -510,8 +510,10 @@ public class ModelVisitor extends PathNodeVisitor {
     public Node visit(UnaryNode unaryNode, boolean onset) {
         if (onset) {
             if (Token.descType(unaryNode.getToken()) == TokenType.NEW) {
+                Node lastNode = getPath().get(getPath().size() -1);
                 if (unaryNode.rhs() instanceof CallNode
-                        && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode) {
+                        && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode
+                        && !(lastNode instanceof PropertyNode)) {
                     Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(unaryNode);
                     for (TypeUsage type : types) {
                         modelBuilder.getCurrentObject().addAssignment(type, unaryNode.getStart());
