@@ -266,8 +266,12 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleVirtualBlock(Block block) {
-        assert block.getStart() == block.getFinish() && block.getStatements().size() == 1;
-        
+        assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
+
+        if (block.getStatements().isEmpty()) {
+            return;
+        }
+
         Node statement = block.getStatements().get(0);
 
         handleBlockContent(block);
