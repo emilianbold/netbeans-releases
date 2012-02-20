@@ -43,10 +43,10 @@
 package org.netbeans.modules.groovy.editor.api.completion;
 
 import java.util.Map;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -98,6 +98,16 @@ public class NewVarsCCTest extends GroovyTestBase {
         checkCompletion(BASE + "Identifier3.groovy", "StringBuffer ^", false);
     }
 
+    // test field suggestions
+
+    public void testCompletionField1_1() throws Exception {
+        checkCompletion(BASE + "FieldCompletion.groovy", "    Identifier4 i^", false);
+    }
+
+    public void testCompletionField1_2() throws Exception {
+        checkCompletion(BASE + "FieldCompletion.groovy", "    String ^", false);
+    }
+
     // test primitve type suggestions
 
     public void testPrimitive1() throws Exception {
@@ -131,6 +141,4 @@ public class NewVarsCCTest extends GroovyTestBase {
     public void testPrimitive8() throws Exception {
         checkCompletion(BASE + "Primitive1.groovy", "short ^", false);
     }
-
-
 }

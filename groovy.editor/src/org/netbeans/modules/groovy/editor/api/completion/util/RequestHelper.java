@@ -527,6 +527,21 @@ public final class RequestHelper {
         }
     }
 
+    public static boolean isFieldDefinitionLine(CompletionRequest request) {
+        LOG.log(Level.FINEST, "isFieldDefinitionLine()"); //NOI18N
+        CompletionContext ctx = request.ctx;
+
+        if (ctx == null || ctx.before1 == null) {
+            return false;
+        }
+
+        ASTNode node = getASTNodeForToken(ctx.before1, request);
+        if (node != null && (node instanceof PropertyNode || node instanceof ClassNode)) {
+            return true;
+        }
+        return false;
+    }
+
     private static ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request) {
         LOG.log(Level.FINEST, "getASTNodeForToken()"); //NOI18N
         TokenHierarchy<Document> th = TokenHierarchy.get((Document) request.doc);

@@ -68,6 +68,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -167,7 +168,9 @@ public class CompletionHandler implements CodeCompletionHandler {
             int anchor = lexOffset - prefix.length();
             ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
 
-            if (RequestHelper.isVariableDefinitionLine(request) == false) {
+            if (RequestHelper.isVariableDefinitionLine(request) || RequestHelper.isFieldDefinitionLine(request)) {
+                proposalsCollector.completeNewVars(request);
+            } else {
                 if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {
                     proposalsCollector.completePackages(request);
                     proposalsCollector.completeTypes(request);
@@ -182,8 +185,6 @@ public class CompletionHandler implements CodeCompletionHandler {
                     proposalsCollector.completeFields(request);
                     proposalsCollector.completeLocalVars(request);
                 }
-            } else {
-                proposalsCollector.completeNewVars(request);
             }
             proposalsCollector.completeCamelCase(request);
 
