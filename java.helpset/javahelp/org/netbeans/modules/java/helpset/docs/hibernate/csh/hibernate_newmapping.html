@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Hibernate Mapping Wizard: Select Mapping Class</title> 
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Hibernate Mapping Wizard: Select Mapping Class</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The Hibernate Mapping wizard generates a single mapping file for a specified class.
+            After you create the mapping file you need to edit the mapping file 
+            in the XML editor to map the fields in the class to the corresponding columns in the table.
+            You can use the IDE's code completion feature to help you edit the mapping file.</p>
+
+        <p>The Select Mapping Class page of the wizard enables you to specify the class
+            that you want to map, the Hibernate configuration file and the table that you want 
+            to map to the class.</p>
+        
+        <ul class="note">
+            <li>You must have the following to complete this wizard.
+            <ul>
+                <li>Database connection for the 
+                database that is registered with the IDE (database must be running).</li>
+                <li>Hibernate configuration file that is named <tt>hibernate.cfg.xml</tt>.</li>
+            </ul>
+            </li>
+        </ul>
+        
+        <p>In this page you specify the following details:</p>
+        <ul>
+            <li><strong>Class to Map.</strong>
+            Type the name of the class you want to map or click the Browse button to locate the class.
+            </li>
+            <li><strong>Configuration File.</strong>
+                Select the <tt>hibernate.cfg.xml</tt> configuration file in the dropdown list 
+                (if not already selected).
+                
+            </li>
+            <li><strong>Database Table.</strong> Select the database table that you want to map to the selected class.</li>
+        </ul>
+        
+        <p>When you click Finish, the IDE generates the mapping file
+            and adds the <tt>&lt;mapping resource&gt;</tt> element to the <tt>hibernate.cfg.xml</tt> configuration file.
+        </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../hibernate_fromdb.html">Generating Hibernate Mapping Files and POJOs from a Database</a> </dd>
+            <dd><a href="../hibernate_workingwith.html">Working with Hibernate</a> </dd>
+            <dd><a href="../hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="../hibernate_about.html">About Hibernate Support</a> </dd>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>
