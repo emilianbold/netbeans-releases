@@ -54,12 +54,12 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
-import org.openide.util.Parameters;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
@@ -276,8 +276,17 @@ class CompatibilityUtils {
             return legacyToCurrentSearchInfo(legacySearchInfo);
         }
         Project p = node.getLookup().lookup(Project.class);
-        if (p != null && !hasAncestorProjectNode(node.getParentNode())) {
-            return AbstractProjectSearchScope.createDefaultProjectSearchInfo(p);
+        Project ancestorProject = findAncestorProjectNode(node.getParentNode());
+        if (p != null && ancestorProject == null) { // project node
+            return AbstractProjectSearchScope.createSingleProjectSearchInfo(p);
+        }
+        if (ancestorProject != null) {
+            org.netbeans.api.search.provider.SearchInfo subTreeSearchInfo;
+            subTreeSearchInfo = findSearchInfoForProjectSubTree(
+                    ancestorProject, node);
+            if (subTreeSearchInfo != null) {
+                return subTreeSearchInfo;
+            }
         }
         return SearchInfoUtils.getSearchInfoForNode(node);
     }
@@ -285,15 +294,15 @@ class CompatibilityUtils {
     /**
      * Check whether there is a project node among ancestors of a node.
      */
-    private static boolean hasAncestorProjectNode(Node node) {
+    private static Project findAncestorProjectNode(Node node) {
         if (node == null) {
-            return false;
+            return null;
         }
         Project p = node.getLookup().lookup(Project.class);
         if (p != null) {
-            return true;
+            return p;
         } else {
-            return hasAncestorProjectNode(node.getParentNode());
+            return findAncestorProjectNode(node.getParentNode());
         }
     }
 
@@ -303,5 +312,39 @@ class CompatibilityUtils {
     private static org.netbeans.api.search.provider.SearchInfo legacyToCurrentSearchInfo(SearchInfo legacyInfo) {
         return SearchInfoUtils.createForDefinition(
                 new WrappingSearchInfoDefinition(legacyInfo));
+    }
+
+    /**
+     * Create search info for a node that is under a project node, if the
+     * project lookup contains SubTreeSearchOptions instance.
+     *
+     * @return SearchInfo for the node if ancestor project defines
+     * SubTreeSearchOptions and a file object for the node can be found, null
+     * otherwise.
+     */
+    private static org.netbeans.api.search.provider.SearchInfo findSearchInfoForProjectSubTree(
+            Project ancestorProject, Node node) {
+        SubTreeSearchOptions stso;
+        stso = ancestorProject.getLookup().lookup(
+                SubTreeSearchOptions.class);
+        DataObject dob = node.getLookup().lookup(DataObject.class);
+        if (stso != null && dob != null && dob.getPrimaryFile() != null) {
+            return SearchInfoUtils.createSearchInfoForRoots(
+                    new FileObject[]{dob.getPrimaryFile()},
+                    false, subTreeFilters(stso));
+        }
+        return null;
+    }
+
+    /**
+     * Create an array of search filter definition for filters from a
+     * SubTreeSearchOptions instance.
+     */
+    static SearchFilterDefinition[] subTreeFilters(SubTreeSearchOptions subTreeSearchOptions) {
+        assert subTreeSearchOptions != null;
+        List<SearchFilterDefinition> list = subTreeSearchOptions.getFilters();
+        SearchFilterDefinition[] array = list.toArray(
+                new SearchFilterDefinition[list.size()]);
+        return array;
     }
 }

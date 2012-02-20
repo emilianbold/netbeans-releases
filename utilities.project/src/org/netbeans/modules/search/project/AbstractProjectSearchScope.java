@@ -56,6 +56,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.spi.search.SearchScopeDefinition;
+import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.WeakListeners;
@@ -95,7 +96,7 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
         }
     }
     
-    protected SearchInfo createSingleProjectSearchInfo(Project project) {
+    static SearchInfo createSingleProjectSearchInfo(Project project) {
 
         SearchInfo prjSearchInfo = CompatibilityUtils.getSearchInfoForLookup(
                 project.getLookup());
@@ -130,6 +131,13 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
         for (int i = 0; i < roots.size(); i++) {
             rootArray[i] = roots.get(i);
         }
-        return SearchInfoUtils.createSearchInfoForRoots(rootArray);
+        SubTreeSearchOptions stso =
+                project.getLookup().lookup(SubTreeSearchOptions.class);
+        if (stso == null) {
+            return SearchInfoUtils.createSearchInfoForRoots(rootArray);
+        } else {
+            return SearchInfoUtils.createSearchInfoForRoots(rootArray, false,
+                    CompatibilityUtils.subTreeFilters(stso));
+        }
     }
 }
