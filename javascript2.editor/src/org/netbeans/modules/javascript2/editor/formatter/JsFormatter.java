@@ -199,7 +199,8 @@ public class JsFormatter implements Formatter {
         FormatToken next = token.next();
         if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                || next.getKind() == FormatToken.Kind.AFTER_CASE) {
+                || next.getKind() == FormatToken.Kind.AFTER_CASE
+                || next.getKind() == FormatToken.Kind.INDENTATION_INC) {
             return false;
         }
 
@@ -221,7 +222,8 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.TEXT
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
-                    || kind == FormatToken.Kind.AFTER_CASE) {
+                    || kind == FormatToken.Kind.AFTER_CASE
+                    || kind == FormatToken.Kind.INDENTATION_INC) {
                 result = previous;
                 break;
             }
@@ -230,7 +232,8 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.SOURCE_START
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
-                || result.getKind() == FormatToken.Kind.AFTER_CASE) {
+                || result.getKind() == FormatToken.Kind.AFTER_CASE
+                || result.getKind() == FormatToken.Kind.INDENTATION_INC) {
             return false;
         }
 

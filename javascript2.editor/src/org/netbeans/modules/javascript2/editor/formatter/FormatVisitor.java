@@ -247,15 +247,18 @@ public class FormatVisitor extends NodeVisitor {
         Node statement = block.getStatements().get(0);
 
         // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(statement), null);
-        if (formatToken != null && !isScript(block)) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+        Token token = getPreviousNonEmptyToken(getStart(statement));
+        if (token != null) {
+            FormatToken formatToken = tokenStream.getToken(ts.offset());
+            if (formatToken != null && !isScript(block)) {
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+            }
         }
 
         handleBlockContent(block);
 
         // put indentation mark after non white token
-        formatToken = getPreviousToken(getFinish(statement), null);
+        FormatToken formatToken = getPreviousToken(getFinish(statement), null);
         if (formatToken != null && !isScript(block)) {
             formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
@@ -356,6 +359,26 @@ public class FormatVisitor extends NodeVisitor {
 
         Token ret = null;
         while (ts.moveNext()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
+                break;
+            }
+        }
+        return ret;
+    }
+
+    private Token getPreviousNonEmptyToken(int offset) {
+        ts.move(offset);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
+        Token ret = null;
+        while (ts.movePrevious()) {
             Token token = ts.token();
             if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
                 && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
