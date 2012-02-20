@@ -79,7 +79,7 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         
         protected FileOperationsImpl(FileSystem fs) {
             super(fs);
-            assert (assertIt = true);
+//            assert (assertIt = true);
         }
 
         @Override
