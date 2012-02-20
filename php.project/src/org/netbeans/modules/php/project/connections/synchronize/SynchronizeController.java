@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.synchronize;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -54,10 +55,12 @@ public final class SynchronizeController {
     static final RequestProcessor SYNCHRONIZE_RP = new RequestProcessor("Remote Synchronization", 1); // NOI18N
 
     final PhpProject phpProject;
+    final RemoteClient remoteClient;
 
 
-    public SynchronizeController(PhpProject phpProject) {
+    public SynchronizeController(PhpProject phpProject, RemoteClient remoteClient) {
         this.phpProject = phpProject;
+        this.remoteClient = remoteClient;
     }
 
     public void synchronize() {
@@ -69,14 +72,14 @@ public final class SynchronizeController {
         });
     }
 
-    List<Object> fetchFiles() {
+    List<FileItem> fetchFiles() {
         assert !SwingUtilities.isEventDispatchThread();
         System.out.println("--------------- fetching...");
         //FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
         return null;
     }
 
-    void showPanel(final List<Object> files) {
+    void showPanel(final List<FileItem> files) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -91,7 +94,7 @@ public final class SynchronizeController {
         });
     }
 
-    void doSynchronize(final List<Object> files) {
+    void doSynchronize(final List<FileItem> files) {
         SYNCHRONIZE_RP.post(new Runnable() {
             @Override
             public void run() {

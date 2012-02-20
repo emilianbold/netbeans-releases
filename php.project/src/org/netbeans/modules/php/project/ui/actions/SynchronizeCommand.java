@@ -42,10 +42,13 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController;
+import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.windows.InputOutput;
 
 /**
  * Synchronize remote and local files
@@ -87,7 +90,9 @@ public class SynchronizeCommand extends RemoteCommand implements Displayable {
     }
 
     void synchronize() {
-        new SynchronizeController(getProject()).synchronize();
+        InputOutput remoteLog = getRemoteLog(RunConfigRemote.forProject(getProject()).getRemoteConfiguration().getDisplayName());
+        RemoteClient remoteClient = getRemoteClient(remoteLog);
+        new SynchronizeController(getProject(), remoteClient).synchronize();
     }
 
 }
