@@ -95,13 +95,41 @@ public class Nodes {
         if (!byCategory) {
             return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors, BY_FILE)));
         } else {
-            Map<String, Map<Analyzer, List<ErrorDescription>>> byId = sortErrors(errors, BY_ID);
-            List<Node> categoryNodes = new ArrayList<Node>(byId.size());
+            Map<String, Map<Analyzer, List<ErrorDescription>>> byCategoryId = sortErrors(errors, BY_CATEGORY);
+            List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
 
-            for (Entry<String, Map<Analyzer, List<ErrorDescription>>> e : byId.entrySet()) {
-                Analyzer analyzer = e.getValue().keySet().iterator().next();
+            for (Entry<String, Map<Analyzer, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
+                Map<String, Map<Analyzer, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
+                List<Node> warningTypNodes = new ArrayList<Node>(byId.size());
+
+                for (Entry<String, Map<Analyzer, List<ErrorDescription>>> typeEntry : byId.entrySet()) {
+                    Analyzer analyzer = typeEntry.getValue().keySet().iterator().next();
+                    final Image icon = analyzer.getIcon();
+                    AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE))) {
+                        @Override public Image getIcon(int type) {
+                            return icon;
+                        }
+                        @Override public Image getOpenedIcon(int type) {
+                            return icon;
+                        }
+                    };
+
+                    String typeDisplayName = typeEntry.getKey() != null ? analyzer.getDisplayName4Id(typeEntry.getKey()) : null;
+
+                    typeNode.setDisplayName(typeDisplayName != null ? typeDisplayName : "Unknown");
+
+                    warningTypNodes.add(typeNode);
+                }
+                
+                Collections.sort(warningTypNodes, new Comparator<Node>() {
+                    @Override public int compare(Node o1, Node o2) {
+                        return o1.getDisplayName().compareTo(o2.getDisplayName());
+                    }
+                });
+
+                Analyzer analyzer = categoryEntry.getValue().keySet().iterator().next();//TODO: multiple Analyzers for this category
                 final Image icon = analyzer.getIcon();
-                AbstractNode categoryNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(e.getValue(), BY_FILE))) {
+                AbstractNode categoryNode = new AbstractNode(new DirectChildren(warningTypNodes)) {
                     @Override public Image getIcon(int type) {
                         return icon;
                     }
@@ -109,10 +137,8 @@ public class Nodes {
                         return icon;
                     }
                 };
-                
-                String categoryDisplayName = e.getKey() != null ? analyzer.getDisplayName4Id(e.getKey()) : null;
 
-                categoryNode.setDisplayName(categoryDisplayName != null ? categoryDisplayName : "Unknown");
+                categoryNode.setDisplayName(categoryEntry.getKey());
 
                 categoryNodes.add(categoryNode);
             }
@@ -132,7 +158,7 @@ public class Nodes {
 
         for (Entry<Analyzer, List<ErrorDescription>> e : errs.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
-                A attribute = attributeRetriever.getAttribute(ed);
+                A attribute = attributeRetriever.getAttribute(e.getKey(), ed);
                 Map<Analyzer, List<ErrorDescription>> errorsPerAttributeValue = sorted.get(attribute);
 
                 if (errorsPerAttributeValue == null) {
@@ -153,18 +179,30 @@ public class Nodes {
     }
 
     private static interface AttributeRetriever<A> {
-        public A getAttribute(ErrorDescription ed);
+        public A getAttribute(Analyzer a, ErrorDescription ed);
     }
 
     private static final AttributeRetriever<FileObject> BY_FILE = new AttributeRetriever<FileObject>() {
-        @Override public FileObject getAttribute(ErrorDescription ed) {
+        @Override public FileObject getAttribute(Analyzer a, ErrorDescription ed) {
             return ed.getFile();
         }
     };
 
     private static final AttributeRetriever<String> BY_ID = new AttributeRetriever<String>() {
-        @Override public String getAttribute(ErrorDescription ed) {
+        @Override public String getAttribute(Analyzer a, ErrorDescription ed) {
             return ed.getId();
+        }
+    };
+
+    private static final AttributeRetriever<String> BY_CATEGORY = new AttributeRetriever<String>() {
+        @Override public String getAttribute(Analyzer a, ErrorDescription ed) {
+            String id = ed.getId();
+
+            if (id == null) {
+                Logger.getLogger(Nodes.class.getName()).log(Level.FINE, "No ID for: {0}", ed.toString());
+                return "Unknown";
+            }
+            return a.getDisplayName4Id(a.getCategoryId4WarningId(id));
         }
     };
 

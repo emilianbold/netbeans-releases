@@ -56,6 +56,7 @@ public interface Analyzer {
     public Iterable<? extends ErrorDescription> analyze(Context context);
     public String getDisplayName();
     public String getDisplayName4Id(String id);
+    public String getCategoryId4WarningId(String id);
     public Image  getIcon();
 
     public static final class Context {

@@ -92,9 +92,14 @@ public class AnalyzerImpl implements Analyzer {
         
         id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
 
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
+        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+
+        for (DetectorFactory df : dfc.getFactories()) {
             for (BugPattern bp : df.getReportedBugPatterns()) {
                 if (id.equals(bp.getType())) return bp.getShortDescription();
+                if (id.equals(bp.getCategory())) {
+                    return dfc.getBugCategory(id).getShortDescription();
+                }
             }
         }
 
@@ -104,6 +109,21 @@ public class AnalyzerImpl implements Analyzer {
     @Override
     public Image getIcon() {
         return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
+    }
+
+    @Override
+    public String getCategoryId4WarningId(String id) {
+        if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
+
+        id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
+
+        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
+            for (BugPattern bp : df.getReportedBugPatterns()) {
+                if (id.equals(bp.getType())) return RunFindBugs.PREFIX_FINDBUGS + bp.getCategory();
+            }
+        }
+
+        return RunFindBugs.PREFIX_FINDBUGS + id;
     }
 
 }
