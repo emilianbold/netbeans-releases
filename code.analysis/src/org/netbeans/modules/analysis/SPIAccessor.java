@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.analysis;
 
-import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -63,6 +63,6 @@ public abstract class SPIAccessor {
         }
     }
 
-    public abstract Context createContext(Scope scope, ProgressContributor progress);
+    public abstract Context createContext(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize);
     
 }

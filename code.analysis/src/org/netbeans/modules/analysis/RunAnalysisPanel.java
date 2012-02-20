@@ -42,10 +42,17 @@
 package org.netbeans.modules.analysis;
 
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.GridBagConstraints;
+import java.util.Collection;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
 import javax.swing.JPanel;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.analysis.spi.Analyzer;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -53,10 +60,20 @@ import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
  */
 public class RunAnalysisPanel extends javax.swing.JPanel {
     
-    private JPanel progress;
+    private final JPanel progress;
+    private final DefaultComboBoxModel configurationModel;
 
-    public RunAnalysisPanel(AggregateProgressHandle handle) {
+    public RunAnalysisPanel(ProgressHandle handle, Collection<? extends Analyzer> analyzers) {
+        configurationModel = new DefaultComboBoxModel();
+        configurationModel.addElement(null);
+
+        for (Analyzer analyzer : analyzers) {
+            configurationModel.addElement(analyzer);
+        }
+        
         initComponents();
+
+        configurationCombo.setRenderer(new ConfigurationRenderer());
 
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 
@@ -70,7 +87,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         progress = new JPanel(new CardLayout());
         progress.add(new JPanel(), "empty");
-        progress.add(AggregateProgressFactory.createProgressComponent(handle), "progress");
+        progress.add(ProgressHandleFactory.createProgressComponent(handle), "progress");
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
     }
@@ -78,6 +95,10 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
     void started() {
         ((CardLayout) progress.getLayout()).show(progress, "progress");
         progress.invalidate();
+    }
+
+    public Analyzer getSelectedAnalyzer() {
+        return (Analyzer) configurationCombo.getSelectedItem();
     }
 
     /**
@@ -93,7 +114,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jComboBox1 = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox();
+        configurationCombo = new javax.swing.JComboBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -121,19 +142,32 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Default" }));
+        configurationCombo.setModel(configurationModel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
-        add(jComboBox2, gridBagConstraints);
+        add(configurationCombo, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox configurationCombo;
     private javax.swing.JComboBox jComboBox1;
-    private javax.swing.JComboBox jComboBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     // End of variables declaration//GEN-END:variables
+
+    private static final class ConfigurationRenderer extends DefaultListCellRenderer {
+        @Messages({"LBL_RunAllAnalyzers=All Analyzers", "LBL_RunAnalyzer={0}"})
+        @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            if (value == null) {
+                value = Bundle.LBL_RunAllAnalyzers();
+            } else if (value instanceof Analyzer) {
+                value = Bundle.LBL_RunAnalyzer(((Analyzer) value).getDisplayName());
+            }
+            
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+        }
+    }
 }

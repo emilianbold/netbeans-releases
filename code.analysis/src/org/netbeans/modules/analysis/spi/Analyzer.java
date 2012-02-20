@@ -42,7 +42,7 @@
 package org.netbeans.modules.analysis.spi;
 
 import java.awt.Image;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -61,11 +61,16 @@ public interface Analyzer {
 
     public static final class Context {
         private final Scope scope;
-        private final ProgressContributor progress;
+        private final ProgressHandle progress;
+        private final int bucketStart;
+        private final int bucketSize;
+        private int totalWork;
 
-        Context(Scope scope, ProgressContributor progress) {
+        Context(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize) {
             this.scope = scope;
             this.progress = progress;
+            this.bucketStart = bucketStart;
+            this.bucketSize = bucketSize;
         }
 
         public Scope getScope() {
@@ -73,11 +78,15 @@ public interface Analyzer {
         }
 
         public void start(int workunits) {
-            progress.start(workunits);
+            totalWork = workunits;
         }
 
         public void progress(String message, int unit) {
-            progress.progress(message, unit);
+            progress.progress(message, computeProgress(unit));
+        }
+
+        private int computeProgress(int unit) {
+            return (int) (bucketStart + ((double) unit / totalWork) * bucketSize);
         }
 
         public void progress(String message) {
@@ -85,18 +94,18 @@ public interface Analyzer {
         }
 
         public void progress(int workunit) {
-            progress.progress(workunit);
+            progress.progress(computeProgress(workunit));
         }
 
         public void finish() {
-            progress.finish();
+            progress.progress(bucketStart + bucketSize);
         }
 
         static {
             SPIAccessor.ACCESSOR = new SPIAccessor() {
                 @Override
-                public Context createContext(Scope scope, ProgressContributor progress) {
-                    return new Context(scope, progress);
+                public Context createContext(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize) {
+                    return new Context(scope, progress, bucketStart, bucketSize);
                 }
             };
         }

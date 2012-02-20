@@ -59,9 +59,8 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
-import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -87,17 +86,12 @@ import org.openide.util.lookup.Lookups;
 public class RunAnalysis {
 
     private static final RequestProcessor WORKER = new RequestProcessor(RunAnalysisAction.class.getName(), 1, false, false);
+    private static final int MAX_WORK = 1000;
 
     public static void showDialogAndRunAnalysis() {
         final Collection<? extends Analyzer> analyzers = Lookup.getDefault().lookupAll(Analyzer.class);
-        final ProgressContributor[] contributors = new ProgressContributor[analyzers.size()];
-
-        for (int i = 0; i < contributors.length; i++) {
-            contributors[i] = AggregateProgressFactory.createProgressContributor(Integer.toHexString(i));
-        }
-
-        final AggregateProgressHandle progress = AggregateProgressFactory.createHandle("Analyzing...", contributors, null, null);
-        final RunAnalysisPanel rap = new RunAnalysisPanel(progress);
+        final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
+        final RunAnalysisPanel rap = new RunAnalysisPanel(progress, analyzers);
         final JButton runAnalysis = new JButton("Run Analysis");
         JButton cancel = new JButton("Cancel");
         DialogDescriptor dd = new DialogDescriptor(rap, "Code Analysis", true, new Object[] {runAnalysis, cancel}, runAnalysis, DialogDescriptor.DEFAULT_ALIGN, null/*XXX*/, null);
@@ -111,6 +105,8 @@ public class RunAnalysis {
 
                 rap.started();
                 progress.start();
+
+                final Analyzer toRun = rap.getSelectedAnalyzer();
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {
@@ -146,19 +142,20 @@ public class RunAnalysis {
                             }
                         }
 
-                        final Map<Analyzer, List<ErrorDescription>> result = new HashMap<Analyzer, List<ErrorDescription>>();
-                        int i = 0;
+                        progress.switchToDeterminate(MAX_WORK);
 
-                        for (Analyzer analyzer : analyzers) {
-                            if (doCancel.get()) {
-                                break ;
+                        final Map<Analyzer, List<ErrorDescription>> result = new HashMap<Analyzer, List<ErrorDescription>>();
+
+                        if (toRun == null) {
+                            int doneSoFar = 0;
+                            int bucketSize = MAX_WORK / analyzers.size();
+                            for (Analyzer analyzer : analyzers) {
+                                if (doCancel.get()) break;
+                                doRunAnalyzer(analyzer, sourceRoots, nonRecursiveFolders, files, progress, doneSoFar, bucketSize, result);
+                                doneSoFar += bucketSize;
                             }
-                            List<ErrorDescription> current = new ArrayList<ErrorDescription>();
-                            for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(Scope.create(sourceRoots, nonRecursiveFolders, files), contributors[i++]))) {
-                                current.add(ed);
-                            }
-                            if (current.isEmpty()) continue;
-                            result.put(analyzer, current);
+                        } else if (!doCancel.get()) {
+                            doRunAnalyzer(toRun, sourceRoots, nonRecursiveFolders, files, progress, 0, MAX_WORK, result);
                         }
 
                         SwingUtilities.invokeLater(new Runnable() {
@@ -173,6 +170,15 @@ public class RunAnalysis {
                                 d.dispose();
                             }
                         });
+                    }
+
+                    private void doRunAnalyzer(Analyzer analyzer, List<FileObject> sourceRoots, List<NonRecursiveFolder> nonRecursiveFolders, List<FileObject> files, ProgressHandle handle, int bucketStart, int bucketSize, final Map<Analyzer, List<ErrorDescription>> result) {
+                        List<ErrorDescription> current = new ArrayList<ErrorDescription>();
+                        for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(Scope.create(sourceRoots, nonRecursiveFolders, files), handle, bucketStart, bucketSize))) {
+                            current.add(ed);
+                        }
+                        if (!current.isEmpty())
+                            result.put(analyzer, current);
                     }
                 });
             }
