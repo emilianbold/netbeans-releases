@@ -150,11 +150,27 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(WhileNode whileNode, boolean onset) {
+        if (onset) {
+            Block body = whileNode.getBody();
+            if (body.getStart() == body.getFinish()) {
+                handleVirtualBlock(body);
+                return null;
+            }
+        }
+
         return super.visit(whileNode, onset);
     }
 
     @Override
     public Node visit(WithNode withNode, boolean onset) {
+        if (onset) {
+            Block body = withNode.getBody();
+            if (body.getStart() == body.getFinish()) {
+                handleVirtualBlock(body);
+                return null;
+            }
+        }
+
         return super.visit(withNode, onset);
     }
 

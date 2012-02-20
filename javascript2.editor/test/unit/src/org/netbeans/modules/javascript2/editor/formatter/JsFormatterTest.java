@@ -118,6 +118,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/for1.js",new IndentPrefs(4, 4));
     }
 
+    public void testWhile1() throws Exception {
+        reformatFileContents("testfiles/formatter/while1.js",new IndentPrefs(4, 4));
+    }
+
+    public void testWith1() throws Exception {
+        reformatFileContents("testfiles/formatter/with1.js",new IndentPrefs(4, 4));
+    }
+
     public void testFormatting1() throws Exception {
         reformatFileContents("testfiles/formatter/formatting1.js",new IndentPrefs(4, 4));
     }
