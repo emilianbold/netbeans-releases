@@ -113,11 +113,14 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 // if a modal dialog active use it as parent
                 // otherwise use the main window
                 if (NbPresenter.currentModalDialog != null) {
+                    NbDialog dlg;
                     if (NbPresenter.currentModalDialog.isLeaf ()) {
-                        return new NbDialog(d, WindowManager.getDefault ().getMainWindow ());
+                        dlg = new NbDialog(d, WindowManager.getDefault ().getMainWindow ());
                     } else {
-                        return new NbDialog(d, NbPresenter.currentModalDialog);
+                        dlg = new NbDialog(d, NbPresenter.currentModalDialog);
                     }
+                    customizeDlg(dlg);
+                    return dlg;
                 }
                 else {
                     Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
