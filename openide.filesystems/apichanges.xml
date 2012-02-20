@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileSystem.createTemporaryFO">
+            <api name="filesystems"/>
+            <summary>File System can create temporary file</summary>
+            <version major="7" minor="60"/>
+            <date year="2012" month="2" day="20"/>
+            <author login="alexvsimon"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added methods to create temporary file objects:
+                    <code>FileSystem.getTempFolder</code>,  <code>FileSystem.createTempFile</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileSystem"/>
+            <issue number="207659"/>
+        </change>
         <change id="LayersProvider">
             <api name="filesystems"/>
             <summary>SPI for Additions to System File System</summary>
