@@ -13,3 +13,9 @@ class GroovyClass3 {
         new Byte().
     }
 }
+
+class GroovyClass4 {
+    def m4 = {
+        new GroovyClass3().in
+    }
+}

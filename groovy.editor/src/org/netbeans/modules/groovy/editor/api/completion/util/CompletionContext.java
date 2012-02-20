@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,24 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler;
+package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import org.netbeans.lib.profiler.results.ResultsSnapshot;
-import org.netbeans.lib.profiler.ui.ResultsView;
-
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
- * A common superclass for all snapshot panels.
+ * Holder class for the context of a given completion.
+ * This means the two surrounding Lexer-tokens before and after the completion point are stored here.
  *
- * @author Tomas Hurka
- * @author Ian Formanek
+ * @author Martin Janicek
  */
-public abstract class SnapshotPanel extends ResultsView {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+public class CompletionContext {
 
-    public abstract ResultsSnapshot getSnapshot();
+    // b2    b1      |       a1        a2
+    // class MyClass extends BaseClass {
+    public Token<? extends GroovyTokenId> beforeLiteral;
+    public Token<? extends GroovyTokenId> before2;
+    public Token<? extends GroovyTokenId> before1;
+    public Token<? extends GroovyTokenId> active;
+    public Token<? extends GroovyTokenId> after1;
+    public Token<? extends GroovyTokenId> after2;
+    public Token<? extends GroovyTokenId> afterLiteral;
+    public TokenSequence<?> ts; // we keep the sequence with us.
 
-    public abstract void updateSavedState();
+    
+    public CompletionContext(
+        Token<? extends GroovyTokenId> beforeLiteral,
+        Token<? extends GroovyTokenId> before2,
+        Token<? extends GroovyTokenId> before1,
+        Token<? extends GroovyTokenId> active,
+        Token<? extends GroovyTokenId> after1,
+        Token<? extends GroovyTokenId> after2,
+        Token<? extends GroovyTokenId> afterLiteral,
+        TokenSequence<?> ts) {
+
+        this.beforeLiteral = beforeLiteral;
+        this.before2 = before2;
+        this.before1 = before1;
+        this.active = active;
+        this.after1 = after1;
+        this.after2 = after2;
+        this.afterLiteral = afterLiteral;
+        this.ts = ts;
+    }
 }

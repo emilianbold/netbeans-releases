@@ -49,6 +49,7 @@ import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.FileUtilTestHidden;
+import org.openide.filesystems.TempFileObjectTestHid;
 import org.openide.filesystems.URLMapperTestHidden;
 
 /**
@@ -69,6 +70,7 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
         //suite.addTestSuite(AttributesTestHidden.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(TempFileObjectTestHid.class);
         return new RemoteFSTCKTest(suite);
     }
     
