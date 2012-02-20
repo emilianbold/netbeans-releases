@@ -362,13 +362,16 @@ public class ModelTest extends JsTestBase {
         
         JsObject  object = model.getGlobalObject();
         // TODO this is wrong, needs to be handled parameters
-        assertEquals(2, object.getProperties().size());
+        assertEquals(1, object.getProperties().size());
         
         object = object.getProperty("$function");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
         assertEquals(4, object.getProperties().size());
         assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
+        
+        JsObject param = ((JsFunction)object).getParameter("window");
+        assertEquals(5, param.getProperties().size());
     }
     
     public void testClosers01() throws Exception {
