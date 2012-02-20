@@ -46,8 +46,9 @@ package org.netbeans.modules.maven.dependencies;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.tree.*;
+import static org.netbeans.modules.maven.dependencies.Bundle.*;
 import org.openide.awt.HtmlRenderer;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * @author Pavel Flaska
@@ -142,8 +143,9 @@ public class CheckRenderer extends JPanel implements TreeCellRenderer {
         }
     }
     
+    @Messages("LBL_NotAvailable=(not available)")
     private String getNodeText(CheckNode node) {
-        String nodeLabel = node.getLabel() == null ? NbBundle.getMessage(CheckRenderer.class,"LBL_NotAvailable") : node.getLabel();
+        String nodeLabel = node.getLabel() == null ? LBL_NotAvailable() : node.getLabel();
         nodeLabel = "<html>" + nodeLabel; // NOI18N
         nodeLabel += "</html>"; // NOI18N
         int i = nodeLabel.indexOf("<br>"); // NOI18N
