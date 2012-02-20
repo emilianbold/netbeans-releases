@@ -1375,8 +1375,8 @@ public final class JFXProjectProperties {
 
         JFXConfigs() {
             reset();
-            groups.defineGroup(PRELOADER_GROUP_NAME, getPreloaderProperties());
-            groups.defineGroup(BROWSER_GROUP_NAME, getBrowserProperties());
+            defineGroup(PRELOADER_GROUP_NAME, getPreloaderProperties());
+            defineGroup(BROWSER_GROUP_NAME, getBrowserProperties());
         }
         
         private void reset() {
@@ -1386,6 +1386,26 @@ public final class JFXProjectProperties {
         
         private boolean configNameWrong(String config) {
             return config !=null && config.contains("default");
+        }
+
+        public final void defineGroup(String groupName, Collection<String> props) {
+            groups.defineGroup(groupName, props);
+        }
+        
+        public final void clearGroup(String groupName) {
+            groups.clearGroup(groupName);
+        }
+
+        public final void clearAllGroups() {
+            groups.clearAllGroups();
+        }
+
+        public boolean isBound(String prop) {
+            return groups.isBound(prop);
+        }
+
+        public Collection<String> getBoundedProperties(String prop) {
+            return groups.getBoundedProperties(prop);
         }
 
         //==========================================================
@@ -1685,7 +1705,7 @@ public final class JFXProjectProperties {
          * @param prop
          * @return false if nothing was solidified, true otherwise
          */
-        public boolean solidifyBoundedGroups(String config, @NonNull String prop) {
+        private boolean solidifyBoundedGroups(String config, @NonNull String prop) {
             boolean solidified = false;
             for(String name : groups.getBoundedProperties(prop)) {
                 solidified |= solidifyProperty(config, name);
@@ -1698,7 +1718,7 @@ public final class JFXProjectProperties {
         public void eraseProperty(String config, @NonNull String prop) {
             assert !configNameWrong(config);
             Map<String,String/*|null*/> configMap = getConfig(config);
-            if(config != null) {
+            if(configMap != null) {
                 configMap.remove(prop);
                 for(String name : groups.getBoundedProperties(prop)) {
                     configMap.remove(name);
@@ -2127,8 +2147,7 @@ public final class JFXProjectProperties {
             addParam(null, name, value);
         }
         
-        public void addActiveParam(String config, @NonNull String name, String value) {
-            assert !configNameWrong(config);
+        public void addActiveParam(@NonNull String name, String value) {
             addParam(getActive(), name, value);
         }
 
@@ -2145,8 +2164,7 @@ public final class JFXProjectProperties {
             }
         }
         
-        public void addActiveParamTransparent(String config, @NonNull String name, String value) {
-            assert !configNameWrong(config);
+        public void addActiveParamTransparent(@NonNull String name, String value) {
             addParamTransparent(getActive(), name, value);
         }
 
@@ -2390,7 +2408,7 @@ public final class JFXProjectProperties {
          * (modified from "A royal mess." from J2SEProjectProperties)"
          */
         //void storeRunConfigs
-        void store(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
+        public void store(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
 
             for (String name : PROJECT_PROPERTIES) {
                 String value = getDefaultProperty(name);
@@ -2631,7 +2649,7 @@ public final class JFXProjectProperties {
         * @param storeEmpty true==keep empty properties in editable properties, false==remove empty properties
         * @return true if updated existing property, false otherwise
         */
-        boolean updateParamPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
+        private boolean updateParamPropertyIfExists(@NonNull String name, String value, EditableProperties ep, boolean storeEmpty) {
             if(name != null && !name.isEmpty()) {
                 for(String prop : ep.keySet()) {
                     if(isParamNameProperty(prop)) {
@@ -2656,7 +2674,7 @@ public final class JFXProjectProperties {
         * 
         * @param ep editable properties
         */
-        void cleanParamPropertiesIfEmpty(String config, EditableProperties ep) {
+        private void cleanParamPropertiesIfEmpty(String config, EditableProperties ep) {
             assert !configNameWrong(config);
             List<String> toRemove = new LinkedList<String>();
             for(String prop : ep.keySet()) {
@@ -2679,7 +2697,7 @@ public final class JFXProjectProperties {
         * 
         * @param ep editable properties
         */
-        void cleanParamPropertiesNotListed(List<Map<String, String>> props, EditableProperties ep) {
+        private void cleanParamPropertiesNotListed(List<Map<String, String>> props, EditableProperties ep) {
             List<String> toRemove = new LinkedList<String>();
             for(String name : ep.keySet()) {
                 if(isParamNameProperty(name)) {
@@ -2712,7 +2730,7 @@ public final class JFXProjectProperties {
         * @param newPropValue name of property to store parameter value
         * @param ep editable properties to which param is to be stored
         */
-        void exportParamProperty(@NonNull Map<String, String> param, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
+        private void exportParamProperty(@NonNull Map<String, String> param, String newPropName, String newPropValue, @NonNull EditableProperties ep) {
             String name = param.get(APP_PARAM_SUFFIXES[0]);
             String value = param.get(APP_PARAM_SUFFIXES[1]);
             if(name != null) {
