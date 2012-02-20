@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
 public class MethodTag extends PhpAnnotationTag {
 
     public MethodTag() {
-        super("method", "@method ${tp default=\"type\"} {m default=\"methodName\"}() {m default=\"methodName\"}(${param default=\"type\"} $$${paramName}) ${Description}", //NOI18N
+        super("method", "@method ${tp default=\"type\"} ${m default=\"methodName\"}() ${m default=\"methodName\"}(${param default=\"type\"} $$${paramName}) ${Description}", //NOI18N
                 NbBundle.getMessage(MethodTag.class, "MethodTag.documentation"));
     }
 

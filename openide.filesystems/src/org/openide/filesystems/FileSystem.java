@@ -442,6 +442,30 @@ public abstract class FileSystem implements Serializable {
     */
     public abstract FileObject findResource(String name);
 
+    /** Returns temporary folder if it is avaliable on this file system.
+     * Method never returns null. IOException is thrown instead.
+     * @return a file object for temporary folder
+     * @throws IOException 
+     * @since 7.60
+     */
+    public FileObject getTempFolder() throws IOException {
+        throw new IOException("Unsupported operation"); // NOI18N
+    }
+
+    /** Creates temporary file in the given parent folder.
+     * Method never returns null. IOException is thrown instead.
+     * @param parent the parent folder where temporary file will be created
+     * @param prefix prefix of the name of created file
+     * @param suffix suffix of the name of created file
+     * @param deleteOnExit delete file on exit
+     * @return new temporary file
+     * @throws IOException 
+     * @since 7.60
+     */
+    public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        throw new IOException("Unsupported operation"); // NOI18N
+    }
+        
     /** Returns an array of actions that can be invoked on any file in
     * this filesystem.
     * These actions should preferably

@@ -55,14 +55,7 @@ import com.sun.tools.javac.util.FatalError;
 import com.sun.tools.javac.util.Log;
 import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -83,6 +76,7 @@ import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -92,7 +86,11 @@ import org.openide.filesystems.FileUtil;
 final class SuperOnePassCompileWorker extends CompileWorker {
 
     @Override
-    ParsingOutput compile(ParsingOutput previous, final Context context, JavaParsingContext javaContext, Iterable<? extends CompileTuple> files) {
+    ParsingOutput compile(
+            final ParsingOutput previous,
+            final Context context,
+            final JavaParsingContext javaContext,
+            final Collection<? extends CompileTuple> files) {
         final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
         final Map<JavaFileObject, List<String>> file2FQNs = previous != null ? previous.file2FQNs : new HashMap<JavaFileObject, List<String>>();
         final Set<ElementHandle<TypeElement>> addedTypes = previous != null ? previous.addedTypes : new HashSet<ElementHandle<TypeElement>>();
@@ -109,7 +107,10 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         JavacTaskImpl jt = null;
 
         boolean nop = true;
-        for (CompileTuple tuple : files) {
+        final SuspendStatus suspendStatus = context.getSuspendStatus();
+        final SourcePrefetcher sourcePrefetcher = SourcePrefetcher.create(files, suspendStatus);
+        while (sourcePrefetcher.hasNext())  {
+            final CompileTuple tuple = sourcePrefetcher.next();
             nop = false;
             if (context.isCancelled()) {
                 return null;
@@ -136,6 +137,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                     }
                     computeFQNs(file2FQNs, cut, tuple);
                 }
+                sourcePrefetcher.remove();
                 Log.instance(jt.getContext()).nerrors = 0;
             } catch (CancelAbort ca) {
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {

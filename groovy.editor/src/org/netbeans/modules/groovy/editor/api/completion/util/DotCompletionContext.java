@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.parsing.impl.indexing;
+
+package org.netbeans.modules.groovy.editor.api.completion.util;
+
+import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**
  *
- * @author Tomas Zezula
+ * @author Martin Janicek
  */
-interface SuspendStatus {
-    boolean isSuspended();
-    void parkWhileSuspended() throws InterruptedException;
+public class DotCompletionContext {
+
+    private final int lexOffset;
+    private final int astOffset;
+    private final AstPath astPath;
+    private final boolean methodsOnly;
+
+    public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath, boolean methodsOnly) {
+        this.lexOffset = lexOffset;
+        this.astOffset = astOffset;
+        this.astPath = astPath;
+        this.methodsOnly = methodsOnly;
+    }
+
+    public int getLexOffset() {
+        return lexOffset;
+    }
+
+    public int getAstOffset() {
+        return astOffset;
+    }
+
+    public AstPath getAstPath() {
+        return astPath;
+    }
+
+    public boolean isMethodsOnly() {
+        return methodsOnly;
+    }
 }

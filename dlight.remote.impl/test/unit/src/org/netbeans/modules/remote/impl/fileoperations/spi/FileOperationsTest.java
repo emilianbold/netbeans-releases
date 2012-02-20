@@ -55,6 +55,7 @@ public class FileOperationsTest extends NativeExecutionBaseTestSuite {
         this("FileOperations API", getTestClasses());
     }
 
+    @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
             FileOperationsTestCase.class
@@ -66,6 +67,7 @@ public class FileOperationsTest extends NativeExecutionBaseTestSuite {
         return new FileOperationsTest(testClass.getName(), testClass);
     }
 
+    @SuppressWarnings("unchecked")
     public static FileOperationsTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
         Class[] classes = new Class[timesToRepeat];
         for (int i = 0; i < classes.length; i++) {

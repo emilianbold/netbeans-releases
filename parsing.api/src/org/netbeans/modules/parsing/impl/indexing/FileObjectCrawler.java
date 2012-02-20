@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;

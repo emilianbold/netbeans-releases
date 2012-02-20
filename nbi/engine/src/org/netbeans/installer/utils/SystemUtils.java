@@ -504,8 +504,8 @@ public final class SystemUtils {
         return NetworkUtils.getHostName();        
     }
     
-    public static List<File> getFileSystemRoots() throws IOException {
-        return getNativeUtils().getFileSystemRoots();
+    public static List<File> getFileSystemRoots(String... files) throws IOException {
+        return getNativeUtils().getFileSystemRoots(files);
     }
     
     // platforms probes /////////////////////////////////////////////////////////////

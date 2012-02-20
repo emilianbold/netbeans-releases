@@ -56,6 +56,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Timer;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.PathMap;
@@ -67,9 +68,9 @@ import org.netbeans.modules.cnd.spi.remote.setup.MirrorPathProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -109,11 +110,11 @@ public abstract class RemotePathMap extends PathMap {
         pathmap = pathmaps.get(syncID);
         if (pathmap == null) {            
             synchronized (pmtable) {
-                pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);
-                pathmap.init();
+                pathmap = customizable ? new CustomizableRemotePathMap(env) : new FixedRemotePathMap(env);                
                 pathmaps.put(syncID, pathmap);
             }
         }
+        pathmap.initIfNeeded();
         return pathmap;
     }
 
@@ -173,7 +174,7 @@ public abstract class RemotePathMap extends PathMap {
      *
      * Initialization the path map here:
      */
-    public abstract void init();
+    public abstract void initIfNeeded();
     
     // PathMap
     @Override
@@ -467,33 +468,50 @@ public abstract class RemotePathMap extends PathMap {
     private final static class CustomizableRemotePathMap extends RemotePathMap {
 
         private static final int TIMEOUT = Integer.getInteger("remote.path.map.analyzer.timeout", 10000); // NOI18N
-        
+
+        private final Object lock = new Object();
+        private boolean initialized = false;
+
         private CustomizableRemotePathMap(ExecutionEnvironment exc) {
             super(exc);
         }
 
         @Override
-        public void init() {
-            if (!loadFromPrefs()) {
-                // 2. Automated mappings gathering entry point
-                final HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
-                Timer timer = new Timer(TIMEOUT, new ActionListener() {
-                    @Override
-                    public void actionPerformed(ActionEvent e) {
-                        ham.cancel();
-                    }
-                });
-                timer.setRepeats(false);
-                timer.start();
-                Map<String, String> mappings = ham.getMappings();
-                synchronized( map ) {
-                    map.putAll(mappings);
+        public void initIfNeeded() {
+            synchronized (lock) {
+                if (initialized) {
+                    return;
                 }
-                // TODO: what about consequent runs. User may share something, we need to check it
+                if (loadFromPrefs()) {
+                    initialized = true;
+                } else {
+                    if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                        return;
+                    }
+                    final AtomicReference<Boolean> cancelled = new AtomicReference<Boolean>(Boolean.FALSE);
+                    // 2. Automated mappings gathering entry point
+                    final HostMappingsAnalyzer ham = new HostMappingsAnalyzer(execEnv);
+                    Timer timer = new Timer(TIMEOUT, new ActionListener() {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            cancelled.set(Boolean.TRUE);
+                            ham.cancel();
+                        }
+                    });
+                    timer.setRepeats(false);
+                    timer.start();
+                    Map<String, String> mappings = ham.getMappings();
+                    synchronized( map ) {
+                        map.putAll(mappings);
+                    }
+                    if (!cancelled.get().booleanValue()) {
+                        initialized = true;
+                    }
+                }
             }
         }
     }
-
+        
     private static final String NO_MAPPING_PREFIX = "///"; // NOI18N
     private final static class FixedRemotePathMap extends RemotePathMap {
 
@@ -505,7 +523,7 @@ public abstract class RemotePathMap extends PathMap {
         }
 
         @Override
-        public void init() {
+        public void initIfNeeded() {
             // Fix for noIZ: IDE fails to build if -J-Dcnd.remote.sync.root is specified
             // Loading from prefs leads to incompatibility with MirrorPathProvider.getRemoteMirror,
             // which is widely used 

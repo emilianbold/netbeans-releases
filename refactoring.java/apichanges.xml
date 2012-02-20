@@ -69,7 +69,7 @@ made subject to such option by the copyright holder.
             <api name="JavaRefactoringAPI"/>
             <summary>Added option to generate PropertyChangeSupport in EncapsulateFieldRefactoring.</summary>
             <version major="1" minor="32"/>
-            <date day="6" month="12" year="2011"/>
+            <date day="8" month="12" year="2011"/>
             <author login="jbecicka"/>
             <compatibility addition="yes"/>
             <description>
@@ -84,7 +84,7 @@ made subject to such option by the copyright holder.
             <api name="JavaRefactoringAPI"/>
             <summary>Added new Move Members Properties.</summary>
             <version major="1" minor="31"/>
-            <date day="30" month="11" year="2011"/>
+            <date day="7" month="12" year="2011"/>
             <author login="ralphbenjamin"/>
             <compatibility addition="yes"/>
             <description>

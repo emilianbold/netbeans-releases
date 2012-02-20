@@ -1,0 +1,69 @@
+Code completion result for source line:
+Foo f = new F|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+CONSTRUCTO FactoryBuilderSupport()                    null
+CONSTRUCTO FactoryBuilderSupport(boolean)             null
+CONSTRUCTO FactoryInterceptorMetaClass(Me             null
+CONSTRUCTO FactoryURLClassLoader(URL[])               null
+CONSTRUCTO FactoryURLClassLoader(URL[], C             null
+CONSTRUCTO File(File, String)                         null
+CONSTRUCTO File(String)                               null
+CONSTRUCTO File(String, File)                         null
+CONSTRUCTO File(String, String)                       null
+CONSTRUCTO File(String, int)                          null
+CONSTRUCTO File(URI)                                  null
+CONSTRUCTO FileDescriptor()                           null
+CONSTRUCTO FileDescriptor(int)                        null
+CONSTRUCTO FileInputStream(File)                      null
+CONSTRUCTO FileInputStream(FileDescriptor             null
+CONSTRUCTO FileInputStream(String)                    null
+CONSTRUCTO FileNameByRegexFinder$_getFile             null
+CONSTRUCTO FileNameByRegexFinder()                    null
+CONSTRUCTO FileNameFinder$_getFileNames_c             null
+CONSTRUCTO FileNameFinder()                           null
+CONSTRUCTO FileNotFoundException()                    null
+CONSTRUCTO FileNotFoundException(String)              null
+CONSTRUCTO FileNotFoundException(String,              null
+CONSTRUCTO FileOutputStream(File)                     null
+CONSTRUCTO FileOutputStream(File, boolean             null
+CONSTRUCTO FileOutputStream(FileDescripto             null
+CONSTRUCTO FileOutputStream(String)                   null
+CONSTRUCTO FileOutputStream(String, boole             null
+CONSTRUCTO FilePermission(String, String)             null
+CONSTRUCTO FilePermission(String, int)                null
+CONSTRUCTO FilePermissionCollection()                 null
+CONSTRUCTO FileReader(File)                           null
+CONSTRUCTO FileReader(FileDescriptor)                 null
+CONSTRUCTO FileReader(String)                         null
+CONSTRUCTO FileSystem()                               null
+CONSTRUCTO FileWriter(File)                           null
+CONSTRUCTO FileWriter(File, boolean)                  null
+CONSTRUCTO FileWriter(FileDescriptor)                 null
+CONSTRUCTO FileWriter(String)                         null
+CONSTRUCTO FileWriter(String, boolean)                null
+CONSTRUCTO FilterInputStream(InputStream)             null
+CONSTRUCTO FilterOutputStream(OutputStrea             null
+CONSTRUCTO FilterReader(Reader)                       null
+CONSTRUCTO FilterWriter(Writer)                       null
+CONSTRUCTO Float(String)                              null
+CONSTRUCTO Float(double)                              null
+CONSTRUCTO Float(float)                               null
+CONSTRUCTO Foo()                                      null
+CONSTRUCTO Foo(int)                                   null
+CONSTRUCTO FormatFlagsConversionMismatchE             null
+CONSTRUCTO FormattableFlags()                         null
+CONSTRUCTO Formatter()                                null
+CONSTRUCTO Formatter(Appendable)                      null
+CONSTRUCTO Formatter(Appendable, Locale)              null
+CONSTRUCTO Formatter(File)                            null
+CONSTRUCTO Formatter(File, String)                    null
+CONSTRUCTO Formatter(File, String, Locale             null
+CONSTRUCTO Formatter(Locale)                          null
+CONSTRUCTO Formatter(OutputStream)                    null
+CONSTRUCTO Formatter(OutputStream, String             null
+CONSTRUCTO Formatter(OutputStream, String             null
+CONSTRUCTO Formatter(PrintStream)                     null
+CONSTRUCTO Formatter(String)                          null
+CONSTRUCTO Formatter(String, String)                  null
+CONSTRUCTO Formatter(String, String, Loca             null
+CONSTRUCTO FormatterClosedException()                 null

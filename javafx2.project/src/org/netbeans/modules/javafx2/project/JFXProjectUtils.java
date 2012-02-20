@@ -517,4 +517,38 @@ public final class JFXProjectUtils {
         }
         return _currentJfxImplCRC.equals(crc);
     }
+
+    /**
+     * Returns a copy of existing list of maps, usually used to store application parameters
+     * 
+     * @param list2Copy
+     * @return copy of list2Copy
+     */
+    public static List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
+        List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
+        if(list2Copy != null ) {
+            for (Map<String,String> map : list2Copy) {
+                list2Return.add(copyMap(map));
+            }
+        }
+        return list2Return;
+    }
+
+    /**
+     * Returns a copy of existing string map, usually used to store application parameter
+     * (keys 'name' and 'value')
+     * 
+     * @param map2Copy
+     * @return copy of map2Copy
+     */
+    public static Map<String,String> copyMap(Map<String,String> map2Copy) {
+        Map<String,String> newMap = new HashMap<String,String>();
+        if(map2Copy != null) {
+            for(String key : map2Copy.keySet()) {
+                String value = map2Copy.get(key);
+                newMap.put(key, value);
+            }
+        }
+        return newMap;
+    }
 }
