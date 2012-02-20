@@ -112,6 +112,14 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(ForNode forNode, boolean onset) {
+        if (onset) {
+            Block body = forNode.getBody();
+            if (body.getStart() == body.getFinish()) {
+                handleVirtualBlock(body);
+                return null;
+            }
+        }
+
         return super.visit(forNode, onset);
     }
 
@@ -246,6 +254,8 @@ public class FormatVisitor extends NodeVisitor {
         
         Node statement = block.getStatements().get(0);
 
+        handleBlockContent(block);
+
         // indentation mark
         Token token = getPreviousNonEmptyToken(getStart(statement));
         if (token != null) {
@@ -254,8 +264,6 @@ public class FormatVisitor extends NodeVisitor {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
         }
-
-        handleBlockContent(block);
 
         // put indentation mark after non white token
         FormatToken formatToken = getPreviousToken(getFinish(statement), null);
