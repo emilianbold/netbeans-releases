@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**
  *
- * @author schmidtm
+ * @author Martin Janicek
  */
-public class ConstructorsCCTest extends GroovyTestBase {
+public class DotCompletionContext {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    private final int lexOffset;
+    private final int astOffset;
+    private final AstPath astPath;
+    private final boolean methodsOnly;
 
-    public ConstructorsCCTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
+    public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath, boolean methodsOnly) {
+        this.lexOffset = lexOffset;
+        this.astOffset = astOffset;
+        this.astPath = astPath;
+        this.methodsOnly = methodsOnly;
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public int getLexOffset() {
+        return lexOffset;
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
+    public int getAstOffset() {
+        return astOffset;
     }
 
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
+    public AstPath getAstPath() {
+        return astPath;
     }
 
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
-
-    public void testConstructor4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors4.groovy", "    Foo f = new F^", false);
+    public boolean isMethodsOnly() {
+        return methodsOnly;
     }
 }
