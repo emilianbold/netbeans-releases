@@ -58,6 +58,7 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -137,11 +138,9 @@ public final class CompleteElementHandler {
             for (int i = 0; i < typeParameters.length; i++) {
                 GenericsType genType = typeNode.getGenericsTypes()[i];
                 if (genType.getUpperBounds() != null) {
-                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
-                            genType.getUpperBounds()[0].getName());
+                    typeParameters[i] = Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
                 } else {
-                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
-                            genType.getName());
+                    typeParameters[i] = Utilities.translateClassLoaderTypeName(genType.getName());
                 }
             }
 
