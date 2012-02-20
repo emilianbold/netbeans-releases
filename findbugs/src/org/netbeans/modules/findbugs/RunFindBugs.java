@@ -85,15 +85,12 @@ public class RunFindBugs {
     public static final String PREFIX_FINDBUGS = "findbugs:";
     private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    public static List<ErrorDescription> runFindBugs(FileObject sourceRoot, Iterable<? extends String> classNames) {
+    public static List<ErrorDescription> runFindBugs(FileObject sourceRoot, Iterable<? extends String> classNames, SigFilesValidator validator) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
             Class.forName("org.netbeans.modules.findbugs.NbClassFactory", true, RunFindBugs.class.getClassLoader()); //NOI18N
-            FindBugs2 engine = new FindBugs2();
             Project p = new Project();
-            BugCollectionBugReporter r = new BugCollectionBugReporter(p);
-            Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
             URL[] binaryRoots = CacheBinaryForSourceQuery.findCacheBinaryRoots(sourceRoot.toURL()).getRoots();
 
             if (classNames == null) {
@@ -106,13 +103,24 @@ public class RunFindBugs {
                 }
             } else {
                 ClassPath binary = ClassPathSupport.createClassPath(binaryRoots);
+                List<FileObject> sigFiles = new ArrayList<FileObject>();
 
                 for (String className : classNames) {
                     FileObject classFO = binary.findResource(className.replace('.', '/') + ".sig"); //NOI18N
 
                     if (classFO != null) {
-                        p.addFile(new File(classFO.toURI()).getAbsolutePath());
+                        sigFiles.add(classFO);
+                    } else {
+                        LOG.log(Level.WARNING, "Cannot find sig file for: " + className); //TODO: should probably become FINE eventually
                     }
+                }
+
+                assert validator != null;
+
+                if (!validator.validate(sigFiles)) return null;
+
+                for (FileObject classFO : sigFiles) {
+                    p.addFile(new File(classFO.toURI()).getAbsolutePath());
                 }
 
                 addCompileRootAsSource(p, sourceRoot);
@@ -124,13 +132,24 @@ public class RunFindBugs {
                 addCompileRoot(p, compileRoot);
             }
 
+            BugCollectionBugReporter r = new BugCollectionBugReporter(p);
+
             r.setPriorityThreshold(Integer.MAX_VALUE);
             r.setRankThreshold(Integer.MAX_VALUE);
+
+            FindBugs2 engine = new FindBugs2();
+
             engine.setProject(p);
             engine.setNoClassOk(true);
             engine.setBugReporter(r);
+
+            Preferences settings = NbPreferences.forModule(RunFindBugs.class).node("global-settings");
+
             engine.setUserPreferences(readPreferences(settings));
             engine.setDetectorFactoryCollection(DetectorFactoryCollection.instance());
+
+            LOG.log(Level.INFO, "Running FindBugs");
+            
             engine.execute();
 
             for (BugInstance b : r.getBugCollection().getCollection()) {
@@ -224,5 +243,9 @@ public class RunFindBugs {
         if (f == null) return ;
 
         p.addAuxClasspathEntry(f.getAbsolutePath());
+    }
+
+    interface SigFilesValidator {
+        public boolean validate(Iterable<? extends FileObject> files);
     }
 }

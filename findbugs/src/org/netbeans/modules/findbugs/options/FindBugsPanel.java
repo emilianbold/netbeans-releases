@@ -43,9 +43,7 @@ package org.netbeans.modules.findbugs.options;
 
 import edu.umd.cs.findbugs.BugCategory;
 import edu.umd.cs.findbugs.BugPattern;
-import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
-import edu.umd.cs.findbugs.config.UserPreferences;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
@@ -74,6 +72,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.findbugs.RunFindBugs;
+import org.netbeans.modules.findbugs.RunInEditor;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 import org.openide.util.Exceptions;
@@ -211,6 +210,7 @@ final class FindBugsPanel extends javax.swing.JPanel {
         jScrollPane2 = new javax.swing.JScrollPane();
         description = new javax.swing.JTextPane();
         jLabel1 = new javax.swing.JLabel();
+        runInEditor = new javax.swing.JCheckBox();
 
         jSplitPane1.setDividerLocation(200);
 
@@ -238,7 +238,7 @@ final class FindBugsPanel extends javax.swing.JPanel {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addGap(0, 184, Short.MAX_VALUE)
+                .addGap(0, 153, Short.MAX_VALUE)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 213, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -246,23 +246,33 @@ final class FindBugsPanel extends javax.swing.JPanel {
 
         jSplitPane1.setRightComponent(jPanel1);
 
+        org.openide.awt.Mnemonics.setLocalizedText(runInEditor, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.runInEditor.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(runInEditor)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(runInEditor)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSplitPane1))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
+        this.runInEditor.setSelected(NbPreferences.forModule(FindBugsPanel.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT));
     }
 
     void store() {
         this.settings.store(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
+        NbPreferences.forModule(RunInEditor.class).putBoolean(RunInEditor.RUN_IN_EDITOR, this.runInEditor.isSelected());
     }
 
     boolean valid() {
@@ -321,6 +331,7 @@ final class FindBugsPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JCheckBox runInEditor;
     // End of variables declaration//GEN-END:variables
 
     private boolean enabled(BugPattern bp) {

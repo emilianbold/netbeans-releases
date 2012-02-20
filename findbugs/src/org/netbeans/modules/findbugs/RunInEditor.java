@@ -46,6 +46,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementScanner6;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -56,9 +58,11 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.JavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
+import org.netbeans.modules.findbugs.RunFindBugs.SigFilesValidator;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -67,11 +71,20 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class RunInEditor implements CancellableTask<CompilationInfo> {
 
+    public static final String RUN_IN_EDITOR = "run-in-editor";
+    public static final boolean RUN_IN_EDITOR_DEFAULT = false;
+    
     private final AtomicBoolean cancel = new AtomicBoolean();
 
+    private String previousTimeStamps;
+    
     @Override
     public void run(final CompilationInfo parameter) throws Exception {
         cancel.set(false);
+
+        Logger.getLogger(RunInEditor.class.getName()).log(Level.INFO, "RunInEditor");
+
+        if (!NbPreferences.forModule(RunInEditor.class).getBoolean(RUN_IN_EDITOR, RUN_IN_EDITOR_DEFAULT)) return;
 
         ClassPath sourceCP = parameter.getClasspathInfo().getClassPath(PathKind.SOURCE);
         FileObject sourceRoot = sourceCP.findOwnerRoot(parameter.getFileObject());
@@ -90,9 +103,28 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
             }
         }.scan(parameter.getTopLevelElements(), null);
 
-        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(sourceRoot, classNames);
+        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(sourceRoot, classNames, new SigFilesValidator() {
+            @Override public boolean validate(Iterable<? extends FileObject> files) {
+                StringBuilder timeStamps = new StringBuilder();
 
-        if (cancel.get()) return;
+                for (FileObject f : files) {
+                    if (timeStamps.length() != 0) timeStamps.append("-");
+                    timeStamps.append(f.lastModified().getTime());
+                }
+                
+                String timeStampsString = timeStamps.toString();
+
+                if (timeStampsString.equals(previousTimeStamps)) {
+                    Logger.getLogger(RunInEditor.class.getName()).log(Level.FINE, "Classfiles did not change, skipping FindBugs in editor");
+                    return false;
+                }
+
+                previousTimeStamps = timeStampsString;
+                return true;
+            }
+        });
+
+        if (cancel.get() || bugs == null) return;
 
         HintsController.setErrors(parameter.getFileObject(), RunInEditor.class.getName(), bugs);
     }
