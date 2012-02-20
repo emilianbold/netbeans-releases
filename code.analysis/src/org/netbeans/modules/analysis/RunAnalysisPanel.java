@@ -45,6 +45,10 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -52,6 +56,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -62,8 +67,12 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
     
     private final JPanel progress;
     private final DefaultComboBoxModel configurationModel;
+    private final RequiredPluginsPanel requiredPlugins;
+    private final Collection<? extends Analyzer> analyzers;
 
     public RunAnalysisPanel(ProgressHandle handle, Collection<? extends Analyzer> analyzers) {
+        this.analyzers = analyzers;
+        
         configurationModel = new DefaultComboBoxModel();
         configurationModel.addElement(null);
 
@@ -88,13 +97,40 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         progress = new JPanel(new CardLayout());
         progress.add(new JPanel(), "empty");
         progress.add(ProgressHandleFactory.createProgressComponent(handle), "progress");
+        progress.add(requiredPlugins = new RequiredPluginsPanel(), "plugins");
         add(progress, gridBagConstraints);
         ((CardLayout) progress.getLayout()).show(progress, "empty");
+
+        updatePlugins();
     }
 
     void started() {
         ((CardLayout) progress.getLayout()).show(progress, "progress");
         progress.invalidate();
+    }
+
+    private void updatePlugins() {
+        Collection<? extends Analyzer> toRun;
+
+        if (configurationCombo.getSelectedItem() == null) {
+            toRun = analyzers;
+        } else {
+            toRun = Collections.singleton((Analyzer) configurationCombo.getSelectedItem());
+        }
+
+        Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, -1, -1);
+        Set<String> plugins = new HashSet<String>();
+
+        for (Analyzer a : toRun) {
+            plugins.addAll(a.requiredPlugins(ctx));
+        }
+
+        if (plugins.isEmpty()) {
+            ((CardLayout) progress.getLayout()).show(progress, "empty");
+        } else {
+            requiredPlugins.setRequiredPlugins(plugins);
+            ((CardLayout) progress.getLayout()).show(progress, "plugins");
+        }
     }
 
     public Analyzer getSelectedAnalyzer() {
@@ -143,6 +179,11 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
 
         configurationCombo.setModel(configurationModel);
+        configurationCombo.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                configurationComboActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -151,6 +192,11 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 0);
         add(configurationCombo, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void configurationComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_configurationComboActionPerformed
+        updatePlugins();
+    }//GEN-LAST:event_configurationComboActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox configurationCombo;
     private javax.swing.JComboBox jComboBox1;

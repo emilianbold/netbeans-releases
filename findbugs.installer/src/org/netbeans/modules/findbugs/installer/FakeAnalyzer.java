@@ -39,97 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.findbugs;
+package org.netbeans.modules.findbugs.installer;
 
-import edu.umd.cs.findbugs.BugPattern;
-import edu.umd.cs.findbugs.DetectorFactory;
-import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import java.awt.Image;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author lahvac
  */
-@ServiceProvider(service=Analyzer.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzer")
-public class AnalyzerImpl implements Analyzer {
+@ServiceProvider(service=Analyzer.class)
+public class FakeAnalyzer implements Analyzer {
 
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
-        Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        int i = 0;
-
-        ctx.start(sourceRoots.size());
-
-        for (FileObject sr : sourceRoots) {
-            result.addAll(RunFindBugs.runFindBugs(sr, null, null));
-            ctx.progress(++i);
-        }
-
-        ctx.finish();
-
-        return result;
+    public Iterable<? extends ErrorDescription> analyze(Context context) {
+        return Collections.emptyList();
     }
 
     @Override
-    @Messages("DN_FindBugs=FindBugs")
     public String getDisplayName() {
-        return Bundle.DN_FindBugs();
+        return "FindBugs";
     }
 
     @Override
     public String getDisplayName4Id(String id) {
-        if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
-        
-        id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
-
-        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
-
-        for (DetectorFactory df : dfc.getFactories()) {
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) return bp.getShortDescription();
-                if (id.equals(bp.getCategory())) {
-                    return dfc.getBugCategory(id).getShortDescription();
-                }
-            }
-        }
-
-        return id;
-    }
-
-    @Override
-    public Image getIcon() {
-        return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public String getCategoryId4WarningId(String id) {
-        if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 
-        id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
-
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) return RunFindBugs.PREFIX_FINDBUGS + bp.getCategory();
-            }
-        }
-
-        return RunFindBugs.PREFIX_FINDBUGS + id;
+    @Override
+    public Image getIcon() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
     public Collection<? extends String> requiredPlugins(Context context) {
-        return Collections.emptyList();
+        return Arrays.asList("org.netbeans.libs.findbugs");
     }
 
 }

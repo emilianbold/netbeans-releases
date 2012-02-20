@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.analysis;
 import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -164,6 +165,11 @@ public class AnalyzerImpl implements Analyzer {
         }
 
         return "text/x-java:" + id;
+    }
+
+    @Override
+    public Collection<? extends String> requiredPlugins(Context context) {
+        return Collections.emptyList();
     }
 
 }

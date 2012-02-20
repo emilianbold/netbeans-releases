@@ -42,6 +42,7 @@
 package org.netbeans.modules.analysis.spi;
 
 import java.awt.Image;
+import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -54,6 +55,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public interface Analyzer {
 
     public Iterable<? extends ErrorDescription> analyze(Context context);
+    public Collection<? extends String> requiredPlugins(Context context);
     public String getDisplayName();
     public String getDisplayName4Id(String id);
     public String getCategoryId4WarningId(String id);
