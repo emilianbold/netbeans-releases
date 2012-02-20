@@ -38,6 +38,7 @@
                               <Component id="resetButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="firstRunInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="syncInfoLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -53,7 +54,9 @@
               <Component id="firstRunInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Component id="itemScrollPane" pref="399" max="32767" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="syncInfoLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="diffButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="noopButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -91,6 +94,11 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JLabel" name="syncInfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="SYNC INFO LABEL" noResource="true"/>
+      </Properties>
+    </Component>
     <Component class="javax.swing.JButton" name="diffButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
