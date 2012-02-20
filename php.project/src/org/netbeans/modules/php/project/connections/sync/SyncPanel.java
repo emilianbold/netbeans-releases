@@ -146,6 +146,10 @@ public final class SyncPanel extends JPanel {
         return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
     }
 
+    public List<SyncItem> getItems() {
+        return items;
+    }
+
     private void initTable() {
         // model
         tableModel.addTableModelListener(new TableModelListener() {
@@ -476,6 +480,10 @@ public final class SyncPanel extends JPanel {
             fireTableCellUpdated(row, 2);
         }
 
+        public void fireSyncItemsChange() {
+            fireTableDataChanged();
+        }
+
     }
 
     private final class StringRenderer implements TableCellRenderer {
@@ -537,6 +545,8 @@ public final class SyncPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
+            boolean fireIndividualEvents = operation != SyncItem.Operation.DELETE_LOCALLY
+                    && operation != SyncItem.Operation.DELETE_REMOTELY;
             for (Integer index : selectedRows) {
                 SyncItem syncItem = items.get(index);
                 if (operation == null) {
@@ -545,7 +555,13 @@ public final class SyncPanel extends JPanel {
                     syncItem.setOperation(operation);
                 }
                 syncItem.validate();
-                tableModel.fireSyncItemChange(index);
+                if (fireIndividualEvents) {
+                    tableModel.fireSyncItemChange(index);
+                }
+            }
+            if (!fireIndividualEvents) {
+                // need to redraw all children and parents
+                tableModel.fireSyncItemsChange();
             }
         }
 

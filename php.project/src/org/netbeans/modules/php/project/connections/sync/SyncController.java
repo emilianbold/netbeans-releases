@@ -98,9 +98,9 @@ public final class SyncController implements Cancellable {
     }
 
     @NbBundle.Messages("SyncController.fetching=Fetching {0} files")
-    List<SyncItem> fetchSyncItems() {
+    SyncItems fetchSyncItems() {
         assert !SwingUtilities.isEventDispatchThread();
-        List<SyncItem> items = null;
+        SyncItems items = null;
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SyncController_fetching(phpProject.getName()), this);
         try {
             progressHandle.start();
@@ -115,19 +115,19 @@ public final class SyncController implements Cancellable {
         } finally {
             progressHandle.finish();
         }
-        return items != null ? Collections.synchronizedList(items) : null;
+        return items;
     }
 
-    void showPanel(final List<SyncItem> items, final SyncResultProcessor resultProcessor) {
+    void showPanel(final SyncItems items, final SyncResultProcessor resultProcessor) {
         if (cancelled || items == null) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), items);
+                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), items.getItems());
                 if (panel.open(lastTimeStamp == -1)) {
-                    doSynchronize(items, resultProcessor);
+                    doSynchronize(panel.getItems(), resultProcessor);
                 } else {
                     disconnect();
                 }
@@ -221,7 +221,7 @@ public final class SyncController implements Cancellable {
         }
     }
 
-    private List<SyncItem> pairItems(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
+    private SyncItems pairItems(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
         List<TransferFile> remoteFilesSorted = new ArrayList<TransferFile>(remoteFiles);
         Collections.sort(remoteFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
         List<TransferFile> localFilesSorted = new ArrayList<TransferFile>(localFiles);
@@ -230,7 +230,7 @@ public final class SyncController implements Cancellable {
         removeProjectRoot(remoteFilesSorted);
         removeProjectRoot(localFilesSorted);
 
-        List<SyncItem> items = new ArrayList<SyncItem>(Math.max(remoteFiles.size(), localFiles.size()));
+        SyncItems items = new SyncItems();
         Iterator<TransferFile> remoteFilesIterator = remoteFilesSorted.iterator();
         Iterator<TransferFile> localFilesIterator = localFilesSorted.iterator();
         TransferFile remote = null;
@@ -247,21 +247,21 @@ public final class SyncController implements Cancellable {
             }
             if (remote == null
                     || local == null) {
-                items.add(new SyncItem(remote, local, lastTimeStamp));
+                items.add(remote, local, lastTimeStamp);
                 remote = null;
                 local = null;
             } else {
                 int compare = TransferFile.TRANSFER_FILE_COMPARATOR.compare(remote, local);
                 if (compare == 0) {
                     // same remote paths
-                    items.add(new SyncItem(remote, local, lastTimeStamp));
+                    items.add(remote, local, lastTimeStamp);
                     remote = null;
                     local = null;
                 } else if (compare < 0) {
-                    items.add(new SyncItem(remote, null, lastTimeStamp));
+                    items.add(remote, null, lastTimeStamp);
                     remote = null;
                 } else {
-                    items.add(new SyncItem(null, local, lastTimeStamp));
+                    items.add(null, local, lastTimeStamp);
                     local = null;
                 }
             }

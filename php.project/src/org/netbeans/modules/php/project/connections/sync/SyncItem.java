@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.connections.sync;
 
+import java.util.LinkedList;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
@@ -117,6 +118,7 @@ public final class SyncItem {
     }
 
 
+    private final SyncItems syncItems;
     private final TransferFile remoteTransferFile;
     private final TransferFile localTransferFile;
     private final Operation defaultOperation;
@@ -126,8 +128,10 @@ public final class SyncItem {
     private volatile String message = null;
 
 
-    public SyncItem(TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
+    SyncItem(SyncItems syncItems, TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
+        assert syncItems != null;
         assert remoteTransferFile != null || localTransferFile != null;
+        this.syncItems = syncItems;
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
         defaultOperation = calculateDefaultOperation(lastTimestamp);
@@ -175,6 +179,10 @@ public final class SyncItem {
     @NbBundle.Messages({
         "SyncItem.error.fileConflict=File must be merged before synchronization.",
         "SyncItem.error.fileDirCollision=Cannot synchronize file with directory.",
+        "SyncItem.error.deleteLocallyNonExisting=Cannot delete non-existing local file.",
+        "SyncItem.error.childNotLocallyDeleted=Not all children marked for local deleting.",
+        "SyncItem.error.deleteRemotelyNonExisting=Cannot delete non-existing remote file.",
+        "SyncItem.error.childNotRemotelyDeleted=Not all children marked for remote deleting.",
         "SyncItem.warn.downloadReview=File should be reviewed before download.",
         "SyncItem.warn.uploadReview=File should be reviewed before upload."
     })
@@ -189,6 +197,30 @@ public final class SyncItem {
             valid = false;
             message = Bundle.SyncItem_error_fileDirCollision();
             return;
+        }
+        if (op == Operation.DELETE_LOCALLY) {
+            if (localTransferFile == null) {
+                valid = false;
+                message = Bundle.SyncItem_error_deleteLocallyNonExisting();
+                return;
+            }
+            if (!verifyChildrenOperation(localTransferFile, Operation.DELETE_LOCALLY)) {
+                valid = false;
+                message = Bundle.SyncItem_error_childNotLocallyDeleted();
+                return;
+            }
+        }
+        if (op == Operation.DELETE_REMOTELY) {
+            if (remoteTransferFile == null) {
+                valid = false;
+                message = Bundle.SyncItem_error_deleteRemotelyNonExisting();
+                return;
+            }
+            if (!verifyChildrenOperation(remoteTransferFile, Operation.DELETE_REMOTELY)) {
+                valid = false;
+                message = Bundle.SyncItem_error_childNotRemotelyDeleted();
+                return;
+            }
         }
         if (op == Operation.DOWNLOAD_REVIEW) {
             valid = true;
@@ -205,14 +237,20 @@ public final class SyncItem {
     }
 
     public boolean hasError() {
+        // XXX optimize?
+        validate();
         return !valid;
     }
 
     public boolean hasWarning() {
+        // XXX optimize?
+        validate();
         return valid && message != null;
     }
 
     public String getMessage() {
+        // XXX optimize?
+        validate();
         return message;
     }
 
@@ -292,6 +330,20 @@ public final class SyncItem {
             return Operation.UPLOAD;
         }
         return Operation.DOWNLOAD;
+    }
+
+    private boolean verifyChildrenOperation(TransferFile transferFile, Operation operation) {
+        LinkedList<TransferFile> children = new LinkedList<TransferFile>();
+        children.addAll(transferFile.getChildren());
+        while (!children.isEmpty()) {
+            TransferFile child = children.pop();
+            SyncItem syncItem = syncItems.getByRemotePath(child.getRemotePath());
+            if (syncItem.getOperation() != operation) {
+                return false;
+            }
+            children.addAll(child.getChildren());
+        }
+        return true;
     }
 
     @Override
