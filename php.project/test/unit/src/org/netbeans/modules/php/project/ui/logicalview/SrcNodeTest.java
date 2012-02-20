@@ -78,7 +78,6 @@ public class SrcNodeTest extends PhpTestCase {
             Node node = nodes.node(sourceGroup);
             Lookup lookup = node.getLookup();
             assertNotNull("Fileobject should be found", lookup.lookup(FileObject.class));
-            assertNotNull("SearchInfo should be found", lookup.lookup(SearchInfo.class));
             Children children = node.getChildren();
             assertTrue("Should have subnodes", children.getNodesCount(true) > 0);
             for (Node subnode : children.getNodes(true)) {
@@ -86,10 +85,7 @@ public class SrcNodeTest extends PhpTestCase {
                 FileObject fileObject = sublookup.lookup(FileObject.class);
                 assertNotNull("Fileobject should be found", fileObject);
                 assertEquals("Fileobjects should be same", subfolder, fileObject);
-                assertNotNull("SearchInfo should be found", sublookup.lookup(SearchInfo.class));
             }
         }
-
     }
-
 }

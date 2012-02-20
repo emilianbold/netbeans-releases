@@ -1101,7 +1101,7 @@ public final class PhpProject implements Project {
 
         @Override
         public List<SearchRoot> getSearchRoots() {
-            return delegate.getSearchRoots();
+            return getDelegate().getSearchRoots();
         }
 
         private FileObject[] getRoots() {

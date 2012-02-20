@@ -75,6 +75,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -97,7 +98,7 @@ public class SrcNode extends FilterNode {
     }
 
     private SrcNode(PhpProject project, DataFolder folder, FilterNode node, String name, boolean isTest) {
-        super(node, new FolderChildren(project, node, isTest), folder.getNodeDelegate().getLookup());
+        super(node, new FolderChildren(project, node, isTest), new ProxyLookup(folder.getNodeDelegate().getLookup()));
 
         this.project = project;
         this.isTest = isTest;
@@ -233,7 +234,7 @@ public class SrcNode extends FilterNode {
 
         public PackageNode(PhpProject project, final Node originalNode, boolean isTest) {
             super(originalNode, new FolderChildren(project, originalNode, isTest),
-                    originalNode.getLookup());
+                    new ProxyLookup(originalNode.getLookup()));
             this.project = project;
             this.isTest = isTest;
 
