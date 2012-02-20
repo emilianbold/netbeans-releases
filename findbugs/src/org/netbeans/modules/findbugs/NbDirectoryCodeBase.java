@@ -102,6 +102,17 @@ public final class NbDirectoryCodeBase extends DirectoryCodeBase {
         };
     }
 
+    @Override
+    public ICodeBaseEntry lookupResource(String resourceName) {
+        if (resourceName.endsWith(".class")) {
+            ICodeBaseEntry result = lookupResource(resourceName.substring(0, resourceName.length() - "class".length()) + "sig");
+
+            if (result != null) return result;
+        }
+
+        return super.lookupResource(resourceName);
+    }
+
     private RecursiveFileSearch getRecursiveFileSearch() {
         try {
             Field fld = DirectoryCodeBase.class.getDeclaredField("rfs"); //NOI18N
