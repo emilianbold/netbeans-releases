@@ -69,6 +69,10 @@ public class NextError extends AbstractAction implements PropertyChangeListener 
     
     @Override
     public boolean isEnabled() {
+        if (comp.nodesForNext == null) {
+            return !comp.empty;
+        }
+
         Node node = getNextMeaningfullNode();
         boolean enabled = node != null;
         

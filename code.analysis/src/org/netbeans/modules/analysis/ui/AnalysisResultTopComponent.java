@@ -298,6 +298,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     }
 
     List<Node> nodesForNext;
+    boolean empty;
     List<Node> seenNodes;
     final PreviousError prevAction;
     final NextError nextAction;
@@ -313,6 +314,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         }
         refreshButton.setEnabled(context != Lookup.EMPTY);
         nodesForNext = null;
+        empty = provider2Hints.isEmpty();
         fireActionEnabledChange();
     }
 

@@ -71,6 +71,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -167,7 +168,19 @@ public class Nodes {
         }
     };
 
-    private static Children constructSemiLogicalViewChildren(Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
+    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
+        return Children.create(new ChildFactory<Node>() {
+            @Override protected boolean createKeys(List<Node> toPopulate) {
+                toPopulate.addAll(constructSemiLogicalViewNodes(errors));
+                return true;
+            }
+            @Override protected Node createNodeForKey(Node key) {
+                return key;
+            }
+        }, true);
+    }
+
+    private static List<Node> constructSemiLogicalViewNodes(Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
         Map<Project, Map<FileObject, Map<Analyzer, List<ErrorDescription>>>> projects = new HashMap<Project, Map<FileObject, Map<Analyzer, List<ErrorDescription>>>>();
         
         for (FileObject file : errors.keySet()) {
@@ -188,21 +201,27 @@ public class Nodes {
         
         projects.remove(null);
         
-        List<Node> nodes = new LinkedList<Node>();
+        List<Node> nodes = new ArrayList<Node>(projects.size());
         
         for (Project p : projects.keySet()) {
             nodes.add(constructSemiLogicalView(p, projects.get(p)));
         }
+
+        Collections.sort(nodes, new Comparator<Node>() {
+            @Override public int compare(Node o1, Node o2) {
+                return o1.getDisplayName().compareToIgnoreCase(o2.getDisplayName());
+            }
+        });
         
 //        Children.Array subNodes = new Children.Array();
 //        
 //        subNodes.add(nodes.toArray(new Node[0]));
         
-        return new DirectChildren(nodes);
+        return nodes;
     }
     
-    private static Node constructSemiLogicalView(final Project p, Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
-        LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
+    private static Node constructSemiLogicalView(final Project p, final Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
+        final LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         final Node view;
         
         if (lvp != null) {
@@ -216,40 +235,41 @@ public class Nodes {
             }
         }
         
+        final Wrapper[] w = new Wrapper[1];
+
+        w[0] = new Wrapper(view, new FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>>() {
+            private Map<Node, Map<Analyzer, List<ErrorDescription>>> computed;
+            @Override public synchronized Map<Node, Map<Analyzer, List<ErrorDescription>>> get() {
+                if (computed == null) {
+                    computed = resolveFileNodes(lvp, w[0], view, errors);
+                }
+                
+                return computed;
+            }
+        });
+
+        return w[0];
+    }
+
+    private static Map<Node, Map<Analyzer, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, Wrapper w, final Node view, Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
         Map<Node, Map<Analyzer, List<ErrorDescription>>> fileNodes = new HashMap<Node, Map<Analyzer, List<ErrorDescription>>>();
-        
+
         for (FileObject file : errors.keySet()) {
             Map<Analyzer, List<ErrorDescription>> eds = errors.get(file);
             Node foundChild = locateChild(view, lvp, file);
 
             if (foundChild == null) {
-                Node n = new AbstractNode(Children.LEAF) {
-                    @Override
-                    public Image getIcon(int type) {
-                        return ImageUtilities.icon2Image(ProjectUtils.getInformation(p).getIcon());
-                    }
-                    @Override
-                    public Image getOpenedIcon(int type) {
-                        return getIcon(type);
-                    }
-                    @Override
-                    public String getHtmlDisplayName() {
-                        return view.getHtmlDisplayName() != null ? NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getHtmlDisplayName()) : null;
-                    }
-                    @Override
-                    public String getDisplayName() {
-                        return NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName());
-                    }
-                };
+                w.displayName = NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName());
+                w.htmlDisplayName = view.getHtmlDisplayName() != null ? NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getHtmlDisplayName()) : null;
+                w.fireDisplayNameChange();
 
-                return n;
+                return Collections.emptyMap();
             }
 
             fileNodes.put(foundChild, eds);
-            
         }
-        
-        return new Wrapper(view, fileNodes);
+
+        return fileNodes;
     }
     
     private static Node locateChild(Node parent, LogicalViewProvider lvp, FileObject file) {
@@ -262,8 +282,8 @@ public class Nodes {
 
     private static class Wrapper extends FilterNode {
 
-        public Wrapper(Node orig, Map<Node, Map<Analyzer, List<ErrorDescription>>> fileNodes) {
-            super(orig, new WrapperChildren(orig, fileNodes), lookupForNode(orig, fileNodes));
+        public Wrapper(Node orig, FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
+            super(orig, new WrapperChildren(orig, fileNodes), Lookup.EMPTY);
         }
         
         public Wrapper(Node orig, Map<Analyzer, List<ErrorDescription>> errors, boolean file) {
@@ -275,12 +295,32 @@ public class Nodes {
             return new Action[0];
         }
 
+        private String displayName;
+
+        @Override
+        public String getDisplayName() {
+            if (displayName == null) {
+                return getOriginal().getDisplayName();
+            }
+            return displayName;
         }
 
-    private static Lookup lookupForNode(Node n, Map<Node, Map<Analyzer, List<ErrorDescription>>> fileNodes) {
-        return Lookups.fixed();
+        private String htmlDisplayName;
+        
+        @Override
+        public String getHtmlDisplayName() {
+            if (htmlDisplayName == null) {
+                return getOriginal().getHtmlDisplayName();
+            }
+            return htmlDisplayName;
+        }
+
+        private void fireDisplayNameChange() {
+            fireDisplayNameChange(null, getDisplayName());
+        }
+
     }
-    
+
     private static Lookup lookupForFileNode(Node n, Map<Analyzer, List<ErrorDescription>> errors) {
         return Lookups.fixed();
     }
@@ -302,11 +342,12 @@ public class Nodes {
     private static class WrapperChildren extends Children.Keys<Node> {
 
         private final Node orig;
-        private final java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes;
+        private final FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>> fileNodesFuture;
+        private java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes;
 
-        public WrapperChildren(Node orig, java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes) {
+        public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
             this.orig = orig;
-            this.fileNodes = fileNodes;
+            this.fileNodesFuture = fileNodes;
             
         }
         
@@ -316,7 +357,8 @@ public class Nodes {
             doSetKeys();
         }
 
-        private void doSetKeys() {
+        private synchronized void doSetKeys() {
+            java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
             Node[] nodes = orig.getChildren().getNodes(true);
             List<Node> toSet = new LinkedList<Node>();
             
@@ -333,11 +375,13 @@ public class Nodes {
         }
         
         @Override
-        protected Node[] createNodes(Node key) {
+        protected synchronized Node[] createNodes(Node key) {
+            java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
             if (fileNodes.containsKey(key)) {
+                
                 return new Node[] {new Wrapper(key, fileNodes.get(key), true)};
             }
-            return new Node[] {new Wrapper(key, fileNodes)};
+            return new Node[] {new Wrapper(key, fileNodesFuture)};
         }
         
     }
@@ -443,6 +487,10 @@ public class Nodes {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    interface FutureValue<T> {
+        T get();
     }
 
 }

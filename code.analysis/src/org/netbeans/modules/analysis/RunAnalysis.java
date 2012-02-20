@@ -149,15 +149,15 @@ public class RunAnalysis {
                         final Map<Analyzer, List<ErrorDescription>> result = new HashMap<Analyzer, List<ErrorDescription>>();
                         int i = 0;
 
-                        OUTTER:
                         for (Analyzer analyzer : analyzers) {
                             if (doCancel.get()) {
-                                break OUTTER;
+                                break ;
                             }
                             List<ErrorDescription> current = new ArrayList<ErrorDescription>();
                             for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(Scope.create(sourceRoots, nonRecursiveFolders, files), contributors[i++]))) {
                                 current.add(ed);
                             }
+                            if (current.isEmpty()) continue;
                             result.put(analyzer, current);
                         }
 
@@ -166,6 +166,7 @@ public class RunAnalysis {
                                 if (!doCancel.get()) {
                                     AnalysisResultTopComponent.findInstance().setData(Lookups.fixed(), result);
                                     AnalysisResultTopComponent.findInstance().open();
+                                    AnalysisResultTopComponent.findInstance().requestActive();
                                 }
 
                                 d.setVisible(false);
