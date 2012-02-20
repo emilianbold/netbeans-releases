@@ -118,6 +118,8 @@ public final class FileItem {
     private final Operation defaultOperation;
 
     private volatile Operation operation;
+    private volatile boolean valid;
+    private volatile String message = null;
 
 
     public FileItem(TransferFile remoteTransferFile, TransferFile localTransferFile, Long lastTimestamp) {
@@ -125,6 +127,7 @@ public final class FileItem {
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
         defaultOperation = calculateOperation(lastTimestamp);
+        validate();
     }
 
     public String getRemotePath() {
@@ -163,6 +166,44 @@ public final class FileItem {
 
     public void resetOperation() {
         operation = null;
+    }
+
+    @NbBundle.Messages({
+        "FileItem.warn.downloadReview=File must be reviewed before download.",
+        "FileItem.warn.uploadReview=File must be reviewed before upload.",
+        "FileItem.error.fileDirCollision=Cannot synchronize file with directory."
+    })
+    public void validate() {
+        Operation op = getOperation();
+        if (op == Operation.DOWNLOAD_REVIEW) {
+            valid = true;
+            message = Bundle.FileItem_warn_downloadReview();
+            return;
+        }
+        if (op == Operation.UPLOAD_REVIEW) {
+            valid = true;
+            message = Bundle.FileItem_warn_uploadReview();
+            return;
+        }
+        if (op == Operation.FILE_DIR_COLLISION) {
+            valid = false;
+            message = Bundle.FileItem_error_fileDirCollision();
+            return;
+        }
+        message = null;
+        valid = true;
+    }
+
+    public boolean hasError() {
+        return !valid;
+    }
+
+    public boolean hasWarning() {
+        return valid && message != null;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     private Operation calculateOperation(Long lastTimestamp) {
@@ -221,7 +262,8 @@ public final class FileItem {
                 + "path: " + (localTransferFile != null ? localTransferFile.getRemotePath() : remoteTransferFile.getRemotePath()) // NOI18N
                 + ", localFile: " + (localTransferFile != null) // NOI18N
                 + ", remoteFile: " + (remoteTransferFile != null) // NOI18N
-                + ", operation: " + operation // NOI18N
+                + ", operation: " + getOperation() // NOI18N
+                + ", valid: " + valid // NOI18N
                 + "}"; // NOI18N
     }
 

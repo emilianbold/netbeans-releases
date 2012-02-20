@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.connections.synchronize;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
@@ -57,6 +58,7 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -85,12 +87,13 @@ public final class SynchronizePanel extends JPanel {
     private static final String RESET_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
 
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
+    static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
+
+    final List<FileItem> files;
+    final FileTableModel tableModel;
 
     private final String projectName;
-    // XXX replace with RUN (!) configuration
     private final String remoteConfigurationName;
-    private final List<FileItem> files;
-    private final AbstractTableModel tableModel;
 
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
@@ -146,26 +149,22 @@ public final class SynchronizePanel extends JPanel {
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                int firstRow = e.getFirstRow();
-                int lastRow = e.getLastRow();
-                if (lastRow - firstRow > files.size()) {
-                    // all data change
-                    validateFiles();
-                } else {
-                    // row changes
-                    validateFiles(firstRow, lastRow);
-                }
+                validateFiles();
             }
         });
         fileTable.setModel(tableModel);
         // renderer
         fileTable.setDefaultRenderer(String.class, new StringRenderer());
         fileTable.setDefaultRenderer(FileItem.Operation.class, new OperationRenderer());
-        // column widths
+        // columns
+        fileTable.getTableHeader().setReorderingAllowed(false);
         TableColumnModel columnModel = fileTable.getColumnModel();
-        columnModel.getColumn(0).setPreferredWidth(300);
-        columnModel.getColumn(1).setPreferredWidth(100);
-        columnModel.getColumn(2).setPreferredWidth(300);
+        columnModel.getColumn(0).setMinWidth(10);
+        columnModel.getColumn(0).setMaxWidth(10);
+        columnModel.getColumn(0).setResizable(false);
+        columnModel.getColumn(2).setMinWidth(100);
+        columnModel.getColumn(2).setMaxWidth(100);
+        columnModel.getColumn(2).setResizable(false);
         // selections
         fileTable.setColumnSelectionAllowed(false);
         fileTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -229,16 +228,29 @@ public final class SynchronizePanel extends JPanel {
         diffButton.setEnabled(true);
     }
 
+    // XXX
+    @NbBundle.Messages({
+        "SynchronizePanel.error.operations=Some errors.",
+        "SynchronizePanel.warn.operations=Some warnings."
+    })
     void validateFiles() {
-        // table data changed
-        validateFiles(0, files.size() - 1);
-    }
-
-    void validateFiles(int from, int to) {
         assert SwingUtilities.isEventDispatchThread();
-        // row change
-        // XXX validate all files and highlight those with errors
-        System.out.println("+++++ validating rows: " + from + " - " + to);
+        boolean warn = false;
+        for (FileItem fileItem : files) {
+            if (fileItem.hasError()) {
+                notificationLineSupport.setErrorMessage(Bundle.SynchronizePanel_error_operations());
+                descriptor.setValid(false);
+                return;
+            }
+            if (fileItem.hasWarning()) {
+                warn = true;
+            }
+        }
+        if (warn) {
+            notificationLineSupport.setWarningMessage(Bundle.SynchronizePanel_warn_operations());
+        } else {
+            notificationLineSupport.clearMessages();
+        }
         descriptor.setValid(true);
     }
 
@@ -353,6 +365,7 @@ public final class SynchronizePanel extends JPanel {
             "SynchronizePanel.table.column.operation.title=Operation"
         })
         private static final String[] COLUMNS = {
+            "", // NOI18N
             Bundle.SynchronizePanel_table_column_remote_title(),
             Bundle.SynchronizePanel_table_column_operation_title(),
             Bundle.SynchronizePanel_table_column_local_title(),
@@ -380,14 +393,26 @@ public final class SynchronizePanel extends JPanel {
             return COLUMNS.length;
         }
 
+        @NbBundle.Messages({
+            "SynchronizePanel.error.cellValue=!",
+            "SynchronizePanel.warning.cellValue=?"
+        })
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             FileItem fileItem = files.get(rowIndex);
             if (columnIndex == 0) {
-                return fileItem.getRemotePath();
+                if (!fileItem.hasError()) {
+                    return Bundle.SynchronizePanel_error_cellValue();
+                }
+                if (fileItem.hasWarning()) {
+                    return Bundle.SynchronizePanel_warning_cellValue();
+                }
+                return null;
             } else if (columnIndex == 1) {
-                return fileItem.getOperation();
+                return fileItem.getRemotePath();
             } else if (columnIndex == 2) {
+                return fileItem.getOperation();
+            } else if (columnIndex == 3) {
                 return fileItem.getLocalPath();
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
@@ -401,33 +426,51 @@ public final class SynchronizePanel extends JPanel {
         @Override
         public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex == 0
-                    || columnIndex == 2) {
+                    || columnIndex == 1
+                    || columnIndex == 3) {
                 return String.class;
-            } else if (columnIndex == 1) {
+            } else if (columnIndex == 2) {
                 return FileItem.Operation.class;
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
 
+        public void fireFileItemChange(int row) {
+            fireTableCellUpdated(row, 0);
+            fireTableCellUpdated(row, 2);
+        }
+
     }
 
-    private static final class StringRenderer implements TableCellRenderer {
+    private final class StringRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = 567654543546954L;
 
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel rendererComponent;
             String text = (String) value;
+            if (column == 0) {
+                // error
+                rendererComponent = (JLabel) ERROR_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
+                rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
+                FileItem fileItem = files.get(row);
+                rendererComponent.setForeground(UIManager.getColor(fileItem.hasError() ? "nb.errorForeground" : "nb.warningForeground")); // NOI18N
+                rendererComponent.setToolTipText(files.get(row).getMessage());
+            } else {
+                rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                // file path
+                rendererComponent.setToolTipText(text);
+            }
             rendererComponent.setText(text);
-            rendererComponent.setToolTipText(text);
             return rendererComponent;
         }
 
     }
 
-    private static final class OperationRenderer implements TableCellRenderer {
+    private final class OperationRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = -6786654671313465458L;
 
@@ -453,18 +496,20 @@ public final class SynchronizePanel extends JPanel {
             this.operation = operation;
         }
 
+        // can be done in background thread if needed
         @Override
         public void actionPerformed(ActionEvent e) {
             int[] selectedRows = fileTable.getSelectedRows();
             assert selectedRows.length > 0;
             for (Integer index : selectedRows) {
+                FileItem fileItem = files.get(index);
                 if (operation == null) {
-                    files.get(index).resetOperation();
+                    fileItem.resetOperation();
                 } else {
-                    files.get(index).setOperation(operation);
+                    fileItem.setOperation(operation);
                 }
-                // perhaps validate file here (to avoid stack overflow)
-                tableModel.fireTableCellUpdated(index, 1);
+                fileItem.validate();
+                tableModel.fireFileItemChange(index);
             }
         }
 
