@@ -55,6 +55,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
@@ -86,7 +87,10 @@ public final class MIMEResolverImpl {
     /** Position of user-defined mime resolver. Need to very low to override all other resolvers. */
     private static final int USER_DEFINED_MIME_RESOLVER_POSITION = 10;
 
-    public static MIMEResolver forDescriptor(FileObject fo) {
+    public static MIMEResolver forDescriptor(FileObject fo) throws IOException {
+        if (fo.getSize() == 0) {
+            return create(fo);
+        }
         return forDescriptor(fo, true);
     }
     static MIMEResolver forDescriptor(FileObject fo, boolean warn) {
@@ -142,8 +146,13 @@ public final class MIMEResolverImpl {
      */
     public static Map<String, Set<String>> getMIMEToExtensions(FileObject fo) {
         Impl impl;
-        if (!fo.hasExt("xml")) { // NOI18N
-            impl = FileUtil.getConfigObject(fo.getPath(), Impl.class);
+        if (!fo.hasExt("xml") || fo.getSize() == 0) { // NOI18N
+            try {
+                impl = (Impl) MIMEResolverImpl.create(fo);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                impl = null;
+            }
             if (impl == null) {
                 return Collections.emptyMap();
             }

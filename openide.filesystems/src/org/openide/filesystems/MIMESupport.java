@@ -51,16 +51,17 @@ import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.Union2;
+import org.openide.util.*;
 
 /**
  * This class is intended to enhance MIME resolving. This class offers
@@ -218,20 +219,8 @@ final class MIMESupport extends Object {
 
             ERR.fine("Computing resolvers"); // NOI18N
 
-            List<FileObject> instances = new ArrayList<FileObject>();
-            List<MIMEResolver> all = new ArrayList<MIMEResolver>(declarativeResolvers(instances));
-            final Collection<? extends MIMEResolver> regularLookup = result.allInstances();
-            if (regularLookup.isEmpty() && !instances.isEmpty()) {
-                for (FileObject fo : instances) {
-                    MIMEResolver mr = FileUtil.getConfigObject(fo.getPath(), MIMEResolver.class);
-                    if (mr != null) {
-                        all.add(mr);
-                    }
-                }
-            } else {
-                all.addAll(regularLookup);
-            }
-            
+            List<MIMEResolver> all = new ArrayList<MIMEResolver>(declarativeResolvers());
+            all.addAll(result.allInstances());
             MIMEResolver[] toRet = all.toArray(new MIMEResolver[all.size()]);
 
             ERR.fine("Resolvers computed"); // NOI18N
@@ -279,9 +268,7 @@ final class MIMESupport extends Object {
         // holds reference to not loose FileChangeListener
         private static FileObject declarativeFolder = null;
 
-        private static synchronized List<MIMEResolver> declarativeResolvers(
-            List<FileObject> instances
-        ) {
+        private static synchronized List<MIMEResolver> declarativeResolvers() {
             List<MIMEResolver> declmimes = new ArrayList<MIMEResolver>();
             if (declarativeFolder == null) {
                 declarativeFolder = FileUtil.getConfigFile("Services/MIMEResolver"); // NOI18N
@@ -289,11 +276,12 @@ final class MIMESupport extends Object {
             if (declarativeFolder != null) {
                 for (FileObject f : Ordering.getOrder(Arrays.asList(declarativeFolder.getChildren()), true)) {
                     if (f.hasExt("xml")) { // NOI18N
-                        // For now, just assume it has the right DTD. Could check this if desired.
-                        declmimes.add(MIMEResolverImpl.forDescriptor(f));
-                    }
-                    if (f.hasExt("instance")) { // NOI18N
-                        instances.add(f);
+                        try {
+                            // For now, just assume it has the right DTD. Could check this if desired.
+                            declmimes.add(MIMEResolverImpl.forDescriptor(f)); // NOI18N
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                     }
                 }
                 declarativeFolder.removeFileChangeListener(weakDeclarativeFolderListener);
