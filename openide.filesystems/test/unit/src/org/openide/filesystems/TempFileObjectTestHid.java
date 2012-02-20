@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,24 +34,52 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.profiler;
-
-import org.netbeans.lib.profiler.results.ResultsSnapshot;
-import org.netbeans.lib.profiler.ui.ResultsView;
-
+package org.openide.filesystems;
 
 /**
- * A common superclass for all snapshot panels.
  *
- * @author Tomas Hurka
- * @author Ian Formanek
+ * @author Alexander Simon
  */
-public abstract class SnapshotPanel extends ResultsView {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+public class TempFileObjectTestHid extends TestBaseHid {
+    private FileObject root;
 
-    public abstract ResultsSnapshot getSnapshot();
+    public TempFileObjectTestHid(String name) {
+        super(name);
+    }
 
-    public abstract void updateSavedState();
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        root = testedFS.findResource(getResourcePrefix());
+    }
+
+    @Override
+    protected String[] getResources(String testName) {
+        return new String[] {};
+    }
+    
+    public void testTempDir() throws Exception {
+        FileObject tempFolder = root.getFileSystem().getTempFolder();
+        assertNotNull(tempFolder);
+        assertTrue(tempFolder.isValid());
+        assertTrue(tempFolder.isFolder());
+        assertEquals(tempFolder.getFileSystem(), root.getFileSystem());
+    }
+
+    public void testTempFile() throws Exception {
+        FileObject tempFolder = root.getFileSystem().getTempFolder();
+        FileObject tempFile = root.getFileSystem().createTempFile(tempFolder, "out", ".tmp", true);
+        assertNotNull(tempFile);
+        assertTrue(tempFile.isValid());
+        assertTrue(tempFile.isData());
+        assertEquals(tempFile.getParent(), tempFolder);
+        assertEquals(tempFolder.getFileSystem(), tempFile.getFileSystem());
+        assertTrue(tempFile.getNameExt().startsWith("out"));
+        assertTrue(tempFile.getNameExt().endsWith(".tmp"));
+    }
 }

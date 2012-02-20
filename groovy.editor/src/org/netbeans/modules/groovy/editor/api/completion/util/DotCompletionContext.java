@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,24 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.profiler;
+package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import org.netbeans.lib.profiler.results.ResultsSnapshot;
-import org.netbeans.lib.profiler.ui.ResultsView;
-
+import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**
- * A common superclass for all snapshot panels.
  *
- * @author Tomas Hurka
- * @author Ian Formanek
+ * @author Martin Janicek
  */
-public abstract class SnapshotPanel extends ResultsView {
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
+public class DotCompletionContext {
 
-    public abstract ResultsSnapshot getSnapshot();
+    private final int lexOffset;
+    private final int astOffset;
+    private final AstPath astPath;
+    private final boolean methodsOnly;
 
-    public abstract void updateSavedState();
+    public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath, boolean methodsOnly) {
+        this.lexOffset = lexOffset;
+        this.astOffset = astOffset;
+        this.astPath = astPath;
+        this.methodsOnly = methodsOnly;
+    }
+
+    public int getLexOffset() {
+        return lexOffset;
+    }
+
+    public int getAstOffset() {
+        return astOffset;
+    }
+
+    public AstPath getAstPath() {
+        return astPath;
+    }
+
+    public boolean isMethodsOnly() {
+        return methodsOnly;
+    }
 }

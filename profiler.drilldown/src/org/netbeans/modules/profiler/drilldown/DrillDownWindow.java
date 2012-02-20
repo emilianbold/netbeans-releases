@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.drilldown;
 
+import java.awt.Dimension;
 import org.netbeans.lib.profiler.ui.cpu.statistics.StatisticalModule;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -50,7 +51,6 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import java.awt.Image;
-import java.awt.Insets;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractButton;
@@ -216,7 +216,17 @@ public final class DrillDownWindow extends TopComponent {
 
     // --- Presenter stuff -------------------------------------------------------
     private AbstractButton createPresenter() {
-        JToggleButton button = new JToggleButton();
+        JToggleButton button = new JToggleButton() {
+            public Dimension getPreferredSize() {
+                Dimension d = super.getPreferredSize();
+                d.width += 20;
+                return d;
+            }
+
+            public Dimension getMinimumSize() {
+                return getPreferredSize();
+            }
+        };
 
         if (getIcon() == null) {
             button.setText(getName());
@@ -225,9 +235,6 @@ public final class DrillDownWindow extends TopComponent {
             button.setIcon(new ImageIcon(getIcon()));
             button.setToolTipText(getName());
         }
-
-        Insets buttonMargin = button.getMargin();
-        button.setMargin(new Insets(buttonMargin.top, buttonMargin.top + 10, buttonMargin.bottom, buttonMargin.top + 10));
 
         return button;
     }
