@@ -50,16 +50,15 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.api.CssCslParserResult;
-import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.ui.preview.CssTCController;
 import org.netbeans.modules.css.visual.v2.RuleContext;
 import org.netbeans.modules.css.visual.v2.RuleEditorTC;
-import org.netbeans.modules.css.visual.v2.RuleNode;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.*;
 import org.openide.windows.WindowManager;
@@ -190,9 +189,9 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssCslParser
         model.runReadTask(new Model.ModelTask() {
 
             @Override
-            public void run(Model model) {
+            public void run(StyleSheet styleSheet) {
                 Rule match = null;
-                List<Rule> rules = model.getStyleSheet().getBody().getRules();
+                List<Rule> rules = styleSheet.getBody().getRules();
                 for (Rule rule : rules) {
                     if (offset > rule.getStartOffset() && offset < rule.getEndOffset()) {
                         match = rule;

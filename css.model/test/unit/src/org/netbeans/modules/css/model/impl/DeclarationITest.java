@@ -69,9 +69,8 @@ public class DeclarationITest extends ModelTestBase {
 
     public void testResolvedProperty() throws BadLocationException, ParseException {
         String code = "div { padding : 1px 2px }";
-        Model model = createModel(code);
         
-        StyleSheet styleSheet = model.getStyleSheet();
+        StyleSheet styleSheet = createStyleSheet(code);
         Declaration d = styleSheet.getBody().getRules().get(0).getDeclarations().getDeclarations().get(0);
         assertNotNull(d);
         

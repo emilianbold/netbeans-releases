@@ -49,6 +49,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.nodes.AbstractNode;
@@ -169,10 +170,10 @@ public class RuleNode extends AbstractNode {
                 return ;
             }
             
-            model.runWriteTask(new Model.ModelTask() {
+            model.runReadTask(new Model.ModelTask() {
 
                 @Override
-                public void run(final Model model) {
+                public void run(StyleSheet styleSheet) {
                     doc.runAtomic(new Runnable() {
 
                         @Override

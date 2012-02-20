@@ -73,9 +73,8 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
         model.runWriteTask(new Model.ModelTask() {
 
             @Override
-            public void run(Model model) {
+            public void run(StyleSheet styleSheet) {
 
-                StyleSheet styleSheet = model.getStyleSheet();
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 

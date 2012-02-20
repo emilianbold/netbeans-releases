@@ -185,8 +185,8 @@ public class ModelTest extends ModelTestBase {
         model.runReadTask(new Model.ModelTask() {
 
             @Override
-            public void run(Model model) {
-                assertEquals(1, model.getStyleSheet().getBody().getRules().size());
+            public void run(StyleSheet styleSheet) {
+                assertEquals(1, styleSheet.getBody().getRules().size());
             }
         });
         
@@ -198,8 +198,8 @@ public class ModelTest extends ModelTestBase {
         model.runWriteTask(new Model.ModelTask() {
 
             @Override
-            public void run(Model model) {
-                model.getStyleSheet().getBody().getRules().get(0).getDeclarations()
+            public void run(StyleSheet styleSheet) {
+                styleSheet.getBody().getRules().get(0).getDeclarations()
                         .getDeclarations().get(0).getProperty().setContent("background-color");
             }
         });
