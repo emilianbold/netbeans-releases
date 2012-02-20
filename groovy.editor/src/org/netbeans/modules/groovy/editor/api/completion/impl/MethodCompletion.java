@@ -98,75 +98,11 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        // FIXME move this to separate method completeConstructors()
         if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
-            LOG.log(Level.FINEST, "This looks like a constructor ...");
-
-            // look for all imported types starting with prefix, which have public constructors
-            final JavaSource javaSource = getJavaSourceFromRequest(request);
-            final List<String> defaultImports = new ArrayList<String>();
-            defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
-
-            if (javaSource != null) {
-
-                try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController info) {
-
-                            for (String singlePackage : defaultImports) {
-                                List<? extends Element> typelist;
-
-                                typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
-
-                                if (typelist == null) {
-                                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
-                                    continue;
-                                }
-
-                                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
-
-                                for (Element element : typelist) {
-                                    // only look for classes rather than enums or interfaces
-                                    if (element.getKind() == ElementKind.CLASS) {
-                                        TypeElement te = (TypeElement) element;
-
-                                        List<? extends Element> enclosed = te.getEnclosedElements();
-
-                                        // we gotta get the constructors name from the type itself, since
-                                        // all the constructors are named <init>.
-
-                                        String constructorName = te.getSimpleName().toString();
-
-                                        for (Element encl : enclosed) {
-                                            if (encl.getKind() == ElementKind.CONSTRUCTOR) {
-
-                                                if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-
-                                                    LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-
-                                                    String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                                    List<CompletionItem.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
-
-                                                    proposals.add(new CompletionItem.ConstructorItem(constructorName, paramListString, paramList, anchor, false));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
-                }
-
-            }
-
-            return !proposals.isEmpty();
+            return completeConstructor(proposals, request, anchor);
         }
 
         // 2.2  static/instance method on class or object
-
         if (!request.isBehindDot() && request.ctx.before1 != null) {
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
@@ -210,6 +146,70 @@ public class MethodCompletion extends BaseCompletion {
         proposals.addAll(result.values());
 
         return true;
+    }
+
+    private boolean completeConstructor(final List<CompletionProposal> proposals, final CompletionRequest request, final int anchor) {
+        LOG.log(Level.FINEST, "This looks like a constructor ...");
+
+        // look for all imported types starting with prefix, which have public constructors
+        final JavaSource javaSource = getJavaSourceFromRequest(request);
+        final List<String> defaultImports = new ArrayList<String>();
+        defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
+
+        if (javaSource != null) {
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController info) {
+
+                        for (String singlePackage : defaultImports) {
+                            List<? extends Element> typelist;
+
+                            typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
+
+                            if (typelist == null) {
+                                LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
+                                continue;
+                            }
+
+                            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+
+                            for (Element element : typelist) {
+                                // only look for classes rather than enums or interfaces
+                                if (element.getKind() == ElementKind.CLASS) {
+                                    TypeElement te = (TypeElement) element;
+
+                                    List<? extends Element> enclosed = te.getEnclosedElements();
+
+                                    // we gotta get the constructors name from the type itself, since
+                                    // all the constructors are named <init>.
+
+                                    String constructorName = te.getSimpleName().toString();
+
+                                    for (Element encl : enclosed) {
+                                        if (encl.getKind() == ElementKind.CONSTRUCTOR) {
+
+                                            if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+
+                                                LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
+
+                                                String paramListString = getParameterListForMethod((ExecutableElement)encl);
+                                                List<CompletionItem.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
+
+                                                proposals.add(new CompletionItem.ConstructorItem(constructorName, paramListString, paramList, anchor, false));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
+            }
+        }
+
+        return !proposals.isEmpty();
     }
 
     private JavaSource getJavaSourceFromRequest(final CompletionRequest request) {
