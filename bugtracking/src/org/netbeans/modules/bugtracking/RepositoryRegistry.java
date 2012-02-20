@@ -382,17 +382,17 @@ public class RepositoryRegistry {
         String url = values[0];
         
         String user;
-        String password;
+        char[] password;
         if(BugtrackingUtil.isNbRepository(url)) {
             user = getNBUsername();
             char[] psswdArray = getNBPassword();
-            password = psswdArray != null ? new String(psswdArray) : null;
+            password = psswdArray != null ? psswdArray : new char[0];
         } else {
             user = values[1];
-            password = new String(BugtrackingUtil.readPassword(values[2], null, user, url));
+            password = BugtrackingUtil.readPassword(values[2], null, user, url);
         }
         String httpUser = values.length > 3 ? values[3] : null;
-        String httpPassword = new String(values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : null); // NOI18N
+        char[] httpPassword = values.length > 3 ? BugtrackingUtil.readPassword(values[4], "http", httpUser, url) : new char[0]; // NOI18N
         
         String shortNameEnabled = "false"; // NOI18N
         if (values.length > 5) {
@@ -413,8 +413,8 @@ public class RepositoryRegistry {
                 name, 
                 user, 
                 httpUser, 
-                password.toCharArray(), 
-                httpPassword.toCharArray()); 
+                password, 
+                httpPassword); 
         info.putValue(REPOSITORY_SETTING_SHORT_LOGIN, shortNameEnabled);
         SPIAccessor.IMPL.store(getPreferences(), info, getRepositoryKey(info));
     }
