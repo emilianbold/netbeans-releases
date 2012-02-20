@@ -118,7 +118,11 @@ public class ModelVisitor extends PathNodeVisitor {
                     JsObject property = current.getProperty(accessNode.getProperty().getName());
                     if (property == null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
                             || current.getParent().getJSKind() == JsElement.Kind.OBJECT)) {
-                        current = current.getParent();
+                        Node previous = getPreviousFromPath(2);
+                        // check whether is not a part of method in constructor
+                        if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
+                            current = current.getParent();
+                        }
                     }
                     fromAN = (JsObjectImpl)current;
                     
@@ -128,15 +132,17 @@ public class ModelVisitor extends PathNodeVisitor {
                 JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
                 if (property != null) {
                     property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
-                    fromAN = property;
                 } else {
                     int pathSize = getPath().size();
+                    Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                     if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
                         CallNode cNode = (CallNode)getPath().get(pathSize - 2);
-                        Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
-                        property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
-                        fromAN.addProperty(name.getName(), property);
+                        property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());                        
+                    } else {
+                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
                     }
+                    fromAN.addProperty(name.getName(), property);
+                    
                 }
                 if(property != null) {
                     fromAN = property;
@@ -514,9 +520,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (unaryNode.rhs() instanceof CallNode
                         && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode
                         && !(lastNode instanceof PropertyNode)) {
+                    int start = unaryNode.getStart();
+                    if (getPath().get(getPath().size() - 1) instanceof VarNode) {
+                        start = ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish();
+                    }
                     Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(unaryNode);
                     for (TypeUsage type : types) {
-                        modelBuilder.getCurrentObject().addAssignment(type, unaryNode.getStart());
+                        modelBuilder.getCurrentObject().addAssignment(type, start);
                     }
                     
                 }
@@ -541,6 +551,11 @@ public class ModelVisitor extends PathNodeVisitor {
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit());
+            } else if (!(varNode.getInit() instanceof UnaryNode)) {
+                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(varNode.getInit());
+                for (TypeUsage type : types) {
+                    variable.addAssignment(type, name.getOffsetRange().getEnd());
+                }
             }
         }
         if (!onset && !(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)) {
@@ -670,5 +685,13 @@ public class ModelVisitor extends PathNodeVisitor {
         if (property != null) {
             ((JsObjectImpl)property).addOccurrence(ModelUtils.documentOffsetRange(parserResult, iNode.getStart(), iNode.getFinish()));
         }
+    }
+    
+    private Node getPreviousFromPath(int back) {
+        int size = getPath().size();
+        if (size >= back) {
+            return getPath().get(size - back);
+        }
+        return null;
     }
 }
