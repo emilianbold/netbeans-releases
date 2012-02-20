@@ -41,7 +41,24 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.text.StyledDocument;
+import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.LineCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 
 /**
  * CSS-related utility methods.
@@ -359,6 +376,69 @@ public class CSSUtils {
         return sb.toString();
     }
 
+    /**
+     * Opens the specified file at the given offset. This method has been
+     * copied (with minor modifications) from UiUtils class in csl.api module.
+     * This method is not CSS-specific. It was placed into this file just
+     * because there was no better place.
+     * 
+     * @param fob file that should be opened.
+     * @param offset offset where the caret should be placed.
+     * @return {@code true} when the file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    public static boolean open(FileObject fob, int offset) {
+        try {
+            DataObject dob = DataObject.find(fob);
+            Lookup dobLookup = dob.getLookup();
+            EditorCookie ec = dobLookup.lookup(EditorCookie.class);
+            LineCookie lc = dobLookup.lookup(LineCookie.class);
+            OpenCookie oc = dobLookup.lookup(OpenCookie.class);
+
+            if ((ec != null) && (lc != null) && (offset != -1)) {
+                StyledDocument doc;
+                try {
+                    doc = ec.openDocument();
+                } catch (UserQuestionException uqe) {
+                    String title = NbBundle.getMessage(
+                            GoToElementSourceAction.class,
+                            "GoToElementSourceAction.question"); // NOI18N
+                    Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                            uqe.getLocalizedMessage(),
+                            title,
+                            NotifyDescriptor.YES_NO_OPTION));
+                    if (value != NotifyDescriptor.YES_OPTION) {
+                        return false;
+                    }
+                    uqe.confirmed();
+                    doc = ec.openDocument();
+                }
+
+                if (doc != null) {
+                    int line = NbDocument.findLineNumber(doc, offset);
+                    int lineOffset = NbDocument.findLineOffset(doc, line);
+                    int column = offset - lineOffset;
+                    if (line != -1) {
+                        Line l = lc.getLineSet().getCurrent(line);
+                        if (l != null) {
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            if (oc != null) {
+                oc.open();
+                return true;
+            }
+        } catch (IOException ioe) {
+            Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ioe);
+        }
+
+        return false;
+    }
+    
     /**
      * Descriptor of a CSS property.
      */

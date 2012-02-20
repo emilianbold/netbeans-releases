@@ -43,13 +43,11 @@ package org.netbeans.modules.web.inspect.actions;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.StyledDocument;
 import org.netbeans.editor.ext.html.parser.api.AstNode;
 import org.netbeans.editor.ext.html.parser.api.HtmlParsingResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -57,22 +55,13 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.ElementHandle;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
 import org.openide.util.actions.NodeAction;
 import org.w3c.dom.Element;
 
@@ -170,70 +159,9 @@ public class GoToElementSourceAction extends NodeAction  {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    open(fob, nodeToShow.startOffset());
+                    CSSUtils.open(fob, nodeToShow.startOffset());
                 }
             });
-        }
-
-        /**
-         * Opens the specified file at the given offset. This method has been
-         * copied (with minor modifications) from UiUtils class in csl.api module.
-         * 
-         * @param fob file that should be opened.
-         * @param offset offset where the caret should be placed.
-         * @return {@code true} when the file was opened successfully,
-         * returns {@code false} otherwise.
-         */
-        private boolean open(FileObject fob, int offset) {
-            try {
-                DataObject dob = DataObject.find(fob);
-                Lookup dobLookup = dob.getLookup();
-                EditorCookie ec = dobLookup.lookup(EditorCookie.class);
-                LineCookie lc = dobLookup.lookup(LineCookie.class);
-                OpenCookie oc = dobLookup.lookup(OpenCookie.class);
-
-                if ((ec != null) && (lc != null) && (offset != -1)) {
-                    StyledDocument doc;
-                    try {
-                        doc = ec.openDocument();
-                    } catch (UserQuestionException uqe) {
-                        String title = NbBundle.getMessage(
-                                GoToElementSourceAction.class,
-                                "GoToElementSourceAction.question"); // NOI18N
-                        Object value = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
-                                uqe.getLocalizedMessage(),
-                                title,
-                                NotifyDescriptor.YES_NO_OPTION));
-                        if (value != NotifyDescriptor.YES_OPTION) {
-                            return false;
-                        }
-                        uqe.confirmed();
-                        doc = ec.openDocument();
-                    }
-
-                    if (doc != null) {
-                        int line = NbDocument.findLineNumber(doc, offset);
-                        int lineOffset = NbDocument.findLineOffset(doc, line);
-                        int column = offset - lineOffset;
-                        if (line != -1) {
-                            Line l = lc.getLineSet().getCurrent(line);
-                            if (l != null) {
-                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-                                return true;
-                            }
-                        }
-                    }
-                }
-
-                if (oc != null) {
-                    oc.open();
-                    return true;
-                }
-            } catch (IOException ioe) {
-                Logger.getLogger(GoToElementSourceAction.class.getName()).log(Level.INFO, null, ioe);
-            }
-
-            return false;
         }
         
     }

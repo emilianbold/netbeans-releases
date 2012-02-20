@@ -123,6 +123,7 @@
                 <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javafx2.editor</friend>
+                <friend>org.netbeans.modules.web.inspect</friend>
                 <package>org.netbeans.modules.css.lib.api</package>
                 <package>org.netbeans.modules.css.lib.api.model</package>
                 <package>org.netbeans.modules.css.lib.api.properties</package>

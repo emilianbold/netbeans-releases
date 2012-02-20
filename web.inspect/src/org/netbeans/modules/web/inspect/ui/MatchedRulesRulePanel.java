@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.web.inspect.ui;
 
+import java.awt.SystemColor;
 import java.util.Map;
 import javax.swing.*;
 import javax.swing.GroupLayout.*;
 import javax.swing.LayoutStyle.*;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.actions.GoToRuleAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -69,7 +71,7 @@ public class MatchedRulesRulePanel extends JPanel {
         ParallelGroup horizontalGroup = layout.createParallelGroup(Alignment.LEADING);
 
         // Style-sheet source
-        JComponent styleSheetSourceComponent = createStyleSheetSourceComponent(rule.getSourceURL());
+        JComponent styleSheetSourceComponent = createStyleSheetSourceComponent(rule);
         verticalGroup.addContainerGap();
         verticalGroup.addComponent(styleSheetSourceComponent);
         horizontalGroup.addComponent(styleSheetSourceComponent);
@@ -124,19 +126,27 @@ public class MatchedRulesRulePanel extends JPanel {
      * Creates a component that displays information about the source
      * of the rule.
      * 
-     * @param sourceURL URL of the source stylesheet (can be {@code null}).
+     * @param rule rule whose source should be descrined by the returned component.
      * @return component that displays information about the source.
      */
-    private JComponent createStyleSheetSourceComponent(String sourceURL) {
-        JLabel label = new JLabel();
-        label.setEnabled(false);
+    private JComponent createStyleSheetSourceComponent(PageModel.RuleInfo rule) {
+        String sourceURL = rule.getSourceURL();
+        JLabel label;
         if (sourceURL == null) {
             // embedded stylesheet
+            label = new JLabel();
             label.setText(NbBundle.getMessage(MatchedRulesRulePanel.class,
                     "MatchedRulesRulePanel.embeddedStyleSheet")); // NOI18N
+        } else if (sourceURL.startsWith("file://")) { // NOI18N
+            Hyperlink hyperlink = new Hyperlink();
+            hyperlink.setAction(new GoToRuleAction(rule));
+            hyperlink.setText(sourceURL);
+            label = hyperlink;
         } else {
+            label = new JLabel();
             label.setText(sourceURL);
         }
+        label.setForeground(SystemColor.textInactiveText);
         return label;
     }
 
