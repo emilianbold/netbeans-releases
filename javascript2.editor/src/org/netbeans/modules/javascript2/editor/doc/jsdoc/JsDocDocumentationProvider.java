@@ -73,10 +73,8 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     @Override
     public Types getReturnType(Node node) {
         // TODO - process shared tags and nocode comments
-        int offset = node.getStart();
-        int endOffset = getEndOffsetOfAssociatedComment(offset);
-        if (endOffset > 0) {
-            JsComment comment = getCommentByEndOffset(endOffset);
+        JsComment comment = getCommentForOffset(node.getStart());
+        if (comment != null) {
             JsDocBlock jsDocBlock = (JsDocBlock) comment;
             if (jsDocBlock.getType() == JsDocCommentType.DOC_COMMON) {
                 for (JsDocElement jsDocElement : jsDocBlock.getTags()) {
@@ -97,20 +95,36 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
-    private int getNearestNodeForOffset(int offset) {
-        int nearestOffset = Integer.MAX_VALUE;
+    protected JsComment getCommentForOffset(int offset) {
+        int endOffset = getEndOffsetOfAssociatedComment(offset);
+        if (endOffset > 0) {
+            for (JsComment jsComment : parserResult.getComments()) {
+                if (jsComment.getEndOffset() == endOffset) {
+                    return jsComment;
+                }
+            }
+        }
+        return null;
+    }
+
+    private int getNearestNodeOffsetForOffset(int nodeOffset, int commentEndOffset) {
+        int nearestOffset = nodeOffset;
         FunctionNode root = parserResult.getRoot();
         for (Node node : root.getStatements()) {
-            if (node.getFinish() < offset) {
-                nearestOffset = node.getFinish();
+            if ((node.getStart() > commentEndOffset) && (node.getStart() < nearestOffset)) {
+                nearestOffset = node.getStart();
             }
         }
         return nearestOffset;
     }
 
     private boolean isAssociatedComment(int nodeOffset, int commentEndOffset) {
-        int nearestNodeOffset = getNearestNodeForOffset(nodeOffset);
-        return nearestNodeOffset < commentEndOffset;
+        // for small diffs you can return true immediately
+        if (nodeOffset - commentEndOffset <= 1) {
+            return true;
+        }
+        int nearestNodeOffset = getNearestNodeOffsetForOffset(nodeOffset, commentEndOffset);
+        return !(nearestNodeOffset < nodeOffset);
     }
 
     private int getEndOffsetOfAssociatedComment(int offset) {
@@ -132,15 +146,5 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
 
         return -1;
     }
-
-    private JsComment getCommentByEndOffset(int offset) {
-        for (JsComment jsComment : parserResult.getComments()) {
-            if (jsComment.getEndOffset() == offset) {
-                return jsComment;
-            }
-        }
-        return null;
-    }
-
 
 }
