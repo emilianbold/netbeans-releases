@@ -41,40 +41,81 @@
  */
 package org.netbeans.modules.php.project.connections.synchronize;
 
-import java.util.Arrays;
-import java.util.List;
+import javax.swing.Icon;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
- * File item holding remote and local files.
+ * File item holding remote and local files and providing
+ * operations with them.
  */
 public final class FileItem {
 
+    // XXX
+    @StaticResource
+    static final String NOOP_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String DOWNLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String DOWNLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String UPLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String UPLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String DELETE_LOCALLY_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String DELETE_REMOTELY_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+
+    @NbBundle.Messages({
+        "Operation.noop.title=No operation",
+        "Operation.download.title=Download",
+        "Operation.downloadReview.title=Download with review",
+        "Operation.upload.title=Upload",
+        "Operation.uploadReview.title=Upload with review",
+        "Operation.deleteLocally.title=Delete local file",
+        "Operation.deleteRemotely.title=Delete remote file",
+        "Operation.fileDirCollision.title=File vs. directory collision",
+    })
     public static enum Operation {
 
-        NOOP,
-        DOWNLOAD,
-        DOWNLOAD_REVIEW,
-        UPLOAD,
-        UPLOAD_REVIEW,
-        DELETE_LOCALLY,
-        DELETE_REMOTELY,
-        FILE_DIR_COLLISION;
+        NOOP(Bundle.Operation_noop_title(), NOOP_ICON_PATH),
+        DOWNLOAD(Bundle.Operation_download_title(), DOWNLOAD_ICON_PATH),
+        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_title(), DOWNLOAD_REVIEW_ICON_PATH),
+        UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH),
+        UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH),
+        DELETE_LOCALLY(Bundle.Operation_deleteLocally_title(), DELETE_LOCALLY_ICON_PATH),
+        DELETE_REMOTELY(Bundle.Operation_deleteRemotely_title(), DELETE_REMOTELY_ICON_PATH),
+        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH);
 
 
-        public static List<Operation> possibleOperations() {
-            return Arrays.asList(
-                    NOOP,
-                    DOWNLOAD,
-                    UPLOAD,
-                    DELETE_LOCALLY,
-                    DELETE_REMOTELY);
+        private final String title;
+        private final String iconPath;
+
+
+        private Operation(String title, String iconPath) {
+            this.title = title;
+            this.iconPath = iconPath;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public Icon getIcon() {
+            return ImageUtilities.loadImageIcon(iconPath, false);
         }
 
     }
 
+
     private final TransferFile remoteTransferFile;
     private final TransferFile localTransferFile;
+    private final Operation defaultOperation;
 
     private volatile Operation operation;
 
@@ -83,7 +124,7 @@ public final class FileItem {
         assert remoteTransferFile != null || localTransferFile != null;
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
-        operation = calculateOperation(lastTimestamp);
+        defaultOperation = calculateOperation(lastTimestamp);
     }
 
     public String getRemotePath() {
@@ -109,12 +150,19 @@ public final class FileItem {
     }
 
     public Operation getOperation() {
-        return operation;
+        if (operation != null) {
+            return operation;
+        }
+        return defaultOperation;
     }
 
     public void setOperation(Operation operation) {
         assert operation != null;
         this.operation = operation;
+    }
+
+    public void resetOperation() {
+        operation = null;
     }
 
     private Operation calculateOperation(Long lastTimestamp) {

@@ -56,6 +56,7 @@ import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
@@ -71,14 +72,16 @@ public final class SynchronizeController implements Cancellable {
 
     final PhpProject phpProject;
     final RemoteClient remoteClient;
+    final RemoteConfiguration remoteConfiguration;
     final Long lastTimeStamp = null;
 
     volatile boolean cancelled = false;
 
 
-    public SynchronizeController(PhpProject phpProject, RemoteClient remoteClient) {
+    public SynchronizeController(PhpProject phpProject, RemoteClient remoteClient, RemoteConfiguration remoteConfiguration) {
         this.phpProject = phpProject;
         this.remoteClient = remoteClient;
+        this.remoteConfiguration = remoteConfiguration;
     }
 
     public void synchronize() {
@@ -103,6 +106,7 @@ public final class SynchronizeController implements Cancellable {
             Set<TransferFile> localFiles = remoteClient.prepareUpload(sources, sources);
             items = pairFiles(remoteFiles, localFiles);
         } catch (RemoteException ex) {
+            disconnect();
             RemoteUtils.processRemoteException(ex);
         } finally {
             progressHandle.finish();
@@ -117,13 +121,12 @@ public final class SynchronizeController implements Cancellable {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SynchronizePanel panel = createPanel();
-                if (panel.open()) {
+                SynchronizePanel panel = new SynchronizePanel(phpProject.getName(), remoteConfiguration.getDisplayName(), files);
+                if (panel.open(lastTimeStamp == null)) {
                     doSynchronize(files);
+                } else {
+                    disconnect();
                 }
-            }
-            private SynchronizePanel createPanel() {
-                return new SynchronizePanel();
             }
         });
     }
@@ -138,6 +141,7 @@ public final class SynchronizeController implements Cancellable {
             public void run() {
                 // XXX synchronize
                 System.out.println("--------------- synchronizing...");
+                disconnect();
             }
         });
     }
@@ -147,6 +151,14 @@ public final class SynchronizeController implements Cancellable {
         cancelled = true;
         remoteClient.cancel();
         return true;
+    }
+
+    void disconnect() {
+        try {
+            remoteClient.disconnect();
+        } catch (RemoteException ex1) {
+            // XXX log INFO
+        }
     }
 
     private List<FileItem> pairFiles(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {

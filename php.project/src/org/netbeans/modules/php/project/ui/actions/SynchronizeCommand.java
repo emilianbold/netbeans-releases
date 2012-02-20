@@ -43,6 +43,9 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
@@ -90,9 +93,10 @@ public class SynchronizeCommand extends RemoteCommand implements Displayable {
     }
 
     void synchronize() {
-        InputOutput remoteLog = getRemoteLog(RunConfigRemote.forProject(getProject()).getRemoteConfiguration().getDisplayName());
+        RemoteConfiguration remoteConfiguration = RunConfigRemote.forProject(getProject()).getRemoteConfiguration();
+        InputOutput remoteLog = getRemoteLog(remoteConfiguration.getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
-        new SynchronizeController(getProject(), remoteClient).synchronize();
+        new SynchronizeController(getProject(), remoteClient, remoteConfiguration).synchronize();
     }
 
 }
