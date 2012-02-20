@@ -53,9 +53,9 @@ import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
 import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -116,13 +116,11 @@ public class MissingHashCode {
             int[] span = compilationInfo.getTreeUtilities().findNameSpan((MethodTree) warningTo.getLeaf());
 
             if (span != null) {
-                ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    ctx.getSeverity().toEditorSeverity(),
+                ErrorDescription ed = ErrorDescriptionFactory.forName(
+                    ctx,
+                    warningTo,
                     NbBundle.getMessage(MissingHashCode.class, addHint), 
-                    fixes, 
-                    compilationInfo.getFileObject(),
-                    span[0], 
-                    span[1]
+                    fixes.toArray(new Fix[0])
                 );
 
                 return Collections.singletonList(ed);
