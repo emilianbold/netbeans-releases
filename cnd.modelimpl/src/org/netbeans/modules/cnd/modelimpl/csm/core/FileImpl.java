@@ -2074,10 +2074,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fd != null ? fd : FileComponentInstantiations.empty();
     }
     
-    private static final class FakeIncludePair {
+    static final class FakeIncludePair {
 
-        private final CsmUID<IncludeImpl> includeUid;
-        private final CsmUID<CsmOffsetableDeclaration> containerUid;
+        final CsmUID<IncludeImpl> includeUid;
+        final CsmUID<CsmOffsetableDeclaration> containerUid;
         private volatile boolean alreadyFixed;
 
         public FakeIncludePair(CsmUID<IncludeImpl> includeUid, CsmUID<CsmOffsetableDeclaration> containerUID) {

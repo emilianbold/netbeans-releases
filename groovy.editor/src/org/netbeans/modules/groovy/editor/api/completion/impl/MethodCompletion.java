@@ -43,16 +43,15 @@
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -62,10 +61,12 @@ import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ConstructorItem;
+import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ParameterDescriptor;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 
 /**
  * Complete the methods invokable on a class.
@@ -73,6 +74,14 @@ import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
  * @author Martin Janicek
  */
 public class MethodCompletion extends BaseCompletion {
+
+    private static List<String> defaultImports;
+
+    public MethodCompletion() {
+        defaultImports = new ArrayList<String>();
+        defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
+    }
+
 
     @Override
     public boolean complete(final List<CompletionProposal> proposals, final CompletionRequest request, final int anchor) {
@@ -98,75 +107,11 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        // FIXME move this to separate method completeConstructors()
         if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
-            LOG.log(Level.FINEST, "This looks like a constructor ...");
-
-            // look for all imported types starting with prefix, which have public constructors
-            final JavaSource javaSource = getJavaSourceFromRequest(request);
-            final List<String> defaultImports = new ArrayList<String>();
-            defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
-
-            if (javaSource != null) {
-
-                try {
-                    javaSource.runUserActionTask(new Task<CompilationController>() {
-                        public void run(CompilationController info) {
-
-                            for (String singlePackage : defaultImports) {
-                                List<? extends Element> typelist;
-
-                                typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
-
-                                if (typelist == null) {
-                                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
-                                    continue;
-                                }
-
-                                LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
-
-                                for (Element element : typelist) {
-                                    // only look for classes rather than enums or interfaces
-                                    if (element.getKind() == ElementKind.CLASS) {
-                                        TypeElement te = (TypeElement) element;
-
-                                        List<? extends Element> enclosed = te.getEnclosedElements();
-
-                                        // we gotta get the constructors name from the type itself, since
-                                        // all the constructors are named <init>.
-
-                                        String constructorName = te.getSimpleName().toString();
-
-                                        for (Element encl : enclosed) {
-                                            if (encl.getKind() == ElementKind.CONSTRUCTOR) {
-
-                                                if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-
-                                                    LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-
-                                                    String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                                    List<CompletionItem.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
-
-                                                    proposals.add(new CompletionItem.ConstructorItem(constructorName, paramListString, paramList, anchor, false));
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
-                }
-
-            }
-
-            return !proposals.isEmpty();
+            return completeConstructor(proposals, request, anchor);
         }
 
         // 2.2  static/instance method on class or object
-
         if (!request.isBehindDot() && request.ctx.before1 != null) {
             LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
@@ -212,6 +157,83 @@ public class MethodCompletion extends BaseCompletion {
         return true;
     }
 
+    private boolean completeConstructor(final List<CompletionProposal> proposals, final CompletionRequest request, final int anchor) {
+        LOG.log(Level.FINEST, "This looks like a constructor ...");
+
+        // look for all imported types starting with prefix, which have public constructors
+        final JavaSource javaSource = getJavaSourceFromRequest(request);
+
+        if (javaSource != null) {
+            try {
+                javaSource.runUserActionTask(new Task<CompilationController>() {
+                    public void run(CompilationController info) {
+
+                        for (String singlePackage : defaultImports) {
+                            List<? extends Element> typelist = getElementListForPackage(info.getElements(), javaSource, singlePackage);
+
+                            if (typelist == null) {
+                                LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
+                                continue;
+                            }
+
+                            LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
+
+                            for (Element element : typelist) {
+                                // only look for classes rather than enums or interfaces
+                                if (element.getKind() == ElementKind.CLASS) {
+                                    TypeElement te = (TypeElement) element;
+
+                                    List<? extends Element> enclosed = te.getEnclosedElements();
+
+                                    // we gotta get the constructors name from the type itself, since
+                                    // all the constructors are named <init>.
+
+                                    String constructorName = te.getSimpleName().toString();
+
+                                    for (Element encl : enclosed) {
+                                        if (encl.getKind() == ElementKind.CONSTRUCTOR) {
+
+                                            if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+
+                                                LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
+
+                                                String paramListString = getParameterListForMethod((ExecutableElement)encl);
+                                                List<ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
+
+                                                proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
+
+                        for (ClassNode declaredClass : declaredClasses) {
+                            List<ConstructorNode> constructors = declaredClass.getDeclaredConstructors();
+                            String constructorName = declaredClass.getNameWithoutPackage();
+
+                            if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+                                for (ConstructorNode constructor : constructors) {
+                                    Parameter[] parameters = constructor.getParameters();
+                                    String paramListString = getParameterListStringForMethod(parameters);
+                                    List<ParameterDescriptor> paramList = getParameterListForMethod(parameters);
+
+                                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
+                                }
+                            }
+                        }
+                    }
+                }, true);
+            } catch (IOException ex) {
+                LOG.log(Level.FINEST, "IOException : {0}", ex.getMessage());
+            }
+        }
+
+        return !proposals.isEmpty();
+    }
+
     private JavaSource getJavaSourceFromRequest(final CompletionRequest request) {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null;
@@ -247,12 +269,13 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     /**
-     * Get the list of parameters of this executable as a List of ParamDesc's
+     * Get the list of parameters of this executable as a List of <code>ParameterDescriptor</code>'s
      * To be used in insert templates and pretty-printers.
-     * @param exe
-     * @return
+     * 
+     * @param exe executable element
+     * @return list of <code>ParameterDescriptor</code>'s
      */
-    private static List<CompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
+    private List<CompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
         List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<CompletionItem.ParameterDescriptor>();
 
         if (exe != null) {
@@ -291,11 +314,12 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     /**
-     * Get the parameter-list of this executable as String
+     * Get the parameter-list of this executable as String.
+     *
      * @param exe
      * @return
      */
-    public static String getParameterListForMethod(ExecutableElement exe) {
+    private String getParameterListForMethod(ExecutableElement exe) {
         StringBuilder sb = new StringBuilder();
 
         if (exe != null) {
@@ -324,5 +348,49 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Convert given parameter array into one String.
+     * For example if we send two parameters (int and String), this method will
+     * return "int, String"
+     *
+     * @param parameters array of parameters
+     * @return parameter string
+     */
+    private String getParameterListStringForMethod(Parameter[] parameters) {
+        if (parameters.length == 0) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (Parameter param : parameters) {
+            sb.append(param.getType().getNameWithoutPackage()).append(", ");
+        }
+
+        // remove last comma and return
+        return sb.substring(0, sb.lastIndexOf(","));
+    }
+
+    /**
+     * Convert given parameter array into the list of <code>ParameterDescription</code>'s
+     *
+     * @param parameters array of parameters
+     * @return list of <code>ParameterDescription</code>'s
+     */
+    private List<ParameterDescriptor> getParameterListForMethod(Parameter[] parameters) {
+        if (parameters.length == 0) {
+            return Collections.EMPTY_LIST;
+        }
+
+        List<ParameterDescriptor> paramDescriptors = new ArrayList<ParameterDescriptor>();
+        for (Parameter param : parameters) {
+            String fullTypeName = param.getType().getName();
+            String typeName = param.getType().getNameWithoutPackage();
+            String name = param.getName();
+
+            paramDescriptors.add(new ParameterDescriptor(fullTypeName, typeName, name));
+        }
+        return paramDescriptors;
     }
 }

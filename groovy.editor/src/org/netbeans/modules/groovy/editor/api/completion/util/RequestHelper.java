@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -97,6 +100,28 @@ public final class RequestHelper {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns all declared <code>ClassNode</code>'s for the given request
+     *
+     * @param request completion request
+     * @return list of declared <code>ClassNode</code>'s
+     */
+    public static List<ClassNode> getDeclaredClasses(CompletionRequest request) {
+        if (request.path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+
+        for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+
+            if (current instanceof ModuleNode) {
+                return ((ModuleNode) current).getClasses();
+            }
+        }
+        return Collections.EMPTY_LIST;
     }
 
     /**
