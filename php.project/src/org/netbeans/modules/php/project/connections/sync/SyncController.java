@@ -92,13 +92,13 @@ public final class SyncController implements Cancellable {
         SYNC_RP.post(new Runnable() {
             @Override
             public void run() {
-                showPanel(fetchFiles(), resultProcessor);
+                showPanel(fetchSyncItems(), resultProcessor);
             }
         });
     }
 
     @NbBundle.Messages("SyncController.fetching=Fetching {0} files")
-    List<SyncItem> fetchFiles() {
+    List<SyncItem> fetchSyncItems() {
         assert !SwingUtilities.isEventDispatchThread();
         List<SyncItem> items = null;
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SyncController_fetching(phpProject.getName()), this);
@@ -118,16 +118,16 @@ public final class SyncController implements Cancellable {
         return items != null ? Collections.synchronizedList(items) : null;
     }
 
-    void showPanel(final List<SyncItem> files, final SyncResultProcessor resultProcessor) {
-        if (cancelled || files == null) {
+    void showPanel(final List<SyncItem> items, final SyncResultProcessor resultProcessor) {
+        if (cancelled || items == null) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), files);
+                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), items);
                 if (panel.open(lastTimeStamp == -1)) {
-                    doSynchronize(files, resultProcessor);
+                    doSynchronize(items, resultProcessor);
                 } else {
                     disconnect();
                 }
@@ -136,7 +136,7 @@ public final class SyncController implements Cancellable {
     }
 
     @NbBundle.Messages("SyncController.error.unknown=Unknown reason")
-    void doSynchronize(final List<SyncItem> files, final SyncResultProcessor resultProcessor) {
+    void doSynchronize(final List<SyncItem> items, final SyncResultProcessor resultProcessor) {
         if (cancelled) {
             // in fact, cannot happen here
             return;
@@ -145,7 +145,7 @@ public final class SyncController implements Cancellable {
             @Override
             public void run() {
                 SyncResult syncResult = new SyncResult();
-                for (SyncItem syncItem : files) {
+                for (SyncItem syncItem : items) {
                     TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
                     TransferFile localTransferFile = syncItem.getLocalTransferFile();
                     switch (syncItem.getOperation()) {
