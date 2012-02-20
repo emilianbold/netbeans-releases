@@ -559,12 +559,12 @@
 
 <!-- Hibernate topics CSH -->
     
-    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
+<!--    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengNameLocationWizardDescriptor" url="hibernate/hibernate_fromdb.html" />-->
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="hibernate/csh/hibernate_newreveng.html" />
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
     <mapID target="org.netbeans.modules.hibernate.wizards.HibernateCodeGenWizardDescriptor" url="hibernate/csh/hibernate_fromdbwiz_codegen.html" />
-    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="hibernate/hibernate_mapping.html" />
-    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengNameLocationWizardDescriptor" url="hibernate/hibernate_fromdb.html" />
-    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="hibernate/hibernate_cfg.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="hibernate/csh/hibernate_newmapping.html" />
+    <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="hibernate/csh/hibernate_newcfg.html" />
 
 
 

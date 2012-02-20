@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--
+ * Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved.
+ * Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+        <title>Hibernate Reverse Engineering Wizard: Database Tables</title> 
+        <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+        
+    </head>
+    <body>
+        
+        <h2>Hibernate Reverse Engineering Wizard: Database Tables</h2>
+        <p><small><a href="#seealso">See Also</a></small></p>
+        <p>The Hibernate Reverse Engineering wizard enables you to generate
+            a reverse engineering file from tables in a database.</p>
+            
+        <p>The reverse engineering file is an XML file that can be used to modify the default settings
+        used when generating Hibernate files from the metadata of the database specified in <tt>hibernate.cfg.xml</tt>.
+        The file can be used to explicitly specify the database schema that is used,
+        to filter out tables that should not be used and how JDBC types are mapped to Hibernate types.</p>
+
+        
+        <p>The Database Tables page of the wizard enables you to specify the tables
+            that are added to the <tt>hibernate.reveng.xml</tt> file.
+            A <tt>&lt;table-filter&gt;</tt> element is added to the file for each selected table.</p>
+        
+        <p>In this page you select the tables in the database schema that is specified in <tt>hibernate.cfg.xml</tt>.
+        Select a table from the list of Available Tables and click Add.</p>
+        
+        <p>When you click Finish, the IDE generates the <tt>hibernate.reveng</tt> reverse engineering file
+        in the location that you specified in the first page of the wizard.
+        If you do not select any tables in this page of the wizard the IDE will generate
+        the <tt>hibernate.reveng.xml</tt> file without any references to tables.
+        You can edit the <tt>hibernate.reveng.xml</tt> in the XML editor.
+        The <tt>hibernate.reveng</tt> is not necessary for compiling your project and can be deleted if desired.
+        </p>
+        
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="../hibernate_reveng.html">Creating a Hibernate Reverse Engineering File</a> </dd>
+            <dd><a href="../hibernate_cfg.html">Creating the Hibernate Configuration File</a> </dd>
+            <dd><a href="../hibernate_fromdb.html">Generating Hibernate Mapping Files and POJOs from a Database</a> </dd>
+            <dd><a href="../hibernate_workingwith.html">Working with Hibernate</a> </dd>
+            <dd><a href="../hibernate_about.html">About Hibernate Support</a> </dd>
+            <dd><a href="nbdocs://org.netbeans.modules.db/org/netbeans/modules/db/docs/connectdb.html">Connecting to a Database</a></dd>
+        </dl>
+        
+        <hr>
+        <small> <a href="../../credits.html">Legal Notices</a></small> 
+        <table cellpadding="50" border="0"> 
+            <tr><td>&nbsp;</td></tr> 
+        </table> 
+    </body>
+    
+</html>
