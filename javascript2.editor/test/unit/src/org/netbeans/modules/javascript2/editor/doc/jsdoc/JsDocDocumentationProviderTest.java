@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import com.oracle.nashorn.ir.FunctionNode;
-import com.oracle.nashorn.ir.Node;
 import java.util.Collections;
-import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -56,24 +53,10 @@ import org.netbeans.modules.parsing.spi.Parser;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JsDocDocumentationProviderTest extends JsTestBase {
+public class JsDocDocumentationProviderTest extends JsDocTestBase {
 
     public JsDocDocumentationProviderTest(String testName) {
         super(testName);
-    }
-
-    private static JsDocDocumentationProvider getDocumentationProvider(JsParserResult parserResult) {
-        return new JsDocDocumentationProvider(parserResult);
-    }
-
-    private static Node getNodeForOffset(JsParserResult parserResult, int offset) {
-        FunctionNode root = parserResult.getRoot();
-        for (Node node : root.getStatements()) {
-            if (offset >= node.getStart() && offset <= node.getFinish()) {
-                return node;
-            }
-        }
-        return null;
     }
 
     private static void checkReturnType(Source source, final int offset, final String expected) throws Exception {
@@ -96,40 +79,35 @@ public class JsDocDocumentationProviderTest extends JsTestBase {
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(),
-                "Shape.prototype.clone = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = ^function(){");
         checkReturnType(testSource, caretOffset, "Shape");
     }
 
     public void testGetReturnTypeForReturns() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(),
-                "Shape.prototype.clone2 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone2 = ^function(){");
         checkReturnType(testSource, caretOffset, "Shape");
     }
 
     public void testGetReturnTypeForType() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(),
-                "Rectangle.prototype.getClassName= ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getClassName= ^function(){");
         checkReturnType(testSource, caretOffset, "String");
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(),
-                "Shape.prototype.clone3 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = ^function(){");
         checkReturnType(testSource, caretOffset, null);
     }
 
     public void testGetNullReturnTypeByMissingComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
 
-        final int caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(),
-                "Shape.prototype.clone4 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = ^function(){");
         checkReturnType(testSource, caretOffset, null);
     }
 
