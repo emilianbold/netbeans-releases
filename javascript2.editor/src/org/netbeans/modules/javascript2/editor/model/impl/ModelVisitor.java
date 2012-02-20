@@ -341,8 +341,19 @@ public class ModelVisitor extends PathNodeVisitor {
             if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                 DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
                 fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder);
-                fncScope.setAnonymous(getPath().get(pathSize - 2) instanceof ReferenceNode
-                        && getPath().get(pathSize - 3) instanceof CallNode);
+                boolean isAnonymous = false;
+                if (getPreviousFromPath(2) instanceof ReferenceNode) {
+                    Node node = getPreviousFromPath(3);
+                    if (node instanceof CallNode) {
+                        isAnonymous = true;
+                    } else if (node instanceof AccessNode && getPreviousFromPath(4) instanceof CallNode) {
+                        String methodName = ((AccessNode)node).getProperty().getName();
+                        if ("call".equals(methodName) || "apply".equals(methodName)) {
+                            isAnonymous = true;
+                        }
+                    }
+                }
+                fncScope.setAnonymous(isAnonymous);
                 Set<Modifier> modifiers = fncScope.getModifiers();
                 if (isPrivate) {
                     modifiers.remove(Modifier.PUBLIC);
