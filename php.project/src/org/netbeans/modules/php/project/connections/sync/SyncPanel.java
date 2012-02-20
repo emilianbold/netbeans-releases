@@ -231,8 +231,8 @@ public final class SyncPanel extends JPanel {
 
     // XXX
     @NbBundle.Messages({
-        "SyncPanel.error.operations=Some errors.",
-        "SyncPanel.warn.operations=Some warnings."
+        "SyncPanel.error.operations=Synchronization not possible. Fix errors first.",
+        "SyncPanel.warn.operations=Synchronization possible but warnings should be reviewed first."
     })
     void validateFiles() {
         assert SwingUtilities.isEventDispatchThread();
@@ -381,7 +381,7 @@ public final class SyncPanel extends JPanel {
         public Object getValueAt(int rowIndex, int columnIndex) {
             SyncItem fileItem = files.get(rowIndex);
             if (columnIndex == 0) {
-                if (!fileItem.hasError()) {
+                if (fileItem.hasError()) {
                     return Bundle.SyncPanel_error_cellValue();
                 }
                 if (fileItem.hasWarning()) {

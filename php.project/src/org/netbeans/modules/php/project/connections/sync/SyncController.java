@@ -153,6 +153,7 @@ public final class SyncController implements Cancellable {
                             // noop
                             break;
                         case DOWNLOAD:
+                        case DOWNLOAD_REVIEW:
                             try {
                                 TransferInfo downloadInfo = remoteClient.download(Collections.singleton(remoteTransferFile));
                                 mergeTransferInfo(downloadInfo, syncResult.getDownloadTransferInfo());
@@ -161,6 +162,7 @@ public final class SyncController implements Cancellable {
                             }
                             break;
                         case UPLOAD:
+                        case UPLOAD_REVIEW:
                             try {
                                 TransferInfo uploadInfo = remoteClient.upload(Collections.singleton(localTransferFile));
                                 mergeTransferInfo(uploadInfo, syncResult.getUploadTransferInfo());
