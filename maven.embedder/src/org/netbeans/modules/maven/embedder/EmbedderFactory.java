@@ -66,11 +66,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.spi.connector.RepositoryConnector;
-import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
-import org.sonatype.aether.transfer.NoRepositoryConnectorException;
 
 /**
  * Factory for creating {@link MavenEmbedder}s.

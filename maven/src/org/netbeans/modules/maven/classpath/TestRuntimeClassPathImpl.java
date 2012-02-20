@@ -66,6 +66,7 @@ public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
         super(proj);
     }
 
+    @Override
    URI[] createPath() {
         List<URI> lst = createPath(getMavenProject().getOriginalMavenProject());
         URI[] uris = new URI[lst.size()];
