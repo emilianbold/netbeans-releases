@@ -73,6 +73,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -83,6 +84,8 @@ public final class SyncPanel extends JPanel {
     private static final long serialVersionUID = 1674646546545121L;
 
     // XXX
+    @StaticResource
+    private static final String INFO_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
     private static final String RESET_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
 
@@ -113,13 +116,13 @@ public final class SyncPanel extends JPanel {
         initComponents();
         initTable();
         initOperationButtons();
+        initInfos();
     }
 
     @NbBundle.Messages({
         "# 0 - project name",
         "# 1 - remote configuration name",
         "SyncPanel.title=Remote Synchronization for {0}: {1}",
-        "SyncPanel.firstRun=Running for the first time for this project and this run configuration, more user actions will be needed."
     })
     public boolean open(boolean firstRun) {
         assert SwingUtilities.isEventDispatchThread();
@@ -132,10 +135,7 @@ public final class SyncPanel extends JPanel {
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
         validateFiles();
-        if (firstRun) {
-            // XXX conflict with validateFiles()
-            notificationLineSupport.setInformationMessage(Bundle.SyncPanel_firstRun());
-        }
+        firstRunInfoLabel.setVisible(firstRun);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
             dialog.setVisible(true);
@@ -211,6 +211,10 @@ public final class SyncPanel extends JPanel {
         resetButton.addActionListener(new OperationButtonListener(null));
     }
 
+    private void initInfos() {
+        firstRunInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
+    }
+
     void setEnabledOperationButtons(boolean enabled) {
         noopButton.setEnabled(enabled);
         downloadButton.setEnabled(enabled);
@@ -263,6 +267,7 @@ public final class SyncPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        firstRunInfoLabel = new JLabel();
         fileScrollPane = new JScrollPane();
         fileTable = new JTable();
         diffButton = new JButton();
@@ -272,6 +277,9 @@ public final class SyncPanel extends JPanel {
         deleteLocallyButton = new JButton();
         deleteRemotelyButton = new JButton();
         resetButton = new JButton();
+
+        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
+        fileTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
         fileTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         fileScrollPane.setViewportView(fileTable);
@@ -303,12 +311,14 @@ public final class SyncPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                        .addComponent(diffButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(noopButton)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(fileScrollPane).addGroup(layout.createSequentialGroup()
 
-                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteLocallyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteRemotelyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton).addGap(0, 0, Short.MAX_VALUE)).addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)).addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                                .addComponent(diffButton)
+                                .addGap(18, 18, 18)
+                                .addComponent(noopButton)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteLocallyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteRemotelyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteLocallyButton, deleteRemotelyButton, downloadButton, noopButton, resetButton, uploadButton});
@@ -316,8 +326,9 @@ public final class SyncPanel extends JPanel {
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(firstRunInfoLabel)
 
-                .addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -328,6 +339,7 @@ public final class SyncPanel extends JPanel {
     private JButton downloadButton;
     private JScrollPane fileScrollPane;
     private JTable fileTable;
+    private JLabel firstRunInfoLabel;
     private JButton noopButton;
     private JButton resetButton;
     private JButton uploadButton;
