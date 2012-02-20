@@ -294,6 +294,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(4, object.getOffset());
         
         JsObject variable = object.getProperty("color");
+        assertEquals(true, object.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         
         variable = object.getProperty("size");
@@ -340,8 +341,13 @@ public class ModelTest extends JsTestBase {
         
         object = object.getProperty("customEvent");
         assertEquals(true, object.isDeclared());
-        assertEquals(7, object.getProperties().size());
+        assertEquals(8, object.getProperties().size());
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        
+        JsObject virtualProperty = object.getProperty("name");
+        assertEquals(false, virtualProperty.isDeclared());
+        assertEquals(0, virtualProperty.getProperties().size());
+        assertEquals(JsElement.Kind.PROPERTY, virtualProperty.getJSKind());
         
         object = object.getProperty("getData");
         assertEquals(true, object.isDeclared());
@@ -491,6 +497,68 @@ public class ModelTest extends JsTestBase {
         TypeUsage type = iterator.next();
         assertEquals("Man.Address", type.getType());
         
+    }
+    
+    public void testPropertyWithNew() throws Exception {
+        Model model = getModel("testfiles/model/propertyWithNew.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        
+        JsObject object = global.getProperty("view");
+        assertEquals(JsElement.Kind.VARIABLE, object.getJSKind());
+        
+        object = global.getProperty("Anonym$0");
+        assertEquals(JsElement.Kind.ANONYMOUS_OBJECT, object.getJSKind());
+        
+        JsObject property = object.getProperty("model");
+        Collection<? extends TypeUsage> types = property.getAssignmentForOffset(property.getDeclarationName().getOffsetRange().getEnd());
+        Iterator<? extends TypeUsage> iterator = types.iterator();
+        assertEquals(1, types.size());
+    }
+    
+    public void testFunctionCall() throws Exception {
+        Model model = getModel("testfiles/model/simpleCall.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        assertEquals(2, global.getProperties().size());
+        
+        JsObject object = global.getProperty("Backbone");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getProperty("Collection");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getProperty("extend");
+        assertEquals(JsElement.Kind.METHOD, object.getJSKind());
+        assertEquals(0, object.getProperties().size());
+        
+    }
+    
+    public void testMethodParameters01() throws Exception {
+        Model model = getModel("testfiles/model/objectAsParameter.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        assertEquals(4, global.getProperties().size());
+        
+        JsObject object = global.getProperty("furniture");
+        assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        object = object.getProperty("getDescription");
+        assertEquals(JsElement.Kind.METHOD, object.getJSKind());
+        assertEquals(true, object.isDeclared());
+        assertEquals(1, object.getProperties().size());
+        
+        JsObject variable = object.getProperty("param");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertEquals(true, variable.isDeclared());
+        assertEquals(4, variable.getProperties().size());
     }
     
 //    public void testPrivateMethod01() throws Exception {

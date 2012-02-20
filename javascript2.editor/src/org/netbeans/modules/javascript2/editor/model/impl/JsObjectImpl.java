@@ -90,7 +90,21 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             // global object
             return Kind.FILE;
         }
-        if (hasOnlyVirtualMethods()) {
+        if (isDeclared()) {
+            if (!getAssignmentForOffset(getDeclarationName().getOffsetRange().getEnd()).isEmpty()
+                && hasOnlyVirtualProperties()) {
+                if (getParent().getParent() == null || getModifiers().contains(Modifier.PRIVATE)) {
+                    return Kind.VARIABLE;
+                } else {
+                    return Kind.PROPERTY;
+                }
+            }
+        } else {
+            if(!getProperties().isEmpty()) {
+                return Kind.OBJECT;
+            }
+        }
+        if (getProperties().isEmpty()) {
             if (getParent().isAnonymous() && (getParent() instanceof AnonymousObject)) {
                 return Kind.PROPERTY;
             }
@@ -106,9 +120,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return Kind.OBJECT;
     }
     
-    private boolean hasOnlyVirtualMethods() {
+    private boolean hasOnlyVirtualProperties() {
         for(JsObject property: getProperties().values()) {
-            if (!(property instanceof JsFunction && !property.isDeclared())) {
+            if (property.isDeclared()) {
                 return false;
             }
         }
@@ -164,7 +178,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             types = new ArrayList<TypeUsage>();
             assignments.put(offset, types);
         }
-        types.add(new TypeUsageImpl(typeName.getType(), offset));
+        types.add(new TypeUsageImpl(typeName.getType(), offset, ((TypeUsageImpl)typeName).isResolved()));
     }
 
     @Override

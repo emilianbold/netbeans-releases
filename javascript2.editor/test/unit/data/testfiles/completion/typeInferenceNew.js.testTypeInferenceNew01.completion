@@ -5,7 +5,7 @@ Code completion result for source line:
 CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew
 CONSTRUCTO Car(color, maker)               [PUBLIC]   typeInferenceNew
 CLASS      Context                         [PUBLIC]   typeInferenceNew
-VARIABLE   formatter                       [PUBLIC]   typeInferenceNew
+CLASS      formatter                       [PUBLIC]   typeInferenceNew
 VARIABLE   object                          [PUBLIC]   typeInferenceNew
 KEYWORD    break                                      null
 KEYWORD    case                                       null
