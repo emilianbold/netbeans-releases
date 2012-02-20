@@ -66,9 +66,7 @@ public final class SyncItem {
     @StaticResource
     static final String UPLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
-    static final String DELETE_LOCALLY_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
-    @StaticResource
-    static final String DELETE_REMOTELY_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
     static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
@@ -80,8 +78,7 @@ public final class SyncItem {
         "Operation.downloadReview.title=Download with review",
         "Operation.upload.title=Upload",
         "Operation.uploadReview.title=Upload with review",
-        "Operation.deleteLocally.title=Delete local file",
-        "Operation.deleteRemotely.title=Delete remote file",
+        "Operation.delete.title=Delete",
         "Operation.fileDirCollision.title=File vs. directory collision",
         "Operation.fileConflict.title=File conflict",
     })
@@ -92,8 +89,7 @@ public final class SyncItem {
         DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_title(), DOWNLOAD_REVIEW_ICON_PATH),
         UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH),
         UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH),
-        DELETE_LOCALLY(Bundle.Operation_deleteLocally_title(), DELETE_LOCALLY_ICON_PATH),
-        DELETE_REMOTELY(Bundle.Operation_deleteRemotely_title(), DELETE_REMOTELY_ICON_PATH),
+        DELETE(Bundle.Operation_delete_title(), DELETE_ICON_PATH),
         FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH),
         FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH);
 
@@ -179,10 +175,7 @@ public final class SyncItem {
     @NbBundle.Messages({
         "SyncItem.error.fileConflict=File must be merged before synchronization.",
         "SyncItem.error.fileDirCollision=Cannot synchronize file with directory.",
-        "SyncItem.error.deleteLocallyNonExisting=Cannot delete non-existing local file.",
-        "SyncItem.error.childNotLocallyDeleted=Not all children marked for local deleting.",
-        "SyncItem.error.deleteRemotelyNonExisting=Cannot delete non-existing remote file.",
-        "SyncItem.error.childNotRemotelyDeleted=Not all children marked for remote deleting.",
+        "SyncItem.error.childNotDeleted=Not all children marked for deleting.",
         "SyncItem.warn.downloadReview=File should be reviewed before download.",
         "SyncItem.warn.uploadReview=File should be reviewed before upload."
     })
@@ -198,27 +191,17 @@ public final class SyncItem {
             message = Bundle.SyncItem_error_fileDirCollision();
             return;
         }
-        if (op == Operation.DELETE_LOCALLY) {
-            if (localTransferFile == null) {
+        if (op == Operation.DELETE) {
+            if (localTransferFile != null
+                    && !verifyChildrenOperation(localTransferFile, Operation.DELETE)) {
                 valid = false;
-                message = Bundle.SyncItem_error_deleteLocallyNonExisting();
+                message = Bundle.SyncItem_error_childNotDeleted();
                 return;
             }
-            if (!verifyChildrenOperation(localTransferFile, Operation.DELETE_LOCALLY)) {
+            if (remoteTransferFile != null
+                    && !verifyChildrenOperation(remoteTransferFile, Operation.DELETE)) {
                 valid = false;
-                message = Bundle.SyncItem_error_childNotLocallyDeleted();
-                return;
-            }
-        }
-        if (op == Operation.DELETE_REMOTELY) {
-            if (remoteTransferFile == null) {
-                valid = false;
-                message = Bundle.SyncItem_error_deleteRemotelyNonExisting();
-                return;
-            }
-            if (!verifyChildrenOperation(remoteTransferFile, Operation.DELETE_REMOTELY)) {
-                valid = false;
-                message = Bundle.SyncItem_error_childNotRemotelyDeleted();
+                message = Bundle.SyncItem_error_childNotDeleted();
                 return;
             }
         }
@@ -305,9 +288,9 @@ public final class SyncItem {
         if (localTransferFile == null
                 || remoteTransferFile == null) {
             if (localTransferFile == null) {
-                return remoteTransferFile.getTimestamp() > lastTimestamp ? Operation.DOWNLOAD : Operation.DELETE_REMOTELY;
+                return remoteTransferFile.getTimestamp() > lastTimestamp ? Operation.DOWNLOAD : Operation.DELETE;
             }
-            return localTransferFile.getTimestamp() > lastTimestamp ? Operation.UPLOAD : Operation.DELETE_REMOTELY;
+            return localTransferFile.getTimestamp() > lastTimestamp ? Operation.UPLOAD : Operation.DELETE;
         }
         long localTimestamp = localTransferFile.getTimestamp();
         long remoteTimestamp = remoteTransferFile.getTimestamp();

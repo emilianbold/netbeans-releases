@@ -170,20 +170,20 @@ public final class SyncController implements Cancellable {
                                 syncResult.getUploadTransferInfo().addFailed(localTransferFile, ex.getLocalizedMessage());
                             }
                             break;
-                        case DELETE_LOCALLY:
+                        case DELETE:
+                            // local
                             // XXX recursive delete
                             long start = System.currentTimeMillis();
                             if (!syncItem.getLocalTransferFile().resolveLocalFile().delete()) {
-                                syncResult.getDeleteLocallyTransferInfo().addFailed(remoteTransferFile, Bundle.SyncController_error_unknown());
+                                syncResult.getDeleteTransferInfo().addFailed(remoteTransferFile, Bundle.SyncController_error_unknown());
                             }
-                            break;
-                        case DELETE_REMOTELY:
+                            // remote
                             try {
                                 // XXX recursive delete
                                 TransferInfo deleteInfo = remoteClient.delete(remoteTransferFile);
-                                mergeTransferInfo(deleteInfo, syncResult.getDeleteRemotelyTransferInfo());
+                                mergeTransferInfo(deleteInfo, syncResult.getDeleteTransferInfo());
                             } catch (RemoteException ex) {
-                                syncResult.getDeleteRemotelyTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
+                                syncResult.getDeleteTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
                             }
                             break;
                         default:
@@ -294,19 +294,14 @@ public final class SyncController implements Cancellable {
 
         private final TransferInfo downloadTransferInfo = new TransferInfo();
         private final TransferInfo uploadTransferInfo = new TransferInfo();
-        private final TransferInfo deleteLocallyTransferInfo = new TransferInfo();
-        private final TransferInfo deleteRemotelyTransferInfo = new TransferInfo();
+        private final TransferInfo deleteTransferInfo = new TransferInfo();
 
 
         SyncResult() {
         }
 
-        public TransferInfo getDeleteLocallyTransferInfo() {
-            return deleteLocallyTransferInfo;
-        }
-
-        public TransferInfo getDeleteRemotelyTransferInfo() {
-            return deleteRemotelyTransferInfo;
+        public TransferInfo getDeleteTransferInfo() {
+            return deleteTransferInfo;
         }
 
         public TransferInfo getDownloadTransferInfo() {

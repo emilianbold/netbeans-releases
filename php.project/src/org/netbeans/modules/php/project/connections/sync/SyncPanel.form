@@ -31,9 +31,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="uploadButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="deleteLocallyButton" linkSize="1" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="deleteRemotelyButton" linkSize="1" min="-2" max="-2" attributes="0"/>
+                              <Component id="deleteButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="resetButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
@@ -62,8 +60,7 @@
                   <Component id="noopButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="downloadButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="uploadButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="deleteLocallyButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="deleteRemotelyButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="deleteButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="resetButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -125,13 +122,7 @@
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="deleteLocallyButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" value=" " noResource="true"/>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="deleteRemotelyButton">
+    <Component class="javax.swing.JButton" name="deleteButton">
       <Properties>
         <Property name="text" type="java.lang.String" value=" " noResource="true"/>
         <Property name="enabled" type="boolean" value="false"/>

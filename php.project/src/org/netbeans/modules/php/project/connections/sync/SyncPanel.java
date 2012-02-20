@@ -193,8 +193,7 @@ public final class SyncPanel extends JPanel {
         initOperationButton(noopButton, SyncItem.Operation.NOOP);
         initOperationButton(downloadButton, SyncItem.Operation.DOWNLOAD);
         initOperationButton(uploadButton, SyncItem.Operation.UPLOAD);
-        initOperationButton(deleteLocallyButton, SyncItem.Operation.DELETE_LOCALLY);
-        initOperationButton(deleteRemotelyButton, SyncItem.Operation.DELETE_REMOTELY);
+        initOperationButton(deleteButton, SyncItem.Operation.DELETE);
         // reset
         initResetButton();
     }
@@ -226,8 +225,7 @@ public final class SyncPanel extends JPanel {
         noopButton.setEnabled(enabled);
         downloadButton.setEnabled(enabled);
         uploadButton.setEnabled(enabled);
-        deleteLocallyButton.setEnabled(enabled);
-        deleteRemotelyButton.setEnabled(enabled);
+        deleteButton.setEnabled(enabled);
         resetButton.setEnabled(enabled);
     }
 
@@ -265,13 +263,12 @@ public final class SyncPanel extends JPanel {
         descriptor.setValid(true);
     }
 
-    @NbBundle.Messages("SyncPanel.info.status=Download: {0} files, upload: {1} files, delete remotely: {2} files, "
-            + "delete locally: {3} files, no operation: {4} files, errors: {5} files.")
+    @NbBundle.Messages("SyncPanel.info.status=Download: {0} files, upload: {1} files, delete: {2} files, "
+            + "no operation: {3} files, errors: {4} files.")
     void updateSyncInfo() {
         int download = 0;
         int upload = 0;
-        int deleteRemotely = 0;
-        int deleteLocally = 0;
+        int delete = 0;
         int noop = 0;
         int errors = 0;
         for (SyncItem syncItem : items) {
@@ -287,11 +284,8 @@ public final class SyncPanel extends JPanel {
                 case UPLOAD_REVIEW:
                     upload++;
                     break;
-                case DELETE_REMOTELY:
-                    deleteRemotely++;
-                    break;
-                case DELETE_LOCALLY:
-                    deleteLocally++;
+                case DELETE:
+                    delete++;
                     break;
                 case FILE_CONFLICT:
                 case FILE_DIR_COLLISION:
@@ -301,7 +295,7 @@ public final class SyncPanel extends JPanel {
                     assert false : "Unknown operation: " + syncItem.getOperation();
             }
         }
-        syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, deleteRemotely, deleteLocally, noop, errors));
+        syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, delete, noop, errors));
     }
 
     /**
@@ -320,8 +314,7 @@ public final class SyncPanel extends JPanel {
         noopButton = new JButton();
         downloadButton = new JButton();
         uploadButton = new JButton();
-        deleteLocallyButton = new JButton();
-        deleteRemotelyButton = new JButton();
+        deleteButton = new JButton();
         resetButton = new JButton();
 
         Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
@@ -343,11 +336,8 @@ public final class SyncPanel extends JPanel {
         Mnemonics.setLocalizedText(uploadButton, " "); // NOI18N
         uploadButton.setEnabled(false);
 
-        Mnemonics.setLocalizedText(deleteLocallyButton, " "); // NOI18N
-        deleteLocallyButton.setEnabled(false);
-
-        Mnemonics.setLocalizedText(deleteRemotelyButton, " "); // NOI18N
-        deleteRemotelyButton.setEnabled(false);
+        Mnemonics.setLocalizedText(deleteButton, " "); // NOI18N
+        deleteButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(resetButton, " "); // NOI18N
         resetButton.setEnabled(false);
@@ -365,23 +355,22 @@ public final class SyncPanel extends JPanel {
                                 .addGap(18, 18, 18)
                                 .addComponent(noopButton)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteLocallyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteRemotelyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteLocallyButton, deleteRemotelyButton, downloadButton, noopButton, resetButton, uploadButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton deleteLocallyButton;
-    private JButton deleteRemotelyButton;
+    private JButton deleteButton;
     private JButton diffButton;
     private JButton downloadButton;
     private JLabel firstRunInfoLabel;
@@ -545,8 +534,6 @@ public final class SyncPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
-            boolean fireIndividualEvents = operation != SyncItem.Operation.DELETE_LOCALLY
-                    && operation != SyncItem.Operation.DELETE_REMOTELY;
             for (Integer index : selectedRows) {
                 SyncItem syncItem = items.get(index);
                 if (operation == null) {
@@ -554,15 +541,9 @@ public final class SyncPanel extends JPanel {
                 } else {
                     syncItem.setOperation(operation);
                 }
-                syncItem.validate();
-                if (fireIndividualEvents) {
-                    tableModel.fireSyncItemChange(index);
-                }
             }
-            if (!fireIndividualEvents) {
-                // need to redraw all children and parents
-                tableModel.fireSyncItemsChange();
-            }
+            // need to redraw all children and parents
+            tableModel.fireSyncItemsChange();
         }
 
     }
