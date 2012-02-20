@@ -77,6 +77,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         this("Remote API", getTestClasses());
     }
 
+    @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
            AdeMockupTestCase.class,
@@ -107,6 +108,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         return new RemoteApiTest(testClass.getName(), testClass);
     }
 
+    @SuppressWarnings("unchecked")
     public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
         Class[] classes = new Class[timesToRepeat];
         for (int i = 0; i < classes.length; i++) {
