@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="fileScrollPane" max="32767" attributes="0"/>
+                  <Component id="itemScrollPane" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Group type="102" attributes="0">
@@ -52,7 +52,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="firstRunInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-              <Component id="fileScrollPane" pref="399" max="32767" attributes="0"/>
+              <Component id="itemScrollPane" pref="399" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="diffButton" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -75,14 +75,14 @@
         </Property>
       </Properties>
     </Component>
-    <Container class="javax.swing.JScrollPane" name="fileScrollPane">
+    <Container class="javax.swing.JScrollPane" name="itemScrollPane">
       <AuxValues>
         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
       <SubComponents>
-        <Component class="javax.swing.JTable" name="fileTable">
+        <Component class="javax.swing.JTable" name="itemTable">
           <Properties>
             <Property name="selectionModel" type="javax.swing.ListSelectionModel" editor="org.netbeans.modules.form.editors2.JTableSelectionModelEditor">
               <JTableSelectionModel selectionMode="2"/>

@@ -108,7 +108,7 @@ public final class SyncController implements Cancellable {
             Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
             initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
             Set<TransferFile> localFiles = remoteClient.prepareUpload(sources, sources);
-            items = pairFiles(remoteFiles, localFiles);
+            items = pairItems(remoteFiles, localFiles);
         } catch (RemoteException ex) {
             disconnect();
             RemoteUtils.processRemoteException(ex);
@@ -145,10 +145,10 @@ public final class SyncController implements Cancellable {
             @Override
             public void run() {
                 SyncResult syncResult = new SyncResult();
-                for (SyncItem fileItem : files) {
-                    TransferFile remoteTransferFile = fileItem.getRemoteTransferFile();
-                    TransferFile localTransferFile = fileItem.getLocalTransferFile();
-                    switch (fileItem.getOperation()) {
+                for (SyncItem syncItem : files) {
+                    TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
+                    TransferFile localTransferFile = syncItem.getLocalTransferFile();
+                    switch (syncItem.getOperation()) {
                         case NOOP:
                             // noop
                             break;
@@ -173,7 +173,7 @@ public final class SyncController implements Cancellable {
                         case DELETE_LOCALLY:
                             // XXX recursive delete
                             long start = System.currentTimeMillis();
-                            if (!fileItem.getLocalTransferFile().resolveLocalFile().delete()) {
+                            if (!syncItem.getLocalTransferFile().resolveLocalFile().delete()) {
                                 syncResult.getDeleteLocallyTransferInfo().addFailed(remoteTransferFile, Bundle.SyncController_error_unknown());
                             }
                             break;
@@ -187,7 +187,7 @@ public final class SyncController implements Cancellable {
                             }
                             break;
                         default:
-                            assert false : "Unsupported synchronization operation: " + fileItem.getOperation();
+                            assert false : "Unsupported synchronization operation: " + syncItem.getOperation();
                     }
                 }
                 disconnect();
@@ -221,7 +221,7 @@ public final class SyncController implements Cancellable {
         }
     }
 
-    private List<SyncItem> pairFiles(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
+    private List<SyncItem> pairItems(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
         List<TransferFile> remoteFilesSorted = new ArrayList<TransferFile>(remoteFiles);
         Collections.sort(remoteFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
         List<TransferFile> localFilesSorted = new ArrayList<TransferFile>(localFiles);
@@ -230,7 +230,7 @@ public final class SyncController implements Cancellable {
         removeProjectRoot(remoteFilesSorted);
         removeProjectRoot(localFilesSorted);
 
-        List<SyncItem> result = new ArrayList<SyncItem>(Math.max(remoteFiles.size(), localFiles.size()));
+        List<SyncItem> items = new ArrayList<SyncItem>(Math.max(remoteFiles.size(), localFiles.size()));
         Iterator<TransferFile> remoteFilesIterator = remoteFilesSorted.iterator();
         Iterator<TransferFile> localFilesIterator = localFilesSorted.iterator();
         TransferFile remote = null;
@@ -247,26 +247,26 @@ public final class SyncController implements Cancellable {
             }
             if (remote == null
                     || local == null) {
-                result.add(new SyncItem(remote, local, lastTimeStamp));
+                items.add(new SyncItem(remote, local, lastTimeStamp));
                 remote = null;
                 local = null;
             } else {
                 int compare = TransferFile.TRANSFER_FILE_COMPARATOR.compare(remote, local);
                 if (compare == 0) {
                     // same remote paths
-                    result.add(new SyncItem(remote, local, lastTimeStamp));
+                    items.add(new SyncItem(remote, local, lastTimeStamp));
                     remote = null;
                     local = null;
                 } else if (compare < 0) {
-                    result.add(new SyncItem(remote, null, lastTimeStamp));
+                    items.add(new SyncItem(remote, null, lastTimeStamp));
                     remote = null;
                 } else {
-                    result.add(new SyncItem(null, local, lastTimeStamp));
+                    items.add(new SyncItem(null, local, lastTimeStamp));
                     local = null;
                 }
             }
         }
-        return result;
+        return items;
     }
 
     private void removeProjectRoot(List<TransferFile> files) {

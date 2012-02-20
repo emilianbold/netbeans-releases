@@ -92,7 +92,7 @@ public final class SyncPanel extends JPanel {
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
-    final List<SyncItem> files;
+    final List<SyncItem> items;
     final FileTableModel tableModel;
 
     private final String projectName;
@@ -104,14 +104,14 @@ public final class SyncPanel extends JPanel {
     private NotificationLineSupport notificationLineSupport = null;
 
 
-    SyncPanel(String projectName, String remoteConfigurationName, List<SyncItem> files) {
+    SyncPanel(String projectName, String remoteConfigurationName, List<SyncItem> items) {
         assert SwingUtilities.isEventDispatchThread();
-        assert files != null;
+        assert items != null;
 
         this.projectName = projectName;
         this.remoteConfigurationName = remoteConfigurationName;
-        this.files = files;
-        tableModel = new FileTableModel(files);
+        this.items = items;
+        tableModel = new FileTableModel(items);
 
         initComponents();
         initTable();
@@ -134,7 +134,7 @@ public final class SyncPanel extends JPanel {
                 NotifyDescriptor.OK_OPTION,
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
-        validateFiles();
+        validateItems();
         firstRunInfoLabel.setVisible(firstRun);
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
@@ -150,16 +150,16 @@ public final class SyncPanel extends JPanel {
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                validateFiles();
+                validateItems();
             }
         });
-        fileTable.setModel(tableModel);
+        itemTable.setModel(tableModel);
         // renderer
-        fileTable.setDefaultRenderer(String.class, new StringRenderer());
-        fileTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
+        itemTable.setDefaultRenderer(String.class, new StringRenderer());
+        itemTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
         // columns
-        fileTable.getTableHeader().setReorderingAllowed(false);
-        TableColumnModel columnModel = fileTable.getColumnModel();
+        itemTable.getTableHeader().setReorderingAllowed(false);
+        TableColumnModel columnModel = itemTable.getColumnModel();
         columnModel.getColumn(0).setMinWidth(10);
         columnModel.getColumn(0).setMaxWidth(10);
         columnModel.getColumn(0).setResizable(false);
@@ -167,14 +167,14 @@ public final class SyncPanel extends JPanel {
         columnModel.getColumn(2).setMaxWidth(100);
         columnModel.getColumn(2).setResizable(false);
         // selections
-        fileTable.setColumnSelectionAllowed(false);
-        fileTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        itemTable.setColumnSelectionAllowed(false);
+        itemTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent event) {
                 if (event.getValueIsAdjusting()) {
                     return;
                 }
-                int selectedRowCount = fileTable.getSelectedRowCount();
+                int selectedRowCount = itemTable.getSelectedRowCount();
                 setEnabledOperationButtons(selectedRowCount > 0);
                 setEnabledDiffButton(selectedRowCount);
             }
@@ -229,7 +229,7 @@ public final class SyncPanel extends JPanel {
             diffButton.setEnabled(false);
             return;
         }
-        SyncItem syncItem = files.get(fileTable.getSelectedRow());
+        SyncItem syncItem = items.get(itemTable.getSelectedRow());
         diffButton.setEnabled(syncItem.isDiffPossible());
     }
 
@@ -238,16 +238,16 @@ public final class SyncPanel extends JPanel {
         "SyncPanel.error.operations=Synchronization not possible. Fix errors first.",
         "SyncPanel.warn.operations=Synchronization possible but warnings should be reviewed first."
     })
-    void validateFiles() {
+    void validateItems() {
         assert SwingUtilities.isEventDispatchThread();
         boolean warn = false;
-        for (SyncItem fileItem : files) {
-            if (fileItem.hasError()) {
+        for (SyncItem syncItem : items) {
+            if (syncItem.hasError()) {
                 notificationLineSupport.setErrorMessage(Bundle.SyncPanel_error_operations());
                 descriptor.setValid(false);
                 return;
             }
-            if (fileItem.hasWarning()) {
+            if (syncItem.hasWarning()) {
                 warn = true;
             }
         }
@@ -268,8 +268,8 @@ public final class SyncPanel extends JPanel {
     private void initComponents() {
 
         firstRunInfoLabel = new JLabel();
-        fileScrollPane = new JScrollPane();
-        fileTable = new JTable();
+        itemScrollPane = new JScrollPane();
+        itemTable = new JTable();
         diffButton = new JButton();
         noopButton = new JButton();
         downloadButton = new JButton();
@@ -279,10 +279,10 @@ public final class SyncPanel extends JPanel {
         resetButton = new JButton();
 
         Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
-        fileTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 
-        fileTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        fileScrollPane.setViewportView(fileTable);
+        itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(diffButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.diffButton.text")); // NOI18N
         diffButton.setEnabled(false);
@@ -311,7 +311,7 @@ public final class SyncPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(fileScrollPane).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(itemScrollPane).addGroup(layout.createSequentialGroup()
 
                         .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                                 .addComponent(diffButton)
@@ -328,7 +328,7 @@ public final class SyncPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -337,9 +337,9 @@ public final class SyncPanel extends JPanel {
     private JButton deleteRemotelyButton;
     private JButton diffButton;
     private JButton downloadButton;
-    private JScrollPane fileScrollPane;
-    private JTable fileTable;
     private JLabel firstRunInfoLabel;
+    private JScrollPane itemScrollPane;
+    private JTable itemTable;
     private JButton noopButton;
     private JButton resetButton;
     private JButton uploadButton;
@@ -363,11 +363,11 @@ public final class SyncPanel extends JPanel {
             Bundle.SyncPanel_table_column_local_title(),
         };
 
-        private final List<SyncItem> files;
+        private final List<SyncItem> items;
 
 
-        public FileTableModel(List<SyncItem> files) {
-            this.files = files;
+        public FileTableModel(List<SyncItem> items) {
+            this.items = items;
         }
 
         @Override
@@ -377,7 +377,7 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public int getRowCount() {
-            return files.size();
+            return items.size();
         }
 
         @Override
@@ -391,21 +391,21 @@ public final class SyncPanel extends JPanel {
         })
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            SyncItem fileItem = files.get(rowIndex);
+            SyncItem syncItem = items.get(rowIndex);
             if (columnIndex == 0) {
-                if (fileItem.hasError()) {
+                if (syncItem.hasError()) {
                     return Bundle.SyncPanel_error_cellValue();
                 }
-                if (fileItem.hasWarning()) {
+                if (syncItem.hasWarning()) {
                     return Bundle.SyncPanel_warning_cellValue();
                 }
                 return null;
             } else if (columnIndex == 1) {
-                return fileItem.getRemotePath();
+                return syncItem.getRemotePath();
             } else if (columnIndex == 2) {
-                return fileItem.getOperation();
+                return syncItem.getOperation();
             } else if (columnIndex == 3) {
-                return fileItem.getLocalPath();
+                return syncItem.getLocalPath();
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
@@ -427,7 +427,7 @@ public final class SyncPanel extends JPanel {
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
 
-        public void fireFileItemChange(int row) {
+        public void fireSyncItemChange(int row) {
             fireTableCellUpdated(row, 0);
             fireTableCellUpdated(row, 2);
         }
@@ -448,9 +448,9 @@ public final class SyncPanel extends JPanel {
                 rendererComponent = (JLabel) ERROR_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
                 rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
-                SyncItem fileItem = files.get(row);
-                rendererComponent.setForeground(UIManager.getColor(fileItem.hasError() ? "nb.errorForeground" : "nb.warningForeground")); // NOI18N
-                rendererComponent.setToolTipText(files.get(row).getMessage());
+                SyncItem syncItem = items.get(row);
+                rendererComponent.setForeground(UIManager.getColor(syncItem.hasError() ? "nb.errorForeground" : "nb.warningForeground")); // NOI18N
+                rendererComponent.setToolTipText(items.get(row).getMessage());
             } else {
                 rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 // file path
@@ -491,17 +491,17 @@ public final class SyncPanel extends JPanel {
         // can be done in background thread if needed
         @Override
         public void actionPerformed(ActionEvent e) {
-            int[] selectedRows = fileTable.getSelectedRows();
+            int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
             for (Integer index : selectedRows) {
-                SyncItem fileItem = files.get(index);
+                SyncItem syncItem = items.get(index);
                 if (operation == null) {
-                    fileItem.resetOperation();
+                    syncItem.resetOperation();
                 } else {
-                    fileItem.setOperation(operation);
+                    syncItem.setOperation(operation);
                 }
-                fileItem.validate();
-                tableModel.fireFileItemChange(index);
+                syncItem.validate();
+                tableModel.fireSyncItemChange(index);
             }
         }
 
