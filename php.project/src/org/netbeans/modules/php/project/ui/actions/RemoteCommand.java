@@ -88,7 +88,6 @@ public abstract class RemoteCommand extends Command {
     private static final int MAX_TYPE_SIZE = getFileTypeLabelMaxSize() + 2;
     private static final Color COLOR_SUCCESS = Color.GREEN.darker().darker();
     private static final Color COLOR_IGNORE = Color.ORANGE.darker();
-    private static final Comparator<TransferFile> TRANSFER_FILE_COMPARATOR = new TransferFileComparator();
 
     private static final RequestProcessor RP = new RequestProcessor("Remote connection", 1); // NOI18N
     private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
@@ -187,7 +186,7 @@ public abstract class RemoteCommand extends Command {
         if (transferInfo.hasAnyTransfered()) {
             printSuccess(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSucceeded"));
             ArrayList<TransferFile> sorted = new ArrayList<TransferFile>(transferInfo.getTransfered());
-            Collections.sort(sorted, TRANSFER_FILE_COMPARATOR);
+            Collections.sort(sorted, TransferFile.TRANSFER_FILE_COMPARATOR);
             for (TransferFile file : sorted) {
                 printSuccess(io, maxRelativePath, file);
                 if (file.isFile()) {
@@ -199,7 +198,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyFailed()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteFailed"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getFailed());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
@@ -208,7 +207,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyPartiallyFailed()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemotePartiallyFailed"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getPartiallyFailed());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
@@ -217,7 +216,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyIgnored()) {
             printIgnore(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getIgnored());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printIgnore(io, maxRelativePath, entry.getKey(), entry.getValue());
@@ -418,15 +417,6 @@ public abstract class RemoteCommand extends Command {
                 size += file.getSize();
             }
             return size / 1024;
-        }
-
-    }
-
-    private static final class TransferFileComparator implements Comparator<TransferFile> {
-
-        @Override
-        public int compare(TransferFile file1, TransferFile file2) {
-            return file1.getRemotePath().compareToIgnoreCase(file2.getRemotePath());
         }
 
     }

@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -83,6 +84,15 @@ public abstract class TransferFile {
      * Remote project root path ({@value #REMOTE_PROJECT_ROOT}).
      */
     public static final String REMOTE_PROJECT_ROOT = "."; // NOI18N
+    /**
+     * Comparator by {@link #getRemotePath() remote paths}.
+     */
+    public static final Comparator<TransferFile> TRANSFER_FILE_COMPARATOR = new Comparator<TransferFile>() {
+        @Override
+        public int compare(TransferFile file1, TransferFile file2) {
+            return file1.getRemotePath().compareToIgnoreCase(file2.getRemotePath());
+        }
+    };
 
     protected final String baseLocalDirectoryPath;
     protected final String baseRemoteDirectoryPath;

@@ -41,21 +41,39 @@
  */
 package org.netbeans.modules.php.project.connections.synchronize;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils;
+import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  * Controller for synchronization.
  */
-public final class SynchronizeController {
+public final class SynchronizeController implements Cancellable {
 
     static final RequestProcessor SYNCHRONIZE_RP = new RequestProcessor("Remote Synchronization", 1); // NOI18N
 
     final PhpProject phpProject;
     final RemoteClient remoteClient;
+    final Long lastTimeStamp = null;
+
+    volatile boolean cancelled = false;
 
 
     public SynchronizeController(PhpProject phpProject, RemoteClient remoteClient) {
@@ -72,14 +90,30 @@ public final class SynchronizeController {
         });
     }
 
+    @NbBundle.Messages("SynchronizeController.fetching=Fetching {0} files")
     List<FileItem> fetchFiles() {
         assert !SwingUtilities.isEventDispatchThread();
-        System.out.println("--------------- fetching...");
-        //FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-        return null;
+        List<FileItem> items = null;
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SynchronizeController_fetching(phpProject.getName()), this);
+        try {
+            progressHandle.start();
+            FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+            Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
+            initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
+            Set<TransferFile> localFiles = remoteClient.prepareUpload(sources, sources);
+            items = pairFiles(remoteFiles, localFiles);
+        } catch (RemoteException ex) {
+            RemoteUtils.processRemoteException(ex);
+        } finally {
+            progressHandle.finish();
+        }
+        return items != null ? Collections.synchronizedList(items) : null;
     }
 
     void showPanel(final List<FileItem> files) {
+        if (cancelled || files == null) {
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -95,6 +129,10 @@ public final class SynchronizeController {
     }
 
     void doSynchronize(final List<FileItem> files) {
+        if (cancelled) {
+            // in fact, cannot happen here
+            return;
+        }
         SYNCHRONIZE_RP.post(new Runnable() {
             @Override
             public void run() {
@@ -102,6 +140,80 @@ public final class SynchronizeController {
                 System.out.println("--------------- synchronizing...");
             }
         });
+    }
+
+    @Override
+    public boolean cancel() {
+        cancelled = true;
+        remoteClient.cancel();
+        return true;
+    }
+
+    private List<FileItem> pairFiles(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
+        List<TransferFile> remoteFilesSorted = new ArrayList<TransferFile>(remoteFiles);
+        Collections.sort(remoteFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
+        List<TransferFile> localFilesSorted = new ArrayList<TransferFile>(localFiles);
+        Collections.sort(localFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
+
+        removeProjectRoot(remoteFilesSorted);
+        removeProjectRoot(localFilesSorted);
+
+        List<FileItem> result = new ArrayList<FileItem>(Math.max(remoteFiles.size(), localFiles.size()));
+        Iterator<TransferFile> remoteFilesIterator = remoteFilesSorted.iterator();
+        Iterator<TransferFile> localFilesIterator = localFilesSorted.iterator();
+        TransferFile remote = null;
+        TransferFile local = null;
+        while (remoteFilesIterator.hasNext()
+                || localFilesIterator.hasNext()) {
+            if (remote == null
+                    && remoteFilesIterator.hasNext()) {
+                remote = remoteFilesIterator.next();
+            }
+            if (local == null
+                    && localFilesIterator.hasNext()) {
+                local = localFilesIterator.next();
+            }
+            if (remote == null
+                    || local == null) {
+                result.add(new FileItem(remote, local, lastTimeStamp));
+                remote = null;
+                local = null;
+            } else {
+                int compare = TransferFile.TRANSFER_FILE_COMPARATOR.compare(remote, local);
+                if (compare == 0) {
+                    // same remote paths
+                    result.add(new FileItem(remote, local, lastTimeStamp));
+                    remote = null;
+                    local = null;
+                } else if (compare < 0) {
+                    result.add(new FileItem(remote, null, lastTimeStamp));
+                    remote = null;
+                } else {
+                    result.add(new FileItem(null, local, lastTimeStamp));
+                    local = null;
+                }
+            }
+        }
+        return result;
+    }
+
+    private void removeProjectRoot(List<TransferFile> files) {
+        if (files.isEmpty()) {
+            return;
+        }
+        if (files.get(0).isProjectRoot()) {
+            files.remove(0);
+        }
+    }
+
+    /**
+     * Remote files are downloaded lazily so we need to fetch all children.
+     */
+    private void initRemoteFiles(Set<TransferFile> allRemoteFiles, Collection<TransferFile> remoteFiles) {
+        allRemoteFiles.addAll(remoteFiles);
+        for (TransferFile file : remoteFiles) {
+            initRemoteFiles(allRemoteFiles, file.getChildren());
+        }
     }
 
 }
