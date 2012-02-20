@@ -95,11 +95,17 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     private boolean createMacroAndIncludes;
     private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
-
+    private static final EvalCallback EMPTY_EVAL_CALLBACK = new EvalCallback() {
+        @Override
+        public void onEval(APT apt, boolean result) { }
+        @Override
+        public void onStoppedDirective(APT apt) { }
+    };
+    
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
         this.createMacroAndIncludes = false;
-        this.evalCallback = evalCallback;
+        this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
     }
 
@@ -158,9 +164,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         super.onErrorNode(apt);
         if (needMacroAndIncludes()) {
             getFile().addError(createError((APTError)apt));
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -168,9 +172,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onPragmaNode(APT apt) {
         super.onPragmaNode(apt);
         if (isStopped()) {
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -285,8 +287,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected void onEval(APT apt, boolean result) {
-        if (evalCallback != null) {
-            evalCallback.onEval(apt, result);
-        }
+        evalCallback.onEval(apt, result);
     }
 }

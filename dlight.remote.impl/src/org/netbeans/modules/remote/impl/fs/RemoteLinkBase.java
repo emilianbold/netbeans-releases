@@ -173,6 +173,16 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
     }
 
+    @Override
+    protected boolean checkLock(FileLock aLock) throws IOException {
+        RemoteFileObjectBase delegate = getDelegate();
+        if (delegate != null) {
+            return delegate.checkLock(aLock);
+        } else {
+            return super.checkLock(aLock);
+        }
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     protected boolean isReadOnlyImpl(RemoteFileObjectBase orig) {

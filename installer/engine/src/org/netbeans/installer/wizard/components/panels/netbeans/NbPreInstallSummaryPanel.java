@@ -556,17 +556,21 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         protected String validateInput() {
             try {
                 if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {
-                    final List<File> roots =
-                            SystemUtils.getFileSystemRoots();
-                    final List<Product> toInstall =
-                            Registry.getInstance().getProductsToInstall();
-                    final Map<File, Long> spaceMap =
-                            new HashMap<File, Long>();
+                    final List<Product> toInstall = Registry.getInstance().getProductsToInstall();
+                    final Map<File, Long> spaceMap = new HashMap<File, Long>();
+                    final File downloadDataDir = Installer.getInstance().getLocalDirectory();
                     
-                    LogManager.log("Available roots : " + StringUtils.asString(roots));
+                    // only roots for appropriate files
+                    final String[] installFiles = new String[toInstall.size() + 1];                    
+                    for (int i = 0; i < toInstall.size(); i++) {
+                        installFiles[i] = toInstall.get(i).getInstallationLocation().getAbsolutePath();
+                    }
+                    installFiles[installFiles.length - 1] = downloadDataDir.getAbsolutePath();
+                    final List<File> roots = SystemUtils.getFileSystemRoots(installFiles);
                     
-                    File downloadDataDirRoot = FileUtils.getRoot(
-                            Installer.getInstance().getLocalDirectory(), roots);
+                    LogManager.log("Roots : " + StringUtils.asString(roots));
+                    
+                    File downloadDataDirRoot = FileUtils.getRoot(downloadDataDir, roots);
                     long downloadSize = 0;
                     for (Product product: toInstall) {
                         downloadSize+=product.getDownloadSize();
