@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.Map;
 import java.util.Queue;
@@ -169,11 +168,15 @@ public abstract class RemoteCommand extends Command {
     }
 
     protected static void processTransferInfo(TransferInfo transferInfo, InputOutput io) {
+        processTransferInfo(transferInfo, io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSummary"));
+    }
+
+    protected static void processTransferInfo(TransferInfo transferInfo, InputOutput io, String title) {
         OutputWriter out = io.getOut();
         OutputWriter err = io.getErr();
 
         out.println();
-        out.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSummary"));
+        out.println(title);
         StringBuilder sep = new StringBuilder(20);
         for (int i = 0; i < sep.capacity(); i++) {
             sep.append(SEP_CHAR);

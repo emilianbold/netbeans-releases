@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
@@ -58,6 +60,8 @@ import org.openide.windows.InputOutput;
  * Synchronize remote and local files.
  */
 public class SyncCommand extends RemoteCommand implements Displayable {
+
+    static final Logger LOGGER = Logger.getLogger(SyncCommand.class.getName());
 
     public static final String ID = "synchronize"; // NOI18N
     @NbBundle.Messages("SyncCommand.label=Synchronize")
@@ -111,23 +115,24 @@ public class SyncCommand extends RemoteCommand implements Displayable {
             this.remoteLog = remoteLog;
         }
 
+        @NbBundle.Messages({
+            "SyncCommand.download.title=Download",
+            "SyncCommand.upload.title=Upload",
+            "SyncCommand.remoteDelete.title=Remote Delete",
+            "SyncCommand.localDelete.title=Local Delete"
+        })
         @Override
         public void process(SyncResult result) {
             try {
                 remoteLog.getOut().reset();
             } catch (IOException ex) {
-                // XXX logger
+                LOGGER.log(Level.WARNING, null, ex);
             }
             remoteLog.select();
-            // XXX
-            remoteLog.getOut().println("------ Download:");
-            processTransferInfo(result.getDownloadTransferInfo(), remoteLog/*, title = Download */);
-            remoteLog.getOut().println("------ Upload:");
-            processTransferInfo(result.getUploadTransferInfo(), remoteLog);
-            remoteLog.getOut().println("------ Remote Delete:");
-            processTransferInfo(result.getDeleteRemotelyTransferInfo(), remoteLog);
-            remoteLog.getOut().println("------ Local Delete:");
-            processTransferInfo(result.getDeleteLocallyTransferInfo(), remoteLog);
+            processTransferInfo(result.getDownloadTransferInfo(), remoteLog, Bundle.SyncCommand_download_title());
+            processTransferInfo(result.getUploadTransferInfo(), remoteLog, Bundle.SyncCommand_upload_title());
+            processTransferInfo(result.getDeleteRemotelyTransferInfo(), remoteLog, Bundle.SyncCommand_remoteDelete_title());
+            processTransferInfo(result.getDeleteLocallyTransferInfo(), remoteLog, Bundle.SyncCommand_localDelete_title());
         }
 
     }
