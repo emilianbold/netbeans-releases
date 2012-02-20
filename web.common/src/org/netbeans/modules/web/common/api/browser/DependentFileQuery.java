@@ -41,11 +41,6 @@
  */
 package org.netbeans.modules.web.common.api.browser;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import org.netbeans.modules.web.common.spi.browser.DependentFileQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -76,13 +71,13 @@ public class DependentFileQuery {
         return false;
     }
     
-    /**
+    /*
      * Find collection of files whose change affects changes in the view of <code>fileObject</code>.
      * F.e. if <code>fileObject</code> is html file then its view is affected 
      * by changes in included JS or CSS files. Related to {@link #isDependent} .
      * @param fileObject
      * @return collection of files from which <code>fileObject</code> depends on
-     */
+     *
     public static Set<FileObject> getDependent(FileObject fileObject) {
         Collection<? extends DependentFileQueryImplementation> impls = lookup.allInstances();
         if ( impls.isEmpty() ){
@@ -97,5 +92,5 @@ public class DependentFileQuery {
             result.addAll(set);
         }
         return result;
-    }
+    }*/
 }

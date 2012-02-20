@@ -392,16 +392,22 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         public void ensureListenersAttached( FileObject file ) {
             assert REQUEST_PROCESSOR.isRequestProcessorThread();
             
-            if ( filesDependsOn == null ){
+            /*if ( filesDependsOn == null ){
                 filesDependsOn = new HashSet<FileObject>();
                 file.addFileChangeListener( this );
             }
             else {
                 checkListeners();
+            }*/
+            if ( !added ){
+                added = true;
+                subject.addFileChangeListener( this );
+                FileObject parent = subject.getParent();
+                parent.addFileChangeListener( this  );
             }
         }
 
-        private void checkListeners( ) {
+        /*private void checkListeners( ) {
             assert REQUEST_PROCESSOR.isRequestProcessorThread();
             
             Set<FileObject> files = DependentFileQuery.getDependent(subject);
@@ -416,7 +422,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
                fileObject.addFileChangeListener(this ); 
             }
             filesDependsOn = files;
-        }
+        }*/
         
         /* (non-Javadoc)
          * @see org.openide.filesystems.FileChangeAdapter#fileChanged(org.openide.filesystems.FileEvent)
@@ -427,19 +433,25 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
             if (u != null) {
                 BrowserSupport.getDefault().reload(u);
             }
-            REQUEST_PROCESSOR.post( new Runnable() {
+            /*REQUEST_PROCESSOR.post( new Runnable() {
                 @Override
                 public void run() {
                     checkListeners();
                 }
-            });
+            });*/
         }
 
         /* (non-Javadoc)
          * @see org.openide.filesystems.FileChangeAdapter#fileDeleted(org.openide.filesystems.FileEvent)
          */
         @Override
-        public void fileDeleted( FileEvent fe ) {
+        public void fileDeleted( final FileEvent fe ) {
+            REQUEST_PROCESSOR.post( new Runnable() {
+                @Override
+                public void run() {
+                    fe.getFile().removeFileChangeListener( ReloadOnSaveSupport.this );
+                }
+            });
         }
 
         /* (non-Javadoc)
@@ -449,7 +461,8 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         public void fileRenamed( FileRenameEvent fe ) {
         }
         
-        private Set<FileObject> filesDependsOn;
+        //private Set<FileObject> filesDependsOn;
+        private boolean added;
     }
     
     private class FileEncodingQueryImpl extends FileEncodingQueryImplementation {

@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.web.common.spi.browser;
 
-import java.util.Set;
-
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,6 +50,6 @@ public interface DependentFileQueryImplementation {
     
     Boolean isDependent(FileObject master, FileObject dependent);
     
-    Set<FileObject> getDependent( FileObject fileObject );
+    //Set<FileObject> getDependent( FileObject fileObject );
     
 }
