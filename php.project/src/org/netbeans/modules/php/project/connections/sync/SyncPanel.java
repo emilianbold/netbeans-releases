@@ -229,8 +229,8 @@ public final class SyncPanel extends JPanel {
             diffButton.setEnabled(false);
             return;
         }
-        // XXX improve, ask SyncItem
-        diffButton.setEnabled(true);
+        SyncItem syncItem = files.get(fileTable.getSelectedRow());
+        diffButton.setEnabled(syncItem.isDiffPossible());
     }
 
     // XXX

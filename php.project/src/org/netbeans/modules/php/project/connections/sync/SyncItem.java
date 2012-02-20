@@ -206,6 +206,16 @@ public final class SyncItem {
         return message;
     }
 
+    public boolean isDiffPossible() {
+        if (remoteTransferFile != null
+                && localTransferFile != null) {
+            return remoteTransferFile.isFile() && localTransferFile.isFile();
+        } else if (remoteTransferFile != null) {
+            return remoteTransferFile.isFile();
+        }
+        return localTransferFile.isFile();
+    }
+
     private Operation calculateOperation(long lastTimestamp) {
         if (lastTimestamp == -1) {
             // perhaps running for the first time
