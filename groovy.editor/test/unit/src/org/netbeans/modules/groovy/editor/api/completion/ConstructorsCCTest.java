@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
  *
@@ -60,6 +60,7 @@ public class ConstructorsCCTest extends GroovyTestBase {
     }
 
     // uncomment this to have logging from GroovyLexer
+    @Override
     protected Level logLevel() {
         // enabling logging
         return Level.INFO;
@@ -84,7 +85,11 @@ public class ConstructorsCCTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
     }
 
-    public void testConstructor4() throws Exception {
+    public void testConstructors4() throws Exception {
         checkCompletion(TEST_BASE + "" + "Constructors4.groovy", "    Foo f = new F^", false);
+    }
+
+    public void testConstructors5() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Constructors5.groovy", "    Foo f = new F^", false);
     }
 }
