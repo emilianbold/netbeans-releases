@@ -41,12 +41,13 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.io.IOException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
-import org.netbeans.modules.php.project.connections.RemoteException;
-import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController;
+import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController.SyncResult;
+import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController.SyncResultProcessor;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.openide.util.Lookup;
@@ -96,7 +97,39 @@ public class SynchronizeCommand extends RemoteCommand implements Displayable {
         RemoteConfiguration remoteConfiguration = RunConfigRemote.forProject(getProject()).getRemoteConfiguration();
         InputOutput remoteLog = getRemoteLog(remoteConfiguration.getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
-        new SynchronizeController(getProject(), remoteClient, remoteConfiguration).synchronize();
+        new SynchronizeController(getProject(), remoteClient, remoteConfiguration).synchronize(new PrintSyncResultProcessor(remoteLog));
+    }
+
+    //~ Inner classes
+
+    private static final class PrintSyncResultProcessor implements SyncResultProcessor {
+
+        private final InputOutput remoteLog;
+
+
+        public PrintSyncResultProcessor(InputOutput remoteLog) {
+            this.remoteLog = remoteLog;
+        }
+
+        @Override
+        public void process(SyncResult result) {
+            try {
+                remoteLog.getOut().reset();
+            } catch (IOException ex) {
+                // XXX logger
+            }
+            remoteLog.select();
+            // XXX
+            remoteLog.getOut().println("------ Download:");
+            processTransferInfo(result.getDownloadTransferInfo(), remoteLog/*, title = Download */);
+            remoteLog.getOut().println("------ Upload:");
+            processTransferInfo(result.getUploadTransferInfo(), remoteLog);
+            remoteLog.getOut().println("------ Remote Delete:");
+            processTransferInfo(result.getDeleteRemotelyTransferInfo(), remoteLog);
+            remoteLog.getOut().println("------ Local Delete:");
+            processTransferInfo(result.getDeleteLocallyTransferInfo(), remoteLog);
+        }
+
     }
 
 }

@@ -48,16 +48,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
+import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -73,7 +76,7 @@ public final class SynchronizeController implements Cancellable {
     final PhpProject phpProject;
     final RemoteClient remoteClient;
     final RemoteConfiguration remoteConfiguration;
-    final Long lastTimeStamp = null;
+    final long lastTimeStamp;
 
     volatile boolean cancelled = false;
 
@@ -82,13 +85,14 @@ public final class SynchronizeController implements Cancellable {
         this.phpProject = phpProject;
         this.remoteClient = remoteClient;
         this.remoteConfiguration = remoteConfiguration;
+        lastTimeStamp = ProjectSettings.getSyncTimestamp(phpProject);
     }
 
-    public void synchronize() {
+    public void synchronize(final SyncResultProcessor resultProcessor) {
         SYNCHRONIZE_RP.post(new Runnable() {
             @Override
             public void run() {
-                showPanel(fetchFiles());
+                showPanel(fetchFiles(), resultProcessor);
             }
         });
     }
@@ -114,7 +118,7 @@ public final class SynchronizeController implements Cancellable {
         return items != null ? Collections.synchronizedList(items) : null;
     }
 
-    void showPanel(final List<FileItem> files) {
+    void showPanel(final List<FileItem> files, final SyncResultProcessor resultProcessor) {
         if (cancelled || files == null) {
             return;
         }
@@ -122,8 +126,8 @@ public final class SynchronizeController implements Cancellable {
             @Override
             public void run() {
                 SynchronizePanel panel = new SynchronizePanel(phpProject.getName(), remoteConfiguration.getDisplayName(), files);
-                if (panel.open(lastTimeStamp == null)) {
-                    doSynchronize(files);
+                if (panel.open(lastTimeStamp == -1)) {
+                    doSynchronize(files, resultProcessor);
                 } else {
                     disconnect();
                 }
@@ -131,7 +135,8 @@ public final class SynchronizeController implements Cancellable {
         });
     }
 
-    void doSynchronize(final List<FileItem> files) {
+    @NbBundle.Messages("SynchronizeController.error.unknown=Unknown reason")
+    void doSynchronize(final List<FileItem> files, final SyncResultProcessor resultProcessor) {
         if (cancelled) {
             // in fact, cannot happen here
             return;
@@ -139,10 +144,63 @@ public final class SynchronizeController implements Cancellable {
         SYNCHRONIZE_RP.post(new Runnable() {
             @Override
             public void run() {
-                // XXX synchronize
-                System.out.println("--------------- synchronizing...");
+                SyncResult syncResult = new SyncResult();
+                for (FileItem fileItem : files) {
+                    TransferFile remoteTransferFile = fileItem.getRemoteTransferFile();
+                    TransferFile localTransferFile = fileItem.getLocalTransferFile();
+                    switch (fileItem.getOperation()) {
+                        case NOOP:
+                            // noop
+                            break;
+                        case DOWNLOAD:
+                            try {
+                                TransferInfo downloadInfo = remoteClient.download(Collections.singleton(remoteTransferFile));
+                                mergeTransferInfo(downloadInfo, syncResult.getDownloadTransferInfo());
+                            } catch (RemoteException ex) {
+                                syncResult.getDownloadTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
+                            }
+                            break;
+                        case UPLOAD:
+                            try {
+                                TransferInfo uploadInfo = remoteClient.upload(Collections.singleton(localTransferFile));
+                                mergeTransferInfo(uploadInfo, syncResult.getUploadTransferInfo());
+                            } catch (RemoteException ex) {
+                                syncResult.getUploadTransferInfo().addFailed(localTransferFile, ex.getLocalizedMessage());
+                            }
+                            break;
+                        case DELETE_LOCALLY:
+                            // XXX recursive delete
+                            long start = System.currentTimeMillis();
+                            if (!fileItem.getLocalTransferFile().resolveLocalFile().delete()) {
+                                syncResult.getDeleteLocallyTransferInfo().addFailed(remoteTransferFile, Bundle.SynchronizeController_error_unknown());
+                            }
+                            break;
+                        case DELETE_REMOTELY:
+                            try {
+                                // XXX recursive delete
+                                TransferInfo deleteInfo = remoteClient.delete(remoteTransferFile);
+                                mergeTransferInfo(deleteInfo, syncResult.getDeleteRemotelyTransferInfo());
+                            } catch (RemoteException ex) {
+                                syncResult.getDeleteRemotelyTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
+                            }
+                            break;
+                        default:
+                            assert false : "Unsupported synchronization operation: " + fileItem.getOperation();
+                    }
+                }
                 disconnect();
+                ProjectSettings.setSyncTimestamp(phpProject, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+                resultProcessor.process(syncResult);
             }
+
+            private void mergeTransferInfo(TransferInfo from, TransferInfo to) {
+                to.setRuntime(to.getRuntime() + from.getRuntime());
+                to.getTransfered().addAll(from.getTransfered());
+                to.getIgnored().putAll(from.getIgnored());
+                to.getPartiallyFailed().putAll(from.getPartiallyFailed());
+                to.getFailed().putAll(from.getFailed());
+            }
+
         });
     }
 
@@ -226,6 +284,41 @@ public final class SynchronizeController implements Cancellable {
         for (TransferFile file : remoteFiles) {
             initRemoteFiles(allRemoteFiles, file.getChildren());
         }
+    }
+
+    //~ Inner classes
+
+    public static final class SyncResult {
+
+        private final TransferInfo downloadTransferInfo = new TransferInfo();
+        private final TransferInfo uploadTransferInfo = new TransferInfo();
+        private final TransferInfo deleteLocallyTransferInfo = new TransferInfo();
+        private final TransferInfo deleteRemotelyTransferInfo = new TransferInfo();
+
+
+        SyncResult() {
+        }
+
+        public TransferInfo getDeleteLocallyTransferInfo() {
+            return deleteLocallyTransferInfo;
+        }
+
+        public TransferInfo getDeleteRemotelyTransferInfo() {
+            return deleteRemotelyTransferInfo;
+        }
+
+        public TransferInfo getDownloadTransferInfo() {
+            return downloadTransferInfo;
+        }
+
+        public TransferInfo getUploadTransferInfo() {
+            return uploadTransferInfo;
+        }
+
+    }
+
+    public interface SyncResultProcessor {
+        void process(SyncResult result);
     }
 
 }

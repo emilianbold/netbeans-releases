@@ -122,7 +122,7 @@ public final class FileItem {
     private volatile String message = null;
 
 
-    public FileItem(TransferFile remoteTransferFile, TransferFile localTransferFile, Long lastTimestamp) {
+    public FileItem(TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
         assert remoteTransferFile != null || localTransferFile != null;
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
@@ -206,8 +206,8 @@ public final class FileItem {
         return message;
     }
 
-    private Operation calculateOperation(Long lastTimestamp) {
-        if (lastTimestamp == null) {
+    private Operation calculateOperation(long lastTimestamp) {
+        if (lastTimestamp == -1) {
             // perhaps running for the first time
             lastTimestamp = Long.MIN_VALUE;
         }

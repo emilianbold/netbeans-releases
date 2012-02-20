@@ -343,9 +343,19 @@ public abstract class TransferFile {
     }
 
     /**
+     * Resolve local file for the {@link #getBaseLocalDirectoryPath() base local directory}.
+     * @return resolved local file
+     * @see #resolveLocalFile(File)
+     */
+    public File resolveLocalFile() {
+        return resolveLocalFile(new File(getBaseLocalDirectoryPath()));
+    }
+
+    /**
      * Resolve local file for the given directory.
      * @param directory directory (does not need to exist) to be used as a parent
      * @return resolved local file
+     * @see #resolveLocalFile()
      */
     public File resolveLocalFile(File directory) {
         if (directory == null) {

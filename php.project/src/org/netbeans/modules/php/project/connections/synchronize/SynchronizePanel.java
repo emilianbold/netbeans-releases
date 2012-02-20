@@ -130,9 +130,10 @@ public final class SynchronizePanel extends JPanel {
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.OK_OPTION,
                 null);
-        descriptor.setValid(false);
         notificationLineSupport = descriptor.createNotificationLineSupport();
+        validateFiles();
         if (firstRun) {
+            // XXX conflict with validateFiles()
             notificationLineSupport.setInformationMessage(Bundle.SynchronizePanel_firstRun());
         }
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
