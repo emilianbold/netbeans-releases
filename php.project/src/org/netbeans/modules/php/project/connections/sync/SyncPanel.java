@@ -261,13 +261,15 @@ public final class SyncPanel extends JPanel {
         descriptor.setValid(true);
     }
 
-    @NbBundle.Messages("SyncPanel.info.status=Download: {0} files, upload: {1} files, delete remotely: {2} files, delete locally: {3} files, no operation: {4} files.")
+    @NbBundle.Messages("SyncPanel.info.status=Download: {0} files, upload: {1} files, delete remotely: {2} files, "
+            + "delete locally: {3} files, no operation: {4} files, errors: {5} files.")
     void updateSyncInfo() {
         int download = 0;
         int upload = 0;
         int deleteRemotely = 0;
         int deleteLocally = 0;
         int noop = 0;
+        int errors = 0;
         for (SyncItem syncItem : items) {
             switch (syncItem.getOperation()) {
                 case NOOP:
@@ -287,14 +289,15 @@ public final class SyncPanel extends JPanel {
                 case DELETE_LOCALLY:
                     deleteLocally++;
                     break;
+                case FILE_CONFLICT:
                 case FILE_DIR_COLLISION:
-                    // noop
+                    errors++;
                     break;
                 default:
                     assert false : "Unknown operation: " + syncItem.getOperation();
             }
         }
-        syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, deleteRemotely, deleteLocally, noop));
+        syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, deleteRemotely, deleteLocally, noop, errors));
     }
 
     /**

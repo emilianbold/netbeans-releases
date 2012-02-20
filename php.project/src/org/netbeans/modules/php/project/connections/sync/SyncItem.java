@@ -70,6 +70,8 @@ public final class SyncItem {
     static final String DELETE_REMOTELY_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
     static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
+    static final String FILE_CONFLICT_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
 
     @NbBundle.Messages({
         "Operation.noop.title=No operation",
@@ -80,6 +82,7 @@ public final class SyncItem {
         "Operation.deleteLocally.title=Delete local file",
         "Operation.deleteRemotely.title=Delete remote file",
         "Operation.fileDirCollision.title=File vs. directory collision",
+        "Operation.fileConflict.title=File conflict",
     })
     public static enum Operation {
 
@@ -90,7 +93,8 @@ public final class SyncItem {
         UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH),
         DELETE_LOCALLY(Bundle.Operation_deleteLocally_title(), DELETE_LOCALLY_ICON_PATH),
         DELETE_REMOTELY(Bundle.Operation_deleteRemotely_title(), DELETE_REMOTELY_ICON_PATH),
-        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH);
+        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH),
+        FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH);
 
 
         private final String title;
@@ -126,7 +130,7 @@ public final class SyncItem {
         assert remoteTransferFile != null || localTransferFile != null;
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
-        defaultOperation = calculateOperation(lastTimestamp);
+        defaultOperation = calculateDefaultOperation(lastTimestamp);
         validate();
     }
 
@@ -169,12 +173,23 @@ public final class SyncItem {
     }
 
     @NbBundle.Messages({
-        "SyncItem.warn.downloadReview=File must be reviewed before download.",
-        "SyncItem.warn.uploadReview=File must be reviewed before upload.",
-        "SyncItem.error.fileDirCollision=Cannot synchronize file with directory."
+        "SyncItem.error.fileConflict=File must be merged before synchronization.",
+        "SyncItem.error.fileDirCollision=Cannot synchronize file with directory.",
+        "SyncItem.warn.downloadReview=File should be reviewed before download.",
+        "SyncItem.warn.uploadReview=File should be reviewed before upload."
     })
     public void validate() {
         Operation op = getOperation();
+        if (op == Operation.FILE_CONFLICT) {
+            valid = false;
+            message = Bundle.SyncItem_error_fileConflict();
+            return;
+        }
+        if (op == Operation.FILE_DIR_COLLISION) {
+            valid = false;
+            message = Bundle.SyncItem_error_fileDirCollision();
+            return;
+        }
         if (op == Operation.DOWNLOAD_REVIEW) {
             valid = true;
             message = Bundle.SyncItem_warn_downloadReview();
@@ -183,11 +198,6 @@ public final class SyncItem {
         if (op == Operation.UPLOAD_REVIEW) {
             valid = true;
             message = Bundle.SyncItem_warn_uploadReview();
-            return;
-        }
-        if (op == Operation.FILE_DIR_COLLISION) {
-            valid = false;
-            message = Bundle.SyncItem_error_fileDirCollision();
             return;
         }
         message = null;
@@ -216,18 +226,7 @@ public final class SyncItem {
         return localTransferFile.isFile();
     }
 
-    private Operation calculateOperation(long lastTimestamp) {
-        if (lastTimestamp == -1) {
-            // perhaps running for the first time
-            lastTimestamp = Long.MIN_VALUE;
-        }
-        if (localTransferFile == null
-                || remoteTransferFile == null) {
-            if (localTransferFile == null) {
-                return Operation.DOWNLOAD;
-            }
-            return Operation.UPLOAD;
-        }
+    private Operation calculateDefaultOperation(long lastTimestamp) {
         if (localTransferFile.isFile() && !remoteTransferFile.isFile()) {
             return Operation.FILE_DIR_COLLISION;
         }
@@ -237,33 +236,62 @@ public final class SyncItem {
         if (localTransferFile.isDirectory() && remoteTransferFile.isDirectory()) {
             return Operation.NOOP;
         }
+        if (lastTimestamp == -1) {
+            // running for the first time
+            return calculateFirstDefaultOperation();
+        }
+        return calculateNewDefaultOperation(lastTimestamp);
+    }
+
+    private Operation calculateFirstDefaultOperation() {
+        if (localTransferFile == null
+                || remoteTransferFile == null) {
+            if (localTransferFile == null) {
+                return Operation.DOWNLOAD;
+            }
+            return Operation.UPLOAD;
+        }
         long localTimestamp = localTransferFile.getTimestamp();
         long remoteTimestamp = remoteTransferFile.getTimestamp();
-        long localSize = localTransferFile.getSize();
-        long remoteSize = remoteTransferFile.getSize();
         if (localTimestamp == remoteTimestamp) {
             // in fact, cannot happen
             return Operation.NOOP;
-        }
-        if (localTimestamp <= lastTimestamp) {
-            // no change in local file
-            if (remoteTimestamp <= lastTimestamp
-                    && localSize == remoteSize) {
-                return Operation.NOOP;
-            }
-            if (localTimestamp > remoteTimestamp) {
-                return Operation.UPLOAD;
-            }
-            return Operation.DOWNLOAD;
-        }
-        // change in local file
-        if (remoteTimestamp <= lastTimestamp) {
-            return Operation.UPLOAD;
         }
         if (localTimestamp > remoteTimestamp) {
             return Operation.UPLOAD_REVIEW;
         }
         return Operation.DOWNLOAD_REVIEW;
+    }
+
+    private Operation calculateNewDefaultOperation(long lastTimestamp) {
+        if (localTransferFile == null
+                || remoteTransferFile == null) {
+            if (localTransferFile == null) {
+                return remoteTransferFile.getTimestamp() > lastTimestamp ? Operation.DOWNLOAD : Operation.DELETE_REMOTELY;
+            }
+            return localTransferFile.getTimestamp() > lastTimestamp ? Operation.UPLOAD : Operation.DELETE_REMOTELY;
+        }
+        long localTimestamp = localTransferFile.getTimestamp();
+        long remoteTimestamp = remoteTransferFile.getTimestamp();
+        if (localTimestamp == remoteTimestamp) {
+            // in fact, cannot happen
+            return Operation.NOOP;
+        }
+        if (localTimestamp <= lastTimestamp
+                && remoteTimestamp <= lastTimestamp) {
+            // already synchronized
+            return Operation.NOOP;
+        }
+        if (localTimestamp > lastTimestamp
+                && remoteTimestamp > lastTimestamp) {
+            // both files are newer
+            return Operation.FILE_CONFLICT;
+        }
+        // only one file is newer
+        if (localTimestamp > remoteTimestamp) {
+            return Operation.UPLOAD;
+        }
+        return Operation.DOWNLOAD;
     }
 
     @Override
