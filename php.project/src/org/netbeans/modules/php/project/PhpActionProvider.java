@@ -61,6 +61,7 @@ import org.netbeans.modules.php.project.ui.actions.RenameCommand;
 import org.netbeans.modules.php.project.ui.actions.RunProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
+import org.netbeans.modules.php.project.ui.actions.SynchronizeCommand;
 import org.netbeans.modules.php.project.ui.actions.TestProjectCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.spi.project.ActionProvider;
@@ -94,6 +95,7 @@ public class PhpActionProvider implements ActionProvider {
             // file sensitive actions
             new DownloadCommand(project),
             new UploadCommand(project),
+            new SynchronizeCommand(project),
         };
         for (Command command : commandArray) {
             commands.put(command.getCommandId(), command);
