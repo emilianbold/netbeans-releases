@@ -57,7 +57,6 @@ import org.openide.windows.TopComponent;
         iconBase="org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
 @TopComponent.Registration(
         mode = "properties", // NOI18N
-        position = 900,
         openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N

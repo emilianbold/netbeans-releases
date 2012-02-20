@@ -49,6 +49,6 @@ made subject to such option by the copyright holder.
 
 <tc-group version="2.0">
     <module name="org.netbeans.modules.css.visual" spec="2.0" />
-    <tc-id id="CssPropertiesTC" />
+    <tc-id id="RuleEditorTC" />
     <open-close-behavior open="true" close="true" />
 </tc-group>
