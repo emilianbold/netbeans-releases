@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.synchronize;
+package org.netbeans.modules.php.project.connections.sync;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -69,9 +69,9 @@ import org.openide.util.RequestProcessor;
 /**
  * Controller for synchronization.
  */
-public final class SynchronizeController implements Cancellable {
+public final class SyncController implements Cancellable {
 
-    static final RequestProcessor SYNCHRONIZE_RP = new RequestProcessor("Remote Synchronization", 1); // NOI18N
+    static final RequestProcessor SYNC_RP = new RequestProcessor("Remote PHP Synchronization", 1); // NOI18N
 
     final PhpProject phpProject;
     final RemoteClient remoteClient;
@@ -81,7 +81,7 @@ public final class SynchronizeController implements Cancellable {
     volatile boolean cancelled = false;
 
 
-    public SynchronizeController(PhpProject phpProject, RemoteClient remoteClient, RemoteConfiguration remoteConfiguration) {
+    public SyncController(PhpProject phpProject, RemoteClient remoteClient, RemoteConfiguration remoteConfiguration) {
         this.phpProject = phpProject;
         this.remoteClient = remoteClient;
         this.remoteConfiguration = remoteConfiguration;
@@ -89,7 +89,7 @@ public final class SynchronizeController implements Cancellable {
     }
 
     public void synchronize(final SyncResultProcessor resultProcessor) {
-        SYNCHRONIZE_RP.post(new Runnable() {
+        SYNC_RP.post(new Runnable() {
             @Override
             public void run() {
                 showPanel(fetchFiles(), resultProcessor);
@@ -97,11 +97,11 @@ public final class SynchronizeController implements Cancellable {
         });
     }
 
-    @NbBundle.Messages("SynchronizeController.fetching=Fetching {0} files")
-    List<FileItem> fetchFiles() {
+    @NbBundle.Messages("SyncController.fetching=Fetching {0} files")
+    List<SyncItem> fetchFiles() {
         assert !SwingUtilities.isEventDispatchThread();
-        List<FileItem> items = null;
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SynchronizeController_fetching(phpProject.getName()), this);
+        List<SyncItem> items = null;
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SyncController_fetching(phpProject.getName()), this);
         try {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
@@ -118,14 +118,14 @@ public final class SynchronizeController implements Cancellable {
         return items != null ? Collections.synchronizedList(items) : null;
     }
 
-    void showPanel(final List<FileItem> files, final SyncResultProcessor resultProcessor) {
+    void showPanel(final List<SyncItem> files, final SyncResultProcessor resultProcessor) {
         if (cancelled || files == null) {
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SynchronizePanel panel = new SynchronizePanel(phpProject.getName(), remoteConfiguration.getDisplayName(), files);
+                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), files);
                 if (panel.open(lastTimeStamp == -1)) {
                     doSynchronize(files, resultProcessor);
                 } else {
@@ -135,17 +135,17 @@ public final class SynchronizeController implements Cancellable {
         });
     }
 
-    @NbBundle.Messages("SynchronizeController.error.unknown=Unknown reason")
-    void doSynchronize(final List<FileItem> files, final SyncResultProcessor resultProcessor) {
+    @NbBundle.Messages("SyncController.error.unknown=Unknown reason")
+    void doSynchronize(final List<SyncItem> files, final SyncResultProcessor resultProcessor) {
         if (cancelled) {
             // in fact, cannot happen here
             return;
         }
-        SYNCHRONIZE_RP.post(new Runnable() {
+        SYNC_RP.post(new Runnable() {
             @Override
             public void run() {
                 SyncResult syncResult = new SyncResult();
-                for (FileItem fileItem : files) {
+                for (SyncItem fileItem : files) {
                     TransferFile remoteTransferFile = fileItem.getRemoteTransferFile();
                     TransferFile localTransferFile = fileItem.getLocalTransferFile();
                     switch (fileItem.getOperation()) {
@@ -172,7 +172,7 @@ public final class SynchronizeController implements Cancellable {
                             // XXX recursive delete
                             long start = System.currentTimeMillis();
                             if (!fileItem.getLocalTransferFile().resolveLocalFile().delete()) {
-                                syncResult.getDeleteLocallyTransferInfo().addFailed(remoteTransferFile, Bundle.SynchronizeController_error_unknown());
+                                syncResult.getDeleteLocallyTransferInfo().addFailed(remoteTransferFile, Bundle.SyncController_error_unknown());
                             }
                             break;
                         case DELETE_REMOTELY:
@@ -219,7 +219,7 @@ public final class SynchronizeController implements Cancellable {
         }
     }
 
-    private List<FileItem> pairFiles(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
+    private List<SyncItem> pairFiles(Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
         List<TransferFile> remoteFilesSorted = new ArrayList<TransferFile>(remoteFiles);
         Collections.sort(remoteFilesSorted, TransferFile.TRANSFER_FILE_COMPARATOR);
         List<TransferFile> localFilesSorted = new ArrayList<TransferFile>(localFiles);
@@ -228,7 +228,7 @@ public final class SynchronizeController implements Cancellable {
         removeProjectRoot(remoteFilesSorted);
         removeProjectRoot(localFilesSorted);
 
-        List<FileItem> result = new ArrayList<FileItem>(Math.max(remoteFiles.size(), localFiles.size()));
+        List<SyncItem> result = new ArrayList<SyncItem>(Math.max(remoteFiles.size(), localFiles.size()));
         Iterator<TransferFile> remoteFilesIterator = remoteFilesSorted.iterator();
         Iterator<TransferFile> localFilesIterator = localFilesSorted.iterator();
         TransferFile remote = null;
@@ -245,21 +245,21 @@ public final class SynchronizeController implements Cancellable {
             }
             if (remote == null
                     || local == null) {
-                result.add(new FileItem(remote, local, lastTimeStamp));
+                result.add(new SyncItem(remote, local, lastTimeStamp));
                 remote = null;
                 local = null;
             } else {
                 int compare = TransferFile.TRANSFER_FILE_COMPARATOR.compare(remote, local);
                 if (compare == 0) {
                     // same remote paths
-                    result.add(new FileItem(remote, local, lastTimeStamp));
+                    result.add(new SyncItem(remote, local, lastTimeStamp));
                     remote = null;
                     local = null;
                 } else if (compare < 0) {
-                    result.add(new FileItem(remote, null, lastTimeStamp));
+                    result.add(new SyncItem(remote, null, lastTimeStamp));
                     remote = null;
                 } else {
-                    result.add(new FileItem(null, local, lastTimeStamp));
+                    result.add(new SyncItem(null, local, lastTimeStamp));
                     local = null;
                 }
             }

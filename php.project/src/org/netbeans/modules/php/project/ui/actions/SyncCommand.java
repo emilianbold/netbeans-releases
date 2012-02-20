@@ -45,9 +45,9 @@ import java.io.IOException;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
-import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController;
-import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController.SyncResult;
-import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController.SyncResultProcessor;
+import org.netbeans.modules.php.project.connections.sync.SyncController;
+import org.netbeans.modules.php.project.connections.sync.SyncController.SyncResult;
+import org.netbeans.modules.php.project.connections.sync.SyncController.SyncResultProcessor;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
 import org.openide.util.Lookup;
@@ -55,16 +55,16 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
- * Synchronize remote and local files
+ * Synchronize remote and local files.
  */
-public class SynchronizeCommand extends RemoteCommand implements Displayable {
+public class SyncCommand extends RemoteCommand implements Displayable {
 
     public static final String ID = "synchronize"; // NOI18N
-    @NbBundle.Messages("SynchronizeCommand.label=Synchronize")
-    public static final String DISPLAY_NAME = Bundle.SynchronizeCommand_label();
+    @NbBundle.Messages("SyncCommand.label=Synchronize")
+    public static final String DISPLAY_NAME = Bundle.SyncCommand_label();
 
 
-    public SynchronizeCommand(PhpProject project) {
+    public SyncCommand(PhpProject project) {
         super(project);
     }
 
@@ -97,7 +97,7 @@ public class SynchronizeCommand extends RemoteCommand implements Displayable {
         RemoteConfiguration remoteConfiguration = RunConfigRemote.forProject(getProject()).getRemoteConfiguration();
         InputOutput remoteLog = getRemoteLog(remoteConfiguration.getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
-        new SynchronizeController(getProject(), remoteClient, remoteConfiguration).synchronize(new PrintSyncResultProcessor(remoteLog));
+        new SyncController(getProject(), remoteClient, remoteConfiguration).synchronize(new PrintSyncResultProcessor(remoteLog));
     }
 
     //~ Inner classes

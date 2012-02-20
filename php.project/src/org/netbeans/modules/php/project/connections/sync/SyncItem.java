@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.synchronize;
+package org.netbeans.modules.php.project.connections.sync;
 
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  * File item holding remote and local files and providing
  * operations with them.
  */
-public final class FileItem {
+public final class SyncItem {
 
     // XXX
     @StaticResource
@@ -122,7 +122,7 @@ public final class FileItem {
     private volatile String message = null;
 
 
-    public FileItem(TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
+    public SyncItem(TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
         assert remoteTransferFile != null || localTransferFile != null;
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
@@ -169,25 +169,25 @@ public final class FileItem {
     }
 
     @NbBundle.Messages({
-        "FileItem.warn.downloadReview=File must be reviewed before download.",
-        "FileItem.warn.uploadReview=File must be reviewed before upload.",
-        "FileItem.error.fileDirCollision=Cannot synchronize file with directory."
+        "SyncItem.warn.downloadReview=File must be reviewed before download.",
+        "SyncItem.warn.uploadReview=File must be reviewed before upload.",
+        "SyncItem.error.fileDirCollision=Cannot synchronize file with directory."
     })
     public void validate() {
         Operation op = getOperation();
         if (op == Operation.DOWNLOAD_REVIEW) {
             valid = true;
-            message = Bundle.FileItem_warn_downloadReview();
+            message = Bundle.SyncItem_warn_downloadReview();
             return;
         }
         if (op == Operation.UPLOAD_REVIEW) {
             valid = true;
-            message = Bundle.FileItem_warn_uploadReview();
+            message = Bundle.SyncItem_warn_uploadReview();
             return;
         }
         if (op == Operation.FILE_DIR_COLLISION) {
             valid = false;
-            message = Bundle.FileItem_error_fileDirCollision();
+            message = Bundle.SyncItem_error_fileDirCollision();
             return;
         }
         message = null;
@@ -258,7 +258,7 @@ public final class FileItem {
 
     @Override
     public String toString() {
-        return "FileItem{" // NOI18N
+        return "SyncItem{" // NOI18N
                 + "path: " + (localTransferFile != null ? localTransferFile.getRemotePath() : remoteTransferFile.getRemotePath()) // NOI18N
                 + ", localFile: " + (localTransferFile != null) // NOI18N
                 + ", remoteFile: " + (remoteTransferFile != null) // NOI18N

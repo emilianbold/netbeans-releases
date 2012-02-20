@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections.synchronize;
+package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.Component;
 import java.awt.Dialog;
@@ -78,7 +78,7 @@ import org.openide.util.NbBundle;
 /**
  * Panel for remote synchronization.
  */
-public final class SynchronizePanel extends JPanel {
+public final class SyncPanel extends JPanel {
 
     private static final long serialVersionUID = 1674646546545121L;
 
@@ -89,7 +89,7 @@ public final class SynchronizePanel extends JPanel {
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
-    final List<FileItem> files;
+    final List<SyncItem> files;
     final FileTableModel tableModel;
 
     private final String projectName;
@@ -101,7 +101,7 @@ public final class SynchronizePanel extends JPanel {
     private NotificationLineSupport notificationLineSupport = null;
 
 
-    SynchronizePanel(String projectName, String remoteConfigurationName, List<FileItem> files) {
+    SyncPanel(String projectName, String remoteConfigurationName, List<SyncItem> files) {
         assert SwingUtilities.isEventDispatchThread();
         assert files != null;
 
@@ -118,14 +118,14 @@ public final class SynchronizePanel extends JPanel {
     @NbBundle.Messages({
         "# 0 - project name",
         "# 1 - remote configuration name",
-        "SynchronizePanel.title=Remote Synchronization for {0}: {1}",
-        "SynchronizePanel.firstRun=Running for the first time for this project and this run configuration, more user actions will be needed."
+        "SyncPanel.title=Remote Synchronization for {0}: {1}",
+        "SyncPanel.firstRun=Running for the first time for this project and this run configuration, more user actions will be needed."
     })
     public boolean open(boolean firstRun) {
         assert SwingUtilities.isEventDispatchThread();
         descriptor = new DialogDescriptor(
                 this,
-                Bundle.SynchronizePanel_title(projectName, remoteConfigurationName),
+                Bundle.SyncPanel_title(projectName, remoteConfigurationName),
                 true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.OK_OPTION,
@@ -134,7 +134,7 @@ public final class SynchronizePanel extends JPanel {
         validateFiles();
         if (firstRun) {
             // XXX conflict with validateFiles()
-            notificationLineSupport.setInformationMessage(Bundle.SynchronizePanel_firstRun());
+            notificationLineSupport.setInformationMessage(Bundle.SyncPanel_firstRun());
         }
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         try {
@@ -156,7 +156,7 @@ public final class SynchronizePanel extends JPanel {
         fileTable.setModel(tableModel);
         // renderer
         fileTable.setDefaultRenderer(String.class, new StringRenderer());
-        fileTable.setDefaultRenderer(FileItem.Operation.class, new OperationRenderer());
+        fileTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
         // columns
         fileTable.getTableHeader().setReorderingAllowed(false);
         TableColumnModel columnModel = fileTable.getColumnModel();
@@ -181,19 +181,19 @@ public final class SynchronizePanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("SynchronizePanel.resetButton.title=Reset to the original state")
+    @NbBundle.Messages("SyncPanel.resetButton.title=Reset to the original state")
     private void initOperationButtons() {
         // operations
-        initOperationButton(noopButton, FileItem.Operation.NOOP);
-        initOperationButton(downloadButton, FileItem.Operation.DOWNLOAD);
-        initOperationButton(uploadButton, FileItem.Operation.UPLOAD);
-        initOperationButton(deleteLocallyButton, FileItem.Operation.DELETE_LOCALLY);
-        initOperationButton(deleteRemotelyButton, FileItem.Operation.DELETE_REMOTELY);
+        initOperationButton(noopButton, SyncItem.Operation.NOOP);
+        initOperationButton(downloadButton, SyncItem.Operation.DOWNLOAD);
+        initOperationButton(uploadButton, SyncItem.Operation.UPLOAD);
+        initOperationButton(deleteLocallyButton, SyncItem.Operation.DELETE_LOCALLY);
+        initOperationButton(deleteRemotelyButton, SyncItem.Operation.DELETE_REMOTELY);
         // reset
         initResetButton();
     }
 
-    private void initOperationButton(JButton button, FileItem.Operation operation) {
+    private void initOperationButton(JButton button, SyncItem.Operation operation) {
         // XXX
         //button.setText(null);
         button.setText(operation.name());
@@ -207,7 +207,7 @@ public final class SynchronizePanel extends JPanel {
         //resetButton.setText(null);
         resetButton.setText("RESET"); // NOI18N
         //resetButton.setIcon(ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
-        resetButton.setToolTipText(Bundle.SynchronizePanel_resetButton_title());
+        resetButton.setToolTipText(Bundle.SyncPanel_resetButton_title());
         resetButton.addActionListener(new OperationButtonListener(null));
     }
 
@@ -225,21 +225,21 @@ public final class SynchronizePanel extends JPanel {
             diffButton.setEnabled(false);
             return;
         }
-        // XXX improve, ask FileItem
+        // XXX improve, ask SyncItem
         diffButton.setEnabled(true);
     }
 
     // XXX
     @NbBundle.Messages({
-        "SynchronizePanel.error.operations=Some errors.",
-        "SynchronizePanel.warn.operations=Some warnings."
+        "SyncPanel.error.operations=Some errors.",
+        "SyncPanel.warn.operations=Some warnings."
     })
     void validateFiles() {
         assert SwingUtilities.isEventDispatchThread();
         boolean warn = false;
-        for (FileItem fileItem : files) {
+        for (SyncItem fileItem : files) {
             if (fileItem.hasError()) {
-                notificationLineSupport.setErrorMessage(Bundle.SynchronizePanel_error_operations());
+                notificationLineSupport.setErrorMessage(Bundle.SyncPanel_error_operations());
                 descriptor.setValid(false);
                 return;
             }
@@ -248,7 +248,7 @@ public final class SynchronizePanel extends JPanel {
             }
         }
         if (warn) {
-            notificationLineSupport.setWarningMessage(Bundle.SynchronizePanel_warn_operations());
+            notificationLineSupport.setWarningMessage(Bundle.SyncPanel_warn_operations());
         } else {
             notificationLineSupport.clearMessages();
         }
@@ -276,7 +276,7 @@ public final class SynchronizePanel extends JPanel {
         fileTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         fileScrollPane.setViewportView(fileTable);
 
-        Mnemonics.setLocalizedText(diffButton, NbBundle.getMessage(SynchronizePanel.class, "SynchronizePanel.diffButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(diffButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.diffButton.text")); // NOI18N
         diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
@@ -300,45 +300,24 @@ public final class SynchronizePanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(diffButton)
                         .addGap(18, 18, 18)
                         .addComponent(noopButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(downloadButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(uploadButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(deleteLocallyButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(deleteRemotelyButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(resetButton)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE))
-                .addContainerGap())
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteLocallyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteRemotelyButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton).addGap(0, 0, Short.MAX_VALUE)).addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteLocallyButton, deleteRemotelyButton, downloadButton, noopButton, resetButton, uploadButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(diffButton)
-                    .addComponent(noopButton)
-                    .addComponent(downloadButton)
-                    .addComponent(uploadButton)
-                    .addComponent(deleteLocallyButton)
-                    .addComponent(deleteRemotelyButton)
-                    .addComponent(resetButton)))
+
+                .addComponent(fileScrollPane, GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteLocallyButton).addComponent(deleteRemotelyButton).addComponent(resetButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -361,21 +340,21 @@ public final class SynchronizePanel extends JPanel {
         private static final long serialVersionUID = 16478634354314324L;
 
         @NbBundle.Messages({
-            "SynchronizePanel.table.column.remote.title=Remote Path",
-            "SynchronizePanel.table.column.local.title=Local Path",
-            "SynchronizePanel.table.column.operation.title=Operation"
+            "SyncPanel.table.column.remote.title=Remote Path",
+            "SyncPanel.table.column.local.title=Local Path",
+            "SyncPanel.table.column.operation.title=Operation"
         })
         private static final String[] COLUMNS = {
             "", // NOI18N
-            Bundle.SynchronizePanel_table_column_remote_title(),
-            Bundle.SynchronizePanel_table_column_operation_title(),
-            Bundle.SynchronizePanel_table_column_local_title(),
+            Bundle.SyncPanel_table_column_remote_title(),
+            Bundle.SyncPanel_table_column_operation_title(),
+            Bundle.SyncPanel_table_column_local_title(),
         };
 
-        private final List<FileItem> files;
+        private final List<SyncItem> files;
 
 
-        public FileTableModel(List<FileItem> files) {
+        public FileTableModel(List<SyncItem> files) {
             this.files = files;
         }
 
@@ -395,18 +374,18 @@ public final class SynchronizePanel extends JPanel {
         }
 
         @NbBundle.Messages({
-            "SynchronizePanel.error.cellValue=!",
-            "SynchronizePanel.warning.cellValue=?"
+            "SyncPanel.error.cellValue=!",
+            "SyncPanel.warning.cellValue=?"
         })
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            FileItem fileItem = files.get(rowIndex);
+            SyncItem fileItem = files.get(rowIndex);
             if (columnIndex == 0) {
                 if (!fileItem.hasError()) {
-                    return Bundle.SynchronizePanel_error_cellValue();
+                    return Bundle.SyncPanel_error_cellValue();
                 }
                 if (fileItem.hasWarning()) {
-                    return Bundle.SynchronizePanel_warning_cellValue();
+                    return Bundle.SyncPanel_warning_cellValue();
                 }
                 return null;
             } else if (columnIndex == 1) {
@@ -431,7 +410,7 @@ public final class SynchronizePanel extends JPanel {
                     || columnIndex == 3) {
                 return String.class;
             } else if (columnIndex == 2) {
-                return FileItem.Operation.class;
+                return SyncItem.Operation.class;
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
@@ -457,7 +436,7 @@ public final class SynchronizePanel extends JPanel {
                 rendererComponent = (JLabel) ERROR_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
                 rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
-                FileItem fileItem = files.get(row);
+                SyncItem fileItem = files.get(row);
                 rendererComponent.setForeground(UIManager.getColor(fileItem.hasError() ? "nb.errorForeground" : "nb.warningForeground")); // NOI18N
                 rendererComponent.setToolTipText(files.get(row).getMessage());
             } else {
@@ -479,7 +458,7 @@ public final class SynchronizePanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            FileItem.Operation operation = (FileItem.Operation) value;
+            SyncItem.Operation operation = (SyncItem.Operation) value;
             // XXX replace with icon
             rendererComponent.setText(operation.toString());
             rendererComponent.setToolTipText(operation.getTitle());
@@ -490,10 +469,10 @@ public final class SynchronizePanel extends JPanel {
 
     private final class OperationButtonListener implements ActionListener {
 
-        private final FileItem.Operation operation;
+        private final SyncItem.Operation operation;
 
 
-        public OperationButtonListener(FileItem.Operation operation) {
+        public OperationButtonListener(SyncItem.Operation operation) {
             this.operation = operation;
         }
 
@@ -503,7 +482,7 @@ public final class SynchronizePanel extends JPanel {
             int[] selectedRows = fileTable.getSelectedRows();
             assert selectedRows.length > 0;
             for (Integer index : selectedRows) {
-                FileItem fileItem = files.get(index);
+                SyncItem fileItem = files.get(index);
                 if (operation == null) {
                     fileItem.resetOperation();
                 } else {
