@@ -39,55 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.connections.synchronize;
 
+import java.util.List;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.connections.synchronize.SynchronizeController;
-import org.netbeans.modules.php.project.ui.actions.support.Displayable;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
- * Synchronize remote and local files
+ * Controller for synchronization.
  */
-public class SynchronizeCommand extends RemoteCommand implements Displayable {
+public final class SynchronizeController {
 
-    public static final String ID = "synchronize"; // NOI18N
-    @NbBundle.Messages("SynchronizeCommand.label=Synchronize")
-    public static final String DISPLAY_NAME = Bundle.SynchronizeCommand_label();
+    static final RequestProcessor SYNCHRONIZE_RP = new RequestProcessor("Remote Synchronization", 1); // NOI18N
+
+    final PhpProject phpProject;
 
 
-    public SynchronizeCommand(PhpProject project) {
-        super(project);
+    public SynchronizeController(PhpProject phpProject) {
+        this.phpProject = phpProject;
     }
 
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return DISPLAY_NAME;
-    }
-
-    @Override
-    public boolean isFileSensitive() {
-        return false;
-    }
-
-    @Override
-    protected Runnable getContextRunnable(Lookup context) {
-        return new Runnable() {
+    public void synchronize() {
+        SYNCHRONIZE_RP.post(new Runnable() {
             @Override
             public void run() {
-                synchronize();
+                showPanel(fetchFiles());
             }
-        };
+        });
     }
 
-    void synchronize() {
-        new SynchronizeController(getProject()).synchronize();
+    List<Object> fetchFiles() {
+        assert !SwingUtilities.isEventDispatchThread();
+        System.out.println("--------------- fetching...");
+        //FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
+        return null;
+    }
+
+    void showPanel(final List<Object> files) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                SynchronizePanel panel = createPanel();
+                if (panel.open()) {
+                    doSynchronize(files);
+                }
+            }
+            private SynchronizePanel createPanel() {
+                return new SynchronizePanel();
+            }
+        });
+    }
+
+    void doSynchronize(final List<Object> files) {
+        SYNCHRONIZE_RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // XXX synchronize
+                System.out.println("--------------- synchronizing...");
+            }
+        });
     }
 
 }
