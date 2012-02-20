@@ -48,7 +48,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * File item holding remote and local files and providing
+ * Sync item holding remote and local files and providing
  * operations with them.
  */
 public final class SyncItem {
