@@ -98,11 +98,20 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     @Override
+    public Node visit(WhileNode whileNode, boolean onset) {
+        if (onset) {
+            if (handleWhile(whileNode)) {
+                return null;
+            }
+        }
+
+        return super.visit(whileNode, onset);
+    }
+
+    @Override
     public Node visit(DoWhileNode doWhileNode, boolean onset) {
         if (onset) {
-            Block body = doWhileNode.getBody();
-            if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+            if (handleWhile(doWhileNode)) {
                 return null;
             }
         }
@@ -113,9 +122,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(ForNode forNode, boolean onset) {
         if (onset) {
-            Block body = forNode.getBody();
-            if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
+            if (handleWhile(forNode)) {
                 return null;
             }
         }
@@ -146,19 +153,6 @@ public class FormatVisitor extends NodeVisitor {
         }
 
         return null;
-    }
-
-    @Override
-    public Node visit(WhileNode whileNode, boolean onset) {
-        if (onset) {
-            Block body = whileNode.getBody();
-            if (body.getStart() == body.getFinish()) {
-                handleVirtualBlock(body);
-                return null;
-            }
-        }
-
-        return super.visit(whileNode, onset);
     }
 
     @Override
@@ -244,6 +238,15 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         return super.visit(switchNode, onset);
+    }
+
+    private boolean handleWhile(WhileNode whileNode) {
+        Block body = whileNode.getBody();
+        if (body.getStart() == body.getFinish()) {
+            handleVirtualBlock(body);
+            return true;
+        }
+        return false;
     }
 
     private void handleStandardBlock(Block block) {
