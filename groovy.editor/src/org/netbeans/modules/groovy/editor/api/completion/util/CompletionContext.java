@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,54 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
+ * Holder class for the context of a given completion.
+ * This means the two surrounding Lexer-tokens before and after the completion point are stored here.
  *
- * @author schmidtm
+ * @author Martin Janicek
  */
-public class ConstructorsCCTest extends GroovyTestBase {
+public class CompletionContext {
 
-    String TEST_BASE = "testfiles/completion/constructors/";
+    // b2    b1      |       a1        a2
+    // class MyClass extends BaseClass {
+    public Token<? extends GroovyTokenId> beforeLiteral;
+    public Token<? extends GroovyTokenId> before2;
+    public Token<? extends GroovyTokenId> before1;
+    public Token<? extends GroovyTokenId> active;
+    public Token<? extends GroovyTokenId> after1;
+    public Token<? extends GroovyTokenId> after2;
+    public Token<? extends GroovyTokenId> afterLiteral;
+    public TokenSequence<?> ts; // we keep the sequence with us.
 
-    public ConstructorsCCTest(String testName) {
-        super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
-    }
+    
+    public CompletionContext(
+        Token<? extends GroovyTokenId> beforeLiteral,
+        Token<? extends GroovyTokenId> before2,
+        Token<? extends GroovyTokenId> before1,
+        Token<? extends GroovyTokenId> active,
+        Token<? extends GroovyTokenId> after1,
+        Token<? extends GroovyTokenId> after2,
+        Token<? extends GroovyTokenId> afterLiteral,
+        TokenSequence<?> ts) {
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testConstructors1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors1.groovy", "StringBuffer sb = new StringBuffer^", false);
-    }
-
-    public void testConstructors2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors2.groovy", "StringBuffer sb = new stringbuffer^", false);
-    }
-
-    public void testConstructors3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
-    }
-
-    public void testConstructor4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Constructors4.groovy", "    Foo f = new F^", false);
+        this.beforeLiteral = beforeLiteral;
+        this.before2 = before2;
+        this.before1 = before1;
+        this.active = active;
+        this.after1 = after1;
+        this.after2 = after2;
+        this.afterLiteral = afterLiteral;
+        this.ts = ts;
     }
 }
