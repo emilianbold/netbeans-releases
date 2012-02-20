@@ -298,7 +298,7 @@ public class FormatVisitor extends NodeVisitor {
 
             FormatToken formatToken = getPreviousToken(finish, null);
             if (formatToken != null) {
-                appendToken(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
             }
         }
     }
