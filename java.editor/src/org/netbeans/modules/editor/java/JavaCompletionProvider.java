@@ -1520,7 +1520,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         addKeyword(env, SUPER_KEYWORD, SPACE, false);
                         break;
                     case LT:
-                    case COLON:
+                    case COMMA:
                     case EXTENDS:
                     case SUPER:
                         addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
