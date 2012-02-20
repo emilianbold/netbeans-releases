@@ -85,7 +85,11 @@ public class ConstructorsCCTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Constructors3.groovy", "FileOutputStream fos = new fileoutputstr^", false);
     }
 
-    public void testConstructor4() throws Exception {
+    public void testConstructors4() throws Exception {
         checkCompletion(TEST_BASE + "" + "Constructors4.groovy", "    Foo f = new F^", false);
+    }
+
+    public void testConstructors5() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Constructors5.groovy", "    Foo f = new F^", false);
     }
 }
