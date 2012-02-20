@@ -90,7 +90,7 @@ public class JsStructureScanner implements StructureScanner {
                 } else {
                     collectedItems.add(new JsFunctionStructureItem((JsFunction) child, children, result));
                 }
-            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && hasDeclaredProperty(child)) {
+            } else if ((child.getJSKind() == JsElement.Kind.OBJECT || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) && child.isDeclared()) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
                 if(child.getModifiers().contains(Modifier.PUBLIC)

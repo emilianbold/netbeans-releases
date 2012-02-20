@@ -64,15 +64,23 @@ public class ModelUtils {
         String firstName = fqName.get(0).getName();
         
         while (tmpObject == null && result.getParent() != null) {
-            if (result.getProperty(firstName) != null) {
-                tmpObject = result;
+            if (result instanceof JsFunctionImpl) {
+                tmpObject = ((JsFunctionImpl)result).getParameter(firstName);
             }
-            result = result.getParent();
+            if (tmpObject == null) {
+                if (result.getProperty(firstName) != null) {
+                    tmpObject = result;
+                }
+                result = result.getParent();
+            } else {
+                result = tmpObject;
+            }
         }
         if (tmpObject == null) {
             tmpObject = builder.getGlobal();
         }
-        for (Identifier name : fqName) {
+        for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
+            Identifier name = fqName.get(index);
             result = tmpObject.getProperty(name.getName());
             if (result == null) {
                 result = new JsObjectImpl(tmpObject, name, name.getOffsetRange());

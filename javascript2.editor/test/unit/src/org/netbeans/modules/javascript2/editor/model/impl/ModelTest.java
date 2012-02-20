@@ -362,13 +362,16 @@ public class ModelTest extends JsTestBase {
         
         JsObject  object = model.getGlobalObject();
         // TODO this is wrong, needs to be handled parameters
-        assertEquals(2, object.getProperties().size());
+        assertEquals(1, object.getProperties().size());
         
         object = object.getProperty("$function");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
         assertEquals(4, object.getProperties().size());
         assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
+        
+        JsObject param = ((JsFunction)object).getParameter("window");
+        assertEquals(5, param.getProperties().size());
     }
     
     public void testClosers01() throws Exception {
@@ -561,6 +564,21 @@ public class ModelTest extends JsTestBase {
         assertEquals(4, variable.getProperties().size());
     }
     
+    public void testAnonymousFunction() throws Exception {
+        Model model = getModel("testfiles/model/anonymousFunction.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        
+        JsFunction function = (JsFunction)global.getProperty("$function");
+        assertTrue(function.isAnonymous());
+        assertEquals(2, function.getProperties().size());
+        
+        JsObject object = function.getProperty("Car");
+        function = (JsFunction)object.getProperty("getColor");
+        assertFalse(function.isAnonymous());
+    }
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);
