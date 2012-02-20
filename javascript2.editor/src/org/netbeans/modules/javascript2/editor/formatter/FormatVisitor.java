@@ -128,7 +128,7 @@ public class FormatVisitor extends NodeVisitor {
             // put indentation mark after non white token
             formatToken = getPreviousToken(getFinish(objectNode), JsTokenId.BRACKET_RIGHT_CURLY);
             if (formatToken != null) {
-                formatToken = previousNonWhiteToken(objectNode.getStart());
+                formatToken = previousNonWhiteToken(getStart(objectNode));
                 if (formatToken != null) {
                     FormatToken next = formatToken.next();
                     if (next != null && next.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
@@ -167,7 +167,7 @@ public class FormatVisitor extends NodeVisitor {
             // put indentation mark after non white token
             formatToken = getPreviousToken(getFinish(switchNode), JsTokenId.BRACKET_RIGHT_CURLY);
             if (formatToken != null) {
-                formatToken = previousNonWhiteToken(switchNode.getStart());
+                formatToken = previousNonWhiteToken(getStart(switchNode));
                 if (formatToken != null) {
                     FormatToken next = formatToken.next();
                     if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
@@ -197,7 +197,7 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         formatToken = getPreviousToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
         if (formatToken != null && !isScript(block)) {
-            formatToken = previousNonWhiteToken(block.getStart());
+            formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
                 FormatToken next = formatToken.next();
                 if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
@@ -225,7 +225,7 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         Token token = getNextNonEmptyToken(getFinish(block));
         if (token != null) {
-            formatToken = previousNonWhiteToken(block.getStart());
+            formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
                 FormatToken next = formatToken.next();
                 if (next != null && (next.getKind() == FormatToken.Kind.AFTER_STATEMENT)) {
@@ -336,8 +336,22 @@ public class FormatVisitor extends NodeVisitor {
         return null;
     }
 
+    private static int getStart(Node node) {
+        // All this magic is because nashorn nodes and tokens don't contain the
+        // quotes for string. Due to this we call this method to add 1 to start
+        // in case it is string literal.
+        int start = node.getStart();
+        long firstToken = node.getToken();
+        if (com.oracle.nashorn.parser.Token.descType(firstToken).equals(TokenType.STRING)) {
+            start--;
+        }
+
+        return start;
+    }
+
     private int getFinish(Node node) {
         // we are fixing the wrong finish offset here
+        // only function node has last token
         if (node instanceof FunctionNode) {
             FunctionNode function = (FunctionNode) node;
             if (node.getStart() == node.getFinish()) {
