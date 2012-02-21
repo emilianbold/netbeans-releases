@@ -1174,7 +1174,7 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
     /**
      * Recursively deletes the file or directory.
      *
-     * @param file file/directory to deletegin
+     * @param file file/directory to delete
      */
     private static void deleteRecursively(File file) {
         deleteRecursively(file, Level.WARNING);
