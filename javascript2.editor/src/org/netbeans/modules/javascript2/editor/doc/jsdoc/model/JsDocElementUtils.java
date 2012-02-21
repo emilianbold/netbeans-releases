@@ -68,7 +68,7 @@ public class JsDocElementUtils {
                 return new AssignElement(
                         type,
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
-                        (values.length > 2) ? new NamePath(values[2].trim()) : null);
+                        (values.length > 1) ? new NamePath(values[1].trim()) : null);
             case DECLARATION:
                 return new DeclarationElement(type, new TypeImpl(trimmed));
             case DESCRIPTION:
