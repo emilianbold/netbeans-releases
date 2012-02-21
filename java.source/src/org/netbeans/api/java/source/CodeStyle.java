@@ -46,15 +46,27 @@ package org.netbeans.api.java.source;
 
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.Set;
 import java.util.prefs.Preferences;
+
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
+
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.ui.FmtOptions;
-
-import org.openide.filesystems.FileObject;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
+import org.openide.filesystems.FileObject;
 
 /** 
  *  XXX make sure the getters get the defaults from somewhere
@@ -239,7 +251,26 @@ public final class CodeStyle {
     }
 
     public boolean makeParametersFinal() {
-        return preferences.getBoolean(makeParametersFinal, getDefaultAsBoolean(useFQNs));
+        return preferences.getBoolean(makeParametersFinal, getDefaultAsBoolean(makeParametersFinal));
+    }
+
+    /**
+     * Returns an information about the desired grouping of class members.
+     * @since 0.96
+     */
+    public MemberGroups getClassMemberGroups() {
+        return new MemberGroups(preferences.get(classMembersOrder, getDefaultAsString(classMembersOrder)),
+                preferences.getBoolean(sortMembersByVisibility, getDefaultAsBoolean(sortMembersByVisibility))
+                ? preferences.get(visibilityOrder, getDefaultAsString(visibilityOrder)) : null);
+    }
+    
+    /**
+     * Returns an information about the desired insertion point of a new class member.
+     * @since 0.96
+     */
+    public InsertionPoint getClassMemberInsertionPoint() {
+        String point = preferences.get(classMemberInsertionPoint, getDefaultAsString(classMemberInsertionPoint));
+        return InsertionPoint.valueOf(point);
     }
 
     // Alignment and braces ----------------------------------------------------
@@ -400,6 +431,10 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    public boolean wrapAfterDotInChainedMethodCalls() {
+        return preferences.getBoolean(wrapAfterDotInChainedMethodCalls, getDefaultAsBoolean(wrapAfterDotInChainedMethodCalls));
+    }
+
     public WrapStyle wrapArrayInit() {
         String wrap = preferences.get(wrapArrayInit, getDefaultAsString(wrapArrayInit));
         return WrapStyle.valueOf(wrap);
@@ -511,6 +546,10 @@ public final class CodeStyle {
         return preferences.getInt(blankLinesAfterClassHeader, getDefaultAsInt(blankLinesAfterClassHeader));
     }
 
+    public int getBlankLinesAfterAnonymousClassHeader() {
+        return preferences.getInt(blankLinesAfterAnonymousClassHeader, getDefaultAsInt(blankLinesAfterAnonymousClassHeader));
+    }
+
     public int getBlankLinesBeforeFields() {
         return preferences.getInt(blankLinesBeforeFields, getDefaultAsInt(blankLinesBeforeFields));
     }
@@ -602,6 +641,10 @@ public final class CodeStyle {
 
     public boolean spaceAroundAssignOps() {
         return preferences.getBoolean(spaceAroundAssignOps, getDefaultAsBoolean(spaceAroundAssignOps));
+    }
+
+    public boolean spaceAroundAnnotationValueAssignOps() {
+        return preferences.getBoolean(spaceAroundAnnotationValueAssignOps, getDefaultAsBoolean(spaceAroundAnnotationValueAssignOps));
     }
 
     public boolean spaceBeforeClassDeclLeftBrace() {
@@ -896,6 +939,12 @@ public final class CodeStyle {
         WRAP_NEVER
     }
     
+    public enum InsertionPoint {
+        LAST_IN_CATEGORY,
+        FIRST_IN_CATEGORY,
+        CARET_LOCATION
+    }
+    
     /**
      * Provides an information about the desired grouping of import statements,
      * including group order.
@@ -967,6 +1016,134 @@ public final class CodeStyle {
 
             private boolean check(String s, boolean b) {
                 return isStatic == b && check(s);
+            }
+        }
+    }
+
+    /**
+     * Provides an information about the desired grouping of class members,
+     * including group order.
+     * @since 0.96
+     */
+    public static final class MemberGroups {
+
+        private Info[] infos;
+
+        private MemberGroups(String groups, String visibility) {
+            if (groups == null || groups.length() == 0) {
+                this.infos = new Info[0];
+            } else {
+                String[] order = groups.trim().split("\\s*[,;]\\s*"); //NOI18N
+                String[] visibilityOrder = visibility != null ? visibility.trim().split("\\s*[,;]\\s*") : new String[1]; //NOI18N
+                this.infos = new Info[order.length * visibilityOrder.length];
+                for (int i = 0; i < order.length; i++) {
+                    String o = order[i];
+                    boolean isStatic = false;
+                    if (o.startsWith("STATIC ")) { //NOI18N
+                        isStatic = true;
+                        o = o.substring(7);
+                    }
+                    ElementKind kind = ElementKind.valueOf(o);
+                    for (int j = 0; j < visibilityOrder.length; j++) {
+                        int idx = i * visibilityOrder.length + j;
+                        String vo = visibilityOrder[j];
+                        Info info = new Info(idx);
+                        info.ignoreVisibility = vo == null || !"DEFAULT".equals(vo); //NOI18N
+                        info.mods = vo != null && !"DEFAULT".equals(vo) ? EnumSet.of(Modifier.valueOf(vo)) : EnumSet.noneOf(Modifier.class); //NOI18N
+                        if (isStatic)
+                            info.mods.add(Modifier.STATIC);
+                        info.kind = kind;
+                        this.infos[idx] = info;                        
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the group number of the class member. Elements with the same
+         * number form a group. Groups with lower numbers should be positioned
+         * higher in the class member list.
+         * @param tree the member tree
+         * @return the group number
+         * @since 0.96
+         */
+        public int getGroupId(Tree tree) {
+            for (Info info : infos) {
+                ElementKind kind = ElementKind.OTHER;
+                Set<Modifier> modifiers = null;
+                switch (tree.getKind()) {
+                    case ANNOTATION_TYPE:
+                    case CLASS:
+                    case ENUM:
+                    case INTERFACE:
+                        kind = ElementKind.CLASS;
+                        modifiers = ((ClassTree)tree).getModifiers().getFlags();
+                        break;
+                    case METHOD:
+                        MethodTree mt = (MethodTree)tree;
+                        if (mt.getName().contentEquals("<init>")) { //NOI18N
+                            kind = ElementKind.CONSTRUCTOR;
+                        } else {
+                            kind = ElementKind.METHOD;
+                        }
+                        modifiers = mt.getModifiers().getFlags();
+                        break;
+                    case VARIABLE:
+                        kind = ElementKind.FIELD;
+                        modifiers = ((VariableTree)tree).getModifiers().getFlags();
+                        break;
+                    case BLOCK:
+                        kind = ((BlockTree)tree).isStatic() ? ElementKind.STATIC_INIT : ElementKind.INSTANCE_INIT;
+                        break;
+                }
+                if (info.check(kind, modifiers))
+                    return info.groupId;
+            }
+            return infos.length;
+        }
+
+        /**
+         * Returns the group number of the class member. Elements with the same
+         * number form a group. Groups with lower numbers should be positioned
+         * higher in the class member list.
+         * @param element the member element
+         * @return the group number
+         * @since 0.96
+         */
+        public int getGroupId(Element element) {
+            for (Info info : infos) {
+                ElementKind kind = element.getKind();
+                if (kind == ElementKind.ANNOTATION_TYPE || kind == ElementKind.ENUM || kind == ElementKind.INSTANCE_INIT)
+                    kind = ElementKind.CLASS;
+                if (info.check(kind, element.getModifiers()));
+                    return info.groupId;
+            }
+            return infos.length;
+        }
+
+        private static final class Info {
+
+            private int groupId;
+            private boolean ignoreVisibility;
+            private Set<Modifier> mods;
+            private ElementKind kind;
+            
+            private Info(int id) {
+                this.groupId = id;
+            }
+
+            private boolean check(ElementKind kind, Set<Modifier> modifiers) {
+                if (this.kind != kind)
+                    return false;
+                if (modifiers == null)
+                    return true;
+                if (!modifiers.containsAll(this.mods))
+                    return false;
+                if (ignoreVisibility)
+                    return true;
+                EnumSet<Modifier> copy = EnumSet.copyOf(modifiers);
+                copy.retainAll(EnumSet.of(Modifier.PUBLIC, Modifier.PRIVATE, Modifier.PROTECTED)); 
+                return copy.isEmpty();
             }
         }
     }

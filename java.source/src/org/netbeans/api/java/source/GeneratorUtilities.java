@@ -111,9 +111,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.Elements;
-import javax.lang.model.util.Types;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedDocument;
@@ -162,32 +163,38 @@ public final class GeneratorUtilities {
     public ClassTree insertClassMember(ClassTree clazz, Tree member) {
         assert clazz != null && member != null;
         int idx = 0;
-        GuardedDocument gdoc = null;
-        SourcePositions sp = null;
+        Document doc = null;
+        int caretPos = -1;
         try {
-            Document doc = copy.getDocument();
+            doc = copy.getDocument();
             if (doc == null) {
                 DataObject data = DataObject.find(copy.getFileObject());
                 EditorCookie cookie = data.getCookie(EditorCookie.class);
                 doc = cookie.openDocument();
             }
-
-            if (doc != null && doc instanceof GuardedDocument) {
-                gdoc = (GuardedDocument)doc;
-                sp = copy.getTrees().getSourcePositions();
-            }
         } catch (IOException ioe) {}
+        CodeStyle codeStyle = DiffContext.getCodeStyle(copy);
+        if (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.CARET_LOCATION) {
+            JTextComponent jtc = EditorRegistry.lastFocusedComponent();
+            if (jtc.getDocument() == doc)
+                caretPos = jtc.getCaretPosition();
+        }
+        ClassMemberComparator comparator = caretPos < 0 ? new ClassMemberComparator(codeStyle) : null;
+        SourcePositions sp = copy.getTrees().getSourcePositions();
         TreeUtilities utils = copy.getTreeUtilities();
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
         for (Tree tree : clazz.getMembers()) {
             TreePath path = TreePath.getPath(compilationUnit, tree);
-            if ((path == null || !utils.isSynthetic(path)) && CLASS_MEMBER_COMPARATOR.compare(member, tree) < 0) {
-                if (gdoc == null)
+            if ((path == null || !utils.isSynthetic(path)) && (caretPos < 0
+                    && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
+                    || comparator.compare(member, tree) < 0) || caretPos >= 0 && caretPos < sp.getStartPosition(compilationUnit, tree))) {
+                if (doc == null || !(doc instanceof GuardedDocument))
                     break;
                 int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
-                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                if (pos <= sp.getStartPosition(compilationUnit, tree))
+                pos = ((GuardedDocument)doc).getGuardedBlockChain().adjustToBlockEnd(pos);
+                long treePos = sp.getStartPosition(compilationUnit, tree);
+                if (treePos < 0 || pos <= treePos)
                     break;
             }
             idx++;
@@ -1015,47 +1022,20 @@ public final class GeneratorUtilities {
 
     private static class ClassMemberComparator implements Comparator<Tree> {
 
+        private CodeStyle.MemberGroups groups;
+
+        public ClassMemberComparator(CodeStyle cs) {
+            this.groups = cs.getClassMemberGroups();
+        }
+
         @Override
         public int compare(Tree tree1, Tree tree2) {
             if (tree1 == tree2)
                 return 0;
-            return getSortPriority(tree1) - getSortPriority(tree2);
-        }
-
-        private static int getSortPriority(Tree tree) {
-            int ret = 0;
-            ModifiersTree modifiers = null;
-            switch (tree.getKind()) {
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                ret = 4000;
-                modifiers = ((ClassTree)tree).getModifiers();
-                break;
-            case METHOD:
-                MethodTree mt = (MethodTree)tree;
-                if (mt.getName().contentEquals("<init>"))
-                    ret = 200;
-                else
-                    ret = 300;
-                modifiers = mt.getModifiers();
-                break;
-            case VARIABLE:
-                ret = 100;
-                modifiers = ((VariableTree)tree).getModifiers();
-                break;
-            }
-            if (modifiers != null) {
-                if (!modifiers.getFlags().contains(Modifier.STATIC))
-                    ret += 1000;
-            }
-            return ret;
+            return groups.getGroupId(tree1) - groups.getGroupId(tree2);
         }
     }
     
-    private static ClassMemberComparator CLASS_MEMBER_COMPARATOR = new ClassMemberComparator();
-
     private static class ImportsComparator implements Comparator<Object> {
 
         private CodeStyle.ImportGroups groups;

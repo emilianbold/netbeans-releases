@@ -48,6 +48,9 @@ import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -79,6 +82,14 @@ public class JFXConfigsTest extends NbTestCase {
     private static final String[] PROPGROUP = new String[] {PROP2, PROP3};
     private static final String PROPGROUP_NAME = "property_test_group";
 
+    private static final String CONFIG_PROPERTIES_FILE = "nbproject/private/config.properties";
+    private static final String PROJECT_PROPERTIES_FILE = "nbproject/project.properties";
+    private static final String PRIVATE_PROPERTIES_FILE = "nbproject/private/private.properties";
+    private static final String NONDEF1_PROJECT_PROPERTIES_FILE = "nbproject/configs/" + NONDEF1 + ".properties";
+    private static final String NONDEF1_PRIVATE_PROPERTIES_FILE = "nbproject/private/configs/" + NONDEF1 + ".properties";
+    private static final String NONDEF2_PROJECT_PROPERTIES_FILE = "nbproject/configs/" + NONDEF2 + ".properties";
+    private static final String NONDEF2_PRIVATE_PROPERTIES_FILE = "nbproject/private/configs/" + NONDEF2 + ".properties";
+
     /** Set up. */
     protected @Override void setUp() throws IOException {
         MockLookup.setLayersAndInstances();
@@ -94,6 +105,10 @@ public class JFXConfigsTest extends NbTestCase {
         assertNotNull(project);
         jfxprops = JFXProjectProperties.getInstance(project.getLookup());
         assertNotNull(jfxprops);
+        Project verify = jfxprops.getProject();
+        assertNotNull(verify);
+        FileObject projectDir = verify.getProjectDirectory();
+        assertNotNull(projectDir);
         CONFIGS = jfxprops.getConfigs();
         assertNotNull(CONFIGS);
     }
@@ -317,4 +332,44 @@ public class JFXConfigsTest extends NbTestCase {
         assertTrue(JFXProjectProperties.isEqual(CONFIGS.getActiveParamsTransparentAsString(true), "--par2=val2 par4"));
     }
 
+    public void testSavedConfigFiles() throws Exception {
+        assertNotNull(jfxprops);
+        // Note: SFXProjectProperties.store() stores only properties in JFXConfig.PROJECT_PROPERTIES
+        CONFIGS.setDefaultProperty(JFXProjectProperties.RUN_APP_WIDTH, "444");
+        CONFIGS.setDefaultProperty(JFXProjectProperties.RUN_APP_HEIGHT, "333");
+        CONFIGS.setDefaultProperty(JFXProjectProperties.RUN_AS, "dummy");
+        CONFIGS.setProperty(NONDEF1, PROP3, "dummy_1_3");
+        CONFIGS.setProperty(NONDEF2, PROP3, "dummy_2_3");
+        jfxprops.store();
+        // verify existence of config files
+        FileObject projectDir = jfxprops.getProject().getProjectDirectory();
+        assertNotNull(projectDir);
+        EditableProperties ep;
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(CONFIG_PROPERTIES_FILE));
+        assertTrue(ep.size() == 1);
+        assertTrue(ep.getProperty("config").equals(NONDEF1));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(PROJECT_PROPERTIES_FILE));
+        assertTrue(ep.getProperty(JFXProjectProperties.RUN_APP_WIDTH).equals("444"));
+        assertTrue(ep.getProperty(JFXProjectProperties.RUN_APP_HEIGHT).equals("333"));
+        assertTrue(ep.getProperty("javafx.param.0.name").equals("par2"));
+        assertTrue(ep.getProperty("javafx.param.0.value").equals("val2"));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(PRIVATE_PROPERTIES_FILE));
+        assertTrue(ep.getProperty(JFXProjectProperties.RUN_AS).equals("dummy"));
+        assertTrue(ep.getProperty("application.args").equals("--par2=val2"));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF1_PROJECT_PROPERTIES_FILE));
+        assertTrue(ep.size() == 3);
+        assertTrue(ep.getProperty("javafx.param.1.name").equals("par4"));
+        assertTrue(ep.getProperty(PROP2).equals("value2"));
+        assertTrue(ep.getProperty(PROP3).equals("dummy_1_3"));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF1_PRIVATE_PROPERTIES_FILE));
+        assertTrue(ep.size() == 1);
+        assertTrue(ep.getProperty("application.args").equals("--par2=val2 par4"));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF2_PROJECT_PROPERTIES_FILE));
+        assertTrue(ep.size() == 2);
+        assertTrue(ep.getProperty(PROP2).equals("value2"));
+        assertTrue(ep.getProperty(PROP3).equals("dummy_2_3"));
+        ep = JFXProjectProperties.readFromFile(projectDir.getFileObject(NONDEF2_PRIVATE_PROPERTIES_FILE));
+        assertTrue(ep.size() == 0);
+    }
+    
 }
