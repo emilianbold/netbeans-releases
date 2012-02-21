@@ -310,7 +310,7 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         FormatToken formatToken = getPreviousToken(getFinish(statement), null);
         if (formatToken != null && !isScript(block)) {
-            formatToken = previousNonWhiteToken(getStart(block));
+            //formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
