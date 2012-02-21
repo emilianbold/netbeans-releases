@@ -50,6 +50,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -85,6 +87,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import junit.framework.TestSuite;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -2336,6 +2339,32 @@ public class RepositoryUpdaterTest extends NbTestCase {
         b.delete();
         assertFalse(indexerFactory.indexer.awaitDeleted());
     }
+    
+    public void testExceptionFromScanStarted() throws Exception {
+        final FooExceptionIndexerFactory fooExcPactory = new FooExceptionIndexerFactory();
+        
+        RepositoryUpdater ru = RepositoryUpdater.getDefault();
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedBinaries().size());
+        assertEquals(0, ru.getScannedUnknowns().size());
+
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        
+        
+        MockMimeLookup.setInstances(MimePath.get(MIME), fooExcPactory);
+        fooExcPactory.finishedRoots.clear();
+        ClassPath cp1 = ClassPathSupport.createClassPath(srcRoot1);
+        globalPathRegistry_register(SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.srcRoot1.toURL(), handler.getSources().get(0));
+        assertEquals(1, fooExcPactory.finishedRoots.size());
+        assertEquals(this.srcRoot1.toURI(), fooExcPactory.finishedRoots.iterator().next());
+    }
 
 //    public void testVisibilityQueryPerformance() throws Exception {
 //        final FileObject workDir = FileUtil.toFileObject(getWorkDir());
@@ -3069,6 +3098,58 @@ public class RepositoryUpdaterTest extends NbTestCase {
                 callBack = null;
             }
         }
+    }
+    
+    private static final class FooExceptionIndexerFactory extends CustomIndexerFactory {
+        
+        private final Set<URI> finishedRoots = new HashSet<URI>();
+
+        @Override
+        public CustomIndexer createIndexer() {
+            return new CustomIndexer() {
+                @Override
+                protected void index(Iterable<? extends Indexable> files, Context context) {
+                }
+            };
+        }
+
+        @Override
+        public boolean supportsEmbeddedIndexers() {
+            return false;
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return "fooexcp";   //NOI18N
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return 1;
+        }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            throw new NullPointerException();
+        }
+
+        @Override
+        public void scanFinished(Context context) {
+            try {
+                finishedRoots.add(context.getRootURI().toURI());
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    
     }
 
     private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
