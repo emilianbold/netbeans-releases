@@ -196,6 +196,20 @@ public enum CppTokenId implements TokenId {
     __UNUSED__("__unused__", "keyword"), // gcc // NOI18N
     __W64("__w64", "keyword"), // g++ // NOI18N
 
+
+    // C++11    
+    FINAL("final", "keyword"), // c++11
+    OVERRIDE("override", "keyword"), // c++11
+    CONSTEXPR("constexpr", "keyword"), // c++11
+    DECLTYPE("decltype", "keyword"), // c++11
+    NULLPTR("nullptr", "keyword"), // c++11
+    THREAD_LOCAL("thread_local", "keyword"), // c++11
+    STATIC_ASSERT("static_assert", "keyword"), // c++11
+    ALIGNAS("alignas", "keyword"), // c++11
+    CHAR16_T("char16_t", "keyword"), // c++11
+    CHAR32_T("char32_t", "keyword"), // c++11
+    NOEXCEPT("noexcept", "keyword"), // c++11
+    
     // extension points
     BUILT_IN_TYPE(null, "keyword"), // NOI18N
     TYPE_QUALIFIER(null, "keyword"), // NOI18N
