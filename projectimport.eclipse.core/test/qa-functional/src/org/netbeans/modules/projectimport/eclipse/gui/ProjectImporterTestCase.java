@@ -69,10 +69,6 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class ProjectImporterTestCase  extends NbTestCase {
     
-    protected static final String menuPath = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File");
-    protected static final String importMenuPath = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.resources.Bundle","Menu/File/Import");
-    protected static String menuRootString = menuPath+"|"+importMenuPath+"|";
-    protected static String menuString = menuRootString+Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "CTL_MenuItem");
     private final static String caption = Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.wizard.Bundle", "CTL_WizardTitle");
 
     protected ProjectsTabOperator pto = null;
@@ -94,7 +90,7 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
         clearWorkDir();
     }
     protected static WizardOperator invokeImporterWizard() {
-        new ActionNoBlock(menuString, null).performMenu();        
+        new ActionNoBlock(ImporterMenu.menuItemString, null).performMenu();
         return new WizardOperator(caption);
     }
     
