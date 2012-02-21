@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.modules.php.project.connections.TmpLocalFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 /**
@@ -76,6 +77,17 @@ public final class SyncItems {
     public SyncItem getByRemotePath(String remotePath) {
         synchronized (itemsByPath) {
             return itemsByPath.get(remotePath);
+        }
+    }
+
+    public void cleanup() {
+        synchronized (itemsByPath) {
+            for (SyncItem syncItem : itemsByPath.values()) {
+                TmpLocalFile tmpLocalFile = syncItem.getTmpLocalFile();
+                if (tmpLocalFile != null) {
+                    tmpLocalFile.cleanup();
+                }
+            }
         }
     }
 

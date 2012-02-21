@@ -120,17 +120,19 @@ public final class SyncController implements Cancellable {
 
     void showPanel(final SyncItems items, final SyncResultProcessor resultProcessor) {
         if (cancelled || items == null) {
+            items.cleanup();
             return;
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                SyncPanel panel = new SyncPanel(phpProject.getName(), remoteConfiguration.getDisplayName(), items.getItems());
+                SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient);
                 if (panel.open(lastTimeStamp == -1)) {
                     doSynchronize(panel.getItems(), resultProcessor);
                 } else {
                     disconnect();
                 }
+                items.cleanup();
             }
         });
     }
