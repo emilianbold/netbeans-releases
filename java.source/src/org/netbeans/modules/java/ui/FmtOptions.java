@@ -63,6 +63,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -72,6 +73,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -119,6 +122,9 @@ public class FmtOptions {
     public static final String makeLocalVarsFinal = "makeLocalVarsFinal"; //NOI18N
     public static final String makeParametersFinal = "makeParametersFinal"; //NOI18N
     public static final String classMembersOrder = "classMembersOrder"; //NOI18N
+    public static final String sortMembersByVisibility = "sortMembersByVisibility"; //NOI18N
+    public static final String visibilityOrder = "visibilityOrder"; //NOI18N
+    public static final String classMemberInsertionPoint = "classMemberInsertionPoint"; //NOI18N
     
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
     public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
@@ -155,6 +161,7 @@ public class FmtOptions {
     public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
     public static final String wrapAnnotationArgs = "wrapAnnotationArgs"; //NOI18N
     public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
+    public static final String wrapAfterDotInChainedMethodCalls = "wrapAfterDotInChainedMethodCalls"; //NOI18N
     public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
     public static final String wrapTryResources = "wrapTryResources"; //NOI18N
     public static final String wrapDisjunctiveCatchTypes = "wrapDisjunctiveCatchTypes"; //NOI18N
@@ -179,6 +186,7 @@ public class FmtOptions {
     public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
     public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
     public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
+    public static final String blankLinesAfterAnonymousClassHeader = "blankLinesAfterAnonymousClassHeader"; //NOI18N
     public static final String blankLinesBeforeFields = "blankLinesBeforeFields"; //NOI18N
     public static final String blankLinesAfterFields = "blankLinesAfterFields"; //NOI18N
     public static final String blankLinesBeforeMethods = "blankLinesBeforeMethods"; //NOI18N
@@ -202,6 +210,7 @@ public class FmtOptions {
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
     public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
     public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
+    public static final String spaceAroundAnnotationValueAssignOps = "spaceAroundAnnotationValueAssignOps"; //NOI18N
     public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
     public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
@@ -340,7 +349,11 @@ public class FmtOptions {
     
     private static final String BGS_ELIMINATE = BracesGenerationStyle.ELIMINATE.name(); 
     private static final String BGS_LEAVE_ALONE = BracesGenerationStyle.LEAVE_ALONE.name(); 
-    private static final String BGS_GENERATE = BracesGenerationStyle.GENERATE.name(); 
+    private static final String BGS_GENERATE = BracesGenerationStyle.GENERATE.name();
+    
+    private static final String IP_CARET = InsertionPoint.CARET_LOCATION.name();
+    private static final String IP_FIRST = InsertionPoint.FIRST_IN_CATEGORY.name();
+    private static final String IP_LAST = InsertionPoint.LAST_IN_CATEGORY.name();
     
     private static Map<String,String> defaults;
     
@@ -376,7 +389,10 @@ public class FmtOptions {
             { addOverrideAnnotation, TRUE}, //NOI18N
             { makeLocalVarsFinal, FALSE}, //NOI18N
             { makeParametersFinal, FALSE}, //NOI18N
-            { classMembersOrder, ""}, //NOI18N // XXX
+            { classMembersOrder, "STATIC FIELD;STATIC_INIT;STATIC METHOD;FIELD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS"}, //NOI18N
+            { sortMembersByVisibility, FALSE}, //NOI18N
+            { visibilityOrder, "PUBLIC;PRIVATE;PROTECTED;DEFAULT"}, //NOI18N
+            { classMemberInsertionPoint, IP_LAST},
 
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
             { methodDeclBracePlacement, BP_SAME_LINE}, //NOI18N
@@ -413,6 +429,7 @@ public class FmtOptions {
             { wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
             { wrapAnnotationArgs, WRAP_NEVER}, //NOI18N
             { wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
+            { wrapAfterDotInChainedMethodCalls, TRUE}, //NOI18N
             { wrapArrayInit, WRAP_NEVER}, //NOI18N
             { wrapTryResources, WRAP_NEVER}, //NOI18N
             { wrapDisjunctiveCatchTypes, WRAP_NEVER}, //NOI18N
@@ -437,6 +454,7 @@ public class FmtOptions {
             { blankLinesBeforeClass, "1"}, //NOI18N 
             { blankLinesAfterClass, "0"}, //NOI18N
             { blankLinesAfterClassHeader, "1"}, //NOI18N 
+            { blankLinesAfterAnonymousClassHeader, "0"}, //NOI18N 
             { blankLinesBeforeFields, "0"}, //NOI18N 
             { blankLinesAfterFields, "0"}, //NOI18N
             { blankLinesBeforeMethods, "1"}, //NOI18N
@@ -460,6 +478,7 @@ public class FmtOptions {
             { spaceAroundBinaryOps, TRUE}, //NOI18N
             { spaceAroundTernaryOps, TRUE}, //NOI18N
             { spaceAroundAssignOps, TRUE}, //NOI18N
+            { spaceAroundAnnotationValueAssignOps, TRUE}, //NOI18N
             { spaceBeforeClassDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeMethodDeclLeftBrace, TRUE}, //NOI18N
             { spaceBeforeIfLeftBrace, TRUE}, //NOI18N
@@ -534,7 +553,7 @@ public class FmtOptions {
     
     // Support section ---------------------------------------------------------
       
-    public static class CategorySupport implements ActionListener, ChangeListener, TableModelListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
+    public static class CategorySupport implements ActionListener, ChangeListener, ListDataListener, TableModelListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
         public static final String OPTION_ID = "org.netbeans.modules.java.ui.FormatingOptions.ID";
 
@@ -558,6 +577,12 @@ public class FmtOptions {
                 new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
                 new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
                 new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
+            };
+        
+        private static final ComboItem  insertionPoint[] = new ComboItem[] {
+                new ComboItem( InsertionPoint.LAST_IN_CATEGORY.name(), "LBL_ip_LAST_IN_CATEGORY" ), // NOI18N
+                new ComboItem( InsertionPoint.FIRST_IN_CATEGORY.name(), "LBL_ip_FIRST_IN_CATEGORY" ), // NOI18N
+                new ComboItem( InsertionPoint.CARET_LOCATION.name(), "LBL_ip_CARET_LOCATION" ) // NOI18N
             };
         
         protected final String previewText;
@@ -619,6 +644,12 @@ public class FmtOptions {
             refreshPreview();
         }
         
+        protected void loadListData(final JList list, final String optionID, final Preferences p) {
+        }
+
+        protected void storeListData(final JList list, final String optionID, final Preferences node) {            
+        }
+
         protected void loadTableData(final JTable table, final String optionID, final Preferences p) {
         }
 
@@ -636,6 +667,21 @@ public class FmtOptions {
         @Override
         public void stateChanged(ChangeEvent e) {
             notifyChanged();
+        }
+        
+        // ListDataListener implementation -----------------------------------
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+        }
+
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            notifyChanged();
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
         }
         
         // TableModelListener implementation -----------------------------------
@@ -812,6 +858,9 @@ public class FmtOptions {
                 ComboItem item = whichItem(value, model);
                 cb.setSelectedItem(item);
             }
+            else if ( jc instanceof JList ) {
+                loadListData((JList)jc, optionID, node);
+            }
             else if ( jc instanceof JTable ) {
                 loadTableData((JTable)jc, optionID, node);
             }
@@ -871,6 +920,9 @@ public class FmtOptions {
                 else
                     node.put(optionID,value);
             }
+            else if ( jc instanceof JList ) {
+                storeListData((JList)jc, optionID, node);
+            }
             else if ( jc instanceof JTable ) {
                 storeTableData((JTable)jc, optionID, node);
             }
@@ -893,6 +945,10 @@ public class FmtOptions {
             else if ( jc instanceof JComboBox) {
                 JComboBox cb  = (JComboBox)jc;
                 cb.addActionListener(this);
+            }
+            else if ( jc instanceof JList) {
+                JList jl = (JList)jc;
+                jl.getModel().addListDataListener(this);
             }
             else if ( jc instanceof JTable) {
                 JTable jt = (JTable)jc;
@@ -917,10 +973,17 @@ public class FmtOptions {
                 }
             }
             
-            // is it wrap
+            // is it wrap?
             for (ComboItem comboItem : wrap) {
                 if ( value.equals( comboItem.value) ) {
                     return new DefaultComboBoxModel( wrap );
+                }
+            }
+            
+            // is it insertion point?
+            for (ComboItem comboItem : insertionPoint) {
+                if ( value.equals( comboItem.value) ) {
+                    return new DefaultComboBoxModel( insertionPoint );
                 }
             }
             

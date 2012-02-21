@@ -50,7 +50,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -66,8 +65,9 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
     private static final int MIN_FILES = 10;    //Trivial problem size
     private static final boolean PREFETCH_DISABLED = Boolean.getBoolean("SourcePrefetcher.disabled");   //NOI18N
     private static final int PROC_COUNT = Integer.getInteger("SourcePrefetcher.proc.count", DEFAULT_PROC_COUNT);    //NOI18N
-    private static final int BUFFER_SIZE = Integer.getInteger("SourcePrefetcher.beffer.size", DEFAULT_BUFFER_SIZE); //NOI18N
     
+    /*test - never change it during IDE run*/
+    static int BUFFER_SIZE = Integer.getInteger("SourcePrefetcher.buffer.size", DEFAULT_BUFFER_SIZE); //NOI18N
     /*test*/ static Boolean TEST_DO_PREFETCH;
     
     private final Iterator<? extends CompileTuple> iterator;
@@ -189,7 +189,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                     @Override
                     public CompileTuple call() throws Exception {
                         safePark();
-                        final int len = ct.jfo.prefetch();
+                        final int len = Math.min(BUFFER_SIZE,ct.jfo.prefetch());
                         if (LOG.isLoggable(Level.FINEST) && 
                             (sem.availablePermits() - len) < 0) {
                             LOG.finest("Buffer full");  //NOI18N
@@ -234,7 +234,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
                 throw new IllegalStateException("Call next before remove");   //NOI18N
             }
             try {
-                final int len = active.jfo.dispose();
+                final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
                 sem.release(len);
             } finally {
                 active = null;

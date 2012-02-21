@@ -68,6 +68,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ScanUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -168,7 +169,7 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
                 TypeElement type = (TypeElement) ((DeclaredType) var.asType()).asElement();
                 for (ExecutableElement ee : ElementFilter.methodsIn(type.getEnclosedElements())) {
                     if (methodName.equals(ee.getSimpleName().toString()) && ee.getParameters().size() == paramCount) {
-                        DelegateMethodGenerator.generateDelegatingMethods(wc, tp, var, Collections.singletonList(ee), 0);
+                        DelegateMethodGenerator.generateDelegatingMethods(wc, tp, var, Collections.singletonList(ee));
                     }
                 }
             }
@@ -183,25 +184,31 @@ public class DelegateMethodGeneratorTest extends NbTestCase {
         compareReferenceFiles();
     }
      
-    private void performMethodProposalsTest(String name) throws Exception {
+    private void performMethodProposalsTest(final String name) throws Exception {
         prepareTest("MethodProposals");
 
-        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(source, Phase.RESOLVED);
-        TypeElement clazz = info.getElements().getTypeElement("test.MethodProposals");
-        VariableElement variable = null;
+        ScanUtils.waitUserActionTask(source, new Task<CompilationController>() {
 
-        for (VariableElement v : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
-            if (name.contentEquals(v.getSimpleName())) {
-                variable = v;
+            @Override
+            public void run(CompilationController info) throws Exception {
+                info.toPhase(Phase.RESOLVED);
+                TypeElement clazz = info.getElements().getTypeElement("test.MethodProposals");
+                VariableElement variable = null;
+
+                for (VariableElement v : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
+                    if (name.contentEquals(v.getSimpleName())) {
+                        variable = v;
+                    }
+                }
+
+                assertNotNull(variable);
+
+                ClassTree ct = info.getTrees().getTree(clazz);
+                int offset = (int) (info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), ct) - 1);
+                compareMethodProposals(info, DelegateMethodGenerator.getAvailableMethods(info, offset,
+                        ElementHandle.create(clazz), ElementHandle.create(variable)));
             }
-        }
-
-        assertNotNull(variable);
-
-        ClassTree ct = info.getTrees().getTree(clazz);
-        int offset = (int) (info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), ct) - 1);
-        compareMethodProposals(info, DelegateMethodGenerator.getAvailableMethods(info, offset,
-                ElementHandle.create(clazz), ElementHandle.create(variable)));
+        });
     }
      
     private void compareMethodProposals(CompilationInfo info, ElementNode.Description proposal) {

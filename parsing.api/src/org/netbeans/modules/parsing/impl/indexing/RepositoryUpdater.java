@@ -2127,8 +2127,16 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}", 
                             new Object[] { factory.getIndexerName(), root.toString() });
                 }
-                boolean vote = factory.scanStarted(value.second);
-                votes.put(factory,vote);
+                try {
+                    boolean vote = factory.scanStarted(value.second);
+                    votes.put(factory,vote);
+                } catch (Throwable t) {
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    }
+                    votes.put(factory, false);
+                    Exceptions.printStackTrace(t);
+                }
             }
         }
 
@@ -2162,8 +2170,16 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
-                    boolean vote = eif.scanStarted(value.second);
-                    votes.put(eif, vote);
+                    try {
+                        boolean vote = eif.scanStarted(value.second);
+                        votes.put(eif, vote);
+                    } catch (Throwable t) {
+                        if (t instanceof ThreadDeath) {
+                            throw (ThreadDeath) t;
+                        }
+                        votes.put(eif, false);
+                        Exceptions.printStackTrace(t);
+                    }
                 }
             }
         }

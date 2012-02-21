@@ -122,7 +122,6 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
@@ -1481,7 +1480,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 expressionStatement = true;
                             }
                             
-                            ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
+                            ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), constant);
 
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
 
@@ -1675,7 +1674,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         toRemoveFromParent = resolved;
                     }
                     
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
+                    ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), field);
 
                     TreePath method        = findMethod(resolved);
 
@@ -1738,7 +1737,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 BlockTree nueBlock = make.Block(nueStatements, false);
                                 MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
 
-                                nueClass = GeneratorUtils.insertClassMember(parameter, new TreePath(new TreePath(parameter.getCompilationUnit()), nueClass), nueConstr);
+                                nueClass = GeneratorUtilities.get(parameter).insertClassMember(nueClass, nueConstr);
 
                                 nueClass = make.removeClassMember(nueClass, constructor.getLeaf());
                                 break;
@@ -2116,12 +2115,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
                     
                     Tree parent = findMethod(firstStatement).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                 }
@@ -2264,12 +2258,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
 
                     Tree parent = findMethod(expression).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
 
