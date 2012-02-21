@@ -5,4 +5,5 @@ CONSTRUCTO StringBuffer()                             null
 CONSTRUCTO StringBuffer(CharSequence)                 null
 CONSTRUCTO StringBuffer(String)                       null
 CONSTRUCTO StringBuffer(int)                          null
-CONSTRUCTO StringBufferInputStream(String             null
+------------------------------------
+CLASS      StringBufferInputStream                    null

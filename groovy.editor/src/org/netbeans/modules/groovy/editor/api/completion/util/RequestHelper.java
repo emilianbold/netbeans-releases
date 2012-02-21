@@ -111,7 +111,7 @@ public final class RequestHelper {
     public static List<ClassNode> getDeclaredClasses(CompletionRequest request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
-            return null;
+            return Collections.EMPTY_LIST;
         }
 
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -66,9 +65,10 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
@@ -101,9 +101,21 @@ import org.openide.filesystems.FileObject;
  */
 public class TypesCompletion extends BaseCompletion {
 
+    // There attributes should be initiated after each complete() method call
+    private List<CompletionProposal> proposals;
+    private CompletionRequest request;
+    private int anchor;
+    private boolean constructorCompletion;
+
+    
     @Override
     public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
         LOG.log(Level.FINEST, "-> completeTypes"); // NOI18N
+
+        this.proposals = proposals;
+        this.request = request;
+        this.anchor = anchor;
+
         final PackageCompletionRequest packageRequest = getPackageRequest(request);
 
         // todo: we don't handle single dots in the source. In that case we should
@@ -115,12 +127,14 @@ public class TypesCompletion extends BaseCompletion {
             return false;
         }
 
-        // this is a new Something()| request for a constructor, which is handled in completeMethods.
+        // check for a constructor call
+        if (request.ctx.before1 != null && request.prefix.length() > 0 &&
+           (request.ctx.before1.text().toString().equals("new") ||          // new String|
+            request.ctx.beforeLiteral.text().toString().equals("new"))) {   // new String|("abc");
 
-        if (request.ctx.before1 != null
-                && request.ctx.before1.text().toString().equals("new") // NOI18N
-                && request.prefix.length() > 0) {
-            return false;
+            constructorCompletion = true;
+        } else {
+            constructorCompletion = false;
         }
 
         // are we dealing with a class xyz implements | {
@@ -162,7 +176,7 @@ public class TypesCompletion extends BaseCompletion {
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
 
         // get the JavaSource for our file.
-        final JavaSource javaSource = getJavaSourceFromRequest(request);
+        final JavaSource javaSource = getJavaSourceFromRequest();
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
 
@@ -180,7 +194,7 @@ public class TypesCompletion extends BaseCompletion {
                 LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
 
                 for (TypeHolder singleType : stringTypelist) {
-                    addToProposalUsingFilter(addedTypes, proposals, request, singleType, onlyInterfaces, anchor);
+                    addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
                 }
             }
 
@@ -235,7 +249,7 @@ public class TypesCompletion extends BaseCompletion {
                     }
 
                     for (TypeHolder type : typelist) {
-                        addToProposalUsingFilter(addedTypes, proposals, request, type, onlyInterfaces, anchor);
+                        addToProposalUsingFilter(addedTypes, type, onlyInterfaces);
                     }
                 }
             }
@@ -262,8 +276,7 @@ public class TypesCompletion extends BaseCompletion {
                         ek = ElementKind.CLASS;
                     }
 
-                    addToProposalUsingFilter(addedTypes, proposals, request,
-                            new TypeHolder(importNode.getClassName(), ek), onlyInterfaces, anchor);
+                    addToProposalUsingFilter(addedTypes, new TypeHolder(importNode.getClassName(), ek), onlyInterfaces);
                 }
             }
 
@@ -288,9 +301,7 @@ public class TypesCompletion extends BaseCompletion {
         // prefix
 
         for (String singlePackage : localDefaultImports) {
-            List<TypeHolder> typeList;
-
-            typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
+            List<TypeHolder> typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
 
             if (typeList == null) {
                 LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
@@ -300,19 +311,18 @@ public class TypesCompletion extends BaseCompletion {
             LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
             for (TypeHolder element : typeList) {
-                addToProposalUsingFilter(addedTypes, proposals, request, element, onlyInterfaces, anchor);
+                addToProposalUsingFilter(addedTypes, element, onlyInterfaces);
             }
         }
 
         // Adding single classes
         for (String className : GroovyUtils.DEFAULT_IMPORT_CLASSES) {
-            addToProposalUsingFilter(addedTypes, proposals, request,
-                    new TypeHolder(className, ElementKind.CLASS), onlyInterfaces, anchor);
+            addToProposalUsingFilter(addedTypes, new TypeHolder(className, ElementKind.CLASS), onlyInterfaces);
         }
         return true;
     }
 
-    private JavaSource getJavaSourceFromRequest(final CompletionRequest request) {
+    private JavaSource getJavaSourceFromRequest() {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null;
 
@@ -332,16 +342,21 @@ public class TypesCompletion extends BaseCompletion {
      * @param request
      * @param fqn
      */
-    void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, List<CompletionProposal> proposals,
-            CompletionRequest request, TypeHolder type, boolean onlyInterfaces, int anchor) {
-
+    void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, TypeHolder type, boolean onlyInterfaces) {
         if ((onlyInterfaces && (type.getKind() != ElementKind.INTERFACE)) || alreadyPresent.contains(type)) {
             return;
         }
 
         String typeName = NbUtilities.stripPackage(type.getName());
 
-        if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+        // If we are in situation: "String s = new String|" we don't want to show
+        // String type as a option - we want to show String constructors + types
+        // prefixed with String (e.g. StringBuffer)
+        if (constructorCompletion && typeName.toUpperCase().equals(request.prefix.toUpperCase())) {
+            return;
+        }
+
+        if (isPrefixed(request, typeName)) {
             alreadyPresent.add(type);
             proposals.add(new CompletionItem.TypeItem(typeName, anchor, type.getKind()));
         }
@@ -356,10 +371,8 @@ public class TypesCompletion extends BaseCompletion {
 
             try {
                 javaSource.runUserActionTask(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController info) {
-
-                        List<? extends javax.lang.model.element.Element> typelist = null;
-
                         Elements elements = info.getElements();
 
                         if (elements != null && pkg != null) {
@@ -369,7 +382,7 @@ public class TypesCompletion extends BaseCompletion {
                             if (packageElement == null) {
                                 LOG.log(Level.FINEST, "packageElement is null");
                             } else {
-                                typelist = packageElement.getEnclosedElements();
+                                List<? extends Element> typelist = packageElement.getEnclosedElements();
                                 boolean samePackage = pkg.equals(currentPackage);
 
                                 for (Element element : typelist) {
@@ -382,7 +395,10 @@ public class TypesCompletion extends BaseCompletion {
                                     }
                                 }
                             }
-
+                        }
+                        List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
+                        for (ClassNode declaredClass : declaredClasses) {
+                            result.add(new TypeHolder(declaredClass.getNameWithoutPackage(), null));
                         }
                     }
                 }, true);
