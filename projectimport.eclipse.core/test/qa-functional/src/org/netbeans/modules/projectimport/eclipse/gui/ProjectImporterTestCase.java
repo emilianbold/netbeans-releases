@@ -42,11 +42,8 @@
 
 package org.netbeans.modules.projectimport.eclipse.gui;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.InputStream;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.Bundle;
@@ -61,8 +58,8 @@ import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.test.TestFileUtils;
+
 /**
  *
  * @author mkhramov@netbeans.org
@@ -75,12 +72,8 @@ public abstract class ProjectImporterTestCase  extends NbTestCase {
     public ProjectImporterTestCase(String testName) {
         super(testName);
     }
-    protected static void ExtractToWorkDir(String dataDir, String archiveName) throws FileNotFoundException, Exception {
-        File f = new File(dataDir);
-        FileObject fo = FileUtil.toFileObject(f);
-        String workspaceJarPath = dataDir + File.separatorChar + archiveName;
-        InputStream is = new BufferedInputStream(new FileInputStream(new File(workspaceJarPath)));
-        FileUtil.extractJar(fo, is);
+    protected static void ExtractToWorkDir(File dataDir, String archiveName) throws FileNotFoundException, Exception {
+        TestFileUtils.unpackZipFile(new File(dataDir, archiveName), dataDir);
     }
     
     @Override
