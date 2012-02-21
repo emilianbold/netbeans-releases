@@ -108,6 +108,10 @@ public class NewVarsCCTest extends GroovyTestBase {
         checkCompletion(BASE + "FieldCompletion.groovy", "    String ^", false);
     }
 
+    public void testCompletionField1_3() throws Exception {
+        checkCompletion(BASE + "FieldCompletion.groovy", "    private String ^", false);
+    }
+
     // test primitve type suggestions
 
     public void testPrimitive1() throws Exception {
