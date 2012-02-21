@@ -1961,6 +1961,10 @@ qualified_id returns [String q = ""]
 				 LESSTHAN template_argument_list GREATERTHAN)?
 		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
 		|
+		LITERAL_OPERATOR STRING_LITERAL IDENT (options{warnWhenFollowAmbig = false;}:
+				 LESSTHAN template_argument_list GREATERTHAN)?
+		{qitem.append("operator"); qitem.append("NYI");} // TODO: understand
+		|
 		LITERAL_this  // DW 21/07/03 fix to pass test8.i
 		|
 		(LITERAL_true|LITERAL_false)	// DW 21/07/03 fix to pass test8.i

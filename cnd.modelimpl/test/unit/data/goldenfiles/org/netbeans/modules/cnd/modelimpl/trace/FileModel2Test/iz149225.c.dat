@@ -2,11 +2,11 @@
 State of macro map:
 Own Map:
 MACROS (sorted 5):
-<U>#define '["C1",<ID>,line=1,col=9],offset=8,file=null[["x",<ID>,line=1,col=12],offset=11,file=null]'='["x",<ID>,line=1,col=15],offset=14,file=null ["##",<DBL_SHARP>,line=1,col=16],offset=15,file=null ["0",<OCTALINT>,line=1,col=18],offset=17,file=null ["_1",<ID>,line=1,col=19],offset=18,file=null'
-<U>#define '["C2",<ID>,line=4,col=9],offset=56,file=null[["x",<ID>,line=4,col=12],offset=59,file=null]'='["x",<ID>,line=4,col=15],offset=62,file=null ["##",<DBL_SHARP>,line=4,col=16],offset=63,file=null ["999",<DECIMALINT>,line=4,col=18],offset=65,file=null ["_z_z_00",<ID>,line=4,col=21],offset=68,file=null'
-<U>#define '["C3",<ID>,line=7,col=9],offset=111,file=null[["x",<ID>,line=7,col=12],offset=114,file=null]'='["x",<ID>,line=7,col=15],offset=117,file=null ["##",<DBL_SHARP>,line=7,col=16],offset=118,file=null ["0xDEADBEEF",<HEXADECIMALINT>,line=7,col=18],offset=120,file=null ["_z_z_z",<ID>,line=7,col=28],offset=130,file=null'
+<U>#define '["C1",<ID>,line=1,col=9],offset=8,file=null[["x",<ID>,line=1,col=12],offset=11,file=null]'='["x",<ID>,line=1,col=15],offset=14,file=null ["##",<DBL_SHARP>,line=1,col=16],offset=15,file=null ["0_1",<OCTALINT>,line=1,col=18],offset=17,file=null'
+<U>#define '["C2",<ID>,line=4,col=9],offset=56,file=null[["x",<ID>,line=4,col=12],offset=59,file=null]'='["x",<ID>,line=4,col=15],offset=62,file=null ["##",<DBL_SHARP>,line=4,col=16],offset=63,file=null ["999_z_z_00",<DECIMALINT>,line=4,col=18],offset=65,file=null'
+<U>#define '["C3",<ID>,line=7,col=9],offset=111,file=null[["x",<ID>,line=7,col=12],offset=114,file=null]'='["x",<ID>,line=7,col=15],offset=117,file=null ["##",<DBL_SHARP>,line=7,col=16],offset=118,file=null ["0xDEADBEEF_z_z_z",<HEXADECIMALINT>,line=7,col=18],offset=120,file=null'
 <U>#define '["C4",<ID>,line=10,col=9],offset=172,file=null[["x",<ID>,line=10,col=12],offset=175,file=null, ["y",<ID>,line=10,col=14],offset=177,file=null]'='["x",<ID>,line=10,col=17],offset=180,file=null ["##",<DBL_SHARP>,line=10,col=18],offset=181,file=null ["y",<ID>,line=10,col=20],offset=183,file=null'
-<U>#define '["C5",<ID>,line=13,col=9],offset=222,file=null[["x",<ID>,line=13,col=12],offset=225,file=null]'='["C4",<ID>,line=13,col=15],offset=228,file=null ["(",<LPAREN>,line=13,col=17],offset=230,file=null ["x",<ID>,line=13,col=18],offset=231,file=null [",",<COMMA>,line=13,col=19],offset=232,file=null ["149225",<DECIMALINT>,line=13,col=20],offset=233,file=null ["_b",<ID>,line=13,col=26],offset=239,file=null [")",<RPAREN>,line=13,col=28],offset=241,file=null'
+<U>#define '["C5",<ID>,line=13,col=9],offset=222,file=null[["x",<ID>,line=13,col=12],offset=225,file=null]'='["C4",<ID>,line=13,col=15],offset=228,file=null ["(",<LPAREN>,line=13,col=17],offset=230,file=null ["x",<ID>,line=13,col=18],offset=231,file=null [",",<COMMA>,line=13,col=19],offset=232,file=null ["149225_b",<DECIMALINT>,line=13,col=20],offset=233,file=null [")",<RPAREN>,line=13,col=28],offset=241,file=null'
 System Map:
 MACROS (sorted 0):
 
