@@ -250,13 +250,13 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleStandardBlock(Block block) {
+        handleBlockContent(block);
+
         // indentation mark
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
-
-        handleBlockContent(block);
 
         // put indentation mark after non white token
         formatToken = getPreviousToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
@@ -275,10 +275,10 @@ public class FormatVisitor extends NodeVisitor {
             return;
         }
 
-        Node statement = block.getStatements().get(0);
-
         handleBlockContent(block);
 
+        Node statement = block.getStatements().get(0);
+        
         // indentation mark
         Token token = getPreviousNonEmptyToken(getStart(statement));
         if (token != null) {
@@ -299,13 +299,13 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private void handleCaseBlock(Block block) {
+        handleBlockContent(block);
+
         // indentation mark
         FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
-
-        handleBlockContent(block);
 
         // put indentation mark after non white token
         Token token = getNextNonEmptyToken(getFinish(block));
