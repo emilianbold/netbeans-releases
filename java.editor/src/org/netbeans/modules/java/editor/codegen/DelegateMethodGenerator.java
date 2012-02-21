@@ -76,6 +76,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
+
+import com.sun.source.tree.Tree;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -172,13 +174,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 String message = NbBundle.getMessage(DelegateMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                                 ElementHandle<? extends Element> handle = panel.getDelegateField();
                                 VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
                                 ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
                                     methods.add((ExecutableElement)elementHandle.resolve(copy));
-                                generateDelegatingMethods(copy, path, delegate, methods, idx);
+                                generateDelegatingMethods(copy, path, delegate, methods);
                             }
                         }
                     });
@@ -300,14 +301,15 @@ public class DelegateMethodGenerator implements CodeGenerator {
         return null;
     }
     
-    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods, int index) {
+    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>();
             for (ExecutableElement executableElement : methods)
-                nue = make.insertClassMember(nue, index, createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
+                members.add(createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
+            nue = GeneratorUtilities.get(wc).insertClassMembers(nue, members);
             wc.rewrite(path.getLeaf(), nue);
         }        
     }
