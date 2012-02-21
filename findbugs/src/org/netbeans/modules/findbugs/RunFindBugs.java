@@ -41,12 +41,19 @@
  */
 package org.netbeans.modules.findbugs;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.VariableTree;
 import edu.umd.cs.findbugs.BugCollectionBugReporter;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugPattern;
+import edu.umd.cs.findbugs.ClassAnnotation;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
+import edu.umd.cs.findbugs.FieldAnnotation;
 import edu.umd.cs.findbugs.FindBugs2;
+import edu.umd.cs.findbugs.MethodAnnotation;
+import edu.umd.cs.findbugs.PackageMemberAnnotation;
 import edu.umd.cs.findbugs.Project;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
@@ -60,10 +67,23 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
@@ -85,7 +105,7 @@ public class RunFindBugs {
     public static final String PREFIX_FINDBUGS = "findbugs:";
     private static final Logger LOG = Logger.getLogger(RunFindBugs.class.getName());
     
-    public static List<ErrorDescription> runFindBugs(FileObject sourceRoot, Iterable<? extends String> classNames, SigFilesValidator validator) {
+    public static List<ErrorDescription> runFindBugs(CompilationInfo info, FileObject sourceRoot, Iterable<? extends String> classNames, SigFilesValidator validator) {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         
         try {
@@ -158,19 +178,22 @@ public class RunFindBugs {
                 }
 
                 SourceLineAnnotation sourceLine = b.getPrimarySourceLineAnnotation();
+                FileObject sourceFile = null;
 
                 if (sourceLine != null) {
-                    if (sourceLine.getStartLine() < 0) {
-                        LOG.log(Level.WARNING, "{0}, location: {1}", new Object[]{b, sourceLine.getStartLine()});
-                        continue;
-                    }
-                    FileObject sourceFile = sourceRoot.getFileObject(sourceLine.getSourcePath());
+                    sourceFile = sourceRoot.getFileObject(sourceLine.getSourcePath());
 
-                    if (sourceFile != null) {
+                    if (sourceFile != null && sourceLine.getStartLine() >= 0) {
                         DataObject d = DataObject.find(sourceFile);
                         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
                         Document doc = ec.openDocument();
                         result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
+                    } else {
+                        if (sourceFile != null) {
+                            addByElementAnnotation(b, info, sourceFile, result);
+                        } else {
+                            LOG.log(Level.WARNING, "{0}, location: {1}:{2}", new Object[]{b, sourceLine.getSourcePath(), sourceLine.getStartLine()});
+                        }
                     }
                 }
             }
@@ -180,6 +203,136 @@ public class RunFindBugs {
             Exceptions.printStackTrace(ex);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
+        }
+
+        return result;
+    }
+
+    private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, List<ErrorDescription> result) {
+        int[] span = null;
+        FieldAnnotation fieldAnnotation = b.getPrimaryField();
+
+        if (fieldAnnotation != null) {
+            span = spanFor(info, sourceFile, fieldAnnotation);
+        }
+
+        MethodAnnotation methodAnnotation = b.getPrimaryMethod();
+
+        if ((span == null || span[0] == (-1)) && methodAnnotation != null) {
+            span = spanFor(info, sourceFile, methodAnnotation);
+        }
+
+        ClassAnnotation classAnnotation = b.getPrimaryClass();
+
+        if ((span == null || span[0] == (-1)) && classAnnotation != null) {
+            span = spanFor(info, sourceFile, classAnnotation);
+        }
+
+        if (span != null && span[0] != (-1)) {
+            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), sourceFile, span[0], span[1]));
+        }
+    }
+
+    private static int[] spanFor(CompilationInfo info, FileObject sourceFile, final PackageMemberAnnotation annotation) {
+        final int[] result = new int[] {-1, -1};
+        class TaskImpl implements Task<CompilationInfo> {
+            @Override public void run(final CompilationInfo parameter) {
+                TypeElement clazz = parameter.getElements().getTypeElement(annotation.getClassName());
+
+                if (clazz == null) {
+                    //XXX: log
+                    return;
+                }
+
+                Element resolved = null;
+
+                if (annotation instanceof FieldAnnotation) {
+                    FieldAnnotation fa = (FieldAnnotation) annotation;
+                    
+                    for (VariableElement var : ElementFilter.fieldsIn(clazz.getEnclosedElements())) {
+                        if (var.getSimpleName().contentEquals(fa.getFieldName())) {
+                            resolved = var;
+                            break;
+                        }
+                    }
+                } else if (annotation instanceof MethodAnnotation) {
+                    MethodAnnotation ma = (MethodAnnotation) annotation;
+
+                    for (ExecutableElement method : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+                        if (method.getSimpleName().contentEquals(ma.getMethodName())) {
+                            if (ma.getMethodSignature().equals(SourceUtils.getJVMSignature(ElementHandle.create(method))[2])) {
+                                resolved = method;
+                                break;
+                            }
+                        }
+                    }
+                } else if (annotation instanceof ClassAnnotation) {
+                    resolved = clazz;
+                }
+
+                if (resolved == null) {
+                    //XXX: log
+                    return;
+                }
+
+                final Element resolvedFin = resolved;
+
+                new CancellableTreePathScanner<Void, Void>() {
+                    @Override public Void visitVariable(VariableTree node, Void p) {
+                        if (resolvedFin.equals(parameter.getTrees().getElement(getCurrentPath()))) {
+                            int[] span = parameter.getTreeUtilities().findNameSpan(node);
+
+                            if (span != null) {
+                                result[0] = span[0];
+                                result[1] = span[1];
+                            }
+                        }
+
+                        return super.visitVariable(node, p);
+                    }
+                    @Override public Void visitMethod(MethodTree node, Void p) {
+                        if (resolvedFin.equals(parameter.getTrees().getElement(getCurrentPath()))) {
+                            int[] span = parameter.getTreeUtilities().findNameSpan(node);
+
+                            if (span != null) {
+                                result[0] = span[0];
+                                result[1] = span[1];
+                            }
+                        }
+
+                        return super.visitMethod(node, p);
+                    }
+                    @Override public Void visitClass(ClassTree node, Void p) {
+                        if (resolvedFin.equals(parameter.getTrees().getElement(getCurrentPath()))) {
+                            int[] span = parameter.getTreeUtilities().findNameSpan(node);
+
+                            if (span != null) {
+                                result[0] = span[0];
+                                result[1] = span[1];
+                            }
+                        }
+
+                        return super.visitClass(node, p);
+                    }
+                }.scan(parameter.getCompilationUnit(), null);
+            }
+        };
+        
+        final TaskImpl convertor = new TaskImpl();
+
+        if (info != null) {
+            convertor.run(info);
+        } else {
+            try {
+                JavaSource.forFileObject(sourceFile).runUserActionTask(new Task<CompilationController>() {
+                    @Override public void run(CompilationController parameter) throws Exception {
+                        parameter.toPhase(Phase.RESOLVED); //XXX: ENTER should be enough in most cases, but not for anonymous innerclasses.
+                        convertor.run(parameter);
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
 
         return result;

@@ -107,7 +107,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -125,6 +125,53 @@ public class RunFindBugsTest extends NbTestCase {
 
         SourceUtilsTestUtil.compileRecursively(sourceRoot);
 
-        assertEquals(0, RunFindBugs.runFindBugs(sourceRoot, null, null).size());
+        assertEquals(0, RunFindBugs.runFindBugs(null, sourceRoot, null, null).size());
+    }
+
+    public void testFieldAnnotation() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    private String str;\n" +
+                    "}\n");
+
+        List<String> errors = new ArrayList<String>();
+
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+            errors.add(ed.toString());
+        }
+
+        assertEquals(Arrays.asList("2:19-2:22:verifier:Unused field: test.Test.str"),
+                     errors);
+    }
+
+    public void DtestMethodAnnotation() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    private void str() {};\n" +
+                    "}\n");
+
+        List<String> errors = new ArrayList<String>();
+
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+            errors.add(ed.toString());
+        }
+
+        assertEquals(Arrays.asList("2:17-2:20:verifier:Private method test.Test.str() is never called"),
+                     errors);
+    }
+
+    public void DtestClassAnnotation() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test implements java.io.Serializable {\n" +
+                    "}\n");
+
+        List<String> errors = new ArrayList<String>();
+
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+            errors.add(ed.toString());
+        }
+
+        assertEquals(Arrays.asList("1:13-1:17:verifier:test.Test is Serializable; consider declaring a serialVersionUID"),
+                     errors);
     }
 }

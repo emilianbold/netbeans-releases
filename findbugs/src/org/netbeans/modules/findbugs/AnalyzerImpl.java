@@ -72,7 +72,7 @@ public class AnalyzerImpl implements Analyzer {
         ctx.start(sourceRoots.size());
 
         for (FileObject sr : sourceRoots) {
-            result.addAll(RunFindBugs.runFindBugs(sr, null, null));
+            result.addAll(RunFindBugs.runFindBugs(null, sr, null, null));
             ctx.progress(++i);
         }
 
