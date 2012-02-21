@@ -1243,16 +1243,18 @@ NUMBER
 		(options {greedy=true;} : '.' (Digit)* (options {greedy=true;} : Exponent)? {$setType(FLOATONE);} //Zuo 3/12/01
 		| Exponent                 {$setType(FLOATTWO);} //Zuo 3/12/01
 		)
-
+                (Suffix)?
 	|	'.'  (                  {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
 		| 	(Digit)+ (options {greedy=true;} : Exponent)?   
                                         {$setType(FLOATONE);} //Zuo 3/12/01
+                        (Suffix)?
 		| '*' {$setType(DOTMBR);}
                 | {(LA(2)=='.')}? ".."  {$setType(ELLIPSIS);}
                 )
 
 	|	'1'..'9' (Digit)*
                                         {$setType(DECIMALINT);}  
+                (Suffix)?
         |
                 (       '0'
                     (   ('x' | 'X') => ('x' | 'X') (options {greedy=true;} : 'a'..'f' | 'A'..'F' | Digit)*
@@ -1263,8 +1265,8 @@ NUMBER
                                         {$setType(OCTALINT);}
                     )
                 )
-    )
-    (Suffix)?
+                (Suffix)?
+    )    
     ;
 
 //
