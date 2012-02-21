@@ -536,7 +536,16 @@ public final class RequestHelper {
         }
 
         ASTNode node = getASTNodeForToken(ctx.before1, request);
-        if (node != null && (node instanceof PropertyNode || node instanceof ClassNode)) {
+        if (node != null &&
+                // This might looks weird - we are checking if the current context
+                // is either property (e.g. String st)/field (e.g. private String)
+                // or it might be field but there is no identifier name yet
+                // In that case getASTNodeForToken() will return ClassNode and we
+                // have to check out (from CompletionContext) if it's really field
+                (node instanceof PropertyNode
+                || node instanceof FieldNode
+                || (node instanceof ClassNode && ctx.before1 != null && ctx.before2 == null &&
+                ctx.after1 == null && ctx.after2 == null && ctx.afterLiteral == null))) {
             return true;
         }
         return false;
