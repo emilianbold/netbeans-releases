@@ -234,14 +234,17 @@ public class ModelUtils {
             } else {
                 result.add(new TypeUsageImpl(Type.UNDEFINED, type.getOffset(), true));
             }
-        } else if ("@this".equals(type.getType())) {
+        } else if ("@this".equals(type.getType())) { //NOI18N
             JsObject parent = null;
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
-            } else if (object.getJSKind() == JsElement.Kind.METHOD) {
+            } else {
                 parent = object.getParent();
-            }
-            if (parent != null) {
+            } 
+            if (parent.getJSKind() == JsElement.Kind.FUNCTION 
+                    && parent.getParent().getJSKind() == JsElement.Kind.FILE) {
+                result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+            } else {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@new:")) {

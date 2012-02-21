@@ -562,7 +562,8 @@ public class ModelVisitor extends PathNodeVisitor {
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit());
-            } else if (!(varNode.getInit() instanceof UnaryNode)) {
+            }
+            if (!(varNode.getInit() instanceof UnaryNode)) {
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(varNode.getInit());
                 for (TypeUsage type : types) {
                     variable.addAssignment(type, name.getOffsetRange().getEnd());
