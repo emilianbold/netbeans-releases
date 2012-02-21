@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -182,12 +184,12 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile(String extension) throws IOException {
-            file = File.createTempFile("nb-remote-tmp-file-", extension); // NOI18N
+            file = File.createTempFile("nb-remote-tmp-file-", extension != null ? "." + extension : null); // NOI18N
         }
 
         @Override
         public void cleanup() {
-            if (!file.delete()) {
+            if (file.isFile() && !file.delete()) {
                 file.deleteOnExit();
             }
         }
@@ -205,7 +207,7 @@ public abstract class TmpLocalFile {
         @Override
         public OutputStream getOutputStream() {
             try {
-                return new FileOutputStream(file);
+                return new BufferedOutputStream(new FileOutputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create output stream for local tmp file", ex);
                 return null;
@@ -215,7 +217,7 @@ public abstract class TmpLocalFile {
         @Override
         public InputStream getInputStream() {
             try {
-                return new FileInputStream(file);
+                return new BufferedInputStream(new FileInputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create input stream for local tmp file", ex);
                 return null;
