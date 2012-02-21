@@ -268,6 +268,25 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
+    private void handleCaseBlock(Block block) {
+        handleBlockContent(block);
+
+        // indentation mark
+        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
+        }
+
+        // put indentation mark after non white token
+        Token token = getNextNonEmptyToken(getFinish(block));
+        if (token != null) {
+            formatToken = previousNonWhiteToken(getStart(block));
+            if (formatToken != null) {
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
+            }
+        }
+    }
+
     private void handleVirtualBlock(Block block) {
         assert block.getStart() == block.getFinish() && block.getStatements().size() <= 1;
 
@@ -291,25 +310,6 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         FormatToken formatToken = getPreviousToken(getFinish(statement), null);
         if (formatToken != null && !isScript(block)) {
-            formatToken = previousNonWhiteToken(getStart(block));
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-            }
-        }
-    }
-
-    private void handleCaseBlock(Block block) {
-        handleBlockContent(block);
-
-        // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON);
-        if (formatToken != null) {
-            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
-        }
-
-        // put indentation mark after non white token
-        Token token = getNextNonEmptyToken(getFinish(block));
-        if (token != null) {
             formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
