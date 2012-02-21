@@ -102,7 +102,7 @@ public class MIMEResolverProcessorTest extends NbTestCase {
 
     public void testXMLFileResolver() throws Exception {
         final String PATH = "Services/MIMEResolver/"
-            + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Registration.instance";
+            + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Registration.xml";
         FileObject fo = FileUtil.getConfigFile(PATH);
         assertNotNull("Registration found", fo);
         String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));
@@ -123,7 +123,7 @@ public class MIMEResolverProcessorTest extends NbTestCase {
     
     public void testExtensionResolver() throws Exception {
         final String PATH = "Services/MIMEResolver/"
-                + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Extension.instance";
+                + "org-netbeans-modules-openide-filesystems-declmime-MIMEResolverProcessorTest-Extension.xml";
         FileObject fo = FileUtil.getConfigFile(PATH);
         assertNotNull("Registration found", fo);
         String dispName = fo.getFileSystem().getStatus().annotateName(fo.getName(), Collections.singleton(fo));

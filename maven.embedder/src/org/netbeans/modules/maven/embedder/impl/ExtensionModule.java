@@ -48,7 +48,7 @@ import org.sonatype.aether.spi.connector.RepositoryConnectorFactory;
 import org.sonatype.guice.plexus.config.Roles;
 
 /**
- *
+ * this module is meant to be used by the project embedder only
  * @author mkleint
  */
 public class ExtensionModule implements Module {
