@@ -1187,13 +1187,13 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertTrue(eindexerFactory.indexer.awaitIndex());
     }
 
-    @RandomlyFails // in fact always for jglick
     public void testFileChangedInEditorReparsedOnce191885() throws Exception {
         //Prepare
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests");
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
+        handler.reset(TestHandler.Type.ROOTS_WORK_FINISHED);
         MutableClassPathImplementation mcpi1 = new MutableClassPathImplementation ();
         mcpi1.addResource(this.srcRootWithFiles1);
         ClassPath cp1 = ClassPathFactory.createClassPath(mcpi1);
@@ -1204,15 +1204,15 @@ public class RepositoryUpdaterTest extends NbTestCase {
         assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
         RepositoryUpdater.unitTestActiveSource = src;
         try {
-            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
-                    Collections.singleton(f1.getURL()));
+            IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
+                    Collections.singleton(f1.toURL()));
             assertFalse("Active shource should not be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
             
         } finally {
             RepositoryUpdater.unitTestActiveSource=null;
         }
-        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.getURL(),
-                    Collections.singleton(f1.getURL()));
+        IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),
+                    Collections.singleton(f1.toURL()));
         assertTrue("Non active shource should be invalidated",SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
     }
     
