@@ -65,8 +65,7 @@ var line13;
 
 /**
  * @example
- * var bleeper = makeBleep(3);
- * bleeper.flop();
+ * var bleeper
  */
 var line14;
 
