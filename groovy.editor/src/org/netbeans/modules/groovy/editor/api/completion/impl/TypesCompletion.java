@@ -54,6 +54,7 @@ import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -128,10 +129,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // check for a constructor call
-        if (request.ctx.before1 != null && request.prefix.length() > 0 &&
-           (request.ctx.before1.text().toString().equals("new") ||          // new String|
-            request.ctx.beforeLiteral.text().toString().equals("new"))) {   // new String|("abc");
-
+        if (RequestHelper.isConstructorCall(request)) {
             constructorCompletion = true;
         } else {
             constructorCompletion = false;
@@ -183,17 +181,11 @@ public class TypesCompletion extends BaseCompletion {
         if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
 
-                List<TypeHolder> stringTypelist =
-                        getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage, currentPackage);
+                List<TypeHolder> typeList = getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage, currentPackage);
 
-                if (stringTypelist == null) {
-                    LOG.log(Level.FINEST, "Typelist is null for package : {0}", packageRequest.basePackage);
-                    return false;
-                }
+                LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
-                LOG.log(Level.FINEST, "Number of types found:  {0}", stringTypelist.size());
-
-                for (TypeHolder singleType : stringTypelist) {
+                for (TypeHolder singleType : typeList) {
                     addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
                 }
             }
@@ -303,11 +295,6 @@ public class TypesCompletion extends BaseCompletion {
         for (String singlePackage : localDefaultImports) {
             List<TypeHolder> typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
 
-            if (typeList == null) {
-                LOG.log(Level.FINEST, "Typelist is null for package : {0}", singlePackage);
-                continue;
-            }
-
             LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
             for (TypeHolder element : typeList) {
@@ -342,7 +329,7 @@ public class TypesCompletion extends BaseCompletion {
      * @param request
      * @param fqn
      */
-    void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, TypeHolder type, boolean onlyInterfaces) {
+    private void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, TypeHolder type, boolean onlyInterfaces) {
         if ((onlyInterfaces && (type.getKind() != ElementKind.INTERFACE)) || alreadyPresent.contains(type)) {
             return;
         }
@@ -362,7 +349,8 @@ public class TypesCompletion extends BaseCompletion {
         }
     }
 
-    List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
+    @NonNull
+    private List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
 
         final List<TypeHolder> result = new ArrayList<TypeHolder>();
@@ -398,7 +386,10 @@ public class TypesCompletion extends BaseCompletion {
                         }
                         List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
                         for (ClassNode declaredClass : declaredClasses) {
-                            result.add(new TypeHolder(declaredClass.getNameWithoutPackage(), null));
+                            TypeHolder declaredType = new TypeHolder(declaredClass.getNameWithoutPackage(), ElementKind.CLASS);
+                            if (!result.contains(declaredType)) {
+                                result.add(declaredType);
+                            }
                         }
                     }
                 }, true);

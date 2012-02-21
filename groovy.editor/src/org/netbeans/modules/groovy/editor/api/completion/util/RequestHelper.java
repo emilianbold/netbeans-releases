@@ -463,6 +463,31 @@ public final class RequestHelper {
     }
 
     /**
+     * Finds out if the give CompletionRequest is a complete-constructor call.
+     * 
+     * @param request actual completion request
+     * @return true if it's constructor call, false otherwise
+     */
+    public static boolean isConstructorCall(CompletionRequest request) {
+        if (request.prefix.length() > 0) {
+            if (isEqualsNew(request.ctx.before1)) {
+                return true; // new String|
+            }
+            if (isEqualsNew(request.ctx.before2)) {
+                return true; // new String|("abc");
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEqualsNew(Token<? extends GroovyTokenId> token) {
+        if (token != null && token.text().toString().equals("new")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Here we test, whether the provided CompletionContext is likely to become
      * a variable definition. At this point in time we can not check whether we
      * live in a "DeclarationExpression" since this is not yet created.

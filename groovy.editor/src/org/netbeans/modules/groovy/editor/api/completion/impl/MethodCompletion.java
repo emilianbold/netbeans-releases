@@ -118,10 +118,7 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        if (request.ctx.before1 != null && request.prefix.length() > 0 &&
-           (request.ctx.before1.text().toString().equals("new") ||          // new String|
-            request.ctx.beforeLiteral.text().toString().equals("new"))) {   // new String|("abc");
-            
+        if (RequestHelper.isConstructorCall(request)) {
             return completeConstructor();
         }
 
