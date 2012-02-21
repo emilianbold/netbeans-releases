@@ -43,6 +43,7 @@ package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -68,6 +69,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.connections.RemoteClient;
+import org.netbeans.modules.php.project.connections.sync.diff.DiffPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
@@ -92,10 +97,11 @@ public final class SyncPanel extends JPanel {
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
+    final RemoteClient remoteClient;
     final List<SyncItem> items;
     final FileTableModel tableModel;
 
-    private final String projectName;
+    private final PhpProject project;
     private final String remoteConfigurationName;
 
     // @GuardedBy(AWT)
@@ -104,18 +110,21 @@ public final class SyncPanel extends JPanel {
     private NotificationLineSupport notificationLineSupport = null;
 
 
-    SyncPanel(String projectName, String remoteConfigurationName, List<SyncItem> items) {
+    SyncPanel(PhpProject project, String remoteConfigurationName, List<SyncItem> items, RemoteClient remoteClient) {
         assert SwingUtilities.isEventDispatchThread();
         assert items != null;
 
-        this.projectName = projectName;
+        this.project = project;
         this.remoteConfigurationName = remoteConfigurationName;
         this.items = items;
+        this.remoteClient = remoteClient;
         tableModel = new FileTableModel(items);
 
         initComponents();
+        setPreferredSize(new Dimension(600, 450));
         initTable();
         initOperationButtons();
+        initDiffButton();
         initInfos();
     }
 
@@ -128,7 +137,7 @@ public final class SyncPanel extends JPanel {
         assert SwingUtilities.isEventDispatchThread();
         descriptor = new DialogDescriptor(
                 this,
-                Bundle.SyncPanel_title(projectName, remoteConfigurationName),
+                Bundle.SyncPanel_title(project.getName(), remoteConfigurationName),
                 true,
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.OK_OPTION,
@@ -216,6 +225,10 @@ public final class SyncPanel extends JPanel {
         resetButton.addActionListener(new OperationButtonListener(null));
     }
 
+    private void initDiffButton() {
+        diffButton.addActionListener(new DiffActionListener());
+    }
+
     private void initInfos() {
         firstRunInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
@@ -234,8 +247,11 @@ public final class SyncPanel extends JPanel {
             diffButton.setEnabled(false);
             return;
         }
-        SyncItem syncItem = items.get(itemTable.getSelectedRow());
-        diffButton.setEnabled(syncItem.isDiffPossible());
+        diffButton.setEnabled(getSelectedItem().isDiffPossible());
+    }
+
+    SyncItem getSelectedItem() {
+        return items.get(itemTable.getSelectedRow());
     }
 
     @NbBundle.Messages({
@@ -544,6 +560,19 @@ public final class SyncPanel extends JPanel {
             }
             // need to redraw all children and parents
             tableModel.fireSyncItemsChange();
+        }
+
+    }
+
+    private final class DiffActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            SyncItem syncItem = getSelectedItem();
+            DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
+            if (diffPanel.open()) {
+                assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
+            }
         }
 
     }
