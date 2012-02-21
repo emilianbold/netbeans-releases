@@ -63,7 +63,7 @@ public class PagedMediaModuleTest extends CssModuleTestBase {
     }
     
     public void testPagePseudoClassCompletion() throws ParseException  {
-        checkCC("@page|", arr(":first"), Match.CONTAINS);
+        checkCC("@page| ", arr(":first"), Match.CONTAINS);
         checkCC("@page:| ", arr("first"), Match.CONTAINS);
         checkCC("@page:fi| ", arr("first"), Match.CONTAINS);
         
