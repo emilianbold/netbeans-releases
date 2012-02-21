@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -218,14 +219,16 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             safePark();
             try {
                 active = cs.take().get();
-                return active;
             } catch (InterruptedException ex) {
-                return null;
+                active = null;
+                Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
-                return null;
+                active = null;
+                Exceptions.printStackTrace(ex);
             } finally {
                 count--;
             }
+            return active;
         }
         
         @Override
