@@ -61,7 +61,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -121,8 +120,14 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.*;
+import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
+import org.openide.util.TopologicalSortException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -2184,8 +2189,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        protected final void scanFinished(WorkContext wContext) throws IOException {
-            final Collection<? extends Pair<SourceIndexerFactory,Context>> ctxToFinish = wContext.contexts.values();
+        protected final void scanFinished(
+                @NonNull final Collection<Pair<SourceIndexerFactory,Context>> ctxToFinish,
+                @NonNull final UsedIndexables usedIterables) throws IOException {
             try {
                 for (Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
                     parkWhileSuspended();
@@ -2204,7 +2210,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(entry.second).getIndex(entry.second.getIndexFolder());
                     if (index != null) {
                         storeChanges(entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm(), 
-                                index, isSteady(), wContext.getValidatedIndexables());
+                                index, isSteady(), usedIterables.get());
                     }
                 }
             }
@@ -2212,12 +2218,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
         protected final void delete (
             @NonNull final Collection<IndexableImpl> deleted,
-            @NonNull final WorkContext wContext) throws IOException {
+            @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
+            @NonNull final UsedIndexables usedIterables) throws IOException {
             if (deleted == null || deleted.isEmpty()) {
                 return;
             }
 
-            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = wContext.contexts;
             final ClusteredIndexables ci = new ClusteredIndexables(deleted);
             try {
                 for (Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
@@ -2228,8 +2234,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
                     DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
                     if (index != null) {
-                        // TODO: really markValid in finally block, not just for indexables, which have succeeded deletion through indexer  ?
-                        wContext.markValid(ci.getIndexablesFor(null));
+                        usedIterables.offer(ci.getIndexablesFor(null));
                     }
                 }
             }
@@ -2239,64 +2244,31 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final Collection<IndexableImpl> resources, // out-of-date (new/modified) files
                 final Collection<IndexableImpl> allResources, // all files
                 final URL root,
-//                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
                 final SourceIndexers indexers,
                 final Map<SourceIndexerFactory, Boolean> votes,
-                final WorkContext wContext,
+                @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
+                @NonNull final UsedIndexables usedIterables,
                 final long [] recursiveListenersTime
         ) throws IOException {
             return TaskCache.getDefault().refreshTransaction(new ExceptionAction<Boolean>() {
                 public @Override Boolean run() throws IOException {
-                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes, wContext, recursiveListenersTime);
+                    return doIndex(resources, allResources, root, sourceForBinaryRoot, indexers, votes, contexts, usedIterables, recursiveListenersTime);
                 }
             });
-        }
-        
-        /**
-         * Provides both contexts to the individual operations (index, delete, ...)
-         * and communicates work-local results, like removed/obsolete iterables, which
-         * will be processed as a part of scanFinished().
-         */
-        static class WorkContext{
-            Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts;
-            
-            private Collection<Iterable<Indexable>> removedIterables = new LinkedList<Iterable<Indexable>>();
-            
-            WorkContext() {
-                contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
-            }
-            
-            void markValid(Iterable<Indexable> col) {
-                removedIterables.add(col);
-            }
-            
-            /**
-             * Returns all indexables chained into one iterable. Returns {@code null} if
-             * there are no iterables added.
-             * 
-             * @return all removed indexables
-             */
-            Iterable<Indexable> getValidatedIndexables() {
-                if (removedIterables.isEmpty()) {
-                    return null;
-                }
-                return new ProxyIterable<Indexable>(removedIterables, false);
-            }
         }
 
         private boolean doIndex(
                 Collection<IndexableImpl> resources, // out-of-date (new/modified) files
                 Collection<IndexableImpl> allResources, // all files
                 final URL root,
-//                final boolean allFiles,
                 final boolean sourceForBinaryRoot,
                 SourceIndexers indexers,
                 Map<SourceIndexerFactory, Boolean> votes,
-                WorkContext wContext,
+                @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
+                @NonNull final UsedIndexables usedIterables,
                 long [] recursiveListenersTime
         ) throws IOException {
-            Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = wContext.contexts;
             long tm = System.currentTimeMillis();
             if (!RepositoryUpdater.getDefault().rootsListeners.add(root, true)) {
                 //Do not call the expensive recursive listener if exiting
@@ -2493,7 +2465,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 } finally {
                     SourceAccessor.getINSTANCE().suppressListening(false);
                     final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                    wContext.markValid(proxyIterable);
+                    usedIterables.offer(proxyIterable);
                 }
         }
 
@@ -2771,23 +2743,23 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                     final Collection<IndexableImpl> resources = crawler.getResources();
                     if (crawler.isFinished()) {
-                        WorkContext wContext = new WorkContext();
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = wContext.contexts;
+                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                        final UsedIndexables usedIterables = new UsedIndexables();
                         final SourceIndexers indexers = SourceIndexers.load(false);
                         invalidateSources(resources);
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
-                        delete(crawler.getDeletedResources(), wContext);
+                        delete(crawler.getDeletedResources(), ctxToFinish, usedIterables);
                         boolean indexResult=true;
                         try {
-                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, wContext, null);
+                            indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables, null);
                             if (indexResult) {
                                 crawler.storeTimestamps();
                                 return true;
                             }
                         } finally {
                             if (indexResult) {
-                                scanFinished(wContext);
+                                scanFinished(ctxToFinish.values(), usedIterables);
                             }
                         }
                     }
@@ -3045,6 +3017,26 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
             docIndex.store(optimize);
         }
+        
+        final class UsedIndexables {
+            
+            private final Collection<Iterable<? extends Indexable>> usedIndexables = new ArrayDeque<Iterable<? extends Indexable>>();
+            
+            void offer(@NonNull final Iterable<? extends Indexable> indexables) {
+                usedIndexables.add(indexables);
+            }
+            
+            void offerAll(@NonNull final Collection<? extends Iterable<? extends Indexable>> indexables) {
+                usedIndexables.addAll(indexables);
+            }
+            
+            Iterable<? extends Indexable> get() {
+                if (usedIndexables.isEmpty()) {
+                    return null;
+                }
+                return new ProxyIterable<Indexable>(usedIndexables, false);
+            }
+        }
 
     } // End of Work class
 
@@ -3248,14 +3240,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     indexables.add(new DeletedIndexable (root, path));
                 }
                 final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
-                WorkContext wContext = new WorkContext();
-                final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = wContext.contexts;
+                final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                final UsedIndexables usedIterables = new UsedIndexables();
                 final SourceIndexers indexers = SourceIndexers.load(false);
                 scanStarted(root, false, indexers, votes, contexts);
                 try {
-                    delete(indexables, wContext);
+                    delete(indexables, contexts, usedIterables);
                 } finally {
-                    scanFinished(wContext);
+                    scanFinished(contexts.values(), usedIterables);
                 }
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
@@ -3350,14 +3342,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
                         if (crawler.isFinished()) {
-                            WorkContext wContext = new WorkContext();
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = wContext.contexts;
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                            final UsedIndexables usedIterables = new UsedIndexables();
                             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
                             customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, cifInfos, votes, transactionContexts);
                             try {
                                 if (deleted.size() > 0) {
-                                    delete(deleted, wContext);
+                                    delete(deleted, transactionContexts, usedIterables);
                                 }
                                 final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
                                 try {
@@ -3409,11 +3401,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         }
                                     }
                                 } finally {
-                                    final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                                    wContext.markValid(proxyIterable);
+                                    usedIterables.offerAll(allIndexblesSentToIndexers);
                                 }
                             } finally {
-                                scanFinished(wContext);
+                                scanFinished(transactionContexts.values(), usedIterables);
                             }
 
                             crawler.storeTimestamps();
@@ -3510,9 +3501,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
 
                         if (crawler.isFinished()) {
-                            WorkContext wContext = new WorkContext();
                             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = wContext.contexts;
+                            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                            final UsedIndexables usedIterables = new UsedIndexables();
                             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
                             final Map<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>> eifInfosMap = new HashMap<String, Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>>>();
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
@@ -3528,7 +3519,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
                             try {
                                 if (deleted.size() > 0) {
-                                    delete(deleted, wContext);
+                                    delete(deleted, transactionContexts, usedIterables);
                                 }
                                 final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
                                 try {
@@ -3558,11 +3549,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         }
                                     }
                                 } finally {
-                                    final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                                    wContext.markValid(proxyIterable);
+                                    usedIterables.offerAll(allIndexblesSentToIndexers);
                                 }
                             } finally {
-                                scanFinished(wContext);
+                                scanFinished(transactionContexts.values(),usedIterables);
                             }
                             crawler.storeTimestamps();
                         }
@@ -4516,9 +4506,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             @NonNull final URL root,
             @NonNull final SourceIndexers indexers,
             final boolean sourceForBinaryRoot) throws IOException {
-            WorkContext wContext = new WorkContext();
             final FileObject cacheRoot = CacheFolder.getDataFolder(root);
-            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = wContext.contexts;
+            final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+            final UsedIndexables usedIndexables = new UsedIndexables();
             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
             customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, transactionContexts);
             try {
@@ -4546,7 +4536,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                 }
             } finally {
-                scanFinished(wContext);
+                scanFinished(transactionContexts.values(),usedIndexables);
             }
             return true;
         }
@@ -4613,14 +4603,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Collection<IndexableImpl> allResources = crawler.getAllResources();
                     final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
                     if (crawler.isFinished()) {
-                        WorkContext wContext = new WorkContext();
                         final Map<SourceIndexerFactory,Boolean> invalidatedMap = new IdentityHashMap<SourceIndexerFactory, Boolean>();
-                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = wContext.contexts;
+                        final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
+                        final UsedIndexables usedIterables = new UsedIndexables();
                         scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
-                            delete(deleted, wContext);
+                            delete(deleted, ctxToFinish, usedIterables);
                             invalidateSources(resources);
-                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, wContext, recursiveListenersTime)) {
+                            if (index(resources, allResources, root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables, recursiveListenersTime)) {
                                 crawler.storeTimestamps();
                                 outOfDateFiles[0] = resources.size();
                                 deletedFiles[0] = deleted.size();
@@ -4638,7 +4628,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 return true;
                             }
                         } finally {
-                            scanFinished(wContext);
+                            scanFinished(ctxToFinish.values(), usedIterables);
                         }
                     }
                     return false;
