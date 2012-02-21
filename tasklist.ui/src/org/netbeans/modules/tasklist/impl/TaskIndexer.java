@@ -94,22 +94,15 @@ public class TaskIndexer extends CustomIndexer {
         try {
             boolean firstScan = true;
             boolean isInScope = false;
+            boolean currentFileFound = false;
             IndexingSupport is = IndexingSupport.getInstance(context);
             for( Indexable idx : files ) {
                 if (context.isCancelled()) {
                     LOG.log(Level.FINE, "Indexer cancelled"); //NOI18N
                     return;
                 }
-                if( null == scanners ) {
-                    scanners = new ArrayList<FileTaskScanner>( 20 );
-                    for( FileTaskScanner s : tm.getFileScanners() ) {
-                        if( filter.isEnabled(s) ) {
-                            s.notifyPrepare();
-                            scanners.add(s);
-                            LOG.fine("Using FileTaskScanner: " + s); //NOI18N
-                        }
-                    }
-                }
+
+                // get fileObject
                 FileObject root = context.getRoot();
                 if( null == root ) {
                     LOG.log(Level.FINE, "Context root not available");
@@ -120,12 +113,42 @@ public class TaskIndexer extends CustomIndexer {
                     LOG.log(Level.FINE, "Cannot find file [%0] under root [%1]", new Object[] {idx.getRelativePath(), root});
                     continue;
                 }
-                if (firstScan || scope instanceof CurrentEditorScanningScope){
+
+                /*
+                 * if the currentEditorScope is active we want to scan only
+                 * current editor file. If fo isn't the file we are looking for
+                 * we will skip it and flag the cache as dirty
+                 */
+                if (tm.isCurrentEditorScope()) {
+                    isInScope = scope.isInScope(fo);
+                    if (isInScope) {
+                        currentFileFound = true;
+                    } else {
+                        tm.makeCacheDirty();
+                        continue;
+                    }
+                }
+
+                //prepare file scanners
+                if( null == scanners ) {
+                    scanners = new ArrayList<FileTaskScanner>( 20 );
+                    for( FileTaskScanner s : tm.getFileScanners() ) {
+                        if( filter.isEnabled(s) ) {
+                            s.notifyPrepare();
+                            scanners.add(s);
+                            LOG.fine("Using FileTaskScanner: " + s); //NOI18N
+                        }
+                    }
+                }
+
+                if (firstScan){
                     isInScope = scope.isInScope(fo);
                     firstScan = false;
                 }
                 is.removeDocuments(idx);
                 IndexDocument doc = null;
+
+                // scan and cache tasks
                 for( FileTaskScanner scanner : scanners ) {
                     List<? extends Task> tasks = scanner.scan(fo);
                     if( null == tasks )
@@ -142,6 +165,10 @@ public class TaskIndexer extends CustomIndexer {
                             doc.addPair(KEY_TASK, encode(t), false, true);
                         }
                     }
+                }
+                // current editor file has been found, no need for further scanning and caching
+                if (currentFileFound) {
+                    break;
                 }
             }
         } catch( IOException ioE ) {
