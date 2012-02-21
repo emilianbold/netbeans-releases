@@ -332,7 +332,8 @@ public class FormatVisitor extends NodeVisitor {
 
             FormatToken formatToken = getPreviousToken(finish, null);
             if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT));
+                appendTokenAfterLastVirtual(formatToken,
+                        FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
             }
         }
     }
@@ -490,12 +491,22 @@ public class FormatVisitor extends NodeVisitor {
                 && ((FunctionNode) node).getKind() == FunctionNode.Kind.SCRIPT;
     }
 
-    private static void appendTokenAfterLastVirtual(FormatToken previous, FormatToken token) {
+    private static void appendTokenAfterLastVirtual(FormatToken previous,
+            FormatToken token) {
+        appendTokenAfterLastVirtual(previous, token, false);
+    }
+
+    private static void appendTokenAfterLastVirtual(FormatToken previous,
+            FormatToken token, boolean checkDuplicity) {
+
         FormatToken current = previous;
         while (current.next() != null && current.next().isVirtual()) {
             current = current.next();
         }
-        appendToken(current, token);
+        if (!checkDuplicity || !current.isVirtual() || !token.isVirtual()
+                || current.getKind() != token.getKind()) {
+            appendToken(current, token);
+        }
     }
 
     private static void appendToken(FormatToken previous, FormatToken token) {
