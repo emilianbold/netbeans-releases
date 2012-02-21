@@ -45,7 +45,40 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.plugins</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.42</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.28</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.22</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages/>
             <extra-compilation-unit>
                 <package-root>antsrc</package-root>
@@ -54,15 +87,15 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             </extra-compilation-unit>
             <extra-compilation-unit>
                 <package-root>plugins/common</package-root>
-                <classpath></classpath>
+                <classpath/>
             </extra-compilation-unit>
             <extra-compilation-unit>
                 <package-root>plugins/chrome</package-root>
-                <classpath></classpath>
+                <classpath/>
             </extra-compilation-unit>
             <extra-compilation-unit>
                 <package-root>plugins/firefox</package-root>
-                <classpath></classpath>
+                <classpath/>
             </extra-compilation-unit>
         </data>
     </configuration>
