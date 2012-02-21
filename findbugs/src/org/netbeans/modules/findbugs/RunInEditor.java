@@ -71,10 +71,12 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class RunInEditor implements CancellableTask<CompilationInfo> {
 
+    private static final Logger LOG = Logger.getLogger(RunInEditor.class.getName());
     public static final String RUN_IN_EDITOR = "run-in-editor";
     public static final boolean RUN_IN_EDITOR_DEFAULT = false;
     
     private final AtomicBoolean cancel = new AtomicBoolean();
+    private long cancelledAt;
 
     private String previousTimeStamps;
     
@@ -82,7 +84,18 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
     public void run(final CompilationInfo parameter) throws Exception {
         cancel.set(false);
 
-        Logger.getLogger(RunInEditor.class.getName()).log(Level.INFO, "RunInEditor");
+        try {
+            doRun(parameter);
+        } finally {
+            if (cancel.get()) {
+                LOG.log(Level.INFO, "Cancelling RunInEditor took: {0}ms", System.currentTimeMillis() - cancelledAt);
+            }
+        }
+    }
+
+    private void doRun(final CompilationInfo parameter) throws Exception {
+
+        LOG.log(Level.INFO, "RunInEditor");
 
         if (!NbPreferences.forModule(RunInEditor.class).getBoolean(RUN_IN_EDITOR, RUN_IN_EDITOR_DEFAULT)) return;
 
@@ -115,7 +128,7 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
                 String timeStampsString = timeStamps.toString();
 
                 if (timeStampsString.equals(previousTimeStamps)) {
-                    Logger.getLogger(RunInEditor.class.getName()).log(Level.FINE, "Classfiles did not change, skipping FindBugs in editor");
+                    LOG.log(Level.FINE, "Classfiles did not change, skipping FindBugs in editor");
                     return false;
                 }
 
@@ -131,6 +144,7 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
 
     @Override public void cancel() {
         cancel.set(true);
+        cancelledAt = System.currentTimeMillis();
     }
 
     @ServiceProvider(service=JavaSourceTaskFactory.class)
