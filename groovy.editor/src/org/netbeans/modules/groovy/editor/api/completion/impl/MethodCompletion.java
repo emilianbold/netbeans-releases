@@ -166,6 +166,7 @@ public class MethodCompletion extends BaseCompletion {
         if (javaSource != null) {
             try {
                 javaSource.runUserActionTask(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController info) {
 
                         for (String singlePackage : defaultImports) {
@@ -185,13 +186,11 @@ public class MethodCompletion extends BaseCompletion {
 
                                     List<? extends Element> enclosed = te.getEnclosedElements();
 
-                                    // we gotta get the constructors name from the type itself, since
-                                    // all the constructors are named <init>.
-
-                                    String constructorName = te.getSimpleName().toString();
-
                                     for (Element encl : enclosed) {
                                         if (encl.getKind() == ElementKind.CONSTRUCTOR) {
+                                            // we gotta get the constructors name from the type itself, since
+                                            // all the constructors are named <init>.
+                                            String constructorName = te.getSimpleName().toString();
 
                                             if (constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
 
@@ -279,13 +278,10 @@ public class MethodCompletion extends BaseCompletion {
         List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<CompletionItem.ParameterDescriptor>();
 
         if (exe != null) {
-            // generate a list of parameters
-            // unfortunately, we have to work around # 139695 in an ugly fashion
-
-            List<? extends VariableElement> params = null;
-
             try {
-                params = exe.getParameters(); // this can cause NPE's
+                // generate a list of parameters
+                // unfortunately, we have to work around # 139695 in an ugly fashion
+                List<? extends VariableElement> params = exe.getParameters(); // this can cause NPE's
                 int i = 1;
 
                 for (VariableElement variableElement : params) {
@@ -323,12 +319,10 @@ public class MethodCompletion extends BaseCompletion {
         StringBuilder sb = new StringBuilder();
 
         if (exe != null) {
-            // generate a list of parameters
-            // unfortunately, we have to work around # 139695 in an ugly fashion
-            List<? extends VariableElement> params = null;
-
             try {
-                params = exe.getParameters(); // this can cause NPE's
+                // generate a list of parameters
+                // unfortunately, we have to work around # 139695 in an ugly fashion
+                List<? extends VariableElement> params = exe.getParameters(); // this can cause NPE's
 
                 for (VariableElement variableElement : params) {
                     TypeMirror tm = variableElement.asType();
