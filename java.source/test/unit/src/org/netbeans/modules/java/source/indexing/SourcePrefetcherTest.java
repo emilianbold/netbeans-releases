@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.java.source.indexing;
 
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -58,8 +60,10 @@ import org.netbeans.modules.parsing.impl.indexing.FileObjectIndexable;
 import org.netbeans.modules.parsing.impl.indexing.SPIAccessor;
 import org.netbeans.modules.parsing.impl.indexing.SuspendSupport;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 
 /**
  *
@@ -151,6 +155,47 @@ public class SourcePrefetcherTest extends NbTestCase {
             final Deque<CompileTuple> got = new ArrayDeque<CompileTuple>(FILE_COUNT);
             while (pf.hasNext()) {
                 final CompileTuple ct = pf.next();
+                assertNotNull(getCache(ct.jfo));
+                got.offer(ct);
+                pf.remove();
+                assertNull(getCache(ct.jfo));
+            }
+            assertCollectionsEqual(files,got);
+        } finally {
+            log.removeHandler(handler);
+        }
+    }
+    
+    public void testDeadlock208663() throws Exception {
+        CompileTuple ct = files.iterator().next();
+        final FileObject fo = URLMapper.findFileObject(ct.indexable.getURL());
+        final FileLock lck = fo.lock();
+        try {
+            final OutputStream out = new BufferedOutputStream(fo.getOutputStream(lck));
+            try {
+                for (int i = 0; i<101; i++) {
+                    out.write('a');
+                }
+            } finally {
+                out.close();
+            }
+        } finally {
+            lck.releaseLock();
+        }
+        
+        SourcePrefetcher.TEST_DO_PREFETCH = true;
+        SourcePrefetcher.BUFFER_SIZE = 100;
+        final LogHandler handler = new LogHandler();
+        handler.expect("Using concurrent iterator, {0} workers");    //NOI18N
+        final Logger log = Logger.getLogger(SourcePrefetcher.class.getName());
+        log.setLevel(Level.FINE);
+        log.addHandler(handler);
+        try {
+            SourcePrefetcher pf = SourcePrefetcher.create(files, SuspendSupport.NOP);
+            assertTrue(handler.isFound());
+            final Deque<CompileTuple> got = new ArrayDeque<CompileTuple>(FILE_COUNT);
+            while (pf.hasNext()) {
+                ct = pf.next();
                 assertNotNull(getCache(ct.jfo));
                 got.offer(ct);
                 pf.remove();
