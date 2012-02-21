@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import com.sun.org.apache.bcel.internal.generic.FASTORE;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexDownloader;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
