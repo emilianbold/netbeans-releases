@@ -1008,6 +1008,46 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         }
     }
 
+    public static class NewFieldItem extends CompletionItem {
+
+        private final String fieldName;
+
+        public NewFieldItem(String var, int anchorOffset) {
+            super(null, anchorOffset);
+            this.fieldName = var;
+        }
+
+        @Override
+        public String getName() {
+            return fieldName;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
+        }
+    }
+
     // This is from JavaCompletionItem
     public static class ParameterDescriptor {
 
