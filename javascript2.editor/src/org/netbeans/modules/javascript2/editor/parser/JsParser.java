@@ -94,6 +94,7 @@ public class JsParser extends Parser {
         com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
         options.process(new String[]{
             "--parse-only=true",
+            "--empty-statements=true",
             //"--print-parse=true",
             "--debug-lines=false"});
 
