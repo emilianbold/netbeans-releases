@@ -95,6 +95,12 @@ public abstract class TmpLocalFile {
     public abstract boolean isInMemory();
 
     /**
+     * Return absolute path on disk, if available.
+     * @return absolute path on disk, if available; {@code null} otherwise
+     */
+    public abstract String getAbsolutePath();
+
+    /**
      * Get the file output stream, can be {@code null} if any error occurs.
      * @return file output stream, can be {@code null} if any error occurs
      */
@@ -137,6 +143,11 @@ public abstract class TmpLocalFile {
         }
 
         @Override
+        public String getAbsolutePath() {
+            return null;
+        }
+
+        @Override
         public OutputStream getOutputStream() {
             outputStream.reset();
             return outputStream;
@@ -175,6 +186,11 @@ public abstract class TmpLocalFile {
         @Override
         public boolean isInMemory() {
             return false;
+        }
+
+        @Override
+        public String getAbsolutePath() {
+            return file.getAbsolutePath();
         }
 
         @Override
