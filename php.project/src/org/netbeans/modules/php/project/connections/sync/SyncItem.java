@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.connections.sync;
 import java.util.LinkedList;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.StaticResource;
+import org.netbeans.modules.php.project.connections.TmpLocalFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -122,6 +123,8 @@ public final class SyncItem {
     private volatile Operation operation;
     private volatile boolean valid;
     private volatile String message = null;
+    // for merging
+    private volatile TmpLocalFile tmpLocalFile = null;
 
 
     SyncItem(SyncItems syncItems, TransferFile remoteTransferFile, TransferFile localTransferFile, long lastTimestamp) {
@@ -132,6 +135,20 @@ public final class SyncItem {
         this.localTransferFile = localTransferFile;
         defaultOperation = calculateDefaultOperation(lastTimestamp);
         validate();
+    }
+
+    public String getName() {
+        if (remoteTransferFile != null) {
+            return remoteTransferFile.getName();
+        }
+        return localTransferFile.getName();
+    }
+
+    public String getPath() {
+        if (remoteTransferFile != null) {
+            return remoteTransferFile.getRemotePath();
+        }
+        return localTransferFile.getRemotePath();
     }
 
     public String getRemotePath() {
@@ -247,6 +264,14 @@ public final class SyncItem {
         return localTransferFile.isFile();
     }
 
+    public TmpLocalFile getTmpLocalFile() {
+        return tmpLocalFile;
+    }
+
+    public void setTmpLocalFile(TmpLocalFile tmpLocalFile) {
+        this.tmpLocalFile = tmpLocalFile;
+    }
+
     private Operation calculateDefaultOperation(long lastTimestamp) {
         if (localTransferFile.isFile() && !remoteTransferFile.isFile()) {
             return Operation.FILE_DIR_COLLISION;
@@ -337,6 +362,7 @@ public final class SyncItem {
                 + ", remoteFile: " + (remoteTransferFile != null) // NOI18N
                 + ", operation: " + getOperation() // NOI18N
                 + ", valid: " + valid // NOI18N
+                + ", tmpLocalFile: " + (tmpLocalFile != null) // NOI18N
                 + "}"; // NOI18N
     }
 
