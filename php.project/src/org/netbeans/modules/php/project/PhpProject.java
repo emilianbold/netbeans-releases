@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -158,7 +159,7 @@ public final class PhpProject implements Project {
     private final SourceRoots testRoots;
     private final SourceRoots seleniumRoots;
 
-    private final SearchFilterDefinition fileObjectFilter = new PhpSearchFilterDef();
+    private final SearchFilterDefinition searchFilterDef = new PhpSearchFilterDef();
 
     // all next properties are guarded by PhpProject.this lock as well so it could be possible to break this lock to individual locks
     // #165136
@@ -248,8 +249,8 @@ public final class PhpProject implements Project {
         propertyChangeSupport.removePropertyChangeListener(listener);
     }
 
-    public SearchFilterDefinition getFileObjectFilter() {
-        return fileObjectFilter;
+    public SearchFilterDefinition getSearchFilterDefinition() {
+        return searchFilterDef;
     }
 
     private PropertyEvaluator createEvaluator() {
@@ -1081,7 +1082,8 @@ public final class PhpProject implements Project {
 
         private SearchInfo createDelegate() {
             SearchInfo searchInfo = SearchInfoUtils.createSearchInfoForRoots(
-                    getRoots(), false, project.getFileObjectFilter());
+                    getRoots(), false, project.getSearchFilterDefinition(),
+                    SearchInfoDefinitionFactory.SHARABILITY_FILTER);
             return searchInfo;
         }
 
@@ -1179,9 +1181,23 @@ public final class PhpProject implements Project {
 
     private final class PhpSubTreeSearchOptions extends SubTreeSearchOptions {
 
+        private List<SearchFilterDefinition> filterList;
+
+        public PhpSubTreeSearchOptions() {
+            this.filterList = this.createList();
+        }
+
         @Override
         public List<SearchFilterDefinition> getFilters() {
-            return Collections.singletonList(getFileObjectFilter());
+            return filterList;
+        }
+
+        private List<SearchFilterDefinition> createList() {
+            List<SearchFilterDefinition> list =
+                    new ArrayList<SearchFilterDefinition>(2);
+            list.add(getSearchFilterDefinition());
+            list.add(SearchInfoDefinitionFactory.SHARABILITY_FILTER);
+            return Collections.unmodifiableList(list);
         }
     }
 }
