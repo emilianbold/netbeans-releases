@@ -80,8 +80,17 @@ public abstract class TmpLocalFile {
      * @return tmp local file or {@code null} if any error occurs.
      */
     public static TmpLocalFile onDisk() {
+        return onDisk(null);
+    }
+
+    /**
+     * Suitable for big remote files, uses local temp file.
+     * @param extension file extension, can be {@code null}
+     * @return tmp local file or {@code null} if any error occurs.
+     */
+    public static TmpLocalFile onDisk(String extension) {
         try {
-            return new DiskTmpLocalFile();
+            return new DiskTmpLocalFile(extension);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot create local tmp file", ex);
         }
@@ -172,8 +181,8 @@ public abstract class TmpLocalFile {
         private final File file;
 
 
-        public DiskTmpLocalFile() throws IOException {
-            file = File.createTempFile("nb-remote-tmp-file-", null); // NOI18N
+        public DiskTmpLocalFile(String extension) throws IOException {
+            file = File.createTempFile("nb-remote-tmp-file-", extension); // NOI18N
         }
 
         @Override
