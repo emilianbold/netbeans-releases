@@ -46,13 +46,13 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
     
     <target name="build-chrome-plugin" depends="build-crx-task">
         <taskdef name="crx" classname="org.netbeans.modules.web.plugins.CrxTask" classpath="build/antclasses"/>
-        <zip destfile="build/netbeans-chrome-plugin.zip">
+        <zip destfile="build/netbeans-ros-chrome-plugin.zip">
             <fileset dir="plugins/chrome" excludes="**/*.pem"/>
             <fileset dir="plugins/common"/>
         </zip> 
-        <crx src="build/netbeans-chrome-plugin.zip" privatekey="plugins/chrome/private.pem" publickey="plugins/chrome/public.pem"/>
+        <crx src="build/netbeans-ros-chrome-plugin.zip" privatekey="plugins/chrome/private.pem" publickey="plugins/chrome/public.pem"/>
         <mkdir dir="${cluster}/modules/ext"/>
-        <copy file="build/netbeans-chrome-plugin.crx" todir="${cluster}/modules/ext/"/>
+        <copy file="build/netbeans-ros-chrome-plugin.crx" todir="${cluster}/modules/ext/"/>
     </target>
     
     <target name="build-crx-task">
