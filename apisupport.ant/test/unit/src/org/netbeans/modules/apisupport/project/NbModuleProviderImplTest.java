@@ -97,14 +97,14 @@ public class NbModuleProviderImplTest extends TestBase {
         assertTrue(nbModuleProvider.hasDependency("org.openide.util"));
         SpecificationVersion v = nbModuleProvider.getDependencyVersion("org.openide.util");
         assertNotNull(v);
-        assertTrue(v.compareTo(new SpecificationVersion("8.22")) >= 0);
+        assertTrue(v.compareTo(new SpecificationVersion("8.19")) >= 0);
 
         nbModuleProvider.addDependency("org.openide.util", null, new SpecificationVersion("7.0"), true);
 
         assertTrue(nbModuleProvider.hasDependency("org.openide.util"));
         v = nbModuleProvider.getDependencyVersion("org.openide.util");
         assertNotNull(v);
-        assertTrue(v.compareTo(new SpecificationVersion("8.22")) >= 0);
+        assertTrue(v.compareTo(new SpecificationVersion("8.19")) >= 0);
     }
 
 }
