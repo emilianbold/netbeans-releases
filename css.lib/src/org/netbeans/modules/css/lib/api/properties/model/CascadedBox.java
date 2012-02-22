@@ -72,4 +72,24 @@ public class CascadedBox <T extends NodeModel> implements Box<T> {
         return val;
     }
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public String getCategoryName() {
+        return null;
+    }
+
 }

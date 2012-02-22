@@ -51,7 +51,7 @@ import org.netbeans.modules.css.lib.properties.model.MarginB;
  */
 public class MarginBottom extends NodeModel implements Box<MarginWidth> {
 
-    MarginB marginB;
+    public MarginB marginB;
     
     public MarginBottom(Node node) {
         super(node);

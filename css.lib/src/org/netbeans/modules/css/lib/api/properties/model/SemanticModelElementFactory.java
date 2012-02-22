@@ -59,8 +59,8 @@ public class SemanticModelElementFactory {
         return new MarginWidth(createText("auto"), null, null);
     }
 
-    public static MarginWidth createMarginWidth_Length(Length length) {
-        return new MarginWidth(null, length, null);
+    public static MarginWidth createMarginWidth_Length(CharSequence length) {
+        return new MarginWidth(null, createLength(length), null);
     }
 
     public static MarginWidth createMarginWidth_Percentage(CharSequence value) {

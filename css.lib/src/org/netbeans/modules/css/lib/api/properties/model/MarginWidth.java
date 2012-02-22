@@ -42,6 +42,10 @@
 package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
+import org.netbeans.modules.css.lib.api.properties.Tokenizer;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -83,6 +87,24 @@ public class MarginWidth extends NodeModel {
         } else {
             return getPercentage().getValue();
         }
+    }
+    
+    public static MarginWidth parseMarginWidth(CharSequence tokenImage) {
+        TokenAcceptor lengthTokenAcceptor = TokenAcceptor.getAcceptor("length"); //NOI18N
+        TokenAcceptor percentageTokenAcceptor = TokenAcceptor.getAcceptor("percentage"); //NOI18N
+        
+        Tokenizer tokenizer = new Tokenizer(tokenImage);
+        Token token = tokenizer.token();
+        
+        if(lengthTokenAcceptor.accepts(token)) {
+            return SemanticModelElementFactory.createMarginWidth_Length(tokenImage);
+        } else if(percentageTokenAcceptor.accepts(token)) {
+            return SemanticModelElementFactory.createMarginWidth_Percentage(tokenImage);
+        } else if(LexerUtils.equals("auto", tokenImage, true, true)) {
+            return SemanticModelElementFactory.createMarginWidth_Auto();
+        }
+        
+        return null;
     }
 
     @Override

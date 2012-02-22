@@ -66,6 +66,10 @@ public class UITest extends CslTestBase {
     public UITest(String testName) {
         super(testName);
     }
+    
+    public void testPass() {
+        //fake
+    }
 
 //    public void test() throws IntrospectionException {
 //        String code = ".threelinesarticle {\n"

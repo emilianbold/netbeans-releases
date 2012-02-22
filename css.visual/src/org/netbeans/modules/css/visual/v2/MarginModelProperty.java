@@ -39,79 +39,58 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.css.visual.v2;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author marekfukala
  */
-public class DeclarationsI extends ModelElement implements Declarations {
+public class MarginModelProperty extends Node.Property<EditableBox> {
 
-    private List<Declaration> declarations = new ArrayList<Declaration>();    
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+    EditableBox<MarginWidth> model;
+    private RuleNode ruleNode;
 
-        @Override
-        public void elementAdded(Declaration declaration) {
-            declarations.add(declaration);
-        }
-    };
-
-    public DeclarationsI() {
+    public MarginModelProperty(RuleNode ruleNode, EditableBox<MarginWidth> model) {
+        super(EditableBox.class);
+        this.ruleNode = ruleNode;
+        this.model = model;
     }
 
-    public DeclarationsI(ModelElementContext context) {
-        super(context);
-        initChildrenElements();
+    @Override
+    public String getHtmlDisplayName() {
+        return model.getDisplayName();
     }
 
-    @Override 
-    public Collection<? extends SemanticModel> getSemanticModels() {
-        return isValid() 
-                ? Collections.singletonList(new DeclarationsMarginBoxModel(this))
-                : Collections.<SemanticModel>emptyList();
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        return new EditableBoxPropertyEditor(this);
     }
     
     @Override
-    public List<Declaration> getDeclarations() {
-        return declarations;
+    public boolean canRead() {
+        return true;
     }
 
     @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
+    public boolean canWrite() {
+        return true;
     }
 
     @Override
-    public void addDeclaration(Declaration declaration) {
-        addTextElement("\n");
-        addElement(declaration);
-        addTextElement(";\n");
+    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
+        return model;
     }
 
     @Override
-    public void removeDeclaration(Declaration declaration) {
-        int index = getElementIndex(declaration);
-        if(index == -1) {
-            return ;
-        }
-        removeElement(index); //remove the declaration
-        
-        //look if there's a semicolon and some whitespaces after the declaration
-        removeTokenElementsFw(index, ";", "\n", "");
+    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ruleNode.applyModelChanges();
     }
 
-    @Override
-    protected Class getModelClass() {
-        return Declarations.class;
-    }
-
+    
 }

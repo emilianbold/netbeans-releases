@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;

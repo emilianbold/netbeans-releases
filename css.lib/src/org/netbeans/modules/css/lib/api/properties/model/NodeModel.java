@@ -91,8 +91,32 @@ public class NodeModel implements SemanticModel {
     @Override
     public String toString() {
         return new StringBuilder()
+                .append(getClass().getSimpleName())
+                .append(":")
                 .append(getNode() != null ? getNode().image() : super.toString())
                 .toString();
     }
+
+    @Override
+    public String getName() {
+        return new StringBuilder().append("NodeModel for: ").append(toString()).toString(); //NOI18N
+    }
+
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public String getCategoryName() {
+        return null;
+    }
+    
+    
 
 }

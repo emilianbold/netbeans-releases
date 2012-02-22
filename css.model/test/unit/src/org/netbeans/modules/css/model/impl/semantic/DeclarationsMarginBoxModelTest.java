@@ -59,8 +59,8 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
     }
 
     public void testModifySemanticModel() {
-        
-        String code = 
+
+        String code =
                 "div { \n"
                 + "\tcolor: red;\n"
                 + "\tmargin : 3px;\n"
@@ -80,9 +80,8 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
 
                 EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(ds);
                 assertNotNull(margin);
-                
 //                Utils.dumpBox(margin);
-                
+
                 assertBox(margin, "3px", "3px", "3px", "10px");
 
                 final AtomicBoolean changed = new AtomicBoolean();
@@ -95,12 +94,11 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 });
 
                 //edit the box 
-                Length len = SemanticModelElementFactory.createLength("10px");
-                MarginWidth newMarginWidth = SemanticModelElementFactory.createMarginWidth_Length(len);
-                
+                MarginWidth newMarginWidth = SemanticModelElementFactory.createMarginWidth_Length("10px");
+
                 margin.setEdge(Edge.RIGHT, newMarginWidth);
                 assertBox(margin, "3px", "10px", "3px", "10px");
-                
+
                 margin.setEdge(Edge.TOP, SemanticModelElementFactory.createMarginWidth_Auto());
                 assertBox(margin, "auto", "10px", "3px", "10px");
 
@@ -123,6 +121,32 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
 //
 //        Utils.dumpBox(margin);
 //
+
+    }
+
+    public void testSetBottomEdge() {
+        Model model = createModel("div { margin: 1px 3em 3em 1px; }");
+        model.runWriteTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+
+                Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+                assertNotNull(ds);
+
+                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(ds);
+                assertNotNull(margin);
+                assertBox(margin, "1px", "3em", "3em", "1px");
+
+                MarginWidth newMarginWidth = MarginWidth.parseMarginWidth("1px");
+                margin.setEdge(Edge.BOTTOM, newMarginWidth);
+                assertBox(margin, "1px", "3em", "1px", "1px");
+                
+
+            }
+        });
+
+        System.out.println(model.getModelSource());
 
     }
 }

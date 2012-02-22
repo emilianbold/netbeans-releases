@@ -97,6 +97,26 @@ public class CompoundBox <T extends NodeModel> implements EditableBox<T> {
         
     }
 
+    @Override
+    public String getName() {
+        return getClass().getSimpleName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return getName();
+    }
+
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Override
+    public String getCategoryName() {
+        return null;
+    }
+
     private class WBoxI<T extends NodeModel> implements EditableBox {
 
         private NodeModel t,b,l,r; //modified edges
@@ -147,6 +167,26 @@ public class CompoundBox <T extends NodeModel> implements EditableBox<T> {
         @Override
         public void removeListener(SemanticModelListener listener) {
             
+        }
+
+        @Override
+        public String getName() {
+            return getClass().getSimpleName();
+        }
+
+        @Override
+        public String getDisplayName() {
+            return getName();
+        }
+
+        @Override
+        public String getDescription() {
+            return null;
+        }
+
+        @Override
+        public String getCategoryName() {
+            return null;
         }
         
     }
