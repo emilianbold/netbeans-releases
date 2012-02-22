@@ -195,6 +195,8 @@ Context.prototype.processMessageFromCS = function(message) {
             console.log('Ignoring message (from the content script) with a malformed ID.');
             console.log(message);
         }
+    } else if (type === 'selection') {
+        this.socket.send(JSON.stringify(message));
     } else {
         console.log('Ignoring unexpected message from the content script!');
         console.log(message);        

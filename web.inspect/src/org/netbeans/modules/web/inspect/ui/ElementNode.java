@@ -54,6 +54,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -175,9 +176,7 @@ public class ElementNode extends AbstractNode {
      * to the user), returns {@code false} otherwise.
      */
     private static boolean skipAttribute(String name, String value) {
-        // Empty style attributes are result of our highlighting logic.
-        return ("style".equals(name) && value.isEmpty()) // NOI18N
-                || name.startsWith(ATTR_HIDDEN_PREFIX);
+        return name.startsWith(ATTR_HIDDEN_PREFIX);
     }
 
     @Override
@@ -225,6 +224,62 @@ public class ElementNode extends AbstractNode {
             };
         }
         return actions;
+    }
+
+    /**
+     * Finds the {@code ElementNode} that corresponds to the given element handle
+     * in the sub-tree represented by this node.
+     * 
+     * @param handle description of the element to find.
+     * @return {@code ElementNode} that corresponds to the given element handle
+     * or {@code null} if such node cannot be found.
+     */
+    ElementNode locate(ElementHandle handle) {
+        Document document = element.getOwnerDocument();
+        org.w3c.dom.Node elementToLocate = handle.locateInDocument(document)[0];
+        ElementNode result = null;
+        if (elementToLocate != null) {
+            // Build path to the element
+            List<Element> elementPath = new LinkedList<Element>();
+            while (elementToLocate.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                elementPath.add(0, (Element)elementToLocate);
+                elementToLocate = elementToLocate.getParentNode();
+            }
+            // Check the first item of the path
+            Element root = elementPath.get(0);
+            if (root == element) {
+                elementPath.remove(0);
+                result = locate(elementPath);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds the {@code ElementNode} (among sub-nodes of this node) that
+     * corresponds to the specified path of elements.
+     * 
+     * @param elementPath path in the sub-tree represented by this node.
+     * @return {@code ElementNode} that corresponds to the specified path
+     * or {@code null} if such node cannot be found.
+     */
+    private ElementNode locate(List<Element> elementPath) {
+        ElementNode result = null;
+        if (elementPath.isEmpty()) {
+            result = this;
+        } else {
+            Element subElement = elementPath.get(0);
+            Node[] nodes = getChildren().getNodes(true);
+            for (Node node : nodes) {
+                ElementNode elementNode = (ElementNode)node;
+                if (elementNode.element == subElement) {
+                    elementPath.remove(0);
+                    result = elementNode.locate(elementPath);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -406,7 +461,7 @@ public class ElementNode extends AbstractNode {
          * 
          * @param property property to add into this set.
          */
-        void addProperty(Property<?> property) {
+        synchronized void addProperty(Property<?> property) {
             properties.put(property.getName(), property);
             firePropertySetsChange(null, null);
         }
@@ -416,7 +471,7 @@ public class ElementNode extends AbstractNode {
          * 
          * @param property property to remove from this set.
          */
-        void removeProperty(Property<?> property) {
+        synchronized void removeProperty(Property<?> property) {
             properties.remove(property.getName());
             firePropertySetsChange(null, null);
         }
@@ -427,12 +482,12 @@ public class ElementNode extends AbstractNode {
          * @param name name of the requested property.
          * @return property of the specified name.
          */
-        Property<?> getProperty(String name) {
+        synchronized Property<?> getProperty(String name) {
             return properties.get(name);
         }
 
         @Override
-        public Property<?>[] getProperties() {
+        public synchronized Property<?>[] getProperties() {
             return properties.values().toArray(new Property<?>[properties.size()]);
         }
         

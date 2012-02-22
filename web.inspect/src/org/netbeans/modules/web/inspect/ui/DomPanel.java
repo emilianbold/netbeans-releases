@@ -48,8 +48,12 @@ import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.modules.web.inspect.ElementHandle;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -230,7 +234,27 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
-                if (PageModel.PROP_MODEL.equals(propName)) {
+                if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
+                    Collection<ElementHandle> selection = PageModel.getDefault().getSelectedElements();
+                    List<Node> nodeSelection = new ArrayList<Node>();
+                    for (ElementHandle handle : selection) {
+                        Node root = manager.getRootContext();
+                        if (root instanceof FakeRootNode) {
+                            root = ((FakeRootNode)root).getRealRoot();
+                        }
+                        if (root instanceof ElementNode) {
+                            ElementNode node = ((ElementNode)root).locate(handle);
+                            if (node != null) {
+                                nodeSelection.add(node);
+                            }
+                        }
+                    }
+                    try {
+                        manager.setSelectedNodes(nodeSelection.toArray(new Node[nodeSelection.size()]));
+                    } catch (PropertyVetoException pvex) {
+                        Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
+                    }
+                } else if (PageModel.PROP_MODEL.equals(propName)) {
                     update(true);
                 }
             }

@@ -51,6 +51,9 @@ NetBeans.ATTR_URL = ':netbeans_url';
 // Name of attribute used to mark document elements created by the plugin
 NetBeans.ATTR_ARTIFICIAL = ':netbeans_artificial';
 
+// ID of canvas element that serves as a glass-pane
+NetBeans.GLASSPANE_ID = 'netbeans_glasspane';
+
 // Name of the parameter (in query string)
 // that is used to force reload of some resource
 NetBeans.RELOAD_PARAM = 'netbeans_reload';
@@ -99,13 +102,8 @@ NetBeans.getDOM = function() {
 
 // Clears element selection
 NetBeans.clearSelection = function() {
-    for (var i=0; i<this.selection.length; i++) {
-        // Restore the original style
-        var selection = this.selection[i];
-        selection.element.style.outline = selection.outline;
-        selection.element.style.backgroundColor = selection.backgroundColor;
-    }
     this.selection = [];
+    this.repaintGlassPane();
 };
 
 // Determines whether the given value is an array
@@ -115,7 +113,11 @@ NetBeans.isArray = function(value) {
 
 // Returns an element that corresponds to the handle
 NetBeans.getElement = function(handle) {
+    if (handle instanceof Element) {
+        return handle;
+    }
     //var nearest;
+    var self = this;
     var locate = function(handle) {
         var parentHandle = handle.parent;
         if (parentHandle) {
@@ -126,7 +128,10 @@ NetBeans.getElement = function(handle) {
                 var childNodes = parentElement.childNodes;
                 for (var i=0; i<childNodes.length; i++) {
                     var child = childNodes[i];
-                    if (child.nodeType === 1) {
+                    if (child instanceof Element) {
+                        if (child.getAttribute(self.ATTR_ARTIFICIAL)) { // skip artificial elements
+                            continue;
+                        }
                         var childName = child.tagName.toLowerCase();
                         if (name === childName) {
                             if (index === handle.indexInParent) {
@@ -160,19 +165,47 @@ NetBeans.getElement = function(handle) {
     return locate(handle);
 };
 
+// Returns an element handle that corresponds to the given element
+NetBeans.getElementHandle = function(element) {
+    var handle = new Object();
+    if (element.id && element.id !== "") {
+        handle.id = element.id;
+    }
+    if (element.className && element.className !== "") {
+        handle.className = element.className;
+    }
+    var parent = element.parentNode;
+    if (parent instanceof Element) {
+        handle.parent = this.getElementHandle(parent);
+        handle.siblingTagNames = [];
+        var childs = parent.childNodes;
+        for (var i=0; i<childs.length; i++) {
+            var child = childs[i];
+            if (child instanceof Element) {
+                if (child.getAttribute(this.ATTR_ARTIFICIAL)) { // skip artificial elements
+                    continue;
+                }
+                if (child === element) {
+                    handle.indexInParent = handle.siblingTagNames.length;
+                }
+                handle.siblingTagNames.push(child.tagName);
+            }
+        }
+    } else {
+        handle.indexInParent = 0;
+        handle.siblingTagNames = [element.tagName];
+    }
+    return handle;
+}
+
 // Adds the specified element into the selection.
 NetBeans.addElementToSelection = function(handle) {
     var element = this.getElement(handle);
     if (element) {
-        // Store the original style
-        this.selection.push({
-            element:element,
-            outline:element.style.outline,
-            backgroundColor:element.style.backgroundColor
-        });
-        // Change style to highlight the element
-        element.style.outline = 'red solid 2px';
-        element.style.backgroundColor = 'red';
+        if (this.selection.indexOf(element) == -1) {
+            this.selection.push(element);
+            this.repaintGlassPane();
+        }
     }
 };
 
@@ -183,6 +216,7 @@ NetBeans.selectElements = function(handles) {
         var handle = handles[i];
         this.addElementToSelection(handle);
     }
+    this.repaintGlassPane();
 };
 
 // Returns attributes of the specified element
@@ -522,4 +556,90 @@ NetBeans.replaceCrossOriginStylesheets = function() {
     }
 }
 
+// Inserts a glass-pane into the inspected page
+NetBeans.insertGlassPane = function() {
+    var self = this;
+    var zIndex = 50000;
+    
+    // Canvas
+    var canvas = document.createElement('canvas');
+    canvas.id = this.GLASSPANE_ID;
+    canvas.setAttribute(this.ATTR_ARTIFICIAL, true);
+    canvas.style.position = 'fixed';
+    canvas.style.top = 0;
+    canvas.style.left = 0;
+    canvas.style.zIndex = zIndex;
+    canvas.onclick=function(event) {
+        var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
+        canvas.style.visibility = 'hidden';
+        var element = document.elementFromPoint(event.clientX, event.clientY);
+        canvas.style.visibility = 'visible';
+        var handle = self.getElementHandle(element);
+        // Extremely ugly and fragile hack, 'port' refers to variable in eval.js
+        port.postMessage({
+            message: 'selection',
+            selection: handle
+        });
+        self.selectElements([element]);
+    }
+    document.body.appendChild(canvas);
+    
+    // Selection Mode checkbox
+    var toolbox = document.createElement('div');
+    toolbox.setAttribute(this.ATTR_ARTIFICIAL, true);
+    toolbox.style.position = 'fixed';
+    toolbox.style.top = 0;
+    toolbox.style.right = 0;
+    toolbox.style.zIndex = zIndex;
+    var selectionMode = document.createElement('input');
+    selectionMode.type = 'checkbox';
+    selectionMode.setAttribute(this.ATTR_ARTIFICIAL, true);
+    selectionMode.setAttribute('checked', true);
+    selectionMode.onclick = this.switchSelectionMode;
+    toolbox.appendChild(selectionMode);
+    var selectionText = document.createTextNode('Selection Mode');
+    toolbox.appendChild(selectionText);
+    document.body.appendChild(toolbox);
+
+    window.onscroll=this.repaintGlassPane;
+    document.body.onresize=this.repaintGlassPane;
+}
+
+// Updates the selection mode according to the 'Select Mode' check-box
+NetBeans.switchSelectionMode = function(event) {
+    var checked = event.currentTarget.checked;
+    var value = checked ? 'auto' : 'none';
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
+    canvas.style.pointerEvents = value;
+}
+
+// Repaints the glass-pane
+NetBeans.repaintGlassPane = function() {
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
+    if (canvas.getContext) {
+        var ctx = canvas.getContext('2d'); 
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+        ctx.globalAlpha = 0.5;
+        ctx.fillStyle = "#0000FF";
+        for (var i=0; i<NetBeans.selection.length; i++) {
+            var selectedElement = NetBeans.selection[i];
+            var rects = selectedElement.getClientRects();
+            for (var j=0; j<rects.length; j++) {
+                var rect = rects[j];
+                ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
+                ctx.stroke();
+            }
+        }
+    } else {
+        console.log('canvas.getContext not supported!');
+    }
+}
+
+// Replace cross-origin stylesheets by embedded stylesheets
 NetBeans.replaceCrossOriginStylesheets();
+
+// Insert glass-pane into the inspected page
+NetBeans.insertGlassPane();

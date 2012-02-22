@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.openide.util.RequestProcessor;
 
 /**
  * Script executor for an external browser.
@@ -59,6 +61,7 @@ public class RemoteScriptExecutor implements ScriptExecutor {
     // Message attributes
     private static final String MESSAGE_TYPE = "message"; // NOI18N
     private static final String MESSAGE_EVAL = "eval"; // NOI18N
+    private static final String MESSAGE_SELECTION = "selection"; // NOI18N
     private static final String MESSAGE_ID = "id"; // NOI18N
     private static final String MESSAGE_SCRIPT = "script"; // NOI18N
     private static final String MESSAGE_STATUS = "status"; // NOI18N
@@ -172,6 +175,14 @@ public class RemoteScriptExecutor implements ScriptExecutor {
                 } catch (JSONException ex) {
                     LOG.log(Level.INFO, "Ignoring message with malformed id: {0}", messageTxt);
                 }
+            } else if (MESSAGE_SELECTION.equals(type)) {
+                final ElementHandle handle = ElementHandle.forJSONObject(message.getJSONObject(MESSAGE_SELECTION));
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        PageModel.getDefault().setSelectedElements(Collections.singletonList(handle));
+                    }
+                });
             } else {
                 LOG.log(Level.INFO, "Ignoring unexpected message: {0}", messageTxt);
             }

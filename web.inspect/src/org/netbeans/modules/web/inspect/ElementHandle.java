@@ -65,7 +65,7 @@ public class ElementHandle {
     /** Name of JSON attribute where ID is stored. */
     private static final String JSON_ID = "id"; // NOI18N
     /** Name of JSON attribute where class is stored. */
-    private static final String JSON_CLASS = "class"; // NOI18N
+    private static final String JSON_CLASS = "className"; // NOI18N
     /** Name of JSON attribute where parent is stored. */
     private static final String JSON_PARENT = "parent"; // NOI18N
     /** Name of JSON attribute where index of the element (in parent) is stored. */
