@@ -67,6 +67,7 @@ import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
@@ -77,6 +78,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -219,6 +221,18 @@ public class ActionMappings extends javax.swing.JPanel {
                 addListeners();
             }
         };
+    }
+
+    public static void showAddPropertyPopupMenu(JButton btn, JTextArea area, JTextField goalsField, @NullAllowed NbMavenProjectImpl project) {
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new SkipTestsAction(area));
+        menu.add(new DebugMavenAction(area));
+        menu.add(new EnvVarAction(area));
+        menu.add(createGlobalVarSubmenu(area));
+        if (project != null) {
+            menu.add(new PluginPropertyAction(area, goalsField, project));
+        }
+        menu.show(btn, btn.getSize().width, 0);
     }
     
     private void addListeners() {
@@ -545,14 +559,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
     }//GEN-LAST:event_lstMappingsValueChanged
 
     private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
-        JPopupMenu menu = new JPopupMenu();
-        menu.add(new SkipTestsAction(taProperties));
-        menu.add(new DebugMavenAction(taProperties));
-        menu.add(new EnvVarAction(taProperties));
-        menu.add(createGlobalVarSubmenu(taProperties));
-        menu.add(new PluginPropertyAction(taProperties, txtGoals, project));
-        menu.show(btnAddProps, btnAddProps.getSize().width, 0);
-
+        showAddPropertyPopupMenu(btnAddProps, taProperties, txtGoals, project);
     }//GEN-LAST:event_btnAddPropsActionPerformed
     
     private void loadMappings() {
@@ -1063,7 +1070,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-HEADER
         }
     }
 
-    private JMenu createGlobalVarSubmenu(JTextArea area) {
+    private static JMenu createGlobalVarSubmenu(JTextArea area) {
         JMenu menu = new JMenu();
             menu.setText(NbBundle.getMessage(ActionMappings.class, "ActionMappings.globalVar"));
         Map<String, String> vars = DefaultReplaceTokenProvider.readVariables();
