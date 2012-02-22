@@ -120,12 +120,10 @@ public class BugzillaQuery {
 
     private void fireQuerySaved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-        repository.fireQueryListChanged();
     }
 
     private void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-        repository.fireQueryListChanged();
     }
 
     private void fireQueryIssuesChanged() {

@@ -44,11 +44,8 @@ package org.netbeans.modules.bugtracking.api;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.io.IOException;
+import java.util.*;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
@@ -71,6 +68,22 @@ import org.openide.util.Lookup;
  */
 public final class Repository {
 
+    /**
+     * A query from this repository was saved or removed
+     */
+    public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
+
+    /**
+     * RepositoryProvider's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
+
+    public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
+    public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
+    
+    private final PropertyChangeSupport support;
     private RepositoryNode node;
         
     static {
@@ -83,6 +96,7 @@ public final class Repository {
     <R, Q, I> Repository(BugtrackingConnector connector, R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
         this.connector = findDelegatingConnector(connector);
         this.bind = new Bind(repositoryProvider, queryProvider, issueProvider, r);
+        support = new PropertyChangeSupport(this);
     }
 
     private DelegatingConnector findDelegatingConnector(BugtrackingConnector connector) {
@@ -209,21 +223,72 @@ public final class Repository {
         return bind.getQueries();
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        bind.addPropertyChangeListener(listener);
-    }
-
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        bind.removePropertyChangeListener(listener);
+        support.removePropertyChangeListener(listener);
     }
 
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this repository that a query was either removed or saved
+     * XXX make use of new/old value
+     */
+    void fireQueryListChanged() {
+        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+
+    /**
+     * Notify listeners on this repository that some of repository's attributes have changed.
+     * @param oldValue map of old attributes
+     * @param newValue map of new attributes
+     */
+    void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
+        LinkedList<String> equalAttributes = new LinkedList<String>();
+        // find unchanged values
+        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
+            String key = e.getKey();
+            Object value = e.getValue();
+            Object oldValue = oldAttributes.get(key);
+            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
+                equalAttributes.add(key);
+            }
+        }
+        // remove unchanged values
+        for (String equalAttribute : equalAttributes) {
+            if (oldAttributes != null) {
+                oldAttributes.remove(equalAttribute);
+            }
+            newAttributes.remove(equalAttribute);
+        }
+        if (!newAttributes.isEmpty()) {
+            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
+        }        
+    }
+    
     Query getAllIssuesQuery() {
         return bind.getAllIssuesQuery();
     }
     
     Query getMyIssuesQuery() {
-        return bind.getMyIssuesQuery();
+        return bind.getAllIssuesQuery();
     }
+
+    void applyChanges() throws IOException {
+        HashMap<String, Object> oldAttributes = createAttributesMap();
+        getProvider().getController(getData()).applyChanges();
+        HashMap<String, Object> newAttributes = createAttributesMap();
+        fireAttributesChanged(oldAttributes, newAttributes);
+    }
+    
+    private HashMap<String, Object> createAttributesMap () {
+        HashMap<String, Object> attributes = new HashMap<String, Object>(2);
+        // XXX add more if requested
+        attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
+        attributes.put(ATTRIBUTE_URL, getUrl());
+        return attributes;
+    }    
     
     private final class Bind<R, Q, I> {
         private final RepositoryProvider<R, Q, I> repositoryProvider;
@@ -314,14 +379,6 @@ public final class Repository {
             }
             return ret;
         }
-        
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            repositoryProvider.addPropertyChangeListener(r, listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            repositoryProvider.removePropertyChangeListener(r, listener);
-        }
 
         private Lookup getLookup() {
             return repositoryProvider.getLookup(r);
@@ -337,7 +394,6 @@ public final class Repository {
             return ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getMyIssuesQuery(r);
         }
     }
-    
     
 }
 

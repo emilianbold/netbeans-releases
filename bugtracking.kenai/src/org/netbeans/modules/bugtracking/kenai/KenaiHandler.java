@@ -375,7 +375,7 @@ class KenaiHandler {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
+            if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
                 List<QueryHandle> queryHandles = getQueryHandles(repo, ph);
                 for (QueryHandle queryHandle : queryHandles) {
                     if(queryHandle instanceof QueryHandleImpl) {

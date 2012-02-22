@@ -117,14 +117,10 @@ public class BugzillaRepository {
     private Task refreshQueryTask;
     private String id;
 
-    public static final String ATTRIBUTE_URL = "bugzilla.repository.attribute.url"; //NOI18N
-    public static final String ATTRIBUTE_DISPLAY_NAME = "bugzilla.repository.attribute.displayName"; //NOI18N
     private Lookup lookup;
-    private final PropertyChangeSupport support;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        this.support = new PropertyChangeSupport(this);
         BugzillaTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
 
@@ -156,50 +152,6 @@ public class BugzillaRepository {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this repository that a query was either removed or saved
-     * XXX make use of new/old value
-     */
-    public void fireQueryListChanged() {
-        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
-    }
-
-    /**
-     * Notify listeners on this repository that some of repository's attributes have changed.
-     * @param oldValue map of old attributes
-     * @param newValue map of new attributes
-     */
-    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
-        LinkedList<String> equalAttributes = new LinkedList<String>();
-        // find unchanged values
-        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
-            String key = e.getKey();
-            Object value = e.getValue();
-            Object oldValue = oldAttributes.get(key);
-            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
-                equalAttributes.add(key);
-            }
-        }
-        // remove unchanged values
-        for (String equalAttribute : equalAttributes) {
-            if (oldAttributes != null) {
-                oldAttributes.remove(equalAttribute);
-            }
-            newAttributes.remove(equalAttribute);
-        }
-        if (!newAttributes.isEmpty()) {
-            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, RepositoryProvider.EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
-        }        
-    }
-    
     public RepositoryInfo getInfo() {
         if(name == null) { // XXX is new
             return null;
@@ -450,7 +402,6 @@ public class BugzillaRepository {
     }
 
     protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
-        HashMap<String, Object> oldAttributes = createAttributesMap();
 
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
@@ -460,8 +411,6 @@ public class BugzillaRepository {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
                                                                                                      //     on psswd and user change reset only taskrepository
-        HashMap<String, Object> newAttributes = createAttributesMap();
-        fireAttributesChanged(oldAttributes, newAttributes);
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
@@ -746,14 +695,6 @@ public class BugzillaRepository {
 
     protected QueryParameter[] getSimpleSearchParameters () {
         return new QueryParameter[] {};
-    }
-
-    private HashMap<String, Object> createAttributesMap () {
-        HashMap<String, Object> attributes = new HashMap<String, Object>(2);
-        // XXX add more if requested
-        attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
-        attributes.put(ATTRIBUTE_URL, getUrl());
-        return attributes;
     }
 
     private class Cache extends IssueCache<BugzillaIssue, TaskData> {

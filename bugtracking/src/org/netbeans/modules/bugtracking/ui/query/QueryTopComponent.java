@@ -402,7 +402,7 @@ public final class QueryTopComponent extends TopComponent
                     }
                 });
             }
-        } else if(evt.getPropertyName().equals(RepositoryProvider.EVENT_QUERY_LIST_CHANGED)) {
+        } else if(evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
             updateSavedQueries();
         } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(query != null) {

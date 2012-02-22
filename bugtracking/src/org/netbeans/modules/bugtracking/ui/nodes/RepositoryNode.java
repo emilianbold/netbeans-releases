@@ -46,11 +46,11 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -124,8 +124,12 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(RepositoryProvider.EVENT_ATTRIBUTES_CHANGED)) {
-            fireDisplayNameChange(null, repository.getDisplayName()); // XXX get new value from evt
+        if(evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
+            Map<String, String> oldMap = (Map<String, String>) evt.getOldValue();
+            Map<String, String> newMap = (Map<String, String>) evt.getNewValue();
+            if(oldMap.containsKey(Repository.ATTRIBUTE_DISPLAY_NAME)) {
+                fireDisplayNameChange(oldMap.get(Repository.ATTRIBUTE_DISPLAY_NAME), newMap.get(Repository.ATTRIBUTE_DISPLAY_NAME));
+            }
         }
     }
 

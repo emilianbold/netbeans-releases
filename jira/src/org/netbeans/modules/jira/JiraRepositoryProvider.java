@@ -103,16 +103,6 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
     }
 
     @Override
-    public void removePropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
-        r.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
-        r.addPropertyChangeListener(listener);
-    }
-
-    @Override
     public Lookup getLookup(JiraRepository r) {
         return r.getLookup();
     }

@@ -254,11 +254,6 @@ public class JiraUpdater {
         public Lookup getLookup(Object r) {
             return Lookup.EMPTY;
         }
-        @Override
-        public void removePropertyChangeListener(Object r, PropertyChangeListener listener) {}
-        @Override
-        public void addPropertyChangeListener(Object r, PropertyChangeListener listener) {}
-
     }
 
     private class JiraProxyController implements RepositoryController {

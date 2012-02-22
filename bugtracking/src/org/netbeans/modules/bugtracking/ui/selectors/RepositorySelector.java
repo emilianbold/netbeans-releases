@@ -52,7 +52,6 @@ import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -76,7 +75,7 @@ public class RepositorySelector {
         }
         final Repository repo = selectorPanel.getRepository();
         try {
-            getController(repo).applyChanges();
+            APIAccessor.IMPL.applyChanges(repo);
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
@@ -97,7 +96,7 @@ public class RepositorySelector {
         }
         Repository repo = selectorPanel.getRepository();
         try {
-            getController(repo).applyChanges();
+            APIAccessor.IMPL.applyChanges(repo);
             // no repo on edit
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
@@ -115,10 +114,6 @@ public class RepositorySelector {
             connectors = ret;
         }
         return connectors;
-    }
-
-    private RepositoryController getController(Repository repo) {
-        return APIAccessor.IMPL.getController(repo);
     }
 
 }

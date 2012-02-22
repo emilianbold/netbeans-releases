@@ -123,14 +123,12 @@ public class JiraQuery {
     }
 
     // XXX does this has to be protected
-    protected void fireQuerySaved() {
+    public void fireQuerySaved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
-        repository.fireQueryListChanged();
     }
 
     protected void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
-        repository.fireQueryListChanged();
     }
 
     protected void fireQueryIssuesChanged() {

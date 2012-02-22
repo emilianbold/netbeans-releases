@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +64,16 @@ public final class Query {
     <Q, I> Query(Repository repository, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider, Q data) {
         this.repository = repository;
         this.bind = new Bind(queryProvider, issueProvider, data);
+        queryProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(QueryProvider.EVENT_QUERY_REMOVED.equals(evt.getPropertyName()) ||
+                   QueryProvider.EVENT_QUERY_SAVED.equals(evt.getPropertyName())) 
+                {
+                    Query.this.repository.fireQueryListChanged();
+                }
+            }
+        });
     }
 
     public boolean isSaved() {

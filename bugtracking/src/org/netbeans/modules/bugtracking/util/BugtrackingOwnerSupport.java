@@ -615,7 +615,7 @@ public abstract class BugtrackingOwnerSupport {
             if (selectedOption == NotifyDescriptor.OK_OPTION) {
                 Repository repository = selectorBuilder.getSelectedRepository();
                 try {
-                    APIAccessor.IMPL.getController(repository).applyChanges();
+                    APIAccessor.IMPL.applyChanges(repository);
                 } catch (IOException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                     repository = null;

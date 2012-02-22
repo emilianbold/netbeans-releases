@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
+import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
@@ -200,6 +201,11 @@ class APIAccessorImpl extends APIAccessor {
     @Override
     public Query getMyIssuesQuery(Repository repository) {
         return repository.getMyIssuesQuery();
+    }
+
+    @Override
+    public void applyChanges(Repository repository)  throws IOException {
+        repository.applyChanges();
     }
 
 }

@@ -127,14 +127,10 @@ public class JiraRepository {
     private final Object QUERIES_LOCK = new Object();
     private String id;
 
-    public static final String ATTRIBUTE_URL = "jira.repository.attribute.url"; //NOI18N
-    public static final String ATTRIBUTE_DISPLAY_NAME = "jira.repository.attribute.displayName"; //NOI18N
     private Lookup lookup;
-    private final PropertyChangeSupport support;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        this.support = new PropertyChangeSupport(this);
         JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
 
@@ -161,50 +157,6 @@ public class JiraRepository {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        support.removePropertyChangeListener(listener);
-    }
-
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        support.addPropertyChangeListener(listener);
-    }
-
-    /**
-     * Notify listeners on this repository that a query was either removed or saved
-     * XXX make use of new/old value
-     */
-    public void fireQueryListChanged() {
-        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
-    }
-
-    /**
-     * Notify listeners on this repository that some of repository's attributes have changed.
-     * @param oldValue map of old attributes
-     * @param newValue map of new attributes
-     */
-    protected void fireAttributesChanged (java.util.Map<String, Object> oldAttributes, java.util.Map<String, Object> newAttributes) {
-        LinkedList<String> equalAttributes = new LinkedList<String>();
-        // find unchanged values
-        for (Map.Entry<String, Object> e : newAttributes.entrySet()) {
-            String key = e.getKey();
-            Object value = e.getValue();
-            Object oldValue = oldAttributes.get(key);
-            if ((value == null && oldValue == null) || (value != null && value.equals(oldValue))) {
-                equalAttributes.add(key);
-            }
-        }
-        // remove unchanged values
-        for (String equalAttribute : equalAttributes) {
-            if (oldAttributes != null) {
-                oldAttributes.remove(equalAttribute);
-            }
-            newAttributes.remove(equalAttribute);
-        }
-        if (!newAttributes.isEmpty()) {
-            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, RepositoryProvider.EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
-        }        
-    }
-    
     public RepositoryInfo getInfo() {
         if(name == null) { // XXX is new
             return null;
@@ -367,6 +319,7 @@ public class JiraRepository {
                 for (NamedFilter nf : filters) {
                     JiraQuery q = new JiraQuery(nf.getName(), this, nf);
                     ret.add(q);
+                    q.fireQuerySaved();
                 }
             }
         }
@@ -374,7 +327,6 @@ public class JiraRepository {
             remoteFilters = new HashSet<JiraQuery>();
             remoteFilters.addAll(ret);
         }
-        fireQueryListChanged();
     }
 
     public Collection<NbJiraIssue> simpleSearch(String criteria) {
@@ -444,8 +396,6 @@ public class JiraRepository {
     }
 
     protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        HashMap<String, Object> oldAttributes = createAttributesMap();
-
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
         String oldUser = c != null ? c.getUserName() : "";
@@ -455,8 +405,6 @@ public class JiraRepository {
         
         resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
                                                                                                      //     on psswd and user change reset only taskrepository
-        HashMap<String, Object> newAttributes = createAttributesMap();
-        fireAttributesChanged(oldAttributes, newAttributes);
     }
 
     public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
@@ -720,14 +668,6 @@ public class JiraRepository {
      */
     protected ProjectFilter getProjectFilter () {
         return null;
-    }
-
-    private HashMap<String, Object> createAttributesMap () {
-        HashMap<String, Object> attributes = new HashMap<String, Object>(2);
-        // XXX add more if requested
-        attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
-        attributes.put(ATTRIBUTE_URL, getUrl());
-        return attributes;
     }
 
     private class Cache extends IssueCache<NbJiraIssue, TaskData> {

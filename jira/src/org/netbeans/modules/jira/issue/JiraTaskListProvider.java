@@ -136,12 +136,14 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
-                JiraRepository repository = issue.getRepository();
+                JiraRepository jiraRepository = issue.getRepository();
+                
+                Repository repository = JiraUtils.getRepository(jiraRepository);
                 repository.removePropertyChangeListener(this);
                 repository.addPropertyChangeListener(this);
                 // create a representation of the real issue for tasklist
                 watchedIssues.put(url.toString(), lazyIssue =
-                        (repository instanceof KenaiRepository) ?
+                        (jiraRepository instanceof KenaiRepository) ?
                             new KenaiJiraLazyIssue(issue, this) :   // kenai lazy issue
                             new JiraLazyIssue(issue, this));        // common jira lazy issue
             } catch (MalformedURLException e) {
@@ -202,9 +204,9 @@ public final class JiraTaskListProvider extends TaskListIssueProvider implements
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
-                Object oldValue = ((Map)evt.getOldValue()).get(JiraRepository.ATTRIBUTE_URL);
+                Object oldValue = ((Map)evt.getOldValue()).get(Repository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
                     String oldRepoUrl = (String) oldValue;
                     LinkedList<JiraLazyIssue> issuesToRefresh = new LinkedList<JiraLazyIssue>();

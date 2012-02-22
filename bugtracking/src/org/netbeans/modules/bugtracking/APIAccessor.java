@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.bugtracking;
 
+import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -114,6 +113,8 @@ public abstract class APIAccessor {
     public abstract void setContext(Query query, Node[] context);
     public abstract void setContext(Issue issue, Node[] context);
 
+    public abstract void applyChanges(Repository repository) throws IOException;
+    
     /********************************************************************************
      * Kenai
      *******************************************************************************/ 
@@ -123,5 +124,6 @@ public abstract class APIAccessor {
     public abstract void refresh(Query query, boolean synchronously);
     public abstract Query getAllIssuesQuery(Repository repository);
     public abstract Query getMyIssuesQuery(Repository repository);
+
     
 }

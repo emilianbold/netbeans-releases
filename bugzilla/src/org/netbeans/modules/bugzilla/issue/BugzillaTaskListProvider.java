@@ -136,12 +136,15 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
-                BugzillaRepository repository = issue.getRepository();
+                BugzillaRepository bugzillaRepository = issue.getRepository();
+                
+                Repository repository = BugzillaUtil.getRepository(bugzillaRepository);
                 repository.removePropertyChangeListener(this);
                 repository.addPropertyChangeListener(this);
+                
                 // create a representation of the real issue for tasklist
                 watchedIssues.put(url.toString(), lazyIssue =
-                        (repository instanceof KenaiRepository) ?
+                        (bugzillaRepository instanceof KenaiRepository) ?
                             new KenaiBugzillaLazyIssue(issue, this) :   // kenai lazy issue
                             new BugzillaLazyIssue(issue, this));        // common Bugzilla lazy issue
             } catch (MalformedURLException e) {
@@ -202,9 +205,9 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
-                Object oldValue = ((Map)evt.getOldValue()).get(BugzillaRepository.ATTRIBUTE_URL);
+                Object oldValue = ((Map)evt.getOldValue()).get(Repository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
                     String oldRepoUrl = (String) oldValue;
                     LinkedList<BugzillaLazyIssue> issuesToRefresh = new LinkedList<BugzillaLazyIssue>();

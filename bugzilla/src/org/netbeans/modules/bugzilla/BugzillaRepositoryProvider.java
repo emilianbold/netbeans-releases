@@ -104,16 +104,6 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
     }
 
     @Override
-    public void removePropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
-        r.removePropertyChangeListener(listener);
-    }
-
-    @Override
-    public void addPropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
-        r.addPropertyChangeListener(listener);
-    }
-
-    @Override
     public Lookup getLookup(BugzillaRepository r) {
         return r.getLookup();
     }
