@@ -58,6 +58,7 @@ import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
+import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -150,6 +151,7 @@ public class SrcNode extends FilterNode {
         if (!isTest) {
             actions.add(FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
             actions.add(FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
+            actions.add(ProjectSensitiveActions.projectCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null));
             actions.add(null);
         }
         actions.add(SystemAction.get(FileSystemAction.class));
