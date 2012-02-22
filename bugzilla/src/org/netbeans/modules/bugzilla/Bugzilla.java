@@ -51,9 +51,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssueProvider;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
+import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,7 +71,10 @@ public class Bugzilla {
     private RequestProcessor rp;
     private BugzillaClientManager clientManager;
 
-    private KenaiSupport kenaiSupport;
+    private BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> bf;
+    private BugzillaIssueProvider bip;
+    private BugzillaQueryProvider bqp;
+    private BugzillaRepositoryProvider brp;
 
     private Bugzilla() {
 
@@ -81,7 +85,7 @@ public class Bugzilla {
         getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                BugzillaIssueProvider.getInstance();
+                BugzillaTaskListProvider.getInstance();
             }
         });
     }
@@ -97,13 +101,6 @@ public class Bugzilla {
         getInstance();
     }
 
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
-    }
-    
     public BugzillaRepositoryConnector getRepositoryConnector() {
         return brc;
     }
@@ -142,4 +139,29 @@ public class Bugzilla {
         return BugzillaConnector.getInstance();
     }
 
+    public BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
+        if(bf == null) {
+            bf = new BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue>();
+        }    
+        return bf;
+    }
+    
+    public BugzillaIssueProvider getIssueProvider() {
+        if(bip == null) {
+            bip = new BugzillaIssueProvider();
+        }
+        return bip; 
+    }
+    public BugzillaQueryProvider getQueryProvider() {
+        if(bqp == null) {
+            bqp = new BugzillaQueryProvider();
+        }
+        return bqp; 
+    }
+    public BugzillaRepositoryProvider getRepositoryProvider() {
+        if(brp == null) {
+            brp = new BugzillaRepositoryProvider();
+        }
+        return brp; 
+    }
 }

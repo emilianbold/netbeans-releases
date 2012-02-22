@@ -57,8 +57,9 @@ import javax.swing.DefaultComboBoxModel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.versioning.hooks.SvnHook;
@@ -229,21 +230,20 @@ public class SvnHookTest extends NbTestCase {
         return new SvnHookContext(new File[]{new File(getWorkDir(), "f")}, "msg", Arrays.asList(new SvnHookContext.LogEntry("msg", "author", revision, new Date(System.currentTimeMillis()))));
     }
 
-    private void setRepository(HookPanel panel) {
-        HookRepository repo = new HookRepository();
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new RepositoryProvider[] {repo});
+    private void setRepository(Repository repository, HookPanel panel) {
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new Repository[] {repository});
         panel.repositoryComboBox.setModel(model);
-        panel.repositoryComboBox.setSelectedItem(repo);
+        panel.repositoryComboBox.setSelectedItem(repository);
     }
 
-    private void setIssue(HookPanel panel) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    private void setIssue(Repository repository, HookPanel panel) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         Field f = panel.getClass().getDeclaredField("qs");
         f.setAccessible(true);
         QuickSearchComboBar qs = (QuickSearchComboBar) f.get(panel);
-        Method m = qs.getClass().getDeclaredMethod("setIssue", IssueProvider.class);
+        Method m = qs.getClass().getDeclaredMethod("setIssue", Issue.class);
         m.setAccessible(true);
         HookIssue.getInstance().reset();
-        m.invoke(qs, HookIssue.getInstance());
+        m.invoke(qs, TestKit.getIssue(repository, HookIssue.getInstance()));
     }
 
     private HookPanel getPanel(final SvnHookImpl hook, final SvnHookContext ctx) throws InterruptedException, InvocationTargetException, NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException {
@@ -263,8 +263,10 @@ public class SvnHookTest extends NbTestCase {
     }
 
     private void preparePanel(HookPanel panel) throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
-        setRepository(panel);
-        setIssue(panel);
+        HookRepository hookRepository = new HookRepository();
+        Repository repository = TestKit.getRepository(HookConnector.getInstance(), hookRepository);
+        setRepository(repository, panel);
+        setIssue(repository, panel);
         panel.enableFields(); // emulate event
     }
 

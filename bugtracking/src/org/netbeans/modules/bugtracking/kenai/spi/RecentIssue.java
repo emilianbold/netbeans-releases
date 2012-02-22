@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
  * Container for a recently opened IssueProvider and it's last open time
@@ -50,9 +50,9 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
  * @author Tomas Stupka
  */
 public class RecentIssue {
-    private IssueProvider issue;
+    private Issue issue;
     private long ts;
-    public RecentIssue(IssueProvider issue, long ts) {
+    public RecentIssue(Issue issue, long ts) {
         this.issue = issue;
         this.ts = ts;
     }
@@ -61,7 +61,7 @@ public class RecentIssue {
      * Returns a issue
      * @return
      */
-    public IssueProvider getIssue() {
+    public Issue getIssue() {
         return issue;
     }
 

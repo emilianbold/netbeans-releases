@@ -58,6 +58,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -151,11 +152,11 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
         }
 
         // is name unique?
-        RepositoryProvider[] repositories = null;
+        Repository[] repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
-            for (RepositoryProvider rp : repositories) {
-                if(name.equals(rp.getInfo().getDisplayName())) {
+            for (Repository rp : repositories) {
+                if(name.equals(rp.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
@@ -182,8 +183,8 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
 
         // is url unique?
         if(repository.getTaskRepository() == null) {
-            for (RepositoryProvider rp : repositories) {
-                if(url.trim().equals(rp.getInfo().getUrl())) {
+            for (Repository rp : repositories) {
+                if(url.trim().equals(rp.getUrl())) {
                     errorMessage = NbBundle.getMessage(JiraRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
@@ -214,7 +215,6 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             getPassword(),
             getHttpUser(),
             getHttpPassword());
-        repository.getNode().setName(newName);
     }
 
     public void populate() {

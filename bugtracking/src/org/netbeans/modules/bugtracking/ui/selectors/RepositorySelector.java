@@ -46,12 +46,13 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -66,16 +67,16 @@ public class RepositorySelector {
         // init connector cbo
     }
 
-    public RepositoryProvider create() {
+    public Repository create() {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {
             return null;
         }
-        final RepositoryProvider repo = selectorPanel.getRepository();
+        final Repository repo = selectorPanel.getRepository();
         try {
-            repo.getController().applyChanges();
+            getController(repo).applyChanges();
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
@@ -84,19 +85,19 @@ public class RepositorySelector {
         BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                BugtrackingRootNode.selectNode(repo.getInfo().getDisplayName());
+                BugtrackingRootNode.selectNode(repo.getDisplayName());
             }
         });
         return repo;
     }
 
-    public boolean edit(RepositoryProvider repository, String errorMessage) {
+    public boolean edit(Repository repository, String errorMessage) {
         if(!selectorPanel.edit(repository, errorMessage)) {
             return false;
         }
-        RepositoryProvider repo = selectorPanel.getRepository();
+        Repository repo = selectorPanel.getRepository();
         try {
-            repo.getController().applyChanges();
+            getController(repo).applyChanges();
             // no repo on edit
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
@@ -114,6 +115,10 @@ public class RepositorySelector {
             connectors = ret;
         }
         return connectors;
+    }
+
+    private RepositoryController getController(Repository repo) {
+        return APIAccessor.IMPL.getController(repo);
     }
 
 }

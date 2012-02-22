@@ -57,6 +57,11 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.HelpCtx;
@@ -84,17 +89,17 @@ public class RepositorySelectorTest extends NbTestCase {
 
     public void testRepositorySelectorBuilder() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String errorMsg = "tpyo";
-        RepositoryProvider repo = new MyRepository();
+        MyRepository repo = new MyRepository();
 
         SelectorPanel sp = new SelectorPanel();
-        createEditDescriptor(sp, repo, errorMsg);
+        createEditDescriptor(sp, TestKit.getRepository(null, repo), errorMsg);
 
         String text = getErrroLabelText(sp);
         assertEquals(errorMsg, text);
     }
 
-    private void createEditDescriptor(SelectorPanel sp, RepositoryProvider repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", RepositoryProvider.class, String.class);
+    private void createEditDescriptor(SelectorPanel sp, Repository repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", Repository.class, String.class);
         m.setAccessible(true);
         m.invoke(sp, repository, error);
     }
@@ -113,7 +118,7 @@ public class RepositorySelectorTest extends NbTestCase {
         return f.get(o);
     }
 
-    private class MyRepository extends RepositoryProvider {
+    private class MyRepository extends TestRepository {
         private RepositoryInfo info;
 
         public MyRepository() {
@@ -132,7 +137,7 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public IssueProvider getIssue(String id) {
+        public TestIssue getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -195,22 +200,22 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public QueryProvider createQuery() {
+        public TestQuery createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public IssueProvider createIssue() {
+        public TestIssue createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public QueryProvider[] getQueries() {
+        public Collection<TestQuery> getQueries() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public IssueProvider[] simpleSearch(String criteria) {
+        public Collection<TestIssue> simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

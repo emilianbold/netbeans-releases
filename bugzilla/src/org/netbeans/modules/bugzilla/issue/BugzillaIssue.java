@@ -114,7 +114,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvider {
+public class BugzillaIssue {
 
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
@@ -179,18 +179,15 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     private final PropertyChangeSupport support;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
-        super(repo);
         this.data = data;
         this.repository = repo;
         support = new PropertyChangeSupport(this);
     }
 
-    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
@@ -199,11 +196,10 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
      * Notify listeners on this issue that its data were changed
      */
     protected void fireDataChanged() {
-        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
+        support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
 
     
-    @Override
     public boolean isNew() {
         return data == null || data.isNew();
     }
@@ -231,7 +227,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
-    @Override
     public String getDisplayName() {
         return getDisplayName(data);
     }
@@ -241,22 +236,22 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
     }
+    
+    // XXX not the same as in Issue.getShortenedDisplayName()
 
-    @Override
-    public String getShortenedDisplayName() {
-        if (data.isNew()) {
-            return getDisplayName();
-        }
+//    public String getShortenedDisplayName() {
+//        if (data.isNew()) {
+//            return getDisplayName();
+//        }
+//
+//        String shortSummary = TextUtils.shortenText(getSummary(),
+//                                                    2,    //try at least 2 words
+//                                                    SHORTENED_SUMMARY_LENGTH);
+//        return NbBundle.getMessage(BugzillaIssue.class,
+//                                   "CTL_Issue",                         //NOI18N
+//                                   new Object[] {getID(), shortSummary});
+//    }
 
-        String shortSummary = TextUtils.shortenText(getSummary(),
-                                                    2,    //try at least 2 words
-                                                    SHORTENED_SUMMARY_LENGTH);
-        return NbBundle.getMessage(BugzillaIssue.class,
-                                   "CTL_Issue",                         //NOI18N
-                                   new Object[] {getID(), shortSummary});
-    }
-
-    @Override
     public String getTooltip() {
         return getDisplayName();
     }
@@ -352,7 +347,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
 
 
-    @Override
     public BugtrackingController getController() {
         if (controller == null) {
             controller = new IssueController(this);
@@ -366,7 +360,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         return str;
     }
 
-    @Override
     public IssueNode getNode() {
         if(node == null) {
             node = createNode();
@@ -374,7 +367,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         return node;
     }
 
-    @Override
     public void setContext(Node[] nodes) {
         this.context = nodes;
     }
@@ -387,7 +379,7 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         if(attributes == null) {
             attributes = new HashMap<String, String>();
             String value;
-            for (IssueField field : getBugzillaRepository().getConfiguration().getFields()) {
+            for (IssueField field : getRepository().getConfiguration().getFields()) {
                 value = getFieldValue(field);
                 if(value != null && !value.trim().equals("")) {                 // NOI18N
                     attributes.put(field.getKey(), value);
@@ -398,11 +390,11 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
 
     public void setSeen(boolean seen) throws IOException {
-        IssueCacheUtils.setSeen(this, seen);
+        repository.getIssueCache().setSeen(getID(), seen);
     }
 
     private boolean wasSeen() {
-        return IssueCacheUtils.wasSeen(this);
+        return repository.getIssueCache().wasSeen(getID());
     }
 
     public Date getLastModifyDate() {
@@ -457,7 +449,7 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             assert getSeenAttributes() != null;
-            for (IssueField f : getBugzillaRepository().getConfiguration().getFields()) {
+            for (IssueField f : getRepository().getConfiguration().getFields()) {
                 if (f==IssueField.MODIFICATION
                         || f==IssueField.REPORTER_NAME
                         || f==IssueField.QA_CONTACT_NAME
@@ -572,16 +564,14 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         return repository.getTaskRepository();
     }
 
-    BugzillaRepository getBugzillaRepository() {
+    public BugzillaRepository getRepository() {
         return repository;
     }
 
-    @Override
     public String getID() {
         return getID(data);
     }
 
-    @Override
     public String getSummary() {
         return getFieldValue(IssueField.SUMMARY);
     }
@@ -748,7 +738,7 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
 
     boolean canReassign() {
-        BugzillaConfiguration rc = getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration rc = getRepository().getConfiguration();
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
         boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0 : false;
         if (oldRepository) {
@@ -761,7 +751,7 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
     
     boolean canAssignToDefault() {
-        BugzillaConfiguration rc = getBugzillaRepository().getConfiguration();
+        BugzillaConfiguration rc = getRepository().getConfiguration();
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
         boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
         if(oldRepository) {
@@ -871,7 +861,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
     }
 
     // XXX carefull - implicit refresh
-    @Override
     public void addComment(String comment, boolean close) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
@@ -927,7 +916,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         }
     }
 
-    @Override
     public void attachPatch(File file, String description) {
         boolean isPatch = true;
         // HACK for attaching hg bundles - they are NOT patches
@@ -1002,7 +990,6 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
         return true;
     }
 
-    @Override
     public boolean refresh() {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(getID(), false);
@@ -1016,8 +1003,8 @@ public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvi
             if(td == null) {
                 return false;
             }
-            getBugzillaRepository().getIssueCache().setIssueData(this, td); // XXX
-            getBugzillaRepository().ensureConfigurationUptodate(this);
+            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            getRepository().ensureConfigurationUptodate(this);
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);

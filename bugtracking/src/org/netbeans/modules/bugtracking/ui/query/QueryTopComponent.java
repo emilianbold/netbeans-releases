@@ -80,10 +80,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.PlaceholderPanel;
@@ -100,8 +97,12 @@ import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.SPIAccessor;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  * Top component which displays something.
@@ -124,10 +125,10 @@ public final class QueryTopComponent extends TopComponent
     private final JComboBox repositoryComboBox;
     private final JScrollPane scrollPane;
 
-    private QueryProvider[] savedQueries = null;
+    private Query[] savedQueries = null;
     
     private static final String PREFERRED_ID = "QueryTopComponent"; // NOI18N
-    private QueryProvider query; // XXX synchronized
+    private Query query; // XXX synchronized
     private static final Object LOCK = new Object();
 
     private RequestProcessor rp = new RequestProcessor("Bugtracking query", 1, true); // NOI18N
@@ -230,11 +231,11 @@ public final class QueryTopComponent extends TopComponent
         return openQueries;
     }
     
-    public QueryProvider getQuery() {
+    public Query getQuery() {
         return query;
     }
 
-    void init(QueryProvider query, RepositoryProvider defaultRepository, Node[] context, boolean suggestedSelectionOnly) {
+    void init(Query query, Repository defaultRepository, Node[] context, boolean suggestedSelectionOnly) {
         this.query = query;
         this.context = context;
 
@@ -253,7 +254,7 @@ public final class QueryTopComponent extends TopComponent
                     rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
                 }
             }
-            BugtrackingController c = query.getController();
+            BugtrackingController c = getController(query);
             panel.setComponent(c.getComponent());
             this.query.addPropertyChangeListener(this);
             findInQuerySupport.setQuery(query);
@@ -269,13 +270,13 @@ public final class QueryTopComponent extends TopComponent
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
                         Object item = e.getItem();
-                        if (item instanceof RepositoryProvider) {
+                        if (item instanceof Repository) {
                             onRepoSelected();
                         }
                     } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                         Object item = e.getItem();
-                        if (item instanceof RepositoryProvider) {
-                            ((RepositoryProvider) item).removePropertyChangeListener(QueryTopComponent.this);
+                        if (item instanceof Repository) {
+                            ((Repository) item).removePropertyChangeListener(QueryTopComponent.this);
                         }
                     }
                 }
@@ -289,6 +290,10 @@ public final class QueryTopComponent extends TopComponent
             repositoryComboBox.addFocusListener(this);
         }
         BugtrackingUtil.logBugtrackingUsage(query != null ? query.getRepository() : defaultRepository, "ISSUE_QUERY"); // NOI18N
+    }
+
+    private BugtrackingController getController(Query query) {
+        return APIAccessor.IMPL.getController(query);
     }
 
     private static String getBundleText(String key) {
@@ -332,7 +337,7 @@ public final class QueryTopComponent extends TopComponent
      * @param query query for which the top-component should be found.
      * @return top-component that should display the given query.
      */
-    public static synchronized QueryTopComponent find(QueryProvider query) {
+    public static synchronized QueryTopComponent find(Query query) {
         for (QueryTopComponent tc : openQueries) {
             if (query.equals(tc.getQuery())) {
                 return tc;
@@ -350,7 +355,7 @@ public final class QueryTopComponent extends TopComponent
     public void componentOpened() {
         openQueries.add(this);
         if(query != null) {
-            query.getController().opened();
+            getController(query).opened();
         }
 //        SwingUtilities.invokeLater(new Runnable() {
 //            public void run() {
@@ -365,7 +370,7 @@ public final class QueryTopComponent extends TopComponent
         openQueries.remove(this);
         if(query != null) {
             query.removePropertyChangeListener(this);
-            query.getController().closed();
+            getController(query).closed();
         }
         if(prepareTask != null) {
             prepareTask.cancel();
@@ -407,7 +412,7 @@ public final class QueryTopComponent extends TopComponent
                    cNew instanceof Collection &&
                    cOld instanceof Collection)
                 {
-                    RepositoryProvider thisRepo = query.getRepository();
+                    Repository thisRepo = query.getRepository();
                     if(contains((Collection) cOld, thisRepo) && !contains((Collection) cNew, thisRepo)) {
                         // removed
                         SwingUtilities.invokeLater(new Runnable() {
@@ -435,10 +440,10 @@ public final class QueryTopComponent extends TopComponent
         }
     }
 
-    private boolean contains(Collection c, RepositoryProvider r) {
+    private boolean contains(Collection c, Repository r) {
         for (Object o : c) {
-            assert o instanceof RepositoryProvider;
-            if(((RepositoryProvider)o).getInfo().getId().equals(r.getInfo().getId())) {
+            assert o instanceof Repository;
+            if(((Repository)o).getId().equals(r.getId())) {
                 return true;
             }
         }
@@ -479,7 +484,7 @@ public final class QueryTopComponent extends TopComponent
      ***********/
 
     private void onNewClick() {
-        RepositoryProvider repo = BugtrackingUtil.createRepository();
+        Repository repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
@@ -505,7 +510,7 @@ public final class QueryTopComponent extends TopComponent
             public void run() {
                 try {
                     handle.start();
-                    RepositoryProvider repo = getRepository();
+                    Repository repo = getRepository();
                     if(repo == null) {
                         return;
                     }
@@ -515,19 +520,19 @@ public final class QueryTopComponent extends TopComponent
                         query.removePropertyChangeListener(QueryTopComponent.this);
                     }
 
-                    query = repo.createQuery();
+                    query = APIAccessor.IMPL.createNewQuery(repo);
                     if (query == null) {
                         return;
                     }
 
                     findInQuerySupport.setQuery(query);
 
-                    SPIAccessor.IMPL.setSelection(query, context);
+                    APIAccessor.IMPL.setContext(query, context);
                     query.addPropertyChangeListener(QueryTopComponent.this);
 
                     updateSavedQueriesIntern(repo);
 
-                    final BugtrackingController addController = query.getController();
+                    final BugtrackingController addController = getController(query);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
@@ -546,12 +551,12 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
-    private RepositoryProvider getRepository() {
+    private Repository getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof RepositoryProvider)) {
+        if (item == null || !(item instanceof Repository)) {
             return null;
         }
-        return (RepositoryProvider) item;
+        return (Repository) item;
     }
 
     private void focusFirstEnabledComponent() {
@@ -569,8 +574,8 @@ public final class QueryTopComponent extends TopComponent
             @Override
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
-                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getInfo().getDisplayName(), query.getDisplayName()})); // NOI18N
-                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getInfo().getDisplayName(), query.getTooltip()})); // NOI18N
+                    setName(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getDisplayName()})); // NOI18N
+                    setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "LBL_QueryName", new Object[]{query.getRepository().getDisplayName(), query.getTooltip()})); // NOI18N
                 } else {
                     setName(NbBundle.getMessage(QueryTopComponent.class, "CTL_QueryTopComponent")); // NOI18N
                     setToolTipText(NbBundle.getMessage(QueryTopComponent.class, "HINT_QueryTopComponent")); // NOI18N
@@ -588,7 +593,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     public void updateSavedQueries() {
-        final RepositoryProvider repo = getRepository();
+        final Repository repo = getRepository();
         if(repo == null) {
             return;
         }
@@ -600,13 +605,14 @@ public final class QueryTopComponent extends TopComponent
         });        
     }
 
-    private void updateSavedQueriesIntern(final RepositoryProvider repo) {
+    private void updateSavedQueriesIntern(final Repository repo) {
         if(repo == null) {
             return;
         }
-        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getInfo().getDisplayName()} );
-        QueryProvider[] queries = repo.getQueries();
-        final QueryProvider[] finQueries;
+        BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} start", new Object[] {repo.getDisplayName()} );
+        Collection<Query> cq = APIAccessor.IMPL.getQueries(repo);
+        Query[] queries = cq != null ? cq.toArray(new Query[cq.size()]) : new Query[0];
+        final Query[] finQueries;
         synchronized (LOCK) {
             Arrays.sort(queries, new QueryComparator());
             savedQueries = queries;
@@ -618,9 +624,9 @@ public final class QueryTopComponent extends TopComponent
             public void run() {
                 repoPanel.setQueries(finQueries);
                 if(finQueries == null || finQueries.length == 0) {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getInfo().getDisplayName()} );
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. No queries.", new Object[] {repo.getDisplayName()} );
                 } else {
-                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getInfo().getDisplayName(), savedQueries.length} );
+                    BugtrackingManager.LOG.log(Level.FINE, "updateSavedQueries for {0} finnished. {1} saved queries.", new Object[] {repo.getDisplayName(), savedQueries.length} );
                 }
             }
         });
@@ -631,10 +637,10 @@ public final class QueryTopComponent extends TopComponent
         return jPanel2.requestFocusInWindow();
     }
 
-    private class QueryComparator implements Comparator<QueryProvider> {
+    private class QueryComparator implements Comparator<Query> {
 
         @Override
-        public int compare(QueryProvider q1, QueryProvider q2) {
+        public int compare(Query q1, Query q2) {
             if(q1 == null && q2 == null) {
                 return 0;
             }

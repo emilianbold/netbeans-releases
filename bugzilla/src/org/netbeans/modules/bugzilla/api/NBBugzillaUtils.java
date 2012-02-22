@@ -45,11 +45,10 @@ package org.netbeans.modules.bugzilla.api;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 
 /**
@@ -71,13 +70,13 @@ public class NBBugzillaUtils {
      * @param issueID issue identifier
      */
     public static void openIssue(String issueID) {
-        BugzillaRepository nbRepo = NBRepositorySupport.findNbRepository();
+        Repository nbRepo = NBRepositorySupport.getInstance().getNBRepository();
         assert nbRepo != null;
         if(nbRepo == null) {
             Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
             return;
         }
-        IssueProvider.open(nbRepo, issueID);
+        Issue.open(nbRepo, issueID);
     }
 
     /**
@@ -134,8 +133,8 @@ public class NBBugzillaUtils {
         return url.toString().startsWith(nbUrl);
     }
 
-    public static RepositoryProvider findNBRepository() {
-        return NBRepositorySupport.findNbRepository();
+    public static Repository findNBRepository() {
+        return NBRepositorySupport.getInstance().getNBRepository();
     }
     
 }

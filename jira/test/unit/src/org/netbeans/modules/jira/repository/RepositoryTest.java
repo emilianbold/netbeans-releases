@@ -56,10 +56,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.JiraTestUtil;
 import org.netbeans.modules.jira.LogHandler;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.openide.util.Lookup;
 
@@ -225,10 +225,10 @@ public class RepositoryTest extends NbTestCase {
         JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), summary2, "Alles Kaputt!", "Bug");
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);
         String id2 = rr.getTaskId();
-
-        IssueProvider[] issues = repo.simpleSearch(summary1);
-        assertEquals(1, issues.length);
-        assertEquals(summary1, issues[0].getSummary());
+        
+        Collection<NbJiraIssue> issues = repo.simpleSearch(summary1);
+        assertEquals(1, issues.size());
+        assertEquals(summary1, issues.iterator().next().getSummary());
 
         String key1 = getKey(repo, id1);
         String key2 = getKey(repo, id2);
@@ -236,9 +236,9 @@ public class RepositoryTest extends NbTestCase {
         issues = repo.simpleSearch(key1);
         // at least one as id might be also contained
         // in another issues summary
-        assertTrue(issues.length > 0);
-        IssueProvider i = null;
-        for(IssueProvider issue : issues) {
+        assertTrue(issues.size() > 0);
+        NbJiraIssue i = null;
+        for(NbJiraIssue issue : issues) {
             if(issue.getID().equals(key1)) {
                 i = issue;
                 break;
@@ -247,10 +247,10 @@ public class RepositoryTest extends NbTestCase {
         assertNotNull(i);
 
         issues = repo.simpleSearch(summary2.substring(0, summary2.length() - 2));
-        assertEquals(2, issues.length);
+        assertEquals(2, issues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(IssueProvider issue : issues) {
+        for(NbJiraIssue issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -274,8 +274,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     private JiraRepositoryController getController() {
-        JiraConnector bc = getConnector();
-        JiraRepository repo = (JiraRepository) bc.createRepository();
+        JiraRepository repo = new JiraRepository();
         assertNotNull(repo);
         JiraRepositoryController c = (JiraRepositoryController) repo.getController();
         assertNotNull(c);
@@ -284,12 +283,11 @@ public class RepositoryTest extends NbTestCase {
     }
 
     private QueryProvider[] getLocalQueries(JiraRepository repo) {
-        QueryProvider[] queries = repo.getQueries();
-        List<QueryProvider> ret = new ArrayList<QueryProvider>();
-        for (QueryProvider query : queries) {
-            JiraQuery jq = (JiraQuery) query;
-            if(jq.getFilterDefinition() instanceof FilterDefinition) {
-                ret.add(jq);
+        Collection<JiraQuery> queries = repo.getQueries();
+        List<JiraQuery> ret = new ArrayList<JiraQuery>();
+        for (JiraQuery query : queries) {
+            if(query.getFilterDefinition() instanceof FilterDefinition) {
+                ret.add(query);
             }
         }
         return ret.toArray(new QueryProvider[ret.size()]);
@@ -330,7 +328,7 @@ public class RepositoryTest extends NbTestCase {
     }
 
     private String getKey(JiraRepository repo, String id1) {
-        IssueProvider i = repo.getIssue(id1);
+        NbJiraIssue i = repo.getIssue(id1);
         return i.getID();
     }
 

@@ -42,12 +42,12 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,9 +60,20 @@ public class NBRepositorySupport extends BugzillaRepository {
     public static final String NB_BUGZILLA_URL = "https://" + NB_BUGZILLA_HOST + "/bugzilla";           // NOI18N
     public static final String URL_NB_ORG_SIGNUP = "https://" + NB_BUGZILLA_HOST + "/people/new";       // NOI18N
 
-    private static BugzillaRepository nbRepository;
-    private static boolean isKenai;
+    private static NBRepositorySupport instance;
+    private BugzillaRepository bugzillaRepository;
+    private Repository nbRepository;
+    private boolean isKenai;
 
+    private NBRepositorySupport() {}
+    
+    public static synchronized NBRepositorySupport getInstance() {
+        if(instance == null) {
+            instance = new NBRepositorySupport();
+        }
+        return instance;
+    }
+    
     /**
      * Goes through all known bugzilla repositories and returns either the first 
      * which is registered for a netbeans.org url or creates a new with the netbeans
@@ -74,14 +85,14 @@ public class NBRepositorySupport extends BugzillaRepository {
      *
      * @return a BugzillaRepository
      */
-    public static BugzillaRepository findNbRepository() {
-        RepositoryProvider[] repos;
+    public Repository getNBRepository() {
+        Repository[] repos;
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
             if(!isKenai) {
                 repos = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
-                for (RepositoryProvider repo : repos) {
+                for (Repository repo : repos) {
                     if(BugtrackingUtil.isNbRepository(repo)) {
                         registered = true;
                         break;
@@ -94,14 +105,14 @@ public class NBRepositorySupport extends BugzillaRepository {
             return nbRepository;
         }
         repos = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
-        for (RepositoryProvider repo : repos) {
+        for (Repository repo : repos) {
             if(BugtrackingUtil.isNbRepository(repo)) {
-                return (BugzillaRepository) repo;
+                return repo;
             }
         }
 
         if(KenaiUtil.isNetbeansKenaiRegistered()) {
-                isKenai = true;
+            isKenai = true;
             // there is a nb kenai registered in the ide
             // create a new repo but _do not register_ in services
             nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
@@ -119,14 +130,26 @@ public class NBRepositorySupport extends BugzillaRepository {
         return nbRepository;
     }
 
-    private static BugzillaRepository createRepositoryIntern() {
+    public void setNBBugzillaRepository(BugzillaRepository repo) {
+        bugzillaRepository = repo;
+    }
+
+    public BugzillaRepository getNBBugzillaRepository() {
+        if(bugzillaRepository == null) {
+            getNBRepository(); // invoke creation
+        }
+        return bugzillaRepository;
+    }
+            
+    private Repository createRepositoryIntern() {
         char[] password = NBBugzillaUtils.getNBPassword();
         final String username = NBBugzillaUtils.getNBUsername();
-        return new BugzillaRepository("NetbeansRepository" + System.currentTimeMillis(),       // NOI18N
-                      NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"),      // NOI18N
-                      NB_BUGZILLA_URL,
-                      username,
-                      password,
-                      null, null); // NOI18N
+        bugzillaRepository = new BugzillaRepository("NetbeansRepository" + System.currentTimeMillis(),       // NOI18N
+                                         NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"),      // NOI18N
+                                         NB_BUGZILLA_URL,
+                                         username,
+                                         password,
+                                         null, null); // NOI18N
+        return BugzillaUtil.getRepository(bugzillaRepository);
     }
 }

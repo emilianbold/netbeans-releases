@@ -55,10 +55,9 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComparator;
 import org.openide.explorer.ExplorerManager;
@@ -126,7 +125,7 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends ChildFactory<RepositoryProvider> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
@@ -136,7 +135,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected Node createNodeForKey(RepositoryProvider key) {
+        protected Node createNodeForKey(Repository key) {
             return key.getNode();
         }
 
@@ -147,7 +146,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected boolean createKeys(List<RepositoryProvider> toPopulate) {
+        protected boolean createKeys(List<Repository> toPopulate) {
             toPopulate.addAll(Arrays.asList(RepositoryRegistry.getInstance().getRepositories()));
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;

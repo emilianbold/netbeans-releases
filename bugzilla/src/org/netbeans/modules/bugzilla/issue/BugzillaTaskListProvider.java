@@ -63,6 +63,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -91,11 +93,11 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
-    @ServiceProvider(service=BugzillaIssueProvider.class)
+    @ServiceProvider(service=BugzillaTaskListProvider.class)
 })
-public final class BugzillaIssueProvider extends TaskListIssueProvider implements PropertyChangeListener {
+public final class BugzillaTaskListProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
-    private static BugzillaIssueProvider instance;
+    private static BugzillaTaskListProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, BugzillaLazyIssue> watchedIssues = new HashMap<String, BugzillaLazyIssue>(10);
@@ -109,14 +111,14 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static synchronized BugzillaIssueProvider getInstance() {
+    public static synchronized BugzillaTaskListProvider getInstance() {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(BugzillaIssueProvider.class);
+            instance = Lookup.getDefault().lookup(BugzillaTaskListProvider.class);
         }
         return instance;
     }
 
-    public BugzillaIssueProvider () {
+    public BugzillaTaskListProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();
@@ -134,7 +136,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
-                BugzillaRepository repository = issue.getBugzillaRepository();
+                BugzillaRepository repository = issue.getRepository();
                 repository.removePropertyChangeListener(this);
                 repository.addPropertyChangeListener(this);
                 // create a representation of the real issue for tasklist
@@ -276,6 +278,14 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         }
     }
 
+    Map<String, BugzillaRepository> bugzillaRepositories = new HashMap<String, BugzillaRepository>();
+    public void notifyRepositoryCreated (BugzillaRepository repository) {
+        bugzillaRepositories.put(repository.getID(), repository);
+    }
+    public void notifyRepositoryRemoved (BugzillaRepository repository) {
+        bugzillaRepositories.remove(repository.getID());
+    }
+    
     // **** private methods ***** //
     private boolean isAdded(URL url) {
         initializeIssues();
@@ -288,7 +298,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
     }
 
     private static URL getUrl (BugzillaIssue issue) {
-        return getUrl(issue.getRepository().getInfo().getUrl(), issue.getID());
+        return getUrl(issue.getRepository().getUrl(), issue.getID());
     }
 
     private static URL getUrl(String repositoryUrl, String issueId) {
@@ -394,9 +404,8 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
-        for (RepositoryProvider rp : repositories) {
-            BugzillaRepository repository = (BugzillaRepository)rp;
+        Repository[] repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        for (Repository repository : repositories) {
             // all issues for this repository
             List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
             if (issueAttributes != null && issueAttributes.size() > 1) {
@@ -412,7 +421,9 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                         LOG.log(Level.WARNING, "Corrupted issue attributes: {0} {1}", new String[]{issueId, issueName}); //NOI18N
                         break;
                     }
-                    add(issueName, issueId, repository);
+                    BugzillaRepository bugzillaRepository = bugzillaRepositories.get(repository.getId());
+                    assert bugzillaRepository != null;
+                    add(issueName, issueId, bugzillaRepository);
                 }
                 repository.addPropertyChangeListener(this);
                 // remove processed attributes
@@ -560,10 +571,10 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                     issue[0] = (BugzillaIssue) repository.getIssue(issueId);
                 }
             };
-            runCancellableCommand(runnable, NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.loadingIssue"));
+            runCancellableCommand(runnable, NbBundle.getMessage(BugzillaTaskListProvider.class, "BugzillaIssueProvider.loadingIssue"));
         } else {
             LOG.log(Level.FINER, "getIssue: getting issue {0} from the cache", repository.getUrl() + "#" + issueId); //NOI18N
-            issue[0] = (BugzillaIssue) repository.getIssueCache().getIssue(issueId);
+            issue[0] = repository.getIssueCache().getIssue(issueId);
         }
         return issue[0];
     }
@@ -601,20 +612,20 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
          *  cached repository for the issue
          */
         private WeakReference<BugzillaRepository> repositoryRef;
-        private final BugzillaIssueProvider provider;
+        protected final BugzillaTaskListProvider provider;
         private WeakReference<BugzillaIssue> issueRef;
         private PropertyChangeListener issueListener;
 
-        public BugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
-            super(BugzillaIssueProvider.getUrl(issue), issue.getDisplayName());
+        public BugzillaLazyIssue (BugzillaIssue issue, BugzillaTaskListProvider provider) throws MalformedURLException {
+            super(BugzillaTaskListProvider.getUrl(issue), issue.getDisplayName());
             this.issueId = issue.getID();
             this.provider = provider;
-            this.repositoryRef = new WeakReference<BugzillaRepository>(issue.getBugzillaRepository());
+            this.repositoryRef = new WeakReference<BugzillaRepository>(issue.getRepository());
             this.issueRef = new WeakReference<BugzillaIssue>(issue);
             attachIssueListener(issue);
         }
 
-        public BugzillaLazyIssue (String name, URL url, String issueId, BugzillaRepository repository, BugzillaIssueProvider provider) {
+        public BugzillaLazyIssue (String name, URL url, String issueId, BugzillaRepository repository, BugzillaTaskListProvider provider) {
             super(url, name);
             this.issueId = issueId;
             this.repositoryRef = new WeakReference<BugzillaRepository>(repository);
@@ -622,7 +633,6 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
             this.issueRef = new WeakReference<BugzillaIssue>(null);
         }
 
-        @Override
         public BugzillaIssue getIssue() {
             BugzillaIssue issue = issueRef.get();
             if (issue == null) {
@@ -642,8 +652,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         }
 
         private BugzillaRepository getRepository() {
-            BugzillaRepository repository = repositoryRef.get();
-            return repository;
+            return repositoryRef.get();
         }
 
         /**
@@ -689,7 +698,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         @Override
         public String getRepositoryUrl() {
             String repoUrl = null;
-            BugzillaRepository repository = repositoryRef.get();
+            BugzillaRepository repository = getRepository();
             if (repository != null) {
                 repoUrl = repository.getUrl();
             }
@@ -699,7 +708,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         @Override
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
-            actions.add(new AbstractAction(NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveAction")) { //NOI18N
+            actions.add(new AbstractAction(NbBundle.getMessage(BugzillaTaskListProvider.class, "BugzillaIssueProvider.resolveAction")) { //NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -711,14 +720,14 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                             } else {
                                 if (!issue.isResolveAvailable()) {
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveAction.notPermitted"),
+                                            NbBundle.getMessage(BugzillaTaskListProvider.class, "BugzillaIssueProvider.resolveAction.notPermitted"),
                                             NotifyDescriptor.INFORMATION_MESSAGE));
                                     return;
                                 }
                                 ResolveIssuePanel panel = new ResolveIssuePanel(issue);
                                 if (panel.showDialog()) {
                                     LOG.finer("Resolve action: resolving..."); //NOI18N
-                                    String pattern = NbBundle.getMessage(BugzillaIssueProvider.class, "BugzillaIssueProvider.resolveIssueMessage"); //NOI18N
+                                    String pattern = NbBundle.getMessage(BugzillaTaskListProvider.class, "BugzillaIssueProvider.resolveIssueMessage"); //NOI18N
                                     final String resolution = panel.getSelectedResolution();
                                     final String duplicateId = panel.getDuplicateId();
                                     final String comment = panel.getComment();
@@ -734,7 +743,7 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                                                 issue.addComment(comment);
                                             }
                                             if (issue.submitAndRefresh()) {
-                                                issue.open();
+                                                BugzillaUtil.openIssue(issue);
                                             }
                                         }
                                     }, MessageFormat.format(pattern, issue.getID()));
@@ -775,6 +784,18 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
                 repositoryRef = new WeakReference<BugzillaRepository>(repository);
             }
         }
+
+        @Override
+        public void open() {
+            BugzillaIssue issue = getIssue();
+            if (issue != null) {
+                LOG.log(Level.FINER, "TaskListProvider: openning issue {0}", getName()); //NOI18N
+                // openning the real issue in it's top component
+                BugzillaUtil.openIssue(issue);
+            } else {
+                LOG.log(Level.FINE, "null issue returned for {0}", getName()); //NOI18N
+            }
+        }
     }
 
     /**
@@ -785,28 +806,32 @@ public final class BugzillaIssueProvider extends TaskListIssueProvider implement
         private final String projectName;
         private boolean loginStatusChanged = true;
 
-        public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaIssueProvider provider) throws MalformedURLException {
+        public KenaiBugzillaLazyIssue (BugzillaIssue issue, BugzillaTaskListProvider provider) throws MalformedURLException {
             super(issue, provider);
-            RepositoryProvider repo = issue.getRepository();
+            BugzillaRepository repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
             projectName = ((KenaiRepository) repo).getProductName();
         }
 
-        public KenaiBugzillaLazyIssue (String name, URL url, String issueId, String projectName, BugzillaIssueProvider provider) {
+        public KenaiBugzillaLazyIssue (String name, URL url, String issueId, String projectName, BugzillaTaskListProvider provider) {
             super(name, url, issueId, null, provider);
             this.projectName = projectName;
         }
 
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
-            RepositoryProvider repo = null;
+            BugzillaRepository repo = null;
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for: " + projectName);
                     String url = getUrl().toString();
-                    repo = KenaiUtil.getRepository(url, projectName);
+                    Repository repository = KenaiUtil.getRepository(url, projectName);
+                    repo = provider.bugzillaRepositories.get(repository.getId());
+                    assert repo != null;
+                    assert repo instanceof KenaiRepository;
+                    return (KenaiRepository) repo;
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiBugzillaLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }
