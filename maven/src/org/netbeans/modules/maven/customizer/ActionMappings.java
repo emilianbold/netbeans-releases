@@ -360,7 +360,6 @@ public class ActionMappings extends javax.swing.JPanel {
         lblMappings.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jScrollPane2.setViewportView(lblHint);
@@ -449,8 +448,8 @@ public class ActionMappings extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbRecursively)
                     .addComponent(cbBuildWithDeps))
-                .addGap(41, 41, 41)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 105, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
