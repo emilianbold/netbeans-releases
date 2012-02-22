@@ -57,6 +57,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
+import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -119,7 +120,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         }
 
         Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, -1, -1);
-        Set<String> plugins = new HashSet<String>();
+        Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
 
         for (Analyzer a : toRun) {
             plugins.addAll(a.requiredPlugins(ctx));

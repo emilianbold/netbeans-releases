@@ -41,14 +41,8 @@
  */
 package org.netbeans.modules.findbugs.installer;
 
-import java.util.Collections;
-import org.netbeans.api.autoupdate.InstallSupport;
-import org.netbeans.api.autoupdate.OperationContainer;
-import org.netbeans.api.autoupdate.UpdateElement;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 
 final class FindBugsPanel extends javax.swing.JPanel {
 
@@ -99,29 +93,14 @@ final class FindBugsPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @Messages("FindBugs_Library=FindBugs Library")
     private void installActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installActionPerformed
-        UpdateUnit fb = findFindbugsLibrary();
-
-        if (fb == null) return ; //XXX: show warning to the user
-
-        OperationContainer<InstallSupport> installer = OperationContainer.createForInstall();
-
-        for (UpdateElement ue : installer.add(fb.getAvailableUpdates().get(0)).getRequiredElements()) {
-            installer.add(ue);
+        try {
+            new ModuleInstallerSupport().download("org.netbeans.libs.findbugs", Bundle.FindBugs_Library());
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
         }
-
-        PluginManager.openInstallWizard(installer);
     }//GEN-LAST:event_installActionPerformed
-
-    private static UpdateUnit findFindbugsLibrary() {
-        for (UpdateUnit uu : UpdateManager.getDefault().getUpdateUnits()) {
-            if ("org.netbeans.libs.findbugs".equals(uu.getCodeName())) {
-                return uu;
-            }
-        }
-
-        return null;
-    }
 
     void load() {
     }

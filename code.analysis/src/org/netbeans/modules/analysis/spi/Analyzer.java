@@ -55,7 +55,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 public interface Analyzer {
 
     public Iterable<? extends ErrorDescription> analyze(Context context);
-    public Collection<? extends String> requiredPlugins(Context context);
+    public Collection<? extends MissingPlugin> requiredPlugins(Context context);
     public String getDisplayName();
     public String getDisplayName4Id(String id);
     public String getCategoryId4WarningId(String id);
@@ -109,8 +109,50 @@ public interface Analyzer {
                 public Context createContext(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize) {
                     return new Context(scope, progress, bucketStart, bucketSize);
                 }
+
+                @Override
+                public String getDisplayName(MissingPlugin missing) {
+                    return missing.displayName;
+                }
+
+                @Override
+                public String getCNB(MissingPlugin missing) {
+                    return missing.cnb;
+                }
             };
         }
+    }
+
+    public static final class MissingPlugin {
+        private final String cnb;
+        private final String displayName;
+        public MissingPlugin(String cnb, String displayName) {
+            this.cnb = cnb;
+            this.displayName = displayName;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MissingPlugin other = (MissingPlugin) obj;
+            if ((this.cnb == null) ? (other.cnb != null) : !this.cnb.equals(other.cnb)) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 89 * hash + (this.cnb != null ? this.cnb.hashCode() : 0);
+            return hash;
+        }
+        
     }
 
 }

@@ -168,7 +168,7 @@ public class AnalyzerImpl implements Analyzer {
     }
 
     @Override
-    public Collection<? extends String> requiredPlugins(Context context) {
+    public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
         return Collections.emptyList();
     }
 

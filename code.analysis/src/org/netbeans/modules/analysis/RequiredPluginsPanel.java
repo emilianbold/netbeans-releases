@@ -50,7 +50,9 @@ import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.autoupdate.ui.api.PluginManager;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -58,7 +60,7 @@ import org.netbeans.modules.autoupdate.ui.api.PluginManager;
  */
 public class RequiredPluginsPanel extends javax.swing.JPanel {
 
-    private Set<String> plugins = new HashSet<String>();
+    private Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
 
     public RequiredPluginsPanel() {
         initComponents();
@@ -103,29 +105,15 @@ public class RequiredPluginsPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void installActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_installActionPerformed
-        Set<String> plugins = new HashSet<String>(this.plugins);
-        List<UpdateUnit> updates = new ArrayList<UpdateUnit>(plugins.size());
+        Set<MissingPlugin> plugins = new HashSet<MissingPlugin>(this.plugins);
 
-        for (UpdateUnit uu : UpdateManager.getDefault().getUpdateUnits()) {
-            if (plugins.contains(uu.getCodeName())) {
-                plugins.remove(uu.getCodeName());
-                updates.add(uu);
+        for (MissingPlugin missing : plugins) {
+            try {
+                new ModuleInstallerSupport().download(SPIAccessor.ACCESSOR.getCNB(missing), SPIAccessor.ACCESSOR.getDisplayName(missing));
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-
-        if (!plugins.isEmpty()) {
-            //XXX: warn the user
-        }
-
-        OperationContainer<InstallSupport> installer = OperationContainer.createForInstall();
-
-        for (UpdateUnit uu : updates) {
-            for (UpdateElement ue : installer.add(uu.getAvailableUpdates().get(0)).getRequiredElements()) {
-                installer.add(ue);
-            }
-        }
-
-        PluginManager.openInstallWizard(installer);
     }//GEN-LAST:event_installActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -133,7 +121,7 @@ public class RequiredPluginsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
-    public void setRequiredPlugins(Set<String> plugins) {
+    public void setRequiredPlugins(Set<MissingPlugin> plugins) {
         this.plugins = plugins;
     }
 }
