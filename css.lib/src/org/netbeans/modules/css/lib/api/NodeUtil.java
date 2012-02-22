@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib.api;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.StringTokenizer;
@@ -166,13 +167,14 @@ public final class NodeUtil {
         return found.get();
     }
     
-    public static List<Node> getChildrenRecursivelyByType(Node root, final NodeType type) {
+    public static List<Node> getChildrenRecursivelyByType(Node root, final NodeType... type) {
+        final EnumSet<NodeType> nodeTypes = EnumSet.of(type[0], type);
         List<Node> found = new ArrayList<Node>();
         NodeVisitor<List<Node>> visitor = new NodeVisitor<List<Node>>(found) {
 
             @Override
             public boolean visit(Node node) {
-                if(node.type() == type) {
+                if(nodeTypes.contains(node.type())) {
                     getResult().add(node);
                 }
                 return false;

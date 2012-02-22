@@ -42,8 +42,6 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.css.lib.properties.TokenAcceptor;
-import org.netbeans.modules.css.lib.properties.Tokenizer;
 
 /**
  *

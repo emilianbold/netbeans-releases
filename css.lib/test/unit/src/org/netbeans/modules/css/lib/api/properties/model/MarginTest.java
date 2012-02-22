@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -162,6 +163,23 @@ public class MarginTest extends CssTestBase {
      
     }
     
+    public void testMarginLeft() {
+        Box<MarginWidth> mbox1 = getBoxModel("margin-left", "2px");
+        assertBox(mbox1, null, null, null, "2px");
+    }
+    public void testMarginRight() {
+        Box<MarginWidth> mbox1 = getBoxModel("margin-right", "2px");
+        assertBox(mbox1, null, "2px", null, null);
+    }
+    public void testMarginTop() {
+        Box<MarginWidth> mbox1 = getBoxModel("margin-top", "2px");
+        assertBox(mbox1, "2px", null, null, null);
+    }
+    public void testMarginBottom() {
+        Box<MarginWidth> mbox1 = getBoxModel("margin-bottom", "2px");
+        assertBox(mbox1, null, null, "2px", null);
+    }
+    
     public void testMarginBox() {
         dumpMargin("20px");
         dumpMargin("30% 50%");
@@ -217,6 +235,8 @@ public class MarginTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel(propertyName);
         ResolvedProperty val = new ResolvedProperty(model, text);
 
+        dumpTree(val.getParseTree());
+        
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
         val.getParseTree().accept(modelvisitor);
 
@@ -244,6 +264,21 @@ public class MarginTest extends CssTestBase {
     
     private void dumpBox(Box<MarginWidth> box) {
         Utils.dumpBox(box);
+    }
+    
+    protected void assertBox(Box<MarginWidth> box, String top, String right, String bottom, String left) {
+        MarginWidth e = box.getEdge(Edge.TOP);
+        assertEquals(top, e == null ? null : e.getTextRepresentation());
+
+        e = box.getEdge(Edge.RIGHT);
+        assertEquals(right, e == null ? null : e.getTextRepresentation());
+        
+        e = box.getEdge(Edge.BOTTOM);
+        assertEquals(bottom, e == null ? null : e.getTextRepresentation());
+        
+        e = box.getEdge(Edge.LEFT);
+        assertEquals(left, e == null ? null : e.getTextRepresentation());
+        
     }
 
     

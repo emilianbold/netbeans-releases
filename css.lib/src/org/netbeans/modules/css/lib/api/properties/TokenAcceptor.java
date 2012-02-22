@@ -39,7 +39,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties;
+package org.netbeans.modules.css.lib.api.properties;
 
 import org.netbeans.modules.css.lib.api.properties.Token;
 import java.text.DateFormat;

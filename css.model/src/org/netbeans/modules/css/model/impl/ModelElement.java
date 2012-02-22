@@ -41,11 +41,11 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.PlainElement;
@@ -69,6 +69,21 @@ public abstract class ModelElement implements Element {
         this.context = context;
     }
 
+    @Override
+    public boolean isValid() {
+        if(context == null) {
+            //artificial (node-less) elements
+            return true;
+        }
+        Node node = context.getNode();
+        return NodeUtil.getChildrenRecursivelyByType(node, NodeType.error, NodeType.recovery).isEmpty();
+    }
+    
+    @Override
+    public Collection<? extends SemanticModel> getSemanticModels() {
+        return Collections.emptyList();
+    }
+    
     @Override
     public int getStartOffset() {
         return context != null ? context.getNode().from() : -1;

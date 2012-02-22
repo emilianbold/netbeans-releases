@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib.api.properties.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
@@ -133,19 +134,19 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
     }
 
     private void handleNode(String modelClassName, Node node) {
-        try {
-            //1. find the corresponding field in the current node
-            String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
-            Class<?> constructorArgumentClass;
-            if (node instanceof Node.ResolvedTokenNode) {
-                constructorArgumentClass = Node.ResolvedTokenNode.class;
-            } else if (node instanceof Node.GroupNode) {
-                constructorArgumentClass = Node.class;
-            } else {
-                throw new IllegalStateException();
-            }
+        //1. find the corresponding field in the current node
+        String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
+        Class<?> constructorArgumentClass;
+        if (node instanceof Node.ResolvedTokenNode) {
+            constructorArgumentClass = Node.ResolvedTokenNode.class;
+        } else if (node instanceof Node.GroupNode) {
+            constructorArgumentClass = Node.class;
+        } else {
+            throw new IllegalStateException();
+        }
 
-            Class<? extends NodeModel> currentModelClass = current.peek().getClass();
+        Class<? extends NodeModel> currentModelClass = current.peek().getClass();
+        try {
             Field field = currentModelClass.getField(submodelFieldName);
             Class<?> fieldType = field.getType();
 
@@ -156,15 +157,17 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
 
             current.push(modelInstance);
 
-        } catch (Exception /*
-                 * NoSuchFieldException | SecurityException
-                 */ ex) {
-            System.out.println(
-                    String.format("Error processing node %s. Current element %s doesn't contain field %s!",
-                    node,
-                    current.peek(),
-                    ex.getMessage()));
-            ex.printStackTrace();
+        } catch (NoSuchFieldException ex) {
+            String msg = String.format("Processing node %s: No public field %s found in the model class %s", node, submodelFieldName, currentModelClass);
+            throw new RuntimeException(msg, ex);
+        } catch (Exception e) {
+            /*
+             * NoSuchMethodException, InstantiationException,
+             * IllegalAccessException, InvocationTargetException,
+             * SecurityException
+             */
+            throw new RuntimeException(e);
+
         }
     }
 

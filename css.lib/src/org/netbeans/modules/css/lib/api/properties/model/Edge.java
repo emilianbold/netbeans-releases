@@ -46,5 +46,6 @@ package org.netbeans.modules.css.lib.api.properties.model;
  * @author marekfukala
  */
 public enum Edge {
-    TOP, BOTTOM, LEFT, RIGHT
+    //do not change the order!
+    TOP, RIGHT, BOTTOM, LEFT
 }

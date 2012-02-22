@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties;
+package org.netbeans.modules.css.lib.api.properties;
 
 import org.netbeans.modules.css.lib.api.properties.Token;
 import java.util.LinkedList;

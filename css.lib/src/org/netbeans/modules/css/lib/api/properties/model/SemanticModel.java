@@ -47,5 +47,12 @@ package org.netbeans.modules.css.lib.api.properties.model;
  */
 public interface SemanticModel {
     
+    public String getName();
+    
+    public String getDisplayName();
+    
+    public String getDescription();
+    
+    public String getCategoryName();
   
 }

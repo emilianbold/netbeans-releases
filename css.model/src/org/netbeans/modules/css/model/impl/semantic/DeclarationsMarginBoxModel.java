@@ -47,13 +47,20 @@ import java.util.EnumMap;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.*;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
+@NbBundle.Messages({
+    "CTL_MarginDisplayName=Margin", // NOI18N
+    "CTL_MarginDescription=Margin Box Model", // NOI18N
+    "CTL_MarginCategory=Box" //NOI18N
+})
 public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
 
+    private static final String MODEL_NAME = "margin"; //NOI18N
     private Declarations declarations;
     private final CascadedBox<MarginWidth> cascadedBox = new CascadedBox<MarginWidth>();
     private final Collection<Declaration> involved = new ArrayList<Declaration>();
@@ -61,7 +68,7 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
 
     public DeclarationsMarginBoxModel(Declarations element) {
         this.declarations = element;
-
+        
         updateModel();
     }
 
@@ -75,23 +82,24 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
                 involved.add(declaration);
             }
         }
-        
+
         LISTENERS.fireModelChanged();
-        
+
     }
-    
+
     @Override
     public void setEdge(Edge edge, MarginWidth value) {
-        if(getEdge(edge).equals(value)) {
-            return ; //no change
+        MarginWidth current = getEdge(edge);
+        if (current == null && value == null || current != null && current.equals(value)) {
+            return; //no change
         }
-        
+
         //merge the original Box with the new edge setting
         EnumMap<Edge, MarginWidth> map = new EnumMap<Edge, MarginWidth>(Edge.class);
         map.put(Edge.TOP, getEdge(Edge.TOP));
         map.put(Edge.BOTTOM, getEdge(Edge.BOTTOM));
         map.put(Edge.LEFT, getEdge(Edge.LEFT));
-        map.put(Edge.RIGHT, getEdge(Edge.RIGHT));                
+        map.put(Edge.RIGHT, getEdge(Edge.RIGHT));
         map.put(edge, value);
 
         //remove the existing declarations
@@ -103,49 +111,85 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
         Property p = f.createProperty("margin"); //NOI18N
 
         //TODO remove the hardcoding - make the algorithm generic
-        
+
         MarginWidth t = map.get(Edge.TOP);
         MarginWidth r = map.get(Edge.RIGHT);
         MarginWidth b = map.get(Edge.BOTTOM);
         MarginWidth l = map.get(Edge.LEFT);
-        
-        StringBuilder sb = new StringBuilder();
-        if(t.equals(b)) {
-            if(l.equals(r)) {
-                if(t.equals(l)) {
-                    //TRBL
-                    sb.append(t.getTextRepresentation());
-                } else {
-                    //TB LT
-                    sb.append(t.getTextRepresentation());
-                    sb.append(" ");
-                    sb.append(l.getTextRepresentation());
+
+        if (t == null || r == null || b == null || l == null) {
+            //use single properties
+            for(Edge e : Edge.values()) {
+                MarginWidth mw = map.get(e);
+                if(mw != null) {
+                    CharSequence propVal = mw.getTextRepresentation();
+                    Expression expr = f.createExpression(propVal);
+                    PropertyValue pv = f.createPropertyValue(expr);
+                    
+                    String propertyName = String.format("margin-%s", e.name().toLowerCase()); //NOI18N
+                    Property prop = f.createProperty(propertyName);
+                    Declaration newD = f.createDeclaration(prop, pv, false);
+                    
+                    declarations.addDeclaration(newD);
+                    
                 }
             }
-        } else if(l.equals(r)) {
-            //T LR B
-            sb.append(t.getTextRepresentation());
-            sb.append(" ");
-            sb.append(l.getTextRepresentation());
-            sb.append(" ");            
-            sb.append(b.getTextRepresentation());            
+            
+            
+
+            
+            
         } else {
-            //T R B L
-            sb.append(t.getTextRepresentation());
-            sb.append(" ");
-            sb.append(r.getTextRepresentation());
-            sb.append(" ");            
-            sb.append(b.getTextRepresentation());            
-            sb.append(" ");            
-            sb.append(l.getTextRepresentation());            
+
+            StringBuilder sb = new StringBuilder();
+            //all edges defined use aggregated notation
+            if (t.equals(b)) {
+                if (l.equals(r)) {
+                    if (t.equals(l)) {
+                        //TRBL
+                        sb.append(t.getTextRepresentation());
+                    } else {
+                        //TB LT
+                        sb.append(t.getTextRepresentation());
+                        sb.append(" ");
+                        sb.append(l.getTextRepresentation());
+                    }
+                } else {
+                    //TB L R - no such perm.
+                    sb.append(t.getTextRepresentation());
+                    sb.append(" ");
+                    sb.append(r.getTextRepresentation());
+                    sb.append(" ");
+                    sb.append(b.getTextRepresentation());
+                    sb.append(" ");
+                    sb.append(l.getTextRepresentation());
+
+                }
+            } else if (l.equals(r)) {
+                //T LR B
+                sb.append(t.getTextRepresentation());
+                sb.append(" ");
+                sb.append(l.getTextRepresentation());
+                sb.append(" ");
+                sb.append(b.getTextRepresentation());
+            } else {
+                //T R B L
+                sb.append(t.getTextRepresentation());
+                sb.append(" ");
+                sb.append(r.getTextRepresentation());
+                sb.append(" ");
+                sb.append(b.getTextRepresentation());
+                sb.append(" ");
+                sb.append(l.getTextRepresentation());
+            }
+
+            Expression e = f.createExpression(sb);
+            PropertyValue pv = f.createPropertyValue(e);
+
+            Declaration newD = f.createDeclaration(p, pv, false);
+
+            declarations.addDeclaration(newD);
         }
-
-        Expression e = f.createExpression(sb);
-        PropertyValue pv = f.createPropertyValue(e);
-
-        Declaration newD = f.createDeclaration(p, pv, false);
-
-        declarations.addDeclaration(newD);
 
         updateModel();
     }
@@ -163,5 +207,25 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
     @Override
     public void removeListener(SemanticModelListener listener) {
         LISTENERS.remove(listener);
+    }
+
+    @Override
+    public String getName() {
+        return MODEL_NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Bundle.CTL_MarginDisplayName();
+    }
+
+    @Override
+    public String getDescription() {
+        return Bundle.CTL_MarginDescription();
+    }
+
+    @Override
+    public String getCategoryName() {
+        return Bundle.CTL_MarginCategory();
     }
 }

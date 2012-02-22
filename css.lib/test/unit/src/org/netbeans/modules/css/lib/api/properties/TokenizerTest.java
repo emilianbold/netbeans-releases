@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.properties.Tokenizer;
 import java.util.Arrays;
 import java.util.List;
 import junit.framework.AssertionFailedError;

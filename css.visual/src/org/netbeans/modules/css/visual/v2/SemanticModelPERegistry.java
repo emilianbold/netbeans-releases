@@ -39,79 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.css.visual.v2;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import org.openide.nodes.Node.Property;
 
 /**
+ * temporary
  *
  * @author marekfukala
  */
-public class DeclarationsI extends ModelElement implements Declarations {
-
-    private List<Declaration> declarations = new ArrayList<Declaration>();    
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
-        @Override
-        public void elementAdded(Declaration declaration) {
-            declarations.add(declaration);
+public class SemanticModelPERegistry {
+    
+    //XXX use lookup
+    public static Property getProperty(RuleNode ruleNode, SemanticModel model) {
+        if(model.getName().equals("margin")) {
+            return new MarginModelProperty(ruleNode, (EditableBox)model);
         }
-    };
-
-    public DeclarationsI() {
-    }
-
-    public DeclarationsI(ModelElementContext context) {
-        super(context);
-        initChildrenElements();
-    }
-
-    @Override 
-    public Collection<? extends SemanticModel> getSemanticModels() {
-        return isValid() 
-                ? Collections.singletonList(new DeclarationsMarginBoxModel(this))
-                : Collections.<SemanticModel>emptyList();
+        return null;
     }
     
-    @Override
-    public List<Declaration> getDeclarations() {
-        return declarations;
-    }
-
-    @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
-
-    @Override
-    public void addDeclaration(Declaration declaration) {
-        addTextElement("\n");
-        addElement(declaration);
-        addTextElement(";\n");
-    }
-
-    @Override
-    public void removeDeclaration(Declaration declaration) {
-        int index = getElementIndex(declaration);
-        if(index == -1) {
-            return ;
-        }
-        removeElement(index); //remove the declaration
-        
-        //look if there's a semicolon and some whitespaces after the declaration
-        removeTokenElementsFw(index, ";", "\n", "");
-    }
-
-    @Override
-    protected Class getModelClass() {
-        return Declarations.class;
-    }
-
 }

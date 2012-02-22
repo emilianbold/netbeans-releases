@@ -39,79 +39,69 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.css.visual.v2;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import java.beans.PropertyEditorSupport;
+import java.lang.reflect.InvocationTargetException;
+import java.util.StringTokenizer;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author marekfukala
  */
-public class DeclarationsI extends ModelElement implements Declarations {
+public class EditableBoxPropertyEditor extends PropertyEditorSupport {
 
-    private List<Declaration> declarations = new ArrayList<Declaration>();    
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+    private static final String SEPARATOR = " "; //NOI18N
+    private static final String NO_VALUE = "-"; //NOI18N
+    private EditableBox<MarginWidth> editableBox;
+    MarginModelProperty property;
 
-        @Override
-        public void elementAdded(Declaration declaration) {
-            declarations.add(declaration);
+    public EditableBoxPropertyEditor(MarginModelProperty property) {
+        this.property = property;
+        editableBox = property.model;
+    }
+
+    @Override
+    public String getAsText() {
+        StringBuilder b = new StringBuilder();
+        for (Edge e : Edge.values()) {
+            MarginWidth mw = editableBox.getEdge(e);
+            b.append(mw == null ? NO_VALUE : mw.getTextRepresentation());
+            b.append(SEPARATOR);
         }
-    };
-
-    public DeclarationsI() {
-    }
-
-    public DeclarationsI(ModelElementContext context) {
-        super(context);
-        initChildrenElements();
-    }
-
-    @Override 
-    public Collection<? extends SemanticModel> getSemanticModels() {
-        return isValid() 
-                ? Collections.singletonList(new DeclarationsMarginBoxModel(this))
-                : Collections.<SemanticModel>emptyList();
-    }
-    
-    @Override
-    public List<Declaration> getDeclarations() {
-        return declarations;
+        return b.toString();
     }
 
     @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
-
-    @Override
-    public void addDeclaration(Declaration declaration) {
-        addTextElement("\n");
-        addElement(declaration);
-        addTextElement(";\n");
-    }
-
-    @Override
-    public void removeDeclaration(Declaration declaration) {
-        int index = getElementIndex(declaration);
-        if(index == -1) {
-            return ;
+    public void setAsText(String string) throws IllegalArgumentException {
+        StringTokenizer st = new StringTokenizer(string, SEPARATOR);
+        for (Edge e : Edge.values()) {
+            if (!st.hasMoreTokens()) {
+                throw new IllegalArgumentException("Too few arguments");
+            }
+            String token = st.nextToken();
+            MarginWidth mw;
+            if (NO_VALUE.equalsIgnoreCase(token)) {
+                mw = null;
+            } else {
+                mw = MarginWidth.parseMarginWidth(token);
+                if (mw == null) {
+                    throw new IllegalArgumentException(String.format("Invalid value %s", token));
+                }
+            }
+            editableBox.setEdge(e, mw);
         }
-        removeElement(index); //remove the declaration
-        
-        //look if there's a semicolon and some whitespaces after the declaration
-        removeTokenElementsFw(index, ";", "\n", "");
-    }
 
-    @Override
-    protected Class getModelClass() {
-        return Declarations.class;
+        try {
+            property.setValue(editableBox);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
-
 }

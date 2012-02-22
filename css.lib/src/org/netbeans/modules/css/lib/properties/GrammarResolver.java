@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
+import org.netbeans.modules.css.lib.api.properties.Tokenizer;
+import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
