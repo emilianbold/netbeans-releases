@@ -58,4 +58,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testjQueryFragment01() throws Exception {
         checkSemantic("testfiles/model/jQueryFragment01.js");
     }
+    
+    public void testCzechChars() throws Exception {
+        checkSemantic("testfiles/coloring/czechChars.js");
+    }
 }
