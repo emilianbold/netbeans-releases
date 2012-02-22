@@ -53,7 +53,6 @@ import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -119,18 +118,17 @@ public class BugzillaQuery {
         support.removePropertyChangeListener(listener);
     }
 
-    // XXX does this has to be protected
-    protected void fireQuerySaved() {
+    private void fireQuerySaved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
         repository.fireQueryListChanged();
     }
 
-    protected void fireQueryRemoved() {
+    private void fireQueryRemoved() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
         repository.fireQueryListChanged();
     }
 
-    protected void fireQueryIssuesChanged() {
+    private void fireQueryIssuesChanged() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
     
@@ -175,6 +173,7 @@ public class BugzillaQuery {
 
         final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
+            @Override
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 try {
@@ -187,8 +186,8 @@ public class BugzillaQuery {
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
-                        if(!wasRun() && issues.size() != 0) {
-                                Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
+                        if(!wasRun() && !issues.isEmpty()) {
+                                Bugzilla.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                                 assert false;
                         }
                         // read the stored state ...
@@ -200,7 +199,7 @@ public class BugzillaQuery {
                     firstRun = false;
 
                     // run query to know what matches the criteria
-                    StringBuffer url = new StringBuffer();
+                    StringBuilder url = new StringBuilder();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
@@ -341,6 +340,7 @@ public class BugzillaQuery {
 
     private class IssuesIdCollector extends TaskDataCollector {
         public IssuesIdCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             issues.add(id);
@@ -348,6 +348,7 @@ public class BugzillaQuery {
     };
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
