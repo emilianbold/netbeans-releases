@@ -1011,7 +1011,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     }
     
     static boolean isInstant() {
-        return Boolean.parseBoolean(System.getProperty("org.netbeans.modules.refactoring.instant.find.usgaes", "false"));
+        return Boolean.parseBoolean(System.getProperty("org.netbeans.modules.refactoring.instant.find.usages", "false"));
     }
     
     private void setButtonsEnabled(boolean enabled) {
