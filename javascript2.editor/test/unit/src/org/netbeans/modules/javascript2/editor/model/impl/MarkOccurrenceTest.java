@@ -119,6 +119,30 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/completion/undefinedMethods.js", "dvorek.getKo^cicku().udelejMau();", true);
     }
 
+    public void testFunctionParameters05() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "jQuery(function($^){", true);
+    }
+    
+    public void testProperty01() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "    $.timepic^ker.regional[\"cs\"] = {", true);
+    }
+
+    public void testProperty02() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "    $.timepicker.region^al[\"cs\"] = {", true);
+    }
+    
+    public void testProperty03() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "    $.timepicker.regional[\"c^s\"] = {", true);
+    }
+
+    public void testProperty04() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "    te^st.anotherProperty = test.myProperty;", true);
+    }
+    
+    public void testProperty05() throws Exception {
+        checkOccurrences("testfiles/coloring/czechChars.js", "    test.anotherProperty = test.myPrope^rty;", true);
+    }
+
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
