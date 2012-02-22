@@ -247,7 +247,7 @@ public class RepositoryRegistry {
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
             for (String id : ids) {
                 String idArray[] = id.split(DELIMITER);
-                String connectorId = idArray[0].substring(REPO_ID.length());
+                String connectorId = idArray[1];
                 for (DelegatingConnector c : connectors) {
                     if(c.getID().equals(connectorId)) {
                         RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
@@ -269,7 +269,7 @@ public class RepositoryRegistry {
     }
     
     /**
-     * package for testing 
+     * package private for testing 
      */
     void putRepository(Repository repository) {
         RepositoryInfo info = APIAccessor.IMPL.getInfo(repository);
