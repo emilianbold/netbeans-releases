@@ -131,13 +131,14 @@ public final class DiffPanel extends JPanel {
             // set tmp local file
             syncItem.setTmpLocalFile(localTmpFile);
         } else {
-            // cleanup tmp local file
+            // cleanup local tmp file
             if (localTmpFile != null) {
                 localTmpFile.cleanup();
             }
-            if (remoteTmpFile != null) {
-                remoteTmpFile.cleanup();
-            }
+        }
+        // always cleanup remote tmp file
+        if (remoteTmpFile != null) {
+            remoteTmpFile.cleanup();
         }
         return ok;
     }
