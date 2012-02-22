@@ -41,16 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.api.search;
+package org.netbeans.spi.search;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.provider.impl.FlatSearchIterator;
-import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.impl.CompoundSearchInfoDefinition;
 import org.netbeans.spi.search.impl.FlatSearchInfoDefinition;
 import org.netbeans.spi.search.impl.SharabilityFilter;

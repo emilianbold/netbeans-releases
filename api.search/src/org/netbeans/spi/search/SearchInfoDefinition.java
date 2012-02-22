@@ -46,7 +46,6 @@ package org.netbeans.spi.search;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;

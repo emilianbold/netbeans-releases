@@ -46,11 +46,11 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
-import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchFilterDefinition.FolderResult;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

@@ -42,9 +42,9 @@
 package org.netbeans.spi.search.impl;
 
 import java.util.List;
-import org.netbeans.api.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
