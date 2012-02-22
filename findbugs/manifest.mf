@@ -1,4 +1,5 @@
 Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.findbugs
 OpenIDE-Module-Layer: org/netbeans/modules/findbugs/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/findbugs/Bundle.properties

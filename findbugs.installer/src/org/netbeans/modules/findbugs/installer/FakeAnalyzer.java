@@ -83,7 +83,7 @@ public class FakeAnalyzer implements Analyzer {
 
     @Override
     public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-        return Arrays.asList(new MissingPlugin("org.netbeans.libs.findbugs", "FindBugs Library"));
+        return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", "FindBugs Integration"));
     }
 
 }

@@ -64,10 +64,6 @@
                 <package>javax.annotation.meta</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/annotations-2.0.0.jar</runtime-relative-path>
-                <binary-origin>external/annotations-2.0.0.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/asm-3.3.jar</runtime-relative-path>
                 <binary-origin>external/asm-3.3.jar</binary-origin>
             </class-path-extension>
