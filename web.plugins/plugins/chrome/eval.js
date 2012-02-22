@@ -61,6 +61,7 @@ var listener = function(port) {
                 console.log(err);
                 if (err instanceof Error) {
                     result.result = err.name + ':' + err.message;
+                    console.log(result.result);
                 } else {
                     result.result = err;
                 }
