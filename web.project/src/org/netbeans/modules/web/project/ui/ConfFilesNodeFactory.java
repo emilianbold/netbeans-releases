@@ -103,12 +103,12 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 /**
  *
@@ -178,18 +178,6 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         }
     }
 
-    private static Lookup createLookup(Project project) {
-        if (project.getProjectDirectory().isValid()) {
-            DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-            SearchInfoDefinition searchInfo = SearchInfoDefinitionFactory.createSearchInfo(
-                                rootFolder.getPrimaryFile());
-            // XXX Remove root folder after FindAction rewrite
-            return Lookups.fixed(new Object[]{project, rootFolder, searchInfo});
-        } else {
-            return Lookups.fixed(new Object[0]);
-        }
-    }
-
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
         private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
@@ -207,12 +195,26 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
-            //super(ConfFilesChildren.forProject(prj), createLookup(prj));
+            this(prj, new InstanceContent());
+        }
+
+        private ConfFilesNode(Project prj, InstanceContent content) {
             super(Children.create(ConfFilesChildrenFactory.forProject(prj), true), 
-                    createLookup(prj));
+                    new AbstractLookup(content));
             this.project = prj;
+            setLookupContent(content);
             setName("configurationFiles"); // NOI18N
             iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
+        }
+
+        private void setLookupContent(InstanceContent content) {
+            if (project.getProjectDirectory().isValid()) {
+                SearchInfoDefinition searchInfo;
+                searchInfo = SearchInfoDefinitionFactory.createSearchInfoBySubnodes(
+                        this);
+                content.add(searchInfo);
+                content.add(project);
+            }
         }
 
         @Override
