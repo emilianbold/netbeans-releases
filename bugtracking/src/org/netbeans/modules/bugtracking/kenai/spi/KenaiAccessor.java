@@ -202,7 +202,7 @@ public abstract class KenaiAccessor {
                     if(repository == null) {
                         return;
                     }
-                    if(query != KenaiUtil.getAllIssuesQuery(repository)) {
+                    if(!KenaiUtil.isKenai(repository) || query != KenaiUtil.getAllIssuesQuery(repository)) {
                         return;
                     }
                     KenaiProject kenaiProject = KenaiUtil.getKenaiProject(repository);
