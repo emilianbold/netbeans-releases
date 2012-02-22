@@ -849,15 +849,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", preprocHandler); //NOI18N
         }
-        if(TraceFlags.CPP_PARSER_ACTION) {
-            disposeAll(false);
-        }
+        disposeAll(false);
         CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound, callback);
         if (parsing != null) {
             if (isValid()) {
-                if(!TraceFlags.CPP_PARSER_ACTION) {
-                    disposeAll(false);
-                }
                 parsing.render();
             }
         } else {
