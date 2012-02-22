@@ -227,6 +227,7 @@ Context.inspectTab = function(info, tab, accessConfirmed) {
 
 chrome.contextMenus.create({
     title: 'Inspect in NetBeans',
+    contexts: ['all'],
     onclick: Context.inspectTab,
     documentUrlPatterns: [
         'http://*/*',
