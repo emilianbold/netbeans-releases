@@ -62,6 +62,9 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.form.FormUtils;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassSource.Entry;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -79,6 +82,7 @@ public class ClassSourceResolver implements ClassSource.Resolver {
     private static final String TYPE_JAR = "jar"; // NOI18N
     private static final String TYPE_LIBRARY = "library"; // NOI18N
     private static final String TYPE_PROJECT = "project"; // NOI18N
+    private static final String TYPE_NAMED_DEPENDENCY ="dependency"; // only for NBM projects // NOI18N
 
     @Override
     public Entry resolve(String type, String name) {
@@ -135,6 +139,16 @@ public class ClassSourceResolver implements ClassSource.Resolver {
                 }
             }
             return null;
+        } else if (type.equals(TYPE_NAMED_DEPENDENCY)) {
+            Library lib = null;
+            LibraryImplementation libImpl = LibrariesSupport.createLibraryImplementation("j2se", new String[] {"classpath"}); // NOI18N
+            libImpl.setName(name);
+            try {
+                libImpl.setContent("classpath", Collections.singletonList(
+                        new URL("jar:nbinst://"+name+"/modules/"+name.replace('.', '-')+".jar!/"))); // NOI18N
+                lib = LibraryFactory.createLibrary(libImpl);
+            } catch (MalformedURLException ex) {}
+            return lib != null ? new LibraryEntry(lib) : null;
         } else {
             return null;
         }
@@ -225,7 +239,7 @@ public class ClassSourceResolver implements ClassSource.Resolver {
             // For backward compatibility with old *.palette_item files, treat bare names as global libraries.
             // Project libraries are given as e.g. "file:/some/where/libs/index.properties#mylib"
             LibraryManager mgr = lib.getManager();
-            if (mgr == LibraryManager.getDefault()) {
+            if (mgr == LibraryManager.getDefault() || mgr == null) {
                 return lib.getName();
             } else {
                 return mgr.getLocation() + "#" + lib.getName(); // NOI18N
