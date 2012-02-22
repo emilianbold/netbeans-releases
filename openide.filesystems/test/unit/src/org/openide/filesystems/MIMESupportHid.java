@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.filesystems;
 
-package org.netbeans.modules.maven.classpath;
-
-import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.apache.maven.model.Build;
-import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.openide.filesystems.FileUtil;
+import junit.framework.Assert;
+import org.netbeans.modules.openide.filesystems.declmime.MIMEResolverImpl;
 
 /**
- * class path def for runtime..
- * @author  Milos Kleint
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /** Creates a new instance of RuntimeClassPathImpl */
-    public RuntimeClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
-        
-    }
-    
-    @Override
-    URI[] createPath() {
-        List<URI> lst = createPath(getMavenProject().getOriginalMavenProject());
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
-    }
+class MIMESupportHid {
 
-    public static List<URI> createPath(MavenProject prj) {
-        assert prj != null;
-        List<URI> lst = new ArrayList<URI>();
-        Build build = prj.getBuild();
-        if (build != null) {
-            String outputDirectory = build.getOutputDirectory();
-            if (outputDirectory != null) {
-                File fil = new File(outputDirectory);
-                fil = FileUtil.normalizeFile(fil);
-                lst.add(fil.toURI());
-            }
-        }
-        List<Artifact> arts = prj.getRuntimeArtifacts();
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(fil.toURI());
-            } else {
-              //NOPMD   //null means dependencies were not resolved..
-            }
-        }
-        return lst;
+    static void assertNonDeclarativeResolver(String msg, MIMEResolver expected, MIMEResolver... arr) {
+        assertNonDeclarativeResolver(msg, new MIMEResolver[] { expected }, arr);
     }
+    static void assertNonDeclarativeResolver(String msg, MIMEResolver[] expected, MIMEResolver... arr) {
+        Assert.assertNotNull(msg + " result was computed", arr);
+        List<MIMEResolver> filter = new ArrayList<MIMEResolver>();
+        for (MIMEResolver m : arr) {
+            if (!MIMEResolverImpl.isDeclarative(m)) {
+                filter.add(m);
+            }
+        }
+        List<MIMEResolver> exp = Arrays.asList(expected);
+        Assert.assertTrue(msg + " Expected " + exp + " present: " + filter, exp.equals(filter));
+    }
+    
 }

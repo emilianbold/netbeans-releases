@@ -713,7 +713,6 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         @Override
         public void taskFinished(Task task) {
             initListeners();
-            assert !mimeResolvers.allInstances().isEmpty() : "MIME listeners are initialized only when MIME resolvers are ready!"; 
         }
         
         private void initListeners() {
