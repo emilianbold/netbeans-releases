@@ -113,32 +113,29 @@ public final class SearchInfoDefinitionUtils {
             } else {
                 return SearchInfoDefinitionFactory.createSearchInfo(
                         dataObject.getPrimaryFile(),
-                        getFiltersForNode(node, subTreeSearchOptions));
+                        getFiltersForNode(subTreeSearchOptions));
             }
         }
     }
 
     /**
      * Find appropriate SearchFilters for searching under a node. Default
-     * filters are alway returned in the list.
+     * filters are returned if no SubTreeSearchOptions is defined.
      */
-    private static SearchFilterDefinition[] getFiltersForNode(Node node,
+    private static SearchFilterDefinition[] getFiltersForNode(
             SubTreeSearchOptions subTreeSearchOptions) {
 
         if (subTreeSearchOptions != null) {
-            List<SearchFilterDefinition> filters =
+            List<SearchFilterDefinition> filterList =
                     subTreeSearchOptions.getFilters();
-            SearchFilterDefinition[] nodeFilters =
-                    new SearchFilterDefinition[filters.size() + 1];
-            nodeFilters[0] = SearchInfoDefinitionFactory.VISIBILITY_FILTER;
-            int i = 1;
-            for (SearchFilterDefinition sf : filters) {
-                nodeFilters[i++] = sf;
-            }
-            return nodeFilters;
+            SearchFilterDefinition[] filterArray =
+                    new SearchFilterDefinition[filterList.size()];
+            return filterList.toArray(filterArray);
         } else {
-            return new SearchFilterDefinition[]{
-                        SearchInfoDefinitionFactory.VISIBILITY_FILTER};
+            List<SearchFilterDefinition> defaults =
+                    SearchInfoDefinitionFactory.DEFAULT_FILTER_DEFS;
+            return defaults.toArray(
+                    new SearchFilterDefinition[defaults.size()]);
         }
     }
 
