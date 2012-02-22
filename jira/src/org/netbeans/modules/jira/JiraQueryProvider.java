@@ -81,12 +81,12 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
 
     @Override
     public void removePropertyChangeListener(JiraQuery query, PropertyChangeListener listener) {
-        query.addPropertyChangeListener(listener);
+        query.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(JiraQuery query, PropertyChangeListener listener) {
-        query.removePropertyChangeListener(listener);
+        query.addPropertyChangeListener(listener);
     }
 
     @Override

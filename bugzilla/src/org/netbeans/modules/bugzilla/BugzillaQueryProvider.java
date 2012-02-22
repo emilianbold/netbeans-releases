@@ -81,12 +81,12 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
 
     @Override
     public void removePropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.addPropertyChangeListener(listener);
+        query.removePropertyChangeListener(listener);
     }
 
     @Override
     public void addPropertyChangeListener(BugzillaQuery query, PropertyChangeListener listener) {
-        query.removePropertyChangeListener(listener);
+        query.addPropertyChangeListener(listener);
     }
 
     @Override
