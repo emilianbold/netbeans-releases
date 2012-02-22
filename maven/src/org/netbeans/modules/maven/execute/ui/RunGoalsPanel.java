@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.execute.ui;
 
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -50,21 +49,22 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
+import org.codehaus.plexus.util.StringUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.TestChecker;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.api.ProjectProfileHandler;
-import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.customizer.PropertySplitter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.codehaus.plexus.util.StringUtils;
+import org.netbeans.modules.maven.execute.BeanRunConfig;
+import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.TestChecker;
-import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 
 /**
  *
@@ -102,6 +102,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                         e.printStackTrace();
                     }
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             goalcompleter.setValueList(strs);
                         }
@@ -128,6 +129,7 @@ public class RunGoalsPanel extends javax.swing.JPanel {
                 final List<String> ret = profileHandler.getAllProfiles();
                 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         profilecompleter.setValueList(ret);
                     }
@@ -164,9 +166,9 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         StringBuilder buf = new StringBuilder();
         for (Map.Entry<? extends String,? extends String> entry : config.getProperties().entrySet()) {
             if (buf.length() > 0) {
-                buf.append('\n');
+                buf.append('\n');// NOI18N
             }
-            buf.append(entry.getKey()).append('=').append(entry.getValue());
+            buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
             if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                 cbSkipTests.setSelected(true);
             }
@@ -189,9 +191,9 @@ public class RunGoalsPanel extends javax.swing.JPanel {
         StringBuilder buf = new StringBuilder();
         for (Map.Entry<String,String> entry : mapp.getProperties().entrySet()) {
             if (buf.length() > 0) {
-                buf.append('\n');
+                buf.append('\n');// NOI18N
             }
-            buf.append(entry.getKey()).append('=').append(entry.getValue());
+            buf.append(entry.getKey()).append('=').append(entry.getValue());// NOI18N
             if (entry.getKey().equals(TestChecker.PROP_SKIP_TEST) && entry.getValue().equals("true")) { // NOI18N
                 cbSkipTests.setSelected(true);
             }
