@@ -77,6 +77,10 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
     private static final FileComponentIncludes EMPTY = new FileComponentIncludes() {
 
         @Override
+        void appendFrom(FileComponentIncludes fileIncludes) {
+        }
+        
+        @Override
         public void put() {
         }
     };
@@ -85,8 +89,8 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return EMPTY;
     }
 
-    public FileComponentIncludes(FileImpl file) {
-        super(new FileIncludesKey(file));
+    public FileComponentIncludes(FileImpl file, boolean persistent) {
+        super(persistent ? new FileIncludesKey(file) : (org.netbeans.modules.cnd.repository.spi.Key) null);
         put();
     }
 
@@ -200,5 +204,23 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
             return i1.compareTo(o2);
         }
     };
+
+    void appendFrom(FileComponentIncludes other) {
+        try {
+            includesLock.writeLock().lock();
+            for (CsmUID<CsmInclude> csmUID : other.includes) {
+                includes.add(csmUID);
+                brokenIncludes.remove(csmUID);
+            }
+            for (CsmUID<CsmInclude> csmUID : other.brokenIncludes) {
+                if (!includes.contains(csmUID)) {
+                    brokenIncludes.add(csmUID);
+                }
+            }
+        } finally {
+            includesLock.writeLock().unlock();
+        }
+        put();
+    }
 
 }

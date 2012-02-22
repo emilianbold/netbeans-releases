@@ -571,6 +571,7 @@ public final class HtmlRenderer {
         double lastHeight = 0; //the last line height, for calculating total required height
 
         double dotWidth = 0;
+        boolean dotsPainted = false;
 
         //Calculate the width of a . character if we may need to truncate
         if (style == STYLE_TRUNCATE) {
@@ -603,9 +604,15 @@ public final class HtmlRenderer {
         //Clear any junk left behind from a previous rendering loop
         _colorStack.clear();
 
+
         //Enter the painting loop
         while (!done) {
             if (pos == s.length()) {
+                if( truncated && paint && !dotsPainted ) {
+                    g.setColor(defaultColor);
+                    g.setFont(f);
+                    g.drawString("...", x, y); //NOI18N
+                }
                 return widthPainted;
             }
 
@@ -638,6 +645,7 @@ public final class HtmlRenderer {
 
                 if (paint) {
                     g.drawString("...", x, y); //NOI18N
+                    dotsPainted = true; //make sure we paint the dots only once
                 }
 
                 done = true;

@@ -79,6 +79,10 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
     private static final FileComponentMacros EMPTY = new FileComponentMacros() {
 
         @Override
+        void appendFrom(FileComponentMacros other) {
+        }
+        
+        @Override
         public void put() {
         }
     };
@@ -87,8 +91,8 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return EMPTY;
     }
 
-    public FileComponentMacros(FileImpl file) {
-        super(new FileMacrosKey(file));
+    public FileComponentMacros(FileImpl file, boolean persistent) {
+        super(persistent ? new FileMacrosKey(file) : (org.netbeans.modules.cnd.repository.spi.Key) null);
         macros = createMacros();
         put();
     }
@@ -185,6 +189,16 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         } finally {
             macrosLock.readLock().unlock();
         }
+    }
+
+    void appendFrom(FileComponentMacros other) {
+        try {
+            macrosLock.writeLock().lock();
+            macros.putAll(other.macros);
+        } finally {
+            macrosLock.writeLock().unlock();
+        }
+        put();
     }
 
     public static final class NameSortedKey implements Comparable<NameSortedKey>, Persistent, SelfPersistent {
