@@ -306,6 +306,12 @@ public class TypesCompletion extends BaseCompletion {
         for (String className : GroovyUtils.DEFAULT_IMPORT_CLASSES) {
             addToProposalUsingFilter(addedTypes, new TypeHolder(className, ElementKind.CLASS), onlyInterfaces);
         }
+
+        // Adding declared classes
+        for (ClassNode declaredClass : RequestHelper.getDeclaredClasses(request)) {
+            addToProposalUsingFilter(addedTypes, new TypeHolder(declaredClass.getName(), ElementKind.CLASS), onlyInterfaces);
+        }
+
         return true;
     }
 
@@ -382,13 +388,6 @@ public class TypesCompletion extends BaseCompletion {
                                         result.add(new TypeHolder(element.toString(), element.getKind()));
                                     }
                                 }
-                            }
-                        }
-                        List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
-                        for (ClassNode declaredClass : declaredClasses) {
-                            TypeHolder declaredType = new TypeHolder(declaredClass.getNameWithoutPackage(), ElementKind.CLASS);
-                            if (!result.contains(declaredType)) {
-                                result.add(declaredType);
                             }
                         }
                     }
