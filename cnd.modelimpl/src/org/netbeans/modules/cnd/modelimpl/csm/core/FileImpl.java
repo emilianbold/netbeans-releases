@@ -263,12 +263,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         fileMacrosKey = new FileMacrosKey(this);
         weakFileMacros = new WeakContainer<FileComponentMacros>(project, fileMacrosKey);
-        new FileComponentMacros(this);
+        new FileComponentMacros(this, true);
         weakFileMacros.clear();
 
         fileIncludesKey = new FileIncludesKey(this);
         weakFileIncludes = new WeakContainer<FileComponentIncludes>(project, fileIncludesKey);
-        new FileComponentIncludes(this);
+        new FileComponentIncludes(this, true);
         weakFileIncludes.clear();
         hasBrokenIncludes = new AtomicBoolean(false);
 
@@ -485,10 +485,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES && this.isHeaderFile()) {
             return;
         }
-        this.ensureParsed(handlers, null);
-    }
-    
-    private void ensureParsed(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
         try {
             if (inEnsureParsed.incrementAndGet() != 1) {
                 assert false : "concurrent ensureParsed in file " + getAbsolutePath() + parsingState + state; 
@@ -540,12 +536,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }
                             time = System.currentTimeMillis();
                             try {
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null);
                                 for (APTPreprocHandler preprocHandler : handlers) {
-                                    _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND, semaHandler);
+                                    parseParams.setCurrentPreprocHandler(preprocHandler);
+                                    _parse(parseParams);
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
                                     }
                                 }
+                                updateModelAfterParsing(parseParams);
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -565,17 +564,20 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             boolean first = true;
                             time = System.currentTimeMillis();
                             try {
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null);
                                 for (APTPreprocHandler preprocHandler : handlers) {
+                                    parseParams.setCurrentPreprocHandler(preprocHandler);
                                     if (first) {
-                                        _reparse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND, semaHandler);
+                                        _reparse(parseParams);
                                         first = false;
                                     } else {
-                                        _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND, semaHandler);
+                                        _parse(parseParams);
                                     }
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
                                     }
                                 }
+                                updateModelAfterParsing(parseParams);
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -655,12 +657,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 if (parseLevel > 1 && TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
                     System.err.printf(parseLevel + ((curState == State.PARSED) ? " additional " : " ") + "include parse with curState " + curState + "for %s\n", getAbsolutePath()); // NOI18N
                 }
+                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler);
                 for (APTPreprocHandler preprocHandler : handlers) {
-                    _parse(preprocHandler, fullAPT, TraceFlags.EXCLUDE_COMPOUND, semaHandler);
+                    parseParams.setCurrentPreprocHandler(preprocHandler);
+                    _parse(parseParams);
                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                         break; // does not make sense parsing old data
                     }
                 }
+                updateModelAfterParsing(parseParams);
             } finally {
                 synchronized (changeStateLock) {
                     final int val = inEnsureParsed.decrementAndGet();
@@ -833,7 +838,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return fileAPT;
     }
 
-    private void _reparse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound, CsmParserProvider.CsmParseCallback callback) {
+    private void _reparse(ParseDescriptor parseParams) {
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
         }
@@ -847,18 +852,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         getFileInstantiations().clean();
         _clearErrors();
         if (reportParse || logState || TraceFlags.DEBUG) {
-            logParse("ReParsing", preprocHandler); //NOI18N
+            logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
         }
-        if(TraceFlags.CPP_PARSER_ACTION) {
-            disposeAll(false);
-        }
-        CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound, callback);
+        disposeAll(false);
+        CsmParserResult parsing = doParse(parseParams);
         if (parsing != null) {
             if (isValid()) {
-                if(!TraceFlags.CPP_PARSER_ACTION) {
-                    disposeAll(false);
-                }
-                parsing.render();
+                parsing.render(parseParams);
             }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
@@ -933,6 +933,45 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return new TreeSet<ErrorDirectiveImpl>(START_OFFSET_COMPARATOR);
     }
 
+    /**enapsulates all parameters which should be used during parse or reparse of the file */
+    public static final class ParseDescriptor {
+
+        private final CsmParserProvider.CsmParseCallback callback;
+        private final FileImplContent content;
+        private final boolean lazyCompound;
+        private final APTFile fullAPT;
+        private APTPreprocHandler curPreprocHandler;
+
+        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback) {
+            this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND);
+        }
+
+        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT,
+                CsmParserProvider.CsmParseCallback callback,
+                boolean lazyCompound) {
+            assert fileImpl != null : "null file is not allowed";
+            assert fullAPT != null : "null APTFile is not allowed";
+            this.content = new FileImplContent(fileImpl);
+            this.fullAPT = fullAPT;
+            this.callback = callback;
+            this.lazyCompound = lazyCompound;
+        }
+
+        private void setCurrentPreprocHandler(APTPreprocHandler preprocHandler) {
+            assert preprocHandler != null : "null preprocHandler is not allowed";
+            this.curPreprocHandler = preprocHandler;
+        }
+        
+        private APTPreprocHandler getCurrentPreprocHandler() {
+            assert curPreprocHandler != null : "null preprocHandler is not allowed";
+            return curPreprocHandler;
+        }
+
+        public FileImplContent getFileContent() {
+            return content;
+        }
+    }
+    
     /** for debugging/tracing purposes only */
     public AST debugParse() {
         Collection<APTPreprocHandler> handlers = getPreprocHandlers();
@@ -940,8 +979,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return null;
         }
         final APTFile fullAPT = getFileAPT(true);
+        ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false);
+        params.setCurrentPreprocHandler(handlers.iterator().next());
         synchronized (stateLock) {
-            CsmParserResult parsing = _parse(handlers.iterator().next(), fullAPT, false, null);
+            CsmParserResult parsing = _parse(params);
             Object ast = parsing.getAST();
             if (ast instanceof AST) {
                 return (AST) ast;
@@ -950,22 +991,21 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-
-    private CsmParserResult _parse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound, CsmParserProvider.CsmParseCallback callback) {
+    private CsmParserResult _parse(ParseDescriptor parseParams) {
         inParse.get().set(true);
         try {
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
-                logParse("Parsing", preprocHandler); //NOI18N
+                logParse("Parsing", parseParams.getCurrentPreprocHandler()); //NOI18N
             }
-            CsmParserResult parsing = doParse(preprocHandler, aptFull, lazyCompound, callback);
+            CsmParserResult parsing = doParse(parseParams);
             if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                 sw.stopAndReport("Parsing of " + fileBuffer.getUrl() + " took \t"); // NOI18N
             }
             if (parsing != null) {
                 Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
                 if (isValid()) {   // FIXUP: use a special lock here
-                    parsing.render();
+                    parsing.render(parseParams);
                     if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                         sw2.stopAndReport("Rendering of " + fileBuffer.getUrl() + " took \t"); // NOI18N
                     }
@@ -1251,7 +1291,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return null;
     }
 
-    private CsmParserResult doParse(APTPreprocHandler preprocHandler, APTFile aptFull, boolean lazyCompound, CsmParserProvider.CsmParseCallback callback) {
+    private CsmParserResult doParse(ParseDescriptor parseParams) {
 
         if (reportErrors) {
             if (!ParserThreadManager.instance().isParserThread() && !ParserThreadManager.instance().isStandalone()) {
@@ -1260,6 +1300,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 new Throwable(text).printStackTrace(System.err);
             }
         }
+        APTPreprocHandler preprocHandler = parseParams.getCurrentPreprocHandler();
+        APTFile aptFull = parseParams.fullAPT; 
         assert preprocHandler != null;
         if (preprocHandler == null) {
             return null;
@@ -1295,7 +1337,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // ask for concurrent entry if absent
             APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
-            walker.addMacroAndIncludes(true);
+            walker.setFileContent(parseParams.content);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
             }
@@ -1306,8 +1348,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             CsmParser parser = CsmParserProvider.createParser(this);
             assert parser != null : "no parser for " + this;
 
-            parser.init(this, filteredTokenStream, callback);
-            parseResult = parser.parse(lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
+            parser.init(this, filteredTokenStream, parseParams.callback);
+            parseResult = parser.parse(parseParams.lazyCompound ? CsmParser.ConstructionKind.TRANSLATION_UNIT : CsmParser.ConstructionKind.TRANSLATION_UNIT_WITH_COMPOUND);
             FilePreprocessorConditionState pcState = pcBuilder.build();
             if (false) {
                 setAPTCacheEntry(preprocHandler, aptCacheEntry, false);
@@ -1360,13 +1402,33 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lastParsed;
     }
 
-    public void addInclude(IncludeImpl includeImpl, boolean broken) {
-        // addInclude can remove added one from list of broken includes =>
-        boolean hasBroken = getFileIncludes().addInclude(includeImpl, broken);
+    void updateModelAfterParsing(ParseDescriptor parseParams) {
+        // handle fake includes
+        parseParams.content.getFakeIncludeRegistrations();
+        // handle fake functions
+        parseParams.content.getFakeFunctionRegistrations();
+        // handle includes
+        FileComponentIncludes newFileIncludes = parseParams.content.getFileIncludes();
+        getFileIncludes().appendFrom(newFileIncludes);        
+        boolean hasBroken = parseParams.content.hasBrokenIncludes();
         // update hasBrokenIncludes marker accordingly and store if changed
+        boolean updated = false;
         if (hasBrokenIncludes.compareAndSet(!hasBroken, hasBroken) && isValid()) {
-            RepositoryUtils.put(this);
+            updated = true;
         }
+        // handle errors
+        Set<ErrorDirectiveImpl> newErrors = parseParams.content.getErrors();
+        try {
+            errorsLock.writeLock().lock();
+            errors.clear();
+            errors.addAll(newErrors);            
+        } finally {
+            errorsLock.writeLock().unlock();
+        }
+        //
+        FileComponentMacros newFileMacros = parseParams.content.getFileMacros();
+        getFileMacros().appendFrom(newFileMacros);
+        RepositoryUtils.put(this);
     }
 
     public void addInstantiation(CsmInstantiation inst) {
@@ -1521,11 +1583,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileReferences().getResolvedReference(ref);
     }
 
-    public void addMacro(CsmMacro macro) {
+    void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
     }
 
-    public void addError(ErrorDirectiveImpl error) {
+    void addError(ErrorDirectiveImpl error) {
         try {
             errorsLock.writeLock().lock();
             errors.add(error);

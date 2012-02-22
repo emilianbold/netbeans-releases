@@ -59,9 +59,9 @@ import org.openide.util.NbPreferences;
 
     private static final HostInfoCache  INSTANCE = new HostInfoCache();
 
-    private static final String KEY_USERID = "userId";
-    private static final String KEY_GRPID = "groupId";
-    private static final String KEY_GROUPS = "allGroups";
+    private static final String KEY_USERID = "userId"; //NOI18N
+    private static final String KEY_GRPID = "groupId"; //NOI18N
+    private static final String KEY_GROUPS = "allGroups"; //NOI18N
 
     private final Preferences preferences;
 
@@ -94,8 +94,8 @@ import org.openide.util.NbPreferences;
             }
         } else {
             Logger.getInstance().log(Level.WARNING,
-                    "HostInfo should be available for {0} at this point",
-                    new Object[] {env}); //NOI18N
+                    "HostInfo should be available for {0} at this point", //NOI18N
+                    new Object[] {env}); 
         }
     }
 
@@ -114,7 +114,7 @@ import org.openide.util.NbPreferences;
 
     private int[] fromString(String text) {
         if (text != null) {
-            String[] split = text.trim().split(",");
+            String[] split = text.trim().split(","); //NOI18N
             int[] tmp = new int[split.length];
             int cnt = 0;
             for (int i = 0; i < split.length; i++) {
