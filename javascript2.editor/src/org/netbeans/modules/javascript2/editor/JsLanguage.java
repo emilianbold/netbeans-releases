@@ -39,11 +39,16 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.Collections;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -52,6 +57,7 @@ import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -61,8 +67,9 @@ import org.openide.windows.TopComponent;
  */
 
 @LanguageRegistration(mimeType="text/javascript", useMultiview = true) //NOI18N
+@PathRecognizerRegistration(mimeTypes="text/javascript", libraryPathIds=ClassPathProviderImpl.BOOT_CP, binaryLibraryPathIds={})
 public class JsLanguage extends DefaultLanguageConfig {
-    
+
     @MultiViewElement.Registration(displayName = "#LBL_JSEditorTab",
         iconBase = "org/netbeans/modules/javascript2/editor/resources/javascript.png",
         persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
@@ -72,9 +79,11 @@ public class JsLanguage extends DefaultLanguageConfig {
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
-    
+
     public JsLanguage() {
         super();
+        // has to be done here since JS hasn't its own project, also see issue #165915
+        ClassPathProviderImpl.registerJsClassPathIfNeeded();
     }
 
     @Override
@@ -106,7 +115,7 @@ public class JsLanguage extends DefaultLanguageConfig {
     public SemanticAnalyzer getSemanticAnalyzer() {
         return new JsSemanticAnalyzer();
     }
-    
+
     @Override
     public DeclarationFinder getDeclarationFinder() {
         return new DeclarationFinderImpl();
@@ -126,7 +135,7 @@ public class JsLanguage extends DefaultLanguageConfig {
     public CodeCompletionHandler getCompletionHandler() {
         return new JsCodeCompletion();
     }
-    
+
     @Override
     public EmbeddingIndexerFactory getIndexerFactory() {
         return new JsIndexer.Factory();
@@ -146,6 +155,5 @@ public class JsLanguage extends DefaultLanguageConfig {
     public boolean hasFormatter() {
         return true;
     }
-    
-    
+
 }
