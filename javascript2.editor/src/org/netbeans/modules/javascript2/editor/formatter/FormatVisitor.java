@@ -193,13 +193,11 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            // put indentation mark after non white token
-            formatToken = getPreviousToken(getFinish(objectNode), JsTokenId.BRACKET_RIGHT_CURLY);
+            // put indentation mark after non white token preceeding curly bracket
+            formatToken = getPreviousNonWhiteToken(getFinish(objectNode),
+                    getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY);
             if (formatToken != null) {
-                formatToken = previousNonWhiteToken(getStart(objectNode));
-                if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-                }
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
         }
 
@@ -228,13 +226,11 @@ public class FormatVisitor extends NodeVisitor {
                 }
             }
 
-            // put indentation mark after non white token
-            formatToken = getPreviousToken(getFinish(switchNode), JsTokenId.BRACKET_RIGHT_CURLY);
+            // put indentation mark after non white token preceeding curly bracket
+            formatToken = getPreviousNonWhiteToken(getFinish(switchNode),
+                    getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY);
             if (formatToken != null) {
-                formatToken = previousNonWhiteToken(getStart(switchNode));
-                if (formatToken != null) {
-                    appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-                }
+                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
         }
         return super.visit(switchNode, onset);
@@ -258,13 +254,11 @@ public class FormatVisitor extends NodeVisitor {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
 
-        // put indentation mark after non white token
-        formatToken = getPreviousToken(getFinish(block), JsTokenId.BRACKET_RIGHT_CURLY);
+        // put indentation mark after non white token preceeding curly bracket
+        formatToken = getPreviousNonWhiteToken(getFinish(block),
+                getStart(block), JsTokenId.BRACKET_RIGHT_CURLY);
         if (formatToken != null && !isScript(block)) {
-            formatToken = previousNonWhiteToken(getStart(block));
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-            }
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
     }
 
@@ -422,6 +416,29 @@ public class FormatVisitor extends NodeVisitor {
         return ret;
     }
 
+    private FormatToken getPreviousNonWhiteToken(int offset, int stop, JsTokenId expected) {
+        assert stop <= offset;
+        FormatToken ret = getPreviousToken(offset, expected);
+        if (ret != null) {
+            if (expected == null) {
+                return ret;
+            }
+
+            Token token = null;
+            while (ts.movePrevious() && ts.offset() >= stop) {
+                Token current = ts.token();
+                if (current.id() != JsTokenId.WHITESPACE) {
+                    token = current;
+                    break;
+                }
+            }
+
+            if (token != null) {
+                return tokenStream.getToken(ts.offset());
+            }
+        }
+        return null;
+    }
     private FormatToken previousNonWhiteToken(int backstop) {
         Token ret = null;
         while (ts.movePrevious() && ts.offset() >= backstop) {
