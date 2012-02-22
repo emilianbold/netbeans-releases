@@ -1,0 +1,9 @@
+Code completion result for source line:
+return "This is a carrot that has " + this.|color + " color";
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getColor()                      [PUBLIC]   simpleObject
+METHOD     getDescription()                [PUBLIC,   simpleObjectContinue
+METHOD     isVegitable()                   [PUBLIC]   simpleObject
+FIELD      called                          [PUBLIC]   simpleObject
+FIELD      color                           [PUBLIC]   simpleObject
