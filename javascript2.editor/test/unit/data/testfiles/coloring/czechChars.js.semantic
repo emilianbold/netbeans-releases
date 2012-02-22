@@ -1,4 +1,4 @@
-jQuery(|>METHOD:<|function($){
+jQuery(function($){
     $.timepicker.regional["|>CLASS:cs<|"] = {
         |>FIELD:closeText<|: 'Zavřít',
         |>FIELD:prevText<|: '&#x3c;Dříve',

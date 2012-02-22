@@ -1,5 +1,5 @@
 var |>GLOBAL:globalProperty<| = "Some global property";
-(|>METHOD:<|function() {
+(function() {
     
 var functionVar = "155";
 var |>CLASS:jQuery<| = {};
