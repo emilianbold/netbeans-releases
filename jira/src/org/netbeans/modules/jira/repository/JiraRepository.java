@@ -52,7 +52,6 @@ import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
@@ -87,6 +86,7 @@ import org.netbeans.modules.jira.commands.JiraCommand;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
 import org.netbeans.modules.jira.commands.PerformQueryCommand;
+import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
@@ -102,16 +102,16 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class JiraRepository extends RepositoryProvider {
+public class JiraRepository {
 
     private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png"; // NOI18N
 
     private String name;
     private TaskRepository taskRepository;
     private JiraRepositoryController controller;
-    private Set<QueryProvider> queries = null;
-    private Set<QueryProvider> remoteFilters = null;
-    private IssueCache<TaskData> cache;
+    private Set<JiraQuery> queries = null;
+    private Set<JiraQuery> remoteFilters = null;
+    private IssueCache<NbJiraIssue, TaskData> cache;
     private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
@@ -135,16 +135,17 @@ public class JiraRepository extends RepositoryProvider {
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.support = new PropertyChangeSupport(this);
+        JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
 
     public JiraRepository(RepositoryInfo info) {
         this(info.getId(), 
-            info.getDisplayName(), 
-            info.getUrl(), 
-            info.getUsername(), 
-            info.getPassword(), 
-            info.getHttpUsername(), 
-            info.getHttpPassword());
+             info.getDisplayName(), 
+             info.getUrl(), 
+             info.getUsername(), 
+             info.getPassword(), 
+             info.getHttpUsername(), 
+             info.getHttpPassword());
     }
     
     public JiraRepository(String repoID, String repoName, String url, String user, char[] password, String httpUser, char[] httpPassword) {
@@ -160,12 +161,10 @@ public class JiraRepository extends RepositoryProvider {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
     }
 
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
-    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
@@ -175,7 +174,7 @@ public class JiraRepository extends RepositoryProvider {
      * XXX make use of new/old value
      */
     public void fireQueryListChanged() {
-        support.firePropertyChange(EVENT_QUERY_LIST_CHANGED, null, null);
+        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
     }
 
     /**
@@ -202,12 +201,14 @@ public class JiraRepository extends RepositoryProvider {
             newAttributes.remove(equalAttribute);
         }
         if (!newAttributes.isEmpty()) {
-            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
+            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, RepositoryProvider.EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
         }        
     }
     
-    @Override
     public RepositoryInfo getInfo() {
+        if(name == null) { // XXX is new
+            return null;
+        }
         RepositoryInfo info = new RepositoryInfo(id, JiraConnector.ID, getUrl(), getDisplayName(), getTooltip(), getUsername(), getHttpUsername(), getPassword(), getHttpPassword());
         return info;
     }
@@ -219,8 +220,7 @@ public class JiraRepository extends RepositoryProvider {
         return id;
     }
 
-    @Override
-    public QueryProvider createQuery() {
+    public JiraQuery createQuery() {
         if(getConfiguration() == null) {
             // invalid connection data?
             return null;
@@ -228,8 +228,7 @@ public class JiraRepository extends RepositoryProvider {
         return new JiraQuery(this);
     }
 
-    @Override
-    public IssueProvider createIssue() {
+    public NbJiraIssue createIssue() {
         if(getConfiguration() == null) {
             // invalid connection data?
             return null;
@@ -256,7 +255,6 @@ public class JiraRepository extends RepositoryProvider {
         return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl(); // NOI18N
     }
 
-    @Override
     public Image getIcon() {
         return icon;
     }
@@ -265,8 +263,7 @@ public class JiraRepository extends RepositoryProvider {
         return taskRepository;
     }
 
-    @Override
-    public IssueProvider getIssue(String key) {
+    public NbJiraIssue getIssue(String key) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         TaskData taskData = JiraUtils.getTaskDataByKey(JiraRepository.this, key);
@@ -281,7 +278,6 @@ public class JiraRepository extends RepositoryProvider {
         }
     }
     
-    @Override
     public RepositoryController getController() {
         if(controller == null) {
             controller = new JiraRepositoryController(this);
@@ -289,7 +285,6 @@ public class JiraRepository extends RepositoryProvider {
         return controller;
     }
 
-    @Override
     public Lookup getLookup() {
         if(lookup == null) {
             lookup = Lookups.fixed(getLookupObjects());
@@ -305,15 +300,15 @@ public class JiraRepository extends RepositoryProvider {
         return taskRepository != null ? taskRepository.getUrl() : null;
     }
 
-    @Override
     public void remove() {
         synchronized(QUERIES_LOCK) {
-            Set<QueryProvider> qs = getQueriesIntern();
-            for (QueryProvider q : qs) {
-                removeQuery((JiraQuery) q);
+            Set<JiraQuery> qs = getQueriesIntern();
+            for (JiraQuery q : qs) {
+                removeQuery(q);
             }
         }
         resetRepository(true);
+        JiraTaskListProvider.getInstance().notifyRepositoryRemoved(this);
     }
 
     public void removeQuery(JiraQuery query) {
@@ -333,7 +328,7 @@ public class JiraRepository extends RepositoryProvider {
         }
     }
 
-    private Set<QueryProvider> getQueriesIntern() {
+    private Set<JiraQuery> getQueriesIntern() {
         synchronized (QUERIES_LOCK) {
             if(queries == null) {
                 JiraStorageManager manager = Jira.getInstance().getStorageManager();
@@ -343,11 +338,10 @@ public class JiraRepository extends RepositoryProvider {
         }
     }
 
-    @Override
-    public QueryProvider[] getQueries() {
-        List<QueryProvider> ret = new ArrayList<QueryProvider>();
+    public Collection<JiraQuery> getQueries() {
+        List<JiraQuery> ret = new ArrayList<JiraQuery>();
         synchronized (QUERIES_LOCK) {
-            Set<QueryProvider> l = getQueriesIntern();
+            Set<JiraQuery> l = getQueriesIntern();
             ret.addAll(l);
             if(remoteFilters == null) {
                 Jira.getInstance().getRequestProcessor().post(new Runnable() {
@@ -360,11 +354,11 @@ public class JiraRepository extends RepositoryProvider {
                 ret.addAll(remoteFilters);
             }
         }
-        return ret.toArray(new QueryProvider[ret.size()]);
+        return ret;
     }
 
     protected void getRemoteFilters() {
-        List<QueryProvider> ret = new ArrayList<QueryProvider>();
+        List<JiraQuery> ret = new ArrayList<JiraQuery>();
         NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
         getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
@@ -377,20 +371,19 @@ public class JiraRepository extends RepositoryProvider {
             }
         }
         synchronized (QUERIES_LOCK) {
-            remoteFilters = new HashSet<QueryProvider>();
+            remoteFilters = new HashSet<JiraQuery>();
             remoteFilters.addAll(ret);
         }
         fireQueryListChanged();
     }
 
-    @Override
-    public IssueProvider[] simpleSearch(String criteria) {
+    public Collection<NbJiraIssue> simpleSearch(String criteria) {
         assert taskRepository != null;
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
         String[] keywords = criteria.split(" ");                                // NOI18N
 
-        final List<IssueProvider> issues = new ArrayList<IssueProvider>();
+        final List<NbJiraIssue> issues = new ArrayList<NbJiraIssue>();
         TaskDataCollector collector = new TaskDataCollector() {
             @Override
             public void accept(TaskData taskData) {
@@ -436,10 +429,10 @@ public class JiraRepository extends RepositoryProvider {
         fd.setProjectFilter(getProjectFilter());
         PerformQueryCommand queryCmd = new PerformQueryCommand(this, fd, collector);
         getExecutor().execute(queryCmd);
-        return issues.toArray(new NbJiraIssue[issues.size()]);
+        return issues;
     }
 
-    public IssueCache<TaskData> getIssueCache() {
+    public IssueCache<NbJiraIssue, TaskData> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
@@ -667,8 +660,8 @@ public class JiraRepository extends RepositoryProvider {
     }
 
     public void refreshAllQueries() {
-        QueryProvider[] qs = getQueries();
-        for (QueryProvider q : qs) {
+        Collection<JiraQuery> qs = getQueries();
+        for (JiraQuery q : qs) {
             Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
             QueryController qc = ((JiraQuery) q).getController();
             qc.onRefresh();
@@ -676,7 +669,7 @@ public class JiraRepository extends RepositoryProvider {
     }
 
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(this, errroMsg);
+        return BugtrackingUtil.editRepository(JiraUtils.getRepository(this), errroMsg);
     }
 
     private RequestProcessor getRefreshProcessor() {
@@ -737,35 +730,39 @@ public class JiraRepository extends RepositoryProvider {
         return attributes;
     }
 
-    private class Cache extends IssueCache<TaskData> {
+    private class Cache extends IssueCache<NbJiraIssue, TaskData> {
         Cache() {
-            super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
+            super(
+                JiraRepository.this.getUrl(), 
+                new IssueAccessorImpl(),
+                Jira.getInstance().getIssueProvider(),
+                JiraUtils.getRepository(JiraRepository.this));
         }
     }
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<TaskData> {
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue, TaskData> {
         @Override
-        public IssueProvider createIssue(TaskData taskData) {
+        public NbJiraIssue createIssue(TaskData taskData) {
             NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
-            org.netbeans.modules.jira.issue.JiraIssueProvider.getInstance().notifyIssueCreated(issue);
+            org.netbeans.modules.jira.issue.JiraTaskListProvider.getInstance().notifyIssueCreated(issue);
             return issue;
         }
         @Override
-        public void setIssueData(IssueProvider issue, TaskData taskData) {
+        public void setIssueData(NbJiraIssue issue, TaskData taskData) {
             assert issue != null && taskData != null;
             ((NbJiraIssue)issue).setTaskData(taskData);
         }
         @Override
-        public String getRecentChanges(IssueProvider issue) {
+        public String getRecentChanges(NbJiraIssue issue) {
             assert issue != null;
             return ((NbJiraIssue)issue).getRecentChanges();
         }
         @Override
-        public long getLastModified(IssueProvider issue) {
+        public long getLastModified(NbJiraIssue issue) {
             assert issue != null;
             return ((NbJiraIssue)issue).getLastModify();
         }
         @Override
-        public long getCreated(IssueProvider issue) {
+        public long getCreated(NbJiraIssue issue) {
             assert issue != null;
             return ((NbJiraIssue)issue).getCreated();
         }
@@ -775,7 +772,7 @@ public class JiraRepository extends RepositoryProvider {
             return NbJiraIssue.getID(issueData);
         }
         @Override
-        public Map<String, String> getAttributes(IssueProvider issue) {
+        public Map<String, String> getAttributes(NbJiraIssue issue) {
             assert issue != null;
             return ((NbJiraIssue)issue).getAttributes();
         }

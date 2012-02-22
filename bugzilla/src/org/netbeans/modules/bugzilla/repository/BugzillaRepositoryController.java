@@ -57,11 +57,11 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.openide.util.*;
@@ -155,11 +155,11 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         }
 
         // is name unique?
-        RepositoryProvider[] repositories = null;
+        Repository[] repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
-            for (RepositoryProvider repo : repositories) {
-                if(name.equals(repo.getInfo().getDisplayName())) {
+            for (Repository repo : repositories) {
+                if(name.equals(repo.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
@@ -183,8 +183,8 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
         // is url unique?
         if(repository.getTaskRepository() == null) {
-            for (RepositoryProvider repo : repositories) {
-                if(url.trim().equals(repo.getInfo().getUrl())) {
+            for (Repository repo : repositories) {
+                if(url.trim().equals(repo.getUrl())) {
                     errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_URL_ALREADY_EXISTS");  // NOI18N
                     return false;
                 }
@@ -216,7 +216,6 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             getHttpUser(),
             getHttpPassword(),
             isLocalUserEnabled());
-        repository.getNode().setName(newName);
     }
 
     public void populate() {

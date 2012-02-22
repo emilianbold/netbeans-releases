@@ -49,18 +49,20 @@ import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -107,43 +109,41 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     }
 
     @Override
-    public QueryProvider createQuery() {
+    public BugzillaQuery createQuery() {
         KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
     }
 
     @Override
-    public IssueProvider createIssue() {
+    public BugzillaIssue createIssue() {
         return super.createIssue();
     }
 
     @Override
-    public synchronized QueryProvider[] getQueries() {
-        QueryProvider[] qs = super.getQueries();
-        QueryProvider[] dq = getDefinedQueries();
-        QueryProvider[] ret = new QueryProvider[qs.length + dq.length];
-        System.arraycopy(qs, 0, ret, 0, qs.length);
-        System.arraycopy(dq, 0, ret, qs.length, dq.length);
+    public synchronized Collection<BugzillaQuery> getQueries() {
+        List<BugzillaQuery> ret = new LinkedList<BugzillaQuery>();
+        ret.addAll(super.getQueries());
+        ret.addAll(getDefinedQueries());
         return ret;
     }
 
-    private QueryProvider[] getDefinedQueries() {
-        List<QueryProvider> queries = new ArrayList<QueryProvider>();
+    private Collection<BugzillaQuery> getDefinedQueries() {
+        List<BugzillaQuery> queries = new ArrayList<BugzillaQuery>();
         
-        QueryProvider mi = getMyIssuesQuery();
+        BugzillaQuery mi = getMyIssuesQuery();
         if(mi != null) {
             queries.add(mi);
         }
 
-        QueryProvider ai = getAllIssuesQuery();
+        BugzillaQuery ai = getAllIssuesQuery();
         if(ai != null) {
             queries.add(ai);
         }
 
-        return queries.toArray(new QueryProvider[queries.size()]);
+        return queries;
     }
 
-    synchronized QueryProvider getAllIssuesQuery() throws MissingResourceException {
+    public synchronized BugzillaQuery getAllIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries() || BugzillaUtil.isNbRepository(this)) return null;
         if (allIssues == null) {
             StringBuffer url = new StringBuffer();
@@ -155,7 +155,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return allIssues;
     }
 
-    synchronized QueryProvider getMyIssuesQuery() throws MissingResourceException {
+    public synchronized BugzillaQuery getMyIssuesQuery() throws MissingResourceException {
         if(!providePredefinedQueries()) return null;
         if (myIssues == null) {
             String url = getMyIssuesQueryUrl();
@@ -228,10 +228,9 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     @Override
     protected Object[] getLookupObjects() {
         Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 2];
+        Object[] obj2 = new Object[obj.length + 1];
         System.arraycopy(obj, 0, obj2, 0, obj.length);
-        obj2[obj2.length - 2] = kenaiProject;
-        obj2[obj2.length - 1] = Bugzilla.getInstance().getKenaiSupport();
+        obj2[obj2.length - 1] = kenaiProject;
         return obj2;
     }
 

@@ -50,7 +50,7 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
@@ -99,7 +99,7 @@ public class QueriesPanel extends ViewportWidthAwarePanel {
         add(queryLinksPanel);
     }
 
-    void setQueries(QueryProvider[] queries) {
+    void setQueries(Query[] queries) {
         invalidatePrefSize();
         queryLinksPanel.setQueries(queries);
     }

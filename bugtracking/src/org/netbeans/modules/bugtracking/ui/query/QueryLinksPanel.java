@@ -58,8 +58,8 @@ import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.PanelUI;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 
 /**
@@ -78,7 +78,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
 
     private static final int INTERLINE_SPACING = 2;
 
-    private RepositoryProvider repository;
+    private Repository repository;
     private QueryButton[] buttons;
 
     private Dimension[] buttonPrefSizes;
@@ -96,7 +96,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
         setOpaque(false);
     }
 
-    void setQueries(QueryProvider[] queries) {
+    void setQueries(Query[] queries) {
         if ((queries != null) && (queries.length == 0)) {
             queries = null;
         }
@@ -122,7 +122,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
                                           SwingUtilities.getAncestorOfClass(
                                                  QueryTopComponent.class, this);
             for (int i = 0; i < queries.length; i++) {
-                QueryProvider query = queries[i];
+                Query query = queries[i];
                 query.addPropertyChangeListener(queryTopC);
                 QueryButton button = new QueryButton(repository, query);
                 button.setText(query.getDisplayName());
@@ -369,7 +369,7 @@ class QueryLinksPanel extends ViewportWidthAwarePanel implements FocusListener {
     }
 
     private class QueryButton extends LinkButton {
-        public QueryButton(final RepositoryProvider repo, final QueryProvider query) {
+        public QueryButton(final Repository repo, final Query query) {
             super();
             setText(query.getDisplayName());
             getAccessibleContext().setAccessibleDescription(query.getTooltip());

@@ -44,8 +44,12 @@ package org.netbeans.modules.bugtracking.ui.nodes;
 
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -62,13 +66,14 @@ import org.openide.util.actions.SystemAction;
  *
  * @author Tomas Stupka
  */
-public class RepositoryNode extends AbstractNode {
-    private RepositoryProvider repository;
+public class RepositoryNode extends AbstractNode implements PropertyChangeListener {
+    private Repository repository;
 
-    public RepositoryNode(RepositoryProvider repository) {
+    public RepositoryNode(Repository repository) {
         super(Children.LEAF);
         this.repository = repository;
-        setName(repository.getInfo().getDisplayName());
+        setName(repository.getDisplayName());
+        repository.addPropertyChangeListener(this);
     }
 
     @Override
@@ -97,20 +102,27 @@ public class RepositoryNode extends AbstractNode {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
                 public void actionPerformed(ActionEvent e) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
-                        NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getInfo().getDisplayName() }), // NOI18N
+                        NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getDisplayName() }), // NOI18N
                         NbBundle.getMessage(RepositoryNode.class, "CTL_RemoveRepository"),      // NOI18N
                         NotifyDescriptor.OK_CANCEL_OPTION);
 
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
-                                repository.remove();                                
+                                APIAccessor.IMPL.removed(repository);                                
                             }
                         });
                     }
                 }
             }
         };
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if(evt.getPropertyName().equals(RepositoryProvider.EVENT_ATTRIBUTES_CHANGED)) {
+            fireDisplayNameChange(null, repository.getDisplayName()); // XXX get new value from evt
+        }
     }
 
 }
