@@ -1290,12 +1290,13 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         "\n while parsing file " + getAbsolutePath() + "\n of project " + getProject()); // NOI18N
                 return null;
             }
+            FileImplContent content = new FileImplContent(this);
             // We gather conditional state here as well, because sources are not included anywhere
             FilePreprocessorConditionState.Builder pcBuilder = new FilePreprocessorConditionState.Builder(getAbsolutePath());
             // ask for concurrent entry if absent
             APTFileCacheEntry aptCacheEntry = getAPTCacheEntry(preprocHandler, Boolean.FALSE);
             APTParseFileWalker walker = new APTParseFileWalker(startProject, aptFull, this, preprocHandler, true, pcBuilder,aptCacheEntry);
-            walker.addMacroAndIncludes(true);
+            walker.setFileContent(content);
             if (TraceFlags.DEBUG) {
                 System.err.println("doParse " + getAbsolutePath() + " with " + ParserQueue.tracePreprocState(ppState));
             }
@@ -1360,7 +1361,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return lastParsed;
     }
 
-    public void addInclude(IncludeImpl includeImpl, boolean broken) {
+    void addInclude(IncludeImpl includeImpl, boolean broken) {
         // addInclude can remove added one from list of broken includes =>
         boolean hasBroken = getFileIncludes().addInclude(includeImpl, broken);
         // update hasBrokenIncludes marker accordingly and store if changed
@@ -1521,11 +1522,11 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getFileReferences().getResolvedReference(ref);
     }
 
-    public void addMacro(CsmMacro macro) {
+    void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
     }
 
-    public void addError(ErrorDirectiveImpl error) {
+    void addError(ErrorDirectiveImpl error) {
         try {
             errorsLock.writeLock().lock();
             errors.add(error);

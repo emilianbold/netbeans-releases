@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * this content can be used as new file content
  * @author Vladimir Voskresensky
  */
-final class FileImplContent implements DeclarationsContainer {
+public final class FileImplContent implements DeclarationsContainer {
 
     private final FileImpl fileImpl;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
@@ -146,16 +146,18 @@ final class FileImplContent implements DeclarationsContainer {
         return fakeFunctionRegistrations;
     }
 
-    public List<FileImpl.FakeIncludePair> getFakeIncludeRegistrations() {
+    List<FileImpl.FakeIncludePair> getFakeIncludeRegistrations() {
         return fakeIncludeRegistrations;
     }
     
     public void addError(ErrorDirectiveImpl error) {
         errors.add(error);
+        fileImpl.addError(error);
     }
     
     public void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
+        fileImpl.addMacro(macro);
     }
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -179,6 +181,7 @@ final class FileImplContent implements DeclarationsContainer {
         if (hasBrokenIncludes.compareAndSet(!hasBroken, hasBroken)) {
 //            RepositoryUtils.put(this);
         }
+        fileImpl.addInclude(includeImpl, broken);
     }
 
     public void addInstantiation(CsmInstantiation inst) {
