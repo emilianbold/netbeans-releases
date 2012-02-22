@@ -79,8 +79,9 @@ public final class ExternalBrowserPlugin {
             server = new WebSocketServer(new InetSocketAddress(PORT)){
               
                 @Override
-                public void close(SelectionKey key) {
+                public void close(SelectionKey key) throws IOException {
                     removeKey( key );
+                    super.close(key);
                 }
             };
             server.setWebSocketReadHandler( new BrowserPluginHandler() );
