@@ -186,7 +186,15 @@ public final class SyncItem {
     }
 
     public void resetOperation() {
+        cleanupTmpLocalFile();
+        tmpLocalFile = null;
         operation = null;
+    }
+
+    public void cleanupTmpLocalFile() {
+        if (tmpLocalFile != null) {
+            tmpLocalFile.cleanup();
+        }
     }
 
     @NbBundle.Messages({

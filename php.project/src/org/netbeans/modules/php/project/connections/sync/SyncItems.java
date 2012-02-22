@@ -83,10 +83,7 @@ public final class SyncItems {
     public void cleanup() {
         synchronized (itemsByPath) {
             for (SyncItem syncItem : itemsByPath.values()) {
-                TmpLocalFile tmpLocalFile = syncItem.getTmpLocalFile();
-                if (tmpLocalFile != null) {
-                    tmpLocalFile.cleanup();
-                }
+                syncItem.cleanupTmpLocalFile();
             }
         }
     }
