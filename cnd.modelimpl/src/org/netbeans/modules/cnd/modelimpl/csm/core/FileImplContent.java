@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -173,6 +175,10 @@ public final class FileImplContent implements DeclarationsContainer {
         return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
     }
 
+    public Collection<CsmInclude> getIncludes() {
+        return getFileIncludes().getIncludes();
+    }
+    
     public void addInclude(IncludeImpl includeImpl, boolean broken) {
         // addInclude can remove added one from list of broken includes =>
         getFileIncludes().addInclude(includeImpl, broken);

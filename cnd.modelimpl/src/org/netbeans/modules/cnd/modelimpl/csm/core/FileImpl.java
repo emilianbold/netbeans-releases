@@ -858,7 +858,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         CsmParserResult parsing = doParse(parseParams);
         if (parsing != null) {
             if (isValid()) {
-                parsing.render();
+                parsing.render(parseParams);
             }
         } else {
             //System.err.println("null ast for file " + getAbsolutePath());
@@ -966,6 +966,10 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             assert curPreprocHandler != null : "null preprocHandler is not allowed";
             return curPreprocHandler;
         }
+
+        public FileImplContent getFileContent() {
+            return content;
+        }
     }
     
     /** for debugging/tracing purposes only */
@@ -1001,7 +1005,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (parsing != null) {
                 Diagnostic.StopWatch sw2 = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
                 if (isValid()) {   // FIXUP: use a special lock here
-                    parsing.render();
+                    parsing.render(parseParams);
                     if (TraceFlags.TIMING_PARSE_PER_FILE_DEEP) {
                         sw2.stopAndReport("Rendering of " + fileBuffer.getUrl() + " took \t"); // NOI18N
                     }

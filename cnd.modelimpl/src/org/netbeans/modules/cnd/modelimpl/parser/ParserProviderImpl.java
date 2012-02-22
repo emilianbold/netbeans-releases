@@ -179,7 +179,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     if (ast != null) {
-                        new AstRenderer(file, objects).render(ast);
+                        FileImpl.ParseDescriptor descr = (FileImpl.ParseDescriptor) context[0];
+                        new AstRenderer(file, descr.getFileContent(), objects).render(ast);
                         file.incParseCount();
                     }            
                     break;
@@ -188,7 +189,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, null, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }                    
                     break;
                 case CLASS_BODY:
