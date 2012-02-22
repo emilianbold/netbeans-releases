@@ -314,8 +314,8 @@ public class KenaiUtil {
         return null;
     }
 
-    public static void refresh(Query query) {
-        APIAccessor.IMPL.refresh(query, false);
+    public static void refresh(Query query, boolean synchronously) {
+        APIAccessor.IMPL.refresh(query, synchronously);
     }
     
     /**

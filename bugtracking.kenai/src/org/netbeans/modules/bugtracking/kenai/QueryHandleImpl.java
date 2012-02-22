@@ -143,7 +143,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            KenaiUtil.refresh(query);
+            KenaiUtil.refresh(query, true);
         }
     }
 

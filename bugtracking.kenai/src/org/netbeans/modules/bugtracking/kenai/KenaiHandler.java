@@ -343,7 +343,7 @@ class KenaiHandler {
                     for (QueryHandle qh : queries) {
                         if(qh instanceof QueryHandleImpl) {
                             Query query = ((QueryHandleImpl)qh).getQuery();
-                            KenaiUtil.refresh(query);
+                            KenaiUtil.refresh(query, false);
                         }
                     }
                 }
