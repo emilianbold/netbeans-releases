@@ -327,10 +327,16 @@ class CompatibilityUtils {
         SubTreeSearchOptions stso;
         stso = ancestorProject.getLookup().lookup(
                 SubTreeSearchOptions.class);
-        DataObject dob = node.getLookup().lookup(DataObject.class);
-        if (stso != null && dob != null && dob.getPrimaryFile() != null) {
+        FileObject fileObject = node.getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            DataObject dob = node.getLookup().lookup(DataObject.class);
+            if (dob != null) {
+                fileObject = dob.getPrimaryFile();
+            }
+        }
+        if (stso != null && fileObject != null) {
             return SearchInfoUtils.createSearchInfoForRoots(
-                    new FileObject[]{dob.getPrimaryFile()},
+                    new FileObject[]{fileObject},
                     false, subTreeFilters(stso));
         }
         return null;

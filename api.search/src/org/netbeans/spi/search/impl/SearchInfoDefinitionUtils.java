@@ -46,6 +46,7 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -102,8 +103,14 @@ public final class SearchInfoDefinitionUtils {
         /*
          * 2nd try - does the node represent a DataObject.Container?
          */
-        DataObject dataObject = node.getLookup().lookup(DataObject.class);
-        if (dataObject == null) {
+        FileObject fileObject = node.getLookup().lookup(FileObject.class);
+        if (fileObject == null) {
+            DataObject dataObject = node.getLookup().lookup(DataObject.class);
+            if (dataObject != null) {
+                fileObject = dataObject.getPrimaryFile();
+            }
+        }
+        if (fileObject == null) {
             return null;
         } else {
             SubTreeSearchOptions subTreeSearchOptions =
@@ -112,8 +119,7 @@ public final class SearchInfoDefinitionUtils {
                 return null;
             } else {
                 return SearchInfoDefinitionFactory.createSearchInfo(
-                        dataObject.getPrimaryFile(),
-                        getFiltersForNode(subTreeSearchOptions));
+                        fileObject, getFiltersForNode(subTreeSearchOptions));
             }
         }
     }
