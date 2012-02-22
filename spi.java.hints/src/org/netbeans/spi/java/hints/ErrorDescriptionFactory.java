@@ -115,7 +115,7 @@ public class ErrorDescriptionFactory {
 
         if (start != (-1) && end != (-1)) {
             List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, fixesForED, context.getInfo().getFileObject(), start, end);
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), start, end);
         }
 
         return null;
@@ -130,7 +130,7 @@ public class ErrorDescriptionFactory {
         
         if (span != null && span[0] != (-1) && span[1] != (-1)) {
             List<Fix> fixesForED = resolveDefaultFixes(context, fixes);
-            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity().toEditorSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
+            return org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription(context.getSeverity(), text, fixesForED, context.getInfo().getFileObject(), span[0], span[1]);
         }
 
         return null;

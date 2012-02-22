@@ -91,7 +91,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 
-@Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Hint.Severity.CURRENT_LINE_WARNING)
+@Hint(category="apisupport", displayName="#UseNbBundleMessages.displayName", description="#UseNbBundleMessages.description", severity=Severity.HINT)
 @Messages({
     "UseNbBundleMessages.displayName=Use @NbBundle.Messages",
     "UseNbBundleMessages.description=Use @NbBundle.Messages in preference to Bundle.properties plus NbBundle.getMessage(...)."

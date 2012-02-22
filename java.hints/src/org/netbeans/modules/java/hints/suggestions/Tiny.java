@@ -63,11 +63,11 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
@@ -81,7 +81,7 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.HINT)
     @TriggerPattern(value="$this.equals($other)",
                     constraints={
                         @ConstraintVariableType(variable="$this", type="java.lang.Object"),
@@ -133,7 +133,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName, fix);
     }
     
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.convertToDifferentBase", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.HINT)
     @TriggerTreeKind({Tree.Kind.INT_LITERAL, Tree.Kind.LONG_LITERAL})
     public static ErrorDescription convertToDifferentBase(HintContext ctx) {
         int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getInfo().getCompilationUnit(), ctx.getPath().getLeaf());
@@ -224,7 +224,7 @@ public class Tiny {
         
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.CURRENT_LINE_WARNING)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.splitDeclaration", category="suggestions", hintKind=Kind.SUGGESTION, severity=Severity.HINT)
     @TriggerPattern(value="$mods$ $type $name = $init;")
     public static ErrorDescription splitDeclaration(HintContext ctx) {
         Tree.Kind parentKind = ctx.getPath().getParentPath().getLeaf().getKind();

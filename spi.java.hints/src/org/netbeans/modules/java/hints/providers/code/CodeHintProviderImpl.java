@@ -44,7 +44,6 @@ package org.netbeans.modules.java.hints.providers.code;
 
 import com.sun.source.tree.Tree.Kind;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -76,10 +75,10 @@ import org.netbeans.modules.java.hints.providers.spi.HintProvider;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.BooleanOption;
 import org.netbeans.spi.java.hints.ConstraintVariableType;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -355,7 +354,7 @@ public class CodeHintProviderImpl implements HintProvider {
         }
 
         public Severity severity() {
-            return Severity.WARNING;
+            return Severity.VERIFIER;
         }
 
         private static final String[] EMPTY_SW = new String[0];

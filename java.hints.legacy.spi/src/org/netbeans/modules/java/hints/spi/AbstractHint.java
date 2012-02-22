@@ -122,35 +122,33 @@ public abstract class AbstractHint implements TreeRule {
      *  <li><code>CURRENT_LINE_WARNING</code>  - will only show up when the caret is placed in the errorneous element
      */
     public static enum HintSeverity {
-        ERROR(Severity.ERROR, Hint.Severity.ERROR),
-        WARNING(Severity.VERIFIER, Hint.Severity.WARNING),
-        CURRENT_LINE_WARNING(Severity.HINT, Hint.Severity.CURRENT_LINE_WARNING);
+        ERROR(Severity.ERROR),
+        WARNING(Severity.VERIFIER),
+        CURRENT_LINE_WARNING(Severity.HINT);
 
         private final Severity editorSeverity;
-        private final Hint.Severity officialSeverity;
 
-        private HintSeverity(Severity editorSeverity, Hint.Severity officialSeverity) {
+        private HintSeverity(Severity editorSeverity) {
             this.editorSeverity = editorSeverity;
-            this.officialSeverity = officialSeverity;
         }
 
         public Severity toEditorSeverity() {
             return editorSeverity;
         }
 
-        private static HintSeverity fromOfficialHintSeverity(Hint.Severity official, HintSeverity def) {
+        private static HintSeverity fromOfficialHintSeverity(Severity official, HintSeverity def) {
             if (official == null) return def;
 
             switch (official) {
                 case ERROR: return HintSeverity.ERROR;
-                case CURRENT_LINE_WARNING: return HintSeverity.CURRENT_LINE_WARNING;
+                case HINT: return HintSeverity.CURRENT_LINE_WARNING;
                 default:
-                case WARNING: return HintSeverity.WARNING;
+                case VERIFIER: return HintSeverity.WARNING;
             }
         }
 
-        public Hint.Severity toOfficialSeverity() {
-            return officialSeverity;
+        public Severity toOfficialSeverity() {
+            return editorSeverity;
         }
     }
 

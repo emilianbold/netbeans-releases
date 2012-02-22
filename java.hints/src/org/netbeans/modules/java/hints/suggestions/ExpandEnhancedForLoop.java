@@ -112,7 +112,7 @@ public class ExpandEnhancedForLoop {
 
         FixImpl fix = new FixImpl(ctx.getInfo().getFileObject(), TreePathHandle.create(tp, ctx.getInfo()));
         List<Fix> fixes = Collections.<Fix>singletonList(fix);
-        return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(),
+        return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(),
                                                               NbBundle.getMessage(ExpandEnhancedForLoop.class, "ERR_ExpandEhancedForLoop"),
                                                               fixes,
                                                               ctx.getInfo().getFileObject(),

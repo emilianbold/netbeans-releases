@@ -50,8 +50,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
 
@@ -69,7 +68,8 @@ public class HintsSettings {
 //    public static HintsAccessor HINTS_ACCESSOR;
 //
     static final String ENABLED_KEY = "enabled";         // NOI18N
-    static final String SEVERITY_KEY = "severity";       // NOI18N
+    static final String OLD_SEVERITY_KEY = "severity";       // NOI18N
+    static final String NEW_SEVERITY_KEY = "hintSeverity";       // NOI18N
     static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
 
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
@@ -128,8 +128,18 @@ public class HintsSettings {
     }
 
     public static Severity getSeverity(@NullAllowed HintMetadata hint, @NonNull Preferences preferences ) {
-        String s = preferences.get(SEVERITY_KEY, null );
-        return s == null ? hint == null ? null : hint.severity : Severity.valueOf(s);
+        String s = preferences.get(NEW_SEVERITY_KEY, null);
+        if (s != null) return Severity.valueOf(s);
+
+        s = preferences.get(OLD_SEVERITY_KEY, null);
+
+        if (s == null) return hint.severity;
+
+        if ("ERROR".equals(s)) return Severity.ERROR;
+        else if ("WARNING".equals(s)) return Severity.VERIFIER;
+        else if ("CURRENT_LINE_WARNING".equals(s)) return Severity.HINT;
+        
+        return hint.severity;
     }
 //
 //    public static AbstractHint.HintSeverity getSeverity( AbstractHint hint, Preferences preferences ) {
@@ -138,7 +148,7 @@ public class HintsSettings {
 //    }
 //
     public static void setSeverity( Preferences p, Severity severity ) {
-        p.put(SEVERITY_KEY, severity.name());
+        p.put(NEW_SEVERITY_KEY, severity.name());
     }
 //
 //    public static String[] getSuppressedBy(AbstractHint ah) {

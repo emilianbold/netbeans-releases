@@ -117,7 +117,7 @@ public class MissingHashCode {
 
             if (span != null) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    ctx.getSeverity().toEditorSeverity(),
+                    ctx.getSeverity(),
                     NbBundle.getMessage(MissingHashCode.class, addHint), 
                     fixes, 
                     compilationInfo.getFileObject(),

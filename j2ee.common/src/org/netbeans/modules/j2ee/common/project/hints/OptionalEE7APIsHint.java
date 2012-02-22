@@ -123,7 +123,7 @@ public class OptionalEE7APIsHint {
         List<Fix> fixes = new ArrayList<Fix>();
         return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
-                context.getSeverity().toEditorSeverity(),
+                context.getSeverity(),
                 OptionalEE7APIsHint_DisplayName(),
                 fixes,
                 info.getFileObject(),

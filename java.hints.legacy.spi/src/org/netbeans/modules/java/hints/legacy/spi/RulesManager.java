@@ -87,8 +87,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 import static org.netbeans.spi.editor.hints.ErrorDescriptionFactory.createErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.Hint.Severity;
 
 /** Manages rules read from the system filesystem.
  *
@@ -272,7 +272,7 @@ public class RulesManager implements FileChangeListener {
                     else if (h.getClass().getClassLoader() != RulesManager.class.getClassLoader()) hmb = hmb.addOptions(Options.QUERY);
                 } else {
                     hmb = hmb.setDescription(toGui ? tr.getDisplayName() : "", toGui ? tr.getDisplayName() : "");
-                    hmb = hmb.setSeverity(Severity.WARNING);
+                    hmb = hmb.setSeverity(Severity.VERIFIER);
                 }
 
                 HintMetadata hm = hmb.build();

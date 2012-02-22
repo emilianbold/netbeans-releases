@@ -54,7 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
-import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;

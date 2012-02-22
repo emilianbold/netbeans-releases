@@ -86,10 +86,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import org.netbeans.modules.java.hints.spiimpl.options.DepScanningSettings.DependencyTracking;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.netbeans.spi.java.hints.Hint.Options;
-import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
 
 
 /** Contains all important listeners and logic of the Hints Panel.
@@ -116,8 +115,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     static {
         severity2index = new HashMap<Severity, Integer>();
         severity2index.put( Severity.ERROR, 0  );
-        severity2index.put( Severity.WARNING, 1  );
-        severity2index.put( Severity.CURRENT_LINE_WARNING, 2  );
+        severity2index.put( Severity.VERIFIER, 1  );
+        severity2index.put( Severity.HINT, 2  );
         deptracking2index = new HashMap<DepScanningSettings.DependencyTracking, Integer>();
         deptracking2index.put(DependencyTracking.ENABLED, 0);
         deptracking2index.put(DependencyTracking.ENABLED_WITHIN_PROJECT, 1);
@@ -329,7 +328,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             Preferences p = getCurrentPrefernces(hint.id);
 
             if (hint.kind == Kind.SUGGESTION) {
-                severityComboBox.setSelectedIndex(severity2index.get(Severity.CURRENT_LINE_WARNING));
+                severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
                 severityComboBox.setEnabled(false);
             } else {
                 Severity severity = HintsSettings.getSeverity(hint, p);
@@ -501,7 +500,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             customizerPanel.getParent().invalidate();
             ((JComponent)customizerPanel.getParent()).revalidate();
             customizerPanel.getParent().repaint();
-            severityComboBox.setSelectedIndex(severity2index.get(Severity.WARNING));
+            severityComboBox.setSelectedIndex(severity2index.get(Severity.VERIFIER));
             tasklistCheckBox.setSelected(false);
             descriptionTextArea.setText(""); // NOI18N
         }

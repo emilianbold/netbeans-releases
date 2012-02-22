@@ -86,9 +86,8 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
-import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -103,7 +102,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dusan Balek
  */
-@Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.CreateSubclass", description = "#DESC_org.netbeans.modules.java.hints.suggestions.CreateSubclass", category = "suggestions", hintKind = Kind.SUGGESTION, severity = Severity.CURRENT_LINE_WARNING)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.CreateSubclass", description = "#DESC_org.netbeans.modules.java.hints.suggestions.CreateSubclass", category = "suggestions", hintKind = Kind.SUGGESTION, severity = Severity.HINT)
 public class CreateSubclass {
 
     @TriggerTreeKind({Tree.Kind.CLASS, Tree.Kind.INTERFACE})

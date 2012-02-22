@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.java.hints.providers.spi;
 
-import org.netbeans.spi.java.hints.CustomizerProvider;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,8 +52,9 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.Hint.Severity;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,7 +121,7 @@ public class HintMetadata {
             this.category = "";
             this.enabled = true;
             this.kind = Hint.Kind.HINT;
-            this.severity = Severity.WARNING;
+            this.severity = Severity.VERIFIER;
         }
 
         public static Builder create(String id) {

@@ -140,7 +140,7 @@ public class ConvertToDiamondBulkHint {
 
             List<Fix> fixes = Arrays.asList(new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
             
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
         }
 
         return null;

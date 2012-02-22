@@ -96,9 +96,8 @@ import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.Hint.Severity;
-import org.netbeans.spi.java.hints.Hint.Severity;
 import org.netbeans.spi.java.hints.matching.Matcher;
 import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.netbeans.spi.java.hints.matching.Pattern;
@@ -164,14 +163,14 @@ public class HintsInvoker {
                     descs.addAll(e.getValue());
                 } else {
                     Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
-                    if (HintsSettings.getSeverity(m, pref) == Severity.CURRENT_LINE_WARNING) {
+                    if (HintsSettings.getSeverity(m, pref) == Severity.HINT) {
                         descs.addAll(e.getValue());
                     }
                 }
             } else {
                 if (m.kind == Hint.Kind.HINT) {
                     Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
-                    if (HintsSettings.getSeverity(m, pref) != Severity.CURRENT_LINE_WARNING) {
+                    if (HintsSettings.getSeverity(m, pref) != Severity.HINT) {
                         descs.addAll(e.getValue());
                     }
                 }

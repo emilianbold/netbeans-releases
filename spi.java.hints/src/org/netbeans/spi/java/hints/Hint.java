@@ -46,8 +46,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.prefs.Preferences;
-import javax.swing.JComponent;
+import org.netbeans.spi.editor.hints.Severity;
 
 /** Description of a hint.
  * When applied to a class, any enclosed method marked with a trigger
@@ -74,8 +73,9 @@ public @interface Hint {
     public String category();
     /**Should the hint be enabled by default?*/
     public boolean enabled() default true;
-    /**Default severity of the hint*/
-    public Severity severity() default Severity.WARNING;
+    /**Default severity of the hint. {@link Severity#HINT} will typically be shown
+     * only on the line with the caret.*/
+    public Severity severity() default Severity.VERIFIER;
     /**Suppress warnings keys that should automatically suppress the hint.*/
     public String[] suppressWarnings() default {};
     /**A customizer that allows to customize hint's preferences.
@@ -120,31 +120,4 @@ public @interface Hint {
         NO_BATCH;
     }
 
-    /** Severity of hint
-     *  <li><code>ERROR</code>  - will show up as error
-     *  <li><code>WARNING</code>  - will show up as warning
-     *  <li><code>CURRENT_LINE_WARNING</code>  - will only show up when the caret is placed in the erroneous element
-     * @author Petr Hrebejk
-     */
-    public enum Severity {
-        /**Will show as an error*/
-        ERROR,
-        /**Will show as a warning*/
-        WARNING,
-        /**Will be shown only for the line with the caret*/
-        CURRENT_LINE_WARNING;
-
-        public org.netbeans.spi.editor.hints.Severity toEditorSeverity() {
-            switch ( this ) {
-                case ERROR:
-                    return org.netbeans.spi.editor.hints.Severity.ERROR;
-                case WARNING:
-                    return org.netbeans.spi.editor.hints.Severity.VERIFIER;
-                case CURRENT_LINE_WARNING:
-                    return org.netbeans.spi.editor.hints.Severity.HINT;
-                default:
-                    return null;
-            }
-        }
-    }
 }
