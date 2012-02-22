@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.vcs;
 
-package org.netbeans.modules.bugtracking.dummies;
-
+import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
-
-    private final String name;
-    private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
+@BugtrackingConnector.Registration (
+    id=HookConnector.ID,
+    displayName=HookConnector.ID,
+    tooltip=HookConnector.ID
+)    
+public class HookConnector extends BugtrackingConnector {
+    public static final String ID = "HookTestConnector";
+    
+    private static HookConnector instance;
+    public HookConnector() {
     }
 
-    public DummyNode(String name) {
-        this(name, null);
+    @Override
+    public Repository createRepository() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
+    public Lookup getLookup() {
+        return Lookup.EMPTY;
     }
 
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
+    @Override
+    public Repository createRepository(RepositoryInfo info) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
-
-    Repository getAssociatedRepository() {
-        return repository;
+    
+    static HookConnector getInstance() {
+        if(instance == null) {
+            DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
+            for (DelegatingConnector dc : conns) {
+                if(HookConnector.ID.equals(dc.getID())) {
+                    instance = (HookConnector) dc.getDelegate();
+                }
+            }
+        }
+        return instance;
     }
-
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,83 +34,89 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.util.Lookup;
-import org.openide.util.test.MockLookup;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author tomas
  */
-public class ManagerTest extends NbTestCase {
+public class TestIssueProvider extends IssueProvider<TestIssue> {
+
+    @Override
+    public String getDisplayName(TestIssue data) {
+        return data.getDisplayName();
+    }
+
+    @Override
+    public String getTooltip(TestIssue data) {
+        return data.getTooltip();
+    }
+
+    @Override
+    public String getID(TestIssue data) {
+        return data.getID();
+    }
+
+    @Override
+    public String getSummary(TestIssue data) {
+        return data.getSummary();
+    }
+
+    @Override
+    public boolean isNew(TestIssue data) {
+        return data.isNew();
+    }
+
+    @Override
+    public boolean refresh(TestIssue data) {
+        return data.refresh();
+    }
+
+    @Override
+    public TestIssue createFor(String id) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public void addComment(TestIssue data, String comment, boolean closeAsFixed) {
+        data.addComment(comment, closeAsFixed);
+    }
+
+    @Override
+    public void attachPatch(TestIssue data, File file, String description) {
+        data.attachPatch(file, description);
+    }
+
+    @Override
+    public BugtrackingController getController(TestIssue data) {
+        return data.getController();
+    }
+
+    @Override
+    public void removePropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
+        data.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(TestIssue data, PropertyChangeListener listener) {
+        data.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void setContext(TestIssue data, Node[] nodes) {
+        data.setContext(nodes);
+    }
     
-
-    public ManagerTest(String arg0) {
-        super(arg0);
-    }
-
-    @Override
-    protected Level logLevel() {
-        return Level.ALL;
-    }   
-    
-    @Override
-    protected void setUp() throws Exception {    
-        MockLookup.setLayersAndInstances();
-    }
-
-    @Override
-    protected void tearDown() throws Exception {        
-    }
-
-    public void testGetRepositories() {
-        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        assertNotNull(connectors);
-        assertTrue(connectors.length > 1);
-        Set<String> repos = new HashSet<String>();
-        for (DelegatingConnector c : connectors) {
-            repos.add(c.getDisplayName());
-        }
-        assertTrue(repos.contains("ManagerTestConector"));
-    }
-
-    @BugtrackingConnector.Registration (
-        id="ManagerTestConnector",
-        displayName="ManagerTestConector",
-        tooltip="ManagerTestConector"
-    )    
-    public static class MyConnector extends BugtrackingConnector {
-        public MyConnector() {
-        }
-
-        @Override
-        public Repository createRepository() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
-        public Repository createRepository(RepositoryInfo info) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-    }
-
 }

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
@@ -51,10 +52,10 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
  */
 public class DummyKenaiRepositories extends KenaiRepositories {
 
-    private static final RepositoryProvider[] NO_REPOSITORIES = new RepositoryProvider[0];
+    private static final Repository[] NO_REPOSITORIES = new Repository[0];
 
     @Override
-    public RepositoryProvider[] getRepositories(boolean allOpenProjects) {
+    public Repository[] getRepositories(boolean allOpenProjects) {
         return NO_REPOSITORIES;
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.dummies;
-
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
-
-    private final String name;
-    private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
+public class TestKit {
+    public static Repository getRepository(BugtrackingConnector connector, TestRepository repo) {
+        return APIAccessor.IMPL.create(
+                connector, 
+                repo, 
+                new TestRepositoryProvider(), 
+                new TestIssueProvider(),
+                new TestQueryProvider());
     }
 
-    public DummyNode(String name) {
-        this(name, null);
+    public static Issue getIssue(Repository repo, TestIssue issue) {
+        return APIAccessor.IMPL.findIssue(repo, issue);
     }
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
+    public static Query getQuery(Repository repo, TestQuery query) {
+        return APIAccessor.IMPL.findQuery(repo, query);
     }
-
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
-    }
-
-    Repository getAssociatedRepository() {
-        return repository;
-    }
-
 }

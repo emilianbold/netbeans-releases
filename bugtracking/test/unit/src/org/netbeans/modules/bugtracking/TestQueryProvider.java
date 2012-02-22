@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,65 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.dummies;
-
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
+public class TestQueryProvider extends QueryProvider<TestQuery, TestIssue> {
 
-    private final String name;
-    private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
+    @Override
+    public String getDisplayName(TestQuery q) {
+        return q.getDisplayName();
     }
 
-    public DummyNode(String name) {
-        this(name, null);
+    @Override
+    public String getTooltip(TestQuery q) {
+        return q.getTooltip();
     }
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
+    @Override
+    public BugtrackingController getController(TestQuery q) {
+        return q.getController();
     }
 
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
+    @Override
+    public boolean isSaved(TestQuery q) {
+        return q.isSaved();
     }
 
-    Repository getAssociatedRepository() {
-        return repository;
+    @Override
+    public Collection<TestIssue> getIssues(TestQuery q) {
+        return q.getIssues();
     }
 
+    @Override
+    public boolean contains(TestQuery q, String id) {
+        return q.contains(id);
+    }
+
+    @Override
+    public void removePropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
+        q.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(TestQuery q, PropertyChangeListener listener) {
+        q.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void setContext(TestQuery q, Node[] nodes) {
+        q.setContext(nodes);
+    }
+    
 }

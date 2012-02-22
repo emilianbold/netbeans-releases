@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.dummies;
-
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
+public abstract class TestRepository {
 
-    private final String name;
-    private final Repository repository;
+    public abstract RepositoryInfo getInfo();
+    
+    public abstract Image getIcon();
 
-    public DummyNode() {
-        this((String) null);
-    }
+    public abstract TestIssue getIssue(String id);
 
-    public DummyNode(String name) {
-        this(name, null);
-    }
+    public abstract void remove();
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
-    }
+    public abstract RepositoryController getController();
 
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
-    }
+    public abstract TestQuery createQuery();
 
-    Repository getAssociatedRepository() {
-        return repository;
-    }
+    public abstract TestIssue createIssue();
 
+    public abstract Collection<TestQuery> getQueries();
+
+    public abstract Lookup getLookup();
+
+    public abstract Collection<TestIssue> simpleSearch(String criteria);
+
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    
 }

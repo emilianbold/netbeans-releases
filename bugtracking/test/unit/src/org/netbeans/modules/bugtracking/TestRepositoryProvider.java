@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,82 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.dummies;
-
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.util.Collection;
+import org.netbeans.modules.bugtracking.spi.RepositoryController;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
+public class TestRepositoryProvider extends RepositoryProvider<TestRepository, TestQuery, TestIssue> {
 
-    private final String name;
-    private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
+    @Override
+    public RepositoryInfo getInfo(TestRepository r) {
+        return r.getInfo();
     }
 
-    public DummyNode(String name) {
-        this(name, null);
+    @Override
+    public Image getIcon(TestRepository r) {
+        return r.getIcon();
     }
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
+    @Override
+    public TestIssue getIssue(TestRepository r, String id) {
+        return r.getIssue(id);
     }
 
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
+    @Override
+    public void remove(TestRepository r) {
+        r.remove();
     }
 
-    Repository getAssociatedRepository() {
-        return repository;
+    @Override
+    public RepositoryController getController(TestRepository r) {
+        return r.getController();
     }
 
+    @Override
+    public TestQuery createQuery(TestRepository r) {
+        return r.createQuery();
+    }
+
+    @Override
+    public TestIssue createIssue(TestRepository r) {
+        return r.createIssue();
+    }
+
+    @Override
+    public Collection<TestQuery> getQueries(TestRepository r) {
+        return r.getQueries();
+    }
+
+    @Override
+    public Lookup getLookup(TestRepository r) {
+        return r.getLookup();
+    }
+
+    @Override
+    public Collection<TestIssue> simpleSearch(TestRepository r, String criteria) {
+        return r.simpleSearch(criteria);
+    }
+
+    @Override
+    public void removePropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
+        r.removePropertyChangeListener(listener);
+    }
+
+    @Override
+    public void addPropertyChangeListener(TestRepository r, PropertyChangeListener listener) {
+        r.addPropertyChangeListener(listener);
+    }
+    
 }

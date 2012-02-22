@@ -1,13 +1,13 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
  *
  * The contents of this file are subject to the terms of either the GNU
- * General Public License Version 2 only ("GPL") or the Common
+ * General public abstract License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
  * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
@@ -37,44 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking;
 
-package org.netbeans.modules.bugtracking.dummies;
-
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.beans.PropertyChangeListener;
+import java.io.File;
+import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.openide.nodes.Node;
 
 /**
  *
- * @author Marian Petras
+ * @author tomas
  */
-public class DummyNode extends AbstractNode {
+public abstract class TestIssue {
 
-    private final String name;
-    private final Repository repository;
+    public abstract String getDisplayName();
 
-    public DummyNode() {
-        this((String) null);
-    }
+    public abstract String getTooltip();
 
-    public DummyNode(String name) {
-        this(name, null);
-    }
+    public abstract String getID();
 
-    public DummyNode(Repository repository) {
-        this(null, repository);
-    }
+    public abstract String getSummary();
 
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
-    }
+    public abstract boolean isNew();
 
-    Repository getAssociatedRepository() {
-        return repository;
-    }
+    public abstract boolean refresh();
 
+    public abstract TestIssue createFor(String id);
+
+    public abstract void addComment(String comment, boolean closeAsFixed);
+
+    public abstract void attachPatch(File file, String description);
+
+    public abstract BugtrackingController getController();
+
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+
+    public abstract void setContext(Node[] nodes);
+    
 }
