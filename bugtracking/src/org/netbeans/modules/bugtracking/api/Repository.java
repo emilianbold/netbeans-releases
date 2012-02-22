@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.api;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -211,7 +212,7 @@ public final class Repository {
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         bind.addPropertyChangeListener(listener);
     }
-    
+
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         bind.removePropertyChangeListener(listener);
     }
@@ -221,7 +222,7 @@ public final class Repository {
     }
     
     Query getMyIssuesQuery() {
-        return bind.getAllIssuesQuery();
+        return bind.getMyIssuesQuery();
     }
     
     private final class Bind<R, Q, I> {
