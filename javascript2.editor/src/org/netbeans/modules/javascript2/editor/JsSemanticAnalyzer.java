@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -106,8 +107,11 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case CONSTRUCTOR:
                 case METHOD:
                 case FUNCTION:
-                    if(object.isDeclared()) {
+                    if(object.isDeclared() && !object.isAnonymous()) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.METHOD_SET);
+                    }
+                    for(JsObject param: ((JsFunction)object).getParameters()) {
+                        count(result, param, highlights);
                     }
                     break;
                 case OBJECT:

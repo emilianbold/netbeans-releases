@@ -610,6 +610,9 @@ public class ModelVisitor extends PathNodeVisitor {
                         ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
+            if (indexNode.getBase() instanceof AccessNode) {
+                name.addAll(getName((AccessNode)indexNode.getBase()));
+            }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
                 name.add(new IdentifierImpl(lNode.getPropertyName(), 

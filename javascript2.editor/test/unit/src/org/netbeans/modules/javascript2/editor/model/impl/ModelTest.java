@@ -579,6 +579,28 @@ public class ModelTest extends JsTestBase {
         function = (JsFunction)object.getProperty("getColor");
         assertFalse(function.isAnonymous());
     }
+    
+     public void testAnonymousFunctionAsParam() throws Exception {
+        Model model = getModel("testfiles/coloring/czechChars.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        assertEquals(1, global.getProperties().size());
+        
+        JsFunctionImpl function = (JsFunctionImpl)global.getProperty("$function");
+        assertTrue(function.isAnonymous());
+        assertTrue(function.isDeclared());
+        
+        JsObject param = function.getParameter("$");
+        JsObject object = param.getProperty("timepicker");
+        object = object.getProperty("regional");
+        
+        object = object.getProperty("cs");
+        assertTrue(object.isDeclared());
+        assertEquals(18, object.getProperties().size());
+        
+     }
+     
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);
