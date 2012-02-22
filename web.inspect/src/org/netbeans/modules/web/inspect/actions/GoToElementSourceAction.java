@@ -78,6 +78,10 @@ public class GoToElementSourceAction extends NodeAction  {
         String uriTxt = element.getOwnerDocument().getDocumentURI();
         try {
             URI uri = new URI(uriTxt);
+            // 208252: Workaround for file://localhost/<path> URIs that appear on Mac
+            if (uri.getAuthority() != null) {
+                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+            }
             File file = new File(uri);
             file = FileUtil.normalizeFile(file);
             FileObject fob = FileUtil.toFileObject(file);
