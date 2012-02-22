@@ -52,6 +52,7 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     }
     
     public void testObjectAsParam() throws Exception {
+        // TODO arguments can not be handled as global 
         checkSemantic("testfiles/model/objectAsParameter.js");
     }
     

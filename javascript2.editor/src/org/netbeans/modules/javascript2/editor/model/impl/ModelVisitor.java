@@ -279,7 +279,37 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.visit(callNode, onset);
     }
 
+    @Override
+    public Node visit(IndexNode indexNode, boolean onset) {
+        if (!onset && indexNode.getIndex() instanceof LiteralNode) {
+            Node base = indexNode.getBase();
+            JsObjectImpl parent = null;
+            if (base instanceof AccessNode) {
+                parent = fromAN;
+            } else if (base instanceof IdentNode) {
+                Identifier parentName = ModelElementFactory.create(parserResult, (IdentNode)base);
+                List<Identifier> fqName = new ArrayList<Identifier>();
+                fqName.add(parentName);
+                parent = ModelUtils.getJsObject(modelBuilder, fqName);
+                parent.addOccurrence(parentName.getOffsetRange());
+            }
+            if (parent != null) {
+                String index = ((LiteralNode)indexNode.getIndex()).getPropertyName();
+                JsObjectImpl property = (JsObjectImpl)parent.getProperty(index);
+                if (property != null) {
+                    property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
+                } else {
+                    Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
+                    property = new JsObjectImpl(parent, name, name.getOffsetRange());
+                    parent.addProperty(name.getName(), property);
+                }
+            }
+        }
+        return super.visit(indexNode, onset);
+    }
 
+
+    
     @Override
     public Node visit(FunctionNode functionNode, boolean onset) {
 //        System.out.println("FunctionNode: " + functionNode.getName() + " , path: " + getPath().size() + " , onset: " + onset);
@@ -715,5 +745,5 @@ public class ModelVisitor extends PathNodeVisitor {
             return getPath().get(size - back);
         }
         return null;
-    }
+    }    
 }

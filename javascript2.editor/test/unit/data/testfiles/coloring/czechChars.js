@@ -21,6 +21,10 @@ jQuery(function($){
         showMonthAfterYear: false,
         yearSuffix: ''};
     $.timepicker.setDefaults($.timepicker.regional['cs']);
+    
+    var test = {}
+    test["myProperty"] = 20;
+    test.anotherProperty = test.myProperty;
 });
 
 
