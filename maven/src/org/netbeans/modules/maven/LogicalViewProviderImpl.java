@@ -53,8 +53,6 @@ import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.search.SearchInfoDefinition;
-import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -92,9 +90,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             return Lookups.fixed(project);
         }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        SearchInfoDefinition info = SearchInfoDefinitionFactory.createSearchInfo(
-                rootFolder.getPrimaryFile());
-        return Lookups.fixed(project, rootFolder, info);
+        return Lookups.fixed(project, rootFolder);
     }
     
     /**
