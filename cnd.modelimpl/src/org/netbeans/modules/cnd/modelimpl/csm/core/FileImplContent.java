@@ -86,11 +86,11 @@ public final class FileImplContent implements DeclarationsContainer {
 
     public FileImplContent(FileImpl fileImpl) {
         this.fileImpl = fileImpl;
-        this.fileComponentDeclarations = new FileComponentDeclarations(fileImpl);
+        this.fileComponentDeclarations = new FileComponentDeclarations(fileImpl, false);
         this.fileComponentMacros = new FileComponentMacros(fileImpl, false);
         this.fileComponentIncludes = new FileComponentIncludes(fileImpl, false);
-        this.fileComponentInstantiations = new FileComponentInstantiations(fileImpl);
-        this.fileComponentReferences = new FileComponentReferences(fileImpl);
+        this.fileComponentInstantiations = new FileComponentInstantiations(fileImpl, false);
+        this.fileComponentReferences = new FileComponentReferences(fileImpl, false);
     }
 
     public final int getErrorCount() {

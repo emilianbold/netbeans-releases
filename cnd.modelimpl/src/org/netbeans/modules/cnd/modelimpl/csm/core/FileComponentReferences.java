@@ -100,8 +100,8 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return EMPTY;
     }
 
-    public FileComponentReferences(FileImpl file) {
-        super(new FileReferencesKey(file));
+    public FileComponentReferences(FileImpl file, boolean persistent) {
+        super(persistent ? new FileReferencesKey(file) : null);
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         this.fileUID = file.getUID();

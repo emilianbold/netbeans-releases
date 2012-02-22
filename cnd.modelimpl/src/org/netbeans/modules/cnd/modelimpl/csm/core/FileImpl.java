@@ -258,7 +258,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         fileDeclarationsKey = new FileDeclarationsKey(this);
         weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey);
-        new FileComponentDeclarations(this);
+        new FileComponentDeclarations(this, true);
         weakFileDeclarations.clear();
 
         fileMacrosKey = new FileMacrosKey(this);
@@ -274,12 +274,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         fileReferencesKey = new FileReferencesKey(this);
         weakFileReferences = new WeakContainer<FileComponentReferences>(project, fileReferencesKey);
-        new FileComponentReferences(this);
+        new FileComponentReferences(this, true);
         weakFileReferences.clear();
 
         fileInstantiationsKey = new FileInstantiationsKey(this);
         weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey);
-        new FileComponentInstantiations(this);
+        new FileComponentInstantiations(this, true);
         weakFileInstantiationReferences.clear();
         
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
