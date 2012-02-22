@@ -131,12 +131,7 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     @Override
     public void refresh(BugzillaQuery query, boolean synchronously) {
         assert query instanceof KenaiQuery;
-        BugzillaQuery bq = (BugzillaQuery) query;
-        if(synchronously) {
-            bq.refresh();
-        } else {
-            bq.getController().onRefresh();
-        }
+        query.getController().refresh(synchronously);
     }
 
 }

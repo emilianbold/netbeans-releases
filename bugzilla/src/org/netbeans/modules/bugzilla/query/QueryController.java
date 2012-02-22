@@ -782,20 +782,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void autoRefresh() {
-        onRefresh(true);
+        refresh(true, false);
     }
 
+    public void refresh(boolean synchronously) {
+        refresh(false, synchronously);
+    }
+    
     public void onRefresh() {
-        onRefresh(false);
+        refresh(false, false);
     }
 
-    private void onRefresh(final boolean auto) {
+    private void refresh(final boolean auto, boolean synchronously) {
         if(refreshTask == null) {
             refreshTask = new QueryTask();
         } else {
             refreshTask.cancel();
         }
-        refreshTask.post(auto);
+        refreshTask.post(auto, synchronously);
     }
 
     private void onModify() {
@@ -1116,13 +1120,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        synchronized void post(boolean autoRefresh) {
+        synchronized void post(boolean autoRefresh, boolean synchronously) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
-            task.schedule(0);
+            if(synchronously) {
+                task.run();
+            } else {
+                task.schedule(0);
+            }
         }
 
         @Override

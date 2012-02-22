@@ -130,11 +130,6 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
     @Override
     public void refresh(JiraQuery query, boolean synchronously) {
         assert query instanceof KenaiQuery;
-        JiraQuery jq = (JiraQuery) query;
-        if(synchronously) {
-            jq.refresh();
-        } else {
-            jq.getController().onRefresh();
-        }
+        query.getController().refresh(synchronously);
     }
 }
