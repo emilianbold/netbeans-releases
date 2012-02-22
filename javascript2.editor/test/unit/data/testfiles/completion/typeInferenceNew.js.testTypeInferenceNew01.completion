@@ -2,11 +2,11 @@ Code completion result for source line:
 |formatter.println("Car:");
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew
-CONSTRUCTO Car(color, maker)               [PUBLIC]   typeInferenceNew
-CLASS      Context                         [PUBLIC]   typeInferenceNew
-CLASS      formatter                       [PUBLIC]   typeInferenceNew
-VARIABLE   object                          [PUBLIC]   typeInferenceNew
+CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew.js
+CONSTRUCTO Car(color, maker)               [PUBLIC]   typeInferenceNew.js
+CLASS      Context                         [PUBLIC]   typeInferenceNew.js
+CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
+VARIABLE   object                          [PUBLIC]   typeInferenceNew.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

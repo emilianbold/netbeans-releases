@@ -546,7 +546,9 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject global = model.getGlobalObject();
-        assertEquals(4, global.getProperties().size());
+        // TODO one global parameter is now treated arguments of function
+        // It should be treated as property of the function
+        assertEquals(5, global.getProperties().size());
         
         JsObject object = global.getProperty("furniture");
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());

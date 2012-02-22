@@ -2,5 +2,5 @@ Code completion result for source line:
 my| //Foo
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     myFunc()                        [PUBLIC]   test129036
-VARIABLE   myVar                           [PUBLIC]   test129036
+METHOD     myFunc()                        [PUBLIC]   test129036.js
+VARIABLE   myVar                           [PUBLIC]   test129036.js

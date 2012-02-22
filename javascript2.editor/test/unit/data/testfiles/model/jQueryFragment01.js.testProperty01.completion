@@ -2,10 +2,10 @@ Code completion result for source line:
 |jQuery.event.customEvent.test();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CLASS      formatter                       [PUBLIC]   jQueryFragment01
-CLASS      jQuery                          [PUBLIC]   jQueryFragment01
-VARIABLE   functionVar                     [PRIVATE]  jQueryFragment01
-VARIABLE   globalProperty                  [PUBLIC]   jQueryFragment01
+CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
+CLASS      jQuery                          [PUBLIC]   jQueryFragment01.js
+VARIABLE   functionVar                     [PRIVATE]  jQueryFragment01.js
+VARIABLE   globalProperty                  [PUBLIC]   jQueryFragment01.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
