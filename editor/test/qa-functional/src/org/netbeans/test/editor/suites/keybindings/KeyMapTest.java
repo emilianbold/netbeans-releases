@@ -74,10 +74,7 @@ public class KeyMapTest extends EditorTestCase {
      * @param name Test name
      */
     public KeyMapTest(String name) {
-        super(name);
-        openDefaultProject();
-        openSourceFile("keymap", "Main.java");
-        editor = new EditorOperator("Main.java");
+        super(name);        
     }
 
     public void closeProject() {
@@ -94,6 +91,9 @@ public class KeyMapTest extends EditorTestCase {
         System.out.println("----");
         System.out.println("Starting: " + getName());
         System.out.println("----");
+	  openDefaultProject();
+        openSourceFile("keymap", "Main.java");
+        editor = new EditorOperator("Main.java");
     }
 
     @Override
