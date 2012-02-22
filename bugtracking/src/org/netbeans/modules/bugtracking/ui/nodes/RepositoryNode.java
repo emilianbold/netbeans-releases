@@ -85,21 +85,25 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(SystemAction.get(QueryAction.class).getName()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     QueryAction.openQuery(null, repository);
                 }
             },
             new AbstractAction(SystemAction.get(IssueAction.class).getName()) {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     IssueAction.createIssue(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.editRepository(repository);
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     NotifyDescriptor nd = new NotifyDescriptor.Confirmation(
                         NbBundle.getMessage(RepositoryNode.class, "MSG_RemoveRepository", new Object[] { repository.getDisplayName() }), // NOI18N

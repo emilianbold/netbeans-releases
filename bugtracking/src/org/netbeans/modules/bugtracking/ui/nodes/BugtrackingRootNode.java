@@ -118,6 +118,7 @@ public class BugtrackingRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
+            @Override
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.createRepository();
                 }
@@ -139,6 +140,7 @@ public class BugtrackingRootNode extends AbstractNode {
             return key.getNode();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
                 refresh(false);
@@ -155,6 +157,7 @@ public class BugtrackingRootNode extends AbstractNode {
 
     public static void selectNode(final String... path) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
                 if (tab == null) {
@@ -171,6 +174,7 @@ public class BugtrackingRootNode extends AbstractNode {
                 final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
                 final Node root = mgr.getRootContext();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Node repository = NodeOp.findChild(root, BUGTRACKING_NODE_NAME);
                         if (repository == null) {
@@ -186,6 +190,7 @@ public class BugtrackingRootNode extends AbstractNode {
                         }
                         final Node selected = _selected;
                         Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
                                     mgr.setSelectedNodes(new Node[] {selected});
