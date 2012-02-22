@@ -1158,37 +1158,48 @@ protected STRING_LITERAL_BODY :
             )
         ;
 
-//protected RAW_STRING_LITERAL_BODY 
-//{
-//    StringBuilder s1 = new StringBuilder();
-//    StringBuilder s2 = new StringBuilder(); 
-//}   
-//    :
-//    ((~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') {s1.append(LA(0));} )*)
-//    '('
-//        (options{greedy=true;}:   
-//            (   "\r"
-//                    (options{greedy=true;}: "\n" {offset--;} // MS 
-//                    |   // MAC
-//                    )
-//            |   "\n"     // Unix
-//            ) {deferredNewline();}
-//        |	
-//            (
-//                (')' ~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') '"' {s2.append(LA(0));} ) =>
-//                ({s1.equals(s2)}?
-//                    ')' ~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')')
-//                |
-//                    ')' ~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') '"'
-//                )
-//            | 
-//                ~('\r' | '\n')                         
-//            )
-//        )*
-//    ('"' (Suffix)? // correct ending of string
-//        |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
-//    )
-//    ;
+protected RAW_STRING_LITERAL
+        :
+            '"' RAW_STRING_LITERAL_BODY            
+        ;
+
+protected RAW_STRING_LITERAL_BODY 
+{
+    boolean end = false;
+    StringBuilder s1 = new StringBuilder();
+    StringBuilder s2 = null; 
+}   
+    :
+    ((~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') {s1.append(LA(0));} )*)
+    '('
+        (options{greedy=true;}:   
+            (   "\r"
+                    (options{greedy=true;}: "\n" {offset--;} // MS 
+                    |   // MAC
+                    )
+            |   "\n"     // Unix
+            ) {deferredNewline();}
+        |	
+               (')' (~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') )* ) =>
+                {s2 = new StringBuilder();}
+                ')' (options{greedy=true;}: ~('"' | '\r' | '\n' | '\\' | '\t' | '(' | ')') {s2.append(LA(0));})*
+
+                ({ LA(1)=='"' && !s1.toString().equals(s2.toString())}? 
+                    '"'
+                |
+                    {end = LA(1)=='"';}
+                )
+                {s2 = null;}
+            | 
+                ~('\r' | '\n' | '"')                         
+            |   
+                { !end }? '"' 
+            
+        )*
+    ('"' (Suffix)? // correct ending of string
+        |  {LA(1)=='\r'||LA(1)=='\n'}? // error string doesn't have closing quote
+    )
+    ;
 
 /*
  * Handle the various escape sequences.
@@ -1269,40 +1280,6 @@ NUMBER
     )    
     ;
 
-//
-//        (options {greedy=true;} :
-//		( (Digit)+ ('.' | 'e' | 'E') )=> (Digit)+
-//		( '.' (Digit)* (options {greedy=true;} : Exponent)?      {$setType(FLOATONE);} //Zuo 3/12/01
-//		| Exponent                      {$setType(FLOATTWO);} //Zuo 3/12/01
-//		)                               //{type = DoubleDoubleConst;}
-//	|	'.'  (                          {$setType(DOT);}	//TODO: solve "dot & ellipsis"! 
-//		| 	(Digit)+ (options {greedy=true;} : Exponent)?    {$setType(FLOATONE);} //Zuo 3/12/01
-//                                                //{type = DoubleDoubleConst;}
-//			
-//		| '*' {$setType(DOTMBR);}
-//                | {(LA(2)=='.')}? ".."          {$setType(ELLIPSIS);}
-//                )
-//
-//	|	'1'..'9' (Digit)*               //{type = IntIntConst;}
-//                                                {$setType(DECIMALINT);}  
-//
-//	|	'0' 
-//                (options {greedy=true;} :
-//                    ('x' | 'X') (options {greedy=true;} : 'a'..'f' | 'A'..'F' | Digit)*
-//                |
-//                    ('0'..'7')*                 {$setType(OCTALINT);}
-//                |
-//                    (options {greedy=true;} : 'b' | 'B') ('0'|'1')*      {$setType(BINARYINT);}
-//                                                
-//                )
-//                                                //{type = IntHexConst;}
-//                                                {$setType(HEXADECIMALINT);}   
-//	|	'0' 
-//        
-//        )
-//        Suffix
-//	;
-
 // Everything that can be treated lke ID
 ID_LIKE:
         {isPreprocPending()}?
@@ -1331,20 +1308,22 @@ ID_LIKE:
             }
             $setType(IDENT);
         }
+     |  ('L' 'R' '"') => 'L' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' 'R' '"') => 'u' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('U' 'R' '"') => 'U' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  ('u' '8' 'R' '"') => 'u' '8' 'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
      |
         // We have checked opposite above
         //{isAfterPPDefined()}? 
         Identifier 
         {setAfterPPDefined(false);$setType(ID_DEFINED);}
-     |  'Z' (CHAR_LITERAL {$setType(CHAR_LITERAL);}
-            |STRING_LITERAL {$setType(STRING_LITERAL);})
-//     |  "u8" STRING_LITERAL {$setType(STRING_LITERAL);}
-     |  'u' STRING_LITERAL {$setType(STRING_LITERAL);}
-     |  'U' STRING_LITERAL {$setType(STRING_LITERAL);}
-     |  'R' STRING_LITERAL {$setType(STRING_LITERAL);}
-//     |  "u8L" STRING_LITERAL {$setType(STRING_LITERAL);}
-//     |  "uL" STRING_LITERAL {$setType(STRING_LITERAL);}
-//     |  "UL" STRING_LITERAL {$setType(STRING_LITERAL);}
+     |  'L' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'u' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'U' ( CHAR_LITERAL {$setType(CHAR_LITERAL);}
+            | STRING_LITERAL {$setType(STRING_LITERAL);})
+     |  'R' RAW_STRING_LITERAL {$setType(STRING_LITERAL);}
 ;
 
 // FAKE , just to get the correct type number for this token
