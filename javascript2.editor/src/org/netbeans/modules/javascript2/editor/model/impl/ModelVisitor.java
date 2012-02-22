@@ -562,7 +562,8 @@ public class ModelVisitor extends PathNodeVisitor {
             modelBuilder.setCurrentObject(variable);
             if (varNode.getInit() instanceof IdentNode) {
                 addOccurence((IdentNode)varNode.getInit());
-            } else if (!(varNode.getInit() instanceof UnaryNode)) {
+            }
+            if (!(varNode.getInit() instanceof UnaryNode)) {
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(varNode.getInit());
                 for (TypeUsage type : types) {
                     variable.addAssignment(type, name.getOffsetRange().getEnd());
@@ -607,6 +608,13 @@ public class ModelVisitor extends PathNodeVisitor {
             IdentNode ident = (IdentNode) lhs;
             name.add(new IdentifierImpl(ident.getName(),
                         ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
+        } else if (lhs instanceof IndexNode) {
+            IndexNode indexNode = (IndexNode)lhs;
+            if (indexNode.getIndex() instanceof LiteralNode) {
+                LiteralNode lNode = (LiteralNode)indexNode.getIndex();
+                name.add(new IdentifierImpl(lNode.getPropertyName(), 
+                        ModelUtils.documentOffsetRange(parserResult, lNode.getStart(), lNode.getFinish())));
+            }
         }
         return name;
     }
