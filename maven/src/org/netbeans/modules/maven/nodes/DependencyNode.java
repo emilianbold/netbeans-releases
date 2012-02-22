@@ -53,6 +53,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -626,12 +627,13 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     //why oh why do we have to suffer through this??
     private static RemoveDependencyAction REMOVEDEPINSTANCE = new RemoveDependencyAction(Lookup.EMPTY);
 
+    @Messages("BTN_Remove_Dependency=Remove Dependency")
     private static class RemoveDependencyAction extends AbstractAction implements ContextAwareAction {
 
         private Lookup lkp;
 
         RemoveDependencyAction(Lookup look) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Remove_Dependency"));
+            putValue(Action.NAME, BTN_Remove_Dependency());
             lkp = look;
             Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
             Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
@@ -718,11 +720,12 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
 
     }
-
+    @Messages({"BTN_Exclude_Dependency=Exclude Dependency",
+              "TIT_Exclude=Exclude Transitive Dependency"})
     private class ExcludeTransitiveAction extends AbstractAction {
 
         public ExcludeTransitiveAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Exclude_Dependency"));
+            putValue(Action.NAME, BTN_Exclude_Dependency());
         }
 
         @Override
@@ -737,7 +740,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     Collection<org.apache.maven.shared.dependency.tree.DependencyNode> directs;
                     if (nds.size() > 1) {
                         final ExcludeDependencyPanel pnl = new ExcludeDependencyPanel(project.getOriginalMavenProject(), art, nds, rootnode);
-                        DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getBundle(DependencyNode.class).getString("TIT_Exclude"));
+                        DialogDescriptor dd = new DialogDescriptor(pnl, TIT_Exclude());
                         Object ret = DialogDisplayer.getDefault().notify(dd);
                         if (ret == DialogDescriptor.OK_OPTION) {
                             directs = pnl.getDependencyExcludes().get(art);
@@ -845,11 +848,12 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     //why oh why do we have to suffer through this??
     private static SetInCurrentAction SETINCURRENTINSTANCE = new SetInCurrentAction(Lookup.EMPTY);
 
+    @Messages("BTN_Set_Dependency=Declare as Direct Dependency")
     private static class SetInCurrentAction extends AbstractAction  implements ContextAwareAction {
         private Lookup lkp;
 
         SetInCurrentAction(Lookup lookup) {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Set_Dependency"));
+            putValue(Action.NAME, BTN_Set_Dependency());
             lkp = lookup;
             Collection<? extends NbMavenProjectImpl> res = lkp.lookupAll(NbMavenProjectImpl.class);
             Set<NbMavenProjectImpl> prjs = new HashSet<NbMavenProjectImpl>(res);
@@ -929,10 +933,11 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
 
+    @Messages("BTN_Manually_install=Manually install artifact")
     private class InstallLocalArtifactAction extends AbstractAction {
 
         public InstallLocalArtifactAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Manually_install"));
+            putValue(Action.NAME, BTN_Manually_install());
         }
 
         @Override
@@ -944,12 +949,13 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
     }
 
+    @Messages("BTN_Add_javadoc=Add local Javadoc")
     private class InstallLocalJavadocAction extends AbstractAction implements Runnable {
 
         private File source;
 
         public InstallLocalJavadocAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Add_javadoc"));
+            putValue(Action.NAME, BTN_Add_javadoc());
         }
 
         @Override
@@ -973,12 +979,13 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
         }
     }
 
+    @Messages("BTN_Add_sources=Add local sources")
     private class InstallLocalSourcesAction extends AbstractAction implements Runnable {
 
         private File source;
 
         public InstallLocalSourcesAction() {
-            putValue(Action.NAME, org.openide.util.NbBundle.getMessage(DependencyNode.class, "BTN_Add_sources"));
+            putValue(Action.NAME, BTN_Add_sources());
         }
 
         @Override
@@ -1095,44 +1102,18 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
 
         @Override
         public Action[] getActions(boolean context) {
-            DataObject dobj = getOriginal().getLookup().lookup(DataObject.class);
             List<Action> result = new ArrayList<Action>();
-            Action[] superActions = super.getActions(false);
-            boolean hasOpen = false;
-            for (int i = 0; i < superActions.length; i++) {
-                if ((superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction)
-                        && (dobj != null && !dobj.getClass().getName().contains("ClassDataObject"))) {//NOI18N #148053
-                    result.add(superActions[i]);
-                    hasOpen = true;
-                }
-                if (dobj != null && dobj.getPrimaryFile().isFolder() && superActions[i] instanceof FindAction) {
-                    result.add(superActions[i]);
-                }
-            }
-            if (!hasOpen) { //necessary? maybe just keep around for all..
-                result.add(new OpenSrcAction(false));
-            }
-            result.add(new OpenSrcAction(true));
+            result.addAll(Arrays.asList(super.getActions(false)));
+            result.add(new OpenJavadocAction());
 
             return result.toArray(new Action[result.size()]);
         }
 
-        @Override
-        public Action getPreferredAction() {
-            return new OpenSrcAction(false);
-        }
+        @Messages("BTN_View_Javadoc=Show Javadoc")
+        private class OpenJavadocAction extends AbstractAction {
 
-        private class OpenSrcAction extends AbstractAction {
-
-            private boolean javadoc;
-
-            private OpenSrcAction(boolean javadoc) {
-                this.javadoc = javadoc;
-                if (javadoc) {
-                    putValue(Action.NAME, NbBundle.getMessage(DependencyNode.class, "BTN_View_Javadoc"));
-                } else {
-                    putValue(NAME, NbBundle.getMessage(DependencyNode.class, "BTN_View_Source"));
-                }
+            private OpenJavadocAction() {
+                putValue(Action.NAME, BTN_View_Javadoc());
             }
 
             @Override
@@ -1141,27 +1122,20 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                 if (dobj == null) {
                     return;
                 }
-                if (javadoc) {
-                        FileObject fil = dobj.getPrimaryFile();
-                        FileObject jar = FileUtil.getArchiveFile(fil);
-                        FileObject root = FileUtil.getArchiveRoot(jar);
-                        String rel = FileUtil.getRelativePath(root, fil);
-                        rel = rel.replaceAll("[.]class$", ".html"); //NOI18N
-                        JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.toURL());
-                        if (fil.isFolder()) {
-                            rel = rel + "/package-summary.html"; //NOI18N
-                        }
-                        URL javadocUrl = findJavadoc(rel, res.getRoots());
-                        if (javadocUrl != null) {
-                            HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
-                        } else {
-                            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
-                        }
-                } else if (!dobj.getPrimaryFile().isFolder()) {
-                    Openable oc = dobj.getLookup().lookup(Openable.class);
-                    if (oc != null) {
-                        oc.open();
-                    }
+                FileObject fil = dobj.getPrimaryFile();
+                FileObject jar = FileUtil.getArchiveFile(fil);
+                FileObject root = FileUtil.getArchiveRoot(jar);
+                String rel = FileUtil.getRelativePath(root, fil);
+                rel = rel.replaceAll("[.]class$", ".html"); //NOI18N
+                JavadocForBinaryQuery.Result res = JavadocForBinaryQuery.findJavadoc(root.toURL());
+                if (fil.isFolder()) {
+                    rel = rel + "/package-summary.html"; //NOI18N
+                }
+                URL javadocUrl = findJavadoc(rel, res.getRoots());
+                if (javadocUrl != null) {
+                    HtmlBrowser.URLDisplayer.getDefault().showURL(javadocUrl);
+                } else {
+                    StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DependencyNode.class, "ERR_No_Javadoc_Found", fil.getPath()));
                 }
             }
 
