@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,16 +44,14 @@ import java.util.List;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.NbClusterConfigurationLogic;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.InstallationException;
+import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.Progress;
+import org.netbeans.installer.wizard.components.panels.JdkLocationPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbWelcomePanel;
 
 /**
@@ -95,6 +93,11 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     @Override
     public void install(final Progress progress) throws InstallationException {
         super.install(progress);
+        
+        // #208636: ME 3.0.5 emulator never starts on Win 7 64bit
+        if (SystemUtils.isWindows()) {
+            writeJavaExecutablePath(progress);
+        }
 
         // HACK : remove mobility end-2-end if installed by mobility pack installer
         // and there is no enterpise cluster in the netbeans distribution
@@ -165,6 +168,50 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
                     LogManager.log("Enterprise would be installed together with mobility, do nothing with end2end kit");
                 }
             }
+        }
+    }
+    
+    private void writeJavaExecutablePath(final Progress progress) throws InstallationException {
+        Product javemeProduct = getProduct();
+        String javamesdkDirName = javemeProduct.getProperty("javamesdk.directory");
+        List <Product> products = Registry.getInstance().getProducts();
+        Product javaseProduct = null;
+        for (Product p : products) {
+            if(p.getUid().equals("nb-base") ) {
+                javaseProduct = p;
+                break;
+            }
+        }
+        if (javaseProduct == null) {
+            LogManager.log("Cannot write JDK in ME SDK because 'nb-base' is not present.");
+            return ;
+        }
+        File installLocation = javemeProduct.getInstallationLocation();
+        String jdkHomePath = javaseProduct.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
+        if (jdkHomePath == null) {
+            LogManager.log("Cannot write JDK in ME SDK because jdkHomePath is null.");
+            return ;
+        }
+        File jdkHome = new File(jdkHomePath);
+        try {
+            progress.setDetail(getString("CL.write.java.me.sdk")); // NOI18N
+            File javamesdkDir = new File(installLocation, MOBILITY_CLUSTER + File.separator + javamesdkDirName + File.separator + "bin"); // NOI18N
+            assert javamesdkDir.exists() && javamesdkDir.isDirectory() : javamesdkDir + " exists and is a directory.";
+            if (! javamesdkDir.exists() || ! javamesdkDir.isDirectory()) {
+                LogManager.log("Cannot write JDK in ME SDK because javamesdkDir doesn't exist.");
+            }
+            LogManager.log("Writing the following JDK in ME SDK : ");
+            LogManager.log("... path    : " + jdkHome);
+            LogManager.log("... location    : " + javamesdkDir);
+
+            String correctJavaHome = StringUtils.escapeRegExp(jdkHome.getAbsolutePath());
+            File javeConf = new File(javamesdkDir, "java"); // NOI18N
+            FileUtils.writeFile(javeConf, correctJavaHome);
+            javemeProduct.getInstalledFiles().add(javeConf);
+        } catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.error.write.java.me.sdk"), // NOI18N
+                    e);
         }
     }
 }
