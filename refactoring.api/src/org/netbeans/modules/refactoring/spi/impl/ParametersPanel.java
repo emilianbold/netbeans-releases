@@ -359,11 +359,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             canceledDialog = true;
             if (evt!=null && evt.getSource() instanceof Cancellable) {
                 putResult(null);
-                dialog.setVisible(false);
+                if (dialog!=null)
+                    dialog.setVisible(false);
             } else {
                 rui.getRefactoring().cancelRequest();
                 putResult(null);
-                dialog.setVisible(false);
+                if (dialog!=null)
+                    dialog.setVisible(false);
                 cancelRequest = true;
             }
         }
