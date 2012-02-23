@@ -48,6 +48,8 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateCustomizer;
 import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateImplementation;
@@ -59,16 +61,18 @@ import org.openide.util.RequestProcessor;
 
 @NbBundle.Messages({"MSG_Loading=loading...",
     "MSG_None=Do not use any"})
-public class SiteTemplateWizard extends javax.swing.JPanel {
+public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeListener {
 
     private SiteTemplateCustomizer customizer = null;
     private SiteTemplateImplementation site = null;
     private JComponent component = null;
+    private SiteTemplateWizardPanel wizardPanel;
     
     /**
      * Creates new form SiteTemplateWizard
      */
     public SiteTemplateWizard(SiteTemplateWizardPanel wizardPanel) {
+        this.wizardPanel = wizardPanel;
         initComponents();
         loadTemplates();
         final ListCellRenderer defaultRender = sitesComboBox.getRenderer();
@@ -170,21 +174,27 @@ public class SiteTemplateWizard extends javax.swing.JPanel {
     }
     
     private void updatePlaceholder() {
+        final ChangeListener l = this;
         Runnable r = new Runnable() {
             @Override
             public void run() {
                 if (component != null) {
                     placeholder.remove(component);
                 }
+                if (customizer != null) {
+                    customizer.removeChangeListener(l);
+                }
                 site = (SiteTemplateImplementation)sitesComboBox.getSelectedItem();
                 customizer = site.getCustomizer();
                 if (customizer != null) {
                     component = customizer.getComponent();
                     placeholder.add(component, BorderLayout.CENTER);
+                    customizer.addChangeListener(l);
                 } else {
                     component = null;
                 }
                 placeholder.revalidate();
+                wizardPanel.fireChangeEvent();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -194,20 +204,22 @@ public class SiteTemplateWizard extends javax.swing.JPanel {
         }
     }
     
-    boolean valid(WizardDescriptor wizardDescriptor) {
-        return true;
+    public String isValid2() {
+        if (customizer == null) {
+            return "";
+        }
+        if (!customizer.isValid()) {
+            return customizer.getErrorMessage();
+        }
+        return "";
     }
 
-    void validate(WizardDescriptor wizardDescriptor) {
-    }
-
-    void store(WizardDescriptor d) {
-    }
-
-    void read(WizardDescriptor wizardDescriptor) {
-    }
-    
     public void apply(FileObject p, ProgressHandle handle) {
         site.apply(p, handle);
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        wizardPanel.fireChangeEvent();
     }
 }
