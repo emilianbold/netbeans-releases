@@ -57,6 +57,7 @@ import org.netbeans.api.search.provider.impl.CompoundSearchIterator;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -66,15 +67,12 @@ import org.openide.nodes.Node;
 public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
 
     /**
-     *
+     * Children - subnodes.
      */
-    private final Node node;
+    private final Children children;
 
-    /**
-     *
-     */
-    public SubnodesSearchInfoDefinition(final Node node) {
-        this.node = node;
+    public SubnodesSearchInfoDefinition(final Children children) {
+        this.children = children;
     }
 
     /**
@@ -89,7 +87,7 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
     @Override
     public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
             SearchListener listener, TerminationFlag terminationFlag) {
-        final Node[] nodes = node.getChildren().getNodes(true);
+        final Node[] nodes = children.getNodes(true);
         if (nodes.length == 0) {
             return SimpleSearchInfoDefinition.EMPTY_SEARCH_INFO.filesToSearch(
                     options, listener, terminationFlag);
@@ -123,7 +121,7 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
 
     @Override
     public List<SearchRoot> getSearchRoots() {
-        final Node[] nodes = node.getChildren().getNodes(true);
+        final Node[] nodes = children.getNodes(true);
         if (nodes.length == 0) {
             return Collections.emptyList();
         }

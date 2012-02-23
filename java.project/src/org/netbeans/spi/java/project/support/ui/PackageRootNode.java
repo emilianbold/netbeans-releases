@@ -89,8 +89,6 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -113,13 +111,12 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     private volatile boolean nameChange;
     
     PackageRootNode( SourceGroup group ) {
-        this( group, new InstanceContent() );
+        this(group, new PackageViewChildren(group));
     }
     
-    private PackageRootNode( SourceGroup group, InstanceContent ic ) {
-        super( new PackageViewChildren(group),
-                new ProxyLookup(createLookup(group), new AbstractLookup(ic)));
-        ic.add(SearchInfoDefinitionFactory.createSearchInfoBySubnodes(this));
+    private PackageRootNode( SourceGroup group, Children ch) {
+        super(ch, new ProxyLookup(createLookup(group), Lookups.singleton(
+                SearchInfoDefinitionFactory.createSearchInfoBySubnodes(ch))));
         this.group = group;
         file = group.getRootFolder();
         files = Collections.singleton(file);

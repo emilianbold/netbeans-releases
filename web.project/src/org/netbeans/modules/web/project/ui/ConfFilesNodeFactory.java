@@ -103,12 +103,12 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -195,25 +195,25 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
-            this(prj, new InstanceContent());
+            this(prj, Children.create(ConfFilesChildrenFactory.forProject(prj), true));
         }
 
-        private ConfFilesNode(Project prj, InstanceContent content) {
-            super(Children.create(ConfFilesChildrenFactory.forProject(prj), true), 
-                    new AbstractLookup(content));
+        private ConfFilesNode(Project prj, Children children) {
+            super(children, createLookup(prj, children));
             this.project = prj;
-            setLookupContent(content);
             setName("configurationFiles"); // NOI18N
             iconDelegate = DataFolder.findFolder (FileUtil.getConfigRoot()).getNodeDelegate();
         }
 
-        private void setLookupContent(InstanceContent content) {
+        private static Lookup createLookup(Project project,
+                Children children) {
+
             if (project.getProjectDirectory().isValid()) {
                 SearchInfoDefinition searchInfo;
-                searchInfo = SearchInfoDefinitionFactory.createSearchInfoBySubnodes(
-                        this);
-                content.add(searchInfo);
-                content.add(project);
+                searchInfo = SearchInfoDefinitionFactory.createSearchInfoBySubnodes(children);
+                return Lookups.fixed(project, searchInfo);
+            } else {
+                return Lookups.fixed(project);
             }
         }
 

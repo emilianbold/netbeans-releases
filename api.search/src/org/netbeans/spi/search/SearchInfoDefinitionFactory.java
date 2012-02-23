@@ -55,7 +55,7 @@ import org.netbeans.spi.search.impl.SimpleSearchInfoDefinition;
 import org.netbeans.spi.search.impl.SubnodesSearchInfoDefinition;
 import org.netbeans.spi.search.impl.VisibilityFilter;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
+import org.openide.nodes.Children;
 import org.openide.util.Parameters;
 
 /**
@@ -203,28 +203,40 @@ public final class SearchInfoDefinitionFactory {
     /**
      * Creates a
      * <code>SearchInfoDefinition</code> object combining
-     * <code>SearchInfoDefinition</code> objects returned by the node's
-     * subnodes.
+     * <code>SearchInfoDefinition</code> objects of the node's
+     * children.
      *
      * Method {@link SearchInfoDefinition#canSearch()} of the resulting
-     * <code>SearchInfoDefinition</code> objects returns
-     * <code>true</code> if and only if at least one of the nodes is searchable
-     * (its method
-     * <code>canSearch()</code> returns
-     * <code>true</code>). The iterator iterates through all
+     * <code>SearchInfoDefinition</code> objects returns always true.
+     * The iterator iterates through all
      * <code>FileObject</code>s returned by the subnode's
      * <code>SearchInfoDefinition</code> iterators.
      *
-     * @param node node to create
+     * <p> In case you want to create node children in the node constructor, you
+     * can create children in one constructor and pass them to another
+     * constructor:</p>
+     * <pre class="nonnormative"">
+     * {@code
+     * public ExampleNode() {
+     *    this(Children.create(someChildrenFactory, true));
+     * }
+     *
+     * private ExampleNode(Children ch) {
+     *    super(ch, Lookups.singleton(
+     *       SearchInfoDefinitionFactory.createSearchInfoBySubnodes(ch)));
+     *    // ...
+     * }}</pre>
+     * 
+     * @param children  Children to create
      * <code>SearchInfoDefinition</code> for
      * @return
      * <code>SearchInfoDefinition</code> object representing combination of
-     * <code>SearchInfoDefinition</code> objects of the node's subnodes
+     * <code>SearchInfoDefinition</code> objects of child nodes.
      */
     public static @NonNull SearchInfoDefinition createSearchInfoBySubnodes(
-            @NonNull Node node) {
-        Parameters.notNull("node", node);                               //NOI18N
-        return new SubnodesSearchInfoDefinition(node);
+            @NonNull Children children) {
+        Parameters.notNull("children", children);                       //NOI18N
+        return new SubnodesSearchInfoDefinition(children);
     }
 
     /**

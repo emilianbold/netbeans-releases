@@ -129,7 +129,7 @@
             </p>
             <p>
                 The definition is represented by objects extending class
-                <code>SearchInfoDefinition</code>. To enable searching on
+                <code>SearchInfoDefinition</code>. To customize searching on
                 a custom node, a
                 <code>SearchInfoDefinition</code> object must be added to the node's lookup.
                 In most cases, there is no need to define own class extending the
@@ -159,39 +159,6 @@ public class MyNode extends AbstractNode {
 }
                 </pre>
             </blockquote>
-            <p>
-                One of the factory methods -
-                <code>createSearchInfoBySubnodes(...)</code>
-                - requires that a reference to the node itself. In this case, it is not
-                possible to fully define the lookup in the
-                <code>super(...)</code>
-                statement of the constructor because a reference to the node is not
-                available until the call of
-                <code>super(...)</code> returns.
-                In this case, a special technique must be used:
-            </p>
-            <blockquote>
-                <pre>
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-
-public class MyNode extends AbstractNode {
-
-    public MyNode() {
-        this(new InstanceContent());
-    }
-
-    public MyNode(InstanceContent ic) {
-        super(new AbstractLookup(ic));
-        ic.add(SearchInfoDefinitionFactory.createSearchInfoBySubnodes(this));
-    }
-
-    ...
-
-}
-                </pre>
-            </blockquote>
-
             <p>
                 In some cases implementators may need to apply the same set
                 of SearchFilterDefinitions in the whole subtree of a node.
