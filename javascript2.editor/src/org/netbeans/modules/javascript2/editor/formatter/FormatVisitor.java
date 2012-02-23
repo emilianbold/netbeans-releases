@@ -271,13 +271,10 @@ public class FormatVisitor extends NodeVisitor {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
 
-        // put indentation mark after non white token
-        Token token = getNextNonEmptyToken(getFinish(block));
-        if (token != null) {
-            formatToken = previousNonWhiteToken(getStart(block));
-            if (formatToken != null) {
-                appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
-            }
+        // put indentation mark
+        formatToken = getCaseBlockEndToken(block);
+        if (formatToken != null) {
+            appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
     }
 
@@ -332,28 +329,14 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private FormatToken getNextToken(int offset, JsTokenId expected) {
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        Token<?extends JsTokenId> token = ts.token();
-        if (expected != null) {
-            while (expected != token.id() && ts.moveNext()) {
-                token = ts.token();
-            }
-            if (expected != token.id()) {
-                return null;
-            }
-        }
-        if (token != null) {
-            return tokenStream.getToken(ts.offset());
-        }
-        return null;
+        return getToken(offset, expected, false);
     }
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected) {
+        return getToken(offset, expected, true);
+    }
+
+    private FormatToken getToken(int offset, JsTokenId expected, boolean backward) {
         ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
@@ -362,7 +345,8 @@ public class FormatVisitor extends NodeVisitor {
 
         Token<?extends JsTokenId> token = ts.token();
         if (expected != null) {
-            while (expected != token.id() && ts.movePrevious()) {
+            while (expected != token.id()
+                    && ((backward && ts.movePrevious()) || (!backward && ts.moveNext()))) {
                 token = ts.token();
             }
             if (expected != token.id()) {
@@ -373,26 +357,6 @@ public class FormatVisitor extends NodeVisitor {
             return tokenStream.getToken(ts.offset());
         }
         return null;
-    }
-
-    private Token getNextNonEmptyToken(int offset) {
-        ts.move(offset);
-
-        if (!ts.moveNext() && !ts.movePrevious()) {
-            return null;
-        }
-
-        Token ret = null;
-        while (ts.moveNext()) {
-            Token token = ts.token();
-            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
-                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
-                && token.id() != JsTokenId.WHITESPACE)) {
-                ret = token;
-                break;
-            }
-        }
-        return ret;
     }
 
     private Token getPreviousNonEmptyToken(int offset) {
@@ -439,18 +403,45 @@ public class FormatVisitor extends NodeVisitor {
         return null;
     }
 
-    private FormatToken previousNonWhiteToken(int backstop) {
+    /**
+     * Finds the next non empty token first and then move back to non whitespace
+     * token.
+     *
+     * @param block case block
+     * @return format token
+     */
+    private FormatToken getCaseBlockEndToken(Block block) {
+        int start = getStart(block);
+        int finish = getFinish(block);
+        ts.move(finish);
+
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return null;
+        }
+
         Token ret = null;
-        while (ts.movePrevious() && ts.offset() >= backstop) {
-            Token current = ts.token();
-            if (current.id() != JsTokenId.WHITESPACE) {
-                ret = current;
+        while (ts.moveNext()) {
+            Token token = ts.token();
+            if ((token.id() != JsTokenId.BLOCK_COMMENT && token.id() != JsTokenId.DOC_COMMENT
+                && token.id() != JsTokenId.LINE_COMMENT && token.id() != JsTokenId.EOL
+                && token.id() != JsTokenId.WHITESPACE)) {
+                ret = token;
                 break;
             }
         }
 
         if (ret != null) {
-            return tokenStream.getToken(ts.offset());
+            while (ts.movePrevious() && ts.offset() >= start) {
+                Token current = ts.token();
+                if (current.id() != JsTokenId.WHITESPACE) {
+                    ret = current;
+                    break;
+                }
+            }
+
+            if (ret != null) {
+                return tokenStream.getToken(ts.offset());
+            }
         }
         return null;
     }
