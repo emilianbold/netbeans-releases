@@ -70,14 +70,13 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
@@ -155,18 +154,18 @@ public class BugtrackingUtil {
      * 
      * @return issues
      */
-    public static IssueProvider[] getOpenIssues() {
+    public static Collection<Issue> getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        List<IssueProvider> issues = new ArrayList<IssueProvider>();
+        List<Issue> issues = new ArrayList<Issue>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                IssueProvider issue = ((IssueTopComponent)tc).getIssue();
+                Issue issue = ((IssueTopComponent)tc).getIssue();
                 if(!issue.isNew()) {
                     issues.add(issue);
                 }
             }
         }
-        return issues.toArray(new IssueProvider[issues.size()]);
+        return issues;
     }
 
     /**
@@ -174,7 +173,7 @@ public class BugtrackingUtil {
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
-    public static boolean isOpened(IssueProvider issue) {
+    public static boolean isOpened(Issue issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isOpened() : false;
     }
@@ -186,7 +185,7 @@ public class BugtrackingUtil {
      * @return true in case the given issue is opened in the editor area
      *         and showing on the screen, otherwise false
      */
-    public static boolean isShowing(IssueProvider issue) {
+    public static boolean isShowing(Issue issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isShowing() : false;
     }
@@ -196,7 +195,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isOpened(QueryProvider query) {
+    public static boolean isOpened(Query query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isOpened() : false;
     }
@@ -207,7 +206,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isShowing(QueryProvider query) {
+    public static boolean isShowing(Query query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
@@ -221,7 +220,7 @@ public class BugtrackingUtil {
      * @param criteria
      * @return
      */
-    public static IssueProvider[] getByIdOrSummary(IssueProvider[] issues, String criteria) {
+    public static Collection<Issue> getByIdOrSummary(Collection<Issue> issues, String criteria) {
         if(criteria == null) {
             return issues;
         }
@@ -230,8 +229,8 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.toLowerCase();
-        List<IssueProvider> ret = new ArrayList<IssueProvider>();
-        for (IssueProvider issue : issues) {
+        List<Issue> ret = new ArrayList<Issue>();
+        for (Issue issue : issues) {
             if(issue.isNew()) continue;
             String id = issue.getID();
             if(id == null) continue;
@@ -242,25 +241,25 @@ public class BugtrackingUtil {
                 ret.add(issue);
             }  
         }
-        return ret.toArray(new IssueProvider[ret.size()]);
+        return ret;
     }
 
-    public static RepositoryProvider createRepository() {
+    public static Repository createRepository() {
         RepositorySelector rs = new RepositorySelector();
-        RepositoryProvider repo = rs.create();
+        Repository repo = rs.create();
         return repo;
     }
 
-    public static boolean editRepository(RepositoryProvider repository, String errorMessage) {
+    public static boolean editRepository(Repository repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
         return rs.edit(repository, errorMessage);
     }
 
-    public static boolean editRepository(RepositoryProvider repository) {
+    public static boolean editRepository(Repository repository) {
         return editRepository(repository, null);
     }
 
-    public static RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
+    public static Repository[] getKnownRepositories(boolean pingOpenProjects) {
         return BugtrackingManager.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
@@ -281,7 +280,7 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static IssueProvider selectIssue(String message, RepositoryProvider repository, JPanel caller, HelpCtx helpCtx) {
+    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
         bar.setAlignmentX(0f);
@@ -309,7 +308,7 @@ public class BugtrackingUtil {
                 0,
                 layoutStyle.getContainerGap(panel, SwingConstants.EAST, null)));
         panel.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_IssueSelector"));
-        IssueProvider issue = null;
+        Issue issue = null;
         JButton ok = new JButton(bundle.getString("LBL_Select")); // NOI18N
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
@@ -376,12 +375,12 @@ public class BugtrackingUtil {
         queryName = obfuscateQueryName(queryName);
         logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
     }
-
-    public static synchronized void logBugtrackingUsage(RepositoryProvider repository, String operation) {
+ 
+    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
         if (repository == null) {
             return;
         }
-        String btType = getBugtrackingType(repository);
+        String btType = getBugtrackingType(APIAccessor.IMPL.convert(repository));
         if (btType == null) {
             return;
         }
@@ -507,8 +506,8 @@ public class BugtrackingUtil {
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(RepositoryProvider repo) {
-        String url = repo.getInfo().getUrl();
+    public static boolean isNbRepository(Repository repo) {
+        String url = repo.getUrl();
         return isNbRepository(url);
     }
 
@@ -572,20 +571,24 @@ public class BugtrackingUtil {
      * @return true if jira plugin is installed, otherwise false
      */
     public static boolean isJiraInstalled() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (BugtrackingConnector c : connectors) {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
             // XXX hack
-            if(c.getClass().getName().startsWith("org.netbeans.modules.jira")) {    // NOI18N
+            if(c.getDelegate().getClass().getName().startsWith("org.netbeans.modules.jira")) {    // NOI18N
                 return true;
             }
         }
         return false;
     }
 
-    public static void openQuery(final QueryProvider query, final RepositoryProvider repository, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
+    public static void openIssue(Repository repository, String issueId) {
+        IssueAction.openIssue(repository, issueId);
+    }
+    
     public static void openIssue(File file, String issueId) {
         IssueAction.openIssue(file, issueId);
     }
@@ -594,15 +597,15 @@ public class BugtrackingUtil {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
 
-    public static Collection<IssueProvider> getRecentIssues(RepositoryProvider repo) {
+    public static Collection<Issue> getRecentIssues(Repository repo) {
         return BugtrackingManager.getInstance().getRecentIssues(repo);
     }
 
-    public static void closeQuery(QueryProvider query) {
+    public static void closeQuery(Query query) {
         QueryAction.closeQuery(query);
     }
 
-    public static void createIssue(RepositoryProvider repo) {
+    public static void createIssue(Repository repo) {
         IssueAction.createIssue(repo);
     }
 
@@ -616,7 +619,7 @@ public class BugtrackingUtil {
         return "******"; // NOI18N
     }
 
-    public static RepositoryProvider[] getRepositories(String id) {
+    public static Repository[] getRepositories(String id) {
         return RepositoryRegistry.getInstance().getRepositories(id);
     }    
     
@@ -649,6 +652,9 @@ public class BugtrackingUtil {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
+        if(username == null) {
+            return;
+        }
         BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
     }
 

@@ -55,10 +55,9 @@ import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComparator;
 import org.openide.explorer.ExplorerManager;
@@ -119,6 +118,7 @@ public class BugtrackingRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
+            @Override
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.createRepository();
                 }
@@ -126,7 +126,7 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends ChildFactory<RepositoryProvider> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
@@ -136,10 +136,11 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected Node createNodeForKey(RepositoryProvider key) {
+        protected Node createNodeForKey(Repository key) {
             return key.getNode();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
                 refresh(false);
@@ -147,7 +148,7 @@ public class BugtrackingRootNode extends AbstractNode {
         }
 
         @Override
-        protected boolean createKeys(List<RepositoryProvider> toPopulate) {
+        protected boolean createKeys(List<Repository> toPopulate) {
             toPopulate.addAll(Arrays.asList(RepositoryRegistry.getInstance().getRepositories()));
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
@@ -156,6 +157,7 @@ public class BugtrackingRootNode extends AbstractNode {
 
     public static void selectNode(final String... path) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
                 if (tab == null) {
@@ -172,6 +174,7 @@ public class BugtrackingRootNode extends AbstractNode {
                 final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
                 final Node root = mgr.getRootContext();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Node repository = NodeOp.findChild(root, BUGTRACKING_NODE_NAME);
                         if (repository == null) {
@@ -187,6 +190,7 @@ public class BugtrackingRootNode extends AbstractNode {
                         }
                         final Node selected = _selected;
                         Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
                                     mgr.setSelectedNodes(new Node[] {selected});

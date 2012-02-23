@@ -49,9 +49,9 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
-import org.openide.util.NbPreferences;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -77,22 +77,26 @@ public class RepositoryRegistryTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {   
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
+        for (Repository repository : repos) {
+            RepositoryRegistry.getInstance().removeRepository(repository);
+        }
         RepositoryRegistry.getInstance().flushRepositories();
     }
 
     public void testEmpty() {
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories();
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(0, repos.length);
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
         assertEquals(0, repos.length);
     }
     
     public void testAddGetRemove() {
-        MyRepository repo = new MyRepository("1");
+        Repository repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories();
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(1, repos.length);
         
         // remove
@@ -102,11 +106,11 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
     
     public void testWrongConnector() {
-        MyRepository repo = new MyRepository("1");
+        Repository repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories();
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(1, repos.length);
     
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
@@ -114,30 +118,30 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
     
     public void testDifferentConnectors() {
-        MyRepository repo1c1 = new MyRepository("r1", "c1");
-        MyRepository repo2c1 = new MyRepository("r2", "c1");
-        MyRepository repo1c2 = new MyRepository("r1", "c2");
-        MyRepository repo2c2 = new MyRepository("r2", "c2");
+        Repository repo1c1 = getRepository(ID_CONNECTOR1, new MyRepository("r1", ID_CONNECTOR1));
+        Repository repo2c1 = getRepository(ID_CONNECTOR1, new MyRepository("r2", ID_CONNECTOR1));
+        Repository repo1c2 = getRepository(ID_CONNECTOR2, new MyRepository("r1", ID_CONNECTOR2));
+        Repository repo2c2 = getRepository(ID_CONNECTOR2, new MyRepository("r2", ID_CONNECTOR2));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo1c1);
         RepositoryRegistry.getInstance().addRepository(repo2c1);
         RepositoryRegistry.getInstance().addRepository(repo1c2);
         RepositoryRegistry.getInstance().addRepository(repo2c2);
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories();
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(4, repos.length);
-        repos = RepositoryRegistry.getInstance().getRepositories("c1");
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(2, repos.length);
         assertTrue(Arrays.asList(repos).contains(repo1c1));
         assertTrue(Arrays.asList(repos).contains(repo2c1));
         
         // remove
         RepositoryRegistry.getInstance().removeRepository(repo1c1);
-        repos = RepositoryRegistry.getInstance().getRepositories("c1");
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(1, repos.length);
         assertTrue(Arrays.asList(repos).contains(repo2c1));
         RepositoryRegistry.getInstance().removeRepository(repo2c1);
-        repos = RepositoryRegistry.getInstance().getRepositories("c1");
+        repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(0, repos.length);
         
         repos = RepositoryRegistry.getInstance().getRepositories();
@@ -147,15 +151,15 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
 
     public void testListener() {
-        MyRepository repo1 = new MyRepository("1");
-        MyRepository repo2 = new MyRepository("2");
+        Repository repo1 = getRepository(ID_CONNECTOR1, new MyRepository("1"));
+        Repository repo2 = getRepository(ID_CONNECTOR1, new MyRepository("2"));
         class L implements PropertyChangeListener {
-            private Collection<RepositoryProvider> newRepos;
-            private Collection<RepositoryProvider> oldRepos;
+            private Collection<Repository> newRepos;
+            private Collection<Repository> oldRepos;
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                oldRepos = (Collection<RepositoryProvider>) evt.getOldValue();
-                newRepos = (Collection<RepositoryProvider>) evt.getNewValue();
+                oldRepos = (Collection<Repository>) evt.getOldValue();
+                newRepos = (Collection<Repository>) evt.getNewValue();
             }
         };
         L l = new L();
@@ -200,16 +204,21 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
     
     public void testStoredRepository() {
-        RepositoryInfo info = new RepositoryInfo("repoid", MyConnector.ID, "http://url", null, null, null, null, null, null);
-        RepositoryRegistry.getInstance().putRepository(info);
+        RepositoryInfo info = new RepositoryInfo("repoid", ID_CONNECTOR1, "http://url", null, null, null, null, null, null);
+        RepositoryRegistry.getInstance().putRepository(getRepository(ID_CONNECTOR1, new MyRepository(info)));
         
-        RepositoryProvider[] repos = RepositoryRegistry.getInstance().getRepositories(MyConnector.ID);
+        Repository[] repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(1, repos.length);
-        assertEquals("repoid", repos[0].getInfo().getId());
-        assertEquals(MyConnector.ID, repos[0].getInfo().getConnectorId());
+        assertEquals("repoid", repos[0].getId());
+        assertEquals(ID_CONNECTOR1, APIAccessor.IMPL.getInfo(repos[0]).getConnectorId());
+    }
+
+    private Repository getRepository(String connecrorID, MyRepository myRepository) {
+        DelegatingConnector connector = findConnector(connecrorID);
+        return TestKit.getRepository(connector, myRepository);
     }
     
-    private static class MyRepository extends RepositoryProvider {
+    private static class MyRepository extends TestRepository {
         private RepositoryInfo info;
 
         public MyRepository(RepositoryInfo info) {
@@ -217,7 +226,7 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         public MyRepository(String id) {
-            this(id, id);
+            this(id, ID_CONNECTOR1);
         }
         
         public MyRepository(String id, String cid) {
@@ -240,7 +249,7 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         @Override
-        public IssueProvider getIssue(String id) {
+        public TestIssue getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -255,21 +264,21 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         @Override
-        public QueryProvider createQuery() {
+        public TestQuery createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public IssueProvider createIssue() {
+        public TestIssue createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public QueryProvider[] getQueries() {
+        public Collection<TestQuery> getQueries() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public IssueProvider[] simpleSearch(String criteria) {
+        public Collection<TestIssue> simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -284,19 +293,10 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
     }
     
-    @BugtrackingConnector.Registration (
-        id=MyConnector.ID,
-        displayName="ManagerTestConector",
-        tooltip="ManagerTestConector"
-    )    
-    public static class MyConnector extends BugtrackingConnector {
-        static final String ID = "RepoRegistryTestConnector";
-        public MyConnector() {
-        }
-
-        @Override
-        public RepositoryProvider createRepository() {
-            throw new UnsupportedOperationException("Not supported yet.");
+    private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";
+    @BugtrackingConnector.Registration (id=ID_CONNECTOR1,displayName=ID_CONNECTOR1,tooltip=ID_CONNECTOR1)    
+    public static class MyConnector1 extends BugtrackingConnector {
+        public MyConnector1() {
         }
 
         public Lookup getLookup() {
@@ -304,8 +304,27 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         @Override
-        public RepositoryProvider createRepository(RepositoryInfo info) {
-            return new MyRepository(info);
+        public Repository createRepository(RepositoryInfo info) {
+            return TestKit.getRepository(this, new MyRepository(info));
+        }
+
+        @Override
+        public Repository createRepository() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }    
+    
+    private static final String ID_CONNECTOR2 = "RepositoryRegistryTestConector2";
+    @BugtrackingConnector.Registration (id=ID_CONNECTOR2,displayName=ID_CONNECTOR2,tooltip=ID_CONNECTOR2)    
+    public static class MyConnector2 extends MyConnector1 {} 
+    
+    private DelegatingConnector findConnector(String id) {
+        DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector dc : conns) {
+            if(id.equals(dc.getID())) {
+                return dc;
+            }
+        }
+        return null;
+    }
 }

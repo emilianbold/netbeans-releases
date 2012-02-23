@@ -51,8 +51,8 @@ import java.io.File;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -89,7 +89,7 @@ public class IssueAction extends SystemAction {
         createIssue();
     }
 
-    public static void openIssue(final IssueProvider issue, final boolean refresh) {
+    public static void openIssue(final Issue issue, final boolean refresh) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -121,11 +121,11 @@ public class IssueAction extends SystemAction {
         createIssue(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    public static void createIssue(final RepositoryProvider repository) {
+    public static void createIssue(final Repository repository) {
         createIssue(repository, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    private static void createIssue(final RepositoryProvider repository, final Node[] context) {
+    private static void createIssue(final Repository repository, final Node[] context) {
         final boolean repositoryGiven = repository != null;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
@@ -147,11 +147,11 @@ public class IssueAction extends SystemAction {
         openIssueIntern(null, file, issueId);
     }
 
-    public static void openIssue(final RepositoryProvider repository, final String issueId) {
+    public static void openIssue(final Repository repository, final String issueId) {
         openIssueIntern(repository, null, issueId);
     }
 
-    public static void openIssueIntern(final RepositoryProvider repositoryParam, final File file, final String issueId) {
+    public static void openIssueIntern(final Repository repositoryParam, final File file, final String issueId) {
         assert issueId != null;
         assert repositoryParam != null && file == null || repositoryParam == null && file != null;
 
@@ -161,7 +161,7 @@ public class IssueAction extends SystemAction {
                 UIUtils.setWaitCursor(true);
                 final IssueTopComponent tc = IssueTopComponent.find(issueId);
                 final boolean tcOpened = tc.isOpened();
-                final IssueProvider[] issue = new IssueProvider[1];
+                final Issue[] issue = new Issue[1];
                 issue[0] = tc.getIssue();
                 if (issue[0] == null) {
                     tc.initNoIssue(issueId);
@@ -183,7 +183,7 @@ public class IssueAction extends SystemAction {
                                 handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(IssueAction.class, "LBL_OPENING_ISSUE", new Object[]{issueId}));
                                 handle.start();
 
-                                RepositoryProvider repository;
+                                Repository repository;
                                 if(repositoryParam == null) {
                                     repository = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
                                     if(repository == null) {
@@ -236,7 +236,7 @@ public class IssueAction extends SystemAction {
         });
     }
 
-    public static void closeIssue(final IssueProvider issue) {
+    public static void closeIssue(final Issue issue) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

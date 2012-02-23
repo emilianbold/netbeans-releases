@@ -67,9 +67,8 @@ public final class RepositoryInfo {
     private static final String PROPERTY_USERNAME = "username";                 // NOI18N    
     private static final String PROPERTY_HTTP_USERNAME = "httpUsername";        // NOI18N    
 
-    private RepositoryInfo(Map<String, String> properties, char[] password, char[] httpPassword) {
+    private RepositoryInfo(Map<String, String> properties) {
         this.map.putAll(properties);
-        storePasswords(password, httpPassword);
     }
 
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
@@ -141,18 +140,7 @@ public final class RepositoryInfo {
             return null;
         }
         Map<String, String> m = fromString(str);
-        
-        char[] password;
-        char[] httpPassword;
-        if(BugtrackingUtil.isNbRepository(m.get(PROPERTY_URL))) {
-            m.put(PROPERTY_USERNAME, BugtrackingUtil.getNBUsername());
-            password = BugtrackingUtil.getNBPassword();
-            httpPassword = new char[0];
-        } else {
-            password = BugtrackingUtil.readPassword(null, null, m.get(PROPERTY_USERNAME), m.get(PROPERTY_URL));
-            httpPassword = BugtrackingUtil.readPassword(null, "http", m.get(PROPERTY_HTTP_USERNAME), m.get(PROPERTY_URL)); // NOI18N
-        }
-        return new RepositoryInfo(m, password, httpPassword);
+        return new RepositoryInfo(m);
     }
     
     void store(Preferences preferences, String key) {

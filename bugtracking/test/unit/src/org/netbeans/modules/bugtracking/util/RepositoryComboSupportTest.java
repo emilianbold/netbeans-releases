@@ -59,7 +59,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.DummyKenaiRepositories;
 import org.netbeans.modules.bugtracking.dummies.DummyNode;
 import org.netbeans.modules.bugtracking.dummies.DummyTopComponentRegistry;
 import org.netbeans.modules.bugtracking.dummies.DummyWindowManager;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport.Progress;
 import org.openide.nodes.Node;
 import org.openide.util.lookup.AbstractLookup;
@@ -69,6 +68,7 @@ import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.api.Repository;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupportTest.ThreadType.AWT;
@@ -130,9 +130,9 @@ public class RepositoryComboSupportTest {
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
-        protected RepositoryProvider repository1;
-        protected RepositoryProvider repository2;
-        protected RepositoryProvider repository3;
+        protected Repository repository1;
+        protected Repository repository2;
+        protected Repository repository3;
 
         public AbstractRepositoryComboTezt() {
             DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
@@ -705,7 +705,7 @@ public class RepositoryComboSupportTest {
      */
     @Test(timeout=10000,expected=IllegalArgumentException.class)
     public void testDefaultRepoExplicitlySetNull() throws InterruptedException {
-        RepositoryComboSupport.setup(null, new JComboBox(), (RepositoryProvider) null);
+        RepositoryComboSupport.setup(null, new JComboBox(), (Repository) null);
     }
 
     /**

@@ -129,8 +129,8 @@ public class JiraStorageManager {
      * MAY access IO (on the first access)
      * @param repository a repository which's queries will be returned
      */
-    HashSet<QueryProvider> getQueries (JiraRepository repository) {
-        HashSet<QueryProvider> queries = new HashSet<QueryProvider>(10);
+    HashSet<JiraQuery> getQueries (JiraRepository repository) {
+        HashSet<JiraQuery> queries = new HashSet<JiraQuery>(10);
         for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
             if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));
