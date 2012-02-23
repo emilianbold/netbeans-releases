@@ -69,4 +69,5 @@ public interface EditorSupport extends Node.Cookie {
     boolean isJavaEditorDisplayed();
     int getCodeIndentSize();
     boolean getCodeBraceOnNewLine();
+    boolean canGenerateNBMnemonicsCode();
 }
