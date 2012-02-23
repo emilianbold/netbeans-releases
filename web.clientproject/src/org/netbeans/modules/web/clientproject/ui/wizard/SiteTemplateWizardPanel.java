@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
  *
  */
 public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
-        WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+        WizardDescriptor.FinishablePanel {
 
     private SiteTemplateWizard component;
     private WizardDescriptor wizardDescriptor;
@@ -79,19 +79,29 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
     @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
-        component.read(wizardDescriptor);
     }
 
     @Override
     public void storeSettings(Object settings) {
-        WizardDescriptor d = (WizardDescriptor) settings;
-        component.store(d);
     }
 
+    public void setErrorMessage(String message) {
+        if (wizardDescriptor != null) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+        }
+    }
+    
     @Override
     public boolean isValid() {
         getComponent();
-        return component.valid(wizardDescriptor);
+        String error = component.isValid2();
+        if (error.length() > 0) {
+            setErrorMessage(error);
+            return false;
+        } else {
+            setErrorMessage("");
+            return true;
+        }
     }
 
     @Override
@@ -108,12 +118,6 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.Panel,
         changeSupport.fireChange();
     }
     
-    @Override
-    public void validate() throws WizardValidationException {
-        getComponent();
-        component.validate(wizardDescriptor);
-    }
-
     @Override
     public boolean isFinishPanel() {
         return true;

@@ -43,7 +43,9 @@ package org.netbeans.modules.web.clientproject.ui;
 
 import java.awt.Image;
 import javax.swing.Action;
+import javax.swing.JSeparator;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.ui.action.CreateSiteTemplateAction;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.filesystems.FileObject;
@@ -113,12 +115,15 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean arg0) {
-            Action[] nodeActions = new Action[5];
+            Action[] nodeActions = new Action[8];
             nodeActions[0] = CommonProjectActions.newFileAction();
             nodeActions[1] = CommonProjectActions.copyProjectAction();
             nodeActions[2] = CommonProjectActions.deleteProjectAction();
             nodeActions[3] = CommonProjectActions.setAsMainProjectAction();
-            nodeActions[4] = CommonProjectActions.closeProjectAction();            
+            nodeActions[4] = null;
+            nodeActions[5] = new CreateSiteTemplateAction(project);
+            nodeActions[6] = null;
+            nodeActions[7] = CommonProjectActions.closeProjectAction();            
             return nodeActions;
         }
 

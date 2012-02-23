@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @NbBundle.Messages({"LBL_Name2=Mobile Boilerplate",
         "LBL_Description2=Site template from html5boilerplate.com/mobile. Version: 3.0"})
-@ServiceProvider(service=SiteTemplateImplementation.class)
+@ServiceProvider(service=SiteTemplateImplementation.class, position=400)
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     @Override

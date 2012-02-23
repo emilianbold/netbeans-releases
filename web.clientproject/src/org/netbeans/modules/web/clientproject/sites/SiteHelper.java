@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -93,32 +90,68 @@ public class SiteHelper {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_StreamError()));
             return;
         }
-        unZipFile(is, root, handle);
+        File localFile = null;
+        InputStream is2 = null;
+        InputStream is3 = null;
+        try {
+            localFile = downloadFile(is, handle);
+            handle.progress(Bundle.MSG_Progress3());
+            is2 = new FileInputStream(localFile);
+            String rootFolder = testRootFolder(is2);
+            is3 = new FileInputStream(localFile);
+            unZipFile(is3, root, handle, rootFolder);
+        } finally {
+            is.close();
+            if (is2 != null) {
+                is2.close();
+            }
+            if (is3 != null) {
+                is3.close();
+            }
+        }
     }
     
-    private static void unZipFile(InputStream source, FileObject projectRoot, ProgressHandle handle) throws IOException {
+    public static void install(File f, FileObject root, ProgressHandle handle) throws IOException {
+        handle.progress(Bundle.MSG_Progress3());
+        InputStream is;
+        try {
+            is = new FileInputStream(f);
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "could not open stream for "+f, ex);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.ERR_StreamError()));
+            return;
+        }
+        InputStream is2 = null;
+        try {
+            String rootFolder = testRootFolder(is);
+            is2 = new FileInputStream(f);
+            unZipFile(is2, root, handle, rootFolder);
+        } finally {
+            is.close();
+            if (is2 != null) {
+                is2.close();
+            }
+        }
+    }
+    
+    private static void unZipFile(InputStream source, FileObject projectRoot, ProgressHandle handle, String rootFolder) throws IOException {
         boolean firstItem = true;
         try {
-            int stripLen = 0;
+            int stripLen = rootFolder != null ? rootFolder.length() : 0;
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
             while ((entry = str.getNextEntry()) != null) {
                 String entryName = entry.getName();
-                if (firstItem) {
-                    handle.progress(Bundle.MSG_Progress3());
-                    firstItem = false;
-                    // if ZIP contains folder in the root then ignore it:
-                    if (entry.isDirectory()) {
-                        stripLen = entryName.length();
-                        continue;
-                    }
-                }
                 if (stripLen > 0) {
                     entryName = entryName.substring(stripLen);
                 }
+                if (entryName.length() == 0) {
+                    continue;
+                }
+                firstItem = false;
                 if (entry.isDirectory()) {
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
-                    if (entryName.startsWith("build")) {
+                    if (entryName.startsWith("build") || entryName.startsWith("nbproject")) {
                         continue;
                     }
                     FileUtil.createFolder(projectRoot, entryName);
@@ -128,7 +161,7 @@ public class SiteHelper {
                         continue;
                     }
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
-                    if (entryName.startsWith("build/")) {
+                    if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) {
                         continue;
                     }
                     FileObject fo = FileUtil.createData(projectRoot, entryName);
@@ -150,6 +183,43 @@ public class SiteHelper {
         } finally {
             out.close();
         }
+    }
+
+    private static File downloadFile(InputStream is, ProgressHandle handle) throws IOException {
+        File temp = File.createTempFile("template", "zip");
+        OutputStream os = new FileOutputStream(temp);
+        try {
+            FileUtil.copy(is, os);
+        } finally {
+            os.close();
+        }
+        return temp;
+    }
+
+    private static String testRootFolder(InputStream source) throws IOException {
+        String folder = null;
+        try {
+            ZipInputStream str = new ZipInputStream(source);
+            ZipEntry entry;
+            boolean first = true;
+            while ((entry = str.getNextEntry()) != null) {
+                if (first) {
+                    first = false;
+                    if (entry.isDirectory()) {
+                        folder = entry.getName();
+                    } else {
+                        return null;
+                    }
+                } else {
+                    if (!entry.getName().startsWith(folder)) {
+                        return null;
+                    }
+                }
+            }
+        } finally {
+            source.close();
+        }
+        return folder;
     }
     
 }

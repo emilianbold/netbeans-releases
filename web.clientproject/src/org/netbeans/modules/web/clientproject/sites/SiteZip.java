@@ -41,73 +41,57 @@
  */
 package org.netbeans.modules.web.clientproject.sites;
 
-import java.awt.BorderLayout;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateCustomizer;
 import org.netbeans.modules.web.common.spi.clientproject.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
  */
-@NbBundle.Messages({"LBL_Name=HTML5 Boilerplate",
-        "LBL_Description=Site template from html5boilerplate.com. Version: 3.0.1"})
-@ServiceProvider(service=SiteTemplateImplementation.class, position=300)
-public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
+@NbBundle.Messages({"LBL_SiteZip=Archive File",
+    "LBL_SiteZip_Error=Template file does not exist"
+        })
+@ServiceProvider(service=SiteTemplateImplementation.class, position=100)
+public class SiteZip implements SiteTemplateImplementation {
+    
+    private static final String USED_TEMPLATES = "last.templates";
+    private static final String SEPARATOR = "=s e p=";
 
+    private Customizer cust;
+    
     @Override
     public String getName() {
-        return Bundle.LBL_Name();
+        return Bundle.LBL_SiteZip();
     }
 
     @Override
     public SiteTemplateCustomizer getCustomizer() {
-        return new SiteTemplateCustomizer() {
-
-            @Override
-            public void addChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public void removeChangeListener(ChangeListener listener) {
-            }
-
-            @Override
-            public JComponent getComponent() {
-                JPanel p = new JPanel(new BorderLayout());
-                p.add(new JLabel(Bundle.LBL_Description()), BorderLayout.NORTH);
-                return p;
-            }
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public String getErrorMessage() {
-                return null;
-            }
-
-            @Override
-            public String getWarningMessage() {
-                return null;
-            }
-        };
+        cust = new Customizer();
+        return cust;
     }
 
     @Override
-    public void apply(FileObject p, ProgressHandle handle) {
+    public void apply(FileObject projectRoot, ProgressHandle handle) {
         try {
-            SiteHelper.install("https://github.com/h5bp/html5-boilerplate/zipball/v3.0.1", p, handle);
+            String template = cust.panel.getTemplate();
+            if (!template.startsWith("http")) {
+                File templ = new File(template);
+                SiteHelper.install(templ, projectRoot, handle);
+            } else {
+                SiteHelper.install(template, projectRoot, handle);
+            }
+            registerTemplate(template);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (Throwable ex) {
@@ -115,4 +99,67 @@ public class SiteHtml5Boilerplate implements SiteTemplateImplementation {
         }
     }
     
+    static class Customizer implements SiteTemplateCustomizer {
+
+        private SiteZipPanel panel = new SiteZipPanel(this);
+        private ChangeSupport sup = new ChangeSupport(this);
+        private String error = "";
+        
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+            sup.addChangeListener(listener);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+            sup.removeChangeListener(listener);
+        }
+
+        @Override
+        public JComponent getComponent() {
+            return panel;
+        }
+
+        @Override
+        public boolean isValid() {
+            String tpl = panel.getTemplate();
+            if (!tpl.startsWith("http")  && !new File(tpl).exists()) {
+                error = Bundle.LBL_SiteZip_Error();
+                return false;
+            }
+            error = "";
+            return true;
+        }
+
+        @Override
+        public String getErrorMessage() {
+            return error;
+        }
+
+        @Override
+        public String getWarningMessage() {
+            return "";
+        }
+        
+        void fireChange() {
+            sup.fireChange();
+        }
+    
+    }
+    
+    public static void registerTemplate(File f) {
+        String name = f.getAbsolutePath();
+        registerTemplate(name);
+    }
+    
+    public static void registerTemplate(String name) {
+        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
+        templates = name + SEPARATOR + templates.replaceAll(name+SEPARATOR, "");
+        NbPreferences.forModule(SiteZip.class).put(USED_TEMPLATES, templates);
+    }
+    
+    public static List<String> getUsedTemplates() {
+        String templates = NbPreferences.forModule(SiteZip.class).get(USED_TEMPLATES, "");
+        return Arrays.asList(templates.split(SEPARATOR));
+    }
 }

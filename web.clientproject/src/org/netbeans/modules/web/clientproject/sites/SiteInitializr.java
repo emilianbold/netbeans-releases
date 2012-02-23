@@ -57,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @NbBundle.Messages({"LBL_Name_Initializr=Initializr"
         })
-@ServiceProvider(service=SiteTemplateImplementation.class)
+@ServiceProvider(service=SiteTemplateImplementation.class, position=200)
 public class SiteInitializr implements SiteTemplateImplementation {
 
     private SiteTemplateCustomizerImpl customizer = new SiteTemplateCustomizerImpl();
