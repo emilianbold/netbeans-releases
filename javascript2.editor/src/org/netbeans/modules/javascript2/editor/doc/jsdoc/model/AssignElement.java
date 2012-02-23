@@ -55,10 +55,14 @@ public class AssignElement extends JsDocElementImpl {
     private final NamePath otherMemberName;
     private final NamePath thisMemberName;
 
-    public AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+    private AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
         super(type);
         this.otherMemberName = otherMemberName;
         this.thisMemberName = thisMemberName;
+    }
+
+    public static AssignElement create(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+        return new AssignElement(type, otherMemberName, thisMemberName);
     }
 
     /**

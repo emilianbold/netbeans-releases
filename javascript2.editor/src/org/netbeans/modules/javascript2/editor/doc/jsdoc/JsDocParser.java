@@ -53,7 +53,6 @@ import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElemen
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElementUtils;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -147,7 +146,7 @@ public class JsDocParser {
             if (!commentPart.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
                     //TODO - distinguish description and inline comments
-                    jsDocElements.add(new DescriptionElement(Type.CONTEXT_SENSITIVE, new Description(commentPart)));
+                    jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, commentPart));
                 }
             } else {
                 Type type;

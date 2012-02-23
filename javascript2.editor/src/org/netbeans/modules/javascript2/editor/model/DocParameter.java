@@ -39,27 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el;
+package org.netbeans.modules.javascript2.editor.model;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class Description {
+public interface DocParameter {
 
-    private final String description;
+    /**
+     * Gets name of the parameter.
+     * @return parameter name
+     */
+    String getParamName();
 
-    public Description(String description) {
-        this.description = description;
-    }
+    /**
+     * Gets default value of the parameter.
+     * @return default value, {@code null} if no default value set
+     */
+    String getDefaultValue();
 
-    public String getDescription() {
-        return description;
-    }
+    /**
+     * Get information if the parameter is optional or not.
+     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
+     */
+    boolean isOptional();
 
-    @Override
-    public String toString() {
-        return description;
-    }
+    /**
+     * Gets the description of the parameter.
+     * @return parameter description, can be empty string, never {@code null}
+     */
+    String getParamDescription();
+
+    /**
+     * Gets the parameter type.
+     * @return parameter type, or {@code null} when no type is set
+     */
+    Types getParamTypes();
 
 }

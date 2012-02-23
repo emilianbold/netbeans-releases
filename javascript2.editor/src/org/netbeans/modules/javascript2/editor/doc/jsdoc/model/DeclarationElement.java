@@ -53,9 +53,16 @@ public class DeclarationElement extends JsDocElementImpl {
 
     private final org.netbeans.modules.javascript2.editor.model.Type declaredType;
 
-    public DeclarationElement(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
+    private DeclarationElement(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
         super(type);
         this.declaredType = declaredType;
+    }
+
+    /**
+     * Creates new {@code DeclarationElement}.
+     */
+    public static DeclarationElement create(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
+        return new DeclarationElement(type, declaredType);
     }
 
     /**
