@@ -112,7 +112,7 @@ public class LogTest extends NbTestCase {
         LOG.log(Level.INFO, "i4={0} o1={1}", new Object[] {i4, o1});
         assertEquals("some stuff\n"
                 + "null\n"
-                + "found WORKDIR/org.netbeans.junit.LogTest/testPublish/some/thing great\n"
+                + "found WORKDIR/o.n.j.L/testPublish/some/thing great\n"
                 + "o0=java.lang.Object@0 o1=java.lang.Object@1\n"
                 + "o0=java.lang.Object@0\n"
                 + "g2=Group@2 i3=Item@3:2 i4=Item@4:2\n"
