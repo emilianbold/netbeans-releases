@@ -1557,10 +1557,10 @@ public class ElementJavadoc {
                         (throwsTypes == null || throwsTypes.isEmpty()))
                     return null;
             }
-            if (stopByRemoteJdoc && isRemote(inheritedPage, docURL)) {
+            if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage, docURL)) {
                 throw new RemoteJavadocException();
             }
-            String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+            String jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
             if (jdText != null)
                 return jdText;
             for (ClassDoc ifaceDoc : cdoc.interfaces()) {
@@ -1729,10 +1729,10 @@ public class ElementJavadoc {
                         returnTags != null && returnTags.isEmpty() ||
                         paramPos != null && !paramPos.isEmpty() ||
                         throwsTypes != null && !throwsTypes.isEmpty()) {
-                    if (stopByRemoteJdoc && isRemote(inheritedPage,docURL)) {
+                    if (stopByRemoteJdoc && inheritedPage != null && isRemote(inheritedPage,docURL)) {
                         throw new RemoteJavadocException();
                     }
-                    jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : docURL != null ? HTMLJavadocParser.getJavadocText(docURL, false) : null;
+                    jdText = inheritedPage != null ? HTMLJavadocParser.getJavadocText(inheritedPage, false) : null;
                     return jdText != null ? jdText : inheritedDocFor(mdoc, superclass, inlineTags,
                             returnTags, paramPos, paramTags,
                             paramInlineTags, throwsTypes,
