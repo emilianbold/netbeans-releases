@@ -107,6 +107,9 @@ implements PropertyChangeListener, LookupListener {
     public RequestProcessor.Task create(Runnable r) {
         return RP.create(r);
     }
+    public RequestProcessor.Task create(Runnable r, boolean finished) {
+        return RP.create(r, finished);
+    }
 
 
     static void logUI(String msg, Object... params) {
