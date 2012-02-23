@@ -53,7 +53,7 @@ import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.Hint.Severity;
+import org.netbeans.spi.editor.hints.Severity;
 
 /**
  *
@@ -67,7 +67,7 @@ public class WrongPackageSuggestionTest extends TreeRuleTestBase {
     
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), Severity.WARNING);
+        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), Severity.VERIFIER);
         super.setUp();
     }
     

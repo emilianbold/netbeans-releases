@@ -133,13 +133,13 @@ public class HintsSettings {
 
         s = preferences.get(OLD_SEVERITY_KEY, null);
 
-        if (s == null) return hint.severity;
+        if (s == null) return hint != null ? hint.severity : null;
 
         if ("ERROR".equals(s)) return Severity.ERROR;
         else if ("WARNING".equals(s)) return Severity.VERIFIER;
         else if ("CURRENT_LINE_WARNING".equals(s)) return Severity.HINT;
         
-        return hint.severity;
+        return hint != null ? hint.severity : null;
     }
 //
 //    public static AbstractHint.HintSeverity getSeverity( AbstractHint hint, Preferences preferences ) {
