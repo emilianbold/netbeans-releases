@@ -199,6 +199,7 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             assert javamesdkDir.exists() && javamesdkDir.isDirectory() : javamesdkDir + " exists and is a directory.";
             if (! javamesdkDir.exists() || ! javamesdkDir.isDirectory()) {
                 LogManager.log("Cannot write JDK in ME SDK because javamesdkDir doesn't exist.");
+                return ;
             }
             LogManager.log("Writing the following JDK in ME SDK : ");
             LogManager.log("... path    : " + jdkHome);
