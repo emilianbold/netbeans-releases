@@ -283,10 +283,14 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
 
     Map<String, BugzillaRepository> bugzillaRepositories = new HashMap<String, BugzillaRepository>();
     public void notifyRepositoryCreated (BugzillaRepository repository) {
-        bugzillaRepositories.put(repository.getID(), repository);
+        if(repository.getInfo() != null) {
+            bugzillaRepositories.put(repository.getID(), repository);
+        }
     }
     public void notifyRepositoryRemoved (BugzillaRepository repository) {
-        bugzillaRepositories.remove(repository.getID());
+        if(repository.getInfo() != null) {
+            bugzillaRepositories.remove(repository.getID());
+        }
     }
     
     // **** private methods ***** //
