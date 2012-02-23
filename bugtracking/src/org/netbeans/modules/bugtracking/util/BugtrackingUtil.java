@@ -652,6 +652,9 @@ public class BugtrackingUtil {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
+        if(username == null) {
+            return;
+        }
         BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
     }
 
