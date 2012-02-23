@@ -46,6 +46,7 @@ import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.nodes.Node;
 
 /**
@@ -94,11 +95,6 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
         return query.contains(id);
     }
 
-//    @Override
-//    public int getIssueStatus(JiraQuery query, NbJiraIssue issue) {
-//        return query.getIssueStatus(issue.getID());
-//    }
-
     public Collection<NbJiraIssue> getIssues(JiraQuery query, int includeStatus) {
         return query.getIssues(includeStatus);
     }
@@ -114,7 +110,6 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
     
     @Override
     public void setFilter(JiraQuery query, Filter filter) {
-        assert query instanceof KenaiQuery;
         if(query instanceof JiraQuery) {
             ((JiraQuery)query).setFilter(filter);
         }
@@ -122,14 +117,12 @@ public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue
 
     @Override
     public boolean needsLogin(JiraQuery query) {
-        assert query instanceof KenaiQuery;
-        KenaiQuery kenaiQuery = (KenaiQuery) query;
-        return query == ((KenaiRepository) kenaiQuery.getRepository()).getMyIssuesQuery();
+        JiraRepository repository = query.getRepository();
+        return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
 
     @Override
     public void refresh(JiraQuery query, boolean synchronously) {
-        assert query instanceof KenaiQuery;
         query.getController().refresh(synchronously);
     }
 }

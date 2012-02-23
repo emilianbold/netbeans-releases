@@ -46,6 +46,7 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiQuery;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.openide.nodes.Node;
 
 /**
@@ -94,11 +95,6 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
         return query.contains(id);
     }
 
-//    @Override
-//    public int getIssueStatus(BugzillaQuery query, BugzillaIssue issue) {
-//        return query.getIssueStatus(issue.getID());
-//    }
-
     public Collection<BugzillaIssue> getIssues(BugzillaQuery query, int includeStatus) {
         return query.getIssues(includeStatus);
     }
@@ -114,7 +110,6 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     
     @Override
     public void setFilter(BugzillaQuery query, Filter filter) {
-        assert query instanceof KenaiQuery;
         if(query instanceof KenaiQuery) { 
             BugzillaQuery bq = (BugzillaQuery) query;
             bq.getController().selectFilter(filter);
@@ -123,14 +118,12 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
 
     @Override
     public boolean needsLogin(BugzillaQuery query) {
-        assert query instanceof KenaiQuery;
-        KenaiQuery kenaiQuery = (KenaiQuery) query;
-        return query == ((KenaiRepository) kenaiQuery.getRepository()).getMyIssuesQuery();
+        BugzillaRepository repository = query.getRepository();
+        return query == ((KenaiRepository) repository).getMyIssuesQuery();
     }
 
     @Override
     public void refresh(BugzillaQuery query, boolean synchronously) {
-        assert query instanceof KenaiQuery;
         query.getController().refresh(synchronously);
     }
 
