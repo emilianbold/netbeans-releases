@@ -162,7 +162,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
         Scope customScope = refactoring.getContext().lookup(Scope.class);
         ClasspathInfo cpath;
         if (customScope != null) {
-            fileSet = new HashSet<FileObject>();
+            fileSet = new TreeSet<FileObject>(new FileComparator());
             fileSet.addAll(customScope.getFiles());
             FileObject fo = null;
             if(fromLibrary) {
@@ -238,7 +238,7 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             final boolean isFindOverridingMethods, final boolean isFindUsages,
             final Set<NonRecursiveFolder> folders, final AtomicBoolean cancel) {
         final ClassIndex idx = cpInfo.getClassIndex();
-        final Set<FileObject> set = new HashSet<FileObject>();
+        final Set<FileObject> set = new TreeSet<FileObject>(new FileComparator());
         final Set<NonRecursiveFolder> packages = (folders == null)? Collections.EMPTY_SET : folders;
         
         final FileObject file = tph.getFileObject();
@@ -513,4 +513,13 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin {
             fireProgressListenerStep();
         }
     }
+    
+        private static class FileComparator implements Comparator<FileObject> {
+
+        @Override
+        public int compare(FileObject o1, FileObject o2) {
+            return o1.getPath().compareTo(o2.getPath());
+        }
+    }
+
 }
