@@ -42,17 +42,16 @@
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -67,9 +66,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public class JsDocParser {
 
     private static final Logger LOGGER = Logger.getLogger(JsDocParser.class.getName());
-
-    protected static final Pattern JSDOC_TAG_PATTERN =
-            Pattern.compile("(@(([^@]|(@link)|[\r\n])*|@link))|(\\s*[/*][*]+\\S([^@]|(@link)|[\r\n])*)"); //NOI18N
 
     /**
      * Parses given snapshot and returns list of all jsDoc blocks.
@@ -104,36 +100,68 @@ public class JsDocParser {
         return blocks;
     }
 
+    private static void storeCommentPart(List<String> storage, String cleanedPart, StringBuilder link) {
+        if (!"".equals(cleanedPart.trim())) { //NOI18N
+            if (cleanedPart.startsWith("@link")) { //NOI18N
+                link.insert(0, cleanedPart);
+            } else if (link.length() > 0) {
+                storage.add(cleanedPart + link.toString());
+                link = new StringBuilder();
+            } else {
+                storage.add(cleanedPart);
+            }
+        }
+    }
+
+    /**
+     * Gets particular cleaned parts of comment.
+     * @param comment whole comment block string
+     * @return array of strings with cleaned
+     */
+    protected static String[] getCleanedPartsOfComment(String comment) {
+        List<String> strings = new ArrayList<String>();
+
+        String processedText = comment;
+        StringBuilder linkComment = new StringBuilder();
+        int indexOfAt;
+        while ((indexOfAt = processedText.lastIndexOf("@")) != -1) { //NOI18N
+            String cleaned = cleanElementText(processedText.substring(indexOfAt));
+            storeCommentPart(strings, cleaned, linkComment);
+            processedText = processedText.substring(0, indexOfAt);
+        }
+
+        // process the rest from string
+        String cleaned = cleanElementText(processedText);
+        storeCommentPart(strings, cleaned, linkComment);
+        Collections.reverse(strings);
+        return strings.toArray(new String[strings.size()]);
+    }
+
     private static JsDocBlock parseCommentBlock(CommentBlock block, boolean sharedTag) {
         String commentText = block.getContent();
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
-
-        Matcher matcher = JSDOC_TAG_PATTERN.matcher(commentText);
+        String[] commentParts = getCleanedPartsOfComment(commentText);
         boolean afterDescription = false;
-        while(matcher.find()) {
-            String jsDocElementText = cleanElementText(matcher.group());
-            if ("".equals(jsDocElementText.trim())) { //NOI18N
-                continue;
-            }
+        for (String commentPart : commentParts) {
             //TODO - clean shared tag comments
-            if (!jsDocElementText.startsWith("@")) { //NOI18N
+            if (!commentPart.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
                     //TODO - distinguish description and inline comments
-                    jsDocElements.add(new DescriptionElement(Type.CONTEXT_SENSITIVE, new Description(jsDocElementText)));
+                    jsDocElements.add(new DescriptionElement(Type.CONTEXT_SENSITIVE, new Description(commentPart)));
                 }
             } else {
                 Type type;
-                int firstSpace = jsDocElementText.indexOf(" "); //NOI18N
+                int firstSpace = commentPart.indexOf(" "); //NOI18N
                 if (firstSpace == -1) {
-                    type = Type.fromString(jsDocElementText);
+                    type = Type.fromString(commentPart);
                     jsDocElements.add(JsDocElementUtils.createElementForType(
                             type == null ? Type.UNKNOWN : type,
                             ""));
                 } else {
-                    type = Type.fromString(jsDocElementText.substring(0, firstSpace));
+                    type = Type.fromString(commentPart.substring(0, firstSpace));
                     jsDocElements.add(JsDocElementUtils.createElementForType(
                             type == null ? Type.UNKNOWN : type,
-                            jsDocElementText.substring(firstSpace)));
+                            commentPart.substring(firstSpace)));
                 }
             }
             // after description is after first sentence or after any keyword
@@ -155,7 +183,7 @@ public class JsDocParser {
             return blocks;
         }
 
-        while(tokenSequence.moveNext()) {
+        while (tokenSequence.moveNext()) {
             Token<? extends JsTokenId> token = tokenSequence.token();
             if (token.id() == JsTokenId.DOC_COMMENT) {
                 int startOffset = token.offset(snapshot.getTokenHierarchy());

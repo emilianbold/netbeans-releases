@@ -169,24 +169,24 @@ public class JsDocParserTest extends JsTestBase {
             + " * Construct a new Shape object.\n"
             + " * @class This is the basic Shape class.";
         assertEquals(
-                "/**\n * Construct a new Shape object.\n * ",
+                "Construct a new Shape object.",
                 getFirstPatternMatch(comment));
     }
 
     public void testTagPatternOnJsDocElement() throws Exception {
-        String comment = "@throws MemoryException if there is no more memory\n"
+        String comment = "/** @throws MemoryException if there is no more memory\n"
             + " * @throws GeneralShapeException rarely (if ever)\n"
             + " * ";
         assertEquals(
-                "@throws MemoryException if there is no more memory\n * ",
+                "@throws MemoryException if there is no more memory",
                 getFirstPatternMatch(comment));
     }
 
     public void testTagPatternForLastElement() throws Exception {
-        String comment = "@return A new shape\n"
+        String comment = "/** @return A new shape\n"
             + " */";
         assertEquals(
-                "@return A new shape\n */",
+                "@return A new shape",
                 getFirstPatternMatch(comment));
     }
 
@@ -197,8 +197,8 @@ public class JsDocParserTest extends JsTestBase {
             + " * {@link Shape base Shape class}.\n"
             + " * @return The height of this Rectangle\n";
         assertEquals(
-                "/**\n * Get the value of the height for the Rectangle.\n * Another getter is the "
-                + "{@link Shape#getColor} method in the\n * {@link Shape base Shape class}.\n * ",
+                "Get the value of the height for the Rectangle. Another getter is the "
+                + "{@link Shape#getColor} method in the {@link Shape base Shape class}.",
                 getFirstPatternMatch(comment));
     }
 
@@ -216,7 +216,7 @@ public class JsDocParserTest extends JsTestBase {
         List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
         List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement)tags.get(0)).getDescription().toString());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
@@ -225,7 +225,15 @@ public class JsDocParserTest extends JsTestBase {
         List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
         List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
-        assertEquals("This could be description", ((DescriptionElement)tags.get(0)).getDescription().toString());
+        assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
+    }
+
+    public void testParsingLongComments() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/windowStub.js"));
+        Snapshot snapshot = source.createSnapshot();
+        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
+        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
     }
 
     private void checkElementTypes(String filePath) {
@@ -241,8 +249,7 @@ public class JsDocParserTest extends JsTestBase {
     }
 
     private String getFirstPatternMatch(String text) {
-        Matcher matcher = JsDocParser.JSDOC_TAG_PATTERN.matcher(text);
-        matcher.find();
-        return matcher.group();
+        String[] partsOfComment = JsDocParser.getCleanedPartsOfComment(text);
+        return partsOfComment[0];
     }
 }

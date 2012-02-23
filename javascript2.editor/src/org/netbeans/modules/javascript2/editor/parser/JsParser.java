@@ -109,9 +109,7 @@ public class JsParser extends Parser {
         List<? extends JsComment> comments;
         try {
             long startTimeForDoc = System.currentTimeMillis();
-            // needed to fix parsing jsstubs files and then revert this changes
-//            comments = JsDocParser.parse(snapshot);
-            comments = Collections.<JsComment>emptyList();
+            comments = JsDocParser.parse(snapshot);
             long endTimeForDoc = System.currentTimeMillis();
             LOGGER.log(Level.FINE, "Parsing of comments took: {0}ms source: {1}",
                     new Object[]{endTimeForDoc - startTimeForDoc, scriptName});
