@@ -106,8 +106,8 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
-    public FileComponentDeclarations(FileImpl file) {
-        super(new FileDeclarationsKey(file));
+    public FileComponentDeclarations(FileImpl file, boolean persistent) {
+        super(persistent ? new FileDeclarationsKey(file) : null);
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);

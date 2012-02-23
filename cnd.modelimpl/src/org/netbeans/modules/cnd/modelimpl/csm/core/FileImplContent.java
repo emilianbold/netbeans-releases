@@ -41,15 +41,17 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -69,7 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * this content can be used as new file content
  * @author Vladimir Voskresensky
  */
-final class FileImplContent implements DeclarationsContainer {
+public final class FileImplContent implements DeclarationsContainer {
 
     private final FileImpl fileImpl;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
@@ -78,19 +80,17 @@ final class FileImplContent implements DeclarationsContainer {
     private final Set<ErrorDirectiveImpl> errors = createErrors();
     private final FileComponentDeclarations fileComponentDeclarations;
     private final FileComponentMacros fileComponentMacros;
-    private final AtomicBoolean hasBrokenIncludes;
     private final FileComponentIncludes fileComponentIncludes;
     private final FileComponentInstantiations fileComponentInstantiations;
     private final FileComponentReferences fileComponentReferences;
 
     public FileImplContent(FileImpl fileImpl) {
         this.fileImpl = fileImpl;
-        this.fileComponentDeclarations = new FileComponentDeclarations(fileImpl);
-        this.fileComponentMacros = new FileComponentMacros(fileImpl);
-        this.hasBrokenIncludes = new AtomicBoolean(false);
-        this.fileComponentIncludes = new FileComponentIncludes(fileImpl);
-        this.fileComponentInstantiations = new FileComponentInstantiations(fileImpl);
-        this.fileComponentReferences = new FileComponentReferences(fileImpl);
+        this.fileComponentDeclarations = new FileComponentDeclarations(fileImpl, false);
+        this.fileComponentMacros = new FileComponentMacros(fileImpl, false);
+        this.fileComponentIncludes = new FileComponentIncludes(fileImpl, false);
+        this.fileComponentInstantiations = new FileComponentInstantiations(fileImpl, false);
+        this.fileComponentReferences = new FileComponentReferences(fileImpl, false);
     }
 
     public final int getErrorCount() {
@@ -146,20 +146,23 @@ final class FileImplContent implements DeclarationsContainer {
         return fakeFunctionRegistrations;
     }
 
-    public List<FileImpl.FakeIncludePair> getFakeIncludeRegistrations() {
+    List<FileImpl.FakeIncludePair> getFakeIncludeRegistrations() {
         return fakeIncludeRegistrations;
     }
     
     public void addError(ErrorDirectiveImpl error) {
         errors.add(error);
+        fileImpl.addError(error);
     }
     
     public void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
-    }
+        fileImpl.addMacro(macro);
+    }       
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
-        getFileDeclarations().addDeclaration(decl);
+//        getFileDeclarations().addDeclaration(decl);
+        fileImpl.addDeclaration(decl);
     }
 
     @Override
@@ -172,13 +175,13 @@ final class FileImplContent implements DeclarationsContainer {
         return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
     }
 
+    public Collection<CsmInclude> getIncludes() {
+        return getFileIncludes().getIncludes();
+    }
+    
     public void addInclude(IncludeImpl includeImpl, boolean broken) {
         // addInclude can remove added one from list of broken includes =>
-        boolean hasBroken = getFileIncludes().addInclude(includeImpl, broken);
-        // update hasBrokenIncludes marker accordingly and store if changed
-        if (hasBrokenIncludes.compareAndSet(!hasBroken, hasBroken)) {
-//            RepositoryUtils.put(this);
-        }
+        getFileIncludes().addInclude(includeImpl, broken);
     }
 
     public void addInstantiation(CsmInstantiation inst) {
@@ -206,12 +209,20 @@ final class FileImplContent implements DeclarationsContainer {
         return fileComponentDeclarations;
     }
 
-    private FileComponentMacros getFileMacros() {
+    public Set<ErrorDirectiveImpl> getErrors() {
+        return Collections.unmodifiableSet(errors);
+    }
+
+    FileComponentMacros getFileMacros() {
         return fileComponentMacros;
     }
 
-    private FileComponentIncludes getFileIncludes() {
+    FileComponentIncludes getFileIncludes() {
         return fileComponentIncludes;
+    }
+
+    boolean hasBrokenIncludes() {
+        return !fileComponentIncludes.getBrokenIncludes().isEmpty();
     }
 
     private FileComponentReferences getFileReferences() {

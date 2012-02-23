@@ -81,8 +81,8 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         return EMPTY;
     }
 
-    public FileComponentInstantiations(FileImpl file) {
-        super(new FileInstantiationsKey(file));
+    public FileComponentInstantiations(FileImpl file, boolean persistent) {
+        super(persistent ? new FileInstantiationsKey(file) : null);
         put();
     }
 
