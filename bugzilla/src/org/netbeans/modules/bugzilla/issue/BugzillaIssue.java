@@ -941,7 +941,7 @@ public class BugzillaIssue {
         final boolean wasNew = data.isNew();
         final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
         
-        SubmitCommand submitCmd = new SubmitCommand(getTaskRepository(), data);
+        SubmitCommand submitCmd = new SubmitCommand(getRepository(), data);
         repository.getExecutor().execute(submitCmd);
 
         if (!wasNew) {

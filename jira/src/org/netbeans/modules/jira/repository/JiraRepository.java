@@ -306,7 +306,7 @@ public class JiraRepository {
 
     protected void getRemoteFilters() {
         List<JiraQuery> ret = new ArrayList<JiraQuery>();
-        NamedFiltersCommand cmd = new NamedFiltersCommand(taskRepository);
+        NamedFiltersCommand cmd = new NamedFiltersCommand(this);
         getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
             NamedFilter[] filters = cmd.getNamedFilters();

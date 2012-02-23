@@ -110,7 +110,7 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository.getTaskRepository());
+        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository);
         repository.getExecutor().execute(cmd, handleExceptions);
         if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
