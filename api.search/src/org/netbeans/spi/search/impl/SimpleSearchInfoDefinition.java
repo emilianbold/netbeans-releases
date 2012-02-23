@@ -53,7 +53,9 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.api.search.provider.impl.DefinitionUtils;
 import org.netbeans.api.search.provider.impl.SimpleSearchIterator;
 import org.netbeans.spi.search.SearchFilterDefinition;
+import org.netbeans.spi.search.SearchFilterDefinition.FolderResult;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
@@ -144,19 +146,28 @@ public final class SimpleSearchInfoDefinition extends SearchInfoDefinition {
 
         if (folder.isFolder()) {
             for (int i = 0; i < filters.length; i++) {
-                if (filters[i].traverseFolder(folder)
-                        == SearchFilterDefinition.FolderResult.DO_NOT_TRAVERSE) {
+                if (!isSuppressableFilter(filters[i])
+                        && filters[i].traverseFolder(folder)
+                        == FolderResult.DO_NOT_TRAVERSE) {
                     return false;
                 }
             }
         } else {
             for (int i = 0; i < filters.length; i++) {
-                if (!filters[i].searchFile(folder)) {
+                if (!isSuppressableFilter(filters[i])
+                        && !filters[i].searchFile(folder)) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    /**
+     * Test whether filter can be supressed by user.
+     */
+    private boolean isSuppressableFilter(SearchFilterDefinition filter) {
+        return filter == SearchInfoDefinitionFactory.SHARABILITY_FILTER;
     }
 
     @Override
