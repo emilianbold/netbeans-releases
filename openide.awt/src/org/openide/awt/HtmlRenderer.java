@@ -379,7 +379,7 @@ public final class HtmlRenderer {
                 //let's correct the estimate now
                 while( estCharsToPaint > 3 ) {
                     if( estCharsToPaint < chars.length )
-                        Arrays.fill(chars, estCharsToPaint - 3, estCharsToPaint, '.'); //NOI18N
+                        chars[estCharsToPaint-1] = '…';
                     int  newWidth;
                     if (Utilities.isMac()) {
                         // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
@@ -415,7 +415,7 @@ public final class HtmlRenderer {
                                 }
                             }
 
-                            g.drawString("...", x, y);
+                            g.drawString("…", x, y);
                             if (shape != null) {
                                 g.setClip(shape);
                             }
@@ -611,7 +611,7 @@ public final class HtmlRenderer {
                 if( truncated && paint && !dotsPainted ) {
                     g.setColor(defaultColor);
                     g.setFont(f);
-                    g.drawString("...", x, y); //NOI18N
+                    g.drawString("…", x, y); //NOI18N
                 }
                 return widthPainted;
             }
@@ -644,7 +644,7 @@ public final class HtmlRenderer {
                 g.setFont(f);
 
                 if (paint) {
-                    g.drawString("...", x, y); //NOI18N
+                    g.drawString("…", x, y); //NOI18N
                     dotsPainted = true; //make sure we paint the dots only once
                 }
 
