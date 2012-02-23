@@ -120,6 +120,7 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
 
                     switch (token.getKind()) {
+                        case AFTER_BINARY_OPERATOR:
                         case AFTER_COMMA:
                             FormatToken next = getNextNonVirtual(token);
                             if (next != null
