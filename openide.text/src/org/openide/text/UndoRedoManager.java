@@ -432,7 +432,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
 
     @Override
     public void discardAllEdits() {
-        new DocLockedRun(5, support.getDocument());
+        new DocLockedRun(5, support.getDocument(), 0, true);
     }
     
     private void clearSaveActionsEdit() {
