@@ -137,4 +137,8 @@ public class JsFormatterTest extends JsTestBase {
     public void testFormatting2() throws Exception {
         reformatFileContents("testfiles/formatter/formatting2.js",new IndentPrefs(4, 4));
     }
+
+    public void testCommas1() throws Exception {
+        reformatFileContents("testfiles/formatter/commas1.js",new IndentPrefs(4, 4));
+    }
 }

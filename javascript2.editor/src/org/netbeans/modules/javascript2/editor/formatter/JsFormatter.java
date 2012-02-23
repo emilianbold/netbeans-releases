@@ -120,6 +120,17 @@ public class JsFormatter implements Formatter {
                     FormatToken token = tokens.get(i);
 
                     switch (token.getKind()) {
+                        case AFTER_COMMA:
+                            FormatToken next = getNextNonVirtual(token);
+                            if (next != null
+                                    && next.getKind() != FormatToken.Kind.WHITESPACE
+                                    && next.getKind() != FormatToken.Kind.EOL) {
+                                // TODO is previous token always comma ?
+                                FormatToken comma = tokens.get(i - 1);
+                                offsetDiff = insert(doc, comma.getOffset() + comma.getText().length(),
+                                        " ", offsetDiff); // NOI18N
+                            }
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
@@ -179,6 +190,7 @@ public class JsFormatter implements Formatter {
                             break;
                     }
 
+                    // update the indentation for the token
                     indentationLevel = updateIndentationLevel(token, indentationLevel);
                 }
                 LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
@@ -186,7 +198,7 @@ public class JsFormatter implements Formatter {
         });
     }
 
-    public boolean isContinuation(List<FormatToken> tokens, int index) {
+    private boolean isContinuation(List<FormatToken> tokens, int index) {
         FormatToken token = tokens.get(index);
 
         assert token.getKind() == FormatToken.Kind.SOURCE_START
@@ -256,6 +268,24 @@ public class JsFormatter implements Formatter {
                 return indentationLevel - 1;
         }
         return indentationLevel;
+    }
+
+    private static FormatToken getNextNonVirtual(FormatToken token) {
+        FormatToken current = token.next();
+        while (current != null && current.isVirtual()) {
+            current = current.next();
+        }
+        return current;
+    }
+
+    private int insert(BaseDocument doc, int offset, String newString, int offsetDiff) {
+        try {
+            doc.insertString(offset + offsetDiff, newString, null);
+            return offsetDiff + newString.length();
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return offsetDiff;
     }
 
     private int replace(BaseDocument doc, int offset, String oldString, String newString, int offsetDiff) {
