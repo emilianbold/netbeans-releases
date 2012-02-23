@@ -2279,7 +2279,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
 
             final LinkedList<Iterable<Indexable>> allIndexblesSentToIndexers = new LinkedList<Iterable<Indexable>>();
-            SourceAccessor.getINSTANCE().suppressListening(true);
+            SourceAccessor.getINSTANCE().suppressListening(true, !checkEditor);
                 try {
                     final FileObject cacheRoot = CacheFolder.getDataFolder(root);
                     final ClusteredIndexables ci = new ClusteredIndexables(resources);
@@ -2463,7 +2463,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     return true;
                 } finally {
-                    SourceAccessor.getINSTANCE().suppressListening(false);
+                    SourceAccessor.getINSTANCE().suppressListening(false, false);
                     final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
                     usedIterables.offer(proxyIterable);
                 }
@@ -2637,7 +2637,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts,
                 final boolean sourceForBinaryRoot
         ) throws IOException {
-            // XXX: Replace with multi source when done
             for (final Indexable dirty : files) {
                 parkWhileSuspended();
                 if (getShuttdownRequest().isRaised()) {

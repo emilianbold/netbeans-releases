@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package org.netbeans.modules.php.editor;
 
-import java.io.IOException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Tomas Pavek
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface EditorSupport extends Node.Cookie {
-    static String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
-    static String SECTION_VARIABLES = "variables"; // NOI18N
+public class PHPCodeCompletion208784Test extends PHPTestBase {
 
-    Document getDocument();
-    GuardedSectionManager getGuardedSectionManager();
-    void markModified();
-    Object getJavaContext();
-    void openAt(Position pos);
-    void discardEditorUndoableEdits();
-    void saveAs(FileObject folder, String fileName) throws IOException;
-    void openDesign();
-    void openSource();
-    void reloadForm();
-    boolean isJavaEditorDisplayed();
-    int getCodeIndentSize();
-    boolean getCodeBraceOnNewLine();
-    boolean canGenerateNBMnemonicsCode();
+    public PHPCodeCompletion208784Test(String testName) {
+        super(testName);
+    }
+
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test208784/issue208784.php", "parent::b^eforeRender();//TEST", false);
+    }
+
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test208784/"))
+            })
+        );
+    }
+
 }
