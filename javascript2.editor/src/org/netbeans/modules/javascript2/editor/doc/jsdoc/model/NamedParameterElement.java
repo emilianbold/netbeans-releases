@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
-import org.netbeans.modules.javascript2.editor.model.DocParameters;
+import org.netbeans.modules.javascript2.editor.model.DocParameter;
 
 /**
  * Represents named parameter element.
@@ -51,7 +51,7 @@ import org.netbeans.modules.javascript2.editor.model.DocParameters;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class NamedParameterElement extends ParameterElement implements DocParameters {
+public class NamedParameterElement extends ParameterElement implements DocParameter {
 
     private final Name paramName;
     private final boolean optional;
