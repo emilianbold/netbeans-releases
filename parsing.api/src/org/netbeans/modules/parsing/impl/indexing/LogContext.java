@@ -55,7 +55,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Zezula
  */
  public class LogContext {
-
+    
     
     private static final RequestProcessor RP = new RequestProcessor("Thread dump shooter", 1); // NOI18N
     
@@ -119,7 +119,7 @@ import org.openide.util.RequestProcessor;
         createLogMessage(msg);
         return msg.toString();
     }
-
+    
     
     private String createThreadDump() {
         StringBuilder sb = new StringBuilder();
@@ -156,13 +156,15 @@ import org.openide.util.RequestProcessor;
 
         if (cancel) {
             threadDump = createThreadDump();
+
             RP.post(new Runnable() {
+
                 @Override
                 public void run() {
                     secondDump = createThreadDump();
                     LOG.log(r);
                 }
-
+            
             }, SECOND_DUMP_DELAY);
         } else {
             LOG.log(r);
