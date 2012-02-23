@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
-
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>

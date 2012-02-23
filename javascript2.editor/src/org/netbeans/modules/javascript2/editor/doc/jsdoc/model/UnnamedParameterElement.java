@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
-
 /**
  * Represents parameter element which does not need any parameter name.
  * <p>
@@ -53,7 +51,7 @@ import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 public class UnnamedParameterElement extends ParameterElement {
 
     private UnnamedParameterElement(Type type,
-            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
         super(type, paramTypes, paramDescription);
     }
 
@@ -63,7 +61,7 @@ public class UnnamedParameterElement extends ParameterElement {
      * @param paramDescription description of the parameter
      */
     public static UnnamedParameterElement create(Type type,
-            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
         return new UnnamedParameterElement(type, paramTypes, paramDescription);
     }
 

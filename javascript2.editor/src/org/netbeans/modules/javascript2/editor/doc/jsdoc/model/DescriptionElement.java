@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 import org.openide.util.Parameters;
 
 /**
@@ -53,9 +52,9 @@ import org.openide.util.Parameters;
  */
 public class DescriptionElement extends JsDocElementImpl {
 
-    private final Description description;
+    private final String description;
 
-    private DescriptionElement(Type type, Description description) {
+    private DescriptionElement(Type type, String description) {
         super(type);
         Parameters.notNull("type", type);
         Parameters.notNull("description", description);
@@ -68,7 +67,7 @@ public class DescriptionElement extends JsDocElementImpl {
      * @param type {@code DescriptionElement} type, never null
      * @param description description of the element, never null
      */
-    public static DescriptionElement create(Type type, Description description) {
+    public static DescriptionElement create(Type type, String description) {
         return new DescriptionElement(type, description);
     }
 
@@ -76,7 +75,7 @@ public class DescriptionElement extends JsDocElementImpl {
      * Gets description of the element.
      * @return description
      */
-    public Description getDescription() {
+    public String getDescription() {
         return description;
     }
 

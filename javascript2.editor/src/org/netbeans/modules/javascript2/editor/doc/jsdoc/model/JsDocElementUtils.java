@@ -42,9 +42,8 @@
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Description;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 
 /**
@@ -72,7 +71,7 @@ public class JsDocElementUtils {
             case DECLARATION:
                 return DeclarationElement.create(type, new TypeImpl(trimmed));
             case DESCRIPTION:
-                return DescriptionElement.create(type, new Description(trimmed));
+                return DescriptionElement.create(type, trimmed);
             case LINK:
                 return LinkElement.create(type, new NamePath(trimmed));
             case NAMED_PARAMETER:
@@ -83,7 +82,7 @@ public class JsDocElementUtils {
                 return createParameterElement(type, trimmed, false);
             default:
                 // unknown jsDoc element type
-                return DescriptionElement.create(type, new Description(trimmed));
+                return DescriptionElement.create(type, trimmed);
         }
     }
 
@@ -121,10 +120,9 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name),
-                    new TypesImpl(types), new Description(desc));
+            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name), new TypesImpl(types), desc);
         } else {
-            return UnnamedParameterElement.create(elementType, new TypesImpl(types), new Description(desc));
+            return UnnamedParameterElement.create(elementType, new TypesImpl(types), desc);
         }
     }
 
