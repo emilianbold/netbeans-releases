@@ -149,7 +149,8 @@ public class ToggleFullScreenAction extends SystemAction implements DynamicMenuC
 
     @Override
     public boolean isEnabled() {
-        return WindowManager.getDefault().getMainWindow() == MainWindow.getInstance().getFrame();
+        return WindowManager.getDefault().getMainWindow() == MainWindow.getInstance().getFrame()
+                && !Utilities.isMac();
     }
 }
 
