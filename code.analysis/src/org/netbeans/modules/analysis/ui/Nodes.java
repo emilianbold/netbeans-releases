@@ -58,14 +58,12 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.LineCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -80,7 +78,6 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -101,10 +98,20 @@ public class Nodes {
             for (Entry<String, Map<Analyzer, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
                 Map<String, Map<Analyzer, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
                 List<Node> warningTypNodes = new ArrayList<Node>(byId.size());
+                long categoryWarnings = 0;
 
                 for (Entry<String, Map<Analyzer, List<ErrorDescription>>> typeEntry : byId.entrySet()) {
                     Analyzer analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = analyzer.getIcon();
+
+                    String typeDisplayName = typeEntry.getKey() != null ? analyzer.getDisplayName4Id(typeEntry.getKey()) : null;
+                    long typeWarnings = 0;
+
+                    for (List<ErrorDescription> v1 : typeEntry.getValue().values()) {
+                        typeWarnings += v1.size();
+                    }
+
+                    final String typeHtmlDisplayName = (typeDisplayName != null ? translate(typeDisplayName) : "Unknown") + " <b>(" + typeWarnings + ")</b>";
                     AbstractNode typeNode = new AbstractNode(constructSemiLogicalViewChildren(sortErrors(typeEntry.getValue(), BY_FILE))) {
                         @Override public Image getIcon(int type) {
                             return icon;
@@ -112,13 +119,13 @@ public class Nodes {
                         @Override public Image getOpenedIcon(int type) {
                             return icon;
                         }
+                        @Override public String getHtmlDisplayName() {
+                            return typeHtmlDisplayName;
+                        }
                     };
 
-                    String typeDisplayName = typeEntry.getKey() != null ? analyzer.getDisplayName4Id(typeEntry.getKey()) : null;
-
-                    typeNode.setDisplayName(typeDisplayName != null ? typeDisplayName : "Unknown");
-
                     warningTypNodes.add(typeNode);
+                    categoryWarnings += typeWarnings;
                 }
                 
                 Collections.sort(warningTypNodes, new Comparator<Node>() {
@@ -129,6 +136,7 @@ public class Nodes {
 
                 Analyzer analyzer = categoryEntry.getValue().keySet().iterator().next();//TODO: multiple Analyzers for this category
                 final Image icon = analyzer.getIcon();
+                final String categoryHtmlDisplayName = translate(categoryEntry.getKey()) + " <b>(" + categoryWarnings + ")</b>";
                 AbstractNode categoryNode = new AbstractNode(new DirectChildren(warningTypNodes)) {
                     @Override public Image getIcon(int type) {
                         return icon;
@@ -136,9 +144,10 @@ public class Nodes {
                     @Override public Image getOpenedIcon(int type) {
                         return icon;
                     }
+                    @Override public String getHtmlDisplayName() {
+                        return categoryHtmlDisplayName;
+                    }
                 };
-
-                categoryNode.setDisplayName(categoryEntry.getKey());
 
                 categoryNodes.add(categoryNode);
             }
@@ -272,10 +281,18 @@ public class Nodes {
                 return new AbstractNode(Children.LEAF);
             }
         }
+
+        int warnings = 0;
+
+        for (Map<Analyzer, List<ErrorDescription>> v1 : errors.values()) {
+            for (List<ErrorDescription> v2 : v1.values()) {
+                warnings += v2.size();
+            }
+        }
         
         final Wrapper[] w = new Wrapper[1];
 
-        w[0] = new Wrapper(view, new FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>>() {
+        w[0] = new Wrapper(view, warnings, new FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>>() {
             private Map<Node, Map<Analyzer, List<ErrorDescription>>> computed;
             @Override public synchronized Map<Node, Map<Analyzer, List<ErrorDescription>>> get() {
                 if (computed == null) {
@@ -320,12 +337,20 @@ public class Nodes {
 
     private static class Wrapper extends FilterNode {
 
-        public Wrapper(Node orig, FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
+        private final int warningsCount;
+
+        public Wrapper(Node orig, int warningsCount, FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
             super(orig, new WrapperChildren(orig, fileNodes), Lookup.EMPTY);
+            this.warningsCount = warningsCount;
         }
         
         public Wrapper(Node orig, Map<Analyzer, List<ErrorDescription>> errors, boolean file) {
             super(orig, new ErrorDescriptionChildren(errors), lookupForFileNode(orig, errors));
+            int warnings = 0;
+            for (List<ErrorDescription> e : errors.values()) {
+                warnings += e.size();
+            }
+            this.warningsCount = warnings;
         }
 
         @Override
@@ -348,7 +373,10 @@ public class Nodes {
         @Override
         public String getHtmlDisplayName() {
             if (htmlDisplayName == null) {
-                return getOriginal().getHtmlDisplayName();
+                if (getOriginal().getHtmlDisplayName() == null) {
+                    return translate(getOriginal().getDisplayName()) + " <b>(" + warningsCount + ")</b>";
+                }
+                return getOriginal().getHtmlDisplayName() + " <b>(" + warningsCount + ")</b>";
             }
             return htmlDisplayName;
         }
@@ -386,7 +414,6 @@ public class Nodes {
         public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
             this.orig = orig;
             this.fileNodesFuture = fileNodes;
-            
         }
         
         @Override
@@ -419,7 +446,22 @@ public class Nodes {
                 
                 return new Node[] {new Wrapper(key, fileNodes.get(key), true)};
             }
-            return new Node[] {new Wrapper(key, fileNodesFuture)};
+            final java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodesInside = new HashMap<Node, java.util.Map<Analyzer, List<ErrorDescription>>>();
+            int warnings = 0;
+            for (Entry<Node, java.util.Map<Analyzer, List<ErrorDescription>>> e : fileNodes.entrySet()) {
+                if (isParent(key, e.getKey())) {
+                    fileNodesInside.put(e.getKey(), e.getValue());
+                    for (List<ErrorDescription> w : e.getValue().values()) {
+                        warnings += w.size();
+                    }
+                }
+            }
+            return new Node[] {new Wrapper(key, warnings, new FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>>() {
+                @Override
+                public java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> get() {
+                    return fileNodesInside;
+                }
+            })};
         }
         
     }
@@ -527,6 +569,17 @@ public class Nodes {
         }
     }
 
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+
+    private static String translate(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+
+        return input;
+    }
+    
     interface FutureValue<T> {
         T get();
     }
