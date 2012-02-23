@@ -404,6 +404,15 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (packages.length == 1) {
             return new RenameRefactoringUI(packages[0]);
         }
+        final String n = RefactoringActionsProvider.getName(lookup);
+        if (n != null) {
+            return new RenameRefactoringUI(files[0], n, null, null);
+        }
+
+        if (handles.length == 0) {
+            assert files.length == 1;
+            return new RenameRefactoringUI(files[0], null, null);
+        }
         assert handles.length == 1;
         TreePathHandle selectedElement = handles[0];
         Element selected = handles[0].resolveElement(info);
