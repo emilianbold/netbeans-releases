@@ -48,8 +48,10 @@ import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsElementImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -85,6 +87,14 @@ public class IndexedElement extends JsElementImpl {
         for (JsObject property : object.getProperties().values()) {
             elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
         }
+        StringBuilder sb = new StringBuilder();
+        for (TypeUsage type : object.getAssignments()) {
+            sb.append(type.getType());
+            sb.append(":"); //NOI18N
+            sb.append(type.getOffset());
+            sb.append("|");
+        }
+        elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
         return elementDocument;
     }
     
@@ -94,7 +104,8 @@ public class IndexedElement extends JsElementImpl {
         boolean isDeclared = "1".equals(indexResult.getValue(JsIndex.FIELD_IS_DECLARED)); //NOI18N
         JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
-        return new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+        IndexedElement result = new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+        return result;
     }
     
     public static Collection<IndexedElement> createProperties(IndexResult indexResult) {
@@ -102,6 +113,21 @@ public class IndexedElement extends JsElementImpl {
         FileObject fo = indexResult.getFile();
         for(String sProperty : indexResult.getValues(JsIndex.FIELD_PROPERTY)) {
             result.add(decodeProperty(sProperty, fo));
+        }
+        return result;
+    }
+    
+    public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
+        Collection<TypeUsage> result = new ArrayList<TypeUsage>();
+        String text = indexResult.getValue(JsIndex.FIELD_ASSIGNMENS);
+        if (text != null) {
+            for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
+                String token = st.nextToken();
+                int index = token.indexOf(':');
+                String type = token.substring(0, index);
+                String offset = token.substring(index + 1);
+                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+            }
         }
         return result;
     }
