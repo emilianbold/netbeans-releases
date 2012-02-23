@@ -52,10 +52,20 @@ import org.openide.util.Utilities;
  */
 public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener {
     private int cnt;
+    private File lnk;
 
     public CyclicSymlinkTest(String name) {
         super(name);
     }
+
+    @Override
+    protected void tearDown() throws Exception {
+        if (lnk != null) {
+            lnk.delete();
+        }
+    }
+    
+    
     
     public void testCyclicSymlink() throws Exception {
         if (Utilities.isWindows()) {
@@ -68,7 +78,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File two = new File(one, "two");
         File three = new File(two, "three");
         StringBuilder up = new StringBuilder("../..");
-        File lnk = new File(three, "lnk");
+        lnk = new File(three, "lnk");
         three.mkdirs();
         int res = Runtime.getRuntime().exec("ln -s " + up + " lnk", null, three).waitFor();
         assertEquals("Symlink is OK", 0, res);
@@ -94,7 +104,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File independent = new File(getWorkDir(), "independent");
         File two = new File(one, "two");
         File three = new File(two, "three");
-        File lnk = new File(three, "lnk");
+        lnk = new File(three, "lnk");
         three.mkdirs();
         independent.mkdirs();
         
