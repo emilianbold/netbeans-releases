@@ -198,7 +198,14 @@ public abstract class SourceAccessor {
      */
     public abstract Source get (final FileObject file);
 
-    public abstract void suppressListening(boolean suppress);
+    /**
+     * Suppress listening on {@link Source}s created by scan.
+     * @param suppress true to suppress listening
+     * @param preferFiles true if files should be preferred to documents.
+     */
+    public abstract void suppressListening(
+            boolean suppress,
+            boolean preferFiles);
 
     public abstract int getLineStartOffset(Snapshot snapshot, int lineIdx);
 

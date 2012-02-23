@@ -153,8 +153,8 @@ public class SearchBarOperator extends EditorPanelOperator {
         matchCaseCheckBox().setSelected(false);
         highlightResultsCheckBox().setSelected(false);
         reqularExpressionCheckBox().setSelected(false);
-        highlightResultsCheckBox().setSelected(false);
-        wrapAroundCheckBox().setSelected(false);
+//        highlightResultsCheckBox().setSelected(false);
+//        wrapAroundCheckBox().setSelected(false);
     }
     
 }

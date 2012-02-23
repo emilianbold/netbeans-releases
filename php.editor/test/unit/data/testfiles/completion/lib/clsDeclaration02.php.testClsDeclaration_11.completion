@@ -3,6 +3,7 @@ implements |ClsBaseDeclarationTest
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
