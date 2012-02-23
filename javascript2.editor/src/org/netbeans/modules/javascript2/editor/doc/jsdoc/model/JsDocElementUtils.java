@@ -65,25 +65,25 @@ public class JsDocElementUtils {
         switch (type.getCategory()) {
             case ASSIGN:
                 String[] values = trimmed.split("(\\s)*as(\\s)*"); //NOI18N
-                return new AssignElement(
+                return AssignElement.create(
                         type,
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
                         (values.length > 1) ? new NamePath(values[1].trim()) : null);
             case DECLARATION:
-                return new DeclarationElement(type, new TypeImpl(trimmed));
+                return DeclarationElement.create(type, new TypeImpl(trimmed));
             case DESCRIPTION:
-                return new DescriptionElement(type, new Description(trimmed));
+                return DescriptionElement.create(type, new Description(trimmed));
             case LINK:
-                return new LinkElement(type, new NamePath(trimmed));
+                return LinkElement.create(type, new NamePath(trimmed));
             case NAMED_PARAMETER:
                 return createParameterElement(type, trimmed, true);
             case SIMPLE:
-                return new SimpleElement(type);
+                return SimpleElement.create(type);
             case UNNAMED_PARAMETER:
                 return createParameterElement(type, trimmed, false);
             default:
                 // unknown jsDoc element type
-                return new DescriptionElement(type, new Description(trimmed));
+                return DescriptionElement.create(type, new Description(trimmed));
         }
     }
 
@@ -121,9 +121,9 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return new NamedParameterElement(elementType, new Name(name), new TypesImpl(types), new Description(desc));
+            return NamedParameterElement.create(elementType, new Name(name), new TypesImpl(types), new Description(desc));
         } else {
-            return new UnnamedParameterElement(elementType, new TypesImpl(types), new Description(desc));
+            return UnnamedParameterElement.create(elementType, new TypesImpl(types), new Description(desc));
         }
     }
 

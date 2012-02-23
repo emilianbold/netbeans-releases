@@ -147,7 +147,7 @@ public class JsDocParser {
             if (!commentPart.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
                     //TODO - distinguish description and inline comments
-                    jsDocElements.add(new DescriptionElement(Type.CONTEXT_SENSITIVE, new Description(commentPart)));
+                    jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, new Description(commentPart)));
                 }
             } else {
                 Type type;

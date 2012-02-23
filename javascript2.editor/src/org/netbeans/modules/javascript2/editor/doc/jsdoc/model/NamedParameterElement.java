@@ -54,25 +54,85 @@ import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
 public class NamedParameterElement extends ParameterElement {
 
     private final Name paramName;
+    private final boolean optional;
+    private final String defaultValue;
 
-    /** Creates named parameter element.
-     * @param type type of the element
-     * @param paramName name of the parameter
-     * @param paramType type of the parameter
-     * @param paramDescription description of the parameter
-     */
-    public NamedParameterElement(Type type, Name paramName,
-            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
+    private NamedParameterElement(Type type, Name paramName,
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription,
+            boolean optional, String defaultValue) {
         super(type, paramTypes, paramDescription);
         this.paramName = paramName;
+        this.optional = optional;
+        this.defaultValue = defaultValue;
+    }
+
+    /**
+     * Creates named parameter element.
+     * @param type type of the element
+     * @param paramName name of the parameter
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
+     * @param optional flag if the parameter is optional
+     * @param defaultValue default value of the parameter
+     */
+    public static NamedParameterElement create(Type type, Name paramName,
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription,
+            boolean optional, String defaultValue) {
+        return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, defaultValue);
+    }
+
+    /**
+     * Creates named parameter element.
+     * <p>
+     * This creates optional parameter with no default value.
+     * @param type type of the element
+     * @param paramName name of the parameter
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
+     * @param optional flag if the parameter is optional
+     */
+    public static NamedParameterElement create(Type type, Name paramName,
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription,
+            boolean optional) {
+        return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, null);
+    }
+
+    /**
+     * Creates named parameter element.
+     * <p>
+     * This creates mandatory parameter with no default value.
+     * @param type type of the element
+     * @param paramName name of the parameter
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
+     */
+    public static NamedParameterElement create(Type type, Name paramName,
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
+        return new NamedParameterElement(type, paramName, paramTypes, paramDescription, false, null);
     }
 
     /**
      * Gets name of the parameter.
-     * @return parameter name.
+     * @return parameter name
      */
     public Name getParamName() {
         return paramName;
+    }
+
+    /**
+     * Gets default value of the parameter.
+     * @return default value
+     */
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    /**
+     * Get information if the parameter is optional or not.
+     * @return flag which is {@code true} if the parameter is optional, {@code false} otherwise
+     */
+    public boolean isOptional() {
+        return optional;
     }
 
 }

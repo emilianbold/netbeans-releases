@@ -55,17 +55,21 @@ public class DescriptionElement extends JsDocElementImpl {
 
     private final Description description;
 
+    private DescriptionElement(Type type, Description description) {
+        super(type);
+        Parameters.notNull("type", type);
+        Parameters.notNull("description", description);
+        this.description = description;
+    }
+
     /**
      * Creates new {@code DescriptionElement}.
      *
      * @param type {@code DescriptionElement} type, never null
      * @param description description of the element, never null
      */
-    public DescriptionElement(Type type, Description description) {
-        super(type);
-        Parameters.notNull("type", type);
-        Parameters.notNull("description", description);
-        this.description = description;
+    public static DescriptionElement create(Type type, Description description) {
+        return new DescriptionElement(type, description);
     }
 
     /**
