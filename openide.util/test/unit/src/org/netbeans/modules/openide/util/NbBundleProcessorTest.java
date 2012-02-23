@@ -287,6 +287,22 @@ public class NbBundleProcessorTest extends NbTestCase {
         // XXX also check non-ASCII chars in comments; works locally but fails on deadlock
     }
 
+    public void testParameterDescriptions() throws Exception {
+        AnnotationProcessorTestUtils.makeSource(src, "p1.C1", "@org.openide.util.NbBundle.Messages({\"# {0} - first\", \"k1={0}\"})", "class C1 {String s = Bundle.k1(null);}");
+        AnnotationProcessorTestUtils.makeSource(src, "p2.C2", "@org.openide.util.NbBundle.Messages({\"# {0} - first\", \"k2={0} {1}\"})", "class C2 {String s = Bundle.k2(null, null);}");
+        AnnotationProcessorTestUtils.makeSource(src, "p3.C3", "@org.openide.util.NbBundle.Messages(\"k3={0}\")", "class C3 {String s = Bundle.k3(null);}");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C1.java", dest, null, err));
+        assertEquals("", err.toString());
+        err.reset();
+        assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C2.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("{1}"));
+        assertFalse(err.toString(), err.toString().contains("{0}"));
+        err.reset();
+        assertTrue(err.toString(), AnnotationProcessorTestUtils.runJavac(src, "C3.java", dest, null, err));
+        assertTrue(err.toString(), err.toString().contains("{0}"));
+    }
+
     private static boolean isJDK7EarlyBuild() {
         String run = System.getProperty("java.runtime.version");
         if ("1.7".equals(System.getProperty("java.specification.version")) && run != null) {
