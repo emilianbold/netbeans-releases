@@ -216,7 +216,8 @@ public class RepositoryTest extends NbTestCase {
         long ts = System.currentTimeMillis();
         String summary1 = "somary";
         String summary2 = "somar";
-        JiraRepository repo = new JiraRepository(REPO_NAME, REPO_NAME, JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(REPO_NAME, JiraConnector.ID, JiraTestUtil.REPO_URL, REPO_NAME, REPO_NAME, JiraTestUtil.REPO_USER, null, JiraTestUtil.REPO_PASSWD.toCharArray() , null);
+        JiraRepository repo = new JiraRepository(info);
 
         RepositoryResponse rr = JiraTestUtil.createIssue(JiraTestUtil.getRepositoryConnector(), JiraTestUtil.getTaskRepository(), JiraTestUtil.getClient(), JiraTestUtil.getProject(JiraTestUtil.getClient()), summary1, "Alles Kaputt!", "Bug");
         assertEquals(rr.getReposonseKind(), RepositoryResponse.ResponseKind.TASK_CREATED);

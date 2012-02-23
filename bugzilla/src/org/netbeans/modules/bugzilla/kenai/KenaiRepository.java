@@ -56,11 +56,12 @@ import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
@@ -89,7 +90,7 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     private final KenaiProject kenaiProject;
 
     KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String userName, char[] password, String urlParam, String product) {
-        super(getRepositoryId(repoName, url), repoName, url, userName, password, null, null); // use name as id - can't be changed anyway
+        super(createInfo(repoName, url, userName, password)); // use name as id - can't be changed anyway
         this.urlParam = urlParam;
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.product = product;
@@ -349,4 +350,9 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
         return !"true".equals(provide);                                                             // NOI18N
     }
 
+    private static RepositoryInfo createInfo(String repoName, String url, String userName, char[] password) {
+        String id = getRepositoryId(repoName, url);
+        String tooltip = NbBundle.getMessage(BugzillaRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, userName, url}); // NOI18N
+        return new RepositoryInfo(id, BugzillaConnector.ID, url, repoName, tooltip, userName, null, password, null);
+    }
 }

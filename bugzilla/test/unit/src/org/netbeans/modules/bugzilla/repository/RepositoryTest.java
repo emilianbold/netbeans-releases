@@ -175,7 +175,8 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
+        BugzillaRepository repo = new BugzillaRepository(info);
 
         // test queries
         Collection<BugzillaQuery> queries = repo.getQueries();
@@ -212,7 +213,8 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
         String summary1 = "somary" + ts;
         String summary2 = "mary" + ts;
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
+        BugzillaRepository repo = new BugzillaRepository(info);
 
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);

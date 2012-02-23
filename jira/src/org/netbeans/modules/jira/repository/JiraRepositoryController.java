@@ -113,7 +113,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
     }
 
     private String getName() {
-        return panel.nameField.getText();
+        return panel.nameField.getText().trim();
     }
 
     private String getUser() {
@@ -206,9 +206,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
 
     @Override
     public void applyChanges() {
-        String newName = panel.nameField.getText().trim();
-        repository.setName(newName);
-        repository.setTaskRepository(
+        repository.setInfoValues(
             getName(),
             getUrl(),
             getUser(),

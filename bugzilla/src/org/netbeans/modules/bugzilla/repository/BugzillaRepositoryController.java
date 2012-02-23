@@ -59,7 +59,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
@@ -112,7 +111,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     }
     
     private String getName() {
-        return panel.nameField.getText();
+        return panel.nameField.getText().trim();
     }
 
     private String getUser() {
@@ -206,9 +205,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
     @Override
     public void applyChanges() {
-        String newName = panel.nameField.getText().trim();
-        repository.setName(newName);
-        repository.setTaskRepository(
+        repository.setInfoValues(
             getName(),
             getUrl(),
             getUser(),

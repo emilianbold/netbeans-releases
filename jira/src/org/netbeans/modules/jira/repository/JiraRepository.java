@@ -51,18 +51,12 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ProjectFi
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.Map;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -94,6 +88,7 @@ import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.jira.util.MylynUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.Lookups;
@@ -106,7 +101,6 @@ public class JiraRepository {
 
     private static final String ICON_PATH = "org/netbeans/modules/bugtracking/ui/resources/repository.png"; // NOI18N
 
-    private String name;
     private TaskRepository taskRepository;
     private JiraRepositoryController controller;
     private Set<JiraQuery> queries = null;
@@ -125,51 +119,45 @@ public class JiraRepository {
     private final Object REPOSITORY_LOCK = new Object();
     private final Object CONFIGURATION_LOCK = new Object();
     private final Object QUERIES_LOCK = new Object();
-    private String id;
 
     private Lookup lookup;
+    private RepositoryInfo info;
 
     public JiraRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
-        JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
 
     public JiraRepository(RepositoryInfo info) {
-        this(info.getId(), 
-             info.getDisplayName(), 
-             info.getUrl(), 
-             info.getUsername(), 
-             info.getPassword(), 
-             info.getHttpUsername(), 
-             info.getHttpPassword());
+        this.info = info;
+        String name = info.getDisplayName();
+        String user = info.getUsername();
+        if(user == null) {
+            user = ""; // NOI18N
+        }
+        char[] password = info.getPassword();
+        if(password == null) {
+            password = new char[0]; 
+        }
+        String httpUser = info.getHttpUsername();
+        if(httpUser == null) {
+            httpUser = ""; // NOI18N
+        }
+        char[] httpPassword = info.getHttpPassword();
+        if(httpPassword == null) {
+            httpPassword = new char[0]; 
+        }
+        String url = info.getUrl();
+
+        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
+        JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
     
-    public JiraRepository(String repoID, String repoName, String url, String user, char[] password, String httpUser, char[] httpPassword) {
-        this();
-        id = repoID;
-        name = repoName;
-        if(user == null) {
-            user = "";                                                          // NOI18N
-        }
-        if(password == null) {
-            password = new char[0];
-        }
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-    }
-
     public RepositoryInfo getInfo() {
-        if(name == null) { // XXX is new
-            return null;
-        }
-        RepositoryInfo info = new RepositoryInfo(id, JiraConnector.ID, getUrl(), getDisplayName(), getTooltip(), getUsername(), getHttpUsername(), getPassword(), getHttpPassword());
         return info;
     }
     
     public String getID() {
-        if(id == null) {
-            id = name + System.currentTimeMillis();
-        }
-        return id;
+        return info.getId();
     }
 
     public JiraQuery createQuery() {
@@ -199,12 +187,18 @@ public class JiraRepository {
         return new NbJiraIssue(data, this);
     }
 
+    synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
+        setTaskRepository(name, url, user, password, httpUser, httpPassword);
+        String id = info != null ? info.getId() : name + System.currentTimeMillis();
+        info = new RepositoryInfo(id, JiraConnector.ID, url, name, getTooltip(name, user, url), user, httpUser, password, httpPassword);
+    }
+        
     public String getDisplayName() {
-        return name;
+        return info.getDisplayName();
     }
 
-    public String getTooltip() {
-        return name + " : " + taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName() + "@" + taskRepository.getUrl(); // NOI18N
+    private String getTooltip(String repoName, String user, String url) {
+        return NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, user, url}); // NOI18N
     }
 
     public Image getIcon() {
@@ -273,7 +267,7 @@ public class JiraRepository {
     }
 
     public void saveQuery(JiraQuery query) {
-        assert name != null;
+        assert info != null;
         Jira.getInstance().getStorageManager().putQuery(this, query);
         synchronized (QUERIES_LOCK) {
             getQueriesIntern().add(query);
@@ -391,11 +385,7 @@ public class JiraRepository {
         return cache;
     }
 
-    void setName(String newName) {
-        name = newName;
-    }
-
-    protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
+    private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword) {
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
         String oldUser = c != null ? c.getUserName() : "";
@@ -404,7 +394,6 @@ public class JiraRepository {
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
         
         resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(password)); // XXX reset the configuration only if the host changed
-                                                                                                     //     on psswd and user change reset only taskrepository
     }
 
     public void setCredentials(String user, char[] password, String httpUser, char[] httpPassword) {
@@ -514,10 +503,10 @@ public class JiraRepository {
                         ids = new HashSet<String>(issuesToRefresh);
                     }
                     if(ids.isEmpty()) {
-                        Jira.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {name}); // NOI18N
+                        Jira.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
                         return;
                     }
-                    Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {name, ids}); // NOI18N
+                    Jira.LOG.log(Level.FINER, "preparing to refresh {0} - {1}", new Object[] {getDisplayName(), ids}); // NOI18N
                     for (String id : ids) {
                         try {
                             TaskData data = JiraUtils.getTaskDataById(JiraRepository.this, id, false);
@@ -548,11 +537,11 @@ public class JiraRepository {
                             queries = new HashSet<JiraQuery>(queriesToRefresh);
                         }
                         if(queries.isEmpty()) {
-                            Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {name}); // NOI18N
+                            Jira.LOG.log(Level.FINE, "no queries to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
                             return;
                         }
                         for (JiraQuery q : queries) {
-                            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+                            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
                             QueryController qc = q.getController();
                             qc.autoRefresh();
                         }
@@ -567,18 +556,18 @@ public class JiraRepository {
 
     private void scheduleIssueRefresh() {
         int delay = JiraConfig.getInstance().getIssueRefreshInterval();
-        Jira.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
+        Jira.LOG.log(Level.FINE, "scheduling issue refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
         refreshIssuesTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     private void scheduleQueryRefresh() {
         int delay = JiraConfig.getInstance().getQueryRefreshInterval();
-        Jira.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {name, delay}); // NOI18N
+        Jira.LOG.log(Level.FINE, "scheduling query refresh for repository {0} in {1} minute(s)", new Object[] {getDisplayName(), delay}); // NOI18N
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
     public void scheduleForRefresh(String id) {
-        Jira.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, name}); // NOI18N
+        Jira.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.add(id);
         }
@@ -586,14 +575,14 @@ public class JiraRepository {
     }
 
     public void stopRefreshing(String id) {
-        Jira.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, name}); // NOI18N
+        Jira.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
             issuesToRefresh.remove(id);
         }
     }
 
     public void scheduleForRefresh(JiraQuery query) {
-        Jira.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), name}); // NOI18N
+        Jira.LOG.log(Level.FINE, "scheduling query {0} for refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
         synchronized(queriesToRefresh) {
             queriesToRefresh.add(query);
         }
@@ -601,7 +590,7 @@ public class JiraRepository {
     }
 
     public void stopRefreshing(JiraQuery query) {
-        Jira.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), name}); // NOI18N
+        Jira.LOG.log(Level.FINE, "removing query {0} from refresh on repository {1}", new Object[] {query.getDisplayName(), getDisplayName()}); // NOI18N
         synchronized(queriesToRefresh) {
             queriesToRefresh.remove(query);
         }
@@ -610,7 +599,7 @@ public class JiraRepository {
     public void refreshAllQueries() {
         Collection<JiraQuery> qs = getQueries();
         for (JiraQuery q : qs) {
-            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), name}); // NOI18N
+            Jira.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
             QueryController qc = ((JiraQuery) q).getController();
             qc.onRefresh();
         }
@@ -622,7 +611,7 @@ public class JiraRepository {
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
-            refreshProcessor = new RequestProcessor("Jira refresh - " + name); // NOI18N
+            refreshProcessor = new RequestProcessor("Jira refresh - " + getDisplayName()); // NOI18N
         }
         return refreshProcessor;
     }

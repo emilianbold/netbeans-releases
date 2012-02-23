@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.repository;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -144,12 +145,18 @@ public class NBRepositorySupport extends BugzillaRepository {
     private Repository createRepositoryIntern() {
         char[] password = NBBugzillaUtils.getNBPassword();
         final String username = NBBugzillaUtils.getNBUsername();
-        bugzillaRepository = new BugzillaRepository("NetbeansRepository" + System.currentTimeMillis(),       // NOI18N
-                                         NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"),      // NOI18N
-                                         NB_BUGZILLA_URL,
-                                         username,
-                                         password,
-                                         null, null); // NOI18N
+        String name = NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"); // NOI18N
+        RepositoryInfo info = new RepositoryInfo(
+                "NetbeansRepository" + System.currentTimeMillis(), // NOI18N
+                BugzillaConnector.ID, 
+                NB_BUGZILLA_URL, 
+                NbBundle.getMessage(NBRepositorySupport.class, "LBL_NBRepository"), // NOI18N
+                NbBundle.getMessage(NBRepositorySupport.class, "LBL_RepositoryTooltip", new Object[] {name, username, NB_BUGZILLA_URL}), // NOI18N
+                username, 
+                null, 
+                password, 
+                null);
+        bugzillaRepository = new BugzillaRepository(info); 
         return BugzillaUtil.getRepository(bugzillaRepository);
     }
 }
