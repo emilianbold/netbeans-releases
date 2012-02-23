@@ -50,6 +50,7 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -114,6 +115,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
                                 APIAccessor.IMPL.removed(repository);                                
+                                RepositoryRegistry.getInstance().removeRepository(repository);
                             }
                         });
                     }
