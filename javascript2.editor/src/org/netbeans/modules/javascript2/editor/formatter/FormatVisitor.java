@@ -304,7 +304,6 @@ public class FormatVisitor extends NodeVisitor {
         // put indentation mark after non white token
         FormatToken formatToken = getPreviousToken(getFinish(statement), null);
         if (formatToken != null && !isScript(block)) {
-            //formatToken = previousNonWhiteToken(getStart(block));
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
@@ -439,6 +438,7 @@ public class FormatVisitor extends NodeVisitor {
         }
         return null;
     }
+
     private FormatToken previousNonWhiteToken(int backstop) {
         Token ret = null;
         while (ts.movePrevious() && ts.offset() >= backstop) {
