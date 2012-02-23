@@ -112,6 +112,31 @@ public class NamedParameterElement extends ParameterElement {
     }
 
     /**
+     * Creates named parameter element.
+     * <p>
+     * Also do diagnostics on paramName if the parameter isn't optional and with default value.
+     * @param type type of the element
+     * @param paramName name of the parameter
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
+     */
+    public static NamedParameterElement createWithDiagnostics(Type type, Name paramName,
+            org.netbeans.modules.javascript2.editor.model.Types paramTypes, Description paramDescription) {
+        String name = paramName.getName();
+        boolean optional = name.matches("\\[\\S+\\]"); //NOI18N
+        String defaultValue = null;
+        if (optional) {
+            name = name.substring(1, name.length() - 1);
+            int indexOfEqual = name.indexOf("=");
+            if (indexOfEqual != -1) {
+                name = name.substring(0, indexOfEqual);
+                defaultValue = name.substring(indexOfEqual);
+            }
+        }
+        return new NamedParameterElement(type, new Name(name), paramTypes, paramDescription, optional, defaultValue);
+    }
+
+    /**
      * Gets name of the parameter.
      * @return parameter name
      */

@@ -121,7 +121,8 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return NamedParameterElement.create(elementType, new Name(name), new TypesImpl(types), new Description(desc));
+            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name),
+                    new TypesImpl(types), new Description(desc));
         } else {
             return UnnamedParameterElement.create(elementType, new TypesImpl(types), new Description(desc));
         }

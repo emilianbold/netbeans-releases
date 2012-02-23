@@ -62,13 +62,13 @@ public class JsDocModelTest extends JsDocTestBase {
     }
 
     /**
-     * The string should look like: <type>|<key1>=<value1>:<key2>=<value2>;<type>
+     * The string should look like: <type>||<key1>=<value1>:<key2>=<value2>;<type>
      */
     private static List<JsDocElement> parseExpected(String expected) {
         List<JsDocElement> elements = new ArrayList<JsDocElement>();
         String[] tags = expected.split("[;]+");
         for (String tag : tags) {
-            String[] tmp = tag.split("[|]+");
+            String[] tmp = tag.split("[|][|]");
             FakeJsDocElement element = new FakeJsDocElement(JsDocElement.Type.fromString(tmp[0]));
             if (tmp.length > 1) {
                 String[] keyValues = tmp[1].split("[:]+");
@@ -113,37 +113,37 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testContextSensitiveDescription() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line1;");
-        checkJsDocBlock(source, caretOffset, "contextSensitive|This could be description");
+        checkJsDocBlock(source, caretOffset, "contextSensitive||This could be description");
     }
 
     public void testArgument() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line2;");
-        checkJsDocBlock(source, caretOffset, "@argument|type=paramType:name=paramName:desc=paramDescription");
+        checkJsDocBlock(source, caretOffset, "@argument||type=paramType:name=paramName:desc=paramDescription");
     }
 
     public void testAugments() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line3;");
-        checkJsDocBlock(source, caretOffset, "@augments|type=otherClass");
+        checkJsDocBlock(source, caretOffset, "@augments||type=otherClass");
     }
 
     public void testAuthor() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line4;");
-        checkJsDocBlock(source, caretOffset, "@author|desc=Jackie Chan");
+        checkJsDocBlock(source, caretOffset, "@author||desc=Jackie Chan");
     }
 
     public void testBorrows() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line5;");
-        checkJsDocBlock(source, caretOffset, "@borrows|param1=otherMemberName:param2=thisMemberName");
+        checkJsDocBlock(source, caretOffset, "@borrows||param1=otherMemberName:param2=thisMemberName");
     }
 
     public void testClass() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line6;");
-        checkJsDocBlock(source, caretOffset, "@class|desc=description");
+        checkJsDocBlock(source, caretOffset, "@class||desc=description");
     }
 
     public void testConstant() throws Exception {
@@ -167,19 +167,19 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testDefault() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line10;");
-        checkJsDocBlock(source, caretOffset, "@default|desc=valueDescription");
+        checkJsDocBlock(source, caretOffset, "@default||desc=valueDescription");
     }
 
     public void testDeprecated() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line11;");
-        checkJsDocBlock(source, caretOffset, "@deprecated|desc=deprecatedDescription");
+        checkJsDocBlock(source, caretOffset, "@deprecated||desc=deprecatedDescription");
     }
 
     public void testDescription() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line12;");
-        checkJsDocBlock(source, caretOffset, "@description|desc=description");
+        checkJsDocBlock(source, caretOffset, "@description||desc=description");
     }
 
     public void testEvent() throws Exception {
@@ -191,13 +191,13 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testExample() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line14;");
-        checkJsDocBlock(source, caretOffset, "@example|desc=var bleeper");
+        checkJsDocBlock(source, caretOffset, "@example||desc=var bleeper");
     }
 
     public void testExtends() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line15;");
-        checkJsDocBlock(source, caretOffset, "@extends|type=otherClass");
+        checkJsDocBlock(source, caretOffset, "@extends||type=otherClass");
     }
 
     public void testField() throws Exception {
@@ -209,7 +209,7 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testFileOverview() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line17;");
-        checkJsDocBlock(source, caretOffset, "@fileOverview|desc=fileDescription");
+        checkJsDocBlock(source, caretOffset, "@fileOverview||desc=fileDescription");
     }
 
     public void testFunction() throws Exception {
@@ -233,31 +233,31 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testLends() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line21;");
-        checkJsDocBlock(source, caretOffset, "@lends|namepath=symbolAlias");
+        checkJsDocBlock(source, caretOffset, "@lends||namepath=symbolAlias");
     }
 
     public void testMemberOf() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line22;");
-        checkJsDocBlock(source, caretOffset, "@memberOf|namepath=parentNamepath");
+        checkJsDocBlock(source, caretOffset, "@memberOf||namepath=parentNamepath");
     }
 
     public void testName() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line23;");
-        checkJsDocBlock(source, caretOffset, "@name|namepath=theNamepath");
+        checkJsDocBlock(source, caretOffset, "@name||namepath=theNamepath");
     }
 
     public void testNamespace() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line24;");
-        checkJsDocBlock(source, caretOffset, "@namespace|desc=description");
+        checkJsDocBlock(source, caretOffset, "@namespace||desc=description");
     }
 
     public void testParam() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line25;");
-        checkJsDocBlock(source, caretOffset, "@param|type=paramType:name=paramName:desc=paramDescription");
+        checkJsDocBlock(source, caretOffset, "@param||type=paramType:name=paramName:desc=paramDescription");
     }
 
     public void testPrivate() throws Exception {
@@ -269,7 +269,7 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testProperty() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line27;");
-        checkJsDocBlock(source, caretOffset, "@property|type=propertyType:name=propertyName:desc=propertyDescription");
+        checkJsDocBlock(source, caretOffset, "@property||type=propertyType:name=propertyName:desc=propertyDescription");
     }
 
     public void testPublic() throws Exception {
@@ -281,31 +281,31 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testRequires() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line29;");
-        checkJsDocBlock(source, caretOffset, "@requires|desc=requireDescription");
+        checkJsDocBlock(source, caretOffset, "@requires||desc=requireDescription");
     }
 
     public void testReturn() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line30;");
-        checkJsDocBlock(source, caretOffset, "@return|type=returnType:desc=returnDescription");
+        checkJsDocBlock(source, caretOffset, "@return||type=returnType:desc=returnDescription");
     }
 
     public void testReturns() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line31;");
-        checkJsDocBlock(source, caretOffset, "@returns|type=returnType:desc=returnDescription");
+        checkJsDocBlock(source, caretOffset, "@returns||type=returnType:desc=returnDescription");
     }
 
     public void testSee() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line32;");
-        checkJsDocBlock(source, caretOffset, "@see|desc=seeDescription");
+        checkJsDocBlock(source, caretOffset, "@see||desc=seeDescription");
     }
 
     public void testSince() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line33;");
-        checkJsDocBlock(source, caretOffset, "@since|desc=versionDescription");
+        checkJsDocBlock(source, caretOffset, "@since||desc=versionDescription");
     }
 
     public void testStatic() throws Exception {
@@ -317,19 +317,43 @@ public class JsDocModelTest extends JsDocTestBase {
     public void testThrows() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line35;");
-        checkJsDocBlock(source, caretOffset, "@throws|type=exceptionType:desc=exceptionDescription");
+        checkJsDocBlock(source, caretOffset, "@throws||type=exceptionType:desc=exceptionDescription");
     }
 
     public void testType() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line36;");
-        checkJsDocBlock(source, caretOffset, "@type|type=typeName");
+        checkJsDocBlock(source, caretOffset, "@type||type=typeName");
     }
 
     public void testVersion() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
         final int caretOffset = getCaretOffset(source, "var ^line37;");
-        checkJsDocBlock(source, caretOffset, "@version|desc=versionDescription");
+        checkJsDocBlock(source, caretOffset, "@version||desc=versionDescription");
+    }
+
+     public void testParameterWithoutDesc() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        final int caretOffset = getCaretOffset(source, "function ^line1(userName){}");
+        checkJsDocBlock(source, caretOffset, "@param||type=String:name=userName");
+    }
+
+     public void testParameterWithMoreTypes() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        final int caretOffset = getCaretOffset(source, "function ^line2(product){}");
+        checkJsDocBlock(source, caretOffset, "@param||type=String|Number:name=product");
+    }
+
+     public void testParameterOptional() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        final int caretOffset = getCaretOffset(source, "function ^line3(accessLevel){}");
+        checkJsDocBlock(source, caretOffset, "@param||type=String:name=accessLevel:desc=accessLevel is optional");
+    }
+
+     public void testParameterOptionalWithDefault() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
+        final int caretOffset = getCaretOffset(source, "function ^line4(accessLevel){}");
+        checkJsDocBlock(source, caretOffset, "@param||type=String:name=accessLevel:desc=accessLevel is optional");
     }
 
     /**
@@ -430,7 +454,8 @@ public class JsDocModelTest extends JsDocTestBase {
         }
 
         public String getProperty(String key) {
-            return properties.get(key);
+            String property = properties.get(key);
+            return property == null ? "" : property;
         }
     }
 }
