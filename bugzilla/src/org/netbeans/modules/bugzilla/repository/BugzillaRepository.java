@@ -45,13 +45,17 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,6 +71,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -189,7 +194,8 @@ public class BugzillaRepository {
 
     public void remove() {
         Collection<BugzillaQuery> qs = getQueries();
-        for (BugzillaQuery q : qs) {
+        BugzillaQuery[] toRemove = qs.toArray(new BugzillaQuery[qs.size()]);
+        for (BugzillaQuery q : toRemove) {
             removeQuery(q);
         }
         resetRepository(true);
@@ -219,6 +225,7 @@ public class BugzillaRepository {
         }
     }
 
+    
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
         setTaskRepository(name, url, user, password, httpUser, httpPassword, localUserEnabled);
         String id = info != null ? info.getId() : name + System.currentTimeMillis();
@@ -387,7 +394,8 @@ public class BugzillaRepository {
         resetRepository(false);
     }
 
-    private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
+    protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
+
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
         String oldUser = c != null ? c.getUserName() : "";
@@ -395,6 +403,7 @@ public class BugzillaRepository {
 
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
         resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(new String(password))); // XXX reset the configuration only if the host changed
+                                                                                                     //     on psswd and user change reset only taskrepository
     }
 
     static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {

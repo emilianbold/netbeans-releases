@@ -249,7 +249,8 @@ public class JiraRepository {
     public void remove() {
         synchronized(QUERIES_LOCK) {
             Set<JiraQuery> qs = getQueriesIntern();
-            for (JiraQuery q : qs) {
+            JiraQuery[] toRemove = qs.toArray(new JiraQuery[qs.size()]);
+            for (JiraQuery q : toRemove) {
                 removeQuery(q);
             }
         }
