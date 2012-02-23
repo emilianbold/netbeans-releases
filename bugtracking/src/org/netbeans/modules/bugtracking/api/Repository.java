@@ -285,8 +285,10 @@ public final class Repository {
     private HashMap<String, Object> createAttributesMap () {
         HashMap<String, Object> attributes = new HashMap<String, Object>(2);
         // XXX add more if requested
-        attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
-        attributes.put(ATTRIBUTE_URL, getUrl());
+        if(bind.getInfo() != null) {
+            attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
+            attributes.put(ATTRIBUTE_URL, getUrl());
+        }
         return attributes;
     }    
     
