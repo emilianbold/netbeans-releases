@@ -172,22 +172,19 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
     }
     
     private void writeJavaExecutablePath(final Progress progress) throws InstallationException {
-        Product javemeProduct = getProduct();
-        String javamesdkDirName = javemeProduct.getProperty("javamesdk.directory");
-        List <Product> products = Registry.getInstance().getProducts();
-        Product javaseProduct = null;
+        Product javameProduct = getProduct();
+        String javamesdkDirName = javameProduct.getProperty("javamesdk.directory");
+        List <Product> products = Registry.getInstance().getProducts("nb-base"); // NOI18N
+        String jdkHomePath = null;
+        File installLocation = javameProduct.getInstallationLocation();
         for (Product p : products) {
-            if(p.getUid().equals("nb-base") ) {
-                javaseProduct = p;
-                break;
+            if(installLocation.equals(p.getInstallationLocation())) {
+                jdkHomePath = p.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
+                if (jdkHomePath != null) {
+                    break;
+                }
             }
         }
-        if (javaseProduct == null) {
-            LogManager.log("Cannot write JDK in ME SDK because 'nb-base' is not present.");
-            return ;
-        }
-        File installLocation = javemeProduct.getInstallationLocation();
-        String jdkHomePath = javaseProduct.getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY);
         if (jdkHomePath == null) {
             LogManager.log("Cannot write JDK in ME SDK because jdkHomePath is null.");
             return ;
@@ -205,10 +202,9 @@ public class ConfigurationLogic extends NbClusterConfigurationLogic {
             LogManager.log("... path    : " + jdkHome);
             LogManager.log("... location    : " + javamesdkDir);
 
-            String correctJavaHome = StringUtils.escapeRegExp(jdkHome.getAbsolutePath());
             File javeConf = new File(javamesdkDir, "java"); // NOI18N
-            FileUtils.writeFile(javeConf, correctJavaHome);
-            javemeProduct.getInstalledFiles().add(javeConf);
+            FileUtils.writeFile(javeConf, jdkHome.getAbsolutePath());
+            javameProduct.getInstalledFiles().add(javeConf);
         } catch (IOException e) {
             throw new InstallationException(
                     getString("CL.error.write.java.me.sdk"), // NOI18N
