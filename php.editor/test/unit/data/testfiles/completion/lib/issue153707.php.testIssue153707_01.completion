@@ -3,6 +3,7 @@ echo "class property: |$this->name\n";
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 PACKAGE    Bar                             [PUBLIC]   null
 PACKAGE    Brite                           [PUBLIC]   null
@@ -81,6 +82,7 @@ CLASS      A                               [PUBLIC]   test.php
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin
+CLASS      AdminPresenter                  [PUBLIC,   AdminModule
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
@@ -91,6 +93,7 @@ CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
 CLASS      BaseClass                       [PUBLIC]   traits.php
+CLASS      BasePresenter                   [PUBLIC]   issue208784.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
 CLASS      Blah                            [PUBLIC]   Testing\Ns
 CLASS      Book                            [PUBLIC]   issue197453.php
@@ -175,6 +178,7 @@ CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php
 CLASS      NewClass                        [PUBLIC]   issue171232_01.php
 CLASS      NewClass                        [PUBLIC]   issue171232_02.php
 CLASS      ObjectTracker                   [PUBLIC]   test204908.php
+CLASS      PagePresenter                   [PUBLIC]   AdminModule
 CLASS      ParentClass                     [PUBLIC]   class_member_visibility.php
 CLASS      ParentInterface                 [PUBLIC]   interfaces.php
 CLASS      Person148213                    [PUBLIC]   issue148213.php
@@ -183,6 +187,7 @@ CLASS      PhpDoc01News                    [PUBLIC]   typeInPHPDoc01.php
 CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
 CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
+CLASS      SecuredPresenter                [PUBLIC]   AdminModule
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils
