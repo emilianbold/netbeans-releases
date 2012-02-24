@@ -121,7 +121,6 @@ public final class SyncPanel extends JPanel {
         tableModel = new FileTableModel(items);
 
         initComponents();
-        setPreferredSize(new Dimension(600, 450));
         initTable();
         initOperationButtons();
         initDiffButton();
