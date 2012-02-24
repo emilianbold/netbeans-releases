@@ -179,7 +179,7 @@ public abstract class CatalogRepoProvider implements ArchetypeProvider {
     // one day period for updating downloaded/cached archetype catalogs
     private static final long ARCHETYPE_TIMEOUT = 1000 * 60 * 60 * 24; // * 7;
     
-    @ServiceProvider(service=ArchetypeProvider.class, position=300)
+    @ServiceProvider(service=ArchetypeProvider.class, position=50) //has to come before the localCatalogProvider one..
     public static class RemoteCatalogProvider implements ArchetypeProvider {
 
         @Override
