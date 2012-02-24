@@ -77,7 +77,7 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     public void testSignleThread() throws Exception {
 
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
+        String dataPath = convertToModelImplDataDir("repository");
 
         String unit = "FilesAccessStrategyTestUnit";
 
@@ -113,13 +113,15 @@ public class FilesAccessStrategyTest extends ModelImplBaseTestCase {
 
     private void notifyBarrier() {
         synchronized (barrier) {
+            if (TRACE) {
+                System.out.printf("notifyBarrier\n");
+            }            
             barrier.notifyAll();
         }
     }
 
     public void testMultyThread() throws Exception {
-
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
+        String dataPath = convertToModelImplDataDir("repository");
         dataPath = dataPath+"/org"; //NOI18N
 
         String[] units = new String[]{
