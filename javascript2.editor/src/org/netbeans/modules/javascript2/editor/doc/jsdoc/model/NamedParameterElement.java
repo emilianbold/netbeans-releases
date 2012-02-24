@@ -123,7 +123,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
     public static NamedParameterElement createWithDiagnostics(Type type, Name paramName,
             org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
         String name = paramName.getName();
-        boolean optional = name.matches("\\[\\S+\\]"); //NOI18N
+        boolean optional = name.matches("\\[.*\\]"); //NOI18N
         String defaultValue = null;
         if (optional) {
             name = name.substring(1, name.length() - 1);
