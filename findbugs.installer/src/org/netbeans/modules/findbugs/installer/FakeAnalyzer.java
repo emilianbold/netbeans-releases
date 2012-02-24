@@ -67,12 +67,7 @@ public class FakeAnalyzer implements Analyzer {
     }
 
     @Override
-    public String getDisplayName4Id(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public String getCategoryId4WarningId(String id) {
+    public WarningDescription getWarningDescription(String id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
