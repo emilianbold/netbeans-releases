@@ -53,13 +53,12 @@ import org.openide.util.HelpCtx;
  * <div class="nonnormative">
  *   <p>Example:</p>
  *   <pre>
- * {@code
  * // use annotation to register this provider
- * [at]ServiceProvider(service = SearchProvider.class)
+ * {@code @}ServiceProvider(service = SearchProvider.class)
  * public class ExampleSearchProvider extends SearchProvider {
  *
  *   // Create presenter
- *   public Presenter ExamplePresenter(boolean replaceMode) {
+ *   public Presenter createPresenter(boolean replaceMode) {
  *       return new BasicSearchPresenter(replaceMode);
  *   }
  *
@@ -67,18 +66,20 @@ import org.openide.util.HelpCtx;
  *   public boolean isReplaceSupported() {
  *       return true;
  *   }
- *
  *   
  *   // This search provider is always enabled.
  *   public boolean isEnabled() {
  *       return true; // could be disabled on some platforms
  *   }
- * }}</pre>
+ * }</pre>
  * </div>
  *
  * @author jhavlin
  */
 public abstract class SearchProvider {
+
+    /** Constructor for subclasses. */
+    protected SearchProvider() {}
 
     /**
      * Create presenter for this search provider.
@@ -127,7 +128,7 @@ public abstract class SearchProvider {
      *   BasicSearchForm form = null;
      *   private boolean replacing;
      *
-     *   public BasicSearchPresenter(boolean replacing) {
+     *   public ExampleSearchPresenter(boolean replacing) {
      *       this.replacing = replacing;
      *   }
 
@@ -139,7 +140,7 @@ public abstract class SearchProvider {
      *       return form;
      *   }
      *
-     *   public SearchComposition&lt;Def&gt; composeSearch() {
+     *   public SearchComposition<Def> composeSearch() {
      *       // here create a new search composition appropriate for settings 
      *       // specified in the form.
      *   }
@@ -160,6 +161,9 @@ public abstract class SearchProvider {
      * </div>
      */
     public static abstract class Presenter {
+
+        /** Constructor for subclasses. */
+        protected Presenter() {}
 
         /**
          * Returns a new JComponent that contains controls for setting search
