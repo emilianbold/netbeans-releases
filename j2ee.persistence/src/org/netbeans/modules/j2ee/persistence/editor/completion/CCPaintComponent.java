@@ -46,6 +46,7 @@ public class CCPaintComponent extends JPanel {
     static final String COLUMN_ICON = "org/netbeans/modules/j2ee/persistence/editor/completion/resources/column.gif"; //NOI18N
     static final String TABLE_ICON = "org/netbeans/modules/j2ee/persistence/editor/completion/resources/table.gif"; //NOI18
     static final String NOCONNECTION_ICON = "org/netbeans/modules/j2ee/persistence/editor/completion/resources/connectionDisconnected.gif"; //NOI18
+    static final String CONNECTION_ICON = "org/netbeans/modules/j2ee/persistence/ui/resources/connection.gif"; //NOI18
     static final String PU_ICON = "org/netbeans/modules/j2ee/persistence/ui/resources/EntityNodeIcon.gif"; //NOI18
     
     private static final int ICON_WIDTH = 16;
@@ -375,6 +376,15 @@ public class CCPaintComponent extends JPanel {
         protected void draw(Graphics g){
             drawIcon(g, new ImageIcon(Utilities.loadImage(NOCONNECTION_ICON)));
             drawString(g, NbBundle.getMessage(CCPaintComponent.class, "LBL_ConnectToDatabase"), Color.RED, getDrawFont().deriveFont(Font.BOLD), false);
+        }
+
+    }
+    public static final class AddConnectionItemPaintComponent extends NbStringPaintComponent {
+        
+        @Override
+        protected void draw(Graphics g){
+            drawIcon(g, new ImageIcon(Utilities.loadImage(CONNECTION_ICON)));
+            drawString(g, NbBundle.getMessage(CCPaintComponent.class, "LBL_AddConnection"), Color.BLACK, getDrawFont().deriveFont(Font.BOLD), false);
         }
 
     }

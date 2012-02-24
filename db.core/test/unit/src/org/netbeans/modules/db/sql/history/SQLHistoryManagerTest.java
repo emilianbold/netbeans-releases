@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,14 +41,10 @@
  */
 package org.netbeans.modules.db.sql.history;
 
-import java.io.File;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
+import java.util.Date;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -62,8 +58,10 @@ import org.openide.util.Exceptions;
  * @author John Baker
  */
 public class SQLHistoryManagerTest extends NbTestCase {
+
     public static final String SQL_HISTORY_FOLDER = "Databases/SQLHISTORY"; // NOI18N
     public static final String SQL_HISTORY_FILE_NAME = "sql_history.xml";  // NOI18N
+
     /** Default constructor.
      * @param testName name of particular test case
      */
@@ -107,107 +105,51 @@ public class SQLHistoryManagerTest extends NbTestCase {
     }
     
     public void testUpdateListRemoveEqualNumber() {
-        try {
-            FileObject root = FileUtil.toFileObject(getWorkDir());
-            // Create a list of SQL statements
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            // Save SQL
-            SQLHistoryManager.getInstance().save(root);
-            String historyFileRootPath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFileRootPath));
-            String historyFilePath = historyFileRootPath + File.separator + SQL_HISTORY_FILE_NAME;
-            // Limit to 2 SQL statements
-            SQLHistoryManager.getInstance().updateList(2, historyFilePath , historyFileObject);
-            assertEquals(0, SQLHistoryManager.getInstance().getSQLHistory().size());
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// derby", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().setListSize(2);
+        assertEquals(2, SQLHistoryManager.getInstance().getSQLHistory().size());
     }
     
     public void testUpdateListRemoveLessNumber3() {
-        try {
-            FileObject root = FileUtil.toFileObject(getWorkDir());
+        SQLHistoryManager.getInstance().setListSize(100);
+        SQLHistoryManager.getInstance().getSQLHistory().clear();
             // Create a list of SQL statements
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIPTYPE", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.PERSON", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT"))); 
-            assertEquals(5, SQLHistoryManager.getInstance().getSQLHistory().size());
-            // Save SQL
-            SQLHistoryManager.getInstance().save(root);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = root.getFileObject(SQL_HISTORY_FOLDER);
-            // Limit to 3 SQL statements
-            SQLHistoryPersistenceManager.getInstance().updateSQLSaved(3, historyFileObject);
-            assertEquals(3, SQLHistoryPersistenceManager.getInstance().retrieve(historyFileObject).size());
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// derby", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres", "select * from TRAVEL.TRIPTYPE", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres", "select * from TRAVEL.PERSON", new Date()));
+        assertEquals(4, SQLHistoryManager.getInstance().getSQLHistory().size());
+        SQLHistoryManager.getInstance().setListSize(3);
+        assertEquals(3, SQLHistoryManager.getInstance().getSQLHistory().size());
     }
     
     public void testUpdateListRemoveLessNumber1() {
-        try {
-            FileObject root = FileUtil.toFileObject(getWorkDir());
+        SQLHistoryManager.getInstance().setListSize(100);
+        SQLHistoryManager.getInstance().getSQLHistory().clear();
             // Create a list of SQL statements
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres1", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres2", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres3", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres4", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT"))); 
-            // Save SQL
-            SQLHistoryManager.getInstance().save(root);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFilePath));
-            // Limit to 1 SQL statement
-            SQLHistoryManager.getInstance().updateList(1, historyFilePath , historyFileObject);
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// derby", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres1", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres2", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres3", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres4", "select * from TRAVEL.TRIP", new Date()));
+        assertEquals(5, SQLHistoryManager.getInstance().getSQLHistory().size());
+        SQLHistoryManager.getInstance().setListSize(1);
             assertEquals(1, SQLHistoryManager.getInstance().getSQLHistory().size());      
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
     
       public void testUpdateListRemoveAll() {
-        try {
-            FileObject root = FileUtil.toFileObject(getWorkDir());
+        SQLHistoryManager.getInstance().setListSize(100);
+        SQLHistoryManager.getInstance().getSQLHistory().clear();
             // Create a list of SQL statements
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres1", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres2", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres3", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:5 PM, PDT")));
-            SQLHistoryManager.getInstance().saveSQL(new SQLHistory("jdbc:// postgres4", "select * from TRAVEL.TRIP", DateFormat.getInstance().parse("07/10/96 4:6 PM, PDT"))); 
-             // Save SQL
-            SQLHistoryManager.getInstance().save(root);
-            String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + "Databases" + File.separator + "SQLHISTORY";
-            FileObject historyFileObject = FileUtil.toFileObject(new File(historyFilePath));            
-            // Limit to 0 SQL statements
-            SQLHistoryManager.getInstance().updateList(0, historyFilePath, historyFileObject);
-            SQLHistoryPersistenceManager.getInstance().updateSQLSaved(0, historyFileObject);
-            assertEquals(0, SQLHistoryPersistenceManager.getInstance().retrieve(historyFileObject).size());                        
-        } catch (SQLHistoryException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }  catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// derby", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres1", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres2", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres3", "select * from TRAVEL.TRIP", new Date()));
+        SQLHistoryManager.getInstance().saveSQL(new SQLHistoryEntry("jdbc:// postgres4", "select * from TRAVEL.TRIP", new Date()));
+        assertEquals(5, SQLHistoryManager.getInstance().getSQLHistory().size());
+        SQLHistoryManager.getInstance().setListSize(0);
+        assertEquals(0, SQLHistoryManager.getInstance().getSQLHistory().size());
     }
-    
 }

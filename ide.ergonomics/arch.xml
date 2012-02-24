@@ -631,13 +631,6 @@ Microsystems, Inc. All Rights Reserved.
       </api>
     </li>
     <li>
-        <api name="org.netbeans.modules.ide.ergonomics.noparse" category="private" group="systemproperty" type="export">
-        To measure how much overhead ergonomics adds to regular start, one
-        can disable XML parsing and by setting this property to true:
-        -Dorg.netbeans.modules.ide.ergonomics.noparse=true
-        </api>
-    </li>
-    <li>
         <api name="FeaturesOnDemand-Proxy-Layer" category="devel" group="property" type="export">
         A module can prevent processing of its own layer file(s) by adding
         <pre>

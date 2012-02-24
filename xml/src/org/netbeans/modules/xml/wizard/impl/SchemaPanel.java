@@ -376,12 +376,15 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                         //we have to add some dummy element since there are no roots
                         row.add(noRoot);
                     }
-                
-                    String pre = generateUniquePrefix();
-                    obj.setPrefix(pre);
-                    //keep track of unique prefixes
-                    //addPrefix(pre);
-                    row.add(pre);
+                    if (null != info.namespace) {
+                        String pre = generateUniquePrefix();
+                        obj.setPrefix(pre);
+                        //keep track of unique prefixes
+                        //addPrefix(pre);
+                        row.add(pre);
+                    } else {
+                        row.add(null);
+                    }
                     tableModel.addRow(0,row);
                }
                schemaTable.addNotify();
@@ -566,6 +569,8 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             if(col == SCHEMA_COL){
                 SchemaObject val = (SchemaObject)obj.get(col);
                 return val;
+            } else if (col == PREFIX_COL) {
+                return obj.get(col) == null ? NbBundle.getMessage(SchemaPanel.class, "LBL_NoPrefix") : obj.get(col);
             } else {            
                 return obj.get(col);
             }
@@ -585,6 +590,9 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     return false;
                 else
                     return true;
+            } else if (col == PREFIX_COL) {
+                SchemaObject s = (SchemaObject)getValueAt(row,SCHEMA_COL); 
+                return s.getNamespace() != null;
             }   else
                 return true;
          

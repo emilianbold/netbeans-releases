@@ -488,6 +488,19 @@ public abstract class WindowManager extends Object implements Serializable {
     }
 
     /**
+     * Notifies the user that some process is running in the given TopComponent,
+     * for example by drawing an animated "wait" icon in TopComponent's header.<br>
+     * The default implementation does nothing.
+     *
+     * @param tc
+     * @param busy True to start 'busy' notification, false to stop it.
+     *
+     * @since 6.51
+     */
+    protected void topComponentMakeBusy( TopComponent tc, boolean busy ) {
+    }
+
+    /**
      * Attempts to bring the parent <code>Window</code> of the given <code>TopComponent</code>
      * to front of other windows.
      * @see java.awt.Window#toFront()

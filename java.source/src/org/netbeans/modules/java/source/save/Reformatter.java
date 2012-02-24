@@ -54,6 +54,7 @@ import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.CodeStyle.WrapStyle;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -136,7 +137,9 @@ public class Reformatter implements ReformatTask {
                 return;
             }
         }
-        CodeStyle cs = CodeStyle.getDefault(doc);
+        CodeStyle cs = (CodeStyle) doc.getProperty(CodeStyle.class);
+        if (cs == null)
+            cs = CodeStyle.getDefault(doc);
         List<Context.Region> indentRegions = context.indentRegions();
         Collections.reverse(indentRegions);
         for (Context.Region region : indentRegions)
@@ -426,6 +429,7 @@ public class Reformatter implements ReformatTask {
         private int tpLevel;
         private boolean eof = false;
         private boolean bof = false;
+        private boolean insideAnnotation = false;
 
         private Pretty(CompilationInfo info, TreePath path, CodeStyle cs, int startOffset, int endOffset, boolean templateEdit) {
             this(info.getText(), info.getTokenHierarchy().tokenSequence(JavaTokenId.language()),
@@ -727,7 +731,7 @@ public class Reformatter implements ReformatTask {
             } else {
                 if (!cs.indentTopLevelClassMembers())
                     indent = old;
-                blankLines(cs.getBlankLinesAfterClassHeader());
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
                 boolean first = true;
                 boolean semiRead = false;
@@ -1120,7 +1124,10 @@ public class Reformatter implements ReformatTask {
             accept(LPAREN);
             if (args != null && !args.isEmpty()) {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
+                boolean oldInsideAnnotation = insideAnnotation;
+                insideAnnotation = true;
                 wrapList(cs.wrapAnnotationArgs(), cs.alignMultilineAnnotationArgs(), false, COMMA, args);
+                insideAnnotation = oldInsideAnnotation;
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
@@ -1453,61 +1460,53 @@ public class Reformatter implements ReformatTask {
             if (ms.getKind() == Tree.Kind.MEMBER_SELECT) {
                 ExpressionTree exp = ((MemberSelectTree)ms).getExpression();
                 scan(exp, p);
-                accept(DOT);
-                List<? extends Tree> targs = node.getTypeArguments();
-                if (targs != null && !targs.isEmpty()) {
-                    if (LT == accept(LT))
-                        tpLevel++;
-                    for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
-                        Tree targ = it.next();
-                        scan(targ, p);
-                        if (it.hasNext()) {
-                            spaces(cs.spaceBeforeComma() ? 1 : 0);
-                            accept(COMMA);
-                            spaces(cs.spaceAfterComma() ? 1 : 0);
+                WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
+                if (wrapStyle == WrapStyle.WRAP_ALWAYS && exp.getKind() != Tree.Kind.METHOD_INVOCATION)
+                    wrapStyle = WrapStyle.WRAP_IF_LONG;
+                switch (wrapStyle) {
+                    case WRAP_ALWAYS:
+                        if (cs.wrapAfterDotInChainedMethodCalls()) {
+                            accept(DOT);
+                            newline();
+                        } else {
+                            newline();
+                            accept(DOT);
                         }
-                    }
-                    JavaTokenId accepted;
-                    if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
-                        switch (accepted) {
-                            case GTGTGT:
-                                tpLevel -= 3;
-                                break;
-                            case GTGT:
-                                tpLevel -= 2;
-                                break;
-                            case GT:
-                                tpLevel--;
-                                break;
+                        scanMethodCall(node);
+                        break;
+                    case WRAP_IF_LONG:
+                        int index = tokens.index();
+                        int c = col;
+                        Diff d = diffs.isEmpty() ? null : diffs.getFirst();
+                        boolean oldCheckWrap = checkWrap;
+                        checkWrap = true;
+                        try {
+                            accept(DOT);
+                            scanMethodCall(node);
+                        } catch (WrapAbort wa) {
+                        } finally {
+                            checkWrap = oldCheckWrap;
                         }
-                    }
-                }
-                CodeStyle.WrapStyle wrapStyle = cs.wrapChainedMethodCalls();
-                if(exp.getKind() == Tree.Kind.METHOD_INVOCATION) {
-                    wrapToken(wrapStyle, -1, 0, IDENTIFIER, THIS, SUPER);
-                } else {
-                    int index = tokens.index();
-                    int c = col;
-                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    accept(IDENTIFIER, THIS, SUPER);
-                    if (wrapStyle != CodeStyle.WrapStyle.WRAP_NEVER && col > rightMargin && c > indent) {
-                        rollback(index, c, d);
-                        newline();
-                        accept(IDENTIFIER, THIS, SUPER);
-                    }
+                        if (col > rightMargin) {
+                            rollback(index, c, d);
+                            if (cs.wrapAfterDotInChainedMethodCalls()) {
+                                accept(DOT);
+                                newline();
+                            } else {
+                                newline();
+                                accept(DOT);
+                            }
+                            scanMethodCall(node);
+                        }
+                        break;
+                    case WRAP_NEVER:
+                        accept(DOT);
+                        scanMethodCall(node);
+                        break;
                 }
             } else {
-                scan(node.getMethodSelect(), p);
+                scanMethodCall(node);
             }
-            spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);
-            accept(LPAREN);
-            List<? extends ExpressionTree> args = node.getArguments();
-            if (args != null && !args.isEmpty()) {
-                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
-                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
-                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
-            }
-            accept(RPAREN);
             return true;
         }
 
@@ -1996,18 +1995,19 @@ public class Reformatter implements ReformatTask {
             int alignIndent = cs.alignMultilineAssignment() ? col : -1;
             boolean b = scan(node.getVariable(), p);
             if (b || getCurrentPath().getParentPath().getLeaf().getKind() != Tree.Kind.ANNOTATION) {
-                spaces(cs.spaceAroundAssignOps() ? 1 : 0);
+                boolean spaceAroundAssignOps = insideAnnotation ? cs.spaceAroundAnnotationValueAssignOps() : cs.spaceAroundAssignOps();
+                spaces(spaceAroundAssignOps ? 1 : 0);
                 accept(EQ);
                 ExpressionTree expr = node.getExpression();
                 if (expr.getKind() == Tree.Kind.NEW_ARRAY && ((NewArrayTree)expr).getType() == null) {
                     if (cs.getOtherBracePlacement() == CodeStyle.BracePlacement.SAME_LINE)
-                        spaces(cs.spaceAroundAssignOps() ? 1 : 0);
+                        spaces(spaceAroundAssignOps ? 1 : 0);
                     scan(expr, p);
                 } else {
                     if (wrapAnnotation && expr.getKind() == Tree.Kind.ANNOTATION) {
-                        wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, cs.spaceAroundAssignOps() ? 1 : 0, expr);
+                        wrapTree(CodeStyle.WrapStyle.WRAP_ALWAYS, alignIndent, spaceAroundAssignOps ? 1 : 0, expr);
                     } else {
-                        wrapTree(cs.wrapAssignOps(), alignIndent, cs.spaceAroundAssignOps() ? 1 : 0, expr);
+                        wrapTree(cs.wrapAssignOps(), alignIndent, spaceAroundAssignOps ? 1 : 0, expr);
                     }
                 }
             } else {
@@ -3005,6 +3005,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
                         if (alignIndent >= 0)
@@ -3015,7 +3016,7 @@ public class Reformatter implements ReformatTask {
                         accept(first, rest);
                     } catch (WrapAbort wa) {
                     } finally {
-                        checkWrap = false;
+                        checkWrap = oldCheckWrap;
                     }
                     if (this.col > rightMargin) {
                         rollback(index, c, d);
@@ -3056,6 +3057,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
                         if (alignIndent >= 0)
@@ -3066,7 +3068,7 @@ public class Reformatter implements ReformatTask {
                         scan(tree, null);
                     } catch (WrapAbort wa) {
                     } finally {
-                        checkWrap = false;
+                        checkWrap = oldCheckWrap;
                     }
                     if (col > rightMargin) {
                         rollback(index, c, d);
@@ -3114,6 +3116,7 @@ public class Reformatter implements ReformatTask {
                     int c = col;
                     Diff d = diffs.isEmpty() ? null : diffs.getFirst();
                     old = indent;
+                    boolean oldCheckWrap = checkWrap;
                     checkWrap = true;
                     try {
                         if (alignIndent >= 0)
@@ -3131,7 +3134,7 @@ public class Reformatter implements ReformatTask {
                         scan(tree, null);
                     } catch (WrapAbort wa) {
                     } finally {
-                        checkWrap = false;
+                        checkWrap = oldCheckWrap;
                     }
                     if (col > rightMargin) {
                         rollback(index, c, d);
@@ -3291,6 +3294,47 @@ public class Reformatter implements ReformatTask {
                     accept(separator);
                 }
             }
+        }
+        
+        private void scanMethodCall(MethodInvocationTree node) {
+            List<? extends Tree> targs = node.getTypeArguments();
+            if (targs != null && !targs.isEmpty()) {
+                if (LT == accept(LT))
+                    tpLevel++;
+                for (Iterator<? extends Tree> it = targs.iterator(); it.hasNext();) {
+                    Tree targ = it.next();
+                    scan(targ, null);
+                    if (it.hasNext()) {
+                        spaces(cs.spaceBeforeComma() ? 1 : 0);
+                        accept(COMMA);
+                        spaces(cs.spaceAfterComma() ? 1 : 0);
+                    }
+                }
+                JavaTokenId accepted;
+                if (tpLevel > 0 && (accepted = accept(GT, GTGT, GTGTGT)) != null) {
+                    switch (accepted) {
+                        case GTGTGT:
+                            tpLevel -= 3;
+                            break;
+                        case GTGT:
+                            tpLevel -= 2;
+                            break;
+                        case GT:
+                            tpLevel--;
+                            break;
+                    }
+                }
+            }
+            accept(IDENTIFIER, THIS, SUPER);
+            spaces(cs.spaceBeforeMethodCallParen() ? 1 : 0);
+            accept(LPAREN);
+            List<? extends ExpressionTree> args = node.getArguments();
+            if (args != null && !args.isEmpty()) {
+                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0, true);
+                wrapList(cs.wrapMethodCallArgs(), cs.alignMultilineCallArgs(), false, COMMA, args);
+                spaces(cs.spaceWithinMethodCallParens() ? 1 : 0);            
+            }
+            accept(RPAREN);
         }
         
         private void reformatComment() {

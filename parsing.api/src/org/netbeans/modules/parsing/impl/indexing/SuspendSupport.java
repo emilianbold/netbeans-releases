@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,22 +54,41 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-final class SuspendSupport implements SuspendStatus {
+public final class SuspendSupport {
 
     private static final Logger LOG = Logger.getLogger(SuspendSupport.class.getName());
     private static final boolean NO_SUSPEND = Boolean.getBoolean("SuspendSupport.disabled");    //NOI18N
 
     private final RequestProcessor worker;
     private final Object lock = new Object();
+    private final ThreadLocal<Boolean> ignoreSuspend = new ThreadLocal<Boolean>();
+    private final SuspendStatus suspendStatus = SPIAccessor.getInstance().createSuspendStatus(new DefaultImpl());
     //@GuardedBy("lock")
     private int suspedDepth;
+    
+    public static final SuspendStatus NOP = SPIAccessor.getInstance().createSuspendStatus(new NopImpl());
 
+    
+    @NonNull
+    public SuspendStatus getSuspendStatus() {
+        return suspendStatus;
+    }
+    
+    public static interface SuspendStatusImpl {
+        public boolean isSuspended();
+        public void parkWhileSuspended() throws InterruptedException;
+    }
+    
+    
+    
+//-- Package private --
+    
     SuspendSupport(@NonNull final RequestProcessor rp) {
         Parameters.notNull("rp", rp);   //NOI18N
         this.worker = rp;
     }
 
-    public void suspend() {
+    void suspend() {
         if (NO_SUSPEND) {
             return;
         }
@@ -86,7 +106,7 @@ final class SuspendSupport implements SuspendStatus {
         }
     }
 
-    public void resume() {
+    void resume() {
         if (NO_SUSPEND) {
             return;
         }
@@ -102,25 +122,52 @@ final class SuspendSupport implements SuspendStatus {
             }
         }
     }
-
-    @Override
-    public boolean isSuspended() {
-        synchronized(lock) {
-            return suspedDepth > 0;
+    
+    void runWithNoSuspend(final Runnable work) {
+        ignoreSuspend.set(Boolean.TRUE);
+        try {
+            work.run();
+        } finally {
+            ignoreSuspend.remove();
         }
     }
-
-    @Override
-    public void parkWhileSuspended() throws InterruptedException {
-        synchronized(lock) {
-            boolean parked = false;
-            while (suspedDepth > 0) {
-                LOG.fine("PARK");   //NOI18N
-                lock.wait();
-                parked = true;
+    
+    private static final class NopImpl implements SuspendStatusImpl {
+        @Override
+        public boolean isSuspended() {
+            return false;
+        }
+        @Override
+        public void parkWhileSuspended() throws InterruptedException {
+        }
+    }
+    
+    private final class DefaultImpl implements SuspendStatusImpl {
+        @Override
+        public boolean isSuspended() {
+            if (ignoreSuspend.get() == Boolean.TRUE) {
+                return false;
             }
-            if (LOG.isLoggable(Level.FINE) && parked) {
-                LOG.fine("UNPARK");   //NOI18N
+            synchronized(lock) {
+                return suspedDepth > 0;
+            }
+        }
+
+        @Override
+        public void parkWhileSuspended() throws InterruptedException {
+            if (ignoreSuspend.get() == Boolean.TRUE) {
+                return;
+            }
+            synchronized(lock) {
+                boolean parked = false;
+                while (suspedDepth > 0) {
+                    LOG.fine("PARK");   //NOI18N
+                    lock.wait();
+                    parked = true;
+                }
+                if (LOG.isLoggable(Level.FINE) && parked) {
+                    LOG.fine("UNPARK");   //NOI18N
+                }
             }
         }
     }

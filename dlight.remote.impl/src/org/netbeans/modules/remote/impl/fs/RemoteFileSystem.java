@@ -64,8 +64,11 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -98,7 +101,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static final String READONLY_ATTRIBUTES = "readOnlyAttrs"; //NOI18N
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
-    private final RootFileObject root;
+    private final RemoteFileObject root;
+    private final RemoteDirectory rootDelegate;
     private final RemoteFileSupport remoteFileSupport;
     private final RefreshManager refreshManager;
     private final File cache;
@@ -113,6 +117,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<FileSystemProblemListener>();
     transient private final StatusImpl status = new StatusImpl();
+    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -130,7 +135,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (!cache.exists() && !cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
         }
-        this.root = new RootFileObject(this, execEnv, cache); // NOI18N
+        this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
@@ -249,24 +254,67 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     }
 
     @Override
-    public RemoteDirectory getRoot() {
+    public RemoteFileObject getRoot() {
         return root;
     }
 
     @Override
-    public RemoteFileObjectBase findResource(String name) {
+    public RemoteFileObject findResource(String name) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot();
         } else {
             return getRoot().getFileObject(name);
         }
     }
+
+    @Override
+    public FileObject getTempFolder() throws IOException {
+        try {
+            String tmpName = HostInfoUtils.getHostInfo(execEnv).getTempDir();
+            RemoteFileObject tmpDir = findResource(tmpName);
+            if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
+                return tmpDir;
+            }
+        } catch (CancellationException ex) {
+            //
+        }
+        throw new IOException("Cannot find temporary folder"); // NOI18N
+    }
+    
+    @Override
+    public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        if (parent.isFolder() && parent.isValid()) {
+            while(true) {
+                File tmpFile = File.createTempFile(prefix, suffix);
+                String tmpName = tmpFile.getName();
+                tmpFile.delete();
+                try {
+                    FileObject fo = parent.createData(tmpName);
+                    if (fo != null && fo.isData() && fo.isValid()) {
+                        if (deleteOnExit) {
+                            addDeleteOnExit(fo.getPath());
+                        }
+                        return fo;
+                    }
+                    break;   
+                } catch (IOException ex) {
+                    FileObject test = parent.getFileObject(tmpName);
+                    if (test != null) {
+                        continue;
+                    }
+                    throw ex;
+                }
+            }
+        }
+        throw new IOException("Cannot create temporary file"); // NOI18N
+    }
     
     /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
-            return getRoot();
+            return getRoot().getImplementor();
         } else {
-            return getRoot().getFileObject(name, antiloop);
+            RemoteFileObject fo = rootDelegate.getFileObject(name, antiloop);
+            return (fo == null) ? null : fo.getImplementor();
         }
     }
     
@@ -320,10 +368,10 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
         if (hasParent) {
-            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file, file, attrName, oldValue, value));
-            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent, file, attrName, oldValue, value));
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
+            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         } else {
-            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file, file, attrName, oldValue, value));
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         }
     }
 
@@ -509,10 +557,49 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
     }
-    
+
+    @Override
+    public final SystemAction[] getActions(final Set<FileObject> foSet) {
+        SystemAction[] some = status.getActions (foSet);
+        if (some != null) {
+            return some;
+        }        
+        return new SystemAction[] {};
+    }
+
     @Override
     public Status getStatus() {
         return status;
+    }
+    
+    private void addDeleteOnExit(String path) {
+        synchronized(deleteOnExitFiles) {
+            if (deleteOnExitFiles.isEmpty()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                    @Override
+                    public void run() {
+                        releaseResources();
+                    }
+
+                });
+            }
+            deleteOnExitFiles.add(path);
+        }
+    }
+    
+    private void releaseResources() {
+    	ArrayList<String> toBeDeleted;
+        synchronized(deleteOnExitFiles) {
+        	toBeDeleted = new ArrayList<String>(deleteOnExitFiles);
+        }
+    	Collections.reverse(toBeDeleted);
+        for (String filename : toBeDeleted) {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                 return;
+            }
+            CommonTasksSupport.rmFile(execEnv, filename, null);
+        }
     }
 
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
@@ -616,8 +703,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     private static class RootFileObject extends RemoteDirectory {
 
-        private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, null, "", cache);
+        private RootFileObject(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
+            super(wrapper, fileSystem, execEnv, null, "", cache);
         }
 
         @Override

@@ -99,6 +99,8 @@ import org.netbeans.modules.cnd.modelimpl.impl.services.ReferenceRepositoryImpl;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.ContextEntry;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.DeclarationScope;
 import org.netbeans.modules.cnd.modelimpl.trace.XRefResultSet.IncludeLevel;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.spi.model.services.CsmReferenceStorage;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -381,10 +383,10 @@ public class TraceXRef extends TraceModel {
             visitDeclarations(file.getDeclarations(), params, bag, out, printErr, canceled);
         } else if (params.reportIndex) {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor2(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, new LWReportIndexVisitor(bag, printErr, canceled, params.reportIndex), params.interestedReferences);
         } else {
             // otherwise visit active code in whole file
-            CsmFileReferences.getDefault().accept(file, new LWVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
+            CsmFileReferences.getDefault().accept(file, new LWCheckReferenceVisitor(bag, printErr, canceled, params.reportUnresolved), params.interestedReferences);
         }
         time = System.currentTimeMillis() - time;
         // get line num
@@ -418,14 +420,14 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static final class LWVisitor implements CsmFileReferences.Visitor {
+    private static final class LWCheckReferenceVisitor implements CsmFileReferences.Visitor {
 
         private final XRefResultSet<XRefEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
         private final boolean reportUnresolved;
 
-        public LWVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWCheckReferenceVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -454,13 +456,13 @@ public class TraceXRef extends TraceModel {
         }
     }
 
-    private static final class LWVisitor2 implements CsmFileReferences.Visitor {
+    private static final class LWReportIndexVisitor implements CsmFileReferences.Visitor {
 
         private final XRefResultSet<XRefEntry> bag;
         private final OutputWriter printErr;
         private final AtomicBoolean canceled;
 
-        public LWVisitor2(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
+        public LWReportIndexVisitor(XRefResultSet<XRefEntry> bag, OutputWriter printErr, AtomicBoolean canceled, boolean reportUnresolved) {
             this.bag = bag;
             this.printErr = printErr;
             this.canceled = canceled;
@@ -476,26 +478,39 @@ public class TraceXRef extends TraceModel {
             CsmReference refFromStorage = CsmReferenceStorage.getDefault().get(ref);        
             boolean fromStorage = refFromStorage != null && refFromStorage.getReferencedObject() != null;
             CsmObject target = ref.getReferencedObject();
-            boolean important = false;
-            String skind;
             if (target == null) {
-                skind = "UNRESOVED"; //NOI18N
-                entry = XRefResultSet.ContextEntry.UNRESOLVED;
-                important = true;
-            } else {
-                skind = "OBJECT"; //NOI18N
-                entry = XRefResultSet.ContextEntry.RESOLVED;
-                if(CsmKindUtilities.isDeclaration(target)) {
-                    skind = ((CsmDeclaration)target).getKind().toString();
-                } else if(CsmKindUtilities.isNamespace(target)) {
-                    skind = "NAMESPACE"; //NOI18N
-                } else {
-                    skind = "UNKNOWN"; //NOI18N
+                // skip all unresolved
+                if (fromStorage) {
+                    try {
+                        printErr.println("INDEXED UNRESOLVED" + ":" + ref, new RefLink(ref), true); // NOI18N
+                    } catch (IOException ioe) {
+                        // skip it
+                    }
                 }
+                return;
             }
-            if(fromStorage) {
+            if (UIDProviderIml.isSelfUID(UIDs.get(target))) {
+                // skip all locals
+                return;
+            }
+            if (CsmKindUtilities.isParameter(target)) {
+                // skip parameters
+                return;
+            }
+            String skind;
+            entry = XRefResultSet.ContextEntry.RESOLVED;
+            if (CsmKindUtilities.isParameter(target)) {
+                skind = "PARAMETER"; //NOI18N
+            } else if(CsmKindUtilities.isDeclaration(target)) {
+                skind = ((CsmDeclaration)target).getKind().toString();
+            } else if(CsmKindUtilities.isNamespace(target)) {
+                skind = "NAMESPACE"; //NOI18N
+            } else {
+                skind = "UNKNOWN"; //NOI18N
+            }
+            if(!fromStorage) {
                 try {
-                    printErr.println(skind + ":" + ref, new RefLink(ref), important); // NOI18N
+                    printErr.println(skind + ":" + ref, new RefLink(ref), false); // NOI18N
                 } catch (IOException ioe) {
                     // skip it
                 }
@@ -560,7 +575,7 @@ public class TraceXRef extends TraceModel {
         CsmReference ref = context.getReference();
         CsmObject target = ref.getReferencedObject();
         if (target == null) {
-            String kind = "UNRESOVED"; //NOI18N
+            String kind = "UNRESOLVED"; //NOI18N
             entry = XRefResultSet.ContextEntry.UNRESOLVED;
             boolean important = true;
             if (CsmFileReferences.isAfterUnresolved(context)) {
@@ -952,13 +967,15 @@ public class TraceXRef extends TraceModel {
                     }
                 }
             }
+            String header = String.format("%20s %10s %10s %5s", "Kind", "Indexed", "Checked", "%%"); // NOI18N
+            printOut.println(header); // NOI18N
             for (CharSequence kind : indexStats.keySet()) {
                 if(kind != null) { 
-                    String s2 = String.format("%20s %5d %5d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
+                    String s2 = String.format("%20s %10d %10d %.2f%%", kind, indexStats.get(kind), allStats.get(kind), (double) indexStats.get(kind)*100/allStats.get(kind)); // NOI18N
                     printOut.println(s2); // NOI18N
                 }
             }
-            String s = String.format("%20s %5d %5d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
+            String s = String.format("%20s %10d %10d %.2f%%", "Total", totalIndex, totalAll, (double) totalIndex*100/totalAll); // NOI18N
             printOut.println(s); // NOI18N
         }        
         

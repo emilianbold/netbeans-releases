@@ -344,7 +344,7 @@ public class JavaTypeProvider implements TypeProvider {
                 if (c == null) return;
                 try {
                     //Perform queries in single readAccess to suspend RU for all queries.
-                    IndexManager.readAccess(new Action<Void>() {
+                    IndexManager.priorityAccess(new Action<Void>() {
                         @Override
                         public Void run() throws IOException, InterruptedException {
                             for (final CacheItem ci : getCache()) {

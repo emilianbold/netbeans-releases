@@ -41,23 +41,22 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderRefactoring.Setter;
+import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel {
+public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel implements CustomRefactoringPanel {
 
     private List<String> parameterTypes;
     public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN, List<String> paramaterNames, List<String> parameterTypes) {
@@ -88,6 +87,13 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel {
         for (String name:paramaterNames) {
             model.addRow(new Object[]{typesIt.next() + " " + name, "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1), null, false}); //NOI18N
         }
+        model.addTableModelListener(new TableModelListener() {
+
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                parent.stateChanged(new ChangeEvent(ReplaceConstructorWithBuilderPanel.this));
+            }
+        });
     }
 
     /**
@@ -107,7 +113,6 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(builderName, org.openide.util.NbBundle.getMessage(ReplaceConstructorWithBuilderPanel.class, "ReplaceConstructorWithBuilder.jLabel1.text")); // NOI18N
 
         nameField.setColumns(15);
-        nameField.setText(org.openide.util.NbBundle.getMessage(ReplaceConstructorWithBuilderPanel.class, "ReplaceConstructorWithFactory.nameField.text")); // NOI18N
 
         paramTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -162,6 +167,7 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel {
     private javax.swing.JTable paramTable;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public void initialize() {
     }
 
@@ -187,6 +193,11 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel {
                     ));
         }
         return result;
+    }
+
+    @Override
+    public Component getComponent() {
+        return this;
     }
     
 }

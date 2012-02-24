@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImplContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -92,23 +93,28 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
         void onStoppedDirective(APT apt);
     }
-    private boolean createMacroAndIncludes;
+    private FileImplContent fileContent;
     private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
+    private static final EvalCallback EMPTY_EVAL_CALLBACK = new EvalCallback() {
+        @Override
+        public void onEval(APT apt, boolean result) { }
+        @Override
+        public void onStoppedDirective(APT apt) { }
+    };
 
     public APTParseFileWalker(ProjectBase base, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler, boolean triggerParsingActivity, EvalCallback evalCallback, APTFileCacheEntry cacheEntry) {
         super(base, apt, file, preprocHandler, cacheEntry);
-        this.createMacroAndIncludes = false;
-        this.evalCallback = evalCallback;
+        this.evalCallback = evalCallback != null ? evalCallback : EMPTY_EVAL_CALLBACK;
         this.triggerParsingActivity = triggerParsingActivity;
     }
 
-    public void addMacroAndIncludes(boolean create) {
-        this.createMacroAndIncludes = create;
+    public void setFileContent(FileImplContent content) {
+        this.fileContent = content;
     }
 
     protected boolean needMacroAndIncludes() {
-        return this.createMacroAndIncludes;
+        return this.fileContent != null;
     }
 
     public final boolean isTriggerParsingActivity() {
@@ -148,7 +154,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         if (needMacroAndIncludes()) {
             MacroImpl macro = createMacro((APTDefine) apt);
             if (macro != null) {
-                getFile().addMacro(macro);
+                this.fileContent.addMacro(macro);
             }
         }
     }
@@ -157,10 +163,8 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onErrorNode(APT apt) {
         super.onErrorNode(apt);
         if (needMacroAndIncludes()) {
-            getFile().addError(createError((APTError)apt));
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            this.fileContent.addError(createError((APTError)apt));
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -168,9 +172,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     protected void onPragmaNode(APT apt) {
         super.onPragmaNode(apt);
         if (isStopped()) {
-            if (evalCallback != null) {
-                evalCallback.onStoppedDirective(apt);
-            }
+            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -179,7 +181,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void postInclude(APTInclude apt, FileImpl included, IncludeState pushIncludeState) {
         if (needMacroAndIncludes()) {
-            getFile().addInclude(createInclude(apt, included, pushIncludeState == IncludeState.Recursive), pushIncludeState != IncludeState.Success);
+            this.fileContent.addInclude(createInclude(apt, included, pushIncludeState == IncludeState.Recursive), pushIncludeState != IncludeState.Success);
         }
     }
 
@@ -285,8 +287,6 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
     @Override
     protected void onEval(APT apt, boolean result) {
-        if (evalCallback != null) {
-            evalCallback.onEval(apt, result);
-        }
+        evalCallback.onEval(apt, result);
     }
 }

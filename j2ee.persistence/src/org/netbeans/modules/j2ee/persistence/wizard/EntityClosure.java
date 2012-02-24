@@ -45,18 +45,11 @@
 package org.netbeans.modules.j2ee.persistence.wizard;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Future;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
@@ -102,7 +95,7 @@ public class EntityClosure {
     private Set<String> referencedEntities = new HashSet<String>();
     private HashMap<String,Entity> fqnEntityMap = new HashMap<String,Entity>();
     private HashMap<String,Boolean> fqnIdExistMap = new HashMap<String,Boolean>();
-    
+    private boolean modelReady;
     private boolean closureEnabled = true;
     private Project project;
     
@@ -141,6 +134,7 @@ public class EntityClosure {
                         public void run() {
                             try {
                                 addAvaliableEntities(new HashSet<Entity>(readHelper.getResult()));
+                                modelReady = true;
                                 changeSupport.fireChange();
                             } catch (ExecutionException e) {
                                 Exceptions.printStackTrace(e);
@@ -422,7 +416,7 @@ public class EntityClosure {
     }
     
     public boolean isModelReady() {
-        return true; //TODO
+        return modelReady;
     }
     
     void waitModelIsReady(){

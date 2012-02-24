@@ -126,7 +126,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     }
 
     protected Token onToken(Token token) {
-        if (token.getType() == APTTokenTypes.ID) {
+        if (token.getType() == APTTokenTypes.IDENT) {
             token = onID(token);
         }
         return token;
@@ -147,7 +147,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
     }
 
     public boolean isKeyword(Token token) {
-        if (token.getType() == APTTokenTypes.ID) {
+        if (token.getType() == APTTokenTypes.IDENT) {
             Integer newType = filter.get(((APTToken)token).getTextID());
             if (newType != null) {
                 return true;

@@ -80,13 +80,15 @@ public final class ChangePackageViewTypeAction extends AbstractAction implements
     @Messages({
         "LBL_change_package_type=&View Java Packages as",
         "ChangePackageViewTypeAction_list=&List",
-        "ChangePackageViewTypeAction_tree=&Tree"
+        "ChangePackageViewTypeAction_tree=&Tree",
+        "ChangePackageViewTypeAction_reduced_tree=&Reduced Tree"
     })
     @Override public JMenuItem getPopupPresenter() {
         JMenu menu = new JMenu();
         Mnemonics.setLocalizedText(menu, LBL_change_package_type());
         menu.add(createChoice(JavaProjectSettings.PackageViewType.PACKAGES, ChangePackageViewTypeAction_list()));
         menu.add(createChoice(JavaProjectSettings.PackageViewType.TREE, ChangePackageViewTypeAction_tree()));
+        menu.add(createChoice(JavaProjectSettings.PackageViewType.REDUCED_TREE, ChangePackageViewTypeAction_reduced_tree()));
         return menu;
     }
     

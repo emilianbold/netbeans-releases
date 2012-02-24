@@ -100,10 +100,10 @@
  <answer id="arch-usecases">
   <usecase id="1" name="Get Git client">
    Before you can run preferred Git commands, you must get an instance of <a href="@TOP@/org/netbeans/libs/git/GitClient.html">GitClient</a> bound to a specific repository.<br/>
-   Instances of <code>GitClient</code> are provided by <a href="@TOP@/org/netbeans/libs/git/GitClientFactory.html#getClient(java.io.File)">GitClientFactory</a>. The method takes
-   the root of the repository the client will be bound to as a parameter.
+   Instances of <code>GitClient</code> are provided by <a href="@TOP@/org/netbeans/libs/git/GitRepository.html#getClient()">GitRepository</a>.
+   <code>GitRepository</code> represents a concrete local Git repository and is always bound to a specific folder.
    <p></p>
-   The correct way to achieve this is to call <code><a href="@TOP@/org/netbeans/libs/git/GitClientFactory.html">GitClientFactory</a>.getInstance().getClient(repositoryRoot)</code>.
+   The correct way to achieve this is to call <code><a href="@TOP@/org/netbeans/libs/git/GitRepository.html">GitRepository</a>.getInstance(repositoryRoot).getClient()</code>.
   </usecase>
   <usecase id="2" name="Run Git commands">
    To run a Git command simply call a method mapped to the command on an instance of GitClient.

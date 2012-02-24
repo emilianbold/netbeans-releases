@@ -159,6 +159,7 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
 
         if (prj == null) {
         RP.post(new Runnable() {
+                @Override
             public void run() {
                 MavenEmbedder embedder = EmbedderFactory.getOnlineEmbedder();
                 AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Progress_Download(),
@@ -172,15 +173,17 @@ public final class ArtifactMultiViewFactory implements ArtifactViewerFactory {
                         if (fRepos != null) {
                             repos.addAll(fRepos);
                         }
-                        if (repos.size() == 0) {
+                        if (repos.isEmpty()) {
                             //add central repo
                             repos.add(EmbedderFactory.createRemoteRepository(embedder, RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
                             //add repository form info
                             if (info != null && !RepositorySystem.DEFAULT_REMOTE_REPO_ID.equals(info.getRepoId())) {
                                 RepositoryInfo rinfo = RepositoryPreferences.getInstance().getRepositoryInfoById(info.getRepoId());
-                                String url = rinfo.getRepositoryUrl();
-                                if (url != null) {
-                                    repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                                if (rinfo != null) {
+                                    String url = rinfo.getRepositoryUrl();
+                                    if (url != null) {
+                                        repos.add(EmbedderFactory.createRemoteRepository(embedder, url, rinfo.getId()));
+                                    }
                                 }
                             }
                         }

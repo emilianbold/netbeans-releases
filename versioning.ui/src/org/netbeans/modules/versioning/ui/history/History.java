@@ -44,8 +44,9 @@ package org.netbeans.modules.versioning.ui.history;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -95,11 +96,16 @@ public class History {
         return Collections.unmodifiableList(providersList);
     }
 
-    VersioningSystem getLocalHistory(File[] files) {
-        org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem vs = Utils.getLocalHistory(files[0]);
-        if(vs == null) {
-            return null;
+    VersioningSystem getLocalHistory(VCSFileProxy[] files) {
+        File file = files[0].toFile();
+        if(file == null) {
+            LOG.fine("local history available only for local files"); // NOI18N
+            return null; // XXX currently LocalHistory works only with io.File. 
         }
-        return (VersioningSystem) vs.getDelegate();
+        VersioningSystem vs = Utils.getLocalHistory(file);
+        if(vs != null) {
+            LOG.fine("local history not available"); // NOI18N
+        } 
+        return vs;
     }
 }

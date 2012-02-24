@@ -103,6 +103,12 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                 assertTrue("Incorrect link child path: " + childPath + " should start with parent path " + parentPath, 
                         child.getPath().startsWith(parentPath));
             }
+            FileObject linkFO2;
+            linkFO2 = getFileObject(linkFile);
+            assertTrue("Duplicate instances for " + linkFile, linkFO ==linkFO2);
+            linkDirFO.refresh();
+            linkFO2 = getFileObject(linkFile);
+            assertTrue("Duplicate instances for " + linkFile, linkFO ==linkFO2);
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }

@@ -79,7 +79,7 @@ public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
 
 
     private void performTest(final String factoryName) throws Exception {
-        final ReplaceConstructorRefactoring[] r = new ReplaceConstructorRefactoring[1];
+        final ReplaceConstructorWithFactoryRefactoring[] r = new ReplaceConstructorWithFactoryRefactoring[1];
         FileObject testFile = src.getFileObject("test/Test.java");
         
         JavaSource.forFileObject(testFile).runUserActionTask(new Task<CompilationController>() {
@@ -91,11 +91,13 @@ public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
                 MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(0);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new ReplaceConstructorRefactoring(TreePathHandle.create(tp, parameter), factoryName);
+                r[0] = new ReplaceConstructorWithFactoryRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setFactoryName(factoryName);
             }
         }, true);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         r[0].prepare(rs);
         rs.doRefactoring(true);
 

@@ -58,6 +58,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import junit.framework.Assert;
 
@@ -193,10 +194,52 @@ public class TestFileUtils {
     }
 
     /**
+     * Unpacks a ZIP file to disk.
+     * All entries are unpacked, even {@code META-INF/MANIFEST.MF} if present.
+     * Parent directories are created as needed (even if not mentioned in the ZIP);
+     * empty ZIP directories are created too.
+     * Existing files are overwritten.
+     * @param zip a ZIP file
+     * @param dir the base directory in which to unpack (need not yet exist)
+     * @throws IOException in case of problems
+     */
+    public static void unpackZipFile(File zip, File dir) throws IOException {
+        byte[] buf = new byte[8192];
+        InputStream is = new FileInputStream(zip);
+        try {
+            ZipInputStream zis = new ZipInputStream(is);
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                int slash = name.lastIndexOf('/');
+                File d = new File(dir, name.substring(0, slash).replace('/', File.separatorChar));
+                if (!d.isDirectory() && !d.mkdirs()) {
+                    throw new IOException("could not make " + d);
+                }
+                if (slash != name.length() - 1) {
+                    File f = new File(dir, name.replace('/', File.separatorChar));
+                    OutputStream os = new FileOutputStream(f);
+                    try {
+                        int read;
+                        while ((read = zis.read(buf)) != -1) {
+                            os.write(buf, 0, read);
+                        }
+                    } finally {
+                        os.close();
+                    }
+                }
+            }
+        } finally {
+            is.close();
+        }
+    }
+
+    /**
      * Make sure the timestamp on a file changes.
      * @param f a file to touch (make newer)
      * @param ref if not null, make f newer than this file; else make f newer than it was before
      */
+    @SuppressWarnings("SleepWhileInLoop")
     public static void touch(File f, File ref) throws IOException, InterruptedException {
         long older = f.lastModified();
         if (ref != null) {

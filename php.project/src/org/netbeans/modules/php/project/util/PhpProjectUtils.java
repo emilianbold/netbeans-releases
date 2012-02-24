@@ -309,7 +309,14 @@ public final class PhpProjectUtils {
      * Open project customizer, Run Configuration category.
      */
     public static void openCustomizerRun(Project project) {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+        openCustomizer(project, CompositePanelProviderImpl.RUN);
+    }
+
+    /**
+     * Open project customizer.
+     */
+    public static void openCustomizer(Project project, String category) {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

@@ -56,7 +56,7 @@ import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -174,16 +174,16 @@ public class AbstractGitTestCase extends NbTestCase {
         repository.create(true);
 
         if (createLocalClone()) {
-            GitClientFactory fact = GitClientFactory.getInstance();
-            fact.getClient(wc).init(NULL_PROGRESS_MONITOR);
-            Field f = GitClientFactory.class.getDeclaredField("repositoryPool");
+            GitRepository fact = GitRepository.getInstance(wc);
+            fact.getClient().init(NULL_PROGRESS_MONITOR);
+            Field f = GitRepository.class.getDeclaredField("gitRepository");
             f.setAccessible(true);
-            localRepository = ((Map<File, JGitRepository>) f.get(fact)).get(wc);
+            localRepository = (JGitRepository) f.get(fact);
         }
     }
 
     protected GitClient getClient (File repository) throws GitException {
-        return GitClientFactory.getInstance().getClient(repository);
+        return GitRepository.getInstance(repository).getClient();
     }
 
     protected void add (File... files) throws GitException {
@@ -215,7 +215,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
     
     protected void clearRepositoryPool() throws NoSuchFieldException, IllegalArgumentException, IllegalArgumentException, IllegalAccessException {
-        ApiUtils.clearRepositoryPool(GitClientFactory.getInstance());
+        ApiUtils.clearRepositoryPool();
     }
 
     protected static class Monitor extends ProgressMonitor.DefaultProgressMonitor implements FileListener {
@@ -267,10 +267,6 @@ public class AbstractGitTestCase extends NbTestCase {
         }
     }
     
-    public static GitClientFactory getGitClientFactory() {
-        return GitClientFactory.getInstance();
-    }
-
     private static class NullProgressMonitor extends ProgressMonitor {
 
         @Override

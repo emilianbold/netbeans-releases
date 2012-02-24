@@ -86,6 +86,10 @@ public class MethodCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "Methods2.groovy", "        new Byte().^", false);
     }
 
+    public void testMethods2_2() throws Exception {
+        checkCompletion(BASE + "Methods2.groovy", "        new GroovyClass3().in^", false);
+    }
+
     public void testCompletionInMethodCall1_1() throws Exception {
         checkCompletion(BASE + "CompletionInMethodCall1.groovy", "        new File(\"something\").ea^", false);
     }
@@ -132,6 +136,10 @@ public class MethodCCTest extends GroovyCCTestBase {
 
     public void testCompletionGeneratedAccessors1_2() throws Exception {
         checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().set^", false);
+    }
+    
+    public void testCompletionGeneratedAccessors1_3() throws Exception {
+        checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().is^", false);
     }
 
     public void testCompletionGroovyClass1_1() throws Exception {

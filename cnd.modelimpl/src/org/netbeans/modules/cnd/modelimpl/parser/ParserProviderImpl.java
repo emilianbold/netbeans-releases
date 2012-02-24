@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.cnd.modelimpl.parser;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.antlr.runtime.tree.CommonTree;
+import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -65,7 +65,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.fsm.core.DataRenderer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.FortranParser;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.NewCppParser;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -82,10 +81,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
                 return new Antrl3FortranParser((FileImpl)file);
             }
-            if(true) {
+            if(!TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
                 return new Antlr2CppParser((FileImpl)file);
             } else {
-                return new Antlr3NewCppParser((FileImpl)file);
+                return new Antlr3CXXParser((FileImpl)file);
             }
         } else {
             return null;
@@ -117,10 +116,18 @@ public final class ParserProviderImpl extends CsmParserProvider {
             assert object != null;
             assert ts != null;
             parserContainer = object;
-            if(TraceFlags.CPP_PARSER_ACTION) {
-                objects = new HashMap<Integer, CsmObject>();
+            CppParserActionEx cppCallback = (CppParserActionEx)callback;
+            if (cppCallback == null) {
+                if(TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CppParserActionImpl(file);
+                } else {
+                    cppCallback = new CppParserEmptyActionImpl(file);
+                }
             }
-            parser = CPPParserEx.getInstance(file, ts, flags, objects, (CppParserAction)callback);
+            if (cppCallback instanceof CppParserActionImpl) {
+                objects = ((CppParserActionImpl)cppCallback).getObjectsMap();
+            }
+            parser = CPPParserEx.getInstance(file, ts, flags, cppCallback);
         }
 
         @Override
@@ -172,7 +179,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     if (ast != null) {
-                        new AstRenderer(file, objects).render(ast);
+                        FileImpl.ParseDescriptor descr = (FileImpl.ParseDescriptor) context[0];
+                        new AstRenderer(file, descr.getFileContent(), objects).render(ast);
                         file.incParseCount();
                     }            
                     break;
@@ -181,7 +189,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, null, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }                    
                     break;
                 case CLASS_BODY:
@@ -291,13 +299,20 @@ public final class ParserProviderImpl extends CsmParserProvider {
         }
     }
 
-    private final static class Antlr3NewCppParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
+    static Token convertToken(org.antlr.runtime.Token token) {
+        assert token instanceof Antlr3CXXParser.MyToken;
+        return ((Antlr3CXXParser.MyToken) token).t;
+    }
+
+    private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
-        private NewCppParser parser;
+        private CXXParserEx parser;
 
         private ConstructionKind kind;
         
-        Antlr3NewCppParser(FileImpl file) {
+        private Map<Integer, CsmObject> objects = null;
+        
+        Antlr3CXXParser(FileImpl file) {
             this.file = file;
         }
 
@@ -305,9 +320,22 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public void init(CsmObject object, TokenStream ts, CsmParseCallback callback) {
             assert parser == null : "parser can not be reused " + parser;
             assert ts != null;
+            CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
+            if (cppCallback == null) {
+                if (TraceFlags.CPP_PARSER_ACTION) {
+                    cppCallback = new CXXParserActionImpl(file);
+                } else {
+                    cppCallback = new CXXParserEmptyActionImpl(file);
+                }
+            } else {
+                cppCallback.pushFile(file);
+            }            
+            if (cppCallback instanceof CXXParserActionImpl) {
+                objects = ((CXXParserActionImpl) cppCallback).getObjectsMap();
+            }            
             org.netbeans.modules.cnd.antlr.TokenBuffer tb = new org.netbeans.modules.cnd.antlr.TokenBuffer(ts);            
             org.antlr.runtime.TokenStream tokens = new MyTokenStream(tb);
-            parser = new NewCppParser(tokens);
+            parser = new CXXParserEx(tokens, cppCallback);
         }
 
         @Override
@@ -350,7 +378,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             return parser.getNumberOfSyntaxErrors();
         }
         
-        static private class MyToken implements org.antlr.runtime.Token {
+        private static final class MyToken implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
 

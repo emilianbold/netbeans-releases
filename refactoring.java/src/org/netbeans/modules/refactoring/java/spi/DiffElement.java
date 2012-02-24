@@ -72,7 +72,12 @@ import org.openide.util.lookup.Lookups;
     
     private DiffElement(Difference diff, PositionBounds bounds, FileObject parentFile, ModificationResult modification) {
         this.bounds = bounds;
-        this.displayText = diff.getDescription();
+        final String description = diff.getDescription();
+        if (description == null) {
+            displayText = "Missing Description";
+        } else {
+            this.displayText = description;
+        }
         this.parentFile = parentFile;
         this.diff = diff;
         this.modification = modification;

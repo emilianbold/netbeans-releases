@@ -490,12 +490,19 @@ public class DbSchemaEjbGenerator {
         String keyRefName = key.getReferencedTable().getName().getName();
         boolean oneToOne = isFkUnique(key);
         
-        EntityClass roleBHelper = getBean(keyRefName);
-        if (roleBHelper == null) {
-            return;
-        }
         EntityClass roleAHelper = getBean(keyTableName);
         if (roleAHelper == null) {
+            return;
+        }
+        
+        EntityClass roleBHelper = getBean(keyRefName);
+        if (roleBHelper == null) {
+            if(generateUnresolvedRelationships){
+                //we may want to generate field instead of skip
+                for(ColumnElement col:key.getLocalColumns()){
+                    generatePkField(col, false, false);
+                }
+            }
             return;
         }
 

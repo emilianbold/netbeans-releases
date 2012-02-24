@@ -198,8 +198,10 @@ public class XmlFoldManager implements FoldManager {
     public void unsetDirty() {
         synchronized (this) {
             dirtyTimeMillis = 0;
-            timer.cancel();
-            timer = null;
+            if (timer != null) {
+                timer.cancel();
+                timer = null;
+            }
         }
     }
    
@@ -213,7 +215,7 @@ public class XmlFoldManager implements FoldManager {
      * This method parses the XML document using Lexer and creates/recreates
      * the fold hierarchy.
      */
-    private synchronized void updateFolds() {
+    private void updateFolds() {
         FoldHierarchy foldHierarchy = getOperation().getHierarchy();
         //lock the document for changes
         getDocument().readLock();

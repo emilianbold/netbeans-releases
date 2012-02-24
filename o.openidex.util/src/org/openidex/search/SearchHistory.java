@@ -71,15 +71,12 @@ import org.openide.util.NbPreferences;
  * @author  kaktus
  */
 public final class SearchHistory {
-
-    /** Last selected SearchPattern. */
-    private SearchPattern lastSelected;
     
     /** Support for listeners */
     private PropertyChangeSupport pcs;
 
     /** Maximum items allowed in searchPatternsList */
-    private static final int MAX_SEARCH_PATTERNS_ITEMS = 50;
+    private static final int MAX_SEARCH_PATTERNS_ITEMS = 10;
 
     /** Shareable SearchPattern history. It is a List of SearchPatterns */
     private List<SearchPattern> searchPatternsList
@@ -92,10 +89,11 @@ public final class SearchHistory {
      *  Firing: 
      *  oldValue - old selected pattern
      *  newValue - new selected pattern
+     *  @deprecated just changes in history
      */
     public final static String LAST_SELECTED = "last-selected"; //NOI18N
     
-    /** Property name for adding pattern to history
+    /** Property name for adding pattern that was not in history
      *  Firing:
      *  oldValue - null
      *  newValue - added pattern
@@ -106,7 +104,7 @@ public final class SearchHistory {
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
     private static final String PREFS_NODE = "SearchHistory";  //NOI18N
-    private static final String PROP_SEARCH_PATTERN_PREFIX = "search_pattern_";  //NOI18N
+    private static final String PROP_SEARCH_PATTERN_PREFIX = "search_";  //NOI18N
 
     /** Creates a new instance of SearchHistory */
     private SearchHistory() {
@@ -127,23 +125,27 @@ public final class SearchHistory {
      */
     private void load () {
         for(int i=0; i < MAX_SEARCH_PATTERNS_ITEMS; i++){
-            String searchExpr = prefs.get(PROP_SEARCH_PATTERN_PREFIX + i, null);
-            if (searchExpr != null)
-                searchPatternsList.add(SearchPattern.create(searchExpr, false, false, false));
+            SearchPattern pattern = SearchPattern.parseSearchPattern(prefs.get(PROP_SEARCH_PATTERN_PREFIX + i, null));
+            if (pattern != null)
+                searchPatternsList.add(pattern);
         }
     }
 
-    /** @return last selected SearchPattern */
+    /** 
+     *  @deprecated Use <code>getSearchPatterns().get(0)</code>
+     *  @return last selected SearchPattern 
+     */
     public SearchPattern getLastSelected(){
-        return lastSelected;
+        return searchPatternsList.get(0);
     }
     
     /** Sets last selected SearchPattern 
+     *  @deprecated Use only <code>add(SearchPattern pattern)</code>
      *  @param pattern last selected pattern
      */
     public void setLastSelected(SearchPattern pattern){
-        SearchPattern oldPattern = this.lastSelected;
-        this.lastSelected = pattern;
+        SearchPattern oldPattern = searchPatternsList.get(0);
+        add(pattern);
         if (pcs != null){
             pcs.firePropertyChange(LAST_SELECTED, oldPattern, pattern);
         }
@@ -180,21 +182,28 @@ public final class SearchHistory {
     /** Adds SearchPattern to SearchHistory 
      *  @param pattern the SearchPattern to add
      */
-    public synchronized void add(SearchPattern pattern){
-        if (pattern == null || pattern.getSearchExpression() == null || pattern.getSearchExpression().length() == 0){
+    public synchronized void add(SearchPattern pattern) { 
+        if (pattern == null || pattern.getSearchExpression() == null || pattern.getSearchExpression().length() == 0
+                || (searchPatternsList.size() > 0 && pattern.equals(searchPatternsList.get(0)))) {
             return;
         }
-        if (searchPatternsList.size()>0 && pattern.equals(searchPatternsList.get(0))){
-            return;
+        
+        for (int i = 0; i < searchPatternsList.size(); i++) {
+            if (pattern.getSearchExpression().equals(searchPatternsList.get(i).getSearchExpression())) {
+                searchPatternsList.remove(i);
+                break;
+            }
         }
+        
         if (searchPatternsList.size() == MAX_SEARCH_PATTERNS_ITEMS){
             searchPatternsList.remove(MAX_SEARCH_PATTERNS_ITEMS-1);
         }
         searchPatternsList.add(0, pattern);
+        
         for(int i=0;i < searchPatternsList.size();i++){
-            prefs.put(PROP_SEARCH_PATTERN_PREFIX + i, searchPatternsList.get(i).getSearchExpression());
+            prefs.put(PROP_SEARCH_PATTERN_PREFIX + i, searchPatternsList.get(i).toCanonicalString());
         }
-        if (pcs != null){
+        if (pcs != null) {
             pcs.firePropertyChange(ADD_TO_HISTORY, null, pattern);
         }
     }

@@ -71,6 +71,7 @@ made subject to such option by the copyright holder.
         <mapID target="results_telemetry" url="helppages/results_telemetry.html"/>
 	<mapID target="snapshots" url="helppages/snapshots.html"/>
         <mapID target="snap_taking" url="helppages/snap_taking.html"/>
+        <mapID target="heapoql" url="helppages/oqlhelp.html"/>
         
         <!-- begin CSH topics -->
         
@@ -82,7 +83,6 @@ made subject to such option by the copyright holder.
         <mapID target="MemorySettings.Basic.HelpCtx" url="helppages/csh/csh_memory_options_basic.html"/>
         <mapID target="MemorySettings.Advanced.HelpCtx" url="helppages/csh/csh_memory_options_adv.html"/>
 
-        
         <mapID target="FilterSetsPanel.HelpCtx" url="helppages/csh/csh_filters_custom.html"/>
         <mapID target="GlobalFiltersPanel.HelpCtx" url="helppages/csh/csh_filters_global.html"/>
         <mapID target="QuickFilterPanel.HelpCtx" url="helppages/csh/csh_filters_quick.html"/>
@@ -90,10 +90,11 @@ made subject to such option by the copyright holder.
         <mapID target="ThreadsWindow.HelpCtx" url="helppages/csh/view_threads.html"/>
         <mapID target="TelemetryWindow.HelpCtx" url="helppages/csh/view_telemetry.html"/>
         <mapID target="TelemetryOverviewPanel.HelpCtx" url="helppages/csh/view_telemetryoverview.html"/>
-        <mapID target="LiveResultsWindow.HelpCtx" url="helppages/results_liveresults.html"/>
+        
         <mapID target="DrillDownWindow.HelpCtx" url="helppages/csh/view_drilldown.html"/>
         <mapID target="ProfilingPointsWindow.HelpCtx" url="helppages/csh/view_profilingpoints.html"/>
         <mapID target="ProfilerControlPanel.HelpCtx" url="helppages/csh/view_profiler.html"/>
+        
         
         
         
@@ -106,6 +107,11 @@ made subject to such option by the copyright holder.
         <mapID target="PerformIntegrationPanel.HelpCtx" url="helppages/csh/csh_attachwiz_5_performint.html"/>
         <mapID target="ReviewAdditionalStepsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_6_reviewadd.html"/>
         <mapID target="RemoteAttachSettingsPanel.HelpCtx" url="helppages/csh/csh_attachwiz_2_remote.html"/>
+
+        <!-- CSH topics for Live Results windows -->
+        <mapID target="LiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_liveresults.html"/>
+        <mapID target="MemoryLiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_results_memory.html"/>
+        <mapID target="CpuLiveResultsWindow.HelpCtx" url="helppages/csh/view_profiling_results_cpu.html"/>
         
         <!--CSH ID for Options | Misc | Profiler :-->
         <mapID target="ProfilerOptions.Help" url="helppages/csh/options_profiler.html"/>
@@ -132,8 +138,15 @@ made subject to such option by the copyright holder.
         <mapID target="ProfilingPointsDisplayer.HelpCtx" url="helppages/profile_profilepoints.html"/>
 
         <!--CSH ID for HeapWalker -->
-        <mapID target="OQLControllerUI.HelpCtx" url="helppages/oqlhelp.html"/>
-        <mapID target="text.x-oql" url="helppages/oqlhelp.html"/>
-        <mapID target="heapoql" url="helppages/oqlhelp.html"/>
+        <mapID target="HeapWalker.HelpCtx" url="helppages/csh/view_heap.html"/>
+        <mapID target="OQLControllerUI.HelpCtx" url="helppages/csh/csh_view_oqlconsole.html"/>
+        <mapID target="text.x-oql" url="helppages/csh/csh_view_oqlconsole.html"/>
         
+        
+        <!--CSH ID for Snapshot windows -->
+        <mapID target="CpuSnapshot.HelpCtx" url="helppages/csh/view_snap_cpu.html"/>
+        <mapID target="MemorySnapshot.HelpCtx" url="helppages/csh/view_snap_memory.html"/>
+        <!--CSH ID for Compare Memory Snapshot window -->
+        <mapID target="MemoryDiff.HelpCtx" url="helppages/csh/view_snap_memorycompare.html"/>
+       
     </map>

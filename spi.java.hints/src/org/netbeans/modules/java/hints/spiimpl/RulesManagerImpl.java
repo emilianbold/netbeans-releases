@@ -59,8 +59,6 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.providers.spi.ClassPathBasedHintProvider;
 import org.netbeans.modules.java.hints.providers.spi.ElementBasedHintProvider;
 import org.netbeans.modules.java.hints.providers.spi.HintProvider;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
-import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
@@ -96,7 +94,7 @@ public class RulesManagerImpl extends RulesManager {
     @Override
     public Map<HintMetadata, ? extends Collection<? extends HintDescription>> readHints(CompilationInfo info, Collection<? extends ClassPath> from, AtomicBoolean cancel) {
         Map<HintMetadata, Collection<HintDescription>> result = new HashMap<HintMetadata, Collection<HintDescription>>(globalHints);
-        
+
         if (info != null) {
             for (ElementBasedHintProvider provider : Lookup.getDefault().lookupAll(ElementBasedHintProvider.class)) {
                 sortByMetadata(provider.computeHints(info), result);

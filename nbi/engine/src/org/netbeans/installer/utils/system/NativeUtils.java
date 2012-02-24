@@ -227,8 +227,18 @@ public abstract class NativeUtils {
         return cleanerHandler;
     }
     
-    
-    public abstract List<File> getFileSystemRoots() throws IOException;
+    /**
+     * Return roots for specified files. If it is used with no arguments, 
+     * returns all available roots.
+     * But when files are not specified, on Unix systems there is
+     * a possibility of installer freeze because of "df -k" command -
+     * when unavailable nfs filesystem is mounted. 
+     * 
+     * @param files - files for which we want get roots
+     * @return List of roots
+     * @throws IOException 
+     */
+    public abstract List<File> getFileSystemRoots(String... files) throws IOException;
     
     // protected ////////////////////////////////////////////////////////////////////
     protected void loadNativeLibrary(String path) throws NativeException {

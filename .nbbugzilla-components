@@ -145,6 +145,7 @@ editor = editor/-- other --
 editor.errorstripe.api = editor/navigation
 editor.errorstripe = editor/navigation
 editor.fold = editor/code folding
+editor.global.format = editor/formatting & indentation
 editor.guards = editor/-- other --
 editor.highlights = editor/painting & printing
 editor.indent = editor/formatting & indentation

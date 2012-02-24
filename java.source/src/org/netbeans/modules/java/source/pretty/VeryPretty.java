@@ -124,6 +124,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private int fromOffset = -1;
     private int toOffset = -1;
     private boolean containsError = false;
+    private boolean insideAnnotation = false;
 
     private final Map<Tree, ?> tree2Tag;
     private final Map<Object, int[]> tag2Span;
@@ -672,7 +673,7 @@ public final class VeryPretty extends JCTree.Visitor {
             }
         }
 	if (!emptyClass) {
-	    blankLines(cs.getBlankLinesAfterClassHeader());
+	    blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
             if ((tree.mods.flags & ENUM) != 0) {
                 printEnumConstants(tree.defs, false);
             }
@@ -1356,14 +1357,15 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitAssign(JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
-	if (cs.spaceAroundAssignOps())
+        boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
+	if (spaceAroundAssignOps)
             print(' ');
 	print('=');
 	int rm = cs.getRightMargin();
         switch(cs.wrapAssignOps()) {
         case WRAP_IF_LONG:
             if (widthEstimator.estimateWidth(tree.rhs, rm - out.col) + out.col <= cs.getRightMargin()) {
-                if(cs.spaceAroundAssignOps())
+                if(spaceAroundAssignOps)
                     print(' ');
                 break;
             }
@@ -1372,7 +1374,7 @@ public final class VeryPretty extends JCTree.Visitor {
             toColExactly(cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize());
             break;
         case WRAP_NEVER:
-            if(cs.spaceAroundAssignOps())
+            if(spaceAroundAssignOps)
                 print(' ');
             break;
         }
@@ -1622,6 +1624,8 @@ public final class VeryPretty extends JCTree.Visitor {
 
     @Override
     public void visitAnnotation(JCAnnotation tree) {
+        boolean oldInsideAnnotation = insideAnnotation;
+        insideAnnotation = true;
         if (!printAnnotationsFormatted(List.of(tree))) {
             print("@");
             printExpr(tree.annotationType);
@@ -1633,6 +1637,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 print(cs.spaceWithinAnnotationParens() ? " )" : ")");
             }
         }
+        insideAnnotation = oldInsideAnnotation;
     }
 
     @Override
@@ -2142,7 +2147,7 @@ public final class VeryPretty extends JCTree.Visitor {
             printEmptyBlockComments(tree, members);
         } else {
             if (members)
-                blankLines(cs.getBlankLinesAfterClassHeader());
+                blankLines(enclClassName.isEmpty() ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
             else
                 newline();
 	    printStats(stats, members);

@@ -56,7 +56,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -110,7 +110,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
     }
 
     @Override
-    public synchronized void run(CompoundEdit compoundEdit) {
+    public synchronized void run(UndoableEdit compoundEdit) {
         Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(doc)).lookup(Preferences.class);
         String policy = prefs.get(SimpleValueNames.ON_SAVE_REMOVE_TRAILING_WHITESPACE, "never"); //NOI18N
         if (!"never".equals(policy)) { //NOI18N
@@ -136,7 +136,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
 
     @Override
     public void insertUpdate(DocumentEvent evt) {
-        CompoundEdit compoundEdit = (CompoundEdit) evt;
+        UndoableEdit compoundEdit = (UndoableEdit) evt;
         int offset = evt.getOffset();
         int length = evt.getLength();
         boolean covered = false;
@@ -179,7 +179,7 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         return false;
     }
 
-    private MutablePositionRegion addRegion(CompoundEdit compoundEdit, int startOffset, int endOffset) {
+    private MutablePositionRegion addRegion(UndoableEdit compoundEdit, int startOffset, int endOffset) {
         try {
             MutablePositionRegion region = new MutablePositionRegion(doc, startOffset, endOffset);
             lastRegionIndex = findRegionIndex(startOffset, true);

@@ -126,7 +126,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
         //add timeout
         waitNoEvent(1000);
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
@@ -178,7 +178,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
         //add timeout
         waitNoEvent(2000);
 
@@ -246,7 +246,7 @@ public class AutomaticInternationalizationTest extends ExtJellyTestCase {
         //add timeout
         waitNoEvent(1000);
 
-        options.selectCategory("Java"); // NOI18N
+        options.selectJava();
         //add timeout
         waitNoEvent(2000);
         options.pushKey(KeyEvent.VK_TAB);

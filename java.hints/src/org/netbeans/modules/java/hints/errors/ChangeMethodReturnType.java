@@ -141,7 +141,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
     @Override
     public void cancel() {}
 
-    private static final class FixImpl extends JavaFix {
+    static final class FixImpl extends JavaFix {
 
         private final TypeMirrorHandle targetTypeHandle;
         private final String targetTypeDN;

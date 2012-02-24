@@ -49,6 +49,8 @@ import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +61,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -329,9 +332,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
                 throw new IllegalArgumentException ("JavadocFolder must be a folder.");
             }
         }
-        final List<URL> oldJavaDoc = this.javadoc;
         if (c.isEmpty()) {
-            if (oldJavaDoc.equals(defaultJavadoc(this))) {
+            if (toURIList(this.javadoc).equals(toURIList(defaultJavadoc(this)))) {
                 //Set the PROP_NO_DEFAULT_JAVADOC
                 this.properties.put(PROP_NO_DEFAULT_JAVADOC, Boolean.TRUE.toString());
             }
@@ -415,6 +417,20 @@ public class J2SEPlatformImpl extends JavaPlatform {
      */
     private boolean shouldAddDefaultJavadoc() {
         return !Boolean.parseBoolean(getProperties().get(PROP_NO_DEFAULT_JAVADOC));
+    }
+    
+    @NonNull
+    private static List<? extends URI> toURIList(
+            @NonNull final List<? extends URL> original) {
+        final List<URI> result = new ArrayList<URI>(original.size());
+        for (URL url : original) {
+            try {
+                result.add(url.toURI());
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
     }
     
     /**

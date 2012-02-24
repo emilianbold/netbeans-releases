@@ -45,7 +45,6 @@ package org.netbeans.modules.versioning.ui.history;
 
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
-import java.io.File;
 import java.io.IOException;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
@@ -54,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.logging.Level;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.swing.etable.QuickFilter;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -93,7 +93,7 @@ public class RevisionNode extends AbstractNode implements Comparable {
         } else {
             FileNode[] nodes = new FileNode[entry.getFiles().length];
             int i = 0;
-            for (File file : entry.getFiles()) {
+            for (VCSFileProxy file : entry.getFiles()) {
                 nodes[i++] = new FileNode(entry, file);            
             }
             Children.SortedArray children = new Children.SortedArray();            
@@ -312,9 +312,9 @@ public class RevisionNode extends AbstractNode implements Comparable {
     private static class FileNode extends AbstractNode implements Comparable {        
 
         private final HistoryEntry entry;
-        private final File file;
+        private final VCSFileProxy file;
         
-        FileNode(HistoryEntry entry, File file) {
+        FileNode(HistoryEntry entry, VCSFileProxy file) {
             super(Children.LEAF, Lookups.fixed(new Object [] { file, entry }));                        
             this.entry = entry;
             this.file = file;

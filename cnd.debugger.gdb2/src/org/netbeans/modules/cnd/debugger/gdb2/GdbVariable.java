@@ -55,9 +55,14 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.ModelChangeDelegator;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.VariableModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.WatchModel;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
+import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
 import org.openide.util.Exceptions;
 
 class GdbVariable extends Variable {
+    static enum DisplayHint {NONE, ARRAY, MAP, STRING}
+    
     protected final GdbDebuggerImpl debugger;
     private final boolean isWatch;
 
@@ -69,6 +74,7 @@ class GdbVariable extends Variable {
     private boolean changed;
     private boolean inScope = true;
     private boolean dynamic = false;
+    private DisplayHint displayHint = DisplayHint.NONE;
 
     public GdbVariable(GdbDebuggerImpl debugger, ModelChangeDelegator updater,
 		       Variable parent,
@@ -105,6 +111,18 @@ class GdbVariable extends Variable {
 	return inScope;
     }
 
+    public DisplayHint getDisplayHint() {
+        return displayHint;
+    }
+    
+    private void setDisplayHint(String hint) {
+        try {
+            displayHint = DisplayHint.valueOf(hint.toUpperCase());
+        } catch (Exception e) {
+            displayHint = DisplayHint.NONE;
+        }
+    }
+
     // override Variable
     @Override
     public String getAsText() {
@@ -132,7 +150,7 @@ class GdbVariable extends Variable {
 	return editable;
     }
 
-    protected void setMIName(String mi_name) {
+    void setMIName(String mi_name) {
 	this.mi_name = mi_name;
     }
 
@@ -168,8 +186,8 @@ class GdbVariable extends Variable {
         return dynamic;
     }
 
-    public void setDynamic(boolean dynamic) {
-        this.dynamic = dynamic;
+    private void setDynamic(String value) {
+        this.dynamic = "1".equals(value); //NOI18N
     }
 
     // override Variable
@@ -187,13 +205,14 @@ class GdbVariable extends Variable {
                 
         waitingForDebugger = true;           // reset in setChildren()
         Runnable r = new Runnable() {
-           public void run() {
-               try {
-		   setChildren();
-               } catch (Exception e) {
-                   Exceptions.printStackTrace(e);
-               }
-           }
+            @Override
+            public void run() {
+                try {
+                    setChildren();
+                } catch (Exception e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
         };
         SwingUtilities.invokeLater(r);
         
@@ -206,6 +225,7 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteExpanded(boolean isWatch) {
         if (isExpanded())
             return;
@@ -213,12 +233,14 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public void noteCollapsed(boolean isWatch) {
         setExpanded(false);
     }
 
 
     // for assign new value from view nodes
+    @Override
     public void setVariableValue(String assigned_v) {
         // no need to update to the same value
         if (!assigned_v.equals(value)) {
@@ -228,20 +250,24 @@ class GdbVariable extends Variable {
         }
     }
 
+    @Override
     public void removeAllDescendantFromOpenList(boolean isLocal) {
     }
 
     // interface Variable
+    @Override
     public String getDebugInfo() {
 	return "";
     }
 
     // implement Variable
+    @Override
     public boolean getDelta() {
         return false;
     }
 
     // interface Variable
+    @Override
     public Action[] getActions(boolean isWatch) {
 	if (isWatch) {
 	    return new Action[] {
@@ -268,18 +294,74 @@ class GdbVariable extends Variable {
     }
 
     // interface Variable
+    @Override
     public boolean isArrayBrowsable() {
 	// No array browser for gdb
 	return false;
     }
 
     // interface Variable
+    @Override
     public void postFormat(String format) {
 	debugger.postVarFormat(this, format);
     }
 
     // interface Variable
+    @Override
     public String getFormat() {
 	return mi_format;
+    }
+    
+    //////////////
+    // Methods to populate from gdb results
+    
+    void populateFields(MITList results) {
+        setMIName(results.getConstValue("name")); // NOI18N
+        setType(results.getConstValue("type")); // NOI18N
+        
+        String numchild_l = results.getConstValue("numchild"); // NOI18N
+        MIValue dynamicVal = results.valueOf("dynamic"); //NOI18N
+        if (dynamicVal != null) {
+            setDynamic(dynamicVal.asConst().value());
+            setDisplayHint(results.getConstValue("displayhint")); //NOI18N
+            String hasMoreVal = results.getConstValue("has_more"); //NOI18N
+            if (!hasMoreVal.isEmpty()) {
+                numchild_l = hasMoreVal; // NOI18N
+            } else {
+                switch (displayHint) {
+                    case ARRAY:
+                    case MAP:
+                    case NONE:
+                        numchild_l = "1"; // NOI18N
+                }
+            }
+        }
+        setNumChild(numchild_l); // also set children if there is any
+    }
+    
+    void populateUpdate(MITList results) {
+        for (MIResult item : results.getOnly(MIResult.class)) {
+            if (item.matches("in_scope")) { //NOI18N
+                if (this instanceof GdbWatch) {
+                    setInScope(Boolean.parseBoolean(item.value().asConst().value()));
+                }
+            } else if (item.matches("new_type")) { //NOI18N
+                setType(item.value().asConst().value());
+            } else if (item.matches("new_num_children")) { //NOI18N
+                setNumChild(item.value().asConst().value());
+                setChildren(null, false);
+            } else if (item.matches("dynamic")) { //NOI18N
+                setDynamic(item.value().asConst().value());
+            } else if (item.matches("displayhint")) { //NOI18N
+                setDisplayHint(item.value().asConst().value());
+            } else if (item.matches("has_more")) { //NOI18N
+                if (!"0".equals(item.value().asConst().value())) { //NOI18N
+                    setNumChild(item.value().asConst().value());
+                    setChildren(null, false);
+                }
+            } else if (item.matches("new_children")) { //NOI18N
+                //TODO: can update new children from here
+            }
+        }
     }
 }

@@ -58,6 +58,5 @@ made subject to such option by the copyright holder.
 
 <!-- ================ CSH Help IDs for New Database Schema wizard ================= -->
 <mapID target="dbschema_ctxhelp_wizard" url="csh-dbschema-wizard1.html" />
-<!-- This help id needs to be updated-->
-<mapID target="dbschema_ctxhelp_wizard" url="csh-dbschema-wizard2.html" />
+<mapID target="dbschema_ctxhelp_capture_tables" url="csh-dbschema-wizard2.html" />
 </map>

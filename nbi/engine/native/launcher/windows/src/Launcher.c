@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -168,6 +168,26 @@ void loadLocalizationStrings(LauncherProperties *props) {
         writeMessageA(props, OUTPUT_LEVEL_NORMAL, 1, "Error! Can`t load i18n strings!!", 1);
         showErrorW(props, INTEGRITY_ERROR_PROP, 1, props->exeName);
     }
+}
+
+void readDefaultRoots(LauncherProperties *props) {
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading Default Userdir and Cachedir roots...", 1);
+    
+    WCHAR * appDataValue = getStringValue(HKEY_CURRENT_USER,
+                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
+                        toWCHAR("AppData"), 0);
+    props->defaultUserDirRoot = appendStringW(appDataValue, toWCHAR("\\NetBeans"));
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "defaultUserDirRoot: ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->defaultUserDirRoot, 1);
+    
+    WCHAR * localAppDataValue = getStringValue(HKEY_CURRENT_USER,
+                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
+                        toWCHAR("Local AppData"), 0);
+    props->defaultCacheDirRoot = appendStringW(localAppDataValue, toWCHAR("\\NetBeans\\Cache"));
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "defaultCacheDirRoot: ", 0);
+    writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, props->defaultCacheDirRoot, 1);
+    
+    writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "End of Reading Default Roots.", 1);
 }
 
 void createTMPDir(LauncherProperties * props) {
@@ -569,14 +589,30 @@ void setAdditionalArguments(LauncherProperties * props) {
                 }
             }
         }
+        
+        // handle DefaultUserDirRoot, DefaultCacheDirRoot - increasing array size
+        jArg = jArg + 2;
+        
         //fill the array
         if(jArg>0) {
+            int size = jArg + props->jvmArguments->size;
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, DWORDtoCHAR(size), 1);
             javaArgs = newppWCHAR(jArg + props->jvmArguments->size);
-            //DWORD j=0;
             for (i=0;i<props->jvmArguments->size;i++) {
                 javaArgs[i] = props->jvmArguments->items[i];
             }
             FREE(props->jvmArguments->items);
+            
+            // cont. handle DefaultUserDirRoot, DefaultCacheDirRoot
+            // * add -Dnetbeans.default_userdir_root
+            // * add -Dnetbeans.default_cachedir_root
+            javaArgs[i-2] = appendStringW(toWCHAR("-Dnetbeans.default_userdir_root="), props->defaultUserDirRoot);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Added an JVM argument: ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs[i-2], 1);
+            
+            javaArgs[i-1] = appendStringW(toWCHAR("-Dnetbeans.default_cachedir_root="), props->defaultCacheDirRoot);
+            writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Added an JVM argument: ", 0);
+            writeMessageW(props, OUTPUT_LEVEL_DEBUG, 0, javaArgs[i-1], 1);
         } else {
             javaArgs = NULL;
         }
@@ -931,6 +967,9 @@ void processLauncher(LauncherProperties * props) {
     if(!isOK(props) || isTerminated(props)) return;
     
     skipStub(props);
+    if(!isOK(props) || isTerminated(props)) return;
+    
+    readDefaultRoots(props);
     if(!isOK(props) || isTerminated(props)) return;
     
     loadLocalizationStrings(props);

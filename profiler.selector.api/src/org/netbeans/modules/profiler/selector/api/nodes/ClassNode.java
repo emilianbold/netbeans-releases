@@ -55,7 +55,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceClassInfo;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
-import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -109,7 +109,7 @@ public class ClassNode extends ContainerNode {
 
     /** Creates a new instance of ClassNode */
     public ClassNode(SourceClassInfo cInfo, String displayName, Icon icon, final ContainerNode parent) {
-        super((cInfo != null ? cInfo.getQualifiedName() : Bundle.LBL_Unknown()), displayName, icon, parent); // NOI8N
+        super((cInfo != null ? cInfo.getQualifiedName() : Bundle.LBL_Unknown()), displayName, icon, parent, Lookups.singleton(cInfo)); // NOI8N
         this.cInfo = cInfo;
         
         if (isAnonymous()) {
@@ -205,8 +205,12 @@ public class ClassNode extends ContainerNode {
             protected Set<ClassNode> getInnerClassNodes(final InnerClassesNode parent) {
                 final Set<ClassNode> innerClassNodes = new HashSet<ClassNode>();
 
-                for(SourceClassInfo inner : cInfo.getInnerClases()) {
-                    innerClassNodes.add(new ClassNode(inner, parent));
+                try {
+                    for (SourceClassInfo inner : cInfo.getInnerClases()) {
+                        innerClassNodes.add(new ClassNode(inner, parent));
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 return innerClassNodes;

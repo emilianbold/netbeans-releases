@@ -43,24 +43,23 @@
 package org.netbeans.modules.maven.classpath;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.openide.filesystems.FileUtil;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -75,6 +74,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         project = proj;
         //TODO make weak or remove the listeners as well??
         NbMavenProject.addPropertyChangeListener(proj, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                     List<PathResourceImplementation> newValues = getPath();
@@ -111,7 +111,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
             PathResourceImplementation res = it.next();
             URL oldUrl = res.getRoots()[0];
             boolean found = false;
-            if (nl.size() == 0) {
+            if (nl.isEmpty()) {
                 return true;
             }
             Iterator<PathResourceImplementation> inner = nl.iterator();
@@ -128,7 +128,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
                 return true;
             }
         }
-        if (nl.size() != 0) {
+        if (!nl.isEmpty()) {
             return true;
         }
         return false;
@@ -138,6 +138,7 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         return project;
     }
     
+    @Override
     public synchronized List<PathResourceImplementation> getResources() {
         if (resources == null) {
             resources = this.getPath();
@@ -193,12 +194,14 @@ public abstract class AbstractProjectClassPathImpl implements ClassPathImplement
         return result;
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (support) {
             support.addPropertyChangeListener(propertyChangeListener);
         }
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener propertyChangeListener) {
         synchronized (support) {
             support.removePropertyChangeListener(propertyChangeListener);

@@ -63,6 +63,9 @@ public abstract class SaasTestBase extends RestTestBase {
     public SaasTestBase(String name) {
         super(name);
     }
+      public SaasTestBase(String name, Server server) {
+        super(name, server);
+    }
 
     @Override
     protected String getProjectName() {
@@ -98,8 +101,7 @@ public abstract class SaasTestBase extends RestTestBase {
         //Java
         String javaAppLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "Templates/Classes"); //NOI18N
         //Java Class
-        String javaFileLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.project.Bundle", "Templates/Classes/Class.java"); //NOI18N
-        createNewFile(getProject(), javaAppLabel, javaFileLabel);
+        createNewFile(getProject(), javaAppLabel, "Java Class");
         NewJavaFileNameLocationStepOperator op = new NewJavaFileNameLocationStepOperator();
         op.setObjectName(javaClassName);
         op.setPackage("org.my"); //NOI18N

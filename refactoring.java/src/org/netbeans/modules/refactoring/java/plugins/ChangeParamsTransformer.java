@@ -272,7 +272,16 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                     vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
                 } else {
                     String value = pi[i].getDefaultValue();
-                    vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, method);
+                    if (i == pi.length - 1 && pi[i].getType().endsWith("...")) { // NOI18N
+                        // last param is vararg, so split the default value for the remaining arguments
+                        MethodInvocationTree parsedExpression = (MethodInvocationTree) workingCopy.getTreeUtilities().parseExpression("method("+value+")", pos); //NOI18N
+                        for (ExpressionTree expressionTree : parsedExpression.getArguments()) {
+                            arguments.add(translateExpression(expressionTree, currentArguments, method));
+                        }
+                        break;
+                    } else {
+                        vt = translateExpression(workingCopy.getTreeUtilities().parseExpression(value, pos), currentArguments, method);
+                    }
                 }
             } else {
                 if (i == pi.length - 1 && pi[i].getType().endsWith("...") && method.isVarArgs() && method.getParameters().size()-1 == originalIndex) { // NOI18N
@@ -380,7 +389,11 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 int originalIndex = p[i].getOriginalIndex();
                 VariableTree vt;
                 if (originalIndex <0) {
-                    vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), p[i].getName(),make.Identifier(p[i].getType()), null);
+                    boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N
+                    vt = make.Variable(make.Modifiers(Collections.<Modifier>emptySet()),
+                            p[i].getName(),
+                            make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
+                            null);
                 } else {
                     VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
                     boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N

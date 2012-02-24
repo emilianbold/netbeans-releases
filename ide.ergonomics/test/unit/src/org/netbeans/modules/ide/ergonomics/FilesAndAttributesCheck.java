@@ -55,10 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.junit.NbTestCase;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
+import org.openide.filesystems.*;
 
 /**
  *
@@ -248,7 +245,7 @@ public class FilesAndAttributesCheck extends NbTestCase {
             if (!fo.isData()) {
                 continue;
             }
-            if (fo.hasExt("instance")) {
+            if (fo.getAttribute("instanceCreate") instanceof MIMEResolver) {
                 if (fo.getSize() != 0) {
                     errors.append("Should be empty ").append(fo).append(" size: ").append(fo.getSize()).append('\n');
                 }

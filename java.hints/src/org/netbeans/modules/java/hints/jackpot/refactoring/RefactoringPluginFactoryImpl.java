@@ -48,8 +48,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
-        if (refactoring instanceof ReplaceConstructorRefactoring) {
-            return new ReplaceConstructorRefactoringPluginImpl((ReplaceConstructorRefactoring) refactoring);
+        if (refactoring instanceof ReplaceConstructorWithFactoryRefactoring) {
+            return new ReplaceConstructorWithFactoryPlugin((ReplaceConstructorWithFactoryRefactoring) refactoring);
         }
 
         if (refactoring instanceof InvertBooleanRefactoring) {

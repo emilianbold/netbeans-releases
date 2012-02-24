@@ -1319,8 +1319,54 @@ public class CasualDiff {
         if (oldT.typeargs.nonEmpty() && newT.typeargs.nonEmpty() && Kind.MEMBER_SELECT == oldT.meth.getKind()) {
             localPointer = diffSelect((JCFieldAccess) oldT.meth, (JCFieldAccess) newT.meth, methBounds, oldT.typeargs, newT.typeargs);
         } else {
-            localPointer = diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
-            localPointer = diffTree(oldT.meth, newT.meth, methBounds);
+            JCExpression oldExp = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).getExpression() : null;
+            JCExpression newExp = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).getExpression() : null;
+            if(oldExp != newExp) {
+                if(oldExp == null) {
+                    printer.print(newExp);
+                    printer.print("."); //NOI18N
+                } else if(newExp == null) {
+                    int[] expBounds = getBounds(oldExp);
+                    tokenSequence.move(expBounds[1]);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+                    localPointer = tokenSequence.offset();
+                } else {
+                    int[] expBounds = getBounds(oldExp);
+                    localPointer = diffTree(oldExp, newExp, expBounds);
+                    tokenSequence.move(localPointer);
+                    copyTo(localPointer, localPointer = expBounds[1]);
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to dot (.)
+                    moveToSrcRelevant(tokenSequence, Direction.FORWARD); // go to oldT.name token
+                    localPointer = tokenSequence.offset();
+                    printer.print("."); //NOI18N
+                }
+            } else if(oldExp != null) {
+                int endpos = getBounds(oldExp)[1];
+                copyTo(localPointer, localPointer = endpos+1);
+            }
+
+            boolean parens = newT.typeargs.nonEmpty();
+            localPointer = diffParameterList(oldT.typeargs,
+                    newT.typeargs,
+                    parens ? new JavaTokenId[] { JavaTokenId.LT, JavaTokenId.GT } : null,
+                    localPointer,
+                    Measure.ARGUMENT);
+            tokenSequence.move(localPointer);
+            moveToDifferentThan(tokenSequence, Direction.FORWARD, EnumSet.of(JavaTokenId.GT));
+            localPointer = tokenSequence.offset();
+            
+            Name oldName = oldT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)oldT.meth).name : ((JCIdent)oldT.meth).name;
+            Name newName = newT.meth.getKind() == Kind.MEMBER_SELECT ? ((JCFieldAccess)newT.meth).name : ((JCIdent)newT.meth).name;
+            
+            if (nameChanged(oldName, newName)) {
+                if(newT.meth.getKind() == Kind.MEMBER_SELECT) {
+                    printer.print(((JCFieldAccess)newT.meth).name);
+                } else {
+                    printer.print(newT.meth);
+                }
+                localPointer += oldName.length();
+            }
         }
         if (!listsMatch(oldT.args, newT.args)) {
             if (oldT.args.nonEmpty()) {
@@ -1455,7 +1501,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffAssign(JCAssign oldT, JCAssign newT, int[] bounds) {
+    protected int diffAssign(JCAssign oldT, JCAssign newT, JCTree parent, int[] bounds) {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
@@ -1470,7 +1516,8 @@ public class CasualDiff {
             tokenSequence.move(rhsBounds[0]);
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
             if (tokenSequence.token().id() != JavaTokenId.EQ) {
-                if (diffContext.style.spaceAroundAssignOps())
+                boolean spaceAroundAssignOps = parent.getKind() == Kind.ANNOTATION ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
+                if (spaceAroundAssignOps)
                     printer.print(" = ");
                 else
                     printer.print("=");
@@ -3259,7 +3306,7 @@ public class CasualDiff {
               retVal = diffParens((JCParens)oldT, (JCParens)newT, elementBounds);
               break;
           case JCTree.ASSIGN:
-              retVal = diffAssign((JCAssign)oldT, (JCAssign)newT, elementBounds);
+              retVal = diffAssign((JCAssign)oldT, (JCAssign)newT, parent, elementBounds);
               break;
           case JCTree.TYPECAST:
               retVal = diffTypeCast((JCTypeCast)oldT, (JCTypeCast)newT, elementBounds);

@@ -248,21 +248,21 @@ public class IntroduceHintTest extends NbTestCase {
         performFixTest("package test; public class Test {public void test(int y) {while (y != 7) {y = 3 + 4;} y = 3 + 4;}}",
                        115 - 25, 120 - 25,
                        "package test; public class Test {public void test(int y) {int name = 3 + 4; while (y != 7) {y = name;} y = name;}}",
-                       new DialogDisplayerImpl(null, true, null, true),
+                       new DialogDisplayerImpl(null, true, false, true),
                        5, 0);
     }
 
     public void testFix11() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
                        "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",
-                       new DialogDisplayerImpl("name", true, null, true),
+                       new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
 
     public void testFix12() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null; CharSequence c = |l.get(0)|;} }",
                        "package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = null;CharSequence name = l.get(0); CharSequence c = name;} }",
-                       new DialogDisplayerImpl("name", true, null, true),
+                       new DialogDisplayerImpl("name", true, false, true),
                        4, 0);
     }
 
@@ -1149,9 +1149,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "    }\n" +
                        "    private static void t(Runnable r) {}\n" +
                        "}\n",
-                       "package test; public class Test { public static void test() { t(name()); } private static Runnable name() { return new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } private static void t(Runnable r) {} } ",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true),
+                       "package test; public class Test { public static void test() { t(name()); } private static void t(Runnable r) {} private static Runnable name() { return new Runnable() { public void run() { throw new UnsupportedOperationException(); } }; } } ",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true),
                        4, 2);
     }
 
@@ -1190,9 +1189,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        i++;\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { private static int i; public static void test1() { name(); } private static void name() { i++; } public static void test2() { name(); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { private static int i; public static void test1() { name(); } public static void test2() { name(); } private static void name() { i++; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1210,9 +1208,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(a);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; return i; } public static void test2() { int a = 0; a = name(a); System.err.println(a); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } public static void test2() { int a = 0; a = name(a); System.err.println(a); } private static int name(int i) { i++; return i; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1228,9 +1225,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(a);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { int i = 0; name(i); } private static void name(int i) { System.err.println(i); } public static void test2() { int a = 0; name(a); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { int i = 0; name(i); } public static void test2() { int a = 0; name(a); } private static void name(int i) { System.err.println(i); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1246,9 +1242,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(1);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { name(); name(); } private static void name() { System.err.println(1); } public static void test2() { name(); name(); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { name(); name(); } public static void test2() { name(); name(); } private static void name() { System.err.println(1); } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1266,9 +1261,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(a[0]);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; return i; } public static void test2() { int[] a = {0}; a[0] = name(a[0]); System.err.println(a[0]); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } public static void test2() { int[] a = {0}; a[0] = name(a[0]); System.err.println(a[0]); } private static int name(int i) { i++; return i; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1286,9 +1280,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(a[0]);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; return i; } public static void test2() { int[] a = {0}; if (true) a[0] = name(a[0]); System.err.println(a[0]); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } public static void test2() { int[] a = {0}; if (true) a[0] = name(a[0]); System.err.println(a[0]); } private static int name(int i) { i++; return i; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 
@@ -1311,9 +1304,8 @@ public class IntroduceHintTest extends NbTestCase {
                        "        System.err.println(a[0]);\n" +
                        "    }\n" +
                        "}",
-                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } private static int name(int i) { i++; i++; return i; } public static void test2(int ii) { int[] a = {0}; switch (ii) { case 0: a[0] = name(a[0]); break; } System.err.println(a[0]); } }",
-                       new DialogDisplayerImpl3("name", EnumSet
-                .of(Modifier.PRIVATE), true, true),
+                       "package test; public class Test { public static void test1() { int i = 0; i = name(i); System.err.println(i); } public static void test2(int ii) { int[] a = {0}; switch (ii) { case 0: a[0] = name(a[0]); break; } System.err.println(a[0]); } private static int name(int i) { i++; i++; return i; } }",
+                       new DialogDisplayerImpl3("name", EnumSet.of(Modifier.PRIVATE), true, true),
                        1, 0);
     }
 

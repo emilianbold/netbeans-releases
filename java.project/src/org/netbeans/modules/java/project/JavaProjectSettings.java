@@ -67,7 +67,11 @@ public class JavaProjectSettings {
         /**
          * The package view should be displayed as a tree of folders.
          */
-        TREE;
+        TREE,
+        /**
+         * #53192: the package view should be displayed as a tree of folders with unique subcomponents collapsed.
+         */
+        REDUCED_TREE;
     }
 
     public static final String PROP_PACKAGE_VIEW_TYPE = "packageViewType"; //NOI18N
@@ -81,7 +85,9 @@ public class JavaProjectSettings {
      * Returns how the package view should be displayed.
      */
     public static PackageViewType getPackageViewType() {
-        return PackageViewType.values()[prefs().getInt(PROP_PACKAGE_VIEW_TYPE, PackageViewType.PACKAGES.ordinal())];
+        int type = prefs().getInt(PROP_PACKAGE_VIEW_TYPE, -1);
+        PackageViewType[] types = PackageViewType.values();
+        return type >= 0 && type < types.length ? types[type] : PackageViewType.PACKAGES;
     }
 
     /**

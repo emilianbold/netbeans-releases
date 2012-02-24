@@ -64,6 +64,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation;
@@ -107,6 +108,15 @@ public class LibrariesStorageTest extends NbTestCase {
         this.storage = new LibrariesStorage (this.storageFolder);
     }
 
+    @RandomlyFails
+    /* ergonomics-3373:
+     * junit.framework.AssertionFailedError: Event count expected:<1> but was:<2>
+	 * at org.netbeans.modules.project.libraries.LibrariesStorageTest.testGetLibraries(LibrariesStorageTest.java:127)
+	 * at org.netbeans.junit.NbTestCase.access$200(NbTestCase.java:99)
+	 * at org.netbeans.junit.NbTestCase$2.doSomething(NbTestCase.java:405)
+	 * at org.netbeans.junit.NbTestCase$1Guard.run(NbTestCase.java:331)
+	 * at java.lang.Thread.run(Thread.java:662)
+     */
     public void testGetLibraries() throws Exception {
         this.storage.getLibraries();
         LibraryImplementation[] libs = this.storage.getLibraries();
@@ -124,7 +134,7 @@ public class LibrariesStorageTest extends NbTestCase {
         libs = this.storage.getLibraries();
         assertEquals("Libraries count",3,libs.length);
         assertLibEquals(libs, new String[] {"Library1", "Library2", "Library3"});
-        assertEquals("Event count",1,l.getEventNames().size());
+        assertEquals("Event count",1,l.getEventNames().size()); // line 127@ergonomics-3373
         assertEquals("Event names",LibraryProvider.PROP_LIBRARIES,l.getEventNames().get(0));
         assertTrue("Library created called",tlp.wasCreatedCalled());
     }

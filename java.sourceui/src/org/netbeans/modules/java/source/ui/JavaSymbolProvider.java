@@ -192,7 +192,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                     LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
                 }
                 //Perform all queries in single op
-                IndexManager.readAccess(new IndexManager.Action<Void>() {
+                IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                     @Override
                     public Void run() throws IOException, InterruptedException {
                         for (URL url : rootUrls) {

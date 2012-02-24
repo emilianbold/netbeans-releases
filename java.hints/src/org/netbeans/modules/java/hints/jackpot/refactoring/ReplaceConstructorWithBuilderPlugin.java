@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,7 +59,9 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.java.hints.matching.Occurrence;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -84,6 +87,20 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
 
     @Override
     public Problem fastCheckParameters() {
+        String builderName = replaceConstructorWithBuilder.getBuilderName();
+        if (builderName == null || builderName.length() == 0) {
+            return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_NoFactory"));
+        }
+        if (!SourceVersion.isName(builderName)) {
+            return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_NotIdentifier", builderName));
+        }
+        final TreePathHandle constr = replaceConstructorWithBuilder.getRefactoringSource().lookup(TreePathHandle.class);
+        ClassPath classPath = ClassPath.getClassPath(constr.getFileObject(), ClassPath.SOURCE);
+        String name = replaceConstructorWithBuilder.getBuilderName().replace(".", "/") + ".java";
+        FileObject resource = classPath.findResource(name);
+        if (resource !=null) {
+            return new Problem(true, NbBundle.getMessage(ReplaceConstructorWithBuilderPlugin.class, "ERR_FileExists", name));
+        }
         return null;
     }
 

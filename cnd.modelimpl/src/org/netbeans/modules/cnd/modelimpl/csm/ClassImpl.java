@@ -129,25 +129,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return classImpl;
     }
 
-    public void init(CsmScope scope, AST ast, boolean register) {
+    public void init(CsmScope scope, AST ast, CsmFile file, FileImplContent fileContent, boolean register) {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initClassDefinition(scope);
-        render(ast, !register);
+        render(ast, file, fileContent, !register);
         if (register) {
             register(getScope(), false);
         }
     }
-
-    public void init2(CsmScope scope, AST ast, boolean register) {
-        initScope(scope);
-//        temporaryRepositoryRegistration(register, this);
-        initClassDefinition(scope);
-        render(ast, !register);
-        if (register) {
-            register(getScope(), false);
-        }
-    }
+//
+//    public void init2(CsmScope scope, AST ast, boolean register) {
+//        initScope(scope);
+////        temporaryRepositoryRegistration(register, this);
+//        initClassDefinition(scope);
+//        render(ast, !register);
+//        if (register) {
+//            register(getScope(), false);
+//        }
+//    }
     
     public void init3(CsmScope scope, boolean register) {
         initScope(scope);
@@ -170,13 +170,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public final void render(AST ast, boolean localClass) {
-        new ClassAstRenderer(getContainingFile(), CsmVisibility.PRIVATE, localClass).render(ast);
+    public final void render(AST ast, CsmFile file, FileImplContent fileContent, boolean localClass) {
+        new ClassAstRenderer(file, fileContent, CsmVisibility.PRIVATE, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
     public final void fixFakeRender(CsmFile file, CsmVisibility visibility, AST ast, boolean localClass) {
-        new ClassAstRenderer(file, visibility, localClass).render(ast);
+        new ClassAstRenderer(file, null, visibility, localClass).render(ast);
     }
 
     protected static ClassImpl findExistingClassImplInContainer(DeclarationsContainer container, AST ast) {
@@ -197,7 +197,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
     
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register, DeclarationsContainer container) {
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, FileImplContent fileContent, boolean register, DeclarationsContainer container) {
         ClassImpl impl = findExistingClassImplInContainer(container, ast);
         if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
             // not our instance
@@ -208,7 +208,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             nameHolder = NameHolder.createClassName(ast);
             impl = new ClassImpl(nameHolder, ast, file);
         }
-        impl.init(scope, ast, register);
+        impl.init(scope, ast, file, fileContent, register);
         if (nameHolder != null) {
             nameHolder.addReference(file, impl);
         }
@@ -423,6 +423,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
     public static class ClassBuilder implements CsmObjectBuilder {
         
         private CharSequence name;// = CharSequences.empty();
+        private int nameStartOffset;
+        private int nameEndOffset;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
         private int startOffset;
@@ -438,9 +440,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.kind = kind;
         }
         
-        public void setName(CharSequence name) {
+        public void setName(CharSequence name, int startOffset, int endOffset) {
             if(this.name == null) {
                 this.name = name;
+                this.nameStartOffset = startOffset;
+                this.nameEndOffset = endOffset;
             }
         }
 
@@ -502,12 +506,17 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         public ClassImpl create() {
             ClassImpl cls = getClassDefinitionInstance();
             if (cls == null && name != null && getScope() != null) {
-                NameHolder nameHolder = NameHolder.createName(name);
+                NameHolder nameHolder = NameHolder.createName(name, nameStartOffset, nameEndOffset);
                 cls = new ClassImpl(nameHolder, kind, file, startOffset, endOffset);
                 cls.init3(getScope(), true);
 //                temporaryRepositoryRegistration(true, cls);
                 if (nameHolder != null) {
                     nameHolder.addReference(file, cls);
+                }
+                if(parent != null) {
+                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
+                } else {
+                    ((FileImpl)file).addDeclaration(cls);
                 }
             }
             return cls;
@@ -598,8 +607,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private final boolean renderingLocalContext;
         private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(CsmFile containingFile, CsmVisibility curentVisibility, boolean renderingLocalContext) {
-            super((FileImpl) containingFile, null);
+        public ClassAstRenderer(CsmFile containingFile, FileImplContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+            super((FileImpl) containingFile, fileContent, null);
             this.renderingLocalContext = renderingLocalContext;
             this.curentVisibility = curentVisibility;
         }
@@ -660,8 +669,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                         ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token)
-                                ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext(), ClassImpl.this)
-                                : ClassImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext(), ClassImpl.this);
+                                ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this)
+                                : ClassImpl.create(token, ClassImpl.this, getContainingFile(), getFileContent(), !isRenderingLocalContext(), ClassImpl.this);
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass,!isRenderingLocalContext());
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -1020,7 +1029,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 AST colonAST;
                 if (idAST == null) {
                     break;
-                } else if (idAST.getType() == CPPTokenTypes.ID) {
+                } else if (idAST.getType() == CPPTokenTypes.IDENT) {
                     colonAST = idAST.getNextSibling();
                 } else if (idAST.getType() == CPPTokenTypes.COLON){
                     colonAST = idAST;

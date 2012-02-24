@@ -915,7 +915,7 @@ public final class DocumentViewOp
         } // Otherwise it's already assigned from propertyChange()
 
         if (!isAnyStatusBit(CUSTOM_BACKGROUND)) {
-            if (backColor != null && backColor.equals(defaultBackground)) {
+            if (backColor != null && !backColor.equals(defaultBackground)) {
                 if (defaultBackground != null) {
                     change = true;
                 }

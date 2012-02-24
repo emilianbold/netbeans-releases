@@ -207,6 +207,21 @@ public class CompletionUtil {
         }
     }
     
+    private static AXIComponent findOriginal(AXIComponent c) {
+        while (true) {
+            switch (c.getComponentType()) {
+                case REFERENCE:
+                    c = c.getSharedComponent();
+                    break;
+                case PROXY:
+                    c = c.getOriginal();
+                    break;
+                default:
+                    return c;
+            }
+        }
+    }
+    
     /**
      * Returns the list of attributes for a given element.
      */
@@ -217,7 +232,7 @@ public class CompletionUtil {
             return null;
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractAttribute aa: element.getAttributes()) {
-            AXIComponent original = aa.getOriginal();
+            AXIComponent original = findOriginal(aa);
             if(original.getTargetNamespace() == null) {  //no namespace
                 CompletionResultItem item = createResultItem(original, null, context);
                 if(item != null)
@@ -252,7 +267,7 @@ public class CompletionUtil {
         
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractElement ae: element.getChildElements()) {
-            AXIComponent original = ae.getOriginal();
+            AXIComponent original = findOriginal(ae);
             if(original.getTargetNamespace() == null) {  //no namespace
                 CompletionResultItem item = createResultItem(original, null, context);
                 if(item != null) {
@@ -478,12 +493,13 @@ public class CompletionUtil {
         CompletionModel cm) {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
+            ae = findOriginal(ae);
             if(context.getDefaultNamespace() != null &&
                !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
-                String prefix = context.suggestPrefix("ns1");
+                String prefix = context.suggestPrefix(ae.getTargetNamespace());
                 CompletionModel m = new CompletionModelEx(context, prefix,
                     ae.getModel().getSchemaModel());
                 context.addCompletionModel(m);

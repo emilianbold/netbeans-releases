@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,14 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
@@ -62,24 +55,12 @@ import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
-import org.netbeans.installer.utils.BrowserUtils;
-import org.netbeans.installer.utils.ErrorManager;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.ResourceUtils;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.XMLUtils;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.exceptions.UninstallationException;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.Dependency;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.Status;
-import org.netbeans.installer.utils.helper.Pair;
+import org.netbeans.installer.utils.helper.*;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -90,8 +71,6 @@ import org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMe
 import org.netbeans.installer.wizard.containers.SwingContainer;
 import org.netbeans.installer.wizard.ui.SwingUi;
 import org.netbeans.installer.wizard.ui.WizardUi;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  *
@@ -240,6 +219,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public static class NbPreInstallSummaryPanelUi extends ErrorMessagePanelUi {
+        @SuppressWarnings("FieldNameHidesFieldInSuperclass")
         protected NbPreInstallSummaryPanel component;
         
         public NbPreInstallSummaryPanelUi(NbPreInstallSummaryPanel component) {
@@ -259,6 +239,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
     }
     
     public static class NbPreInstallSummaryPanelSwingUi extends ErrorMessagePanelSwingUi {
+        @SuppressWarnings("FieldNameHidesFieldInSuperclass")
         protected NbPreInstallSummaryPanel component;
         
         private NbiTextPane locationsPane;
@@ -345,7 +326,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             
             
             File nbLocation = null;
-            Product base = null;
+            Product base;
             // If there are several packs to be installed but Base is already installed
             // then search it and the corresponding record to text
             if (dependentOnNb.size() > 0 && !nbBasePresent) {
@@ -373,7 +354,8 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                         panel.getProperty(INSTALLATION_FOLDER_NETBEANS_PROPERTY),
                                         base.getDisplayName()));
                                 text.append(StringUtils.LF);
-                                text.append("    " + nbLocation);
+                                text.append("    ");
+                                text.append(nbLocation);
                                 text.append(StringUtils.LF);                                
                             }
                             break;
@@ -397,7 +379,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                         text.append(StringUtils.format(property,
                                 product.getDisplayName()));
                         text.append(StringUtils.LF);
-                        text.append("    " + product.getInstallationLocation());
+                        text.append("    ").append(product.getInstallationLocation());
                         text.append(StringUtils.LF); 
                     }
                 } catch (InitializationException e) {
@@ -473,7 +455,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
             downloadSizeValue.setText(StringUtils.formatSize(
                     downloadSize));
             
-            if (registry.getProductsToInstall().size() == 0) {
+            if (registry.getProductsToInstall().isEmpty()) {
                 locationsPane.setVisible(false);
                 installationSizeLabel.setVisible(false);
                 installationSizeValue.setVisible(false);
@@ -483,7 +465,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 installationSizeValue.setVisible(true);
             }
             
-            if (registry.getProductsToUninstall().size() == 0) {
+            if (registry.getProductsToUninstall().isEmpty()) {
                 uninstallListLabel.setVisible(false);
                 uninstallListPane.setVisible(false);
             } else {
@@ -574,17 +556,21 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
         protected String validateInput() {
             try {
                 if(!Boolean.getBoolean(SystemUtils.NO_SPACE_CHECK_PROPERTY)) {
-                    final List<File> roots =
-                            SystemUtils.getFileSystemRoots();
-                    final List<Product> toInstall =
-                            Registry.getInstance().getProductsToInstall();
-                    final Map<File, Long> spaceMap =
-                            new HashMap<File, Long>();
+                    final List<Product> toInstall = Registry.getInstance().getProductsToInstall();
+                    final Map<File, Long> spaceMap = new HashMap<File, Long>();
+                    final File downloadDataDir = Installer.getInstance().getLocalDirectory();
                     
-                    LogManager.log("Available roots : " + StringUtils.asString(roots));
+                    // only roots for appropriate files
+                    final String[] installFiles = new String[toInstall.size() + 1];                    
+                    for (int i = 0; i < toInstall.size(); i++) {
+                        installFiles[i] = toInstall.get(i).getInstallationLocation().getAbsolutePath();
+                    }
+                    installFiles[installFiles.length - 1] = downloadDataDir.getAbsolutePath();
+                    final List<File> roots = SystemUtils.getFileSystemRoots(installFiles);
                     
-                    File downloadDataDirRoot = FileUtils.getRoot(
-                            Installer.getInstance().getLocalDirectory(), roots);
+                    LogManager.log("Roots : " + StringUtils.asString(roots));
+                    
+                    File downloadDataDirRoot = FileUtils.getRoot(downloadDataDir, roots);
                     long downloadSize = 0;
                     for (Product product: toInstall) {
                         downloadSize+=product.getDownloadSize();
@@ -671,6 +657,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                     checkbox.setBorder(new EmptyBorder(0, 0, 0, 0));
                     checkbox.addActionListener(new ActionListener() {
 
+                        @Override
                         public void actionPerformed(ActionEvent e) {                            
                             if (pair.getSecond().isSelected()) {
                                 pair.getFirst().setStatus(Status.TO_BE_UNINSTALLED);
@@ -934,6 +921,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                                     0, 0));                           // padx, pady - ???
 
             removeInstalldirCheckbox.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {                    
                     System.setProperty(REMOVE_NETBEANS_INSTALLDIR_PROPERTY,
                             "" + removeInstalldirCheckbox.isSelected());
@@ -963,6 +951,7 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
 
 
             removeUserdirCheckbox.addActionListener(new ActionListener() {
+                @Override
                 public void actionPerformed(ActionEvent e) {
                     System.setProperty(REMOVE_NETBEANS_USERDIR_PROPERTY, 
                             "" + removeUserdirCheckbox.isSelected());

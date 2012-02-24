@@ -60,23 +60,19 @@ import org.openide.filesystems.FileObject;
  *
  * @author Alexander Simon
  */
-public class SpecialRemoteFileObject extends RemoteFileObjectFile {
+public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     private final char fileTypeChar;
-    public static SpecialRemoteFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, FileType fileType) {
-        return new SpecialRemoteFileObject(fileSystem, execEnv, parent, remotePath, fileType);
-    }
             
-    private SpecialRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    /*package*/ SpecialRemoteFileObject(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
-        super(fileSystem, execEnv, parent, remotePath, null);
+        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
         fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
     @Override
-    public final RemoteFileObjectBase[] getChildren() {
-        return new RemoteFileObjectBase[0];
+    public final RemoteFileObject[] getChildren() {
+        return new RemoteFileObject[0];
     }
 
     @Override
@@ -90,12 +86,12 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    public final RemoteFileObjectBase getFileObject(String name, String ext) {
+    public final RemoteFileObject getFileObject(String name, String ext) {
         return null;
     }
 
     @Override
-    public RemoteFileObjectBase getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath) {
         return null;
     }
 
@@ -115,7 +111,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
+    protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 

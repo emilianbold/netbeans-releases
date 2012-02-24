@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
             <folder name="x-fxml+xml">
                 <folder name="Factories">
                     <file name="FXMLDataLoader.instance">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif"/>
                         <attr name="dataObjectClass" stringvalue="org.netbeans.modules.javafx2.editor.fxml.FXMLDataObject"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/editor/resources/fxmlObject.gif"/>
                         <attr name="instanceCreate" methodvalue="org.openide.loaders.DataLoaderPool.factory"/>
                         <attr name="mimeType" stringvalue="text/x-fxml+xml"/>
                     </file>
@@ -71,11 +71,11 @@ made subject to such option by the copyright holder.
                     </file>
                     <file name="org-openide-actions-FileSystemAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-FileSystemAction.instance"/>
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="2000"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-PropertiesAction.instance"/>
-                        <attr name="position" intvalue="1200"/>
+                        <attr name="position" intvalue="2200"/>
                     </file>
                     <file name="org-openide-actions-RenameAction.shadow">
                         <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-RenameAction.instance"/>
@@ -85,16 +85,14 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="500"/>
                     </file>
-                </folder>
-            </folder>
-        </folder>
-    </folder>
-
-    <folder name="Editors">
-        <folder name="text">
-            <folder name="x-fxml+xml">
-                <folder name="CompletionProviders">
-                    <file name="org-netbeans-modules-javafx2-editor-FXMLCompletion.instance"/>
+                    <file name="sep-2.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1900"/>
+                    </file>
+                    <file name="sep-3.instance">
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="2100"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
