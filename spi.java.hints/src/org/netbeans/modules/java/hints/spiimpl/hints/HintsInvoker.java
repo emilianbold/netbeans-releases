@@ -159,7 +159,7 @@ public class HintsInvoker {
             }
 
             if (caret != -1) {
-                if (m.kind == Hint.Kind.SUGGESTION) {
+                if (m.kind == Hint.Kind.ACTION) {
                     descs.addAll(e.getValue());
                 } else {
                     Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
@@ -168,7 +168,7 @@ public class HintsInvoker {
                     }
                 }
             } else {
-                if (m.kind == Hint.Kind.HINT) {
+                if (m.kind == Hint.Kind.INSPECTION) {
                     Preferences pref = HintsSettings.getPreferences(m.id, HintsSettings.getCurrentProfileId());
                     if (HintsSettings.getSeverity(m, pref) != Severity.HINT) {
                         descs.addAll(e.getValue());

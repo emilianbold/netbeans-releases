@@ -81,23 +81,23 @@ public @interface Hint {
     /**A customizer that allows to customize hint's preferences.
      */
     public Class<? extends CustomizerProvider> customizerProvider() default CustomizerProvider.class;
-    /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it detects a code smell,
+    /**Whether the hint should be considered an {@link Kind#INSPECTION inspection}, i.e. it detects a code smell,
      * or otherwise leads to improving the code, or a {@link Kind#SUGGESTION}, which is simply
      * an offer to do automatically do something for the user.
      */
-    public Kind hintKind() default Kind.HINT;
+    public Kind hintKind() default Kind.INSPECTION;
     /**Specify various options for the hint*/
     public Options[] options() default {};
 
     /**Whether the hint should be considered a {@link Kind#HINT hint}, e.g. it
-     * detects a code smell, or otherwise leads to improving the code, or a {@link Kind#SUGGESTION},
+     * detects a code smell, or otherwise leads to improving the code, or a {@link Kind#ACTION},
      * which is simply an offer to do automatically do something for the user.
      */
    public enum Kind {
        /**The hint represents a code-smell detector, or alike. It marks code that
         * is not correct (in some sense).
         */
-       HINT,
+       INSPECTION,
        
        /**The hint represents an offer to the user to automatically alter the code.
         * The transformation is not intended to improve the code, only allow the
@@ -105,7 +105,7 @@ public @interface Hint {
         *
         * The only meaningful severity for suggestions if {@link Severity#CURRENT_LINE_WARNING}.
         */
-       SUGGESTION;
+       ACTION;
     }
 
    /**Various options to altering the behavior of the hint.

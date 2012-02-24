@@ -372,7 +372,7 @@ public class CodeHintProviderImpl implements HintProvider {
         }
 
         public Kind hintKind() {
-            return Kind.HINT;
+            return Kind.INSPECTION;
         }
 
         private static final Options[] EMPTY_OPTIONS = new Options[0];

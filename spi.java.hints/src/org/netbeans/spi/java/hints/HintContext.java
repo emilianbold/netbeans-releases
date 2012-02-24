@@ -169,7 +169,7 @@ public class HintContext {
      * @return for suggestions, returns the caret location, -1 otherwise
      */
     public int getCaretLocation() {
-        return metadata.kind == Kind.SUGGESTION ? caret : -1;
+        return metadata.kind == Kind.ACTION ? caret : -1;
     }
     
     public enum MessageKind {

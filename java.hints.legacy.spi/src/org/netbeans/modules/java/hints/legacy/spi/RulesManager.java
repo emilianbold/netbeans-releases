@@ -155,14 +155,14 @@ public class RulesManager implements FileChangeListener {
     private void initHints() {
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + HINTS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules( rules, Kind.HINT, metadata);
+        categorizeTreeRules( rules, Kind.INSPECTION, metadata);
     }
 
 
     private void initSuggestions() {
         FileObject folder = FileUtil.getConfigFile( RULES_FOLDER + SUGGESTIONS );
         List<Pair<Rule,FileObject>> rules = readRules(folder);
-        categorizeTreeRules( rules, Kind.SUGGESTION, metadata);
+        categorizeTreeRules( rules, Kind.ACTION, metadata);
     }
 
     /** Read rules from system filesystem */

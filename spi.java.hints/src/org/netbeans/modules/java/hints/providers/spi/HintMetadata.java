@@ -120,7 +120,7 @@ public class HintMetadata {
             this.description = "";
             this.category = "";
             this.enabled = true;
-            this.kind = Hint.Kind.HINT;
+            this.kind = Hint.Kind.INSPECTION;
             this.severity = Severity.VERIFIER;
         }
 

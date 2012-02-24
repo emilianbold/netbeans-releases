@@ -327,7 +327,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             
             Preferences p = getCurrentPrefernces(hint.id);
 
-            if (hint.kind == Kind.SUGGESTION) {
+            if (hint.kind == Kind.ACTION) {
                 severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
                 severityComboBox.setEnabled(false);
             } else {

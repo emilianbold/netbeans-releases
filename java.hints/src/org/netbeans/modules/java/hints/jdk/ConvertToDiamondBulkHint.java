@@ -62,27 +62,26 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint.CustomizerProviderImpl;
-import org.netbeans.spi.java.hints.Hint;
-import org.netbeans.spi.java.hints.TriggerPattern;
-import org.netbeans.spi.java.hints.TriggerPatterns;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
-import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
-import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.CustomizerProvider;
-import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=CustomizerProviderImpl.class)
+@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, customizerProvider=CustomizerProviderImpl.class)
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";

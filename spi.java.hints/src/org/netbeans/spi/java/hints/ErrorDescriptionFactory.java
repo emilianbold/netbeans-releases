@@ -233,10 +233,10 @@ public class ErrorDescriptionFactory {
             String displayName = metadata.displayName;
             String key;
             switch (metadata.kind) {
-                case HINT:
+                case INSPECTION:
                     key = disable ? "FIX_DisableHint" : "FIX_ConfigureHint";
                     break;
-                case SUGGESTION:
+                case ACTION:
                     key = disable ? "FIX_DisableSuggestion" : "FIX_ConfigureSuggestion";
                     break;
                 default:
