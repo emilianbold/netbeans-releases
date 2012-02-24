@@ -225,9 +225,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 Set<String> types = new HashSet<String>();
                 if (functionScope.returnType != null) {
                     String[] split = functionScope.returnType.split("\\|");//NOI18N
-                    for (String tp : split) {
-                        types.add(tp);
-                    }
+                    types.addAll(Arrays.asList(split));
                 }
                 String tp = QualifiedName.create(typeName).toString();
                 if (types.isEmpty()) {
