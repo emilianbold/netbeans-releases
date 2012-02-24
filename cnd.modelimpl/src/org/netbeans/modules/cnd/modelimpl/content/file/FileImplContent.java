@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +61,8 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelimpl.csm.DeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
@@ -75,7 +77,7 @@ public final class FileImplContent implements DeclarationsContainer {
 
     private final FileImpl fileImpl;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
-    private final List<FileImpl.FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FileImpl.FakeIncludePair>();
+    private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
     private int errorCount = 0;
     private final Set<ErrorDirectiveImpl> errors = createErrors();
     private final FileComponentDeclarations fileComponentDeclarations;
@@ -126,7 +128,7 @@ public final class FileImplContent implements DeclarationsContainer {
                 //   } // end of namespace Inner
                 // } // end of namespace AAA
                 // 
-                for (FileImpl.FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+                for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
                     if (fakeIncludePair.includeUid.equals(includeUid)) {
                         // inner object always has higher priority
                         if (!fakeIncludePair.containerUid.equals(containerUID)) {
@@ -135,7 +137,7 @@ public final class FileImplContent implements DeclarationsContainer {
                         return false;
                     }
                 }
-                fakeIncludeRegistrations.add(new FileImpl.FakeIncludePair(includeUid, containerUID));
+                fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, containerUID));
                 return true;
             }
         }
@@ -146,18 +148,16 @@ public final class FileImplContent implements DeclarationsContainer {
         return fakeFunctionRegistrations;
     }
 
-    List<FileImpl.FakeIncludePair> getFakeIncludeRegistrations() {
+    public List<FakeIncludePair> getFakeIncludeRegistrations() {
         return fakeIncludeRegistrations;
     }
     
     public void addError(ErrorDirectiveImpl error) {
         errors.add(error);
-        fileImpl.addError(error);
     }
     
     public void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
-        fileImpl.addMacro(macro);
     }       
 
     public void addDeclaration(CsmOffsetableDeclaration decl) {
@@ -205,7 +205,7 @@ public final class FileImplContent implements DeclarationsContainer {
         return new TreeSet<ErrorDirectiveImpl>(FileImpl.START_OFFSET_COMPARATOR);
     }
     
-    private FileComponentDeclarations getFileDeclarations() {
+    public FileComponentDeclarations getFileDeclarations() {
         return fileComponentDeclarations;
     }
 
@@ -213,23 +213,23 @@ public final class FileImplContent implements DeclarationsContainer {
         return Collections.unmodifiableSet(errors);
     }
 
-    FileComponentMacros getFileMacros() {
+    public FileComponentMacros getFileMacros() {
         return fileComponentMacros;
     }
 
-    FileComponentIncludes getFileIncludes() {
+    public FileComponentIncludes getFileIncludes() {
         return fileComponentIncludes;
     }
 
-    boolean hasBrokenIncludes() {
+    public boolean hasBrokenIncludes() {
         return !fileComponentIncludes.getBrokenIncludes().isEmpty();
     }
 
-    private FileComponentReferences getFileReferences() {
+    public FileComponentReferences getFileReferences() {
         return fileComponentReferences;
     }
 
-    private FileComponentInstantiations getFileInstantiations() {
+    public FileComponentInstantiations getFileInstantiations() {
         return fileComponentInstantiations;
     }
     /* collection to keep fake ASTs during parse phase */

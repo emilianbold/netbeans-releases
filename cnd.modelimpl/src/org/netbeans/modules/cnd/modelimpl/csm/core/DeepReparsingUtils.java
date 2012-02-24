@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;

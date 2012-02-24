@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +53,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileMacrosKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -79,7 +80,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
     private static final FileComponentMacros EMPTY = new FileComponentMacros() {
 
         @Override
-        void appendFrom(FileComponentMacros other) {
+        public void appendFrom(FileComponentMacros other) {
         }
         
         @Override
@@ -109,7 +110,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         macros = createMacros();
     }
 
-    void clean() {
+    public void clean() {
         _clearMacros();
         put();
     }
@@ -126,7 +127,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         RepositoryUtils.remove(copy);
     }
 
-    void addMacro(CsmMacro macro) {
+    public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
         NameSortedKey key = new NameSortedKey(macro);
         assert macroUID != null;
@@ -138,7 +139,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
     }
 
-    Collection<CsmMacro> getMacros() {
+    public Collection<CsmMacro> getMacros() {
         Collection<CsmMacro> out;
         try {
             macrosLock.readLock().lock();
@@ -149,7 +150,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return out;
     }
 
-    Iterator<CsmMacro> getMacros(CsmFilter filter) {
+    public Iterator<CsmMacro> getMacros(CsmFilter filter) {
         Iterator<CsmMacro> out;
         try {
             macrosLock.readLock().lock();
@@ -160,7 +161,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return out;
     }
 
-    Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
+    public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
         Collection<CsmUID<CsmMacro>> uids = new ArrayList<CsmUID<CsmMacro>>(2);
         NameSortedKey from = NameSortedKey.getStartKey(name);
         NameSortedKey to = NameSortedKey.getEndKey(name);
@@ -191,7 +192,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
     }
 
-    void appendFrom(FileComponentMacros other) {
+    public void appendFrom(FileComponentMacros other) {
         try {
             macrosLock.writeLock().lock();
             macros.putAll(other.macros);
