@@ -98,7 +98,7 @@ fi
 cd $NB_ALL
 
 #Build JNLP
-ant -Djnlp.codebase=http://bits.netbeans.org/7.1/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
+ant -Djnlp.codebase=http://bits.netbeans.org/7.1.1/jnlp/ -Djnlp.signjar.keystore=$KEYSTORE -Djnlp.signjar.alias=nb_ide -Djnlp.signjar.password=$STOREPASS -Djnlp.dest.dir=${DIST}/jnlp build-jnlp
 ERROR_CODE=$?
 
 create_test_result "build.jnlp" "Build JNLP" $ERROR_CODE
