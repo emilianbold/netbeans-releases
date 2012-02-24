@@ -106,6 +106,7 @@ public class BinaryForSourceImpl implements BinaryForSourceQueryImplementation {
                         final File testGenSrcDir = project.getTestGeneratedClassesDirectory(testKind);
                         if (testGenSrcDir != null && testGenSrcDir.toURI().equals(key)) {
                             binRoot = project.getTestClassesDirectory(testKind).toURI().toURL();
+                            break;
                         }
                     }
                 }
