@@ -50,6 +50,8 @@ import java.net.URL;
 import org.netbeans.modules.extbrowser.plugins.DOMInspectionFeatureImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
+import org.netbeans.modules.web.plugins.BrowserId;
+import org.netbeans.modules.web.plugins.ExtensionManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -116,9 +118,14 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (tab != null) {
             ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
-        } else {
+        } 
+        /*
+         * Do nothing in case there is no possibility to reload browser in the opened tab.
+         * Otherwise each call of this method opens new tab in the browser and 
+         * this has no relation to "reload".
+         * else {
             setURL(url);
-        }
+        }*/
     }
         
     
@@ -139,7 +146,10 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     final public void setURL(URL url) {
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (tab == null) {
-            ExternalBrowserPlugin.getInstance().register(url, this);
+            BrowserId pluginId = getPluginId();
+            if ( ExtensionManager.checkExtension(pluginId) ) {
+                ExternalBrowserPlugin.getInstance().register(url, this);
+            }
             loadURLInBrowser(url);
         } else {
             ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
@@ -148,6 +158,13 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     }
     
     abstract protected void loadURLInBrowser(URL url);
+    
+    protected BrowserId getPluginId(){
+        if ( extBrowserFactory instanceof FirefoxBrowser ){
+            return BrowserId.FIREFOX;
+        }
+        return null;
+    }
     
     /** Returns visual component of html browser.
      *

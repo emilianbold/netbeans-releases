@@ -210,6 +210,7 @@ public final class Utils {
     public static void extractFiles(File zipFile, File destDir) throws IOException {
         ZipFile zip = new ZipFile(zipFile);
         try {
+            destDir.mkdirs();
             Enumeration<? extends ZipEntry> entries = zip.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
@@ -218,7 +219,8 @@ public final class Utils {
                 if (entry.isDirectory()) {
                     File newFolder = new File(destDir, fileName);
                     newFolder.mkdirs();
-                } else {
+                } 
+                else {
                     File file = new File(destDir, fileName);
                     if (file.exists() && file.isDirectory()) {
                         throw new IOException("Cannot write normal file " +
@@ -235,7 +237,8 @@ public final class Utils {
                         while ((len = input.read(buffer)) >= 0) {
                             output.write(buffer, 0, len);
                         }
-                    } finally {
+                    } 
+                    finally {
                         output.close();
                         input.close();
                     }
