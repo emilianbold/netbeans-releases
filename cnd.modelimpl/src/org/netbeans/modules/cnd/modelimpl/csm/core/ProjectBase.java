@@ -1128,7 +1128,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         for (FileImpl file : candidates) {
             boolean remove = true;
-            Set<CsmFile> parents = getGraphStorage().getParentFiles(file);
+            Set<CsmFile> parents = getParentFiles(file);
             for (CsmFile parent : parents) {
                 if (!candidates.contains((FileImpl)parent)) {
                     remove = false;
@@ -2717,7 +2717,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final GraphContainer getGraph() {
         return getGraphStorage();
     }
-
+    
+    /**
+     * gets all files that direct or indirect include the referenced file.
+     */
+    public final Set<CsmFile> getParentFiles(CsmFile referencedFile) {
+        return getGraphStorage().getParentFiles(referencedFile);
+    }
+    
     private final static class DefaultFileItem implements NativeFileItem {
 
         private final NativeProject project;
