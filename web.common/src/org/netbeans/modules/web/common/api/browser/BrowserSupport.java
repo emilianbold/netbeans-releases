@@ -123,15 +123,15 @@ public final class BrowserSupport {
     private synchronized WebBrowserPane getWebBrowserPane() {
         if (pane == null) {
             if (browser == null) {
-                browser = WebBrowsers.getInstance().getPreffered();
+                browser = WebBrowsers.getInstance().getPreferred();
                 listener = new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt.getPropertyName())) {
-                            if (!WebBrowsers.getInstance().getPreffered().getId().equals(browser.getId())) {
+                            if (!WebBrowsers.getInstance().getPreferred().getId().equals(browser.getId())) {
                                 assert pane != null;
                                 // update browser pane
-                                browser = WebBrowsers.getInstance().getPreffered();
+                                browser = WebBrowsers.getInstance().getPreferred();
                                 pane.removeListener(paneListener);
                                 pane = null;
                             }

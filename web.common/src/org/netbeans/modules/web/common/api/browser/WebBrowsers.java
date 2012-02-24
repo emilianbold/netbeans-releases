@@ -141,7 +141,7 @@ public final class WebBrowsers {
     /**
      * Returns browser corresponding to user's choice in IDE options.
      */
-    public WebBrowser getPreffered() {
+    public WebBrowser getPreferred() {
         for (WebBrowserFactoryDescriptor desc : getFactories()) {
             if (!desc.isDefault()) {
                 continue;
