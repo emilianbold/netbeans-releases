@@ -281,14 +281,16 @@ public final class SyncItem {
     }
 
     private Operation calculateDefaultOperation(long lastTimestamp) {
-        if (localTransferFile.isFile() && !remoteTransferFile.isFile()) {
-            return Operation.FILE_DIR_COLLISION;
-        }
-        if (localTransferFile.isDirectory() && !remoteTransferFile.isDirectory()) {
-            return Operation.FILE_DIR_COLLISION;
-        }
-        if (localTransferFile.isDirectory() && remoteTransferFile.isDirectory()) {
-            return Operation.NOOP;
+        if (localTransferFile != null && remoteTransferFile != null) {
+            if (localTransferFile.isFile() && !remoteTransferFile.isFile()) {
+                return Operation.FILE_DIR_COLLISION;
+            }
+            if (localTransferFile.isDirectory() && !remoteTransferFile.isDirectory()) {
+                return Operation.FILE_DIR_COLLISION;
+            }
+            if (localTransferFile.isDirectory() && remoteTransferFile.isDirectory()) {
+                return Operation.NOOP;
+            }
         }
         if (lastTimestamp == -1) {
             // running for the first time
