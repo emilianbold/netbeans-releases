@@ -50,6 +50,10 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import static java.util.logging.Level.FINER;
 import java.util.logging.Logger;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
@@ -77,6 +81,12 @@ import org.openide.util.actions.CallableSystemAction;
  *
  * @author  Marian Petras
  */
+@ActionID(id = "org.netbeans.modules.search.FindInFilesAction", category = "Edit")
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_FindInFiles")
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "DS-F"),
+    @ActionReference(path = "Menu/Edit", position = 2400, separatorBefore = 2300)
+})
 public class FindInFilesAction extends CallableSystemAction {
 
     static final long serialVersionUID = 4554342565076372611L;

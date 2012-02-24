@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.search;
 
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -54,6 +58,12 @@ import org.openide.util.NbBundle;
  *
  * @author  Marian Petras
  */
+@ActionID(id = "org.netbeans.modules.search.ReplaceInFilesAction", category = "Edit")
+@ActionRegistration(lazy = false, displayName = "#LBL_Action_ReplaceInFiles")
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "DS-H"),
+    @ActionReference(path = "Menu/Edit", position = 2500)
+})
 public class ReplaceInFilesAction extends FindInFilesAction {
 
     static final long serialVersionUID = 4554342565076372612L;

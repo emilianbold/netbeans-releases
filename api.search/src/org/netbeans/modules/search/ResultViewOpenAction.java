@@ -46,8 +46,11 @@
 package org.netbeans.modules.search;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionListener;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
+import org.openide.awt.ActionRegistration;
 
 /**
  * Action which opens the Search Results window.
@@ -55,20 +58,14 @@ import org.openide.util.NbBundle;
  * @see  ResultView
  * @author  Marian Petras
  */
-public class ResultViewOpenAction extends AbstractAction {
+@ActionID(id = "org.netbeans.modules.search.ResultViewOpenAction", category = "Window")
+@ActionRegistration(displayName = "#TEXT_ACTION_SEARCH_RESULTS", iconBase = "org/netbeans/modules/search/res/find.gif")
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "DS-0"),
+    @ActionReference(path = "Menu/Window/Output", name = "ResultViewOpenAction", position = 200)
+})
+public class ResultViewOpenAction implements ActionListener {
 
-    /**
-     * Creates an instance of this action.
-     */
-    public ResultViewOpenAction() {
-        String name = NbBundle.getMessage(
-                ResultViewOpenAction.class,
-                "TEXT_ACTION_SEARCH_RESULTS");                          //NOI18N
-        putValue(NAME, name);
-        putValue("iconBase",                                            //NOI18N
-                 "org/netbeans/modules/search/res/find.gif");           //NOI18N
-    }
-    
     /**
      * Opens and activates the Search Results window.
      *
