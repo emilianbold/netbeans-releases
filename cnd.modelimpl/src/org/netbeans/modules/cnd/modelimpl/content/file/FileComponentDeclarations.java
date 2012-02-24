@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.VariableImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -142,7 +143,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
     }
 
-    Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
         try {
             declarationsLock.writeLock().lock();
@@ -163,11 +164,11 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return uids;
     }
 
-    boolean hasDeclarations() {
+    public boolean hasDeclarations() {
         return declarations.size() != 0;
     }
 
-    Collection<CsmOffsetableDeclaration> getDeclarations() {
+    public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
         try {
             declarationsLock.readLock().lock();
@@ -179,7 +180,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return decls;
     }
 
-    Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         Iterator<CsmOffsetableDeclaration> out;
         try {
             declarationsLock.readLock().lock();
@@ -190,7 +191,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return out;
     }
 
-    int getDeclarationsSize(){
+    public int getDeclarationsSize(){
         try {
             declarationsLock.readLock().lock();
             return declarations.size();
@@ -199,7 +200,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
     }
 
-    Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
         Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
         try {
             declarationsLock.readLock().lock();
@@ -239,7 +240,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return out;
     }
 
-    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
+    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
         OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
@@ -256,7 +257,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return UIDCsmConverter.UIDtoDeclaration(anUid);
     }
 
-    CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
         OffsetSortedKey key = new OffsetSortedKey(startOffset, Math.abs(CharSequences.create(name).hashCode()));
         CsmUID<CsmOffsetableDeclaration> anUid = null;
         try {
@@ -273,7 +274,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return UIDCsmConverter.UIDtoDeclaration(anUid);
     }
     
-    Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
             declarationsLock.readLock().lock();
@@ -298,7 +299,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return res;
     }
 
-    Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
         List<CsmUID<CsmOffsetableDeclaration>> res;
         try {
             declarationsLock.readLock().lock();
@@ -355,7 +356,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
      * This is necessary for finding definitions/declarations
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
-    Collection<CsmFunction> getStaticFunctionDeclarations() {
+    public Collection<CsmFunction> getStaticFunctionDeclarations() {
         Collection<CsmFunction> out;
         try {
             staticLock.readLock().lock();
@@ -366,7 +367,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return out;
     }
 
-    Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
+    public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
         Iterator<CsmFunction> out;
         try {
             staticLock.readLock().lock();
@@ -377,7 +378,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return out;
     }
 
-    Collection<CsmVariable> getStaticVariableDeclarations() {
+    public Collection<CsmVariable> getStaticVariableDeclarations() {
         Collection<CsmVariable> out;
         try {
             staticLock.readLock().lock();
@@ -388,7 +389,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return out;
     }
 
-    Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
+    public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
         Iterator<CsmVariable> out;
         try {
             staticLock.readLock().lock();
@@ -404,7 +405,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return new OffsetSortedKey(declaration);
     }
 
-    CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
+    public CsmUID<CsmOffsetableDeclaration> addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uidDecl = RepositoryUtils.put(decl);
         try {
             declarationsLock.writeLock().lock();
@@ -454,7 +455,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
     }
 
-    void removeDeclaration(CsmOffsetableDeclaration declaration) {
+    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uidDecl;
         try {
             declarationsLock.writeLock().lock();

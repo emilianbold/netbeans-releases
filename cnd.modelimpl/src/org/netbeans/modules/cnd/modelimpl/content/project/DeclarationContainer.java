@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -56,6 +56,8 @@ import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -233,7 +235,7 @@ public abstract class DeclarationContainer extends ProjectComponent implements P
     }
 
     // for unit test
-    SortedMap<CharSequence, Object> testDeclarations() {
+    public SortedMap<CharSequence, Object> getTestDeclarations() {
         try {
             declarationsLock.readLock().lock();
             return new TreeMap<CharSequence, Object>(declarations);

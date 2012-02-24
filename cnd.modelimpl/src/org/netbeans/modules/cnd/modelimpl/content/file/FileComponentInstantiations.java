@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -49,6 +49,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -97,7 +98,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
     }
 
-    void clean() {
+    public void clean() {
         _clearInstantiations();
         put();
     }
@@ -112,7 +113,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         }
     }
 
-    void addInstantiation(CsmInstantiation inst) {
+    public void addInstantiation(CsmInstantiation inst) {
         CsmUID<CsmInstantiation> instUID = RepositoryUtils.put(inst);
         assert instUID != null;
         try {

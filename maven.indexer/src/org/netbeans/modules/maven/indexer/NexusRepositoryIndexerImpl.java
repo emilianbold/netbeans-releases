@@ -141,7 +141,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         ClassesQuery, ClassUsageQuery, GenericFindQuery, ContextLoadedQuery {
 
     private PlexusContainer embedder;
-    private ArtifactRepository repository;
     private NexusIndexer indexer;
     private SearchEngine searcher;
     private IndexUpdater remoteIndexUpdater;
@@ -215,7 +214,6 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                 desc.addRequirement(req);
                 embedder.addComponentDescriptor(desc);
 
-                repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
                 indexer = embedder.lookup(NexusIndexer.class);
                 searcher = embedder.lookup(SearchEngine.class);
                 remoteIndexUpdater = embedder.lookup(IndexUpdater.class);
@@ -570,7 +568,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public void updateIndexWithArtifacts(final RepositoryInfo repo, final Collection<Artifact> artifacts) {
-
+        final ArtifactRepository repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
         try {
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                 public @Override Void run() throws Exception {
@@ -617,6 +615,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
 
     @Override
     public void deleteArtifactFromIndex(final RepositoryInfo repo, final Artifact artifact) {
+        final ArtifactRepository repository = EmbedderFactory.getProjectEmbedder().getLocalRepository();
         try {
             getRepoMutex(repo).writeAccess(new Mutex.ExceptionAction<Void>() {
                 public @Override Void run() throws Exception {
