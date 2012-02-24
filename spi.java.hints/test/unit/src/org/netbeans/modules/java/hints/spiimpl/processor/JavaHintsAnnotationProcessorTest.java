@@ -71,15 +71,13 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
                 "    public static ErrorDescription h2() { return null;}\n",
                 "    @TriggerPatterns({@TriggerPattern(\"$1.$2.$3.$4\")})\n",
                 "    private ErrorDescription h3(HintContext ctx) { return null;}\n",
-                "    @TriggerPattern(value=\"$1.isEmpty()\", constraints=@Constraint(variable=\"$unknown\", type=\"java.lang.String\"))\n",
+                "    @TriggerPattern(value=\"$1.isEmpty()\", constraints=@ConstraintVariableType(variable=\"$unknown\", type=\"java.lang.String\"))\n",
                 "    public static ErrorDescription h4(HintContext ctx) { return null;}\n",
                 "}\n");
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
         String errors = err.toString();
-//        assertTrue(errors.contains("error: Bundle key DN_p.H not found") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
-//        assertTrue(errors.contains("error: Bundle key DESC_p.H not found") ^ AnnotationProcessorTestUtils.searchClasspathBroken());
         assertTrue(errors.contains("error: The return type must be either org.netbeans.spi.editor.hints.ErrorDescription or java.util.List<org.netbeans.spi.editor.hints.ErrorDescription>"));
         assertTrue(errors.contains("error: The method must have exactly one parameter of type org.netbeans.spi.java.hints.HintContext"));
         assertTrue(errors.contains("error: The method must be static"));
@@ -93,7 +91,7 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
                 "import org.netbeans.spi.java.hints.*;\n",
                 "import org.netbeans.spi.editor.hints.*;\n",
                 "import java.util.*;\n",
-                "@Hint(category=\"general\")\n",
+                "@Hint(displayName=\"#DN_p.H\", description=\"DESC_p.H\", category=\"general\")\n",
                 "public class H {\n",
                 "    @TriggerPattern(\"$1.$2.$3\")\n",
                 "    public static List<ErrorDescription> hint(HintContext ctx) { return null;}\n",
