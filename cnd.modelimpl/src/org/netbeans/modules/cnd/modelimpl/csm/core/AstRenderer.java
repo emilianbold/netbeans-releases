@@ -1433,6 +1433,8 @@ public class AstRenderer {
                 return true;
             case CPPTokenTypes.LITERAL___const__:
                 return true;
+            case CPPTokenTypes.LITERAL_constexpr:
+                return true;
             default:
                 return false;
         }
