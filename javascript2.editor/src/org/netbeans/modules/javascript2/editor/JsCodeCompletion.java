@@ -63,8 +63,10 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -289,14 +291,37 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<List<Token<? extends JsTokenId>>> expression = new ArrayList<List<Token<? extends JsTokenId>>>();
             List<Token<? extends JsTokenId>> part = null;
             Token<? extends JsTokenId> token = ts.token();
+            int parenBalancer = 0;
+            boolean methodCall = false;
+            List<String> exp = new ArrayList();
+            
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY) {
                 
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() == JsTokenId.OPERATOR_DOT) {
                         expression.add(part = new ArrayList<Token<? extends JsTokenId>>());
+                    } else if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN){
+                        parenBalancer++;
+                        methodCall = true;
+                        while (parenBalancer > 0 && ts.movePrevious()) {
+                            token = ts.token();
+                            if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                parenBalancer++;
+                            } else {
+                                if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                                    parenBalancer--;
+                                }
+                            }
+                        }
                     } else {
-                        part.add(ts.token());
+                        exp.add(token.text().toString());
+                        if (!methodCall) {
+                            exp.add("@pro");
+                        } else {
+                            exp.add("@mtd");
+                            methodCall = false;
+                        }
                     }
                 }
                 if (!ts.movePrevious()) {
@@ -307,67 +332,157 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             JsObject type = null;
-            // resolving the first part in the chain
-            part = expression.get(expression.size() - 1);
-            if (part.size() == 1) {
-                for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                    if (object.getName().equals(part.get(0).text().toString())) {
-                        type = object;
-                        break;
-                    }
-                }
-            }
+            List lastResovled = new ArrayList();
             
-            for (int i = expression.size() - 2; i > -1 && type != null; i--) {
-                part = expression.get(i);
-                if (part.size() == 1) {
-                    for (JsObject object : type.getProperties().values()) {
-                        if (object.getName().equals(part.get(0).text().toString())) {
+            for (int i = exp.size() - 1; i > -1; i--) {
+                String kind = exp.get(i);
+                String name = exp.get(--i);
+                System.out.println("hledam: " + kind + ":" + name);
+                if (i == (exp.size() - 2)) {
+                    // resolving the first part of expression
+                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                        if (object.getName().equals(name)) {
                             type = object;
                             break;
                         }
                     }
-                }
-            }
-            if (type != null) {
-                Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-                if (lastTypeAssignment.isEmpty()) {
-                    for (JsObject object : type.getProperties().values()) {
-                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
-                                && startsWith(object.getName(), request.prefix)) {
-                            resultList.add(JsCompletionItem.Factory.create(object, request));
-                        }
-                    }
-                } else {
-                    for (Type typeName : lastTypeAssignment) {
-                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                            if (object.getName().equals(typeName.getType())) {
-                                for (JsObject property : object.getProperties().values()) {
-                                    if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                                            && startsWith(property.getName(), request.prefix)) {
-                                        resultList.add(JsCompletionItem.Factory.create(property, request));
+                    if (type == null) {
+                        // try to find through index
+                    } else {
+                        if ("@mtd".equals(kind)) {
+                            if (type.getJSKind() == JsElement.Kind.METHOD
+                                    || type.getJSKind() == JsElement.Kind.FUNCTION
+                                    || type.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                                lastResovled.addAll(((JsFunction) type).getReturnTypes());
+                            }
+                        } else {
+                            // just property
+                            Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
+
+                            if (lastTypeAssignment.isEmpty()) {
+                                lastResovled.add(type);
+                            } else {
+                                for (Type typeName : lastTypeAssignment) {
+                                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                                        if (object.getName().equals(typeName.getType())) {
+                                            lastResovled.add(type);
+                                        }
                                     }
                                 }
                                 break;
                             }
                         }
                     }
+                } else {
+                    List newResolved = new ArrayList();
+                    for (Object resolved : lastResovled) {
+                        if(resolved instanceof JsObject) {
+                            JsObject property = ((JsObject)resolved).getProperty(name);
+                            if ("@mtd".equals(kind)) {
+                                if (property.getJSKind() == JsElement.Kind.METHOD
+                                        || property.getJSKind() == JsElement.Kind.FUNCTION
+                                        || property.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+                                    newResolved.addAll(((JsFunction) property).getReturnTypes());
+                                }
+                            } else {
+                                newResolved.add(property);
+                            }
+                        } else {
+                            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                            Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(((TypeUsage)resolved).getType() + "." +  name);
+                            for (IndexResult indexResult : indexResults) {
+                                JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                                if ("@mtd".equals(kind) && (jsKind == JsElement.Kind.METHOD
+                                        || jsKind == JsElement.Kind.FUNCTION
+                                        || jsKind == JsElement.Kind.CONSTRUCTOR)) {
+                                    newResolved.addAll(IndexedElement.getReturnTypes(indexResult));
+                                } else {
+                                    
+                                }
+                            }
+                        }
+                    }
+                    lastResovled = newResolved;
                 }
-                
-            } else {
-                // try to look into index
-                StringBuilder fqn = new StringBuilder();
-                // resolving the first part in the chain
-                part = expression.get(expression.size() - 1);
-                if (part.size() == 1) {
+            }
+            
+            for (Object resolved : lastResovled) {
+                if(resolved instanceof JsObject) {
+                    for (JsObject property : ((JsObject)resolved).getProperties().values()) {
+                        if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                                && startsWith(property.getName(), request.prefix)) {
+                            resultList.add(JsCompletionItem.Factory.create(property, request));
+                        }
+                    }
+                } else {
                     FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                    fqn.append(part.get(0).text().toString());
-                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(fqn.toString()); 
+                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(((TypeUsage)resolved).getType()); 
                     for(IndexedElement indexedElement : properties) {
                         resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
                     }
                 }
             }
+//            // resolving the first part in the chain
+//            part = expression.get(expression.size() - 1);
+//            if (part.size() == 1) {
+//                for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
+//                    if (object.getName().equals(part.get(0).text().toString())) {
+//                        type = object;
+//                        break;
+//                    }
+//                }
+//            }
+//            
+//            for (int i = expression.size() - 2; i > -1 && type != null; i--) {
+//                part = expression.get(i);
+//                if (part.size() == 1) {
+//                    for (JsObject object : type.getProperties().values()) {
+//                        if (object.getName().equals(part.get(0).text().toString())) {
+//                            type = object;
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
+//            if (type != null) {
+//                Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
+//                if (lastTypeAssignment.isEmpty()) {
+//                    for (JsObject object : type.getProperties().values()) {
+//                        if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())
+//                                && startsWith(object.getName(), request.prefix)) {
+//                            resultList.add(JsCompletionItem.Factory.create(object, request));
+//                        }
+//                    }
+//                } else {
+//                    for (Type typeName : lastTypeAssignment) {
+//                        for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+//                            if (object.getName().equals(typeName.getType())) {
+//                                for (JsObject property : object.getProperties().values()) {
+//                                    if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+//                                            && startsWith(property.getName(), request.prefix)) {
+//                                        resultList.add(JsCompletionItem.Factory.create(property, request));
+//                                    }
+//                                }
+//                                break;
+//                            }
+//                        }
+//                    }
+//                }
+//                
+//            } else {
+//                // try to look into index
+//                StringBuilder fqn = new StringBuilder();
+//                // resolving the first part in the chain
+//                part = expression.get(expression.size() - 1);
+//                if (part.size() == 1) {
+//                    FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+//                    fqn.append(part.get(0).text().toString());
+//                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(fqn.toString()); 
+//                    for(IndexedElement indexedElement : properties) {
+//                        resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+//                    }
+//                }
+//            }
         }
     }
     

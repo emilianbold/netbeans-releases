@@ -48,8 +48,11 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 
@@ -406,9 +409,20 @@ public class ModelVisitor extends PathNodeVisitor {
                 node.accept(this);
             }
 
-            if (fncScope != null && fncScope.areReturnTypesEmpty()) {
-                // the functio doesn't have return statement -> returns undefined
-                fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+            
+            if (fncScope != null) {
+                
+                DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult); 
+                Types types = docProvider.getReturnType(functionNode);
+                if (types != null) {
+                    for(Type type : types.getTypes()) {
+                        fncScope.addReturnType(new TypeUsageImpl(type.getType(), -1, true));
+                    }
+                }
+                if (fncScope.areReturnTypesEmpty()) {
+                    // the function doesn't have return statement -> returns undefined
+                    fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+                }
             }
                 
             for (FunctionNode fn : functions) {
