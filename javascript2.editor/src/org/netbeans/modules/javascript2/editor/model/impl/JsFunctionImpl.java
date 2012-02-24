@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
@@ -102,7 +103,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             return JsElement.Kind.FILE;
         }
         for (JsObject property : getProperties().values()) {
-            if (property.isDeclared()) {
+            if (property.isDeclared() && property.getModifiers().contains(Modifier.PUBLIC)
+                    && !isAnonymous()) {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }

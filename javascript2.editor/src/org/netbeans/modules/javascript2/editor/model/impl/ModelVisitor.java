@@ -181,7 +181,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                         if(parent.getProperty(fieldName) == null) {
                             Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
-                            parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange() ));
+                            parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true));
                         }
                     } else {
                         // probably a property of an object

@@ -2,7 +2,7 @@ Code completion result for source line:
 MyObj.|create().getInfo().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO create()                        [PUBLIC]   methodChainSimple.js
+METHOD     create()                        [PUBLIC]   methodChainSimple.js
 METHOD     factory()                       [PUBLIC]   methodChainSimple.js
 METHOD     getInfo()                       [PUBLIC]   methodChainSimple.js
 METHOD     getVersion()                    [PUBLIC]   methodChainSimple.js

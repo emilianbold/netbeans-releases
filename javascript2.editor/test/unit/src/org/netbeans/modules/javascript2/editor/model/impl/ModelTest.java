@@ -176,13 +176,13 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, variable.getModifiers().contains(Modifier.PRIVATE));
 
         variable = address.getProperty("id");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
         
         variable = address.getProperty("street");
-        assertEquals(false, variable.isDeclared());
+        assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.PROPERTY, variable.getJSKind());
         assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
@@ -603,6 +603,20 @@ public class ModelTest extends JsTestBase {
         
      }
      
+     
+     public void testProperties02() throws Exception {
+        Model model = getModel("testfiles/completion/typeInferenceNew.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        assertEquals(5, global.getProperties().size());
+        
+        JsObject object = global.getProperty("Address");
+        assertEquals(3, object.getProperties().size());
+        
+        JsObject property = object.getProperty("street");
+        assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
+     }
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

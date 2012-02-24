@@ -68,6 +68,16 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
     }
+    
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
+        super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, EnumSet.of(Modifier.PUBLIC));
+        this.properties = new HashMap<String, JsObject>();
+        this.declarationName = name;
+        this.parent = parent;
+        this.occurrences = new ArrayList<Occurrence>();
+        this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
+        this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
+    }
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
         super((parent != null ? parent.getFileObject() : null), name, isDeclared, offsetRange, modifiers);
@@ -113,7 +123,9 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 return Kind.VARIABLE;
             }
             if (getParent() instanceof JsFunction) {
-                return isDeclared() ? Kind.VARIABLE : Kind.PROPERTY;
+                if (isDeclared()) {
+                    return getModifiers().contains(Modifier.PRIVATE) ? Kind.VARIABLE : Kind.PROPERTY;
+                }
             }
             return Kind.PROPERTY;
         }

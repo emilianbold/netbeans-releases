@@ -137,6 +137,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     for (Occurrence occurence : object.getOccurrences()) {
                         highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
                     }
+                    break;
                 case VARIABLE:
                     if (parent.getParent() == null) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
