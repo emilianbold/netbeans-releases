@@ -44,7 +44,6 @@ package org.netbeans.swing.tabcontrol;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.swing.popupswitcher.SwitcherTable;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
@@ -61,13 +60,11 @@ class DocumentSwitcherTable extends SwitcherTable {
 
     private final JButton btnClose;
     private final TabDisplayer displayer;
-    private final Border rendererBorder;
 
     public DocumentSwitcherTable( TabDisplayer displayer, SwitcherTableItem[] items, int y ) {
         super( items, y );
         this.displayer = displayer;
         btnClose = createCloseButton();
-        rendererBorder = BorderFactory.createEmptyBorder(2, 5, 0, 3+btnClose.getPreferredSize().width);
         ToolTipManager.sharedInstance().registerComponent( this );
     }
 
@@ -79,7 +76,6 @@ class DocumentSwitcherTable extends SwitcherTable {
                 column == getSelectedColumn() && item != null;        
 
         Component renComponent = super.prepareRenderer( renderer, row, column );
-        ((JComponent)renComponent).setBorder( rendererBorder );
         if( selected ) {
             JPanel res = new JPanel( new BorderLayout(5, 0) );
             res.add( renComponent, BorderLayout.CENTER );

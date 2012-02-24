@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.form;
+package com.apple.eawt;
 
-import java.io.IOException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.openide.filesystems.FileObject;
-import org.openide.nodes.Node;
+import java.awt.Window;
 
-/**
- *
- * @author Tomas Pavek
+/* this is stub code written based on Apple EAWT package javadoc published at
+ * http://developer.apple.com.  It makes compiling code which uses Apple EAWT
+ * on non-Mac platforms possible.  The compiled stub classes should never be
+ * included in the final product.
  */
-public interface EditorSupport extends Node.Cookie {
-    static String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
-    static String SECTION_VARIABLES = "variables"; // NOI18N
+public class FullScreenUtilities {
 
-    Document getDocument();
-    GuardedSectionManager getGuardedSectionManager();
-    void markModified();
-    Object getJavaContext();
-    void openAt(Position pos);
-    void discardEditorUndoableEdits();
-    void saveAs(FileObject folder, String fileName) throws IOException;
-    void openDesign();
-    void openSource();
-    void reloadForm();
-    boolean isJavaEditorDisplayed();
-    int getCodeIndentSize();
-    boolean getCodeBraceOnNewLine();
-    boolean canGenerateNBMnemonicsCode();
+    public static void setWindowCanFullScreen( Window w, boolean canFullScreen ) {}
 }

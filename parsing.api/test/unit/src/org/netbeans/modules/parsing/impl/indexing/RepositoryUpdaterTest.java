@@ -1202,6 +1202,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         final Source src = Source.create(f1);
         assertNotNull(src);
         assertFalse ("Created source should be valid", SourceAccessor.getINSTANCE().testFlag(src, SourceFlags.INVALID));
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
         RepositoryUpdater.unitTestActiveSource = src;
         try {
             IndexingManager.getDefault().refreshIndexAndWait(this.srcRootWithFiles1.toURL(),

@@ -137,6 +137,10 @@ public class MethodCCTest extends GroovyCCTestBase {
     public void testCompletionGeneratedAccessors1_2() throws Exception {
         checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().set^", false);
     }
+    
+    public void testCompletionGeneratedAccessors1_3() throws Exception {
+        checkCompletion(BASE + "CompletionGeneratedAccessors1.groovy", "        new Test().is^", false);
+    }
 
     public void testCompletionGroovyClass1_1() throws Exception {
         checkCompletion(BASE + "CompletionGroovyClass1.groovy", "        new Test1().^", false);
