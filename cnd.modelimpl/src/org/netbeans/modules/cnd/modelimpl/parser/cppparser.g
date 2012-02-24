@@ -1638,6 +1638,7 @@ declaration[int kind]
         {kind == declSimpleFunction}? (IDENT LPAREN) =>
         {beginDeclaration();}
         init_declarator_list[kind]
+        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         {endDeclaration();}
@@ -1646,6 +1647,7 @@ declaration[int kind]
         // LL 31/1/97: added (COMMA) ? below. This allows variables to
         // typedef'ed more than once. DW 18/08/03 ?
         declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         //{end_of_stmt();}
@@ -1784,7 +1786,7 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
 {TypeQualifier tq;}
     :
-        (ts = builtin_type[ts])+
+        (options{greedy = true;}: ts = builtin_type[ts])+
         ((cv_qualifier builtin_type[ts]) => 
         tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
     ;
@@ -2365,6 +2367,9 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
+        
+        (trailing_type)?
+
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
 		(( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
@@ -2373,6 +2378,13 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
                 (options {greedy=true;} :function_attribute_specification)?
 	;
         
+trailing_type
+{int ts = tsInvalid;}
+    :
+        POINTERTO 
+        ts=type_specifier[dsInvalid, false]
+    ;
+
 protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
     {String q; CPPParser.TypeQualifier tq;}
