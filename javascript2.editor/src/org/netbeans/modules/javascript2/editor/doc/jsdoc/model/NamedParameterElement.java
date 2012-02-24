@@ -123,14 +123,14 @@ public class NamedParameterElement extends ParameterElement implements DocParame
     public static NamedParameterElement createWithDiagnostics(Type type, Name paramName,
             org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
         String name = paramName.getName();
-        boolean optional = name.matches("\\[\\S+\\]"); //NOI18N
+        boolean optional = name.matches("\\[.*\\]"); //NOI18N
         String defaultValue = null;
         if (optional) {
             name = name.substring(1, name.length() - 1);
             int indexOfEqual = name.indexOf("=");
             if (indexOfEqual != -1) {
+                defaultValue = name.substring(indexOfEqual + 1);
                 name = name.substring(0, indexOfEqual);
-                defaultValue = name.substring(indexOfEqual);
             }
         }
         return new NamedParameterElement(type, new Name(name), paramTypes, paramDescription, optional, defaultValue);

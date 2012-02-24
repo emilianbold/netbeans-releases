@@ -88,7 +88,8 @@ public class JsDocElementUtils {
 
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
             String elementText, boolean named) {
-        String types = "", name = "", desc = ""; //NOI18N
+        String types = "", desc = ""; //NOI18N
+        StringBuilder name = new StringBuilder();
         int process = 0;
         String[] parts = elementText.split("[\\s]+"); //NOI18N
 
@@ -106,8 +107,11 @@ public class JsDocElementUtils {
 
             // get name value (mandatory part)
             if (parts.length > process && named) {
-                name = parts[process].trim();
+                name.append(parts[process].trim());
                 process++;
+                if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
+                    process = buildNameForString(name, process, parts);
+                }
             }
 
             // get description
@@ -120,10 +124,28 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name), new TypesImpl(types), desc);
+            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name.toString()), new TypesImpl(types), desc);
         } else {
             return UnnamedParameterElement.create(elementType, new TypesImpl(types), desc);
         }
+    }
+
+    private static int buildNameForString(StringBuilder name, int currentOffset, String[] parts) {
+        // TODO - better would be to solve that using lexer
+        String nameString = name.toString();
+        if ((nameString.indexOf("\"") != -1 && (nameString.indexOf("\"") == nameString.lastIndexOf("\""))) //NOI18N
+                || (nameString.indexOf("'") != -1 && nameString.indexOf("'") == nameString.lastIndexOf("'"))) { //NOI18N
+            // string with spaces
+            boolean endOfString = false;
+            while (currentOffset < parts.length && !endOfString) {
+                name.append(" ").append(parts[currentOffset]); //NOI18N
+                if (parts[currentOffset].contains("\"") || parts[currentOffset].contains("'")) { //NOI18H
+                    endOfString = true;
+                }
+                currentOffset++;
+            }
+        }
+        return currentOffset;
     }
 
 }

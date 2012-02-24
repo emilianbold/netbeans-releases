@@ -41,17 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
+import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.NamedParameterElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.javascript2.editor.model.Types;
@@ -71,9 +72,10 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         this.parserResult = parserResult;
     }
 
+    // TODO - rewrite for getting all associated comments and call getter for all and merge results
+    // TODO - process shared tags and nocode comments
     @Override
     public Types getReturnType(Node node) {
-        // TODO - process shared tags and nocode comments
         JsComment comment = getCommentForOffset(node.getStart());
         if (comment != null) {
             JsDocBlock jsDocBlock = (JsDocBlock) comment;
@@ -91,9 +93,24 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
+    // TODO - rewrite for getting all associated comments and call getter for all and merge results
+    // TODO - process shared tags and nocode comments
     @Override
-    public List<Types> getParameters(Node node) {
-        return null;
+    public List<DocParameter> getParameters(Node node) {
+        List<DocParameter> params = new LinkedList<DocParameter>();
+        JsComment comment = getCommentForOffset(node.getStart());
+        if (comment != null) {
+            JsDocBlock jsDocBlock = (JsDocBlock) comment;
+            if (jsDocBlock.getType() == JsDocCommentType.DOC_COMMON) {
+                for (JsDocElement jsDocElement : jsDocBlock.getTags()) {
+                    if (jsDocElement.getType() == JsDocElement.Type.PARAM
+                            || jsDocElement.getType() == JsDocElement.Type.ARGUMENT) {
+                        params.add((NamedParameterElement) jsDocElement);
+                    }
+                }
+            }
+        }
+        return params;
     }
 
     protected JsComment getCommentForOffset(int offset) {

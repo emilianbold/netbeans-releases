@@ -52,6 +52,6 @@ public interface DocumentationProvider {
 
     public Types getReturnType(Node node);
 
-    public List<Types> getParameters(Node node);
+    public List<DocParameter> getParameters(Node node);
 
 }
