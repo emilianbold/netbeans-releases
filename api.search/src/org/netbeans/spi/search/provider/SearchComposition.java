@@ -52,6 +52,9 @@ import org.netbeans.api.search.provider.SearchListener;
  */
 public abstract class SearchComposition<R> {
 
+    /** Constructor for subclasses. */
+    protected SearchComposition() {}
+
     /**
      * Start searching.
      */

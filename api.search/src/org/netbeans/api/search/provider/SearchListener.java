@@ -53,6 +53,9 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class SearchListener {
 
+    /** Constructor for subclasses. */
+    protected SearchListener() {}
+
     /**
      * Called when the search is starting.
      */

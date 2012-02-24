@@ -54,6 +54,9 @@ import org.openide.nodes.Node;
  */
 public abstract class SearchResultsDisplayer<T> {
 
+    /** Constructor for subclasses. */
+    protected SearchResultsDisplayer() {}
+
     /**
      * Create component that will be shown in the Search Results window.
      */
@@ -82,8 +85,12 @@ public abstract class SearchResultsDisplayer<T> {
      * Helper class for transforming matching objects to nodes.
      */
     public static abstract class NodeDisplayer<T> {
+        
+        /** Constructor for subclasses. */
+        protected NodeDisplayer() {}
 
         public abstract Node matchToNode(T match);
+
     }
 
     /**
