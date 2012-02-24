@@ -41,8 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 
@@ -67,7 +68,9 @@ public class RuleI extends ModelElement implements Rule {
         }
     };
 
-    public RuleI() {
+    public RuleI(Model model) {
+        super(model);
+        
         //default elements
         addTextElement("\n"); //not acc. to the grammar!
 
@@ -77,8 +80,8 @@ public class RuleI extends ModelElement implements Rule {
         addTextElement("\n}\n");
     }
 
-    public RuleI(ModelElementContext context) {
-        super(context);
+    public RuleI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

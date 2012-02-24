@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.CharSet;
 import org.netbeans.modules.css.model.api.CharSetValue;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -61,14 +63,16 @@ public class CharSetI extends ModelElement implements CharSet {
         
     };
 
-    public CharSetI() {
-    }
-    
-    public CharSetI(ModelElementContext context) {
-        super(context);
-        initChildrenElements();
+    public CharSetI(Model model) {
+        super(model);
     }
 
+    public CharSetI(Model model, Node node) {
+        super(model, node);
+        initChildrenElements();
+    }
+    
+    
     @Override
     public CharSetValue getCharSetValue() {
         return charSetValue;

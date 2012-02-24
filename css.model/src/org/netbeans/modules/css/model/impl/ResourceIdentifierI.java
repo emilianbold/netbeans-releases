@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ResourceIdentifier;
 
 /**
@@ -49,11 +51,16 @@ import org.netbeans.modules.css.model.api.ResourceIdentifier;
  */
 public class ResourceIdentifierI extends TokenElementI implements ResourceIdentifier {
 
-    public ResourceIdentifierI() {
+    public ResourceIdentifierI(Model model, CharSequence text) {
+        super(model, text);
     }
 
-    public ResourceIdentifierI(ModelElementContext context) {
-        super(context);
+    public ResourceIdentifierI(Model model) {
+        super(model);
+    }
+
+    public ResourceIdentifierI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

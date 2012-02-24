@@ -43,6 +43,7 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -74,7 +75,9 @@ public class MediaI extends ModelElement implements Media {
         
     };
 
-    public MediaI() {
+    public MediaI(Model model) {
+        super(model);
+        
         addTextElement("@media");
         addTextElement(" ");
         addEmptyElement(MediaQueryList.class);
@@ -87,8 +90,8 @@ public class MediaI extends ModelElement implements Media {
         addTextElement("}");
     }
 
-    public MediaI(ModelElementContext context) {
-        super(context);
+    public MediaI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 
@@ -125,13 +128,13 @@ public class MediaI extends ModelElement implements Media {
     @Override
     public void addRule(Rule rule) {
         int index = setElement(rule, true);
-        insertElement(index + 1, new PlainElementI("\n"));
+        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
     }
 
     @Override
     public void addPage(Page page) {
         int index = setElement(page, true);
-        insertElement(index + 1, new PlainElementI("\n"));
+        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
     }
 
 }

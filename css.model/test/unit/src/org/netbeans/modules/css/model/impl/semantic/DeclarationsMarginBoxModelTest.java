@@ -68,7 +68,7 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 + "\tmargin-left: 10px\n"
                 + "}";
 
-        Model model = createModel(code);
+        final Model model = createModel(code);
 
         model.runWriteTask(new Model.ModelTask() {
 
@@ -78,7 +78,7 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(ds);
+                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(model, ds);
                 assertNotNull(margin);
 //                Utils.dumpBox(margin);
 
@@ -125,7 +125,7 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
     }
 
     public void testSetBottomEdge() {
-        Model model = createModel("div { margin: 1px 3em 3em 1px; }");
+        final Model model = createModel("div { margin: 1px 3em 3em 1px; }");
         model.runWriteTask(new Model.ModelTask() {
 
             @Override
@@ -134,7 +134,7 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(ds);
+                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(model, ds);
                 assertNotNull(margin);
                 assertBox(margin, "1px", "3em", "3em", "1px");
 

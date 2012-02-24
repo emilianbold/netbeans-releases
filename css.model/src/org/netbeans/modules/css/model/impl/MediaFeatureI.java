@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.MediaFeature;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -49,17 +51,18 @@ import org.netbeans.modules.css.model.api.MediaFeature;
  */
 class MediaFeatureI extends TokenElementI implements MediaFeature {
 
-    public MediaFeatureI() {
+    public MediaFeatureI(Model model, CharSequence text) {
+        super(model, text);
     }
 
-    public MediaFeatureI(CharSequence text) {
-        super(text);
+    public MediaFeatureI(Model model) {
+        super(model);
     }
 
-    public MediaFeatureI(ModelElementContext ctx) {
-        super(ctx);
+    public MediaFeatureI(Model model, Node node) {
+        super(model, node);
     }
-    
+
     @Override
     protected Class getModelClass() {
         return MediaFeature.class;

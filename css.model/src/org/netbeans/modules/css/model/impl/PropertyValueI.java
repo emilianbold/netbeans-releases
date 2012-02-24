@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -59,13 +60,15 @@ public class PropertyValueI extends ModelElement implements PropertyValue {
         }
     };
 
-    public PropertyValueI() {
+    public PropertyValueI(Model model) {
+        super(model);
+        
         //default elements
         addEmptyElement(Expression.class);
     }
 
-    public PropertyValueI(ModelElementContext context) {
-        super(context);
+    public PropertyValueI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

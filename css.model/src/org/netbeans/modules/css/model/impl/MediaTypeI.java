@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.MediaType;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -49,17 +51,18 @@ import org.netbeans.modules.css.model.api.MediaType;
  */
 class MediaTypeI extends TokenElementI implements MediaType {
 
-    public MediaTypeI() {
+    public MediaTypeI(Model model, CharSequence text) {
+        super(model, text);
     }
 
-    public MediaTypeI(CharSequence text) {
-        super(text);
+    public MediaTypeI(Model model) {
+        super(model);
     }
 
-    public MediaTypeI(ModelElementContext ctx) {
-        super(ctx);
+    public MediaTypeI(Model model, Node node) {
+        super(model, node);
     }
-    
+
     @Override
     protected Class getModelClass() {
         return MediaType.class;

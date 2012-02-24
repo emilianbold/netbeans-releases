@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
 
 /**
@@ -52,16 +54,18 @@ public class PlainElementI extends ModelElement implements PlainElement {
     private CharSequence content;
     private final ModelElementListener emptyElementListener = new ModelElementListener.Adapter();
 
-    public PlainElementI() {
+    public PlainElementI(Model model) {
+        super(model);
     }
 
-    public PlainElementI(CharSequence text) {
+    public PlainElementI(Model model, CharSequence text) {
+        super(model);
         this.content = text;
     }
 
-    public PlainElementI(ModelElementContext context) {
-        super(context);
-        this.content = context.getNode().image();
+    public PlainElementI(Model model, Node node) {
+        super(model, node);
+        this.content = node.image();
     }
 
     @Override

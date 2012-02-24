@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.util.Collection;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -67,7 +68,9 @@ public class MediaExpressionI extends ModelElement implements MediaExpression {
         
     };
     
-    public MediaExpressionI() {
+    public MediaExpressionI(Model model) {
+        super(model);
+        
         addTextElement("(");
         addTextElement(" ");
         addEmptyElement(MediaFeature.class);
@@ -79,8 +82,8 @@ public class MediaExpressionI extends ModelElement implements MediaExpression {
         addTextElement(" ");
     }
 
-    public MediaExpressionI(ModelElementContext context) {
-        super(context);
+    public MediaExpressionI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

@@ -43,6 +43,8 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Namespace;
 import org.netbeans.modules.css.model.api.Namespaces;
 
@@ -61,11 +63,12 @@ public class NamespacesI extends ModelElement implements Namespaces {
         }
     };
 
-    public NamespacesI() {
+    public NamespacesI(Model model) {
+        super(model);
     }
 
-    public NamespacesI(ModelElementContext context) {
-        super(context);
+    public NamespacesI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Page;
 
 /**
@@ -49,11 +51,16 @@ import org.netbeans.modules.css.model.api.Page;
  */
 public class PageI extends PlainElementI implements Page {
 
-    public PageI() {
+    public PageI(Model model) {
+        super(model);
     }
 
-    public PageI(ModelElementContext context) {
-        super(context);
+    public PageI(Model model, CharSequence text) {
+        super(model, text);
+    }
+
+    public PageI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

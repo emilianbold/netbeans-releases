@@ -41,17 +41,18 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import javax.swing.text.Document;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Prio;
 import org.netbeans.modules.css.model.api.Property;
 import org.netbeans.modules.css.model.api.PropertyValue;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 
 /**
  *
@@ -62,9 +63,7 @@ public class DeclarationI extends ModelElement implements Declaration {
     private Property property;
     private PropertyValue propertyValue;
     private Prio prio;
-    
     private ResolvedProperty resolvedProperty;
-
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
@@ -83,9 +82,11 @@ public class DeclarationI extends ModelElement implements Declaration {
         }
     };
 
-    public DeclarationI() {
+    public DeclarationI(Model model) {
+        super(model);
+         
         //default elements
-        addTextElement("\t"); //not acc. to the grammar!
+        addTextElement(getIndent()); //not acc. to the grammar!
 
         addEmptyElement(Property.class);
         addTextElement(":");
@@ -94,8 +95,8 @@ public class DeclarationI extends ModelElement implements Declaration {
         addEmptyElement(Prio.class);
     }
 
-    public DeclarationI(ModelElementContext context) {
-        super(context);
+    public DeclarationI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 
@@ -141,9 +142,9 @@ public class DeclarationI extends ModelElement implements Declaration {
 
     @Override
     public synchronized ResolvedProperty getResolvedProperty() {
-        if(resolvedProperty == null) {
+        if (resolvedProperty == null) {
             PropertyModel pmodel = Properties.getPropertyModel(getProperty().getContent().toString().trim());
-            if(pmodel != null) {
+            if (pmodel != null) {
                 resolvedProperty = ResolvedProperty.resolve(pmodel, getPropertyValue().getExpression().getContent());
             }
         }
@@ -163,10 +164,7 @@ public class DeclarationI extends ModelElement implements Declaration {
         b.append(e == null ? "null" : e.getContent());
         b.append(getPrio() == null ? "" : "!");
         b.append(")");
-        
+
         return b.toString();
     }
-    
-    
-    
 }

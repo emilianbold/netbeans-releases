@@ -43,8 +43,10 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.MediaQuery;
 import org.netbeans.modules.css.model.api.MediaQueryList;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -61,11 +63,12 @@ public class MediaQueryListI extends ModelElement implements MediaQueryList {
         }
     };
 
-    public MediaQueryListI() {
+    public MediaQueryListI(Model model) {
+        super(model);
     }
 
-    public MediaQueryListI(ModelElementContext context) {
-        super(context);
+    public MediaQueryListI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

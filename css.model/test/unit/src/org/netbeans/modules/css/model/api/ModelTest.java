@@ -74,10 +74,7 @@ public class ModelTest extends ModelTestBase {
 
         CssParserResult result = TestUtil.parse(code);
 
-        Snapshot snapshot = result.getSnapshot();
-        Node root = result.getParseTree();
-
-        Model model = new Model(snapshot, NodeUtil.query(root, "styleSheet"));
+        Model model = new Model(result);
         ElementFactory factory = model.getElementFactory();
         StyleSheet styleSheet = model.getStyleSheet();
 
@@ -99,8 +96,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(Difference.ADD, diff.getType());
 
         assertEquals("h1 {\n"
-                + "\n\tmargin: 20px;\n"
-                + "\n"
+                + "    margin: 20px;\n\n"
                 + "}\n", diff.getSecondText());
 
     }
@@ -134,7 +130,7 @@ public class ModelTest extends ModelTestBase {
         assertEquals(1, diffs.length);
 
         Difference diff = diffs[0];
-        assertEquals("Difference(ADD, 4, 0, 5, 6)", diff.toString());
+        assertEquals("Difference(ADD, 4, 0, 5, 5)", diff.toString());
 
     }
 

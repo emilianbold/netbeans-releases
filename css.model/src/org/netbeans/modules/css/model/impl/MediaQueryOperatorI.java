@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.MediaQueryOperator;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -49,17 +51,18 @@ import org.netbeans.modules.css.model.api.MediaQueryOperator;
  */
 class MediaQueryOperatorI extends TokenElementI implements MediaQueryOperator {
 
-    public MediaQueryOperatorI() {
+    public MediaQueryOperatorI(Model model, CharSequence text) {
+        super(model, text);
     }
 
-    public MediaQueryOperatorI(CharSequence text) {
-        super(text);
+    public MediaQueryOperatorI(Model model) {
+        super(model);
     }
-    
-    public MediaQueryOperatorI(ModelElementContext ctx) {
-        super(ctx);
+
+    public MediaQueryOperatorI(Model model, Node node) {
+        super(model, node);
     }
-    
+
     @Override
     protected Class getModelClass() {
         return MediaQueryOperator.class;
