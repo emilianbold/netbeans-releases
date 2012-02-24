@@ -45,6 +45,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.util.Exceptions;
 
@@ -69,5 +70,9 @@ public abstract class SPIAccessor {
     public abstract String getDisplayName(MissingPlugin missing);
 
     public abstract String getCNB(MissingPlugin missing);
+
+    public abstract String getWarningDisplayName(WarningDescription description);
+    public abstract String getWarningCategoryId(WarningDescription description);
+    public abstract String getWarningCategoryDisplayName(WarningDescription description);
 
 }

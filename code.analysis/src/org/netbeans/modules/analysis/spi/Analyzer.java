@@ -47,19 +47,45 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
+/**A static analyzer. Called by the infrastructure on a given {@link Scope} to perform
+ * the analysis and return the found warnings as {@link ErrorDescription}s.
+ *
+ * It is intended to be installed in the global lookup, using e.g. {@link ServiceProvider}.
  *
  * @author lahvac
  */
 public interface Analyzer {
 
+    /**Perform the analysis over the {@link Scope} defined in the given {@code contextt}.
+     *
+     * @param context containing the required {@link Scope}
+     * @return the found warnings
+     */
     public Iterable<? extends ErrorDescription> analyze(Context context);
+
+    /**If additional modules are required to run the analysis (for the given {@code context}),
+     * return their description.
+     *
+     * @param context over which the analysis is going to be performed
+     * @return descriptions of the missing plugins, if any
+     */
     public Collection<? extends MissingPlugin> requiredPlugins(Context context);
+
+    /**The name of this analyzer, in the format it should be shown to the user.
+     *
+     * @return the name of this analyzer
+     */
     public String getDisplayName();
-    public String getDisplayName4Id(String id);
-    public String getCategoryId4WarningId(String id);
+
+    /**The icon associated with this analyzer.
+     *
+     * @return the icon of this analyzer
+     */
     public Image  getIcon();
+    
+    public WarningDescription getWarningDescription(String warningId);
 
     public static final class Context {
         private final Scope scope;
@@ -119,6 +145,21 @@ public interface Analyzer {
                 public String getCNB(MissingPlugin missing) {
                     return missing.cnb;
                 }
+
+                @Override
+                public String getWarningDisplayName(WarningDescription description) {
+                    return description.warningDisplayName;
+                }
+
+                @Override
+                public String getWarningCategoryId(WarningDescription description) {
+                    return description.categoryId;
+                }
+
+                @Override
+                public String getWarningCategoryDisplayName(WarningDescription description) {
+                    return description.categoryDisplayName;
+                }
             };
         }
     }
@@ -153,6 +194,24 @@ public interface Analyzer {
             return hash;
         }
         
+    }
+
+    public static final class WarningDescription {
+
+        public static WarningDescription create(String warningDisplayName, String categoryId, String categoryDisplayName) {
+            return new WarningDescription(warningDisplayName, categoryId, categoryDisplayName);
+        }
+        
+        private final String warningDisplayName;
+        private final String categoryId;
+        private final String categoryDisplayName;
+
+        private WarningDescription(String warningDisplayName, String categoryId, String categoryDisplayName) {
+            this.warningDisplayName = warningDisplayName;
+            this.categoryId = categoryId;
+            this.categoryDisplayName = categoryDisplayName;
+        }
+
     }
 
 }

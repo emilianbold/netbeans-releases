@@ -88,7 +88,7 @@ public class AnalyzerImpl implements Analyzer {
     }
 
     @Override
-    public String getDisplayName4Id(String id) {
+    public WarningDescription getWarningDescription(String id) {
         if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
         
         id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
@@ -97,34 +97,18 @@ public class AnalyzerImpl implements Analyzer {
 
         for (DetectorFactory df : dfc.getFactories()) {
             for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) return bp.getShortDescription();
-                if (id.equals(bp.getCategory())) {
-                    return dfc.getBugCategory(id).getShortDescription();
+                if (id.equals(bp.getType())) {
+                    return WarningDescription.create(bp.getShortDescription(), bp.getCategory(), dfc.getBugCategory(bp.getCategory()).getShortDescription());
                 }
             }
         }
 
-        return id;
+        throw new IllegalStateException();
     }
 
     @Override
     public Image getIcon() {
         return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
-    }
-
-    @Override
-    public String getCategoryId4WarningId(String id) {
-        if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
-
-        id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
-
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) return RunFindBugs.PREFIX_FINDBUGS + bp.getCategory();
-            }
-        }
-
-        return RunFindBugs.PREFIX_FINDBUGS + id;
     }
 
     @Override

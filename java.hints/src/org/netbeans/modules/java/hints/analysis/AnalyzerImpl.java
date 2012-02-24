@@ -52,7 +52,6 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
 import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
@@ -123,16 +122,21 @@ public class AnalyzerImpl implements Analyzer {
     private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
 
     @Override
-    public String getDisplayName4Id(String id) {
+    public WarningDescription getWarningDescription(String id) {
         id = id.substring("text/x-java:".length());
 
         for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
-            if (e.getKey().id.equals(id)) return e.getKey().displayName;
+            if (e.getKey().id.equals(id)) {
+                String displayName = e.getKey().displayName;
+                String category = e.getKey().category;
+                FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + id);
+                String categoryDisplayName = getFileObjectLocalizedName(catFO);
+
+                return WarningDescription.create(displayName, category, categoryDisplayName);
+            }
         }
 
-        FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + id);
-        
-        return getFileObjectLocalizedName(catFO);
+        throw new IllegalStateException();
     }
 
     static String getFileObjectLocalizedName( FileObject fo ) {
@@ -154,17 +158,6 @@ public class AnalyzerImpl implements Analyzer {
     @Override
     public Image getIcon() {
         return ImageUtilities.loadImage("org/netbeans/modules/java/hints/analyzer/ui/warning-glyph.gif");
-    }
-
-    @Override
-    public String getCategoryId4WarningId(String id) {
-        id = id.substring("text/x-java:".length());
-
-        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
-            if (e.getKey().id.equals(id)) return "text/x-java:" + e.getKey().category;
-        }
-
-        return "text/x-java:" + id;
     }
 
     @Override

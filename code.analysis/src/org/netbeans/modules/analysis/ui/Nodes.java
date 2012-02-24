@@ -58,6 +58,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -87,7 +88,7 @@ import org.openide.util.lookup.Lookups;
  * @author lahvac
  */
 public class Nodes {
-    
+
     public static Node constructSemiLogicalView(Map<Analyzer, List<ErrorDescription>> errors, boolean byCategory) {
         if (!byCategory) {
             return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors, BY_FILE)));
@@ -104,7 +105,7 @@ public class Nodes {
                     Analyzer analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = analyzer.getIcon();
 
-                    String typeDisplayName = typeEntry.getKey() != null ? analyzer.getDisplayName4Id(typeEntry.getKey()) : null;
+                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(analyzer.getWarningDescription(typeEntry.getKey())) : null;
                     long typeWarnings = 0;
 
                     for (List<ErrorDescription> v1 : typeEntry.getValue().values()) {
@@ -211,7 +212,7 @@ public class Nodes {
                 Logger.getLogger(Nodes.class.getName()).log(Level.FINE, "No ID for: {0}", ed.toString());
                 return "Unknown";
             }
-            return a.getDisplayName4Id(a.getCategoryId4WarningId(id));
+            return SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(a.getWarningDescription(id));
         }
     };
 
