@@ -73,6 +73,7 @@ import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -318,7 +319,7 @@ public final class TargetExecutor implements Runnable {
         }
 
         public void actionPerformed(ActionEvent e) {
-            OptionsDisplayer.getDefault().open("Advanced/" + AntPanelController.OPTIONS_SUBPATH); // NOI18N
+            OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + AntPanelController.OPTIONS_SUBPATH); // NOI18N
         }
 
     }
