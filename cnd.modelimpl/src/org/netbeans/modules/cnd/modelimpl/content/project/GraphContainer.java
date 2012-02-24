@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.GraphContainerKey;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -107,7 +108,7 @@ public class GraphContainer extends ProjectComponent implements Persistent, Self
         super((org.netbeans.modules.cnd.repository.spi.Key) null, true);
     }
 
-    /*package*/ static GraphContainer empty() {
+    public static GraphContainer empty() {
         return EMPTY;
     }
     

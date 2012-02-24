@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.cnd.modelimpl.trace;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;

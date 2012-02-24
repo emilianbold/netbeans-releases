@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
