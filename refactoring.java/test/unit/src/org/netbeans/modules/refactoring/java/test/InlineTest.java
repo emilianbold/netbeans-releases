@@ -66,7 +66,7 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
 
-    public void DISABLEDtest204694() throws Exception { // #204694 - "Cannot inline public method which uses local accessors" when method used only in-class
+    public void test204694() throws Exception { // #204694 - "Cannot inline public method which uses local accessors" when method used only in-class
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1067,7 +1067,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
         final InlineRefactoring[] r = new InlineRefactoring[1];
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
-        performRefactoring(r, new Problem(false, "WRN_InitNoAccess"));
+        performRefactoring(r, new Problem(false, "WRN_InlineNotAccessible"));
     }
 
     public void testCannotInlineMethodPolymorphic() throws Exception {

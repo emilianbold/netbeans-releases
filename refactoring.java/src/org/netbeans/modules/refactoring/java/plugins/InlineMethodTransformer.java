@@ -240,7 +240,9 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 Element el = trees.getElement(currentPath);
                 if (el != null) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
-                    if (el.getEnclosingElement() != method && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
+                    if (methodSelect != null
+                            && el.getEnclosingElement() != method
+                            && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
                         problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
@@ -267,8 +269,10 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 Element el = trees.getElement(currentPath);
                 if (el != null) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
-                    if (el.getEnclosingElement() != method && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
-                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InitNoAccess")));
+                    if (methodSelect != null
+                            && el.getEnclosingElement() != method
+                            && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
                     if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
@@ -303,8 +307,10 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 Element el = trees.getElement(currentPath);
                 if (el != null) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
-                    if (el.getEnclosingElement() != method && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
-                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InitNoAccess")));
+                    if (methodSelect != null
+                            && el.getEnclosingElement() != method
+                            && !workingCopy.getTrees().isAccessible(scope, el, declaredType)) {
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_InlineNotAccessible", el, declaredType)));
                     }
                     TypeElement invocationEnclosingTypeElement = elementUtilities.enclosingTypeElement(el);
                     if (bodyEnclosingTypeElement.equals(invocationEnclosingTypeElement)) {
