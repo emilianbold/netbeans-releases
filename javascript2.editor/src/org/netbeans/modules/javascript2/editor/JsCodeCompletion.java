@@ -326,7 +326,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 }
                 token = ts.token();
-                
             }
             
             JsObject type = null;
@@ -363,6 +362,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                     for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
                                         if (object.getName().equals(typeName.getType())) {
                                             lastResovled.add(object);
+                                            break;
                                         }
                                     }
                                 }
@@ -405,23 +405,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             
             for (Object resolved : lastResovled) {
                 if(resolved instanceof JsObject) {
-                    for (JsObject property : ((JsObject)resolved).getProperties().values()) {
-                        if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                                && startsWith(property.getName(), request.prefix)) {
-                            resultList.add(JsCompletionItem.Factory.create(property, request));
-                        }
-                    }
+                    addObjectPropertiesToCC((JsObject)resolved, request, resultList);
                 } else {
                     TypeUsage typeUsage = (TypeUsage)resolved;
                     // at first try to find the type in the model
                     JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                     if (jsObject != null) {
-                        for (JsObject property : jsObject.getProperties().values()) {
-                            if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                                    && startsWith(property.getName(), request.prefix)) {
-                                resultList.add(JsCompletionItem.Factory.create(property, request));
-                            }
-                        }
+                        addObjectPropertiesToCC(jsObject, request, resultList);
                     } else {
                         // look at the index
                         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
@@ -485,6 +475,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
     }
+    
     private boolean startsWith(String theString, String prefix) {
         if (prefix.length() == 0) {
             return true;
@@ -494,4 +485,16 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
+    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, List<CompletionProposal> resultList) {
+        boolean filter = true;
+        if (request.prefix == null || request.prefix.isEmpty()) {
+            filter = false;
+        }
+        for (JsObject property : jsObject.getProperties().values()) {
+            if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                    && (!filter || startsWith(property.getName(), request.prefix))) {
+                resultList.add(JsCompletionItem.Factory.create(property, request));
+            }
+        }
+    }
 }
