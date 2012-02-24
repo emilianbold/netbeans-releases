@@ -158,8 +158,10 @@ public class DefaultScopeSettingsPanel extends ScopeSettingsPanel {
                 IgnoreListPanel.openDialog(btnEditIgnoreList);
             }
         });
-        chkArchives.addItemListener(checkBoxListener);
-        chkGenerated.addItemListener(checkBoxListener);
+        if (!replacing) {
+            chkArchives.addItemListener(checkBoxListener);
+            chkGenerated.addItemListener(checkBoxListener);
+        }
         chkUseIgnoreList.addItemListener(checkBoxListener);
         if (fileNameComboBox != null) {
             chkFileNameRegex.addActionListener(new ActionListener() {
