@@ -2018,6 +2018,7 @@ init_declarator[int kind]
                 |
                         array_initializer
 		)?
+                (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
 
 initializer
@@ -2351,7 +2352,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition, symTabCheck]
+        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
