@@ -184,7 +184,7 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile(String extension) throws IOException {
-            file = File.createTempFile("nb-remote-tmp-file-", extension != null ? "." + extension : null); // NOI18N
+            file = File.createTempFile("nb-php-remote-tmp-file-", extension != null ? "." + extension : null); // NOI18N
             file.deleteOnExit();
         }
 
