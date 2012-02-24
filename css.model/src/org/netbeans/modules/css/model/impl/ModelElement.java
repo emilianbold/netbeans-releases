@@ -49,6 +49,7 @@ import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -57,11 +58,9 @@ import org.netbeans.modules.css.model.api.PlainElement;
 public abstract class ModelElement implements Element {
 
     private ModelElementContext context;
-    
     private final List<ClassElement> CLASSELEMENTS = new ArrayList<ClassElement>();
-
     private Collection<ElementListener> LISTENERS;
-    
+
     public ModelElement() {
     }
 
@@ -71,19 +70,19 @@ public abstract class ModelElement implements Element {
 
     @Override
     public boolean isValid() {
-        if(context == null) {
+        if (context == null) {
             //artificial (node-less) elements
             return true;
         }
         Node node = context.getNode();
         return NodeUtil.getChildrenRecursivelyByType(node, NodeType.error, NodeType.recovery).isEmpty();
     }
-    
+
     @Override
     public Collection<? extends SemanticModel> getSemanticModels() {
         return Collections.emptyList();
     }
-    
+
     @Override
     public int getStartOffset() {
         return context != null ? context.getNode().from() : -1;
@@ -93,10 +92,10 @@ public abstract class ModelElement implements Element {
     public int getEndOffset() {
         return context != null ? context.getNode().to() : -1;
     }
-    
+
     @Override
     public synchronized void addElementListener(ElementListener listener) {
-        if(LISTENERS == null)  {
+        if (LISTENERS == null) {
             LISTENERS = new ArrayList<ElementListener>();
             LISTENERS.add(listener);
         }
@@ -104,36 +103,36 @@ public abstract class ModelElement implements Element {
 
     @Override
     public synchronized void removeElementListener(ElementListener listener) {
-        if(LISTENERS == null) {
-            return ;
+        if (LISTENERS == null) {
+            return;
         }
         LISTENERS.remove(listener);
-        if(LISTENERS.isEmpty()) {
+        if (LISTENERS.isEmpty()) {
             LISTENERS = null;
         }
     }
-    
+
     protected synchronized void fireElementChanged() {
-        if(LISTENERS == null) {
-            return ;
+        if (LISTENERS == null) {
+            return;
         }
-        
-        for(ElementListener el : LISTENERS) {
+
+        for (ElementListener el : LISTENERS) {
             el.elementChanged(null);
         }
-        
+
     }
-    
+
     private void fireElementAdded(Element e) {
         ModelElementListener.Support.fireElementAdded(e, getElementListener());
         fireElementChanged();
     }
-    
+
     private void fireElementRemoved(Element e) {
         ModelElementListener.Support.fireElementRemoved(e, getElementListener());
         fireElementChanged();
     }
-    
+
     protected abstract Class getModelClass();
 
     protected final void initChildrenElements() {
@@ -146,16 +145,16 @@ public abstract class ModelElement implements Element {
     protected void addEmptyElement(Class clazz) {
         CLASSELEMENTS.add(new ClassElement(clazz, null));
     }
-    
+
     protected void addTextElement(CharSequence text) {
         addElement(ElementFactoryImpl.getDefault().createPlainElement(text));
     }
 
     private Class getModelClass(Element element) {
-        if(element instanceof ModelElement) {
-            ModelElement melement = (ModelElement)element;
+        if (element instanceof ModelElement) {
+            ModelElement melement = (ModelElement) element;
             Class clazz = melement.getModelClass();
-            if(!clazz.isAssignableFrom(element.getClass())) {
+            if (!clazz.isAssignableFrom(element.getClass())) {
                 throw new IllegalArgumentException(String.format("Element %s declares %s as its superinterface but it is not true!", element.getClass().getSimpleName(), clazz.getSimpleName()));
             }
             return clazz;
@@ -163,7 +162,7 @@ public abstract class ModelElement implements Element {
             return element.getClass();
         }
     }
-    
+
     @Override
     public int addElement(Element e) {
         Class clazz = getModelClass(e);
@@ -190,7 +189,7 @@ public abstract class ModelElement implements Element {
         ClassElement old = CLASSELEMENTS.set(index, ce);
         fireElementRemoved(old.getElement());
         fireElementAdded(e);
-        
+
         return old == null ? null : old.getElement();
     }
 
@@ -224,26 +223,25 @@ public abstract class ModelElement implements Element {
     @Override
     public int getElementIndex(Element e) {
         //XXX: fix the linear search :-(
-        for(int i = 0; i < CLASSELEMENTS.size(); i++) {
+        for (int i = 0; i < CLASSELEMENTS.size(); i++) {
             ClassElement ce = CLASSELEMENTS.get(i);
-            if(ce.getElement().equals(e)) { //identity comparison?!?!
+            if (ce.getElement().equals(e)) { //identity comparison?!?!
                 return i;
             }
         }
         return -1;
     }
-    
+
     public int getElementIndex(Class elementClass) {
         //XXX: fix the linear search :-(
-        for(int i = 0; i < CLASSELEMENTS.size(); i++) {
+        for (int i = 0; i < CLASSELEMENTS.size(); i++) {
             ClassElement ce = CLASSELEMENTS.get(i);
-            if(ce.getClazz().equals(elementClass)) {
+            if (ce.getClazz().equals(elementClass)) {
                 return i;
             }
         }
         return -1;
     }
-    
 
     @Override
     public String toString() {
@@ -262,25 +260,26 @@ public abstract class ModelElement implements Element {
     protected void setElement(Element element) {
         setElement(element, false);
     }
-    
+
     /**
      * Adds or replaces the given element in its enclosing element.
-     * 
+     *
      * If position for the given element is found and there's no value defined,
-     * then the given element is set to that position. If there's already an element at 
-     * the position the given element is added just after that position.
+     * then the given element is set to that position. If there's already an
+     * element at the position the given element is added just after that
+     * position.
      *
      * @param element
      */
     protected int setElement(Element element, boolean addElementIfSetAlready) {
         int index = getElementIndex(getModelClass(element));
-        if(index == -1) {
+        if (index == -1) {
             //not fount, just add it
             return addElement(element);
         } else {
             //found, replace or add if exists
             Element original = getElementAt(index);
-            if(original == null) {
+            if (original == null) {
                 //set
                 setElementAt(index, element);
                 return index;
@@ -292,63 +291,109 @@ public abstract class ModelElement implements Element {
             }
         }
     }
-    
-    protected void removeTokenElementsFw(int fromIndex, String... images) {
-        if(fromIndex < 0 || fromIndex >= getElementsCount()) {
-            return ;
+
+    /**
+     * Returns and element at the specified position if it is of the T type.
+     * This method doesn't throw any exception if the index is out of the
+     * children element bounds. It just returns null in this case.
+     *
+     */
+    protected <T extends Element> T getElementAt(int index, Class<T> type) {
+        if (index < 0 || index >= getElementsCount()) {
+            return null;
         }
-        int toIndex = fromIndex;
-        for(int i = fromIndex; i < getElementsCount(); i++) {
-            Element e = getElementAt(i);
-            //XXX consolidate Plain-TokenElements!!!!!!!!
-            if(e instanceof PlainElement) {
-                PlainElement pe = (PlainElement)e;
-                String peImage = pe.getContent().toString().trim();
-                for(String image : images) {
-                    if(image.equals(peImage)) {
-                        toIndex = i;
-                        break;
-                    }
-                }
-            } else {
-                break;
-            }
+        Element e = getElementAt(index);
+        if (type.isAssignableFrom(e.getClass())) {
+            return type.cast(e);
         }
-        
-        for(int i = toIndex; i >= fromIndex; i--) {
-            removeElement(i);
-        }
-        
-    }
-    
-    protected void removeTokenElementsBw(int fromIndex, String... images) {
-         if(fromIndex < 0 || fromIndex >= getElementsCount()) {
-            return ;
-        }
-        int toIndex = fromIndex;
-        for(int i = fromIndex; i >= 0; i--) {
-            Element e = getElementAt(i);
-            //XXX consolidate Plain-TokenElements!!!!!!!!
-            if(e instanceof PlainElement) {
-                PlainElement pe = (PlainElement)e;
-                String peImage = pe.getContent().toString().trim();
-                for(String image : images) {
-                    if(image.equals(peImage)) {
-                        toIndex = i;
-                        break;
-                    }
-                }
-            } else {
-                break;
-            }
-        }
-        
-        for(int i = toIndex; i >= fromIndex; i--) {
-            removeElement(i);
-        }
-        
+        return null;
     }
 
+
+    private static final String EMPTY_STRING = "";
+    //xxx possibly refactor such methods to some utility class 
+    /**
+     * tries to clear part of the PlainElement from whitespaces.
+     */
+    protected void wipeWhitespaces(PlainElement pe, boolean endLineInclusive) {
+        String text = pe.getContent().toString();
+        //remove all whitespace after last endline
+        int lastEndIndex = text.lastIndexOf('\n');
+        if (lastEndIndex >= 0) {
+            String upToTheNL = text.substring(0, lastEndIndex);
+            if(upToTheNL.trim().length() == 0) {
+                //remove all the whitespaces even before the NL
+                pe.setContent(endLineInclusive ? EMPTY_STRING : "\n");
+            } else {
+                //there are some comments which cannot be wiped
+                //in this case keep the endline
+                text = text.substring(0, lastEndIndex + 1);
+                pe.setContent(text);
+            }
+        } else {
+            //no endline
+            //remove the text if it is only WS
+            if(text.trim().length() == 0) {
+                pe.setContent(EMPTY_STRING);
+            }
+        }
+    }
+
+//    protected void removeTokenElementsFw(int fromIndex, String... images) {
+//        if(fromIndex < 0 || fromIndex >= getElementsCount()) {
+//            return ;
+//        }
+//        int toIndex = fromIndex;
+//        for(int i = fromIndex; i < getElementsCount(); i++) {
+//            Element e = getElementAt(i);
+//            //XXX consolidate Plain-TokenElements!!!!!!!!
+//            if(e instanceof PlainElement) {
+//                PlainElement pe = (PlainElement)e;
+//                String peImage = pe.getContent().toString().trim();
+//                for(String image : images) {
+//                    if(image.equals(peImage)) {
+//                        toIndex = i;
+//                        break;
+//                    }
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//        
+//        for(int i = toIndex; i >= fromIndex; i--) {
+//            removeElement(i);
+//        }
+//        
+//    }
+//    
+//    protected void removeTokenElementsBw(int fromIndex, String... images) {
+//         if(fromIndex < 0 || fromIndex >= getElementsCount()) {
+//            return ;
+//        }
+//        int toIndex = fromIndex;
+//        for(int i = fromIndex; i >= 0; i--) {
+//            Element e = getElementAt(i);
+//            //XXX consolidate Plain-TokenElements!!!!!!!!
+//            if(e instanceof PlainElement) {
+//                PlainElement pe = (PlainElement)e;
+//                String peImage = pe.getContent().toString().trim();
+//                for(String image : images) {
+//                    if(image.equals(peImage)) {
+//                        toIndex = i;
+//                        break;
+//                    }
+//                }
+//            } else {
+//                break;
+//            }
+//        }
+//        
+//        for(int i = toIndex; i >= fromIndex; i--) {
+//            removeElement(i);
+//        }
+//        
+//    }
     protected abstract ModelElementListener getElementListener();
 
     private static class ClassElement {
@@ -373,7 +418,5 @@ public abstract class ModelElement implements Element {
         public String toString() {
             return getElement().toString();
         }
-        
-        
     }
 }

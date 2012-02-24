@@ -59,6 +59,9 @@ import org.netbeans.modules.css.model.api.PropertyValue;
  */
 public class DeclarationI extends ModelElement implements Declaration {
 
+    //todo - use indent api
+    private static final String INDENT = "    "; //NOI18N
+    
     private Property property;
     private PropertyValue propertyValue;
     private Prio prio;
@@ -85,7 +88,7 @@ public class DeclarationI extends ModelElement implements Declaration {
 
     public DeclarationI() {
         //default elements
-        addTextElement("\t"); //not acc. to the grammar!
+        addTextElement(INDENT); //not acc. to the grammar!
 
         addEmptyElement(Property.class);
         addTextElement(":");

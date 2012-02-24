@@ -48,7 +48,11 @@ import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -56,7 +60,7 @@ import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
  */
 public class DeclarationsI extends ModelElement implements Declarations {
 
-    private List<Declaration> declarations = new ArrayList<Declaration>();    
+    private List<Declaration> declarations = new ArrayList<Declaration>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
@@ -73,13 +77,13 @@ public class DeclarationsI extends ModelElement implements Declarations {
         initChildrenElements();
     }
 
-    @Override 
+    @Override
     public Collection<? extends SemanticModel> getSemanticModels() {
-        return isValid() 
+        return isValid()
                 ? Collections.singletonList(new DeclarationsMarginBoxModel(this))
                 : Collections.<SemanticModel>emptyList();
     }
-    
+
     @Override
     public List<Declaration> getDeclarations() {
         return declarations;
@@ -92,7 +96,7 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     @Override
     public void addDeclaration(Declaration declaration) {
-        addTextElement("\n");
+//        addTextElement("\n");
         addElement(declaration);
         addTextElement(";\n");
     }
@@ -100,18 +104,40 @@ public class DeclarationsI extends ModelElement implements Declarations {
     @Override
     public void removeDeclaration(Declaration declaration) {
         int index = getElementIndex(declaration);
-        if(index == -1) {
-            return ;
+        if (index == -1) {
+            return;
         }
         removeElement(index); //remove the declaration
+
+        //update the whitespaces in the preceding plain element
+        PlainElement before = getElementAt(index - 1, PlainElement.class);
+        if (before != null) {
+            //remove all whitespace after last endline
+            wipeWhitespaces(before, false);
+        }
+
+        //update the whitespaces after the declaration element
+        PlainElement after = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
+        if(after != null) {
+            if(LexerUtils.equals(";", after.getContent(), true, true)) {
+                //semicolon - remove
+                removeElement(index);
+                PlainElement afterafter = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
+                if(afterafter != null) {
+                    //whitespace
+                    //remove all whitespace after last endline
+                    wipeWhitespaces(afterafter, true);
+                }
+            } else {
+                //remove all whitespace after last endline
+                wipeWhitespaces(after, true);
+            }
+        }
         
-        //look if there's a semicolon and some whitespaces after the declaration
-        removeTokenElementsFw(index, ";", "\n", "");
     }
 
     @Override
     protected Class getModelClass() {
         return Declarations.class;
     }
-
 }
