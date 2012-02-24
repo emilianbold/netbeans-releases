@@ -86,6 +86,10 @@ public interface JsElement extends ElementHandle {
             return lookup.get(id);
         }
         
+        public boolean isFunction() {
+            return this == FUNCTION || this == METHOD || this == CONSTRUCTOR;
+        }
+        
     }
 
     int getOffset();

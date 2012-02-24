@@ -329,8 +329,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
             
             JsObject type = null;
-            List lastResovled = new ArrayList();
-            
+            List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
+            List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
@@ -346,22 +346,20 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         // try to find through index
                     } else {
                         if ("@mtd".equals(kind)) {  //NOI18N
-                            if (type.getJSKind() == JsElement.Kind.METHOD
-                                    || type.getJSKind() == JsElement.Kind.FUNCTION
-                                    || type.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                                lastResovled.addAll(((JsFunction) type).getReturnTypes());
+                            if (type.getJSKind().isFunction()) {
+                                lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
                             }
                         } else {
                             // just property
                             Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
 
                             if (lastTypeAssignment.isEmpty()) {
-                                lastResovled.add(type);
+                                lastResolvedObjects.add(type);
                             } else {
                                 for (Type typeName : lastTypeAssignment) {
                                     for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
                                         if (object.getName().equals(typeName.getType())) {
-                                            lastResovled.add(object);
+                                            lastResolvedObjects.add(object);
                                             break;
                                         }
                                     }
@@ -371,59 +369,55 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                 } else {
-                    List newResolved = new ArrayList();
-                    for (Object resolved : lastResovled) {
-                        if(resolved instanceof JsObject) {
-                            JsObject property = ((JsObject)resolved).getProperty(name);
-                            if ("@mtd".equals(kind)) {  //NOI18N
-                                if (property.getJSKind() == JsElement.Kind.METHOD
-                                        || property.getJSKind() == JsElement.Kind.FUNCTION
-                                        || property.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
-                                    newResolved.addAll(((JsFunction) property).getReturnTypes());
-                                }
-                            } else {
-                                newResolved.add(property);
+                    List<JsObject> newResolvedObjects = new ArrayList<JsObject>();
+                    List<TypeUsage> newResolvedTypes = new ArrayList<TypeUsage>();
+                    for (JsObject resolved : lastResolvedObjects) {
+                        JsObject property = ((JsObject) resolved).getProperty(name);
+                        if ("@mtd".equals(kind)) {  //NOI18N
+                            if (property.getJSKind().isFunction()) {
+                                newResolvedTypes.addAll(((JsFunction) property).getReturnTypes());
                             }
                         } else {
-                            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                            Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(((TypeUsage)resolved).getType() + "." +  name);
-                            for (IndexResult indexResult : indexResults) {
-                                JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
-                                if ("@mtd".equals(kind) && (jsKind == JsElement.Kind.METHOD // NOI18N
-                                        || jsKind == JsElement.Kind.FUNCTION
-                                        || jsKind == JsElement.Kind.CONSTRUCTOR)) {
-                                    newResolved.addAll(IndexedElement.getReturnTypes(indexResult));
-                                } else {
-                                    
-                                }
-                            }
+                            newResolvedObjects.add(property);
                         }
                     }
-                    lastResovled = newResolved;
-                }
-            }
-            
-            for (Object resolved : lastResovled) {
-                if(resolved instanceof JsObject) {
-                    addObjectPropertiesToCC((JsObject)resolved, request, resultList);
-                } else {
-                    TypeUsage typeUsage = (TypeUsage)resolved;
-                    // at first try to find the type in the model
-                    JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
-                    if (jsObject != null) {
-                        addObjectPropertiesToCC(jsObject, request, resultList);
-                    } else {
-                        // look at the index
+                    for (TypeUsage typeUsage : lastResolvedTypes) {
                         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                        Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(((TypeUsage)resolved).getType()); 
-                        for(IndexedElement indexedElement : properties) {
-                            if (startsWith(indexedElement.getName(), request.prefix)) {
-                                resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                        Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
+                        for (IndexResult indexResult : indexResults) {
+                            JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
+                            } else {
                             }
+                        }
+                    }
+
+                    lastResolvedObjects = newResolvedObjects;
+                    lastResolvedTypes = newResolvedTypes;
+                }
+            }
+
+            for (JsObject resolved : lastResolvedObjects) {
+                addObjectPropertiesToCC(resolved, request, resultList);
+            }
+            for (TypeUsage typeUsage : lastResolvedTypes) {
+                // at first try to find the type in the model
+                JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
+                if (jsObject != null) {
+                    addObjectPropertiesToCC(jsObject, request, resultList);
+                } else {
+                    // look at the index
+                    FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(typeUsage.getType());
+                    for (IndexedElement indexedElement : properties) {
+                        if (startsWith(indexedElement.getName(), request.prefix)) {
+                            resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
                         }
                     }
                 }
             }
+
         }
     }
     
