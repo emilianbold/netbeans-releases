@@ -46,7 +46,6 @@
 
 package org.netbeans.nbbuild;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -84,7 +83,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -100,12 +98,6 @@ import org.xml.sax.SAXException;
  */
 public class CheckHelpSetsBin extends Task {
     
-    private static final EntityResolver NO_DTDS = new EntityResolver() {
-        public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            return new InputSource(new ByteArrayInputStream(new byte[0]));
-        }
-    };
-
     private List<FileSet> filesets = new ArrayList<FileSet>();
     
     private Set<String> excludedModulesSet;
@@ -203,7 +195,7 @@ public class CheckHelpSetsBin extends Task {
                         }
                         Document doc;
                         try {
-                            doc = XMLUtil.parse(new InputSource(layer.toString()), false, false, null, NO_DTDS);
+                            doc = XMLUtil.parse(new InputSource(layer.toString()), false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver());
                         } catch (SAXException x) {
                             log("Could not parse " + layer, x, Project.MSG_WARN);
                             continue;
@@ -242,7 +234,7 @@ public class CheckHelpSetsBin extends Task {
                                     }
                                     Document doc2;
                                     try {
-                                        doc2 = XMLUtil.parse(input, false, false, null, NO_DTDS);
+                                        doc2 = XMLUtil.parse(input, false, false, XMLUtil.rethrowHandler(), XMLUtil.nullResolver());
                                     } catch (SAXException x) {
                                         log("Could not parse " + registration.getAttribute("name") + " in " + layer, x, Project.MSG_WARN);
                                         continue;
