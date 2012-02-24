@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.refactoring.support;
+package org.netbeans.modules.cnd.refactoring.api;
 
 import java.util.ArrayList;
 import java.util.Collections;
