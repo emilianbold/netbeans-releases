@@ -129,8 +129,8 @@ public class NamedParameterElement extends ParameterElement implements DocParame
             name = name.substring(1, name.length() - 1);
             int indexOfEqual = name.indexOf("=");
             if (indexOfEqual != -1) {
+                defaultValue = name.substring(indexOfEqual + 1);
                 name = name.substring(0, indexOfEqual);
-                defaultValue = name.substring(indexOfEqual);
             }
         }
         return new NamedParameterElement(type, new Name(name), paramTypes, paramDescription, optional, defaultValue);
