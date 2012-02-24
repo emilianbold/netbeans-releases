@@ -111,6 +111,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     // ------------ delegating methods -------------------
 
     @Override
+    protected boolean hasCache() {
+        RemoteFileObjectBase delegate = getDelegate();
+        return (delegate == null) ? false : delegate.hasCache();
+    }
+
+    @Override
     public RemoteFileObject getFileObject(String name, String ext) {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
