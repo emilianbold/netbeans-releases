@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,9 +96,6 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
-import org.netbeans.modules.java.hints.test.SourceUtilsTestUtil;
-import org.netbeans.modules.java.hints.test.TestLookup;
-import org.netbeans.modules.java.hints.test.TestUtilities;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
@@ -122,6 +120,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.ServiceProvider;
 
 /**A support class for writing a test for a Java Hint. A test verifying that correct
  * warnings are produced should look like:
@@ -338,7 +338,7 @@ public class HintTest {
 
         FileObject file = FileUtil.createData(sourceRoot, fileName);
 
-        TestUtilities.copyStringToFile(file, code);
+        copyStringToFile(file, code);
 
         if (compilable) {
             checkCompilable.add(file);
@@ -569,7 +569,7 @@ public class HintTest {
 
     private static List<URL> bootClassPath;
 
-    private static Logger log = Logger.getLogger(SourceUtilsTestUtil.class.getName());
+    private static Logger log = Logger.getLogger(HintTest.class.getName());
 
     private static synchronized List<URL> getBootClassPath() {
         if (bootClassPath == null) {
@@ -1177,5 +1177,22 @@ public class HintTest {
         } else {
             // probably do nothing - file is not a directory
         }
+    }
+
+    private static FileObject copyStringToFile (FileObject f, String content) throws Exception {
+        OutputStream os = f.getOutputStream();
+        os.write(content.getBytes("UTF-8"));
+        os.close ();
+
+        return f;
+    }
+
+    @ServiceProvider(service = Lookup.class)
+    public static final class TestLookup extends ProxyLookup {
+
+        public void setLookupsImpl(Lookup... lookups) {
+            setLookups(lookups);
+        }
+
     }
 }

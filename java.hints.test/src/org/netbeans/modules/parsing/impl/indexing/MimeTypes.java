@@ -46,7 +46,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
 
-/**
+/**Not an API!
  *
  * @author Tomas Zezula
  */
