@@ -174,7 +174,7 @@ public abstract class SearchProvider {
          * You should update inner state of this presenter from the component,
          * or store reference to created component in this presenter, so that
          * the current settings can be obtained from the form when a new search
-         * is started, e.i. when {@link #composeSearch()} is called.
+         * is started, i.e. when {@link #composeSearch()} is called.
          */
         public abstract @NonNull JComponent createForm();
 
