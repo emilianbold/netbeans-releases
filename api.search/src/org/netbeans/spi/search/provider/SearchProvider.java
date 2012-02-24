@@ -49,6 +49,32 @@ import org.openide.util.HelpCtx;
 
 /**
  * Search provider can register complex search feature to the IDE.
+ * 
+ * <div class="nonnormative">
+ *   <p>Example:</p>
+ *   <pre>
+ * {@code
+ * // use annotation to register this provider
+ * [at]ServiceProvider(service = SearchProvider.class)
+ * public class ExampleSearchProvider extends SearchProvider {
+ *
+ *   // Create presenter
+ *   public Presenter ExamplePresenter(boolean replaceMode) {
+ *       return new BasicSearchPresenter(replaceMode);
+ *   }
+ *
+ *   // Replacing is supported.
+ *   public boolean isReplaceSupported() {
+ *       return true;
+ *   }
+ *
+ *   
+ *   // This search provider is always enabled.
+ *   public boolean isEnabled() {
+ *       return true; // could be disabled on some platforms
+ *   }
+ * }}</pre>
+ * </div>
  *
  * @author jhavlin
  */
@@ -90,6 +116,48 @@ public abstract class SearchProvider {
     /**
      * Presenter for search provider. This class is used to show panel and start
      * the search task.
+     * 
+     * <div class="nonnormative">
+     *   <p>Example:</p>
+     *   <pre>
+     * {@code
+     * class ExampleSearchPresenter
+     *       extends BasicSearchProvider.Presenter {
+     *
+     *   BasicSearchForm form = null;
+     *   private boolean replacing;
+     *
+     *   public BasicSearchPresenter(boolean replacing) {
+     *       this.replacing = replacing;
+     *   }
+
+     *   public JComponent createForm() {
+     *       if (form == null) {
+     *           form = new Form(); // create a new with UI for specifying search settings
+     *           form.setName("Example Provider");
+     *       }
+     *       return form;
+     *   }
+     *
+     *   public SearchComposition&lt;Def&gt; composeSearch() {
+     *       // here create a new search composition appropriate for settings 
+     *       // specified in the form.
+     *   }
+     *
+     *   public boolean isUsable() {
+     *       return form.isUsable();
+     *   }
+     *
+     *   public void addUsabilityChangeListener(ChangeListener cl) {
+     *       form.setUsabilityChangeListener(cl);
+     *   }
+     *
+     *   public void clean() {
+     *       super.clean();
+     *       form.clean();
+     *   }    
+     * }}</pre>
+     * </div>
      */
     public static abstract class Presenter {
 

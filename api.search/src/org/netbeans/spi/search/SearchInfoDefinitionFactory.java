@@ -105,12 +105,12 @@ public final class SearchInfoDefinitionFactory {
      * multiple filters are passed, the filters are applied on each file/folder
      * in the same order as in the array passed to this method.
      *
-     * @param root File of folder where the search should start
-     * @param filters filters to be used when searching; or
-     * <code>null</code> if no filters should be used
+     * @param root File or folder where the search should start
+     * @param filters filters to be used when searching
+     * 
      * @return
      * <code>SearchInfo</code> object which iterates through
-     * <code>DataObject</code>s found in the specified folder and (optionally)
+     * <code>FileObject</code>s found in the specified folder and (optionally)
      * its subfolders
      * @see SearchFilterDefinition
      */
@@ -122,7 +122,11 @@ public final class SearchInfoDefinitionFactory {
     }
 
     /**
-     * Create search info for non-recursive searching in a single directory.
+     * Create a search definition info for non-recursive searching in a single
+     * directory.
+     *
+     * @param root Directory or file. If file is passed, only that single file
+     * will be searched.
      */
     public static @NonNull SearchInfoDefinition createFlatSearchInfo(
             @NonNull final FileObject root,
@@ -132,8 +136,11 @@ public final class SearchInfoDefinitionFactory {
     }
 
     /**
-     * Create search info for non-recursive searching in a single directory. 
-     * Use default filters.
+     * Create a search info definition for non-recursive searching in a single
+     * directory. Use default filters.
+     * 
+     * @param root Directory or file. If file is passed, only that single file
+     * will be searched.
      */
     public static @NonNull SearchInfoDefinition createFlatSearchInfo(
             @NonNull final FileObject root) {
@@ -141,8 +148,8 @@ public final class SearchInfoDefinitionFactory {
     }
 
     /**
-     * Convenience method for creating a search info for a root node with
-     * default filters.
+     * Convenience method for creating a search info definition for a root node
+     * with default filters.
      *
      * @see #createSearchInfo(FileObject, SearchFilterDefinition[])
      */
@@ -166,8 +173,8 @@ public final class SearchInfoDefinitionFactory {
      * <code>null</code> if no filters should be used
      * @return
      * <code>SearchInfo</code> object which iterates through
-     * <code>DataObject</code>s found in the specified folders and (optionally)
-     * their subfolders
+     * <code>FileObject</code>s found in the specified folders and their
+     * subfolders
      * @see SearchFilterDefinition
      */
     public static @NonNull SearchInfoDefinition createSearchInfo(
@@ -241,7 +248,7 @@ public final class SearchInfoDefinitionFactory {
 
     /**
      * Create immutable list of default filter definitions. It will be assigned
-     * to constant {@link #DEFAULT_FILTER_DEFINITIONS}.
+     * to constant {@link #DEFAULT_FILTER_DEFS}.
      */
     private static List<SearchFilterDefinition> createDefaultFilterDefList() {
         List<SearchFilterDefinition> list;

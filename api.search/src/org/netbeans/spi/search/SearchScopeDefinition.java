@@ -141,7 +141,7 @@ public abstract class SearchScopeDefinition {
     
     /**
      * Returns object defining the actual search scope, i.e. the iterator over
-     * {@code DataObject}s to be searched.
+     * {@code FileObject}s to be searched.
      * 
      * @return  {@code SearchInfo} defining the search scope
      */

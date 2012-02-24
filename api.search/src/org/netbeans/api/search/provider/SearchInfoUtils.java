@@ -54,31 +54,34 @@ import org.netbeans.api.search.provider.impl.EmptySearchInfo;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
+import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.netbeans.spi.search.impl.SearchInfoDefinitionUtils;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Parameters;
 
 /**
- * Method for getting SearchInfo for nodes.
+ * Class containing methods for getting SearchInfo instances for nodes and
+ * files.
  *
  * @author jhavlin
  */
 public final class SearchInfoUtils {
 
     /**
-     * Filter for skipping invisible files.
+     * Filter for skipping invisible files. One of default filters.
      */
     public static final SearchFilter VISIBILITY_FILTER =
             createVisibilityFilter();
     /**
-     * Filter for skipping unsharable files.
+     * Filter for skipping unsharable files. One of default filters.
      */
     public static final SearchFilter SHARABILITY_FILTER =
             createSharabilityFilter();
     /**
-     * List of default search filters.
+     * Immutable list of default search filters.
      */
     public static final List<SearchFilter> DEFAULT_FILTERS =
             createDefaultFilterList();
@@ -86,6 +89,37 @@ public final class SearchInfoUtils {
     /**
      * Gets a search info for node.
      *
+     * <div class="nonnormative">
+     * <p>
+     *   Algorithm for getting search info:
+     * </p>
+     * <ol>
+     *    <li>Look for SearchInfoDefinition in lookup of the node. If found,
+     *    create and return search info for this definition.</li>
+     *    <li>Look for SubTreeSearchOptions in lookups of this node and its 
+     *    ancestors. If found, check if the node has a {@link FileObject} 
+     *    (possibly as primary file of a {@link DataObject}) in its lookup,
+     *    and, if so, create search info for recursive searching in the file 
+     *    object, using filters defined in found {@link SubTreeSearchOptions}.
+     *    </li>
+     *    <li>Check whether the node has a {@link FileObject} 
+     *    (possibly as primary file of a {@link DataObject}) in is lookup. If
+     *    so, create default search info for that file object. Default means
+     *    that the file object will be searched recursively, using default 
+     *    filters.
+     *    </li>
+     *    <li>
+     *    Return null.
+     *    </li>
+     * </ol>
+     * </div>
+     * 
+     * @see FileObject
+     * @see DataObject
+     * @see SearchInfoDefinition
+     * @see SubTreeSearchOptions
+     * @see #findDefinedSearchInfo(org.openide.nodes.Node)
+     * 
      * @return Search info for a node. If no search info was defined and it
      * cannot be created for this node, null is returned.
      */
@@ -103,8 +137,11 @@ public final class SearchInfoUtils {
 
     /**
      * Get a search info for a node, if it was explicitly defined in node's
-     * lookup.
+     * lookup, or in lookup of a ancestor node. Default search info is not
+     * created.
      *
+     * @see #getSearchInfoForNode(org.openide.nodes.Node)
+     * 
      * @return Defined SearchInfo, or null if not available.
      */
     public static @CheckForNull SearchInfo findDefinedSearchInfo(
@@ -120,7 +157,9 @@ public final class SearchInfoUtils {
     }
 
     /**
-     * Create a new SearchInfo for a SearchInfoDefinition instance.
+     * Create a new SearchInfo for a {@link SearchInfoDefinition} instance.
+     *
+     * @param definition Search info definition.
      */
     public static @NonNull SearchInfo createForDefinition(
             @NonNull SearchInfoDefinition definition) {
@@ -145,24 +184,30 @@ public final class SearchInfoUtils {
      * <code>SearchInfo</code> should delegate to
      * @return created compound
      * <code>SearchInfo</code>
-     * @exception java.lang.IllegalArgumentException if the argument is
+     * @exception java.lang.NullPointerException if the argument is
      * <code>null</code>
-     * @since 3.13
      */
     public static @NonNull SearchInfo createCompoundSearchInfo(
-            SearchInfo... delegates) {
+            @NonNull SearchInfo... delegates) {
+        Parameters.notNull("delegates", delegates);                     //NOI18N
         return new CompoundSearchInfo(delegates);
     }
 
     /**
-     * Create a SearchInstance that is always unsearchable.
+     * Create a SearchInfo instance that is always unsearchable.
+     *
+     * @return Search info whose {@link SearchInfo#canSearch()} returns always
+     * null.
      */
     public static @NonNull SearchInfo createEmptySearchInfo() {
         return new EmptySearchInfo();
     }
 
     /**
-     * Create a search info for a FileObject. Default filters will be used.
+     * Create a search info for a FileObject. Default filters will be used. If
+     * root is a folder, it will be searched recursively.
+     * 
+     * @param root File of folder where recursive searching should start.
      */
     public static @NonNull SearchInfo createSearchInfoForRoot(
             @NonNull FileObject root) {
@@ -175,6 +220,15 @@ public final class SearchInfoUtils {
     /**
      * Create a search info for an array of FileObjects. Default filters will be
      * used.
+     * 
+     * <p class="nonnormative">
+     * Using this method is preferable to creating several SearchInfo 
+     * instances for individual roots using 
+     * {@link #createSearchInfoForRoot(FileObject)} and then combining them with
+     * {@link #createCompoundSearchInfo(SearchInfo[])}.
+     * </p>
+     * 
+     * @param roots Array of root files or folders.
      */
     public static @NonNull SearchInfo createSearchInfoForRoots(
             @NonNull FileObject[] roots) {

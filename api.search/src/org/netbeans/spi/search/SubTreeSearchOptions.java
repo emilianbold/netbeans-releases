@@ -56,6 +56,23 @@ import org.netbeans.api.annotations.common.NonNull;
  * It is mainly useful in project nodes to set which folders and files are
  * skipped (filtered).
  *
+ * <div class="nonnormative">
+ * <p>Example:</p>
+ * <pre>
+ * {@code 
+ * 
+ * public class MyNode extends AbstractNode {
+ *   public MyNode() { 
+ *     super(Lookups.singleton(new SubTreeSearchOptions() {
+ *       public List<SearchFilterDefinition> getFilters() {
+ *        // return list of SearchFilterDefinitions objects.
+ *       }
+ *     }));
+ *   }
+ *   ...
+ * }}</pre>
+ * </div>
+ * 
  * @author jhavlin
  */
 public abstract class SubTreeSearchOptions {

@@ -51,6 +51,13 @@ import org.openide.filesystems.FileObject;
  * File name Matcher - Instances of this class are used to tell which file paths
  * matches criteria defined in search options.
  *
+ * Use factory method {@link #create(SearchScopeOptions)} to get optimal
+ * implementation for specific search scope options.
+ *
+ * <div class="nonnormative">If search scope handles file name pattern as
+ * regular expression, full path is matched by the implementation. Otherwise,
+ * only file name and extension is matched.</div>
+ *
  * @author jhavlin
  */
 public abstract class FileNameMatcher {
@@ -62,10 +69,15 @@ public abstract class FileNameMatcher {
     }
 
     /**
+     * @param file File whose name or path should be matched.
      * @return True if file path matches required criteria, false otherwise.
      */
     public abstract boolean pathMatches(File file);
 
+    /**
+     * @param fileObject File whose name or path should be matched.
+     * @return True if file path matches required criteria, false otherwise.
+     */
     public abstract boolean pathMatches(FileObject fileObject);
 
     /**

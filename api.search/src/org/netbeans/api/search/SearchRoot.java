@@ -50,7 +50,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
- * Search root is a pair containing a folder (or file) and a set of file
+ * Search root is a pair containing a folder (or file) and a set of search
  * filters.
  */
 public final class SearchRoot {

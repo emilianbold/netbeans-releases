@@ -99,7 +99,23 @@ public abstract class SearchInfo {
      * that comply with search options and search filters.
      *
      * This is only convenience method. The iterated files are the same that
-     * would be retrieved with {@link #getFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}.
+     * would be retrieved with 
+     * {@link #getFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}.
+     * 
+     * <div class="nonnormative">
+     * <p>
+     *  This method can be used in for-each loops:
+     * </p>
+     * <pre>
+     * {@code
+     * for (FileObject fo: searchInfo.iterateFilesToSearch(opts,listnr,term) {
+     *   ResultType result = somehowCheckFileContentMatches(fo);
+     *   if (result != null) {
+     *     searchResultsDisplayer.addMatchingObject(result);
+     *   }
+     * }}
+     * </pre>
+     * </div>
      */
     public final @NonNull Iterable<FileObject> iterateFilesToSearch(
             @NonNull final SearchScopeOptions options,

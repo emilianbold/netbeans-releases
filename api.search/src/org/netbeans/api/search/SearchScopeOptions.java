@@ -46,11 +46,18 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.ui.ScopeSettingsPanel;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.openide.util.Parameters;
 
 /**
- * This class holds user options and custom filters for standard searchers.
+ * This class holds user options and custom filters.
+ *
+ * It is used to specify which files should be iterated by {@link SearchInfo}.
+ *
+ * <div class="nonnormative">It can be initialized with values specified in UI
+ * component {@link ScopeSettingsPanel} </div>
  *
  * @author jhavlin
  */

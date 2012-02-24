@@ -64,6 +64,41 @@ import org.openide.filesystems.FileObject;
  * of nodes or projects</a> the action was invoked on.
  * </p>
  *
+ * SearchInfoDefinition should be registered to lookups of nodes only if default
+ * behavior is not appropriate. By default, recursive search is started in a
+ * file or directory that is registered in node's lookup, using default filters
+ * or filters defined in an ancestor node (see {@link SubTreeSearchOptions}).
+ *
+ * In most cases, you do not need to create custom implementation. You can 
+ * use some factory method in {@link SearchInfoDefinitionFactory}.
+ * 
+ * <div clas="nonnormative">
+ * <p>Example:</p>
+ * <pre>
+ * {@code
+ * import org.openide.util.lookup.Lookups;
+ *
+ * public class MyNode extends AbstractNode {
+ *
+ *   public MyNode(FileObject folder) {
+ *     super(new MyNodeChildren(folder),
+ *       Lookups.singleton(
+ *         SearchInfoDescriptionFactory.createSearchInfo(
+ *           folder,
+ *           new SearchFilterDescription[] {
+ *             SearchInfoDescriptionFactory.VISIBILITY_FILTER
+ *           }
+ *         )
+ *       );
+ *     )
+ *   }
+ *   ...
+ * }}</pre>
+ * </div>
+ * 
+ * Note: Do use custom search info definitions only if default behavior does not
+ * suit your needs. Ensure that search results are intuitive.
+ * 
  * @see SearchInfoDefinitionFactory
  * @see FileObject
  * @see <a href="@org-openide-nodes@/org/openide/nodes/Node.html#getLookup()"><code>Node.getLookup()</code></a>

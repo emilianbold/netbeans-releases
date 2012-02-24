@@ -33,7 +33,7 @@
 -->
     <answer id="arch-overall">
         <p>
-            There are two goals:
+            There are three goals:
         </p>
         <ul>
             <li>
@@ -52,7 +52,17 @@
                 search dialog, and for communicating with
                 search results window.
             </li>
+            <li>
+                Provide API for opening Find in Projects and Replace in Projects
+                dialogs and for starting search programatically.
+            </li>
         </ul>
+        
+        <p>
+            The module also contains UI for Find (Replace) in Projects dialog
+            and search results window, and implementation of default search 
+            provider.
+        </p>
     </answer>
 
 
@@ -95,7 +105,8 @@
         <p>
             The work is almost complete. Several test has to be written
             and completed. SPI and API for search scopes may be needed in the
-            future. The API can be finished in a few days.
+            future. The API can be finished in a few days. Search control needs
+            to be implemented.
         </p>
     </answer>
 
@@ -137,67 +148,19 @@
                 <code>SearchInfoDefinitionFactory</code>.
             </p>
             <p>
-                Example:
-            </p>
-            <blockquote>
-                <pre>
-import org.openide.util.lookup.Lookups;
-
-public class MyNode extends AbstractNode {
-
-    public MyNode(FileObject folder) {
-        super( new MyNodeChildren(folder),
-            Lookups.singleton(SearchInfoDescriptionFactory.createSearchInfo(
-                folder,
-                new SearchFilterDescription[] {
-                    SearchInfoDescriptionFactory.VISIBILITY_FILTER
-        }) );
-    }
-
-    ...
-
-}
-                </pre>
-            </blockquote>
-            <p>
                 In some cases implementators may need to apply the same set
                 of SearchFilterDefinitions in the whole subtree of a node.
                 If so, it is not needed to put SearchInfoDefinition to all 
                 nodes' lookups, but only one instance of SubTreeSearchOptions 
                 have to be put into the lookup of the root node.
             </p>
-            <blockquote>
-                <pre>
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
-
-public class MyNode extends AbstractNode {
-
-    public MyNode() {
-        this(new InstanceContent());
-    }
-
-    public MyNode(InstanceContent ic) {
-        super(new AbstractLookup(ic));
-        ic.add(new SubTreeSearchOptions() {
-            public List&lt;SearchFilterDefinition&gt; getFilters() {
-            // return list of SearchFilterDefinitions objects.
-            }
-        });
-    }
-
-    ...
-
-}
-                </pre>
-            </blockquote>
 
             <api group="java"
-                 name="SearchInProjectsAPI"
+                 name="SearchInfoSPI"
                  type="export"
                  category="devel"
-                 url="@TOP@index.html">
-                defines abstract classes
+                 url="@TOP@org/netbeans/spi/search/package-summary.html">
+                Defines abstract classes
                 <code>SearchInfoDefinition</code>,
                 <code>SearchFilterDefinition</code>,
                 <code>SubTreeSearchOptions</code>
@@ -228,84 +191,61 @@ public class MyNode extends AbstractNode {
                     <code>SearchComposition</code> that encapsulates setting and state of searches, provide access to result displayer, and is able to start and terminate the search.
                 </li>
             </ul>
-            <blockquote>
-                <pre>
-// use annotation register this provider
-[at]ServiceProvider(service = SearchProvider.class)
-public class ExampleSearchProvider extends SearchProvider {
-
-    public Presenter createPresenter(boolean replaceMode) {
-        return new BasicSearchPresenter(replaceMode);
-    }
-
-    /**
-    * Replacing is supported.
-    */
-    public boolean isReplaceSupported() {
-        return true;
-    }
-
-    /**
-    * This search provider is always enabled.
-    */
-    public boolean isEnabled() {
-        return true; // could be disabled on some platforms
-    }
-
-    private static class ExampleSearchPresenter
-            extends BasicSearchProvider.Presenter {
-
-        BasicSearchForm form = null;
-        private boolean replacing;
-
-        public BasicSearchPresenter(boolean replacing) {
-            this.replacing = replacing;
-        }
-
-        public JComponent createForm() {
-            if (form == null) {
-                form = new Form(); // create a new with UI for specifying search settings
-                form.setName("Example Provider");
-            }
-            return form;
-        }
-
-        public SearchComposition&lt;Def&gt; composeSearch() {
-
-            // here create a new search composition appropriate for settings specified in the form.
-        }
-
-        public boolean isUsable() {
-            return form.isUsable();
-        }
-
-        public void addUsabilityChangeListener(ChangeListener cl) {
-            form.setUsabilityChangeListener(cl);
-        }
-
-        public void clean() {
-            super.clean();
-            form.clean();
-        }
-    }
-}
-                </pre>
-            </blockquote>
             <api group="java"
-                 name="SearchInProjectsProviderAPI"
+                 name="SearchProviderSPI"
                  type="export"
                  category="devel"
-                 url="@TOP@index.html">
-                defines abstract classes
+                 url="@TOP@org/netbeans/spi/search/provider/package-summary.html">
+                Defines abstract classes that need to be implemented when 
+                creating custom providers:
                 <code>SearchProvider</code>,
                 <code>SearchProvider.Presenter</code>,
                 <code>SearchResultsDisplayer</code>,
-                utility classes,
-                <code>SearchInfoDefinitionFactory</code>
+                <code>SearchComposition</code>
+                and relative classes.
+            </api>
+            <api group="java"
+                 name="SearchProviderAPI"
+                 type="export"
+                 category="devel"
+                 url="@TOP@org/netbeans/api/search/provider/package-summary.html">
+
+                Classes usually used by search providers.
+                Contains class <code>SearchInfo</code>, that defines which files 
+                should be searched (it can be retrieved from methods in 
+                SearchInfoUtils, or UI component ScopeComboBox), <code>
+                SearchListener</code> that you should inform about events that
+                happen during searching, and helper classes <code>FileInfoUtils
+                </code> (getting SearchInfo objects for nodes) and 
+                <code>FileNameMatcher</code> (filtering files by file name).
+            </api>
+            <api group="java"
+                 name="SearchProviderUIAPI"
+                 type="export"
+                 category="devel"
+                 url="@TOP@org/netbeans/api/search/ui/package-summary.html">
+
+                Several UI components that can be used in presenters of search 
+                providers, and factory method for creating them.
+            </api>
+        </usecase>
+        <usecase id="SearchAPI" name="Search in Projects API">
+            <p>
+                This API enables other modules to open Find in Projects dialog 
+                with some pre-defined criteria and to start searching 
+                programatically.
+            </p>
+            <api group="java"
+                 name="SearchAPI"
+                 type="export"
+                 category="devel"
+                 url="@TOP@org/netbeans/api/search/package-summary.html">
+
+                Contains classes for controlling search, passing search 
+                criteria, and some helper classes.
             </api>
         </usecase>
     </answer>
-
 
 
 <!--
@@ -424,8 +364,8 @@ public class ExampleSearchProvider extends SearchProvider {
 -->
     <answer id="compat-version">
         <p>
-            Only history of search patterns is persisted.
-            Stored data are not critical.
+            Only history of search patterns and search scope options is 
+            persisted. Stored data are not critical.
         </p>
     </answer>
 
@@ -629,6 +569,7 @@ public class ExampleSearchProvider extends SearchProvider {
         <p>
             Yes. There are some private packages with default implementation of
             abstract classes and some helper classes.
+            Only API and SPI packages are public.
         </p>
     </answer>
 
@@ -948,7 +889,8 @@ public class ExampleSearchProvider extends SearchProvider {
     <answer id="lookup-lookup">
         <p>
             Lookup is used to find SearchInfoDefinition and SubTreeSearchOptions
-            instances in lookups of nodes.
+            instances in lookups of nodes, and to get registered SearchProvider
+            and SearchScopeDefinitionProvider instances in the default lookup.
         </p>
     </answer>
 
@@ -1009,7 +951,8 @@ public class ExampleSearchProvider extends SearchProvider {
 -->
     <answer id="perf-huge_dialogs">
         <p>
-            No.
+            The module contains Find in Projects dialog and Search Results
+            Window.
         </p>
     </answer>
 

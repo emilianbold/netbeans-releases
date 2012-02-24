@@ -53,8 +53,8 @@ import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 /**
- * Shareable search history. Known implementations are explorer search
- * dialog and editor find&replace dialog.
+ * Shareable search history. Known clients are "Find (Replace) in Projects" 
+ * dialog and editor find/replace bar.
  *
  * Typical use case:
  * Editor registers a listener to listen on lastSelected SearchPattern. If user
