@@ -56,7 +56,7 @@ public class NamespacesModuleTest extends CssModuleTestBase {
     public void testNamespaceKeywordCompletion() throws ParseException  {
         checkCC("|", arr("@namespace"), Match.CONTAINS);
         checkCC("@|", arr("@namespace"), Match.CONTAINS);
-        checkCC("@name|", arr("@namespace"), Match.CONTAINS);
+        checkCC("@name|", arr("@namespace"), Match.EXACT);
     }
     
     
