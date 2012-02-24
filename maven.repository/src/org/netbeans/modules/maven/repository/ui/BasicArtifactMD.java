@@ -61,34 +61,40 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class BasicArtifactMD implements MultiViewDescription, Serializable {
-    private Lookup lookup;
+    private final Lookup lookup;
 
     BasicArtifactMD(Lookup lkp) {
         lookup = lkp;
     }
 
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
     @Messages("TAB_Basic=Basic")
+    @Override
     public String getDisplayName() {
         return TAB_Basic();
     }
 
+    @Override
     public Image getIcon() {
         return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String preferredID() {
         return ArtifactViewer.HINT_ARTIFACT;
     }
 
+    @Override
     public MultiViewElement createElement() {
         return new BasicArtifactPanel(lookup);
     }
@@ -96,6 +102,7 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
     @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=100)
     public static class Factory implements ArtifactViewerPanelProvider {
 
+        @Override
         public MultiViewDescription createPanel(Lookup content) {
             return new BasicArtifactMD(content);
         }
