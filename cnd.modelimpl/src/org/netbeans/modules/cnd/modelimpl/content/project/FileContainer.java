@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -62,6 +62,11 @@ import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PreprocessorStatePair;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.utils.cache.APTStringManager;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -88,8 +93,7 @@ import org.openide.filesystems.FileSystem;
  * Storage for files and states. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ 
-class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public class FileContainer extends ProjectComponent implements Persistent, SelfPersistent {
     private static final boolean TRACE_PP_STATE_OUT = DebugUtils.getBoolean("cnd.dump.preproc.state", false);
 
     private static final class Lock {}
@@ -133,7 +137,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         fileSystem = null;
     }
 
-    /*package*/ static FileContainer empty() {
+    public static FileContainer empty() {
         return EMPTY;
     }
 
@@ -537,12 +541,12 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
     }
 
     //for unit test only
-    Map<CharSequence, FileEntry> getFileStorage() {
+    public Map<CharSequence, FileEntry> getFileStorage() {
         return new TreeMap<CharSequence, FileEntry>(myFiles);
     }
 
     //for unit test only
-    Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
+    public Map<CharSequence, Object/*CharSequence or CharSequence[]*/> getCanonicalNames(){
         return new TreeMap<CharSequence, Object>(canonicFiles);
     }
 
@@ -902,7 +906,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         }
 
         //for unit test only
-        CsmUID<CsmFile> getFileUID(){
+        public CsmUID<CsmFile> getTestFileUID(){
             return fileNew;
         }
 

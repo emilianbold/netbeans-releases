@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -77,7 +78,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
     private static final FileComponentIncludes EMPTY = new FileComponentIncludes() {
 
         @Override
-        void appendFrom(FileComponentIncludes fileIncludes) {
+        public void appendFrom(FileComponentIncludes fileIncludes) {
         }
         
         @Override
@@ -106,7 +107,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         super((org.netbeans.modules.cnd.repository.spi.Key) null);
     }
 
-    void clean() {
+    public void clean() {
         _clearIncludes();
         put();
     }
@@ -140,7 +141,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return !brokenIncludes.isEmpty();
     }
 
-    Collection<CsmInclude> getIncludes() {
+    public Collection<CsmInclude> getIncludes() {
         Collection<CsmInclude> out;
         try {
             includesLock.readLock().lock();
@@ -151,7 +152,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return out;
     }
 
-    Iterator<CsmInclude> getIncludes(CsmFilter filter) {
+    public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
         Iterator<CsmInclude> out;
         try {
             includesLock.readLock().lock();
@@ -163,7 +164,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return out;
     }
 
-    Collection<CsmInclude> getBrokenIncludes() {
+    public Collection<CsmInclude> getBrokenIncludes() {
         Collection<CsmInclude> out;
         try {
             includesLock.readLock().lock();
@@ -205,7 +206,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         }
     };
 
-    void appendFrom(FileComponentIncludes other) {
+    public void appendFrom(FileComponentIncludes other) {
         try {
             includesLock.writeLock().lock();
             for (CsmUID<CsmInclude> csmUID : other.includes) {

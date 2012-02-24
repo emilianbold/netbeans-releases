@@ -370,14 +370,11 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public InputStream getInputStream() throws FileNotFoundException {
-        File cacheFile = getImplementor().getCache();
-        if (cacheFile != null) {
-            if (!cacheFile.exists()) {
-                if (isMimeResolving()) {
-                    byte[] b = getMagic();
-                    if (b != null) {
-                        return new ByteArrayInputStream(b);
-                    }
+        if (!getImplementor().hasCache()) {
+            if (isMimeResolving()) {
+                byte[] b = getMagic();
+                if (b != null) {
+                    return new ByteArrayInputStream(b);
                 }
             }
         }

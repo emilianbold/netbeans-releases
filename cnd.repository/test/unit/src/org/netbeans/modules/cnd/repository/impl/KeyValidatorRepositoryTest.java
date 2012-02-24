@@ -68,8 +68,7 @@ public class KeyValidatorRepositoryTest extends FileModelTest {
 
     @Override
     protected void postSetUp() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
-        dataPath = dataPath.replaceAll("/cnd.repository/", "/cnd.modelimpl/").replaceAll("\\\\cnd.repository\\\\", "\\cnd.modelimpl\\"); //NOI18N
+        String dataPath = convertToModelImplDataDir("repository");
         String superClassNameAsPath = getClass().getSuperclass().getName().replace('.', File.separatorChar);
         System.setProperty("cnd.modelimpl.unit.data", dataPath + File.separator + superClassNameAsPath); //NOI18N
         System.setProperty("cnd.modelimpl.unit.golden", dataPath + File.separator + "goldenfiles" + File.separator + superClassNameAsPath); //NOI18N

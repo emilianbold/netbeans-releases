@@ -41,7 +41,6 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.Manager;
-import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -74,7 +73,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
 
     @Override
     protected File getTestCaseDataDir() {
-        String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
+        String dataPath = convertToModelImplDataDir("repository");
         String filePath = "common";
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
@@ -149,7 +148,7 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     protected final List<String> find() throws IOException {
         return download();
 //        List<String> list = new ArrayList<String>();
-//        //String dataPath = getDataDir().getAbsolutePath().replaceAll("repository", "modelimpl"); //NOI18N
+//        //String dataPath = convertToModelImplDataDir("repository");
 //        //list.add(dataPath + "/common/quote_nosyshdr"); //NOI18N
 //        //list.add(dataPath + "/org"); //NOI18N
 //        String dataPath = getDataDir().getAbsolutePath();
