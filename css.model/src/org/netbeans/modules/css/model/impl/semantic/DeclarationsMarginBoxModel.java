@@ -61,12 +61,14 @@ import org.openide.util.NbBundle;
 public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
 
     private static final String MODEL_NAME = "margin"; //NOI18N
+    private Model model;
     private Declarations declarations;
     private final CascadedBox<MarginWidth> cascadedBox = new CascadedBox<MarginWidth>();
     private final Collection<Declaration> involved = new ArrayList<Declaration>();
     private final SemanticModelListenerSupport LISTENERS = new SemanticModelListenerSupport();
 
-    public DeclarationsMarginBoxModel(Declarations element) {
+    public DeclarationsMarginBoxModel(Model model, Declarations element) {
+        this.model = model;
         this.declarations = element;
         
         updateModel();
@@ -107,7 +109,7 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
             declarations.removeDeclaration(d);
         }
 
-        ElementFactory f = Model.getElementFactory();
+        ElementFactory f = model.getElementFactory();
         Property p = f.createProperty("margin"); //NOI18N
 
         //TODO remove the hardcoding - make the algorithm generic

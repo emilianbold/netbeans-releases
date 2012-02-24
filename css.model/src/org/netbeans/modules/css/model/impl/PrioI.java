@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.CharSetValue;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Prio;
 
 /**
@@ -50,11 +52,12 @@ import org.netbeans.modules.css.model.api.Prio;
  */
 public class PrioI extends TokenElementI implements Prio {
 
-    public PrioI() {
+    public PrioI(Model model) {
+        super(model);
     }
 
-    public PrioI(ModelElementContext context) {
-        super(context);
+    public PrioI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

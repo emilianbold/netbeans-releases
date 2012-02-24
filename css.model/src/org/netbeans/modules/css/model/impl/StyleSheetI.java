@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -77,11 +78,12 @@ public class StyleSheetI extends ModelElement implements StyleSheet {
         }
     };
 
-    public StyleSheetI() {
+    public StyleSheetI(Model model) {
+        super(model);
     }
 
-    public StyleSheetI(ModelElementContext context) {
-        super(context);
+    public StyleSheetI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

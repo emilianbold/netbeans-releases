@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -52,147 +50,144 @@ import org.netbeans.modules.css.model.api.*;
  */
 public final class ElementFactoryImpl implements ElementFactory {
 
-    private static final ElementFactoryImpl INSTANCE = new ElementFactoryImpl();
-
-    private ElementFactoryImpl() {
+    private Model model;
+    
+    public ElementFactoryImpl(Model model) {
+        this.model = model;
     }
 
-    public static ElementFactoryImpl getDefault() {
-        return INSTANCE;
-    }
-
-    public Element createElement(ModelElementContext ctx) {
+    public Element createElement(Model model, Node node) {
         //TODO use reflection
-        switch (ctx.getNode().type()) {
+        switch (node.type()) {
             case imports:
-                return new ImportsI(ctx);
+                return new ImportsI(model, node);
             case importItem:
-                return new ImportItemI(ctx);
+                return new ImportItemI(model, node);
             case resourceIdentifier:
-                return new ResourceIdentifierI(ctx);
+                return new ResourceIdentifierI(model, node);
             case media:
-                return new MediaI(ctx);
+                return new MediaI(model, node);
             case mediaQueryList:
-                return new MediaQueryListI(ctx);
+                return new MediaQueryListI(model, node);
             case mediaQuery:
-                return new MediaQueryI(ctx);
+                return new MediaQueryI(model, node);
             case mediaExpression:
-                return new MediaExpressionI(ctx);
+                return new MediaExpressionI(model, node);
             case mediaFeature:
-                return new MediaFeatureI(ctx);
+                return new MediaFeatureI(model, node);
             case mediaType:
-                return new MediaTypeI(ctx);
+                return new MediaTypeI(model, node);
             case mediaQueryOperator:
-                return new MediaQueryOperatorI(ctx);
+                return new MediaQueryOperatorI(model, node);
             case namespaces:
-                return new NamespacesI(ctx);
+                return new NamespacesI(model, node);
             case namespace:
-                return new NamespaceI(ctx);
+                return new NamespaceI(model, node);
             case namespacePrefixName:
-                return new NamespacePrefixNameI(ctx);
+                return new NamespacePrefixNameI(model, node);
             case body:
-                return new BodyI(ctx);
+                return new BodyI(model, node);
             case bodyItem:
-                return new BodyItemI(ctx);
+                return new BodyItemI(model, node);
             case rule:
-                return new RuleI(ctx);
+                return new RuleI(model, node);
             case selectorsGroup:
-                return new SelectorsGroupI(ctx);
+                return new SelectorsGroupI(model, node);
             case declarations:
-                return new DeclarationsI(ctx);
+                return new DeclarationsI(model, node);
             case declaration:
-                return new DeclarationI(ctx);
+                return new DeclarationI(model, node);
             case selector:
-                return new SelectorI(ctx);
+                return new SelectorI(model, node);
             case property:
-                return new PropertyI(ctx);
+                return new PropertyI(model, node);
             case propertyValue:
-                return new PropertyValueI(ctx);
+                return new PropertyValueI(model, node);
             case expr:
-                return new ExpressionI(ctx);
+                return new ExpressionI(model, node);
             case prio:
-                return new PrioI(ctx);
+                return new PrioI(model, node);
             case charSet:
-                return new CharSetI(ctx);
+                return new CharSetI(model, node);
             case charSetValue:
-                return new CharSetValueI(ctx);
+                return new CharSetValueI(model, node);
             case styleSheet:
-                return new StyleSheetI(ctx);
+                return new StyleSheetI(model, node);
 
             case ws:
             default:
-                return new PlainElementI(ctx);
+                return new PlainElementI(model, node);
         }
     }
     
     @Override
     public StyleSheet createStyleSheet() {
-        return new StyleSheetI();
+        return new StyleSheetI(model);
     }
 
     @Override
     public CharSet createCharSet() {
-        return new CharSetI();
+        return new CharSetI(model);
     }
 
     @Override
     public CharSetValue createCharSetValue() {
-        return new CharSetValueI();
+        return new CharSetValueI(model);
     }
 
     @Override
     public Imports createImports() {
-        return new ImportsI();
+        return new ImportsI(model);
     }
 
     @Override
     public ImportItem createImportItem() {
-        return new ImportItemI();
+        return new ImportItemI(model);
     }
 
     @Override
     public ResourceIdentifier createResourceIdentifier() {
-        return new ResourceIdentifierI();
+        return new ResourceIdentifierI(model);
     }
 
     @Override
     public MediaQueryList createMediaQueryList() {
-        return new MediaQueryListI();
+        return new MediaQueryListI(model);
     }
 
     @Override
     public MediaQuery createMediaQuery() {
-        return new MediaQueryI();
+        return new MediaQueryI(model);
     }
 
     @Override
     public Namespaces createNamespaces() {
-        return new NamespacesI();
+        return new NamespacesI(model);
     }
 
     @Override
     public Namespace createNamespace() {
-        return new NamespaceI();
+        return new NamespaceI(model);
     }
 
     @Override
     public NamespacePrefixName createNamespacePrefixName() {
-        return new NamespacePrefixNameI();
+        return new NamespacePrefixNameI(model);
     }
 
     @Override
     public Body createBody() {
-        return new BodyI();
+        return new BodyI(model);
     }
 
     @Override
     public BodyItem createBodyItem() {
-        return new BodyItemI();
+        return new BodyItemI(model);
     }
 
     @Override
     public Rule createRule() {
-        return new RuleI();
+        return new RuleI(model);
     }
 
     @Override
@@ -205,7 +200,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public SelectorsGroup createSelectorsGroup() {
-        return new SelectorsGroupI();
+        return new SelectorsGroupI(model);
     }
 
     @Override
@@ -219,19 +214,17 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Selector createSelector() {
-        return new SelectorI();
+        return new SelectorI(model);
     }
 
     @Override
     public Selector createSelector(CharSequence code) {
-        SelectorI si = new SelectorI();
-        si.setContent(code);
-        return si;
+        return new SelectorI(model, code);
     }
 
     @Override
     public Declarations createDeclarations() {
-        return new DeclarationsI();
+        return new DeclarationsI(model);
     }
 
     @Override
@@ -245,7 +238,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Declaration createDeclaration() {
-        return new DeclarationI();
+        return new DeclarationI(model);
     }
 
     @Override
@@ -263,7 +256,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Property createProperty() {
-        return new PropertyI();
+        return new PropertyI(model);
     }
 
     @Override
@@ -275,7 +268,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public PropertyValue createPropertyValue() {
-        return new PropertyValueI();
+        return new PropertyValueI(model);
     }
 
     @Override
@@ -289,7 +282,7 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Expression createExpression() {
-        return new ExpressionI();
+        return new ExpressionI(model);
     }
 
     @Override
@@ -301,27 +294,27 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public Prio createPrio() {
-        return new PrioI();
+        return new PrioI(model);
     }
 
     @Override
     public PlainElement createPlainElement() {
-        return new PlainElementI();
+        return new PlainElementI(model);
     }
 
     @Override
     public PlainElement createPlainElement(CharSequence text) {
-        return new PlainElementI(text);
+        return new PlainElementI(model, text);
     }
 
     @Override
     public MediaQueryOperator createMediaQueryOperator() {
-        return new MediaQueryOperatorI();
+        return new MediaQueryOperatorI(model);
     }
 
     @Override
     public MediaExpression createMediaExpression() {
-        return new MediaExpressionI();
+        return new MediaExpressionI(model);
     }
     
     @Override
@@ -334,37 +327,37 @@ public final class ElementFactoryImpl implements ElementFactory {
 
     @Override
     public MediaFeature createMediaFeature() {
-       return new MediaFeatureI();
+       return new MediaFeatureI(model);
     }
 
     @Override
     public MediaType createMediaType() {
-        return new MediaTypeI();
+        return new MediaTypeI(model);
     }
 
     @Override
     public Media createMedia() {
-        return new MediaI();
+        return new MediaI(model);
     }
 
     @Override
     public Page createPage() {
-        return new PageI();
+        return new PageI(model);
     }
 
     @Override
     public MediaQueryOperator createMediaQueryOperator(CharSequence text) {
-        return new MediaQueryOperatorI(text);
+        return new MediaQueryOperatorI(model, text);
     }
 
     @Override
     public MediaFeature createMediaFeature(CharSequence text) {
-        return new MediaFeatureI(text);
+        return new MediaFeatureI(model, text);
     }
 
     @Override
     public MediaType createMediaType(CharSequence text) {
-        return new MediaTypeI(text);
+        return new MediaTypeI(model, text);
     }
 
     @Override

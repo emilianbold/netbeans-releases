@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.TokenElement;
 
 /**
@@ -49,15 +51,16 @@ import org.netbeans.modules.css.model.api.TokenElement;
  */
 public class TokenElementI extends PlainElementI implements TokenElement {
 
-    public TokenElementI() {
+    public TokenElementI(Model model) {
+        super(model);
     }
 
-    public TokenElementI(CharSequence text) {
-        super(text);
+    public TokenElementI(Model model, CharSequence text) {
+        super(model, text);
     }
-    
-    public TokenElementI(ModelElementContext context) {
-        super(context);
+
+    public TokenElementI(Model model, Node node) {
+        super(model, node);
     }
     
 }

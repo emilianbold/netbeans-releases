@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Property;
 
 /**
@@ -49,11 +51,16 @@ import org.netbeans.modules.css.model.api.Property;
  */
 public class PropertyI extends PlainElementI implements Property {
 
-    public PropertyI() {
+    public PropertyI(Model model) {
+        super(model);
     }
 
-    public PropertyI(ModelElementContext context) {
-        super(context);
+    public PropertyI(Model model, CharSequence text) {
+        super(model, text);
+    }
+
+    public PropertyI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

@@ -45,11 +45,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
-import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
-import org.netbeans.modules.css.model.api.Element;
-import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.CharSequences;
@@ -69,18 +67,19 @@ public class DeclarationsI extends ModelElement implements Declarations {
         }
     };
 
-    public DeclarationsI() {
+    public DeclarationsI(Model model) {
+        super(model);
     }
 
-    public DeclarationsI(ModelElementContext context) {
-        super(context);
+    public DeclarationsI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 
     @Override
     public Collection<? extends SemanticModel> getSemanticModels() {
         return isValid()
-                ? Collections.singletonList(new DeclarationsMarginBoxModel(this))
+                ? Collections.singletonList(new DeclarationsMarginBoxModel(model, this))
                 : Collections.<SemanticModel>emptyList();
     }
 

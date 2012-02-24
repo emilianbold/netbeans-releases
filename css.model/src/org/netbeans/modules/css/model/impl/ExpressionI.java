@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -49,11 +51,16 @@ import org.netbeans.modules.css.model.api.Expression;
  */
 public class ExpressionI extends PlainElementI implements Expression {
 
-    public ExpressionI() {
+    public ExpressionI(Model model) {
+        super(model);
     }
 
-    public ExpressionI(ModelElementContext context) {
-        super(context);
+    public ExpressionI(Model model, CharSequence text) {
+        super(model, text);
+    }
+
+    public ExpressionI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

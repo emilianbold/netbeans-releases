@@ -44,6 +44,7 @@ package org.netbeans.modules.css.model.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -68,11 +69,12 @@ public class BodyI extends ModelElement implements Body {
         
     };
 
-    public BodyI() {
+    public BodyI(Model model) {
+        super(model);
     }
 
-    public BodyI(ModelElementContext context) {
-        super(context);
+    public BodyI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 
@@ -94,7 +96,7 @@ public class BodyI extends ModelElement implements Body {
     
     @Override
     public void addRule(Rule rule) {
-        BodyItem bi = ElementFactoryImpl.getDefault().createBodyItem();
+        BodyItem bi = model.getElementFactory().createBodyItem();
         bi.setElement(rule);
         addElement(bi);
     }
@@ -112,7 +114,7 @@ public class BodyI extends ModelElement implements Body {
     
     @Override
     public void addMedia(Media media) {
-        BodyItem bi = ElementFactoryImpl.getDefault().createBodyItem();
+        BodyItem bi = model.getElementFactory().createBodyItem();
         bi.setElement(media);
         addElement(bi);
     }

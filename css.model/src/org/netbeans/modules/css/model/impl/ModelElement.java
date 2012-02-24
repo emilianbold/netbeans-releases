@@ -42,14 +42,16 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.util.*;
+import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
-import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
 
 /**
  *
@@ -57,24 +59,29 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public abstract class ModelElement implements Element {
 
-    private ModelElementContext context;
     private final List<ClassElement> CLASSELEMENTS = new ArrayList<ClassElement>();
     private Collection<ElementListener> LISTENERS;
+    protected final Model model;
+    private Node node;
+    
+    //used in there's no document to get the indent from
+    private static final String DEFAULT_INDENT = "    "; //NOI18N
 
-    public ModelElement() {
+    public ModelElement(Model model) {
+        this.model = model;
     }
 
-    public ModelElement(ModelElementContext context) {
-        this.context = context;
+    public ModelElement(Model model, Node node) {
+        this(model);
+        this.node = node;
     }
 
     @Override
     public boolean isValid() {
-        if (context == null) {
+        if (node == null) {
             //artificial (node-less) elements
             return true;
         }
-        Node node = context.getNode();
         return NodeUtil.getChildrenRecursivelyByType(node, NodeType.error, NodeType.recovery).isEmpty();
     }
 
@@ -85,12 +92,12 @@ public abstract class ModelElement implements Element {
 
     @Override
     public int getStartOffset() {
-        return context != null ? context.getNode().from() : -1;
+        return node != null ? node.from() : -1;
     }
 
     @Override
     public int getEndOffset() {
-        return context != null ? context.getNode().to() : -1;
+        return node != null ? node.to() : -1;
     }
 
     @Override
@@ -136,9 +143,8 @@ public abstract class ModelElement implements Element {
     protected abstract Class getModelClass();
 
     protected final void initChildrenElements() {
-        for (Node child : context.getNode().children()) {
-            ModelElementContext ctx = new ModelElementContext(context.getSource(), child);
-            addElement(ElementFactoryImpl.getDefault().createElement(ctx));
+        for (Node child : node.children()) {
+            addElement(((ElementFactoryImpl)model.getElementFactory()).createElement(model, child));
         }
     }
 
@@ -147,7 +153,7 @@ public abstract class ModelElement implements Element {
     }
 
     protected void addTextElement(CharSequence text) {
-        addElement(ElementFactoryImpl.getDefault().createPlainElement(text));
+        addElement(model.getElementFactory().createPlainElement(text));
     }
 
     private Class getModelClass(Element element) {
@@ -309,9 +315,19 @@ public abstract class ModelElement implements Element {
         return null;
     }
 
-
+    protected String getIndent() {
+        //init the indent
+        Document doc = model.getLookup().lookup(Document.class);
+        if (doc != null) {
+            int indentLevel = IndentUtils.indentLevelSize(doc);
+            return IndentUtils.createIndentString(null, indentLevel);
+        } else {
+            return DEFAULT_INDENT;
+        }
+    }
     private static final String EMPTY_STRING = "";
     //xxx possibly refactor such methods to some utility class 
+
     /**
      * tries to clear part of the PlainElement from whitespaces.
      */
@@ -321,7 +337,7 @@ public abstract class ModelElement implements Element {
         int lastEndIndex = text.lastIndexOf('\n');
         if (lastEndIndex >= 0) {
             String upToTheNL = text.substring(0, lastEndIndex);
-            if(upToTheNL.trim().length() == 0) {
+            if (upToTheNL.trim().length() == 0) {
                 //remove all the whitespaces even before the NL
                 pe.setContent(endLineInclusive ? EMPTY_STRING : "\n");
             } else {
@@ -333,7 +349,7 @@ public abstract class ModelElement implements Element {
         } else {
             //no endline
             //remove the text if it is only WS
-            if(text.trim().length() == 0) {
+            if (text.trim().length() == 0) {
                 pe.setContent(EMPTY_STRING);
             }
         }

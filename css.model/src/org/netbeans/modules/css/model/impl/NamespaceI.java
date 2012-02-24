@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Namespace;
 import org.netbeans.modules.css.model.api.NamespacePrefixName;
 import org.netbeans.modules.css.model.api.ResourceIdentifier;
@@ -66,11 +68,12 @@ public class NamespaceI extends ModelElement implements Namespace {
         }
     };
 
-    public NamespaceI() {
+    public NamespaceI(Model model) {
+        super(model);
     }
 
-    public NamespaceI(ModelElementContext context) {
-        super(context);
+    public NamespaceI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

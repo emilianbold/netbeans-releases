@@ -56,12 +56,11 @@ import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.ModelAccess;
 import org.netbeans.modules.css.model.impl.ElementFactoryImpl;
-import org.netbeans.modules.css.model.impl.ModelElementContext;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.spi.diff.DiffProvider;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Model for CSS3 source
@@ -76,33 +75,32 @@ import org.openide.util.Mutex;
 public final class Model {
 
     private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
-    private final Mutex MODEL_MUTEX = new Mutex();
-    private final CharSequence source;
-    private final Node styleSheetNode;
-    private final StyleSheet styleSheet;
 
+    private final Mutex MODEL_MUTEX = new Mutex();
+
+    private Lookup MODEL_LOOKUP;
+    private ElementFactory ELEMENT_FACTORY;
+    
     /**
      * Creates a new model with empty stylesheet
      */
     public Model() {
-        source = "";
-        styleSheetNode = null;
-
-        styleSheet = getElementFactory().createStyleSheet();
+        MODEL_LOOKUP = Lookups.fixed(
+                getElementFactory().createStyleSheet()
+                );
     }
 
     public Model(CssParserResult parserResult) {
-        this(parserResult.getSnapshot(), NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name())); //NOI18N
-    }
-
-    /**
-     * Creates a model instance of given source and parser node
-     *
-     * @param snapshot
-     * @param styleSheetNode
-     */
-    public Model(Snapshot snapshot, Node styleSheetNode) {
-        this(snapshot.getText(), styleSheetNode);
+        Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
+        StyleSheet styleSheet = (StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode);
+        
+        MODEL_LOOKUP = Lookups.fixed(
+                parserResult,
+                parserResult.getSnapshot(),
+                parserResult.getSnapshot().getText(),
+                parserResult.getSnapshot().getSource().getDocument(true),
+                styleSheetNode,
+                styleSheet);
     }
 
     /**
@@ -112,13 +110,19 @@ public final class Model {
      * @param styleSheetNode
      */
     public Model(CharSequence source, Node styleSheetNode) {
-        this.source = source;
-        this.styleSheetNode = styleSheetNode;
+        StyleSheet styleSheet = (StyleSheet) getElementFactoryImpl(this).createElement(this, styleSheetNode);
+        
+        MODEL_LOOKUP = Lookups.fixed(
+                source,
+                styleSheetNode,
+                styleSheet);
 
-        ModelElementContext ctx = new ModelElementContext(source, styleSheetNode);
-        this.styleSheet = (StyleSheet) getElementFactoryImpl().createElement(ctx);
     }
 
+    public Lookup getLookup() {
+        return MODEL_LOOKUP;
+    }
+    
     /**
      * Any client wanting to access the model for reading should do it via
      * posting its ModelTask to this method. Any model access outside may cause
@@ -165,11 +169,11 @@ public final class Model {
     //for tests only
     StyleSheet getStyleSheet() {
         checkModelAccess();
-        return styleSheet;
+        return getLookup().lookup(StyleSheet.class);
     }
 
     public CharSequence getOriginalSource() {
-        return source;
+        return getLookup().lookup(CharSequence.class);
     }
 
     /**
@@ -260,13 +264,15 @@ public final class Model {
     /**
      * Returns an instance of {@link ElementFactory}.
      */
-    public static ElementFactory getElementFactory() {
-        return getElementFactoryImpl();
+    public synchronized ElementFactory getElementFactory() {
+        if(ELEMENT_FACTORY == null) {
+            ELEMENT_FACTORY = getElementFactoryImpl(this);
+        }
+        return ELEMENT_FACTORY;
     }
 
-    private static ElementFactoryImpl getElementFactoryImpl() {
-        //possibly get instance from lookup, but ... who'd need that?
-        return ElementFactoryImpl.getDefault();
+    private static ElementFactoryImpl getElementFactoryImpl(Model model) {
+        return new ElementFactoryImpl(model);
     }
 
     public static interface ModelTask {

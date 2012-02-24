@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Selector;
 
 /**
@@ -49,11 +51,16 @@ import org.netbeans.modules.css.model.api.Selector;
  */
 public class SelectorI extends PlainElementI implements Selector {
 
-    public SelectorI() {
+    public SelectorI(Model model) {
+        super(model);
     }
 
-    public SelectorI(ModelElementContext context) {
-        super(context);
+    public SelectorI(Model model, CharSequence text) {
+        super(model, text);
+    }
+
+    public SelectorI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

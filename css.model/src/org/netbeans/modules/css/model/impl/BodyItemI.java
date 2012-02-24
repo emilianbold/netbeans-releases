@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
 /**
@@ -71,15 +72,16 @@ public class BodyItemI extends ModelElement implements BodyItem {
         }
         
     };
-    
-    BodyItemI() {
+
+    public BodyItemI(Model model) {
+        super(model);
     }
 
-    BodyItemI(ModelElementContext context) {
-        super(context);
+    public BodyItemI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
-
+    
     @Override
     public Element getElement() {
         return element;

@@ -154,7 +154,7 @@ public class MediaQueryITest extends ModelTestBase {
         assertEquals("@media ONLY screen AND ( min-device-width : 1000px)  {\n"
                 + "\n"
                 + ".myclass {\n"
-                + "\n\tcolor: red;\n"
+                + "    color: red;\n"
                 + "\n"
                 + "}\n"
                 + "\n\n"

@@ -43,10 +43,12 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.MediaExpression;
 import org.netbeans.modules.css.model.api.MediaQuery;
 import org.netbeans.modules.css.model.api.MediaQueryOperator;
 import org.netbeans.modules.css.model.api.MediaType;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -78,15 +80,17 @@ public class MediaQueryI extends ModelElement implements MediaQuery {
         
     };
     
-    public MediaQueryI() {
+    public MediaQueryI(Model model) {
+        super(model);
+        
         addEmptyElement(MediaQueryOperator.class);
         addTextElement(" ");
         addEmptyElement(MediaType.class);
         addTextElement(" ");
     }
 
-    public MediaQueryI(ModelElementContext context) {
-        super(context);
+    public MediaQueryI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

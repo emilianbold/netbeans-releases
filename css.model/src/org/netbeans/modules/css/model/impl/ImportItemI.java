@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.ImportItem;
 import org.netbeans.modules.css.model.api.MediaQueryList;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ResourceIdentifier;
 
 /**
@@ -66,11 +68,12 @@ public class ImportItemI extends ModelElement implements ImportItem {
         }
     };
 
-    public ImportItemI() {
+    public ImportItemI(Model model) {
+        super(model);
     }
 
-    public ImportItemI(ModelElementContext context) {
-        super(context);
+    public ImportItemI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

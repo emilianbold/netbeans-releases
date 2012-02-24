@@ -88,7 +88,7 @@ public class DeclarationsITest extends ModelTestBase {
         
         ds.removeDeclaration(margin);
         
-        ElementFactory ef = Model.getElementFactory();
+        ElementFactory ef = model.getElementFactory();
         Declaration newMargin = ef.createDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),
@@ -124,7 +124,7 @@ public class DeclarationsITest extends ModelTestBase {
         
         ds.removeDeclaration(margin);
         
-        ElementFactory ef = Model.getElementFactory();
+        ElementFactory ef = model.getElementFactory();
         Declaration newMargin = ef.createDeclaration(
                 ef.createProperty("margin"),
                 ef.createPropertyValue(ef.createExpression("3px")),

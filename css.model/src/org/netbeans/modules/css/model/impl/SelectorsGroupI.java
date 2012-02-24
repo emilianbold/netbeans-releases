@@ -43,6 +43,8 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Selector;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 
@@ -61,11 +63,12 @@ public class SelectorsGroupI extends ModelElement implements SelectorsGroup {
         }
     };
 
-    public SelectorsGroupI() {
+    public SelectorsGroupI(Model model) {
+        super(model);
     }
 
-    public SelectorsGroupI(ModelElementContext context) {
-        super(context);
+    public SelectorsGroupI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 

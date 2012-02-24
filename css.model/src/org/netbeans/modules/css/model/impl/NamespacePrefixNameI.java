@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.CharSetValue;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.NamespacePrefixName;
 
 /**
@@ -50,11 +52,16 @@ import org.netbeans.modules.css.model.api.NamespacePrefixName;
  */
 public class NamespacePrefixNameI extends TokenElementI implements NamespacePrefixName {
 
-    public NamespacePrefixNameI() {
+    public NamespacePrefixNameI(Model model, CharSequence text) {
+        super(model, text);
     }
 
-    public NamespacePrefixNameI(ModelElementContext context) {
-        super(context);
+    public NamespacePrefixNameI(Model model) {
+        super(model);
+    }
+
+    public NamespacePrefixNameI(Model model, Node node) {
+        super(model, node);
     }
 
     @Override

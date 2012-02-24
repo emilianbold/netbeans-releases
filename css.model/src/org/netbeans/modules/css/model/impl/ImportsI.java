@@ -43,8 +43,10 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.ImportItem;
 import org.netbeans.modules.css.model.api.Imports;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *
@@ -61,11 +63,12 @@ public class ImportsI extends ModelElement implements Imports {
         }
     };
 
-    public ImportsI() {
+    public ImportsI(Model model) {
+        super(model);
     }
 
-    public ImportsI(ModelElementContext context) {
-        super(context);
+    public ImportsI(Model model, Node node) {
+        super(model, node);
         initChildrenElements();
     }
 
