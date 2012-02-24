@@ -112,8 +112,8 @@
        <ul>
            <li>Always use the java.hints' <a href="@TOP@/org/netbeans/spi/java/hints/ErrorDescriptionFactory.html">ErrorDescriptionFactory</a> to produce the resulting ErrorDescription.</li>
            <li>Never try to produce a custom suppress warnings "fix". Specify suppress warnings keys in the @Hint annotation.</li>
-           <li>If an automated transformation is to be prodived from your hint, always subclass <a href="@TOP@/org/netbeans/spi/java/hints/JavaFix.html">JavaFix</a> and
-               use its <code>toEditorFix()</code> method to get the <code>Fix</code>, otherwise the transformation is not going to work inside Inspect&amp;Transform.
+           <li>If an automated transformation is to be prodived from your hint, subclass <a href="@TOP@/org/netbeans/spi/java/hints/JavaFix.html">JavaFix</a> and
+               use its <code>toEditorFix()</code> method to get the <code>Fix</code>, if the transformation is going to be used inside Inspect&amp;Transform.
            </li>
            <li>The name of the method is arbitrary, one hint can consist of more that one "triggered" method.</li>
        </ul>
