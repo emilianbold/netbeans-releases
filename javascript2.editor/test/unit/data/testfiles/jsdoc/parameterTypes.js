@@ -22,3 +22,23 @@ function line4(accessLevel){}
  * @param accessLevel
  */
 function line5(accessLevel){}
+
+/**
+ * @param {String} userName name of the user
+ */
+function line6(userName){}
+
+/**
+ * @argument {String} userName
+ */
+function line7(userName){}
+
+/**
+ * @argument {String} [userName="Jackie"] userName is optional
+ */
+function line8(userName){}
+
+/**
+ * @argument {String} [userName="for example Jackie Chan"] userName is optional
+ */
+function line9(userName){}
