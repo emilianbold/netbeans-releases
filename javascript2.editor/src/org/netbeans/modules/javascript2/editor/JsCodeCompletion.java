@@ -365,7 +365,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 for (Type typeName : lastTypeAssignment) {
                                     for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
                                         if (object.getName().equals(typeName.getType())) {
-                                            lastResovled.add(type);
+                                            lastResovled.add(object);
                                         }
                                     }
                                 }
