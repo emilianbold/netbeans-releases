@@ -125,7 +125,7 @@ is the proper place.
                allows indexers to find out that indexing is suspended or to park while it's suspended.
           </p>
       </description>
-      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendedStatus"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
       <class package="org.netbeans.modules.parsing.spi.indexing" name="Context"/>
       <issue number="208378"/>
   </change>

@@ -61,6 +61,7 @@ class PackagedClassPathImpl extends AbstractProjectClassPathImpl {
         super(project);
     }
 
+    @Override
     public URI[] createPath() {
         List<URI> lst = new ArrayList<URI>();
         List<Artifact> arts = getMavenProject().getOriginalMavenProject().getCompileArtifacts();

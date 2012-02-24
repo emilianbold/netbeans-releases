@@ -184,11 +184,6 @@ public class CustomJavac extends Javac {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void setFork(boolean f) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * See issue #196556. Sometimes {@code <depend>} leaves behind individual
      * class files for nested classes when their enclosing classes do not exist.

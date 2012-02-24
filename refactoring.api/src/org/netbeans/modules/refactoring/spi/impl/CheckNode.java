@@ -95,6 +95,10 @@ public class CheckNode extends DefaultMutableTreeNode {
     String getLabel() {
         return nodeLabel;
     }
+
+    void setNodeLabel(String nodeLabel) {
+        this.nodeLabel = nodeLabel;
+    }
     
     Icon getIcon() {
         return icon;

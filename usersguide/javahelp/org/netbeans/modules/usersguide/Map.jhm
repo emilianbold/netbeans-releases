@@ -110,6 +110,7 @@ Other names may be trademarks of their respective owners.
 <mapID target="configure.tbcustomize" url="configure/workspace/toolbar_customize.html" />
 <mapID target="configure.tbcommands" url="configure/workspace/toolbar_commands.html" />
 
+
 <!-- TODO - plugin manager TOC topics -->
 <mapID target="ide.autoupdate" url="configure/modules/autoupdate.html" />
 <mapID target="update.offline" url="configure/modules/updateoffline.html" />
@@ -181,6 +182,8 @@ Other names may be trademarks of their respective owners.
 <!--Java and PHP shared Project Properties: Formatting panel -->
 <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="editing/csh/project_props_editor_format.html" />
 
+<!-- Customize Toolbars window -->
+<mapID target="org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel" url="configure/workspace/csh_toolbar_customize.html" />
 
 <!-- Projects window nodes -->
 <!-- ====================== -->
@@ -376,6 +379,7 @@ Other names may be trademarks of their respective owners.
   <mapID target="netbeans.optionsDialog.editor.markOccurences" url="configure/csh/editor/mark-occurrences.html" />
   <mapID target="netbeans.optionsDialog.editor.identation" url="configure/csh/editor/formatting.html" />
   <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="configure/csh/editor/code-completion.html" />
+  <mapID target="netbeans.optionsDialog.editor.spellchecker" url="configure/csh/editor/spellchecker.html" />
 
   <!--ID for CSH in Options | Basic Options - Fonts and Colors Category: --> 
   <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="configure/csh/options_fontscolors.html" />

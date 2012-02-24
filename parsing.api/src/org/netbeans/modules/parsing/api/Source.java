@@ -51,7 +51,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -291,7 +290,7 @@ public final class Source {
     public Snapshot createSnapshot () {
         final CharSequence [] text = new CharSequence [] {""}; //NOI18N
         final int [][] lineStartOffsets = new int [][] { new int [] { 0 } };
-        Document doc = getDocument (false);
+        final Document doc = preferFile.get() ? null : getDocument (false);
         if (LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, null, new Throwable("Creating snapshot: doc=" + doc + ", file=" + fileObject)); //NOI18N
         } else if (LOG.isLoggable(Level.FINE)) {
@@ -434,6 +433,12 @@ public final class Source {
     private static final Logger LOG = Logger.getLogger(Source.class.getName());
     private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
     private static final ThreadLocal<Boolean> suppressListening = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.FALSE;
+        }
+    };
+    private static final ThreadLocal<Boolean> preferFile = new ThreadLocal<Boolean>() {
         @Override
         protected Boolean initialValue() {
             return Boolean.FALSE;
@@ -700,8 +705,12 @@ public final class Source {
             return ref == null ? null : ref.get();
         }
 
-        public void suppressListening(final boolean suppress) {
+        @Override
+        public void suppressListening(
+                final boolean suppress,
+                final boolean prefer) {
             suppressListening.set(suppress);
+            preferFile.set(prefer);
         }
 
         @Override

@@ -162,6 +162,7 @@ public final class InternalWebServer implements PropertyChangeListener {
         // run
         ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
                 .workingDirectory(runConfig.getWorkDir())
+                .redirectErrorStream(true)
                 .addArgument(WEB_SERVER_PARAM)
                 .addArgument(runConfig.getServer());
         String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();

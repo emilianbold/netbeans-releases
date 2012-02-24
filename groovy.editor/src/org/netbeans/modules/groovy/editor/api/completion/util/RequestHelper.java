@@ -111,7 +111,7 @@ public final class RequestHelper {
     public static List<ClassNode> getDeclaredClasses(CompletionRequest request) {
         if (request.path == null) {
             LOG.log(Level.FINEST, "path == null"); // NOI18N
-            return null;
+            return Collections.EMPTY_LIST;
         }
 
         for (Iterator<ASTNode> it = request.path.iterator(); it.hasNext();) {
@@ -463,6 +463,31 @@ public final class RequestHelper {
     }
 
     /**
+     * Finds out if the give CompletionRequest is a complete-constructor call.
+     * 
+     * @param request actual completion request
+     * @return true if it's constructor call, false otherwise
+     */
+    public static boolean isConstructorCall(CompletionRequest request) {
+        if (request.prefix.length() > 0) {
+            if (isEqualsNew(request.ctx.before1)) {
+                return true; // new String|
+            }
+            if (isEqualsNew(request.ctx.before2)) {
+                return true; // new String|("abc");
+            }
+        }
+        return false;
+    }
+
+    private static boolean isEqualsNew(Token<? extends GroovyTokenId> token) {
+        if (token != null && token.text().toString().equals("new")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Here we test, whether the provided CompletionContext is likely to become
      * a variable definition. At this point in time we can not check whether we
      * live in a "DeclarationExpression" since this is not yet created.
@@ -525,6 +550,30 @@ public final class RequestHelper {
                 LOG.log(Level.FINEST, "default:"); //NOI18N
                 return false;
         }
+    }
+
+    public static boolean isFieldDefinitionLine(CompletionRequest request) {
+        LOG.log(Level.FINEST, "isFieldDefinitionLine()"); //NOI18N
+        CompletionContext ctx = request.ctx;
+
+        if (ctx == null || ctx.before1 == null) {
+            return false;
+        }
+
+        ASTNode node = getASTNodeForToken(ctx.before1, request);
+        if (node != null &&
+                // This might looks weird - we are checking if the current context
+                // is either property (e.g. String st)/field (e.g. private String)
+                // or it might be field but there is no identifier name yet
+                // In that case getASTNodeForToken() will return ClassNode and we
+                // have to check out (from CompletionContext) if it's really field
+                (node instanceof PropertyNode
+                || node instanceof FieldNode
+                || (node instanceof ClassNode && ctx.before1 != null && ctx.before2 == null &&
+                ctx.after1 == null && ctx.after2 == null && ctx.afterLiteral == null))) {
+            return true;
+        }
+        return false;
     }
 
     private static ASTNode getASTNodeForToken(Token<? extends GroovyTokenId> tid, CompletionRequest request) {

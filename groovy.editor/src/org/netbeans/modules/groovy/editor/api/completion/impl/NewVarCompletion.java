@@ -49,9 +49,9 @@ import java.util.logging.Level;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
  *
@@ -73,7 +73,7 @@ public class NewVarCompletion extends BaseCompletion {
         boolean stuffAdded = false;
         for (String var : newVars) {
             LOG.log(Level.FINEST, "Variable candidate: {0}", var); // NOI18N
-            if (var.startsWith(request.prefix)) {
+            if (var.startsWith(request.prefix) && !var.equals(request.prefix)) {
                 proposals.add(new CompletionItem.NewVarItem(var, anchor));
                 stuffAdded = true;
             }

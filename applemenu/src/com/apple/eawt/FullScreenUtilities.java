@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,48 +34,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.javafx2.editor.css.acceptors;
-
-import java.util.Arrays;
-import java.util.List;
-//import org.netbeans.modules.css.editor.properties.NumberPostfixAcceptor;
-
-// XXX probably length will be declared through property
-
-/**
  *
- * @author Anton Chechel <anton.chechel@oracle.com>
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-//public class FXLength extends NumberPostfixAcceptor {
-public class FXLength {
+package com.apple.eawt;
 
-    private static final List<String> POSTFIXES = Arrays.asList(new String[]{"px", "mm", "cm", "in", "pt", "pc", "em", "ex"}); //NOI18N
-    
-//    @Override
-    public String id() {
-        return "fx-length"; //NOI18N
-    }
+import java.awt.Window;
 
-//    @Override
-    public List<String> postfixes() {
-        return POSTFIXES;
-    }
-    
-//    @Override
-    public boolean accepts(String text) {
-//        boolean sa = super.accepts(text);
-//        if(!sa) {
-//            return "0".equals(text); //NOI18N
-//        } else {
-//            return sa;
-//        }
-        return true;
-    }
-    
+/* this is stub code written based on Apple EAWT package javadoc published at
+ * http://developer.apple.com.  It makes compiling code which uses Apple EAWT
+ * on non-Mac platforms possible.  The compiled stub classes should never be
+ * included in the final product.
+ */
+public class FullScreenUtilities {
+
+    public static void setWindowCanFullScreen( Window w, boolean canFullScreen ) {}
 }

@@ -12,22 +12,36 @@
     <body>
     <h2>Live Profiling Results Window - Application Performance</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-                <p>When analyzing application performance, the results display data on the time and number of invocations for executing each method.
+        <p>The results that are displayed in the Live Profiling Results window depend upon which profiling task is in progress.
+        When analyzing application performance, the Live Profiling Results window display data on the time and number of invocations for executing each method.
         The following popup menus are available when you right-click a method.</p>
+        
+        <ul>
+            <li><b>Self time.</b> Time spent in all the invocations of the method.
+            This data is displayed graphically as a percentage of the total time
+            and as the actual amount of time.</li>
+            <li><b>Invocations.</b> Number of times that the method was invoked.</li>
+        </ul>
 
+        
+        <p>Right-click a method name to access the following popup menu commands.</p>
         <ul>
             <li><b>Go To Source.</b> Select this to open the source <tt>.java</tt> file
             for the selected method in the Source Editor. The cursor is placed
             at this method's location in the code.</li>
             <li><b>Add to Instrumentation Roots.</b> Select this to add 
             the selected method to the list of root methods available when profiling part of an application.</li>
-        </ul>     
+        </ul>
+        
+        <p>You can use the Method Name Filter at the bottom of the Live Profiling Results window
+            to filter the list of methods that are displayed.</p>
                 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../snapshots.html">Snapshots</a></dd>
+            <dd><a href="../results_liveresults.html">Working with Live Profiling Results</a></dd>
             <dd><a href="../profile_analyze_short.html">Analyzing Performance</a></dd>
             <dd><a href="../profile_results.html">Viewing Profiling Results</a></dd>
+            <dd><a href="../snapshots.html">Snapshots</a></dd>
         </dl>
         <hr>
         <small><a href="../../credits.html">Legal

@@ -68,6 +68,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -129,6 +130,68 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         };
         groovySettings.addPropertyChangeListener(WeakListeners.propertyChange(docListener, this));
+    }
+
+    @Override
+    public CodeCompletionResult complete(CodeCompletionContext context) {
+        ParserResult info = context.getParserResult();
+        String prefix = context.getPrefix();
+
+        final int lexOffset = context.getCaretOffset();
+        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
+
+        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
+        LOG.log(Level.FINEST, "complete(...), astOffset   : {0}", astOffset); // NOI18N
+
+        // Avoid all those annoying null checks
+        if (prefix == null) {
+            prefix = "";
+        }
+
+        final Document document = info.getSnapshot().getSource().getDocument(false);
+        if (document == null) {
+            return CodeCompletionResult.NONE;
+        }
+        final BaseDocument doc = (BaseDocument) document;
+
+        doc.readLock(); // Read-lock due to Token hierarchy use
+
+        try {
+            CompletionRequest request = new CompletionRequest(lexOffset, astOffset, info, doc, prefix);
+            boolean initResult = request.initContextAttributes();
+
+            if (initResult == false) {
+                return new DefaultCompletionResult(Collections.EMPTY_LIST, false);
+            }
+
+            int anchor = lexOffset - prefix.length();
+            ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
+
+            if (RequestHelper.isVariableDefinitionLine(request) || RequestHelper.isFieldDefinitionLine(request)) {
+                proposalsCollector.completeNewVars(request);
+            } else {
+                if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {
+                    proposalsCollector.completePackages(request);
+                    proposalsCollector.completeTypes(request);
+                }
+
+                if (!request.behindImport) {
+                    if (request.location != CaretLocation.INSIDE_STRING) {
+                        proposalsCollector.completeKeywords(request);
+                        proposalsCollector.completeMethods(request);
+                    }
+
+                    proposalsCollector.completeFields(request);
+                    proposalsCollector.completeLocalVars(request);
+                }
+            }
+            proposalsCollector.completeCamelCase(request);
+
+            return new DefaultCompletionResult(proposalsCollector.getCollectedProposals(), false);
+        } finally {
+            doc.readUnlock();
+        }
     }
 
     private String getGroovyJavadocBase() {
@@ -314,68 +377,6 @@ public class CompletionHandler implements CodeCompletionHandler {
             }
         }
         return sb.toString();
-    }
-
-    @Override
-    public CodeCompletionResult complete(CodeCompletionContext context) {
-        ParserResult info = context.getParserResult();
-        String prefix = context.getPrefix();
-
-        final int lexOffset = context.getCaretOffset();
-        final int astOffset = AstUtilities.getAstOffset(info, lexOffset);
-
-        LOG.log(Level.FINEST, "complete(...), prefix      : {0}", prefix); // NOI18N
-        LOG.log(Level.FINEST, "complete(...), lexOffset   : {0}", lexOffset); // NOI18N
-        LOG.log(Level.FINEST, "complete(...), astOffset   : {0}", astOffset); // NOI18N
-
-        // Avoid all those annoying null checks
-        if (prefix == null) {
-            prefix = "";
-        }
-
-        final Document document = info.getSnapshot().getSource().getDocument(false);
-        if (document == null) {
-            return CodeCompletionResult.NONE;
-        }
-        final BaseDocument doc = (BaseDocument) document;
-
-        doc.readLock(); // Read-lock due to Token hierarchy use
-
-        try {
-            CompletionRequest request = new CompletionRequest(lexOffset, astOffset, info, doc, prefix);
-            boolean initResult = request.initContextAttributes();
-            
-            if (initResult == false) {
-                return new DefaultCompletionResult(Collections.EMPTY_LIST, false);
-            }
-
-            int anchor = lexOffset - prefix.length();
-            ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
-
-            if (RequestHelper.isVariableDefinitionLine(request) == false) {
-                if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {
-                    proposalsCollector.completePackages(request);
-                    proposalsCollector.completeTypes(request);
-                }
-
-                if (!request.behindImport) {
-                    if (request.location != CaretLocation.INSIDE_STRING) {
-                        proposalsCollector.completeKeywords(request);
-                        proposalsCollector.completeMethods(request);
-                    }
-
-                    proposalsCollector.completeFields(request);
-                    proposalsCollector.completeLocalVars(request);
-                }
-            } else {
-                proposalsCollector.completeNewVars(request);
-            }
-            proposalsCollector.completeCamelCase(request);
-
-            return new DefaultCompletionResult(proposalsCollector.getCollectedProposals(), false);
-        } finally {
-            doc.readUnlock();
-        }
     }
 
     /**
