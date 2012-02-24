@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
 import java.util.List;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DeclarationElement;
@@ -107,36 +108,43 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
-    private int getNearestNodeOffsetForOffset(int nodeOffset, int commentEndOffset) {
-        int nearestOffset = nodeOffset;
-        FunctionNode root = parserResult.getRoot();
-        for (Node node : root.getStatements()) {
-            if ((node.getStart() > commentEndOffset) && (node.getStart() < nearestOffset)) {
-                nearestOffset = node.getStart();
-            }
-        }
-        return nearestOffset;
-    }
-
-    private boolean isAssociatedComment(int nodeOffset, int commentEndOffset) {
-        // for small diffs you can return true immediately
-        if (nodeOffset - commentEndOffset <= 1) {
-            return true;
-        }
-        int nearestNodeOffset = getNearestNodeOffsetForOffset(nodeOffset, commentEndOffset);
-        return !(nearestNodeOffset < nodeOffset);
-    }
+//    private int getNearestNodeOffsetForOffset(int nodeOffset, int commentEndOffset) {
+//        int nearestOffset = nodeOffset;
+//        FunctionNode root = parserResult.getRoot();
+//        for (Node node : root.getStatements()) {
+//            if ((node.getStart() > commentEndOffset) && (node.getStart() < nearestOffset)) {
+//                nearestOffset = node.getStart();
+//            }
+//        }
+//        return nearestOffset;
+//    }
+//
+//    private boolean isAssociatedComment(int nodeOffset, int commentEndOffset) {
+//        // for small diffs you can return true immediately
+//        if (nodeOffset - commentEndOffset <= 1) {
+//            return true;
+//        }
+//        int nearestNodeOffset = getNearestNodeOffsetForOffset(nodeOffset, commentEndOffset);
+//        return !(nearestNodeOffset < nodeOffset);
+//    }
 
     private int getEndOffsetOfAssociatedComment(int offset) {
         Snapshot snapshot = parserResult.getSnapshot();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot());
         if (ts != null) {
             ts.move(offset);
+            boolean activated = false;
             while (ts.movePrevious()) {
-                if (ts.token().id() == JsTokenId.DOC_COMMENT) {
-                    int commentEndOffset = ts.token().offset(snapshot.getTokenHierarchy()) + ts.token().length();
-                    if (isAssociatedComment(offset, commentEndOffset)) {
-                        return commentEndOffset;
+                if (!activated) {
+                    if (ts.token().id() == JsTokenId.EOL) {
+                        activated = true;
+                        continue;
+                    }
+                } else {
+                    if (ts.token().id() == JsTokenId.DOC_COMMENT) {
+                        return ts.token().offset(snapshot.getTokenHierarchy()) + ts.token().length();
+                    } else if (isWhitespaceToken(ts.token())) {
+                        continue;
                     } else {
                         return -1;
                     }
@@ -145,6 +153,12 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         }
 
         return -1;
+    }
+
+    private boolean isWhitespaceToken(Token<? extends JsTokenId> token) {
+        return token.id() == JsTokenId.EOL || token.id() == JsTokenId.WHITESPACE
+                || token.id() == JsTokenId.BLOCK_COMMENT || token.id() == JsTokenId.DOC_COMMENT
+                || token.id() == JsTokenId.LINE_COMMENT;
     }
 
 }
