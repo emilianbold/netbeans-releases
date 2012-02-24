@@ -70,9 +70,10 @@ public class JsIndex {
     public static final String FIELD_JS_KIND = "jskind"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
+    public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
     
     private static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL, FIELD_IS_DECLARED};
-    private static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS};
+    private static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_JS_KIND};
     
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -131,5 +132,12 @@ public class JsIndex {
             }
         }
         return result;
+    }
+    
+    public Collection<? extends IndexResult> findFQN(String fqn) {
+        Collection<? extends IndexResult> results = query(
+                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
+        
+        return results;
     }
 }

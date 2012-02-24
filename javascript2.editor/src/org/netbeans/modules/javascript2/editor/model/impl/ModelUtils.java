@@ -165,6 +165,9 @@ public class ModelUtils {
         StringBuilder result = new StringBuilder();
         result.append(object.getName());
         JsObject parent = object;
+        if (object.getJSKind() == JsElement.Kind.FILE) {
+            return object.getName();
+        }
         while((parent = parent.getParent()).getJSKind() != JsElement.Kind.FILE) {
             result.insert(0, ".");
             result.insert(0, parent.getName());

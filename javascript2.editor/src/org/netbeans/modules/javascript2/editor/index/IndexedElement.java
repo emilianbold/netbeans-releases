@@ -95,6 +95,19 @@ public class IndexedElement extends JsElementImpl {
             sb.append("|");
         }
         elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
+        
+        if (object.getJSKind() == JsElement.Kind.METHOD
+                || object.getJSKind() == JsElement.Kind.FUNCTION
+                || object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
+                sb.append(type.getType());
+                sb.append(":"); //NOI18N
+                sb.append(type.getOffset());
+                sb.append("|");
+            }
+            elementDocument.addPair(JsIndex.FIELD_RETURN_TYPES, sb.toString(), false, true);
+        }
         return elementDocument;
     }
     
@@ -120,6 +133,21 @@ public class IndexedElement extends JsElementImpl {
     public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
         Collection<TypeUsage> result = new ArrayList<TypeUsage>();
         String text = indexResult.getValue(JsIndex.FIELD_ASSIGNMENS);
+        if (text != null) {
+            for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
+                String token = st.nextToken();
+                int index = token.indexOf(':');
+                String type = token.substring(0, index);
+                String offset = token.substring(index + 1);
+                result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+            }
+        }
+        return result;
+    }
+    
+    public static Collection<TypeUsage> getReturnTypes(IndexResult indexResult) {
+        Collection<TypeUsage> result = new ArrayList<TypeUsage>();
+        String text = indexResult.getValue(JsIndex.FIELD_RETURN_TYPES);
         if (text != null) {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
