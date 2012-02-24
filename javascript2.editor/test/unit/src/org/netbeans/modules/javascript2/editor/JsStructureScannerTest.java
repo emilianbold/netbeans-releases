@@ -67,4 +67,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testSimpleMethodChain() throws Exception {
         checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
     }
+    
+    public void test() throws Exception {
+        checkStructure("testfiles/completion/typeInferenceNew.js");
+    }
 }
