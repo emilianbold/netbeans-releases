@@ -1,0 +1,34 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+<#if package?? && package != "">
+package ${package};
+
+</#if>
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+/**
+ *
+ * @author ${user}
+ */
+public class ${name} {
+
+    @BeforeClass
+    public void setUp() {
+        // code that will be invoked before this test starts
+    }
+
+    @Test
+    public void aTest() {
+        System.out.println("Test");
+    }
+
+    @AfterClass
+    public void cleanUp() {
+        // code that will be invoked after this test ends
+    }
+}
