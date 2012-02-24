@@ -201,8 +201,13 @@ public final class FastTypeProvider implements TypeProvider {
 
         @Override
         public FileObject getFileObject() {
-            String relPath = getTypeName().replaceAll("\\.", "/") + JAVA_EXTENSION;  // NOI18N
-            return root.getFileObject(relPath);
+            String s = simpleName;
+            
+            if (pkgName != null && !"".equals(pkgName)) {
+                StringBuilder sb = new StringBuilder();
+                s = sb.append(pkgName).append('.').append(simpleName).toString().replaceAll("\\.", "/"); // NOI18N
+            }
+            return root.getFileObject(s + JAVA_EXTENSION);
         }
 
         @Override

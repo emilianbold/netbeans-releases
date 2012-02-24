@@ -81,7 +81,7 @@ public class FastIndexTest extends NbTestCase {
         FileObject root = jfs.getRoot();
         
         OpenProjectFastIndex.IndexBuilder builder = new OpenProjectFastIndex.IndexBuilder(
-                Collections.<FileObject>singleton(root), Collections.<FileObject>emptyList());
+                null, Collections.<FileObject>singleton(root), Collections.<FileObject>emptyList());
         
         Map<FileObject, NameIndex> indexes = builder.build();
         NameIndex nameIndex = indexes.values().iterator().next();
@@ -185,7 +185,7 @@ public class FastIndexTest extends NbTestCase {
         TypeDescriptor d = results.get(0);
         
         // should find java.util.zip.ZipException
-        assertEquals("java.util.zip", d.getContextName());
+        assertEquals("( java.util.zip )", d.getContextName());
         assertNull(d.getOuterName());
         assertEquals("ZipException", d.getSimpleName());
         assertEquals(root.getFileObject("java/util/zip/ZipException.java"), d.getFileObject());
@@ -204,7 +204,7 @@ public class FastIndexTest extends NbTestCase {
         d = results.get(0);
         
         // should find java.util.zip.ZipException
-        assertEquals("java.util", d.getContextName());
+        assertEquals("( java.util )", d.getContextName());
         assertNull(d.getOuterName());
         assertEquals("IllegalFormatException", d.getSimpleName());
         assertEquals(root.getFileObject("java/util/IllegalFormatException.java"), d.getFileObject());

@@ -479,10 +479,16 @@ class OpenProjectFastIndex implements JavaIndexEvents.Listener {
     }
     
     public String getProjectName(Project p) {
+        if (p == null) {
+            return null;
+        }
         return getCacheInfo(p).projectName;
     }
     
     public Icon getProjectIcon(Project p) {
+        if (p == null) {
+            return null;
+        }
         return getCacheInfo(p).projectIcon;
     }
     
