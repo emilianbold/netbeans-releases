@@ -28,10 +28,12 @@ FUNCTION DEFINITION get_five  [13:1/209-13:37/245] FunctionDDImpl SCOPE: $Global
     UNIQUE NAME f:get_five()
     DECLARATION: get_five  [13:1/209-13:37/245]
     PARAMETERS:
-    RETURNS int TEXT=int  [13:11/219-13:14/222]
+    RETURNS const int TEXT=const int  [13:1/209-13:14/222]
     STATEMENT COMPOUND  [13:26/234-13:37/245] SCOPE: get_five 
         STATEMENT RETURN  [13:27/235-13:36/244] SCOPE: Stmt  [13:26/234-13:37/245] text: 'return 5;'
 VARIABLE some_value [14:1/246-14:32/277]  TYPE: int[] TEXT=int[]  [14:1/246-14:4/249]  INIT: null  SCOPE: $Global$ 
+VARIABLE acceleration_due_to_gravity [16:1/279-16:52/330]  TYPE: const double TEXT=const double  [16:1/279-16:17/295]  INIT: text='9.8'  SCOPE: cpp11.cpp
+VARIABLE moon_gravity [17:1/331-17:67/397]  TYPE: const double TEXT=const double  [17:1/331-17:17/347]  INIT: text='acceleration_due_to_gravity / 6.0'  SCOPE: cpp11.cpp
 CLASS B<class T> (B ) [25:1/545-26:2/574] lcurly=571 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -196,6 +198,13 @@ STRUCT Derived (Derived ) [152:1/2940-154:2/3009] lcurly=2962 SCOPE: $Global$
     BASE CLASSES:
         CLASS=Base VISIBILITY==PUBLIC virtual==false text='Base'
     MEMBERS:
+        FUNCTION some_func [153:5/2968-153:44/3007] MethodImpl SCOPE: Derived 
+            DEFINITION: null
+            SIGNATURE some_func(float)
+            UNIQUE NAME F:Derived::some_func(float)
+            PARAMETERS:
+                 [153:28/2991-153:33/2996]  TYPE: float TEXT=float  [153:28/2991-153:33/2996]  INIT: null  SCOPE: some_func 
+            RETURNS void TEXT=void  [153:13/2976-153:17/2980]
 STRUCT Base1 (Base1 ) [156:1/3012-156:23/3034] lcurly=3031 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -206,6 +215,12 @@ STRUCT Derived1 (Derived1 ) [158:1/3038-158:28/3065] lcurly=3062 SCOPE: $Global$
 STRUCT Base2 (Base2 ) [160:1/3129-162:2/3173] lcurly=3142 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
+        FUNCTION f [161:5/3148-161:28/3171] MethodImpl SCOPE: Base2 
+            DEFINITION: null
+            SIGNATURE f()
+            UNIQUE NAME F:Base2::f()
+            PARAMETERS:
+            RETURNS void TEXT=void  [161:13/3156-161:17/3160]
 STRUCT Derived2 (Derived2 ) [164:1/3177-166:2/3292] lcurly=3201 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=Base2 VISIBILITY==PUBLIC virtual==false text='Base2'
@@ -375,7 +390,7 @@ FUNCTION DEFINITION get_five  [13:1/209-13:37/245] FunctionDDImpl SCOPE: $Global
     UNIQUE NAME f:get_five()
     DECLARATION: get_five  [13:1/209-13:37/245]
     PARAMETERS:
-    RETURNS int TEXT=int  [13:11/219-13:14/222]
+    RETURNS const int TEXT=const int  [13:1/209-13:14/222]
     STATEMENT COMPOUND  [13:26/234-13:37/245] SCOPE: get_five 
         STATEMENT RETURN  [13:27/235-13:36/244] SCOPE: Stmt  [13:26/234-13:37/245] text: 'return 5;'
 VARIABLE some_value [14:1/246-14:32/277]  TYPE: int[] TEXT=int[]  [14:1/246-14:4/249]  INIT: null  SCOPE: $Global$ 
@@ -524,6 +539,13 @@ STRUCT Derived (Derived ) [152:1/2940-154:2/3009] lcurly=2962 SCOPE: $Global$
     BASE CLASSES:
         CLASS=Base VISIBILITY==PUBLIC virtual==false text='Base'
     MEMBERS:
+        FUNCTION some_func [153:5/2968-153:44/3007] MethodImpl SCOPE: Derived 
+            DEFINITION: null
+            SIGNATURE some_func(float)
+            UNIQUE NAME F:Derived::some_func(float)
+            PARAMETERS:
+                 [153:28/2991-153:33/2996]  TYPE: float TEXT=float  [153:28/2991-153:33/2996]  INIT: null  SCOPE: some_func 
+            RETURNS void TEXT=void  [153:13/2976-153:17/2980]
 STRUCT Base1 (Base1 ) [156:1/3012-156:23/3034] lcurly=3031 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -534,6 +556,12 @@ STRUCT Derived1 (Derived1 ) [158:1/3038-158:28/3065] lcurly=3062 SCOPE: $Global$
 STRUCT Base2 (Base2 ) [160:1/3129-162:2/3173] lcurly=3142 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
+        FUNCTION f [161:5/3148-161:28/3171] MethodImpl SCOPE: Base2 
+            DEFINITION: null
+            SIGNATURE f()
+            UNIQUE NAME F:Base2::f()
+            PARAMETERS:
+            RETURNS void TEXT=void  [161:13/3156-161:17/3160]
 STRUCT Derived2 (Derived2 ) [164:1/3177-166:2/3292] lcurly=3201 SCOPE: $Global$ 
     BASE CLASSES:
         CLASS=Base2 VISIBILITY==PUBLIC virtual==false text='Base2'
