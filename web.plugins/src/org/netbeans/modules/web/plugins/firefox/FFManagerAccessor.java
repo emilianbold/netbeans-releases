@@ -117,7 +117,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
 
         };
         
-        private static final String EXTENSION_ID = "ros-firefox-extension@netbeans.org";   // NOI18N
+        private static final String EXTENSION_ID = "ros-firefox-plugin@netbeans.org";   // NOI18N
         
         private static final String INSTALL_KEYWORD = "needs-install";              // NOI18N
         
@@ -125,7 +125,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String CURRENT_VERSION = "0.1.3";                      // NOI18N
         
-        private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-firefox-extension.xpi"; // NOI18N
+        private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-firefox-plugin.xpi"; // NOI18N
         
         /* TODO : do we need MD5 checksum ?
         private static final String CHECKSUM_FILENAME = "netbeans-ros-firefox-extension.jar.MD5"; // NOI18N
@@ -141,7 +141,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                     File.separator + EXTENSION_ID);                  
             String extensionVersion = getVersion(extensionDir);
             
-            boolean isInstalling = checkExtensionCache(EXTENSION_ID, extensionDir, 
+            boolean isInstalling = checkExtensionCache(extensionDir, 
                     INSTALL_KEYWORD);
             
             // if the user did not restart before the check was made (user presses 'Continue'
@@ -154,10 +154,10 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                     //|| !checkExtensionChecksum(defaultProfile) )
             {
                 // return false if extension is not initialized
-                return checkExtensionCache( EXTENSION_ID, extensionDir, null);
+                return !checkExtensionInstall(defaultProfile);
             } 
             else {
-                return false;
+                return true;
             }
         }
 
@@ -178,7 +178,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             }
             
             // plugin is not initialized
-            if ( !checkExtensionCache( EXTENSION_ID, extensionDir, null) ){
+            if ( !checkExtensionInstall( defaultProfile ) ){
                 NotifyDescriptor descriptor = new NotifyDescriptor.Message(
                         NbBundle.getMessage(FFExtensionManager.class, 
                                 "LBL_FirefoxNotRestarted"),                                 // NOI18N
@@ -635,8 +635,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         /*
          * Checks extension.cache to determine if the extension has been scheduled for removal
          */
-        private boolean checkExtensionCache(String extensionID, 
-                File profileDir, String keyword) 
+        private boolean checkExtensionCache(File profileDir, String keyword) 
         {
             File extensionCache = new File(profileDir, EXTENSION_CACHE);
             if (extensionCache.exists() && extensionCache.isFile()) {
@@ -650,7 +649,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                         if (nextLine != null) {
                             String[] words = nextLine.split("\\s");             // NOI18N
                             for (String element : words) {
-                                if (element.equals(extensionID)) {
+                                if (element.equals(EXTENSION_ID)) {
                                     foundExtension = true;
                                     if ( keyword == null ){
                                         return true;
@@ -682,7 +681,18 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 }
             }
             
-            return keyword==null;
+            return false;
+        }
+        
+        private boolean checkExtensionInstall(File profileDir) 
+        {   
+            File extensionCache = new File(profileDir, EXTENSION_CACHE);
+            if (extensionCache.exists() && extensionCache.isFile()) {
+                return checkExtensionCache( profileDir , null );
+            }
+            else {
+                return true;
+            }
         }
         
         private boolean displayFirefoxRunningDialog(final File profileDir) {
