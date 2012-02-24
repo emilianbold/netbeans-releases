@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.io.IOException;
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Petr Pisl
@@ -51,7 +54,17 @@ public class JsStructureScannerTest extends JsTestBase {
         super(testName);
     }
     
+    @Override
+    protected void assertDescriptionMatches(FileObject fileObject,
+            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    }
+    
     public void testFolds1() throws Exception {
         checkFolds("testfiles/simple.js");
+    }
+    
+    public void testSimpleMethodChain() throws Exception {
+        checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
     }
 }

@@ -102,8 +102,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             return JsElement.Kind.FILE;
         }
         for (JsObject property : getProperties().values()) {
-            if (property instanceof JsFunctionImpl
-                    || property.getJSKind() == JsElement.Kind.PROPERTY) {
+            if (property.isDeclared()) {
                 return JsElement.Kind.CONSTRUCTOR;
             }
         }
