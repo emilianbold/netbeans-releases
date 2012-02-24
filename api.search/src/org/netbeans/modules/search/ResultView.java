@@ -53,8 +53,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -66,9 +64,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
@@ -84,20 +84,21 @@ import org.openide.windows.WindowManager;
  * @author Marian Petras
  * @author kaktus
  */
-final class ResultView extends TopComponent {
+@TopComponent.Description(preferredID=ResultView.ID, persistenceType=TopComponent.PERSISTENCE_ALWAYS, iconBase="org/netbeans/modules/search/res/find.gif")
+@TopComponent.Registration(mode="output", position=1900, openAtStartup=false)
+@ActionID(id = "org.netbeans.modules.search.ResultViewOpenAction", category = "Window")
+@TopComponent.OpenActionRegistration(displayName="#TEXT_ACTION_SEARCH_RESULTS", preferredID=ResultView.ID)
+@ActionReferences({
+    @ActionReference(path = "Shortcuts", name = "DS-0"),
+    @ActionReference(path = "Menu/Window/Output", name = "ResultViewOpenAction", position = 200)
+})
+public final class ResultView extends TopComponent {
 
     private static final boolean isMacLaf = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static final Color macBackground = UIManager.getColor("NbExplorerView.background"); //NOI18N
     
     /** unique ID of <code>TopComponent</code> (singleton) */
-    private static final String ID = "search-results";                  //NOI18N
-    
-    /**
-     * instance/singleton of this class
-     *
-     * @see  #getInstance
-     */
-    private static Reference<ResultView> instance = null;
+    static final String ID = "search-results";                  //NOI18N
     
     private JPopupMenu pop;
     private PopupListener popL;
@@ -114,46 +115,19 @@ final class ResultView extends TopComponent {
         ResultView view;
         view = (ResultView) WindowManager.getDefault().findTopComponent(ID);
         if (view == null) {
-            view = getDefault();
+            view = new ResultView(); // should not happen
         }
         return view;
     }
 
-    /**
-     * Singleton accessor reserved for the window systemm only. The window
-     * system calls this method to create an instance of this
-     * <code>TopComponent</code> from a <code>.settings</code> file.
-     * <p>
-     * <em>This method should not be called anywhere except from the window
-     * system's code. </em>
-     *
-     * @return  singleton - instance of this class
-     */
-    public static synchronized ResultView getDefault() {
-        ResultView view;
-        if (instance == null) {
-            view = new ResultView();
-            instance = new WeakReference<ResultView>(view);
-        } else {
-            view = instance.get();
-            if (view == null) {
-                view = new ResultView();
-                instance = new WeakReference<ResultView>(view);
-            }
-        }
-        return view;
-    }
-    
     private final CardLayout contentCards;
     
-    /** Creates a new <code>ResultView</code>. */
-    private ResultView() {
+    public ResultView() {
         setLayout(contentCards = new CardLayout());
 
         setName("Search Results");                                      //NOI18N
         setDisplayName(NbBundle.getMessage(ResultView.class, "TITLE_SEARCH_RESULTS"));    //NOI18N
         setToolTipText(NbBundle.getMessage(ResultView.class, "TOOLTIP_SEARCH_RESULTS"));  //NOI18N
-        setIcon(ImageUtilities.loadImage("org/netbeans/modules/search/res/find.gif"));           //NOI18N
         
         initAccessibility();
 
@@ -182,37 +156,15 @@ final class ResultView extends TopComponent {
         map.put("jumpPrev", new PrevNextAction (true)); // NOI18N
     }
     
-    
-    /** Overriden to explicitely set persistence type of ResultView
-     * to PERSISTENCE_NEVER */
-    @Override
-    public int getPersistenceType() {
-        return TopComponent.PERSISTENCE_ALWAYS;  // XXX protimluv
-    }
 
-    /** Replaces this in object stream. */
-    @Override
-    public Object writeReplace() {
-        return new ResolvableHelper();
-    }
-
+    @Deprecated
     final public static class ResolvableHelper implements java.io.Serializable {
         static final long serialVersionUID = 7398708142639457544L;
         public Object readResolve() {
-            return ResultView.getDefault();
+            return null;
         }
     }
 
-    /**
-     * Resolves to the {@linkplain #getDefault default instance} of this class.
-     *
-     * This method is necessary for correct functinality of window system's
-     * mechanism of persistence of top components.
-     */
-    private Object readResolve() throws java.io.ObjectStreamException {
-        return ResultView.getDefault();
-    }
-    
     private void initAccessibility() {
         ResourceBundle bundle = NbBundle.getBundle(ResultView.class);
         getAccessibleContext().setAccessibleName (bundle.getString ("ACSN_ResultViewTopComponent"));                   //NOI18N
@@ -562,11 +514,6 @@ final class ResultView extends TopComponent {
         }
         Manager.getInstance().scheduleSearchTask(newSearchTask);
         }
-    }
-
-    @Override
-    protected String preferredID() {
-        return getClass().getName();
     }
 
     private void closeAll(boolean butCurrent) {
