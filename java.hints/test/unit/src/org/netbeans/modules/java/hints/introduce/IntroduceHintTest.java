@@ -814,7 +814,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void testIntroduceMethodPosition() throws Exception {
         performFixTest("package test; public class Test {public void foo() { int i = 1; } public void foo1() {}}", 78 - 25, 88 - 25,
-                       "package test; public class Test {public void foo() {name(); } private void name() { int i = 1; } public void foo1() {}}",
+                       "package test; public class Test {public void foo() {name(); } public void foo1() {} private void name() { int i = 1; } }",
                        new DialogDisplayerImpl3("name", null, true),
                        3, 2);
     }
