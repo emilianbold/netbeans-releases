@@ -165,6 +165,9 @@ public class ModelUtils {
         StringBuilder result = new StringBuilder();
         result.append(object.getName());
         JsObject parent = object;
+        if (object.getJSKind() == JsElement.Kind.FILE) {
+            return object.getName();
+        }
         while((parent = parent.getParent()).getJSKind() != JsElement.Kind.FILE) {
             result.insert(0, ".");
             result.insert(0, parent.getName());
@@ -253,13 +256,14 @@ public class ModelUtils {
             JsObject parent = object;
             while (possible == null && parent != null) {
                 possible = parent.getProperty(function);
-                if(possible != null && !(possible instanceof JsFunction)) {
-                    possible = null;
-                }
                 parent = parent.getParent();
             }
             if (possible != null) {
-                result.addAll(((JsFunction)possible).getReturnTypes());
+                if (possible instanceof JsFunction) {
+                    result.addAll(((JsFunction)possible).getReturnTypes());
+                } else {
+                    result.add(new TypeUsageImpl(ModelUtils.createFQN(possible), possible.getOffset(), true));
+                }
             } else {
                 result.add(type);
             }

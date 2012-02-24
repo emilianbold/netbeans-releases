@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -68,10 +69,11 @@ public class JsIndex {
     public static final String FIELD_IS_DECLARED = "isdec"; //NOI18N
     public static final String FIELD_JS_KIND = "jskind"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
-    
+    public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
+    public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
     
     private static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL, FIELD_IS_DECLARED};
-    private static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY};
+    private static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_JS_KIND};
     
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -120,10 +122,22 @@ public class JsIndex {
                 JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         for (IndexResult indexResult : results) {
+            Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
+            if (!assignments.isEmpty()) {
+                TypeUsage type = assignments.iterator().next();
+                result.addAll(getProperties(type.getType()));
+            }
             for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult)) {
                 result.add(indexedElement);
             }
         }
         return result;
+    }
+    
+    public Collection<? extends IndexResult> findFQN(String fqn) {
+        Collection<? extends IndexResult> results = query(
+                JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
+        
+        return results;
     }
 }
