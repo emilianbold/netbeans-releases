@@ -277,7 +277,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     @Override
     public void valueChanged (ListSelectionEvent e) {
         if (!e.getValueIsAdjusting() && revisionsPanel1.lstRevisions.isFocusOwner()) {
-            GitRevisionInfo selectedRevision = (GitRevisionInfo) revisionsPanel1.lstRevisions.getSelectedValue();
+            GitRevisionInfo selectedRevision = revisionsPanel1.getSelectedRevision();
             Revision oldRevision = currRevision;
             if (selectedRevision == null && currRevision != null) {
                 currRevision = null;
