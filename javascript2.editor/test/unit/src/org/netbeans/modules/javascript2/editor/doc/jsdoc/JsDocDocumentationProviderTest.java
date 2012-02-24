@@ -79,36 +79,50 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
         checkReturnType(testSource, caretOffset, "Shape");
     }
 
     public void testGetReturnTypeForReturns() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone2 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone2 = function(){^");
         checkReturnType(testSource, caretOffset, "Shape");
     }
 
     public void testGetReturnTypeForType() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getClassName= ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getClassName= function(){^");
         checkReturnType(testSource, caretOffset, "String");
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = function(){^");
         checkReturnType(testSource, caretOffset, null);
     }
 
     public void testGetNullReturnTypeByMissingComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
 
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = ^function(){");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = function(){^");
         checkReturnType(testSource, caretOffset, null);
+    }
+
+    public void testGetReturnTypeAtFunction() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
+
+        final int caretOffset = getCaretOffset(testSource, "function martion () {^");
+        checkReturnType(testSource, caretOffset, "Number");
+    }
+
+    public void testGetReturnTypeAtObjectFunction() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
+
+        final int caretOffset = getCaretOffset(testSource, "getVersion: function() {^");
+        checkReturnType(testSource, caretOffset, "Number");
     }
 
 }

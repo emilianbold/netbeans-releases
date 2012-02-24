@@ -74,13 +74,18 @@ public abstract class JsDocTestBase extends JsTestBase {
      * @return {@code Node} which correspond to given offset
      */
     public static Node getNodeForOffset(JsParserResult parserResult, int offset) {
+        Node nearestNode = null;
+        int nearestNodeDistance = Integer.MAX_VALUE;
         FunctionNode root = parserResult.getRoot();
-        for (Node node : root.getStatements()) {
-            if (offset >= node.getStart() && offset <= node.getFinish()) {
-                return node;
+        OffsetVisitor offsetVisitor = new OffsetVisitor(offset);
+        root.accept(offsetVisitor);
+        for (Node node : offsetVisitor.getNodes()) {
+            if (offset - node.getStart()  < nearestNodeDistance) {
+                nearestNodeDistance = offset - node.getStart();
+                nearestNode = node;
             }
         }
-        return null;
+        return nearestNode;
     }
 
 
