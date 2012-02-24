@@ -80,8 +80,7 @@ public class DeclarationFinderImpl implements DeclarationFinder{
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
         if (ts != null) {
             ts.move(caretOffset);
-            ts.moveNext();
-            if (ts.token().id() == JsTokenId.IDENTIFIER) {
+            if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                 result =  new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }
