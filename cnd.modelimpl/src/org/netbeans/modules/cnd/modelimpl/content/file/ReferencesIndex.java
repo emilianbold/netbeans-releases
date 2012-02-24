@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentReferences.ReferenceImpl;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences.ReferenceImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.*;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -237,7 +237,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     private ReferencesIndex() {
     };
     
-    static SelfPersistent create(RepositoryDataInput stream) throws IOException {
+    public static SelfPersistent create(RepositoryDataInput stream) throws IOException {
         return new ReferencesIndex(stream);
     }
     
@@ -246,7 +246,7 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
         private static final ReferencesIndex INSTANCE = read();
     }
 
-    static void shutdown() {
+    public static void shutdown() {
         RepositoryUtils.closeUnit(INDEX_KEY, null, !TraceFlags.PERSISTENT_REPOSITORY);
     }
     private static final boolean TRACE = Boolean.getBoolean("cnd.model.global.index") || Boolean.getBoolean("cnd.model.index.enabled");

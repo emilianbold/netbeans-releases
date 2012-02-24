@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,9 +63,11 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage;
 import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.DataPresentationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.KeyDataPresentationImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.DeclarationContainerProjectStorage.UniqueNameImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.ProjectDeclarationContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.UniqueNameCache;
@@ -306,7 +308,7 @@ public class DeclarationContainerProject extends DeclarationContainer {
         }
     }
 
-    SortedMap<CharSequence, Set<CsmUID<CsmFriend>>> testFriends(){
+    public SortedMap<CharSequence, Set<CsmUID<CsmFriend>>> getTestFriends(){
         return new TreeMap<CharSequence, Set<CsmUID<CsmFriend>>>(friends);
     }
 

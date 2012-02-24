@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.file;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -55,6 +55,9 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.PositionManager;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.repository.FileReferencesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -136,7 +139,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         fileUID = null;
     }
 
-    void clean() {
+    public void clean() {
         referencesLock.writeLock().lock();
         try {
             references.clear();
@@ -148,7 +151,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         put();
     }
 
-    Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
+    public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
         Set<CsmUID<CsmObject>> searchFor = new HashSet<CsmUID<CsmObject>>(objects.size());
         for(CsmObject obj : objects) {
             CsmUID<CsmObject> uid = UIDs.get(obj);
@@ -169,7 +172,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return res;
     }
 
-    Collection<CsmReference> getReferences() {
+    public Collection<CsmReference> getReferences() {
         List<CsmReference> res = new ArrayList<CsmReference>();
         referencesLock.readLock().lock();
         try {
@@ -182,11 +185,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return res;
     }
 
-    CsmReference getReference(int offset) {
+    public CsmReference getReference(int offset) {
         return getReferenceImpl(offset, references);
     }
 
-    CsmReference getResolvedReference(CsmReference ref) {
+    public CsmReference getResolvedReference(CsmReference ref) {
         referencesLock.readLock().lock();
         try {
             for(Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : type2classifier.tailMap(new ReferenceImpl(ref.getStartOffset(), ref.getEndOffset(), ref.getText())).entrySet()) {
@@ -228,11 +231,11 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return null;
     }
 
-    boolean addResolvedReference(CsmReference ref, CsmObject cls) {
+    public boolean addResolvedReference(CsmReference ref, CsmObject cls) {
          return addReferenceImpl(ref, cls, type2classifier, false);
     }
 
-    void removeResolvedReference(CsmReference ref) {
+    public void removeResolvedReference(CsmReference ref) {
         CsmUID<CsmObject> remove;
         referencesLock.writeLock().lock();
         try {
@@ -245,7 +248,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
     }
     
-    boolean addReference(CsmReference ref, CsmObject referencedObject) {
+    public boolean addReference(CsmReference ref, CsmObject referencedObject) {
          return addReferenceImpl(ref, referencedObject, references, true);
     }
     
@@ -360,7 +363,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
         }
     }
 
-    void dump(PrintWriter printOut) {
+    public void dump(PrintWriter printOut) {
         printOut.printf("Has %d references:\n", references.size());// NOI18N 
         for (Map.Entry<ReferenceImpl, CsmUID<CsmObject>> entry : references.entrySet()) {
             printOut.printf("ref %s\n\t%s:\n", entry.getKey().toString(true), entry.getValue());// NOI18N 
