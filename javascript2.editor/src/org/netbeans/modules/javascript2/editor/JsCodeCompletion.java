@@ -412,10 +412,25 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     }
                 } else {
-                    FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(((TypeUsage)resolved).getType()); 
-                    for(IndexedElement indexedElement : properties) {
-                        resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                    TypeUsage typeUsage = (TypeUsage)resolved;
+                    // at first try to find the type in the model
+                    JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
+                    if (jsObject != null) {
+                        for (JsObject property : jsObject.getProperties().values()) {
+                            if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                                    && startsWith(property.getName(), request.prefix)) {
+                                resultList.add(JsCompletionItem.Factory.create(property, request));
+                            }
+                        }
+                    } else {
+                        // look at the index
+                        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+                        Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(((TypeUsage)resolved).getType()); 
+                        for(IndexedElement indexedElement : properties) {
+                            if (startsWith(indexedElement.getName(), request.prefix)) {
+                                resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                            }
+                        }
                     }
                 }
             }

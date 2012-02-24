@@ -62,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
 public class ClassPathProviderImpl implements ClassPathProvider {
 
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
-    protected static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
+    public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
     // GuardedBy(this)
     private static ClassPath cachedBootClassPath;
