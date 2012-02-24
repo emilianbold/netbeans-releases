@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
 import java.util.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;

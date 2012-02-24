@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -65,6 +65,8 @@ import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -81,7 +83,7 @@ import org.openide.util.CharSequences;
  * Storage for project classifiers. Class was extracted from ProjectBase.
  * @author Alexander Simon
  */
-/*package-local*/ class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
+public class ClassifierContainer extends ProjectComponent implements Persistent, SelfPersistent {
 
     private final Map<CharSequence, CsmUID<CsmClassifier>> classifiers;
     private final Map<CharSequence, CsmUID<CsmClassifier>> typedefs;
@@ -170,7 +172,7 @@ import org.openide.util.CharSequences;
 
 
     // for unit teast
-    Map<CharSequence, CsmClassifier> getClassifiers(){
+    public Map<CharSequence, CsmClassifier> getTestClassifiers(){
         Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
         try {
             declarationsLock.readLock().lock();
@@ -184,7 +186,7 @@ import org.openide.util.CharSequences;
     }
 
     // for unit teast
-    Map<CharSequence, CsmClassifier> getTypedefs(){
+    public Map<CharSequence, CsmClassifier> getTestTypedefs(){
         Map<CharSequence, CsmClassifier> res = new TreeMap<CharSequence, CsmClassifier>();
         try {
             declarationsLock.readLock().lock();

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.core;
+package org.netbeans.modules.cnd.modelimpl.content.project;
 
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmNamespace;
