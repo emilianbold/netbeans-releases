@@ -77,6 +77,9 @@ public class FXMLDataObject extends MultiDataObject {
             @Override
             public Action getPreferredAction() {
                 for(Action a : getActions(true)) {
+                    if (a == null) {
+                        continue;
+                    }
                     if (a.isEnabled()) {
                         if (a instanceof FXMLOpenAction) {
                             return a;
