@@ -42,10 +42,18 @@
 package org.netbeans.modules.php.project.connections.sync.diff;
 
 import java.io.File;
+import java.io.IOException;
+import javax.swing.text.Document;
 import org.netbeans.modules.php.project.connections.TmpLocalFile;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -53,13 +61,14 @@ import org.openide.util.lookup.Lookups;
  */
 public class EditableTmpLocalFileStreamSource extends TmpLocalFileStreamSource {
 
-    private final FileObject fileObject;
+    private final EditorCookie editorCookie;
+    private final Document document;
 
 
-    public EditableTmpLocalFileStreamSource(String name, TmpLocalFile tmpFile, String mimeType, String charsetName, boolean remote) {
+    public EditableTmpLocalFileStreamSource(String name, TmpLocalFile tmpFile, String mimeType, String charsetName, boolean remote) throws IOException {
         super(name, tmpFile, mimeType, charsetName, remote);
-        fileObject = FileUtil.toFileObject(new File(tmpFile.getAbsolutePath()));
-        assert fileObject != null : "Fileobject for tmp local file not found: " + tmpFile;
+        editorCookie = getEditorCookie(tmpFile);
+        document = getDocument();
     }
 
     @Override
@@ -69,7 +78,42 @@ public class EditableTmpLocalFileStreamSource extends TmpLocalFileStreamSource {
 
     @Override
     public Lookup getLookup() {
-        return Lookups.fixed(fileObject);
+        if (document == null) {
+            return super.getLookup();
+        }
+        return Lookups.fixed(document);
+    }
+
+    @NbBundle.Messages("EditableTmpLocalFileStreamSource.open.confirm=File is too big. Do you really want to open it?")
+    private Document getDocument() throws IOException {
+        if (editorCookie == null) {
+            return null;
+        }
+        try {
+            return editorCookie.openDocument();
+        } catch (UserQuestionException uqe) {
+            NotifyDescriptor.Confirmation desc = new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
+                    Bundle.EditableTmpLocalFileStreamSource_open_confirm(), NotifyDescriptor.Confirmation.OK_CANCEL_OPTION);
+            if (DialogDisplayer.getDefault().notify(desc).equals(NotifyDescriptor.OK_OPTION)) {
+                uqe.confirmed();
+                return editorCookie.openDocument();
+            }
+        }
+        return null;
+    }
+
+    public void save() throws IOException {
+        if (editorCookie == null) {
+            return;
+        }
+        editorCookie.saveDocument();
+    }
+
+    private EditorCookie getEditorCookie(TmpLocalFile tmpFile) throws IOException {
+        FileObject fileObject = FileUtil.toFileObject(new File(tmpFile.getAbsolutePath()));
+        assert fileObject != null : "Fileobject for tmp local file not found: " + tmpFile;
+        DataObject dataObject = DataObject.find(fileObject);
+        return dataObject.getLookup().lookup(EditorCookie.class);
     }
 
 }

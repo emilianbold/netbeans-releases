@@ -43,11 +43,13 @@ package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -87,6 +89,8 @@ import org.openide.util.NbBundle;
 public final class SyncPanel extends JPanel {
 
     private static final long serialVersionUID = 1674646546545121L;
+
+    static final Logger LOGGER = Logger.getLogger(SyncPanel.class.getName());
 
     // XXX
     @StaticResource
@@ -262,8 +266,7 @@ public final class SyncPanel extends JPanel {
         boolean warn = false;
         for (SyncItem syncItem : items) {
             if (syncItem.hasError()) {
-                notificationLineSupport.setErrorMessage(Bundle.SyncPanel_error_operations());
-                descriptor.setValid(false);
+                setError(Bundle.SyncPanel_error_operations());
                 return;
             }
             if (syncItem.hasWarning()) {
@@ -271,10 +274,24 @@ public final class SyncPanel extends JPanel {
             }
         }
         if (warn) {
-            notificationLineSupport.setWarningMessage(Bundle.SyncPanel_warn_operations());
+            setWarning(Bundle.SyncPanel_warn_operations());
         } else {
-            notificationLineSupport.clearMessages();
+            clearError();
         }
+    }
+
+    void setError(String error) {
+        notificationLineSupport.setErrorMessage(error);
+        descriptor.setValid(false);
+    }
+
+    void setWarning(String warning) {
+        notificationLineSupport.setErrorMessage(warning);
+        descriptor.setValid(true);
+    }
+
+    void clearError() {
+        notificationLineSupport.clearMessages();
         descriptor.setValid(true);
     }
 
@@ -567,12 +584,21 @@ public final class SyncPanel extends JPanel {
 
     private final class DiffActionListener implements ActionListener {
 
+        @NbBundle.Messages("SyncPanel.error.documentSave=Cannot save file content.")
         @Override
         public void actionPerformed(ActionEvent e) {
             SyncItem syncItem = getSelectedItem();
             DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
-            if (diffPanel.open()) {
-                assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
+            try {
+                if (diffPanel.open()) {
+                    assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
+                    syncItem.setOperation(SyncItem.Operation.UPLOAD);
+                    // need to redraw the changed line
+                    tableModel.fireSyncItemChange(itemTable.getSelectedRow());
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Error while saving document", ex);
+                setError(Bundle.SyncPanel_error_documentSave());
             }
         }
 

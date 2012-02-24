@@ -92,6 +92,7 @@ public final class DiffPanel extends JPanel {
     // tmp files
     volatile TmpLocalFile remoteTmpFile = null;
     volatile TmpLocalFile localTmpFile = null;
+    volatile EditableTmpLocalFileStreamSource editableTmpLocalFileStreamSource = null;
 
     // @GuardedBy(AWT)
     DialogDescriptor descriptor;
@@ -108,7 +109,7 @@ public final class DiffPanel extends JPanel {
         setPreferredSize(new Dimension(600, 450));
     }
 
-    public boolean open() {
+    public boolean open() throws IOException {
         assert SwingUtilities.isEventDispatchThread();
         descriptor = new DialogDescriptor(
                 this,
@@ -127,18 +128,26 @@ public final class DiffPanel extends JPanel {
             dialog.dispose();
         }
         boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
-        if (ok) {
-            // set tmp local file
-            syncItem.setTmpLocalFile(localTmpFile);
-        } else {
-            // cleanup local tmp file
-            if (localTmpFile != null) {
-                localTmpFile.cleanup();
+        try {
+            if (editableTmpLocalFileStreamSource != null) {
+                editableTmpLocalFileStreamSource.save();
             }
-        }
-        // always cleanup remote tmp file
-        if (remoteTmpFile != null) {
-            remoteTmpFile.cleanup();
+        } finally {
+            if (ok) {
+                // clean any old tmp file
+                syncItem.cleanupTmpLocalFile();
+                // set new tmp file
+                syncItem.setTmpLocalFile(localTmpFile);
+            } else {
+                // cancel -> cleanup local tmp file
+                if (localTmpFile != null) {
+                    localTmpFile.cleanup();
+                }
+            }
+            // always cleanup remote tmp file
+            if (remoteTmpFile != null) {
+                remoteTmpFile.cleanup();
+            }
         }
         return ok;
     }
@@ -171,15 +180,20 @@ public final class DiffPanel extends JPanel {
                     // some error, already processed
                     return;
                 }
-                final StreamSource localStream = getLocalStreamSource(name, mimeType);
+                editableTmpLocalFileStreamSource = getLocalStreamSource(name, mimeType);
+                if (editableTmpLocalFileStreamSource == null) {
+                    // some error, already processed
+                    return;
+                }
                 // update ui
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         try {
-                            DiffController diffController = DiffController.createEnhanced(remoteStream, localStream);
+                            DiffController diffController = DiffController.createEnhanced(remoteStream, editableTmpLocalFileStreamSource);
                             remove(loadingLabel);
                             add(diffController.getJComponent(), BorderLayout.CENTER);
+                            repaint();
                             descriptor.setValid(true);
                         } catch (IOException ex) {
                             LOGGER.log(Level.INFO, null, ex);
@@ -230,19 +244,36 @@ public final class DiffPanel extends JPanel {
         return null;
     }
 
-    @NbBundle.Messages("DiffPanel.error.copyContent=Content of file cannot be copied to temporary file.")
-    StreamSource getLocalStreamSource(String name, String mimeType) {
+    @NbBundle.Messages({
+        "DiffPanel.error.copyContent=Content of file cannot be copied to temporary file.",
+        "DiffPanel.error.opening=Local file cannot be opened.",
+    })
+    EditableTmpLocalFileStreamSource getLocalStreamSource(String name, String mimeType) {
         localTmpFile = TmpLocalFile.onDisk(getExtension(name));
-        TransferFile localTransferFile = syncItem.getLocalTransferFile();
-        if (localTransferFile != null) {
-            try {
-                copyContent(localTransferFile.resolveLocalFile(), localTmpFile);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-                showError(Bundle.DiffPanel_error_copyContent());
+        try {
+            TmpLocalFile currentTmpLocalFile = syncItem.getTmpLocalFile();
+            if (currentTmpLocalFile != null) {
+                // already has tmp file
+                copyContent(new File(currentTmpLocalFile.getAbsolutePath()), localTmpFile);
+            } else {
+                // no tmp file yet
+                TransferFile localTransferFile = syncItem.getLocalTransferFile();
+                if (localTransferFile != null) {
+                    copyContent(localTransferFile.resolveLocalFile(), localTmpFile);
+                }
             }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            showError(Bundle.DiffPanel_error_copyContent());
+            return null;
         }
-        return new EditableTmpLocalFileStreamSource(name, localTmpFile, mimeType, charsetName, false);
+        try {
+            return new EditableTmpLocalFileStreamSource(name, localTmpFile, mimeType, charsetName, false);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+            showError(Bundle.DiffPanel_error_opening());
+        }
+        return null;
     }
 
     private String getExtension(String filename) {

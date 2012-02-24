@@ -277,6 +277,7 @@ public final class SyncItem {
     }
 
     public void setTmpLocalFile(TmpLocalFile tmpLocalFile) {
+        assert tmpLocalFile != null;
         this.tmpLocalFile = tmpLocalFile;
     }
 
