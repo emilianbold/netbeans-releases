@@ -817,14 +817,14 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nbweblogic-components" if="do.build.weblogic">
 	<set property="netbeans.group.uid" value=""/>
         <antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-javaee runtimes-group weblogic"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee runtimes-group weblogic"/>
         </antcall>
     </target>    
 
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javafx-mod nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
+	    <param name="build.list" value="nb-base nb-javase nb-platform-sdk nb-javafx nb-javafx-mod nb-webcommon nb-javaee nb-javacard nb-javame nb-groovy nb-cnd nb-php nb-ergonomics runtimes-group glassfish-mod tomcat"/>
         </antcall>
      </target>
 
@@ -2366,6 +2366,7 @@ jarsigner.storepass=${jarsigner.storepass}
                        target="${bundle.prefix}.${bundle.extension}">
             <component uid="nb-base"         version="${nb.full.version}"/>
             <component uid="nb-javase"       version="${nb.full.version}"/>            
+            <component uid="nb-wbcommon"     version="${nb.full.version}"/>
             <component uid="nb-javaee"       version="${nb.full.version}"/>            
             <component uid="weblogic"        version="${weblogic.full.version}"/>
             <bundleProperty name="${bundledproduct.name}" value="weblogic"/>
