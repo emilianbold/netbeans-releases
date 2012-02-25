@@ -302,19 +302,13 @@ Other names may be trademarks of their respective owners.
       <!-- Not used in NetBeans but target preserved for possible platform use 
    <mapID target="org.netbeans.core.ControlPanelNode" url="configure/configure_options.html" />
    -->
-  <!-- ALMOST CERTAINLY OBSOLETE-->  
-<!--OptionsAction is Options window, or may have been many many releases ago:
-
-   <mapID target="org.netbeans.core.actions.OptionsAction" url="configure/configure_options.html" /> 
--->
+  
    <!--root Options node + category nodes:
    TARGETS NOT FOUND IN IDE AS OF DEV BUILD 12 JAN 2012 -->
 <!--   <mapID target="org.netbeans.core.actions.OptionsAction$OptionsPanel$OptionsFilterNode" url="configure/configure_options.html" />
    <mapID target="org.netbeans.core.EnvironmentNode" url="files/csh/files_runtime.html" />-->
 
 
-    <!-- TARGET NOT FOUND AND NO HELP BUTTON FOR CUSTOMIZE TOOLBARS DIALOG, 12 JAN 2012 
-   <mapID target="org.netbeans.core.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
 <!--possibly remap the following target to configure_options.html :-->
 
    <!-- Diff: options window help ids -->
@@ -325,17 +319,10 @@ Other names may be trademarks of their respective owners.
    <mapID target="org.netbeans.core.execution.ProcessNodeItem" url="files/csh/files_runtime.html" /> 
    <mapID target="org.netbeans.core.execution.ProcessNodeItem$TerminateProcessAction" url="files/csh/files_runtime.html" /> -->
    
-   <!-- TARGET NOT FOUND IN core.windows AND NO HELP BUTTON FOR TOOLBAR CONFIG DIALOG -->
-<!--   <mapID target="org.netbeans.core.windows.toolbars.ToolbarConfiguration" url="configure/workspace/toolbar_customize.html" /> -->
 
 <!-- Database Explorer node; both general container and instance node for databases -->
 <!-- SUSPECT DATABASE EXPLORER NODE OBSOLETE, NO DIALOG FOR 
 <mapID target="dbexpovew" url="files/csh/files_runtime.html" /> -->
-
- <!--TODO: add a CSH topic for these nodes; Look & Feel / Menu Bar; Toobars:--> 
- <!-- NO SUCH CLASS, NO SUCH TARGET IN PACKAGE core.windows 
-   <mapID target="org.netbeans.core.windows.services.ToolbarFolderNode" url="configure/workspace/toolbar_customize.html" /> -->
-
 
 
 <!--CSH ID for generic nodes -->
@@ -399,6 +386,9 @@ Other names may be trademarks of their respective owners.
 
  <!-- Options | Misc | Files -->
     <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_file_types.html" />
+    
+ <!-- TODO: Need help id #208839: Options | Misc | Terminal -->
+<!--    <mapID target="netbeans.optionsDialog.advanced.files" url="configure/csh/misc/options_terminal.html" />-->
   
   <mapID target="org.netbeans.core.ui.UINodes$TemplatesNode" url="pending.html" />
   <!--folder subnodes of Templates category; can be overridden in layer:-->
