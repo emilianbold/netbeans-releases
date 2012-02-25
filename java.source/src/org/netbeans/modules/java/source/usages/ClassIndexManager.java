@@ -89,6 +89,17 @@ public final class ClassIndexManager {
         assert listener != null;
         this.listeners.remove(listener);
     }
+    
+    /**
+     * Convenience method to check whether a root has been indexed.
+     * Use in preference to direct call {@link #getUsagesQuery} for this check.
+     * 
+     * @param root root URL
+     * @return true, if the class/usage index has been already created for this root.
+     */
+    public boolean isIndexed(@NonNull final URL root) {
+        return getUsagesQuery(root, false) != null;
+    }
 
     @CheckForNull
     public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {
