@@ -42,6 +42,7 @@
 package org.netbeans.modules.masterfs.watcher;
 
 import java.io.File;
+import java.io.IOException;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.*;
 import org.openide.util.Utilities;
@@ -71,27 +72,48 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         if (Utilities.isWindows()) {
             return;
         }
-        
+        clearWorkDir();
+        assertCyclic(getWorkDir());
+    }
+
+    public void testCyclicSymlinkInASymlink() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
         clearWorkDir();
         
         File one = new File(getWorkDir(), "one");
         File two = new File(one, "two");
         File three = new File(two, "three");
-        StringBuilder up = new StringBuilder("../..");
-        lnk = new File(three, "lnk");
         three.mkdirs();
-        int res = Runtime.getRuntime().exec("ln -s " + up + " lnk", null, three).waitFor();
+        int res = Runtime.getRuntime().exec("ln -s " + two + " lnk", null, getWorkDir()).waitFor();
         assertEquals("Symlink is OK", 0, res);
-        assertTrue("It is directory", lnk.isDirectory());
         
-        FileUtil.addRecursiveListener(this, one);
+        File l = new File(new File(getWorkDir(), "lnk"), "three");
+        assertTrue("Link exists", l.exists());
+        assertTrue("Link is directory", l.isDirectory());
         
-        File newTxt = new File(two, "new.txt");
-        newTxt.createNewFile();
+        assertCyclic(l);
+    }
+
+    public void testCyclicSymlinkOnASymlink() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
         
-        FileUtil.toFileObject(two).getFileSystem().refresh(true);
+        File one = new File(getWorkDir(), "one");
+        File two = new File(one, "two");
+        File three = new File(two, "three");
+        three.mkdirs();
+        int res = Runtime.getRuntime().exec("ln -s " + three + " lnk", null, getWorkDir()).waitFor();
+        assertEquals("Symlink is OK", 0, res);
         
-        assertEquals("One data created event", 1, cnt);
+        File l = new File(getWorkDir(), "lnk");
+        assertTrue("Link exists", l.exists());
+        assertTrue("Link is directory", l.isDirectory());
+        
+        assertCyclic(l);
     }
 
     public void testAcyclicSymlink() throws Exception {
@@ -99,27 +121,26 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
             return;
         }
         clearWorkDir();
-        
+        assertAcyclic(getWorkDir());
+    }
+
+    public void testAcyclicSymlinkInASymlink() throws Exception {
+        if (Utilities.isWindows()) {
+            return;
+        }
+        clearWorkDir();
+
         File one = new File(getWorkDir(), "one");
-        File independent = new File(getWorkDir(), "independent");
         File two = new File(one, "two");
         File three = new File(two, "three");
-        lnk = new File(three, "lnk");
         three.mkdirs();
-        independent.mkdirs();
-        
-        int res = Runtime.getRuntime().exec("ln -s " + independent + " lnk", null, three).waitFor();
+        int res = Runtime.getRuntime().exec("ln -s " + two + " lnk", null, getWorkDir()).waitFor();
         assertEquals("Symlink is OK", 0, res);
-        assertTrue("It is directory", lnk.isDirectory());
         
-        FileUtil.addRecursiveListener(this, one);
-
-        File newTxt = new File(independent, "new.txt");
-        newTxt.createNewFile();
-        
-        FileUtil.toFileObject(two).getFileSystem().refresh(true);
-        
-        assertEquals("One data created event", 1, cnt);
+        File l = new File(new File(getWorkDir(), "lnk"), "three");
+        assertTrue("Link exists", l.exists());
+        assertTrue("Link is directory", l.isDirectory());
+        assertAcyclic(l);
     }
 
     @Override
@@ -150,5 +171,49 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
     @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private void assertCyclic(final File root) throws IOException, InterruptedException, FileStateInvalidException {
+        File one = new File(root, "one");
+        File two = new File(one, "two");
+        File three = new File(two, "three");
+        StringBuilder up = new StringBuilder("../..");
+        lnk = new File(three, "lnk");
+        three.mkdirs();
+        int res = Runtime.getRuntime().exec("ln -s " + up + " lnk", null, three).waitFor();
+        assertEquals("Symlink is OK", 0, res);
+        assertTrue("It is directory", lnk.isDirectory());
+        
+        FileUtil.addRecursiveListener(this, one);
+        
+        File newTxt = new File(two, "new.txt");
+        newTxt.createNewFile();
+        
+        FileUtil.toFileObject(two).getFileSystem().refresh(true);
+        
+        assertEquals("One data created event", 1, cnt);
+    }
+
+    private void assertAcyclic(final File root) throws InterruptedException, IOException, FileStateInvalidException {
+        File one = new File(root, "one");
+        File independent = new File(root, "independent");
+        File two = new File(one, "two");
+        File three = new File(two, "three");
+        lnk = new File(three, "lnk");
+        three.mkdirs();
+        independent.mkdirs();
+        
+        int res = Runtime.getRuntime().exec("ln -s " + independent + " lnk", null, three).waitFor();
+        assertEquals("Symlink is OK", 0, res);
+        assertTrue("It is directory", lnk.isDirectory());
+        
+        FileUtil.addRecursiveListener(this, one);
+
+        File newTxt = new File(independent, "new.txt");
+        newTxt.createNewFile();
+        
+        FileUtil.toFileObject(two).getFileSystem().refresh(true);
+        
+        assertEquals("One data created event", 1, cnt);
     }
 }
