@@ -45,14 +45,12 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.eclipse.osgi.baseadaptor.BaseData;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleEntry;
 import org.eclipse.osgi.baseadaptor.bundlefile.BundleFile;
@@ -295,17 +293,7 @@ final class JarBundleFile extends BundleFile implements BundleContent {
 
             @Override
             public URL getLocalURL() {
-                try {
-                    URL superLocal = findEntry("getLocalURL", name).getLocalURL();
-                    if (superLocal.getProtocol().equals("jar")) {
-                        return new URL("jar:" + getBaseFile().toURI() + "!/" + name); // NOI18N
-                    } else {
-                        return superLocal;
-                    }
-                } catch (MalformedURLException ex) {
-                    NetbinoxFactory.LOG.log(Level.SEVERE, null, ex);
-                    return null;
-                }
+                return findEntry("getLocalURL", name).getLocalURL(); // NOI18N
             }
 
             @Override
