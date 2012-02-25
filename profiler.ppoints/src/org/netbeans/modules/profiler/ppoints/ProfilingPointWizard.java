@@ -103,6 +103,9 @@ public class ProfilingPointWizard implements WizardDescriptor.Iterator {
             component.addValidityListener(this);
             component.init(ppFactories);
             setValid(component.areSettingsValid());
+            
+            if (component.hasDefaultScope())
+                selectedProject = component.getSelectedProject();
 
             return component;
         }
