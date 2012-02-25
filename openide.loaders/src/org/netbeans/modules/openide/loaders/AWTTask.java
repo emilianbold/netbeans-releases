@@ -86,6 +86,7 @@ public final class AWTTask extends org.openide.util.Task {
     @Override
     public void waitFinished () {
         if (EventQueue.isDispatchThread ()) {
+            PENDING.remove(this);
             run ();
         } else {
             WAKE_UP.wakeUp();
@@ -96,6 +97,7 @@ public final class AWTTask extends org.openide.util.Task {
     @Override
     public boolean waitFinished(long milliseconds) throws InterruptedException {
         if (EventQueue.isDispatchThread()) {
+            PENDING.remove(this);
             run();
             return true;
         } else {
@@ -134,19 +136,22 @@ public final class AWTTask extends org.openide.util.Task {
         return true;
     }
 
-    private static void flush() {
+    static void flush() {
         PROCESSOR.run();
     }
 
     private static final class Processor implements Runnable {
+        private static final Logger LOG = Logger.getLogger(Processor.class.getName());
         @Override
         public void run() {
             assert EventQueue.isDispatchThread();
             for(;;) {
                 AWTTask t = PENDING.poll();
                 if (t == null) {
+                    LOG.log(Level.INFO, " processing finished");
                     return;
                 }
+                LOG.log(Level.INFO, " processing {0}", t);
                 t.run();
             }
         }
