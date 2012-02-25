@@ -104,7 +104,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         RefactoringVisitor visitor;
         switch (refactoring.getType()) {
             case METHOD:
-                visitor = new InlineMethodTransformer();
+                visitor = new InlineMethodTransformer(treePathHandle);
                 break;
             case CONSTANT:
             case TEMP:
@@ -313,15 +313,15 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     return preCheckProblem;
                 }
                 // Used accessors must not be local in public method
-                if (methodVisitor.qualIdentProblem) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodLocalAccessors")); //NOI18N
-                    return preCheckProblem;
-                }
+//                if (methodVisitor.qualIdentProblem) {
+//                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodLocalAccessors")); //NOI18N
+//                    return preCheckProblem;
+//                }
                 // Used accessors in the method must have the right access specification
-                if (methodVisitor.accessorRightProblem) {
-                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoAccessors")); //NOI18N
-                    return preCheckProblem;
-                }
+//                if (methodVisitor.accessorRightProblem) {
+//                    preCheckProblem = createProblem(preCheckProblem, false, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodNoAccessors")); //NOI18N
+//                    return preCheckProblem;
+//                }
 
                 break;
             default:
@@ -334,7 +334,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
 
         public int nrOfReturnStatements = 0;
         public boolean isRecursive = false;
-        private boolean accessorRightProblem = false;
+//        private boolean accessorRightProblem = false;
         private boolean qualIdentProblem = false;
         private final CompilationController workingCopy;
         private final Modifier access;
@@ -362,7 +362,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                         || asElement.getKind().equals(ElementKind.METHOD)
                         || asElement.getKind().equals(ElementKind.CLASS)) {
                     Modifier mod = getAccessSpecifier(asElement.getModifiers());
-                    accessorRightProblem = hasAccessorRightProblem(mod);
+//                    accessorRightProblem = hasAccessorRightProblem(mod);
                     qualIdentProblem = hasQualIdentProblem(element, asElement);
                 }
             }
@@ -381,31 +381,31 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
             return result;
         }
 
-        private boolean hasAccessorRightProblem(Modifier mod) {
-            boolean hasProblem = accessorRightProblem;
-            if (access != null) {
-                switch (access) {
-                    case PUBLIC:
-                        if (mod == null || Modifier.PROTECTED.equals(mod) || Modifier.PRIVATE.equals(mod)) {
-                            hasProblem = true;
-                        }
-                        break;
-                    case PROTECTED:
-                        if (mod == null || Modifier.PRIVATE.equals(mod)) {
-                            hasProblem = true;
-                        }
-                        break;
-                    case PRIVATE:
-                    default:
-                        break;
-                }
-            } else {
-                if (Modifier.PRIVATE.equals(mod)) {
-                    hasProblem = true;
-                }
-            }
-            return hasProblem;
-        }
+//        private boolean hasAccessorRightProblem(Modifier mod) {
+//            boolean hasProblem = accessorRightProblem;
+//            if (access != null) {
+//                switch (access) {
+//                    case PUBLIC:
+//                        if (mod == null || Modifier.PROTECTED.equals(mod) || Modifier.PRIVATE.equals(mod)) {
+//                            hasProblem = true;
+//                        }
+//                        break;
+//                    case PROTECTED:
+//                        if (mod == null || Modifier.PRIVATE.equals(mod)) {
+//                            hasProblem = true;
+//                        }
+//                        break;
+//                    case PRIVATE:
+//                    default:
+//                        break;
+//                }
+//            } else {
+//                if (Modifier.PRIVATE.equals(mod)) {
+//                    hasProblem = true;
+//                }
+//            }
+//            return hasProblem;
+//        }
 
         private Modifier getAccessSpecifier(Set<Modifier> modifiers) {
             Modifier mod = null;
@@ -423,11 +423,12 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         @Override
         public Tree visitIdentifier(IdentifierTree node, TreePath p) {
             Element asElement = asElement(new TreePath(p, node));
-            if (asElement.getKind().equals(ElementKind.FIELD)
+            if (!node.getName().contentEquals("this") &&
+                    (asElement.getKind().equals(ElementKind.FIELD)
                     || asElement.getKind().equals(ElementKind.METHOD)
-                    || asElement.getKind().equals(ElementKind.CLASS)) {
+                    || asElement.getKind().equals(ElementKind.CLASS))) {
                 Modifier mod = getAccessSpecifier(asElement.getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
+//                accessorRightProblem = hasAccessorRightProblem(mod);
                 qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitIdentifier(node, p);
@@ -440,7 +441,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     || asElement.getKind().equals(ElementKind.METHOD)
                     || asElement.getKind().equals(ElementKind.CLASS)) {
                 Modifier mod = getAccessSpecifier(asElement.getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
+//                accessorRightProblem = hasAccessorRightProblem(mod);
                 qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitNewClass(node, p);
@@ -453,7 +454,7 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     || asElement.getKind().equals(ElementKind.METHOD)
                     || asElement.getKind().equals(ElementKind.CLASS)) {
                 Modifier mod = getAccessSpecifier(asElement.getModifiers());
-                accessorRightProblem = hasAccessorRightProblem(mod);
+//                accessorRightProblem = hasAccessorRightProblem(mod);
                 qualIdentProblem = hasQualIdentProblem(element, asElement);
             }
             return super.visitMemberSelect(node, p);
