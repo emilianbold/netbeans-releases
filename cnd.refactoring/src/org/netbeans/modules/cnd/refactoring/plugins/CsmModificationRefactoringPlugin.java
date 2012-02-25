@@ -48,7 +48,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.spi.CheckModificationHook;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;

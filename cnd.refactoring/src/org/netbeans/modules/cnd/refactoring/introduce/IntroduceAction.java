@@ -33,7 +33,7 @@ package org.netbeans.modules.cnd.refactoring.introduce;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.HintAction;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.DialogDisplayer;

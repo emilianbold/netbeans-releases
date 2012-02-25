@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;

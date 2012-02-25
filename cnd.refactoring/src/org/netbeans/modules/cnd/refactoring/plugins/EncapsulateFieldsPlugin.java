@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.support.GeneratorUtils;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;

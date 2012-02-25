@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.refactoring.api.ChangeParametersRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldsRefactoring;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.*;

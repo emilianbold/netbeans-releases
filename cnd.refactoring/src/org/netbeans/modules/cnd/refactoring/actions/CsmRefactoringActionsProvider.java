@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.refactoring.hints.infrastructure.Utilities;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.modules.cnd.refactoring.spi.CsmActionsImplementationProvider;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.ui.ChangeParametersUI;

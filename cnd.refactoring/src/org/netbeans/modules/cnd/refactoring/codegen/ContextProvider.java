@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.refactoring.codegen;
 
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
+import org.netbeans.modules.cnd.refactoring.api.CsmContext;
 import org.netbeans.spi.editor.codegen.CodeGeneratorContextProvider;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
