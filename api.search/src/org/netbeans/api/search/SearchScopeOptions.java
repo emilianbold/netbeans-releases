@@ -102,7 +102,7 @@ public class SearchScopeOptions {
     }
 
     /**
-     * Set searchinig in archives.
+     * Set searching in archives.
      */
     public void setSearchInArchives(boolean searchInArchives) {
         this.searchInArchives = searchInArchives;
