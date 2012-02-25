@@ -45,17 +45,18 @@ package org.netbeans.modules.debugger.jpda.ui.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location="Java",
+    location=JavaOptions.JAVA,
     displayName="#LBL_JavaDebugger",
     id="JavaDebugger",
     //toolTip="#HINT_JavaDebugger",
     keywords="#KW_JavaDebugger",
-    keywordsCategory="Java/JavaDebugger")
+    keywordsCategory=JavaOptions.JAVA + "/JavaDebugger")
 public final class JavaDebuggerOptionsPanelController extends OptionsPanelController {
 
     private JavaDebuggerPanel panel;
