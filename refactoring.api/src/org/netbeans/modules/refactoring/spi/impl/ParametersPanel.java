@@ -556,6 +556,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     // disables all components in the custom panel
     private void disableComponents(Container c) {
+        if (c==null) {
+            assert customPanel == null;
+            return;
+        }
         RefactoringPanel.checkEventThread();
         Component children[] = c.getComponents();
         for (int i = 0; i < children.length; i++) {
