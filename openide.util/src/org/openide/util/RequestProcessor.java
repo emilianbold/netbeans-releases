@@ -226,12 +226,14 @@ public final class RequestProcessor implements ScheduledExecutorService {
     private final Object processorLock = new Object();
 
     /** The set holding all the Processors assigned to this RequestProcessor */
-    private HashSet<Processor> processors = new HashSet<Processor>();
+    private final HashSet<Processor> processors = new HashSet<Processor>();
 
     /** Actualy the first item is pending to be processed.
      * Can be accessed/trusted only under the above processorLock lock.
-     * If null, nothing is scheduled and the processor is not running. */
-    private List<Item> queue = new LinkedList<Item>();
+     * If null, nothing is scheduled and the processor is not running. 
+     * @GuardedBy("processorLock")
+     */
+    private final List<Item> queue = new LinkedList<Item>();
 
     /** Number of currently running processors. If there is a new request
      * and this number is lower that the throughput, new Processor is asked
@@ -629,16 +631,16 @@ public final class RequestProcessor implements ScheduledExecutorService {
     private void prioritizedEnqueue(Item item) {
         int iprio = item.getPriority();
 
-        if (queue.isEmpty()) {
-            queue.add(item);
+        if (getQueue().isEmpty()) {
+            getQueue().add(item);
             item.enqueued = true;
 
             return;
-        } else if (iprio <= queue.get(queue.size() - 1).getPriority()) {
-            queue.add(item);
+        } else if (iprio <= getQueue().get(getQueue().size() - 1).getPriority()) {
+            getQueue().add(item);
             item.enqueued = true;
         } else {
-            for (ListIterator<Item> it = queue.listIterator(); it.hasNext();) {
+            for (ListIterator<Item> it = getQueue().listIterator(); it.hasNext();) {
                 Item next = it.next();
 
                 if (iprio > next.getPriority()) {
@@ -655,7 +657,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
     }
 
     Task askForWork(Processor worker, String debug) {
-        if (queue.isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
+        if (getQueue().isEmpty() || (stopped && !finishAwaitingTasks)) { // no more work in this burst, return him
             processors.remove(worker);
             Processor.put(worker, debug);
             running--;
@@ -663,7 +665,7 @@ public final class RequestProcessor implements ScheduledExecutorService {
             return null;
         } else { // we have some work for the worker, pass it
 
-            Item i = queue.remove(0);
+            Item i = getQueue().remove(0);
             Task t = i.getTask();
             i.clear(worker);
 
@@ -702,8 +704,8 @@ public final class RequestProcessor implements ScheduledExecutorService {
         //XXX more aggressive shutdown?
         stop();
         synchronized (processorLock) {
-            List<Runnable> result = new ArrayList<Runnable>(queue.size());
-            for (Item item : queue) {
+            List<Runnable> result = new ArrayList<Runnable>(getQueue().size());
+            for (Item item : getQueue()) {
                 Task task = item.getTask();
                 if (task != null && task.run != null) {
                     Runnable r = task.run;
@@ -1067,6 +1069,11 @@ outer:  do {
         t.schedule (initialDelayMillis);
 
         return wrap;
+    }
+
+    private List<Item> getQueue() {
+        assert Thread.holdsLock(processorLock);
+        return queue;
     }
 
     private static abstract class TaskFutureWrapper implements ScheduledFuture<Void>, Runnable, RunnableWrapper {
@@ -1594,7 +1601,7 @@ outer:  do {
                     return;
                 }
 
-                if (queue.remove(item)) {
+                if (getQueue().remove(item)) {
                     prioritizedEnqueue(item);
                 }
             }
@@ -1737,7 +1744,7 @@ outer:  do {
             boolean ret;
             synchronized (owner.processorLock) {
                 action = processor;
-                ret = enqueued ? owner.queue.remove(this) : true;
+                ret = enqueued ? owner.getQueue().remove(this) : true;
             }
             TickTac.cancel(this);
             return ret;

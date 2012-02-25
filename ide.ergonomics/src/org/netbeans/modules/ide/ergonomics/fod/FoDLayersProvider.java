@@ -67,8 +67,7 @@ import org.openide.util.lookup.ServiceProviders;
 public final class FoDLayersProvider extends Repository.LayerProvider
 implements LookupListener, Runnable {
     final static Logger LOG = Logger.getLogger (FoDLayersProvider.class.getPackage().getName());
-    private static RequestProcessor RP = new RequestProcessor("Ergonomics"); // NOI18N
-    private RequestProcessor.Task refresh = RP.create(this, true);
+    private RequestProcessor.Task refresh = FeatureManager.getInstance().create(this, true);
     private Lookup.Result<ProjectFactory> factories;
     private Lookup.Result<?> ants;
 
