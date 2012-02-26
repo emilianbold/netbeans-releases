@@ -41,62 +41,18 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.profiler.ui.cpu;
+package org.netbeans.modules.profiler.ppoints;
 
-import java.awt.Color;
-import org.netbeans.lib.profiler.results.ExportDataDumper;
-import org.netbeans.lib.profiler.ui.UIUtils;
-import java.awt.Component;
-import java.awt.image.BufferedImage;
-import javax.swing.BorderFactory;
-import javax.swing.JSeparator;
-import javax.swing.JSplitPane;
-import javax.swing.plaf.basic.BasicSplitPaneDivider;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
+import java.util.Set;
+import org.openide.util.Lookup;
 
-
-/**
- *
- * @author Jaroslav Bachorik
- */
-public class CombinedPanel extends JSplitPane implements ScreenshotProvider {
-    //~ Constructors -------------------------------------------------------------------------------------------------------------
-
-    public CombinedPanel(int splitOrientation, Component component1, Component component2) {
-        super(splitOrientation, component1, component2);
-        tweakUI();
-    }
-
-    public void exportData(int exportedFileType, ExportDataDumper eDD, String viewName) {
-        ((CCTDisplay)leftComponent).exportData(exportedFileType, eDD, true, viewName);
-        ((SnapshotFlatProfilePanel)rightComponent).exportData(exportedFileType, eDD, true, viewName);
-    }
-
-    //~ Methods ------------------------------------------------------------------------------------------------------------------
-
-    public BufferedImage getCurrentViewScreenshot(boolean onlyVisible) {
-        return UIUtils.createScreenshot(this);
-    }
-
-    public String getDefaultViewName() {
-        return "cpu-combined"; // NOI18N
-    }
-
-    public boolean fitsVisibleArea() {
-        return true;
-    }
+public abstract class ProfilingPointScopeProvider {
     
-    private void tweakUI() {
-        setBorder(null);
-        setDividerSize(5);
-
-        if (!(getUI() instanceof BasicSplitPaneUI)) return;
-
-        BasicSplitPaneDivider divider = ((BasicSplitPaneUI)getUI()).getDivider();
-        if (divider != null) {
-            Color c = UIUtils.isNimbus() ? UIUtils.getDisabledLineColor() :
-                    new JSeparator().getForeground();
-            divider.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, c));
-        }
-    }
+    public abstract Lookup.Provider getScope();
+    
+    public abstract boolean isDefaultScope();
+    
+    public abstract boolean matchesScope(Lookup.Provider project,
+                                         Set<Lookup.Provider> projects);
+    
 }
