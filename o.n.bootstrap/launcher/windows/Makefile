@@ -48,8 +48,10 @@ build: .build-post
 	cp nbexec.dll ../../../nbbuild/netbeans/platform/lib/
 
 nbexec.exe: nbexecexe.cpp nbexecloader.h utilsfuncs.cpp nbexec_exe.rc
-	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
-	g++ -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
+	x86_64-w64-mingw32-windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
+	x86_64-w64-mingw32-g++.exe -m64 -s -mno-cygwin -static-libgcc -static-libstdc++ nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe  
+#	windres.exe -Ocoff nbexec_exe.rc nbexec_exe.res
+#	g++-3 -s -mno-cygwin nbexecexe.cpp utilsfuncs.cpp nbexec_exe.res -o nbexec.exe
 
 # clean
 clean: .clean-post

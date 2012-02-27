@@ -14,14 +14,14 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
-FC=gfortran
+CC=x86_64-w64-mingw32-gcc.exe
+CCC=x86_64-w64-mingw32-g++.exe
+CXX=x86_64-w64-mingw32-g++.exe
+FC=gfortran.exe
 AS=as.exe
 
 # Macros
-CND_PLATFORM=Cygwin-Windows
+CND_PLATFORM=Cygwin_1-Windows
 CND_CONF=netbeans.exe
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -40,11 +40,11 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-m64
 
 # CC Compiler Flags
-CCFLAGS=-m32 -s -mno-cygwin
-CXXFLAGS=-m32 -s -mno-cygwin
+CCFLAGS=-m64 -s -mno-cygwin -static-libgcc -static-libstdc++
+CXXFLAGS=-m64 -s -mno-cygwin -static-libgcc -static-libstdc++
 
 # Fortran Compiler Flags
 FFLAGS=

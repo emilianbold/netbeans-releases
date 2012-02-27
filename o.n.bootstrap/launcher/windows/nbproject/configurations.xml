@@ -39,23 +39,23 @@
     <conf name="nbexec" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
-        <compilerSet>Cygwin|Cygwin</compilerSet>
+        <compilerSet>Cygwin_1|Cygwin</compilerSet>
       </toolsSet>
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
-          <architecture>1</architecture>
+          <architecture>2</architecture>
           <warningLevel>2</warningLevel>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
           <stripSymbols>true</stripSymbols>
-          <architecture>1</architecture>
+          <architecture>2</architecture>
           <incDir>
             <pElem>C:/Program Files/Java/jdk1.6.0_30/include</pElem>
             <pElem>C:/Program Files/Java/jdk1.6.0_30/include/win32</pElem>
           </incDir>
-          <commandLine>-s -mno-cygwin</commandLine>
+          <commandLine>-s -mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <warningLevel>2</warningLevel>
         </ccTool>
         <linkerTool>
@@ -68,7 +68,7 @@
       </compileType>
       <item path="nbexec.rc" ex="false" tool="3" flavor="0">
         <customTool>
-          <customToolCommandline>windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res</customToolCommandline>
+          <customToolCommandline>x86_64-w64-mingw32-windres.exe -Ocoff nbexec.rc ${OBJECTDIR}/nbexec.res</customToolCommandline>
           <customToolDescription>Compiling Resource files...</customToolDescription>
           <customToolOutputs>${OBJECTDIR}/nbexec.res</customToolOutputs>
           <customToolAdditionalDep>version.h</customToolAdditionalDep>

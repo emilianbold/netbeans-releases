@@ -66,29 +66,11 @@ final class NetigsoModule extends Module {
     private final File jar;
     private final Manifest manifest;
     private int startLevel = -1;
-    private final String codeName;
-    private final int release;
-    private final SpecificationVersion version;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
         this.jar = jar;
         this.manifest = mani;
-        final String symbName = getMainAttribute("Bundle-SymbolicName");
-        this.codeName = symbName.replace('-', '_');
-        int slash = codeName.lastIndexOf('/');
-        if (slash != -1) {
-            this.release = Integer.parseInt(symbName.substring(slash + 1));
-        } else {
-            this.release = -1;
-        }
-        String v = getMainAttribute("Bundle-Version"); // NOI18N
-        if (v == null) {
-            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
-            this.version = new SpecificationVersion("0.0");
-        } else {
-            this.version = computeVersion(v);
-        }
         
         computeProvides(mani.getMainAttributes(), false);
     }
@@ -100,17 +82,35 @@ final class NetigsoModule extends Module {
 
     @Override
     public String getCodeNameBase() {
-        return codeName;
+        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
+        return version.replace('-', '_');
     }
 
     @Override
     public int getCodeNameRelease() {
-        return release;
+        String version = getMainAttribute("Bundle-SymbolicName"); // NOI18N
+        int slash = version.lastIndexOf('/');
+        if (slash != -1) {
+            return Integer.parseInt(version.substring(slash + 1));
+        }
+        return -1;
     }
 
     @Override
     public SpecificationVersion getSpecificationVersion() {
-        return version;
+        String version = getMainAttribute("Bundle-Version"); // NOI18N
+        if (version == null) {
+            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
+            return new SpecificationVersion("0.0");
+        }
+        int pos = -1;
+        for (int i = 0; i < 3; i++) {
+            pos = version.indexOf('.', pos + 1);
+            if (pos == -1) {
+                return new SpecificationVersion(version);
+            }
+        }
+        return new SpecificationVersion(version.substring(0, pos));
     }
 
     @Override
@@ -229,12 +229,7 @@ final class NetigsoModule extends Module {
         if (s == null) {
             return null;
         }
-        int semicolon = s.indexOf(';');
-        if (semicolon == -1) {
-            return s;
-        } else {
-            return s.substring(0, semicolon);
-        }
+        return s.replaceFirst(";.*$", "");
     }
 
     @Override
@@ -244,17 +239,6 @@ final class NetigsoModule extends Module {
 
     final void setStartLevel(int startLevel) {
         this.startLevel = startLevel;
-    }
-    
-    private static SpecificationVersion computeVersion(String v) {
-        int pos = -1;
-        for (int i = 0; i < 3; i++) {
-            pos = v.indexOf('.', pos + 1);
-            if (pos == -1) {
-                return new SpecificationVersion(v);
-            }
-        }
-        return new SpecificationVersion(v.substring(0, pos));
     }
 
     private final class DelegateCL extends ProxyClassLoader 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<configurationDescriptor version="53">
-  <logicalFolder name="root" displayName="root" projectFiles="true">
+<configurationDescriptor version="80">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
@@ -33,20 +33,22 @@
   <confs>
     <conf name="netbeans.exe" type="1">
       <toolsSet>
-        <developmentServer>localhost</developmentServer>
-        <compilerSet>Cygwin|Cygwin</compilerSet>
-        <platform>3</platform>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>Cygwin_1|Cygwin</compilerSet>
       </toolsSet>
       <compileType>
-        <ccCompilerTool>
+        <cTool>
+          <architecture>2</architecture>
+        </cTool>
+        <ccTool>
           <developmentMode>5</developmentMode>
-          <architecture>1</architecture>
-          <includeDirectories>
-            <directoryPath>c:/cygwin/usr/include/mingw</directoryPath>
-          </includeDirectories>
-          <commandLine>-s -mno-cygwin</commandLine>
+          <architecture>2</architecture>
+          <incDir>
+            <pElem>c:/cygwin/usr/include/mingw</pElem>
+          </incDir>
+          <commandLine>-s -mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <warningLevel>2</warningLevel>
-        </ccCompilerTool>
+        </ccTool>
         <linkerTool>
           <output>netbeans.exe</output>
           <linkerLibItems>
@@ -55,24 +57,6 @@
           <commandLine>-mwindows</commandLine>
         </linkerTool>
       </compileType>
-      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="../../../o.n.bootstrap/launcher/windows/utilsfuncs.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="cmdargs.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="nblauncher.cpp">
-        <itemTool>1</itemTool>
-      </item>
-      <item path="nblauncher.h">
-        <itemTool>3</itemTool>
-      </item>
-      <item path="netbeans.cpp">
-        <itemTool>1</itemTool>
-      </item>
     </conf>
   </confs>
 </configurationDescriptor>

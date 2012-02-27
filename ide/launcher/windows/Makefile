@@ -48,7 +48,8 @@ build: .build-post
 	cp *.exe ../../../nbbuild/netbeans/bin/
 
 netbeans.res: netbeans.rc
-	windres -o$@ -Ocoff netbeans.rc
+	x86_64-w64-mingw32-windres.exe -o$@ -Ocoff netbeans.rc
+# windres -o$@ -Ocoff netbeans.rc
 
 # clean
 clean: .clean-post
