@@ -79,7 +79,7 @@ public class SBHomeFactory {
     private static final HomeFactory MAC_HOME_LOCATOR = new HomeFactory() {
         final private static String WKIP = "/Applications/JavaFX Scene Builder " + VER_CURRENT + ".app"; // NOI18N
         final private static String LAUNCHER_PATH = "Contents/MacOS/scenebuilder-launcher.sh"; // NOI18N
-        final private static String PROPERTIES_PATH = "Contents/Resources/SceneBuilder/scenebuilder.properties"; // NOI18N
+        final private static String PROPERTIES_PATH = "Contents/Resources/SceneBuilder/bin/scenebuilder.properties"; // NOI18N
         
         @Override
         public Home defaultHome() {
