@@ -83,9 +83,6 @@ public abstract class Completor {
 
     static class JtaDatasourceCompletor extends Completor {
 
-        public JtaDatasourceCompletor() {
-        }
-
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -189,54 +186,9 @@ public abstract class Completor {
     }
 
     /**
-     * A completor for completing the cascade attribute with cascade styles
-     *
-     */
-    public static class CascadeStyleCompletor extends Completor {
-
-        private String[] itemTextAndDocs;
-
-        public CascadeStyleCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
-        }
-
-        @Override
-        public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            String styleName = null;
-            if (typedChars.contains(",")) {
-                int index = typedChars.lastIndexOf(",");
-                styleName = typedChars.substring(index + 1);
-            } else {
-                styleName = typedChars;
-            }
-
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(styleName.trim())) {
-                    JPACompletionItem item = JPACompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                    results.add(item);
-                }
-            }
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            return results;
-        }
-    }
-
-    /**
      * A completor for completing class tag
      */
     public static class EntityClassCompletor extends Completor {
-
-        private boolean packageOnly = false;
-
-        public EntityClassCompletor(boolean packageOnly) {
-            this.packageOnly = packageOnly;
-        }
 
         @Override
         public List<JPACompletionItem> doCompletion(final CompletionContext context) {
@@ -293,24 +245,6 @@ public abstract class Completor {
             }, true);
 
             setAnchorOffset(substitutionOffset);
-        }
-
-        private void addPackages(Entity[] entities, List<JPACompletionItem> results, String typedPrefix, int substitutionOffset) {
-            HashSet<String> packages = new HashSet<String>();
-            for (Entity entity : entities) {
-                String fqn = entity.getClass2();
-                int index = fqn.lastIndexOf('.');
-                if (index > 0) {
-                    String pkg = fqn.substring(0, index);
-                    packages.add(pkg);
-                }
-            }
-            for (String pkg : packages) {
-                if (pkg.length() > 0) {
-                    JPACompletionItem item = JPACompletionItem.createPackageItem(substitutionOffset, pkg);
-                    results.add(item);
-                }
-            }
         }
     }
 
@@ -399,7 +333,7 @@ public abstract class Completor {
             if (provider != null) {
                 keys.addAll(allKeyAndValues.get(provider).keySet());
             }
-            String itemTexts[] = keys.toArray(new String[]{});//TODO: get proper provider
+            String itemTexts[] = keys.toArray(new String[]{});
             for (int i = 0; i < itemTexts.length; i++) {
                 if (itemTexts[i].startsWith(typedChars.trim())
                         || itemTexts[i].startsWith("javax.persistence." + typedChars.trim())) { // NOI18N

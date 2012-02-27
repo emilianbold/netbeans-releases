@@ -85,7 +85,7 @@ public final class PUCompletionManager {
         Completor.PersistenceMappingFileCompletor mappingFilesCompletor = new Completor.PersistenceMappingFileCompletor();
         registerCompletor(PersistenceCfgXmlConstants.MAPPING_FILE, null, mappingFilesCompletor);
         
-        Completor.EntityClassCompletor javaClassCompletor = new Completor.EntityClassCompletor(false);
+        Completor.EntityClassCompletor javaClassCompletor = new Completor.EntityClassCompletor();
         registerCompletor(PersistenceCfgXmlConstants.CLASS, null, javaClassCompletor);
         
         Completor.ProviderCompletor providerCompletor = new Completor.ProviderCompletor();
