@@ -39,52 +39,34 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.PaddingL;
 
 /**
  *
  * @author marekfukala
  */
-public class Length extends NodeModel {
+public class PaddingLeft extends NodeModel implements Box<BoxEdgeSize> {
 
-    public TokenNodeModel length;
-    
-    public Length(Node node) {
+    public PaddingL paddingL;
+
+    public PaddingLeft(Node node) {
         super(node);
     }
-    
-    public Length(TokenNodeModel text) {
-        length = text;
-    }
-
-    public Text getLength() {
-        return length;
-    }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    public BoxEdgeSize getEdge(Edge edge) {
+        switch (edge) {
+            case LEFT:
+                return paddingL.getBoxEdgeSize();
+            default:
+                return null;
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Length other = (Length) obj;
-        if (this.length != other.length && (this.length == null || !this.length.equals(other.length))) {
-            return false;
-        }
-        return true;
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + (this.length != null ? this.length.hashCode() : 0);
-        return hash;
-    }
-    
-    
 }

@@ -42,18 +42,10 @@
 package org.netbeans.modules.css.model.impl;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.Margin;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
-import org.netbeans.modules.css.lib.api.properties.model.Utils;
 import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.spi.ParseException;
 

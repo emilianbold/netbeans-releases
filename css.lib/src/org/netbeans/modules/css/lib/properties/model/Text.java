@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
 /**
  *

@@ -39,10 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.properties.model.*;
 
 
@@ -51,18 +55,18 @@ import org.netbeans.modules.css.lib.properties.model.*;
  *
  * @author marekfukala
  */
-public class Margin extends NodeModel implements Box<BoxEdgeSize> {
+public class Padding extends NodeModel implements Box<BoxEdgeSize> {
 
-    public MarginTblr marginTblr;
-    public MarginTb marginTb;
-    public MarginLr marginLr;
-    public MarginT marginT;
-    public MarginB marginB;
-    public MarginL marginL;
-    public MarginR marginR;
+    public PaddingTblr paddingTblr;
+    public PaddingTb paddingTb;
+    public PaddingLr paddingLr;
+    public PaddingT paddingT;
+    public PaddingB paddingB;
+    public PaddingL paddingL;
+    public PaddingR paddingR;
 
-    public Margin(Node margin) {
-        super(margin);
+    public Padding(Node padding) {
+        super(padding);
     }
 
     private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
@@ -83,7 +87,7 @@ public class Margin extends NodeModel implements Box<BoxEdgeSize> {
 
     @Override
     public BoxEdgeSize getEdge(Edge edge) {
-        //bit cryptic so ... it takes the margin models sorted by the number of accepted edges
+        //bit cryptic so ... it takes the padding models sorted by the number of accepted edges
         //and use the one which resolves the given edge
         for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
             BoxEdgeSize mw = box.getEdge(edge);
@@ -96,32 +100,32 @@ public class Margin extends NodeModel implements Box<BoxEdgeSize> {
     
     //possibly remove following methods
     
-    MarginB getMarginB() {
-        return marginB;
+    PaddingB getPaddingB() {
+        return paddingB;
     }
 
-    MarginL getMarginL() {
-        return marginL;
+    PaddingL getPaddingL() {
+        return paddingL;
     }
 
-    MarginLr getMarginLr() {
-        return marginLr;
+    PaddingLr getPaddingLr() {
+        return paddingLr;
     }
 
-    MarginR getMarginR() {
-        return marginR;
+    PaddingR getPaddingR() {
+        return paddingR;
     }
 
-    MarginT getMarginT() {
-        return marginT;
+    PaddingT getPaddingT() {
+        return paddingT;
     }
 
-    MarginTb getMarginTb() {
-        return marginTb;
+    PaddingTb getPaddingTb() {
+        return paddingTb;
     }
 
-    MarginTblr getMarginTblr() {
-        return marginTblr;
+    PaddingTblr getPaddingTblr() {
+        return paddingTblr;
     }
 
 }

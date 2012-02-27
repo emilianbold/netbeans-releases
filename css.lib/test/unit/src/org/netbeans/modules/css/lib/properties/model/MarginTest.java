@@ -39,18 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.properties.model.MarginB;
-import org.netbeans.modules.css.lib.properties.model.MarginLr;
-import org.netbeans.modules.css.lib.properties.model.MarginT;
+import org.netbeans.modules.css.lib.api.properties.*;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 
 /**
@@ -190,25 +184,22 @@ public class MarginTest extends CssTestBase {
     public void testCascade() {
         
         Box<BoxEdgeSize> mbox1 = getBoxModel("margin", "2px 3px 4px 5px");
-        PaddingTest.dumpBox(mbox1);
+//        PaddingTest.dumpBox(mbox1);
         
         Box<BoxEdgeSize> mbox2 = getBoxModel("margin-left", "2px");
-        PaddingTest.dumpBox(mbox2);
+//        PaddingTest.dumpBox(mbox2);
         
         Box<BoxEdgeSize> mbox3 = getBoxModel("margin-right", "1px");
-        PaddingTest.dumpBox(mbox3);
+//        PaddingTest.dumpBox(mbox3);
         
-        CompoundBox<BoxEdgeSize> cbox = new CompoundBox<BoxEdgeSize>();
+        CascadedBox<BoxEdgeSize> cbox = new CascadedBox<BoxEdgeSize> ();
         cbox.addBox(mbox1);
         cbox.addBox(mbox2);
         cbox.addBox(mbox3);
         
-        PaddingTest.dumpBox(cbox);
+//        PaddingTest.dumpBox(cbox);
         
-        //
-        
-        cbox.setEdge(Edge.TOP, null);
-        
+        PaddingTest.assertBox(cbox, "2px", "1px", "4px", "2px");
         
         
     }

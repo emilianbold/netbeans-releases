@@ -94,12 +94,12 @@ public class DeclarationsPaddingModelTest extends ModelTestBase {
                 });
 
                 //edit the box 
-                BoxEdgeSize newPaddingWidth = SemanticModelElementFactory.createBoxEdgeSize_Length("10px");
+                BoxEdgeSize newPaddingWidth = BoxEdgeSize.parseValue("10px");
 
                 padding.setEdge(Edge.RIGHT, newPaddingWidth);
                 assertBox(padding, "3px", "10px", "3px", "10px");
 
-                padding.setEdge(Edge.TOP, SemanticModelElementFactory.createBoxEdgeSize_Auto());
+                padding.setEdge(Edge.TOP, BoxEdgeSize.parseValue("auto"));
                 assertBox(padding, "auto", "10px", "3px", "10px");
 
                 assertTrue(changed.get());

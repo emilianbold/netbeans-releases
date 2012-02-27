@@ -39,20 +39,24 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.properties.model.PaddingT;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.MarginT;
 
 /**
  *
  * @author marekfukala
  */
-public class PaddingTop extends NodeModel implements Box<BoxEdgeSize> {
+public class MarginTop extends NodeModel implements Box<BoxEdgeSize> {
 
-    public PaddingT paddingT;
+    public MarginT marginT;
 
-    public PaddingTop(Node node) {
+    public MarginTop(Node node) {
         super(node);
     }
 
@@ -60,7 +64,7 @@ public class PaddingTop extends NodeModel implements Box<BoxEdgeSize> {
     public BoxEdgeSize getEdge(Edge edge) {
         switch (edge) {
             case TOP:
-                return paddingT.getBoxEdgeSize();
+                return marginT.getBoxEdgeSize();
             default:
                 return null;
         }

@@ -45,6 +45,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 
 
 /**
@@ -72,7 +73,7 @@ public class NodeModel implements SemanticModel {
         return submodels;
     }
 
-    protected void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         String fieldName = getSubmodelFieldName(submodelClassName);
         Class<? extends NodeModel> currentModelClass = getClass();
         Field field = currentModelClass.getField(fieldName);
@@ -82,7 +83,7 @@ public class NodeModel implements SemanticModel {
         submodels.add(model);
     }
     
-    static String getSubmodelFieldName(String submodelClassName) {
+    public static String getSubmodelFieldName(String submodelClassName) {
         StringBuilder sb = new StringBuilder(submodelClassName);
         sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
         return sb.toString();

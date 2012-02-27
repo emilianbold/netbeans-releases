@@ -39,18 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.TestUtil;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.properties.model.PaddingB;
-import org.netbeans.modules.css.lib.properties.model.PaddingLr;
-import org.netbeans.modules.css.lib.properties.model.PaddingT;
+import org.netbeans.modules.css.lib.api.properties.*;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 
 /**
@@ -190,25 +184,22 @@ public class PaddingTest extends CssTestBase {
     public void testCascade() {
         
         Box<BoxEdgeSize> mbox1 = getBoxModel("padding", "2px 3px 4px 5px");
-        dumpBox(mbox1);
+//        dumpBox(mbox1);
         
         Box<BoxEdgeSize> mbox2 = getBoxModel("padding-left", "2px");
-        dumpBox(mbox2);
+//        dumpBox(mbox2);
         
         Box<BoxEdgeSize> mbox3 = getBoxModel("padding-right", "1px");
-        dumpBox(mbox3);
+//        dumpBox(mbox3);
         
-        CompoundBox<BoxEdgeSize> cbox = new CompoundBox<BoxEdgeSize>();
+        CascadedBox<BoxEdgeSize> cbox = new CascadedBox<BoxEdgeSize> ();
         cbox.addBox(mbox1);
         cbox.addBox(mbox2);
         cbox.addBox(mbox3);
         
-        dumpBox(cbox);
+//        dumpBox(cbox);
         
-        //
-        
-        cbox.setEdge(Edge.TOP, null);
-        
+        assertBox(cbox, "2px", "1px", "4px", "2px");
         
         
     }

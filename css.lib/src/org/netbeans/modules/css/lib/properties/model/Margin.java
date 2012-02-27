@@ -39,30 +39,93 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.properties.model.MarginR;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.*;
+
+
 
 /**
  *
  * @author marekfukala
  */
-public class MarginRight extends NodeModel implements Box<BoxEdgeSize> {
+public class Margin extends NodeModel implements Box<BoxEdgeSize> {
 
+    public MarginTblr marginTblr;
+    public MarginTb marginTb;
+    public MarginLr marginLr;
+    public MarginT marginT;
+    public MarginB marginB;
+    public MarginL marginL;
     public MarginR marginR;
 
-    public MarginRight(Node node) {
-        super(node);
+    public Margin(Node margin) {
+        super(margin);
+    }
+
+    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
+        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
+        for (NodeModel model : getSubmodels()) {
+            sorted.add((AbstractBEBox) model);
+        }
+        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
+
+            @Override
+            public int compare(AbstractBEBox t, AbstractBEBox t1) {
+                return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
+            }
+        });
+
+        return sorted;
     }
 
     @Override
     public BoxEdgeSize getEdge(Edge edge) {
-        switch (edge) {
-            case RIGHT:
-                return marginR.getBoxEdgeSize();
-            default:
-                return null;
+        //bit cryptic so ... it takes the margin models sorted by the number of accepted edges
+        //and use the one which resolves the given edge
+        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
+            BoxEdgeSize mw = box.getEdge(edge);
+            if (mw != null) {
+                return mw;
+            }
         }
+        return null;
     }
+    
+    //possibly remove following methods
+    
+    MarginB getMarginB() {
+        return marginB;
+    }
+
+    MarginL getMarginL() {
+        return marginL;
+    }
+
+    MarginLr getMarginLr() {
+        return marginLr;
+    }
+
+    MarginR getMarginR() {
+        return marginR;
+    }
+
+    MarginT getMarginT() {
+        return marginT;
+    }
+
+    MarginTb getMarginTb() {
+        return marginTb;
+    }
+
+    MarginTblr getMarginTblr() {
+        return marginTblr;
+    }
+
 }

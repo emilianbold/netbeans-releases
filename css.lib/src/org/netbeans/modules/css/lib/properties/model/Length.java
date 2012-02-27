@@ -39,89 +39,53 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.*;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.properties.model.*;
-
 
 
 /**
  *
  * @author marekfukala
  */
-public class Padding extends NodeModel implements Box<BoxEdgeSize> {
+public class Length extends NodeModel {
 
-    public PaddingTblr paddingTblr;
-    public PaddingTb paddingTb;
-    public PaddingLr paddingLr;
-    public PaddingT paddingT;
-    public PaddingB paddingB;
-    public PaddingL paddingL;
-    public PaddingR paddingR;
-
-    public Padding(Node padding) {
-        super(padding);
+    public TokenNodeModel length;
+    
+    public Length(Node node) {
+        super(node);
+    }
+    
+    public Length(TokenNodeModel text) {
+        length = text;
     }
 
-    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
-        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
-        for (NodeModel model : getSubmodels()) {
-            sorted.add((AbstractBEBox) model);
-        }
-        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
-
-            @Override
-            public int compare(AbstractBEBox t, AbstractBEBox t1) {
-                return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
-            }
-        });
-
-        return sorted;
+    public Text getLength() {
+        return length;
     }
 
     @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        //bit cryptic so ... it takes the padding models sorted by the number of accepted edges
-        //and use the one which resolves the given edge
-        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
-            BoxEdgeSize mw = box.getEdge(edge);
-            if (mw != null) {
-                return mw;
-            }
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return null;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Length other = (Length) obj;
+        if (this.length != other.length && (this.length == null || !this.length.equals(other.length))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.length != null ? this.length.hashCode() : 0);
+        return hash;
     }
     
-    //possibly remove following methods
     
-    PaddingB getPaddingB() {
-        return paddingB;
-    }
-
-    PaddingL getPaddingL() {
-        return paddingL;
-    }
-
-    PaddingLr getPaddingLr() {
-        return paddingLr;
-    }
-
-    PaddingR getPaddingR() {
-        return paddingR;
-    }
-
-    PaddingT getPaddingT() {
-        return paddingT;
-    }
-
-    PaddingTb getPaddingTb() {
-        return paddingTb;
-    }
-
-    PaddingTblr getPaddingTblr() {
-        return paddingTblr;
-    }
-
 }

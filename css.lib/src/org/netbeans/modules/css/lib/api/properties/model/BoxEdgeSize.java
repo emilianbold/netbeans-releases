@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.css.lib.api.properties.model;
 
+import org.netbeans.modules.css.lib.properties.model.TokenNodeModel;
+import org.netbeans.modules.css.lib.properties.model.Text;
+import org.netbeans.modules.css.lib.properties.model.Length;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
@@ -61,10 +64,44 @@ public class BoxEdgeSize extends NodeModel {
         super(node);
     }
 
-    public BoxEdgeSize(TokenNodeModel auto, Length length, TokenNodeModel percentage) {
+    private BoxEdgeSize(TokenNodeModel auto, Length length, TokenNodeModel percentage) {
         this.auto = auto;
         this.length = length;
         this.percentage = percentage;
+    }
+
+    private static TokenNodeModel createText(CharSequence text) {
+        return new TokenNodeModel(text);
+    }
+
+    private static BoxEdgeSize createAuto() {
+        return new BoxEdgeSize(createText("auto"), null, null);
+    }
+
+    private static BoxEdgeSize createLength(CharSequence length) {
+        return new BoxEdgeSize(null, new Length(createText(length)), null);
+    }
+
+    private static BoxEdgeSize createPercentage(CharSequence value) {
+        return new BoxEdgeSize(null, null, createText(value));
+    }
+
+    public static BoxEdgeSize parseValue(CharSequence tokenImage) {
+        TokenAcceptor lengthTokenAcceptor = TokenAcceptor.getAcceptor("length"); //NOI18N
+        TokenAcceptor percentageTokenAcceptor = TokenAcceptor.getAcceptor("percentage"); //NOI18N
+
+        Tokenizer tokenizer = new Tokenizer(tokenImage);
+        Token token = tokenizer.token();
+
+        if (lengthTokenAcceptor.accepts(token)) {
+            return createLength(tokenImage);
+        } else if (percentageTokenAcceptor.accepts(token)) {
+            return createPercentage(tokenImage);
+        } else if (LexerUtils.equals("auto", tokenImage, true, true)) {
+            return createAuto();
+        }
+
+        return null;
     }
 
     public Text getAuto() {
@@ -87,24 +124,6 @@ public class BoxEdgeSize extends NodeModel {
         } else {
             return getPercentage().getValue();
         }
-    }
-    
-    public static BoxEdgeSize parseValue(CharSequence tokenImage) {
-        TokenAcceptor lengthTokenAcceptor = TokenAcceptor.getAcceptor("length"); //NOI18N
-        TokenAcceptor percentageTokenAcceptor = TokenAcceptor.getAcceptor("percentage"); //NOI18N
-        
-        Tokenizer tokenizer = new Tokenizer(tokenImage);
-        Token token = tokenizer.token();
-        
-        if(lengthTokenAcceptor.accepts(token)) {
-            return SemanticModelElementFactory.createBoxEdgeSize_Length(tokenImage);
-        } else if(percentageTokenAcceptor.accepts(token)) {
-            return SemanticModelElementFactory.createBoxEdgeSize_Percentage(tokenImage);
-        } else if(LexerUtils.equals("auto", tokenImage, true, true)) {
-            return SemanticModelElementFactory.createBoxEdgeSize_Auto();
-        }
-        
-        return null;
     }
 
     @Override
@@ -137,8 +156,6 @@ public class BoxEdgeSize extends NodeModel {
         return hash;
     }
 
-    
-    
     @Override
     public String toString() {
         StringBuilder b = new StringBuilder();
@@ -156,6 +173,4 @@ public class BoxEdgeSize extends NodeModel {
         b.append(")");
         return b.toString();
     }
-
-    
 }

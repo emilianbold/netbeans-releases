@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,25 +37,72 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.modules.css.lib.api.properties.model.*;
+
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.properties.model.Text;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.Token;
 
 /**
  *
  * @author marekfukala
  */
-public class PropertyModelFactory {
+public class TokenNodeModel extends NodeModel implements Text {
 
-    public static <T extends NodeModel> T getPropertyModel(Declaration declaration, PropertyModelId propertyModelId) {
-        ModelBuilderNodeVisitor<T> modelvisitor = new ModelBuilderNodeVisitor<T>(propertyModelId);
-        declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
-        return modelvisitor.getModel();
+    private CharSequence text;
+    
+    public TokenNodeModel(Node.ResolvedTokenNode node) {
+        super(node);
+        this.text = node.image();
     }
 
+    public TokenNodeModel(CharSequence text) {
+        this.text = text;
+    }
+    
+//    public Token getToken() {
+//        return ((Node.ResolvedTokenNode)getNode()).getToken();
+//    }
+//    
+    @Override
+    public String toString() {
+        return new StringBuilder(getClass().getSimpleName())
+                .append("(")
+                .append(text != null ? text : "")
+                .append(")").toString();
+    }
+
+    @Override
+    public CharSequence getValue() {
+        return text;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TokenNodeModel other = (TokenNodeModel) obj;
+        if (this.text != other.text && (this.text == null || !this.text.equals(other.text))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.text != null ? this.text.hashCode() : 0);
+        return hash;
+    }
+    
+    
     
 }

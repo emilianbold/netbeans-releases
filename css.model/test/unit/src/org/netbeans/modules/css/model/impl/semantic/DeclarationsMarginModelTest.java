@@ -94,12 +94,12 @@ public class DeclarationsMarginModelTest extends ModelTestBase {
                 });
 
                 //edit the box 
-                BoxEdgeSize newMarginWidth = SemanticModelElementFactory.createBoxEdgeSize_Length("10px");
+                BoxEdgeSize newMarginWidth = BoxEdgeSize.parseValue("10px");
 
                 margin.setEdge(Edge.RIGHT, newMarginWidth);
                 assertBox(margin, "3px", "10px", "3px", "10px");
 
-                margin.setEdge(Edge.TOP, SemanticModelElementFactory.createBoxEdgeSize_Auto());
+                margin.setEdge(Edge.TOP, BoxEdgeSize.parseValue("auto"));
                 assertBox(margin, "auto", "10px", "3px", "10px");
 
                 assertTrue(changed.get());

@@ -41,6 +41,17 @@
  */
 package org.netbeans.modules.css.lib.api.properties.model;
 
+import org.netbeans.modules.css.lib.properties.model.Margin;
+import org.netbeans.modules.css.lib.properties.model.PaddingBottom;
+import org.netbeans.modules.css.lib.properties.model.PaddingRight;
+import org.netbeans.modules.css.lib.properties.model.MarginBottom;
+import org.netbeans.modules.css.lib.properties.model.MarginRight;
+import org.netbeans.modules.css.lib.properties.model.PaddingTop;
+import org.netbeans.modules.css.lib.properties.model.MarginTop;
+import org.netbeans.modules.css.lib.properties.model.MarginLeft;
+import org.netbeans.modules.css.lib.properties.model.PaddingLeft;
+import org.netbeans.modules.css.lib.properties.model.Padding;
+
 /**
  *
  * @author marekfukala
