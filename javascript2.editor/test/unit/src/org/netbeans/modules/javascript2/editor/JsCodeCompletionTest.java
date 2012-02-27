@@ -108,4 +108,7 @@ public class JsCodeCompletionTest extends JsTestBase {
         checkCompletion("testfiles/model/simpleObject.js", "if (this.^color === \"red\") {", false);
     }   
     
+    public void testGetterSettterInObjectLiteral() throws Exception {
+        checkCompletion("testfiles/model/getterSettterInObjectLiteral.js", "formatter.println(\"The dos is old \" + Dog.^years + \" years.\");", false);
+    }
 }

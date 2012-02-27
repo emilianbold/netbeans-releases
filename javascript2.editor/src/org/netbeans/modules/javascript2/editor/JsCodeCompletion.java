@@ -486,7 +486,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         for (JsObject property : jsObject.getProperties().values()) {
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                    && (!filter || startsWith(property.getName(), request.prefix))) {
+                    && (!filter || startsWith(property.getName(), request.prefix))
+                    && !property.getJSKind().isPropertyGetterSetter()) {
                 resultList.add(JsCompletionItem.Factory.create(property, request));
             }
         }
