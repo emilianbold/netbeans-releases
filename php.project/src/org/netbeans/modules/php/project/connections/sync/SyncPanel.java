@@ -46,6 +46,8 @@ import java.awt.Dialog;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -197,6 +199,16 @@ public final class SyncPanel extends JPanel {
                 setEnabledDiffButton(selectedRowCount);
             }
         });
+        // actions
+        itemTable.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2
+                        && diffButton.isEnabled()) {
+                    openDiffPanel();
+                }
+            }
+        });
     }
 
     @NbBundle.Messages("SyncPanel.resetButton.title=Reset to the original state")
@@ -296,11 +308,11 @@ public final class SyncPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "# {0} - number",
-        "# {1} - number",
-        "# {2} - number",
-        "# {3} - number",
-        "# {4} - number",
+        "# {0} - number of files to be downloaded",
+        "# {1} - number of files to be uploaded",
+        "# {2} - number of files to be deleted",
+        "# {3} - number of files without any operation",
+        "# {4} - number of files with errors",
         "SyncPanel.info.status=Download: {0} files, upload: {1} files, delete: {2} files, "
             + "no operation: {3} files, errors: {4} files."
     })
@@ -335,6 +347,24 @@ public final class SyncPanel extends JPanel {
             }
         }
         syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, delete, noop, errors));
+    }
+
+    void openDiffPanel() {
+        assert diffButton.isEnabled() : "Diff button has to be anbled";
+
+        SyncItem syncItem = getSelectedItem();
+        DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
+        try {
+            if (diffPanel.open()) {
+                assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
+                syncItem.setOperation(SyncItem.Operation.UPLOAD);
+                // need to redraw the changed line
+                tableModel.fireSyncItemChange(itemTable.getSelectedRow());
+            }
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Error while saving document", ex);
+            setError(Bundle.SyncPanel_error_documentSave());
+        }
     }
 
     /**
@@ -594,19 +624,7 @@ public final class SyncPanel extends JPanel {
         @NbBundle.Messages("SyncPanel.error.documentSave=Cannot save file content.")
         @Override
         public void actionPerformed(ActionEvent e) {
-            SyncItem syncItem = getSelectedItem();
-            DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
-            try {
-                if (diffPanel.open()) {
-                    assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
-                    syncItem.setOperation(SyncItem.Operation.UPLOAD);
-                    // need to redraw the changed line
-                    tableModel.fireSyncItemChange(itemTable.getSelectedRow());
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Error while saving document", ex);
-                setError(Bundle.SyncPanel_error_documentSave());
-            }
+            openDiffPanel();
         }
 
     }
