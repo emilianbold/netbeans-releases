@@ -48,7 +48,7 @@ import org.netbeans.modules.css.lib.properties.model.MarginT;
  *
  * @author marekfukala
  */
-public class MarginTop extends NodeModel implements Box<MarginWidth> {
+public class MarginTop extends NodeModel implements Box<BoxEdgeSize> {
 
     public MarginT marginT;
 
@@ -57,10 +57,10 @@ public class MarginTop extends NodeModel implements Box<MarginWidth> {
     }
 
     @Override
-    public MarginWidth getEdge(Edge edge) {
+    public BoxEdgeSize getEdge(Edge edge) {
         switch (edge) {
             case TOP:
-                return marginT.getMarginWidth();
+                return marginT.getBoxEdgeSize();
             default:
                 return null;
         }

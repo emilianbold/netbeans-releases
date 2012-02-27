@@ -39,25 +39,89 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.*;
+
+
 
 /**
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class Padding extends NodeModel implements Box<BoxEdgeSize> {
 
-    public MarginR(Node node) {
-        super(node);
+    public PaddingTblr paddingTblr;
+    public PaddingTb paddingTb;
+    public PaddingLr paddingLr;
+    public PaddingT paddingT;
+    public PaddingB paddingB;
+    public PaddingL paddingL;
+    public PaddingR paddingR;
+
+    public Padding(Node padding) {
+        super(padding);
+    }
+
+    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
+        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
+        for (NodeModel model : getSubmodels()) {
+            sorted.add((AbstractBEBox) model);
+        }
+        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
+
+            @Override
+            public int compare(AbstractBEBox t, AbstractBEBox t1) {
+                return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
+            }
+        });
+
+        return sorted;
     }
 
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+    public BoxEdgeSize getEdge(Edge edge) {
+        //bit cryptic so ... it takes the padding models sorted by the number of accepted edges
+        //and use the one which resolves the given edge
+        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
+            BoxEdgeSize mw = box.getEdge(edge);
+            if (mw != null) {
+                return mw;
+            }
+        }
+        return null;
     }
+    
+    //possibly remove following methods
+    
+    PaddingB getPaddingB() {
+        return paddingB;
+    }
+
+    PaddingL getPaddingL() {
+        return paddingL;
+    }
+
+    PaddingLr getPaddingLr() {
+        return paddingLr;
+    }
+
+    PaddingR getPaddingR() {
+        return paddingR;
+    }
+
+    PaddingT getPaddingT() {
+        return paddingT;
+    }
+
+    PaddingTb getPaddingTb() {
+        return paddingTb;
+    }
+
+    PaddingTblr getPaddingTblr() {
+        return paddingTblr;
+    }
+
 }

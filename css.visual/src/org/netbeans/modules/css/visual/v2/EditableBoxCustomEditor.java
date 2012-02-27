@@ -48,7 +48,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 
 /**
  *
@@ -117,7 +117,7 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     }
     
     private ComboBoxModel modelFor(Edge e) {
-        MarginWidth mw = editor.editableBox.getEdge(e);
+        BoxEdgeSize mw = editor.editableBox.getEdge(e);
         String value = mw != null ? mw.getTextRepresentation().toString() : null;
         return new DefaultComboBoxModel(new String[]{value, "auto"});
     }
@@ -202,9 +202,9 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     private void setEdge(Edge e) {
         JComboBox cb = getJComboBoxForEdge(e);
         String value = cb.getModel().getSelectedItem().toString();
-        MarginWidth mw = null;
+        BoxEdgeSize mw = null;
         if(value.length() > 0) {
-            mw = MarginWidth.parseMarginWidth(value);
+            mw = BoxEdgeSize.parseValue(value);
         }
         editor.editableBox.setEdge(e, mw);
     }

@@ -44,7 +44,7 @@ package org.netbeans.modules.css.model.api;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.ModelTestBase;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxEdgeSizeModel;
 
 /**
  *

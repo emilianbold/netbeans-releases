@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.v2;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
-import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
-import org.openide.nodes.Node;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.properties.model.PaddingB;
+
 
 /**
  *
  * @author marekfukala
  */
-public class MarginModelProperty extends Node.Property<EditableBox> {
+public class PaddingBottom extends NodeModel implements Box<BoxEdgeSize> {
 
-    EditableBox<MarginWidth> model;
-    private RuleNode ruleNode;
-
-    public MarginModelProperty(RuleNode ruleNode, EditableBox<MarginWidth> model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
-    }
-
-    @Override
-    public String getHtmlDisplayName() {
-        return model.getDisplayName();
-    }
-
-    @Override
-    public PropertyEditor getPropertyEditor() {
-        return new EditableBoxPropertyEditor(this);
-    }
+    public PaddingB paddingB;
     
-    @Override
-    public boolean canRead() {
-        return true;
+    public PaddingBottom(Node node) {
+        super(node);
     }
 
     @Override
-    public boolean canWrite() {
-        return true;
+    public BoxEdgeSize getEdge(Edge edge) {
+        switch(edge) {
+            case BOTTOM:
+                return paddingB.getBoxEdgeSize();
+            default:
+                return null;
+        }
     }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return model;
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
     
 }

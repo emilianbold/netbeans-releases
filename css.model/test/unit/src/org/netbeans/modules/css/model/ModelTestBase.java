@@ -50,7 +50,7 @@ import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
@@ -100,7 +100,7 @@ public class ModelTestBase extends NbTestCase {
         return new Model(result);
     }
 
-    protected void assertBox(Box<MarginWidth> box, String top, String right, String bottom, String left) {
+    protected void assertBox(Box<BoxEdgeSize> box, String top, String right, String bottom, String left) {
         assertEquals(top, box.getEdge(Edge.TOP).getTextRepresentation());
         assertEquals(right, box.getEdge(Edge.RIGHT).getTextRepresentation());
         assertEquals(bottom, box.getEdge(Edge.BOTTOM).getTextRepresentation());

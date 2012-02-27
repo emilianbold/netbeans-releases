@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.visual.v2;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class BoxEdgeSizeModelProperty extends Node.Property<EditableBox> {
 
-    public MarginR(Node node) {
-        super(node);
+    EditableBox<BoxEdgeSize> model;
+    private RuleNode ruleNode;
+
+    public BoxEdgeSizeModelProperty(RuleNode ruleNode, EditableBox<BoxEdgeSize> model) {
+        super(EditableBox.class);
+        this.ruleNode = ruleNode;
+        this.model = model;
     }
 
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+    public String getHtmlDisplayName() {
+        return model.getDisplayName();
     }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+        return new EditableBoxPropertyEditor(this);
+    }
+    
+    @Override
+    public boolean canRead() {
+        return true;
+    }
+
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
+    @Override
+    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
+        return model;
+    }
+
+    @Override
+    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ruleNode.applyModelChanges();
+    }
+
+    
 }

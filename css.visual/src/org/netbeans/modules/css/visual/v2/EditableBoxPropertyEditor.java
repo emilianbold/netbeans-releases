@@ -49,7 +49,7 @@ import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
-import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -64,10 +64,10 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     private static final String SEPARATOR = " "; //NOI18N
     private static final String NO_VALUE = "-"; //NOI18N
     
-    EditableBox<MarginWidth> editableBox;
-    MarginModelProperty property;
+    EditableBox<BoxEdgeSize> editableBox;
+    BoxEdgeSizeModelProperty property;
 
-    public EditableBoxPropertyEditor(MarginModelProperty property) {
+    public EditableBoxPropertyEditor(BoxEdgeSizeModelProperty property) {
         this.property = property;
         editableBox = property.model;
     }
@@ -86,7 +86,7 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     public String getAsText() {
         StringBuilder b = new StringBuilder();
         for (Edge e : Edge.values()) {
-            MarginWidth mw = editableBox.getEdge(e);
+            BoxEdgeSize mw = editableBox.getEdge(e);
             b.append(mw == null ? NO_VALUE : mw.getTextRepresentation());
             b.append(SEPARATOR);
         }
@@ -135,11 +135,11 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
         
         for (Edge e : Edge.values()) {
             String token = edges.get(e);
-            MarginWidth mw;
+            BoxEdgeSize mw;
             if (NO_VALUE.equalsIgnoreCase(token)) {
                 mw = null;
             } else {
-                mw = MarginWidth.parseMarginWidth(token);
+                mw = BoxEdgeSize.parseValue(token);
                 if (mw == null) {
                     throw new IllegalArgumentException(String.format("Invalid value %s", token));
                 }

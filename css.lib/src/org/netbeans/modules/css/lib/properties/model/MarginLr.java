@@ -50,7 +50,7 @@ import org.netbeans.modules.css.lib.api.properties.model.Edge;
  *
  * @author marekfukala
  */
-public class MarginLr extends AbstractMarginWidthBox {
+public class MarginLr extends AbstractBEBox {
     
     public MarginLr(Node node) {
         super(node);

@@ -52,9 +52,9 @@ import org.netbeans.modules.css.model.api.StyleSheet;
  *
  * @author marekfukala
  */
-public class DeclarationsMarginBoxModelTest extends ModelTestBase {
+public class DeclarationsMarginModelTest extends ModelTestBase {
 
-    public DeclarationsMarginBoxModelTest(String name) {
+    public DeclarationsMarginModelTest(String name) {
         super(name);
     }
 
@@ -78,7 +78,7 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(model, ds);
+                EditableBox<BoxEdgeSize> margin = new DeclarationsMarginModel(model, ds);
                 assertNotNull(margin);
 //                Utils.dumpBox(margin);
 
@@ -94,12 +94,12 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 });
 
                 //edit the box 
-                MarginWidth newMarginWidth = SemanticModelElementFactory.createMarginWidth_Length("10px");
+                BoxEdgeSize newMarginWidth = SemanticModelElementFactory.createBoxEdgeSize_Length("10px");
 
                 margin.setEdge(Edge.RIGHT, newMarginWidth);
                 assertBox(margin, "3px", "10px", "3px", "10px");
 
-                margin.setEdge(Edge.TOP, SemanticModelElementFactory.createMarginWidth_Auto());
+                margin.setEdge(Edge.TOP, SemanticModelElementFactory.createBoxEdgeSize_Auto());
                 assertBox(margin, "auto", "10px", "3px", "10px");
 
                 assertTrue(changed.get());
@@ -134,11 +134,11 @@ public class DeclarationsMarginBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(model, ds);
+                EditableBox<BoxEdgeSize> margin = new DeclarationsMarginModel(model, ds);
                 assertNotNull(margin);
                 assertBox(margin, "1px", "3em", "3em", "1px");
 
-                MarginWidth newMarginWidth = MarginWidth.parseMarginWidth("1px");
+                BoxEdgeSize newMarginWidth = BoxEdgeSize.parseValue("1px");
                 margin.setEdge(Edge.BOTTOM, newMarginWidth);
                 assertBox(margin, "1px", "3em", "1px", "1px");
                 

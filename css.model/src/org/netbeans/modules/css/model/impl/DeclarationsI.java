@@ -51,7 +51,9 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxEdgeSizeModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsPaddingModel;
 
 /**
  *
@@ -79,9 +81,14 @@ public class DeclarationsI extends ModelElement implements Declarations {
 
     @Override
     public Collection<? extends SemanticModel> getSemanticModels() {
-        return isValid()
-                ? Collections.singletonList(new DeclarationsMarginBoxModel(model, this))
-                : Collections.<SemanticModel>emptyList();
+        if(isValid()) {
+            Collection<SemanticModel> models = new ArrayList<SemanticModel>();
+            models.add(new DeclarationsMarginModel(model, this));
+            models.add(new DeclarationsPaddingModel(model, this));
+            return models;
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     @Override

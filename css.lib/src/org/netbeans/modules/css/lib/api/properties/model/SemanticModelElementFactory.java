@@ -55,16 +55,16 @@ public class SemanticModelElementFactory {
         return new Length(createText(text));
     }
 
-    public static MarginWidth createMarginWidth_Auto() {
-        return new MarginWidth(createText("auto"), null, null);
+    public static BoxEdgeSize createBoxEdgeSize_Auto() {
+        return new BoxEdgeSize(createText("auto"), null, null);
     }
 
-    public static MarginWidth createMarginWidth_Length(CharSequence length) {
-        return new MarginWidth(null, createLength(length), null);
+    public static BoxEdgeSize createBoxEdgeSize_Length(CharSequence length) {
+        return new BoxEdgeSize(null, createLength(length), null);
     }
 
-    public static MarginWidth createMarginWidth_Percentage(CharSequence value) {
-        return new MarginWidth(null, null, createText(value));
+    public static BoxEdgeSize createBoxEdgeSize_Percentage(CharSequence value) {
+        return new BoxEdgeSize(null, null, createText(value));
     }
     
 }
