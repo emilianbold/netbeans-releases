@@ -48,10 +48,10 @@ made subject to such option by the copyright holder.
 
     <folder name="Actions">
         <folder name="Build">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Actions/Build"/>
         </folder>
         <folder name="Project">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Actions/Project"/>
             <file name="org-netbeans-modules-project-ui-NewFile.instance">
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ui.actions.NewFile"/>
             </file>
@@ -156,7 +156,7 @@ made subject to such option by the copyright holder.
         
         <folder name="Window">
             <folder name="SelectDocumentNode">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Actions/Window/SelectDocumentNode"/>
             </folder>
         </folder>
         
@@ -164,21 +164,21 @@ made subject to such option by the copyright holder.
 
     <folder name="Templates">
         <folder name="Project">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <!-- Project type providers should register their templates here -->
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Project"/>
             <attr name="simple" boolvalue="false"/> <!-- do not show this in regular temlate wizard -->
             <attr name="position" intvalue="0"/>
             <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/ProjectTemplates.html"/>
 
             <!-- Samples folder -->
             <folder name="Samples">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Project/Samples"/>
                 <attr name="position" intvalue="1000"/>
             </folder>
 
             <!-- Generic import folder -->
             <folder name="Import">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Project/Import"/>
                 <attr name="position" intvalue="990"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/import.html"/>
             </folder>
@@ -186,8 +186,8 @@ made subject to such option by the copyright holder.
 
         <folder name="Other">
             <folder name="Folder">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Other/Folder"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/project/ui/resources/templatesFolder.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.project.ui.NewFileIterator.folderIterator"/>
                 <attr name="templateCategory" stringvalue="simple-files"/>
@@ -196,12 +196,12 @@ made subject to such option by the copyright holder.
         
         <!-- Licenses folder -->
         <folder name="Licenses">
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses"/>
             <attr name="templateCategory" stringvalue="invisible"/>
             <attr name="position" intvalue="0"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             <file name="license-default.txt" url="license-default.txt">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses/license-default.txt"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
             </file>
         </folder>
     </folder>
@@ -296,8 +296,8 @@ made subject to such option by the copyright holder.
         </folder>
 
         <folder name="BuildProject">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
         
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Menu/BuildProject"/>
             <attr name="position" intvalue="700"/>
             
             <file name="org-netbeans-modules-project-ui-RunMainProject.shadow">
@@ -339,7 +339,7 @@ made subject to such option by the copyright holder.
             </folder>
 
         <folder name="RunProject">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Menu/RunProject"/>
             <attr name="position" intvalue="800"/>
         </folder>
         
@@ -365,8 +365,8 @@ made subject to such option by the copyright holder.
         </folder>
     
         <folder name="Build">            
+            <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Toolbars/Build"/>
             <attr name="position" intvalue="400"/>
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.project.ui.Bundle"/>
 
             <!-- Dynamically inserted; see ActiveConfigAction$DynLayer
             <file name="org-netbeans-modules-project-ui-actions-ActiveConfigAction.shadow">
