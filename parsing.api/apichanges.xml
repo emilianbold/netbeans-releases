@@ -110,6 +110,44 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="SuspendStatus">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>SuspendStatus</code> service which can be used by indexers to find out if
+      indexing is suspended.</summary>
+      <version major="1" minor="52"/>
+      <date day="17" month="2" year="2012"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+               The indexing is suspended by the infrastructure when high priority request like index query or execution
+               of <code>UserTask</code>, <code>ParserResultTask</code> is in progress. The <code>SuspendStatus</code>
+               allows indexers to find out that indexing is suspended or to park while it's suspended.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="SuspendStatus"/>
+      <class package="org.netbeans.modules.parsing.spi.indexing" name="Context"/>
+      <issue number="208378"/>
+  </change>
+  <change id="IndexingAwareParserResultTask">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>IndexingAwareParserResultTask</code> which is a specialization of <code>ParserResultTask</code>
+      which can be executed during scan.</summary>
+      <version major="1" minor="52"/>
+      <date day="26" month="1" year="2012"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              The <code>ParserResultTask</code>s are not executed during the scan to keep the semantic backward compatibility.
+              A specialization of the <code>ParserResultTask</code> the <code>IndexingAwareParserResultTask</code> was added.
+              The <code>IndexingAwareParserResultTask</code> can be executed during the scan.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi" name="IndexingAwareParserResultTask"/>
+      <class package="org.netbeans.modules.parsing.spi" name="TaskIndexingMode"/>
+      <issue number="207459"/>
+  </change>
   <change id="ConstrainedBinaryIndexer-namePattern">
       <api name="ParsingAPI"/>
       <summary>Added <code>ConstrainedBinaryIndexer.Registration.namePattern</code> to allow indexers to use name pattern rather than expensive

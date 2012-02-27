@@ -816,6 +816,7 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("named as x", "X", arr[0].getName());
     }
 
+    @RandomlyFails // NB-Core-Build #7944: timeout in waitActiveReferenceQueue
     public void testDestroyIsCalledWhenEntryIsRefreshed () throws Exception {
         class K extends Keys {
             public Node[] arr;

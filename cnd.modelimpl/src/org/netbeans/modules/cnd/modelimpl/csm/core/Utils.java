@@ -132,6 +132,13 @@ public class Utils {
         }
         return lang;
     }
+
+    public static String getLanguageFlavor(NativeFileItem.LanguageFlavor flavor) {
+        if (flavor == NativeFileItem.LanguageFlavor.CPP11) {
+            return APTLanguageSupport.FLAVOR_CPP11;
+        } 
+        return APTLanguageSupport.FLAVOR_UNKNOWN;
+    }
     
     public static CsmOffsetable createOffsetable(CsmFile file, int startOffset, int endOffset) {
         return new Offsetable(file, startOffset, endOffset);

@@ -57,18 +57,6 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="JavacardPlatformResolver.xml" url="JavacardPlatformResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
-                <attr name="position" intvalue="268"/>
-            </file>
-            <file name="JavaCardResolver.xml" url="CardResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javacard.Bundle"/>
-                <attr name="position" intvalue="269"/>
-            </file>
-        </folder>
-    </folder>
 
     <folder name="Loaders">
         <folder name="application">

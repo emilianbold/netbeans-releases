@@ -249,10 +249,10 @@ public class ActionProviderImpl implements ActionProvider {
     }
 
     @Messages({
-        "TXT_Run=Run {0}",
-        "TXT_Debug=Debug {0}",
-        "TXT_Test=Test {0}",
-        "TXT_Build=Build {0}"
+        "# {0} - artifactId", "TXT_Run=Run {0}",
+        "# {0} - artifactId", "TXT_Debug=Debug {0}",
+        "# {0} - artifactId", "TXT_Test=Test {0}",
+        "# {0} - artifactId", "TXT_Build=Build {0}"
     })
     private void setupTaskName(String action, RunConfig config, Lookup lkp) {
         assert config instanceof BeanRunConfig;

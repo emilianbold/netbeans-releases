@@ -49,6 +49,66 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileSystem.createTemporaryFO">
+            <api name="filesystems"/>
+            <summary>File System can create temporary file</summary>
+            <version major="7" minor="60"/>
+            <date year="2012" month="2" day="20"/>
+            <author login="alexvsimon"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added methods to create temporary file objects:
+                    <code>FileSystem.getTempFolder</code>,  <code>FileSystem.createTempFile</code>.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileSystem"/>
+            <issue number="207659"/>
+        </change>
+        <change id="LayersProvider">
+            <api name="filesystems"/>
+            <summary>SPI for Additions to System File System</summary>
+            <version major="7" minor="59"/>
+            <date year="2012" month="2" day="3"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    Those who wish to influence content of 
+                    <a href="@TOP@/org/openide/filesystems/FileUtil.html#getConfigRoot()">
+                    configuration file system</a> have an easier
+                    <a href="@TOP@/org/openide/filesystems/Repository.LayerProvider.html">
+                    way</a> now.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="Repository"/>
+            <issue number="198508"/>
+        </change>
+        <change id="MIMEResolver.Registrations">
+            <api name="filesystems"/>
+            <summary>Annotations to declare MIME type</summary>
+            <version major="7" minor="58"/>
+            <date year="2012" month="2" day="2"/>
+            <author login="jtulach"/>
+            <compatibility addition="yes" deprecation="yes"/>
+            <description>
+                <p>
+                    There are new annotations to register mime type. One
+                    can either use simpler ones based on
+                    <a href="@TOP@/org/openide/filesystems/MIMEResolver.ExtensionRegistration.html">
+                    extension</a> or    
+                    <a href="@TOP@/org/openide/filesystems/MIMEResolver.NamespaceRegistration.html">
+                    XML namespace</a>. In case these registration are not
+                    powerful enough one can use the original and flexible 
+                    <a href="@TOP@/org/openide/filesystems/MIMEResolver.Registration.html">
+                    XML file based registration</a> which is however processed
+                    during compile time to avoid needless XML parsing on each
+                    start.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="MIMEResolver"/>
+            <issue number="191777"/>
+        </change>
         <change id="FileObject.toURI">
             <api name="filesystems"/>
             <summary>Introduced <code>FileObject.toURI</code></summary>

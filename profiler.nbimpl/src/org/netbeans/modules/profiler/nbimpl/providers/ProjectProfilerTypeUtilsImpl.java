@@ -113,6 +113,6 @@ public class ProjectProfilerTypeUtilsImpl extends BaseProfilerTypeUtilsImpl {
     @Override
     protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps) {
         return ClasspathInfoFactory.infoFor(project, subprojects, source, deps);
-    }    
+    }
 }
  

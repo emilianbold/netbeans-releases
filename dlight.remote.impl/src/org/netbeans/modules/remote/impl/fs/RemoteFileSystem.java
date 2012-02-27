@@ -64,18 +64,18 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStatusEvent;
-import org.openide.filesystems.FileStatusListener;
-import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.io.NbObjectInputStream;
@@ -101,7 +101,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private static final String READONLY_ATTRIBUTES = "readOnlyAttrs"; //NOI18N
     private final ExecutionEnvironment execEnv;
     private final String filePrefix;
-    private final RootFileObject root;
+    private final RemoteFileObject root;
+    private final RemoteDirectory rootDelegate;
     private final RemoteFileSupport remoteFileSupport;
     private final RefreshManager refreshManager;
     private final File cache;
@@ -116,6 +117,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<FileSystemProblemListener>();
     transient private final StatusImpl status = new StatusImpl();
+    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -133,7 +135,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         if (!cache.exists() && !cache.mkdirs()) {
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
         }
-        this.root = new RootFileObject(this, execEnv, cache); // NOI18N
+        this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
@@ -248,28 +250,71 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     @Override
     public boolean isReadOnly() {
-        return true;
+        return !ConnectionManager.getInstance().isConnectedTo(execEnv);
     }
 
     @Override
-    public RemoteDirectory getRoot() {
+    public RemoteFileObject getRoot() {
         return root;
     }
 
     @Override
-    public RemoteFileObjectBase findResource(String name) {
+    public RemoteFileObject findResource(String name) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot();
         } else {
             return getRoot().getFileObject(name);
         }
     }
+
+    @Override
+    public FileObject getTempFolder() throws IOException {
+        try {
+            String tmpName = HostInfoUtils.getHostInfo(execEnv).getTempDir();
+            RemoteFileObject tmpDir = findResource(tmpName);
+            if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
+                return tmpDir;
+            }
+        } catch (CancellationException ex) {
+            //
+        }
+        throw new IOException("Cannot find temporary folder"); // NOI18N
+    }
+    
+    @Override
+    public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        if (parent.isFolder() && parent.isValid()) {
+            while(true) {
+                File tmpFile = File.createTempFile(prefix, suffix);
+                String tmpName = tmpFile.getName();
+                tmpFile.delete();
+                try {
+                    FileObject fo = parent.createData(tmpName);
+                    if (fo != null && fo.isData() && fo.isValid()) {
+                        if (deleteOnExit) {
+                            addDeleteOnExit(fo.getPath());
+                        }
+                        return fo;
+                    }
+                    break;   
+                } catch (IOException ex) {
+                    FileObject test = parent.getFileObject(tmpName);
+                    if (test != null) {
+                        continue;
+                    }
+                    throw ex;
+                }
+            }
+        }
+        throw new IOException("Cannot create temporary file"); // NOI18N
+    }
     
     /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
-            return getRoot();
+            return getRoot().getImplementor();
         } else {
-            return getRoot().getFileObject(name, antiloop);
+            RemoteFileObject fo = rootDelegate.getFileObject(name, antiloop);
+            return (fo == null) ? null : fo.getImplementor();
         }
     }
     
@@ -291,31 +336,42 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     /*package*/ void setAttribute(RemoteFileObjectBase file, String attrName, Object value) {
         RemoteFileObjectBase parent = file.getParent();
-        if (parent != null) {
-            File attr = getAttrFile(parent);
-            Properties table = readProperties(attr);
-            String translatedAttributeName = translateAttributeName(file, attrName);
-            String encodedValue = encodeValue(value);
-            if (encodedValue == null) {
-                table.remove(translatedAttributeName);
-            } else {                
-                table.setProperty(translatedAttributeName, encodedValue);
-            }
-            FileOutputStream fileOtputStream = null;
-            try {
-                fileOtputStream = new FileOutputStream(attr);
-                table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                if (fileOtputStream != null) {
-                    try {
-                        fileOtputStream.close();
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+        boolean hasParent = true;
+        if (parent == null) {
+            // root
+            parent = file;
+            hasParent = false;
+        }
+        File attr = getAttrFile(parent);
+        Properties table = readProperties(attr);
+        String translatedAttributeName = translateAttributeName(file, attrName);
+        String encodedValue = encodeValue(value);
+        Object oldValue = null;
+        if (encodedValue == null) {
+            table.remove(translatedAttributeName);
+        } else {                
+            oldValue = table.setProperty(translatedAttributeName, encodedValue);
+        }
+        FileOutputStream fileOtputStream = null;
+        try {
+            fileOtputStream = new FileOutputStream(attr);
+            table.store(fileOtputStream, "Set attribute "+attrName); // NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (fileOtputStream != null) {
+                try {
+                    fileOtputStream.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
+        }
+        if (hasParent) {
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
+            parent.fireFileAttributeChangedEvent(parent.getListeners(), new FileAttributeEvent(parent.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
+        } else {
+            file.fireFileAttributeChangedEvent(file.getListeners(), new FileAttributeEvent(file.getOwnerFileObject(), file.getOwnerFileObject(), attrName, oldValue, value));
         }
     }
 
@@ -326,25 +382,26 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     /*package*/ Object getAttribute(RemoteFileObjectBase file, String attrName) {
         RemoteFileObjectBase parent = file.getParent();
-        if (parent != null) {
-            if (attrName.equals(READONLY_ATTRIBUTES)) {
-                return Boolean.FALSE;
-            } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
-                return Boolean.TRUE;
-            } else if (attrName.equals("FileSystem.rootPath")) { //NOI18N
-                return this.getRoot().getPath();
-            } else if (attrName.equals("java.io.File")) { //NOI18N
-                return null;
-            } else if (attrName.equals("ExistsParentNoPublicAPI")) { //NOI18N
-                return true;
-            } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
-                return null;
-            }
-            File attr = getAttrFile(parent);
-            Properties table = readProperties(attr);
-            return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
+        if (parent == null) {
+            // root
+            parent = file;
         }
-        return null;
+        if (attrName.equals(READONLY_ATTRIBUTES)) {
+            return Boolean.FALSE;
+        } else if (attrName.equals("isRemoteAndSlow")) { // NOI18N
+            return Boolean.TRUE;
+        } else if (attrName.equals("FileSystem.rootPath")) { //NOI18N
+            return this.getRoot().getPath();
+        } else if (attrName.equals("java.io.File")) { //NOI18N
+            return null;
+        } else if (attrName.equals("ExistsParentNoPublicAPI")) { //NOI18N
+            return true;
+        } else if (attrName.startsWith("ProvidedExtensions")) { //NOI18N
+            return null;
+        }
+        File attr = getAttrFile(parent);
+        Properties table = readProperties(attr);
+        return decodeValue(table.getProperty(translateAttributeName(file, attrName)));
     }
 
     /*package*/ Enumeration<String> getAttributes(RemoteFileObjectBase file) {
@@ -361,10 +418,6 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                     aKey = aKey.substring(prefix.length(),aKey.length()-1);
                     res.add(aKey);
                 }
-            }
-            res.add("isRemoteAndSlow"); // NOI18N
-            if (RemoteFileObjectBase.RETURN_JAVA_IO_FILE) {
-                res.add("java.io.File");// NOI18N
             }
             return Collections.enumeration(res);
         }
@@ -504,10 +557,49 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
     }
-    
+
+    @Override
+    public final SystemAction[] getActions(final Set<FileObject> foSet) {
+        SystemAction[] some = status.getActions (foSet);
+        if (some != null) {
+            return some;
+        }        
+        return new SystemAction[] {};
+    }
+
     @Override
     public Status getStatus() {
         return status;
+    }
+    
+    private void addDeleteOnExit(String path) {
+        synchronized(deleteOnExitFiles) {
+            if (deleteOnExitFiles.isEmpty()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                    @Override
+                    public void run() {
+                        releaseResources();
+                    }
+
+                });
+            }
+            deleteOnExitFiles.add(path);
+        }
+    }
+    
+    private void releaseResources() {
+    	ArrayList<String> toBeDeleted;
+        synchronized(deleteOnExitFiles) {
+        	toBeDeleted = new ArrayList<String>(deleteOnExitFiles);
+        }
+    	Collections.reverse(toBeDeleted);
+        for (String filename : toBeDeleted) {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                 return;
+            }
+            CommonTasksSupport.rmFile(execEnv, filename, null);
+        }
     }
 
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
@@ -611,8 +703,8 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     
     private static class RootFileObject extends RemoteDirectory {
 
-        private RootFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
-            super(fileSystem, execEnv, null, "", cache);
+        private RootFileObject(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, File cache) {
+            super(wrapper, fileSystem, execEnv, null, "", cache);
         }
 
         @Override

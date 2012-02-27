@@ -79,6 +79,7 @@ public final class Context {
     private final boolean checkForEditorModifications;
     private final boolean sourceForBinaryRoot;
     private final CancelRequest cancelRequest;
+    private final SuspendStatus suspendedStatus;
     private final LogContext logContext;
     private final Map<String,Object> props;
     private FileObject indexFolder;
@@ -94,7 +95,8 @@ public final class Context {
              final IndexFactoryImpl factory, boolean followUpJob,
              final boolean checkForEditorModifications,
              final boolean sourceForBinaryRoot,
-             final CancelRequest cancelRequest,
+             @NonNull final SuspendStatus suspendedStatus,
+             @NullAllowed final CancelRequest cancelRequest,
              @NullAllowed final LogContext logContext
     ) throws IOException {
         assert indexBaseFolder != null;
@@ -104,11 +106,12 @@ public final class Context {
         this.rootURL = rootURL;
         this.indexerName = indexerName;
         this.indexerVersion = indexerVersion;
-        this.factory = factory != null ? factory : new LuceneIndexFactory();
+        this.factory = factory != null ? factory : LuceneIndexFactory.getDefault();
         this.followUpJob = followUpJob;
         this.checkForEditorModifications = checkForEditorModifications;
         this.sourceForBinaryRoot = sourceForBinaryRoot;
         this.cancelRequest = cancelRequest;
+        this.suspendedStatus = suspendedStatus;
         this.logContext = logContext;
         this.props = new HashMap<String, Object>();
     }
@@ -255,6 +258,17 @@ public final class Context {
      */
     public boolean isCancelled() {
         return cancelRequest == null ? false : cancelRequest.isRaised();
+    }
+    
+    /**
+     * Returns {@link SuspendStatus} providing information
+     * about indexing suspension.
+     * @return the {@link SuspendStatus}
+     * @since 1.52
+     */
+    @NonNull
+    public SuspendStatus getSuspendStatus() {
+        return suspendedStatus;
     }
 
     // -----------------------------------------------------------------------

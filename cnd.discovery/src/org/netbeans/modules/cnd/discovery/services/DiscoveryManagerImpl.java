@@ -249,7 +249,7 @@ public final class DiscoveryManagerImpl {
                         && item.getLanguage() == Language.C_HEADER
                         && (p instanceof ProjectBase)) {
                     ProjectBase pb = (ProjectBase) p;
-                    Set<CsmFile> parentFiles = pb.getGraph().getParentFiles(file);
+                    Set<CsmFile> parentFiles = pb.getParentFiles(file);
                     if (parentFiles.isEmpty()) {
                         isLineDirective = true;
                     }

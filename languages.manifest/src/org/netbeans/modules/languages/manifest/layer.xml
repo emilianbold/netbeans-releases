@@ -91,14 +91,6 @@ Microsystems, Inc. All Rights Reserved.
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="Manifest.xml" url="Manifest.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.manifest.Bundle"/>
-                <attr name="position" intvalue="130"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="OptionsDialog">
         <folder name="PreviewExamples">
             <folder name="text">

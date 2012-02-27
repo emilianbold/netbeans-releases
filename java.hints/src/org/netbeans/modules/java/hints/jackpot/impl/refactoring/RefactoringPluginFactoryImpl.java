@@ -43,10 +43,7 @@ package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 //import org.netbeans.modules.jackpot30.impl.refactoring.findusages.GlobalFindUsagesRefactoringPlugin;
 //import org.netbeans.modules.jackpot30.impl.refactoring.upgrade.UpgradeRefactoring;
 //import org.netbeans.modules.jackpot30.impl.refactoring.upgrade.UpgradeRefactoringPlugin;
-import org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoring;
-import org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringPluginImpl;
-import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorRefactoring;
-import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorRefactoringPluginImpl;
+import org.netbeans.modules.java.hints.jackpot.refactoring.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
@@ -63,12 +60,16 @@ public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 //        } else if (refactoring instanceof GlobalFindUsagesRefactoring) {
 //            return new GlobalFindUsagesRefactoringPlugin((GlobalFindUsagesRefactoring) refactoring);
         }
-        if (refactoring instanceof ReplaceConstructorRefactoring) {
-            return new ReplaceConstructorRefactoringPluginImpl((ReplaceConstructorRefactoring) refactoring);
+        if (refactoring instanceof ReplaceConstructorWithFactoryRefactoring) {
+            return new ReplaceConstructorWithFactoryPlugin((ReplaceConstructorWithFactoryRefactoring) refactoring);
         }
 
         if (refactoring instanceof InvertBooleanRefactoring) {
             return new InvertBooleanRefactoringPluginImpl((InvertBooleanRefactoring) refactoring);
+        }
+        
+        if (refactoring instanceof ReplaceConstructorWithBuilderRefactoring) {
+            return new ReplaceConstructorWithBuilderPlugin((ReplaceConstructorWithBuilderRefactoring) refactoring);
         }
         
 

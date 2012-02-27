@@ -64,8 +64,8 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.phpunit.PhpUnit;
+import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -97,12 +97,14 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         bootstrapForCreateTestsCheckBox.setSelected(uiProps.getPhpUnitBootstrapForCreateTests());
         initFile(uiProps.getPhpUnitConfiguration(), configurationCheckBox, configurationTextField);
         initFile(uiProps.getPhpUnitSuite(), suiteCheckBox, suiteTextField);
+        initFile(uiProps.getPhpUnitScript(), scriptCheckBox, scriptTextField);
         runTestUsingUnitCheckBox.setSelected(uiProps.getPhpUnitRunTestFiles());
         askForTestGroupsCheckBox.setSelected(uiProps.getPhpUnitAskForTestGroups());
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapGenerateButton, bootstrapBrowseButton, bootstrapForCreateTestsCheckBox);
         enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationGenerateButton, configurationBrowseButton);
         enableFile(suiteCheckBox.isSelected(), suiteLabel, suiteTextField, suiteBrowseButton, suiteInfoLabel);
+        enableFile(scriptCheckBox.isSelected(), scriptLabel, scriptTextField, scriptBrowseButton);
 
         addListeners();
         validateData();
@@ -119,6 +121,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         }
     }
 
+    @NbBundle.Messages("CustomizerPhpUnit.script.label=PHPUnit Script")
     void validateData() {
         String bootstrap = ""; // NOI18N
         if (bootstrapCheckBox.isSelected()) {
@@ -141,11 +144,19 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                 return;
             }
         }
+        String script = ""; // NOI18N
+        if (scriptCheckBox.isSelected()) {
+            script = getValidFile(Bundle.CustomizerPhpUnit_script_label(), scriptTextField);
+            if (script == null) {
+                return;
+            }
+        }
 
         uiProps.setPhpUnitBootstrap(bootstrap);
         uiProps.setPhpUnitBootstrapForCreateTests(bootstrapForCreateTestsCheckBox.isSelected());
         uiProps.setPhpUnitConfiguration(configuration);
         uiProps.setPhpUnitSuite(suite);
+        uiProps.setPhpUnitScript(script);
         uiProps.setPhpUnitRunTestFiles(runTestUsingUnitCheckBox.isSelected());
         uiProps.setPhpUnitAskForTestGroups(askForTestGroupsCheckBox.isSelected());
 
@@ -195,6 +206,15 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
             }
         });
         suiteTextField.getDocument().addDocumentListener(defaultDocumentListener);
+
+        scriptCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                enableFile(e.getStateChange() == ItemEvent.SELECTED, scriptLabel, scriptTextField, scriptBrowseButton);
+                validateData();
+            }
+        });
+        scriptTextField.getDocument().addDocumentListener(defaultDocumentListener);
 
         final ItemListener validateItemListener = new ItemListener() {
             @Override
@@ -289,10 +309,12 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         suiteTextField = new JTextField();
         suiteBrowseButton = new JButton();
         suiteInfoLabel = new JLabel();
+        scriptCheckBox = new JCheckBox();
+        scriptLabel = new JLabel();
+        scriptTextField = new JTextField();
+        scriptBrowseButton = new JButton();
         runTestUsingUnitCheckBox = new JCheckBox();
         askForTestGroupsCheckBox = new JCheckBox();
-
-        setFocusTraversalPolicy(null);
 
         phpUnitLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
@@ -300,42 +322,47 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         bootstrapLabel.setLabelFor(bootstrapTextField);
 
         Mnemonics.setLocalizedText(bootstrapLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(bootstrapBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.text"));
+        Mnemonics.setLocalizedText(bootstrapBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.text")); // NOI18N
         bootstrapBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bootstrapBrowseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(bootstrapGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.text"));
+        Mnemonics.setLocalizedText(bootstrapGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.text")); // NOI18N
         bootstrapGenerateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bootstrapGenerateButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(bootstrapForCreateTestsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text"));
-        Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text"));
+        Mnemonics.setLocalizedText(bootstrapForCreateTestsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text")); // NOI18N
 
         configurationLabel.setLabelFor(configurationTextField);
 
         Mnemonics.setLocalizedText(configurationLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(configurationBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.text"));
+        Mnemonics.setLocalizedText(configurationBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.text")); // NOI18N
         configurationBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configurationBrowseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(bootstrapCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.text"));
-        Mnemonics.setLocalizedText(configurationGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.text"));
+        Mnemonics.setLocalizedText(bootstrapCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(configurationGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.text")); // NOI18N
         configurationGenerateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configurationGenerateButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text"));
+        Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text")); // NOI18N
 
         suiteLabel.setLabelFor(suiteTextField);
-        Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text"));
-        Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text"));
+        Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text")); // NOI18N
+        suiteBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                suiteBrowseButtonActionPerformed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text")); // NOI18N
         suiteBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 suiteBrowseButtonActionPerformed(evt);
@@ -343,66 +370,74 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         });
 
         suiteInfoLabel.setLabelFor(this);
-        Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text"));
-        Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text"));
-        Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text"));
+        Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptBrowseButton.text")); // NOI18N
+        scriptBrowseButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                scriptBrowseButtonActionPerformed(evt);
+            }
+        });
+        Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(configurationCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(configurationCheckBox)
+                    .addComponent(suiteCheckBox)
+                    .addComponent(phpUnitLabel)
+                    .addComponent(bootstrapCheckBox)
+                    .addComponent(runTestUsingUnitCheckBox)
+                    .addComponent(askForTestGroupsCheckBox)
+                    .addComponent(scriptCheckBox))
+                .addContainerGap())
             .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
-                .addComponent(configurationLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configurationTextField, GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configurationBrowseButton)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configurationGenerateButton))
-            .addComponent(suiteCheckBox)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addComponent(suiteLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(suiteInfoLabel)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(suiteTextField, GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
+                        .addComponent(configurationLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(suiteBrowseButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(phpUnitLabel)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(bootstrapCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                        .addComponent(configurationTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configurationBrowseButton)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(configurationGenerateButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(suiteLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(suiteInfoLabel)
+                                .addContainerGap())
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(suiteTextField)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(suiteBrowseButton))))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bootstrapForCreateTestsCheckBox)
                         .addContainerGap())
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bootstrapLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(bootstrapTextField, GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE)
+                        .addComponent(bootstrapTextField)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(bootstrapBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(bootstrapGenerateButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(runTestUsingUnitCheckBox)
-                .addContainerGap())
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(askForTestGroupsCheckBox)
-                .addContainerGap())
+                        .addComponent(bootstrapGenerateButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scriptLabel)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(scriptTextField)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(scriptBrowseButton))))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, suiteBrowseButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, bootstrapGenerateButton, configurationBrowseButton, configurationGenerateButton, scriptBrowseButton, suiteBrowseButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -418,7 +453,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addComponent(bootstrapBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(bootstrapForCreateTestsCheckBox)
-                .addGap(18, 18, 18)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(configurationCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
@@ -426,7 +461,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addComponent(configurationTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configurationGenerateButton)
                     .addComponent(configurationBrowseButton))
-                .addGap(18, 18, 18)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(suiteCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
@@ -435,6 +470,13 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addComponent(suiteBrowseButton))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(suiteInfoLabel)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(scriptCheckBox)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(scriptLabel)
+                    .addComponent(scriptTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(scriptBrowseButton))
                 .addGap(18, 18, 18)
                 .addComponent(runTestUsingUnitCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -442,42 +484,8 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapForCreateTestsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapForCreateTestsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        configurationCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        configurationCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        configurationLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleName")); // NOI18N
-        configurationLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        configurationTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleName")); // NOI18N
-        configurationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        configurationBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        configurationBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        bootstrapCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        bootstrapCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        configurationGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleName")); // NOI18N
-        configurationGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleDescription")); // NOI18N
-        suiteCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleName")); // NOI18N
-        suiteCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
-        suiteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleName")); // NOI18N
-        suiteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        suiteTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleName")); // NOI18N
-        suiteTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        suiteBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleName")); // NOI18N
-        suiteBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        suiteInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        suiteInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.AccessibleContext.accessibleDescription")); // NOI18N
+        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName"));         phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleDescription"));         bootstrapLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleName"));         bootstrapLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleDescription"));         bootstrapTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleName"));         bootstrapTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleDescription"));         bootstrapBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleName"));         bootstrapBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.AccessibleContext.accessibleDescription"));         bootstrapGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleName"));         bootstrapGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.AccessibleContext.accessibleDescription"));         bootstrapForCreateTestsCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleName"));         bootstrapForCreateTestsCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.AccessibleContext.accessibleDescription"));         configurationCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleName"));         configurationCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.AccessibleContext.accessibleDescription"));         configurationLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleName"));         configurationLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.AccessibleContext.accessibleDescription"));         configurationTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleName"));         configurationTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleDescription"));         configurationBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleName"));         configurationBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.AccessibleContext.accessibleDescription"));         bootstrapCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleName"));         bootstrapCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.AccessibleContext.accessibleDescription"));         configurationGenerateButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleName"));         configurationGenerateButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.AccessibleContext.accessibleDescription"));         suiteCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleName"));         suiteCheckBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.AccessibleContext.accessibleDescription"));         suiteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleName"));         suiteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.AccessibleContext.accessibleDescription"));         suiteTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleName"));         suiteTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleDescription"));         suiteBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleName"));         suiteBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.AccessibleContext.accessibleDescription"));         suiteInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleName"));         suiteInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.AccessibleContext.accessibleDescription")); 
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.AccessibleContext.accessibleDescription")); //NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void bootstrapBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_bootstrapBrowseButtonActionPerformed
@@ -519,6 +527,14 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         }
     }//GEN-LAST:event_suiteBrowseButtonActionPerformed
 
+    @NbBundle.Messages("CustomizerPhpUnit.script.browse=Select PHPUnit script")
+    private void scriptBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_scriptBrowseButtonActionPerformed
+        File file = Utils.browseFileAction(this, getDefaultDirectory(), Bundle.CustomizerPhpUnit_script_browse());
+        if (file != null) {
+            scriptTextField.setText(file.getAbsolutePath());
+        }
+    }//GEN-LAST:event_scriptBrowseButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox askForTestGroupsCheckBox;
@@ -535,12 +551,18 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
     private JTextField configurationTextField;
     private JLabel phpUnitLabel;
     private JCheckBox runTestUsingUnitCheckBox;
+    private JButton scriptBrowseButton;
+    private JCheckBox scriptCheckBox;
+    private JLabel scriptLabel;
+    private JTextField scriptTextField;
     private JButton suiteBrowseButton;
     private JCheckBox suiteCheckBox;
     private JLabel suiteInfoLabel;
     private JLabel suiteLabel;
     private JTextField suiteTextField;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
 
     private final class DefaultDocumentListener implements DocumentListener {
         @Override
@@ -559,4 +581,5 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
             validateData();
         }
     }
+
 }

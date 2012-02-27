@@ -18,13 +18,13 @@
     </target>
 
     <target name="ext-jar" depends="ext-compile">
-        <mkdir dir="${cluster}/modules/ext"/>
-        <jar jarfile="${cluster}/modules/ext/libs.oracle.cloud-ext.jar" compress="false">
+        <mkdir dir="build/external"/>
+        <jar jarfile="build/external/libs.oracle.cloud-ext.jar" compress="false">
             <fileset dir="build/extclasses"/>
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="release,ext-jar"/>
+    <target name="build-sdk-wrapper" depends="netbeans,ext-jar"/>
 
 
 </project>

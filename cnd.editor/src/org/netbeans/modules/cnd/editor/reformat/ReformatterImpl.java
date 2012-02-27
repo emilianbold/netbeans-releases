@@ -1210,6 +1210,37 @@ public class ReformatterImpl {
         int indent = 0;
         if (entry != null) {
             indent = continuationIndent(entry.getSelfIndent());
+            if (entry.isLikeToFunction() && codeStyle.getFormatNewlineBeforeBraceDeclaration() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                indent += codeStyle.indentSize();
+            } else if (entry.isLikeToArrayInitialization() && codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                indent += codeStyle.indentSize();
+            } else if (entry.getImportantKind() != null) {
+                switch (entry.getImportantKind()) {
+                    case NAMESPACE:
+                        if (codeStyle.getFormatNewlineBeforeBraceNamespace() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += codeStyle.indentSize();
+                        }
+                        break;
+                    case CLASS:
+                    case STRUCT:
+                    case ENUM:
+                    case UNION:
+                        if (codeStyle.getFormatNewlineBeforeBraceClass() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += entry.getIndent();
+                        }
+                        break;
+                    case SWITCH:
+                        if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += codeStyle.indentSize();
+                        }
+                        break;
+                    default:
+                        if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_FULL_INDENTED) {
+                            indent += codeStyle.indentSize();
+                        }
+                        break;
+                }
+            }
         }
         Token<CppTokenId> prevImportant = ts.lookPreviousImportant();
         boolean emptyBody = false;
@@ -1686,6 +1717,8 @@ public class ReformatterImpl {
             newLineBefore(IndentKind.PARENT);
         } else if (where == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED) {
             newLineBefore(IndentKind.PARENT);
+        } else if (where == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED) {
+            newLineBefore(IndentKind.FULL);
         } else if (where == CodeStyle.BracePlacement.SAME_LINE) {
             if (ts.isFirstLineToken()){
                 if (!removeLineBefore(spaceBefore)){
@@ -1792,6 +1825,7 @@ public class ReformatterImpl {
     private static enum IndentKind {
         PARENT,
         HALF,
+        FULL,
         INDENT
     }
 
@@ -1803,6 +1837,9 @@ public class ReformatterImpl {
                 break;
             case HALF:
                 spaces = (getParentIndent()+getIndent())/2;
+                break;
+            case FULL:
+                spaces = getParentIndent()+codeStyle.indentSize();
                 break;
             case INDENT:
             default:

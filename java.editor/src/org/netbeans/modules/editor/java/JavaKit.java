@@ -576,7 +576,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
         
-        @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class) //NOI18N
         public static class JavaStringFactory implements TypedBreakInterceptor.Factory {
 
             @Override
@@ -620,6 +620,15 @@ public class JavaKit extends NbEditorKit {
                 return new JavaDeletedTextInterceptor();
             }
         }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = DeletedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new JavaDeletedTextInterceptor();
+            }
+        }
     }
     
     public static class JavaTypedTextInterceptor implements TypedTextInterceptor {
@@ -634,8 +643,34 @@ public class JavaKit extends NbEditorKit {
         @Override
         public void insert(MutableContext context) throws BadLocationException {
             char insertedChar = context.getText().charAt(0);
-            if (insertedChar == '\"' || insertedChar == '\'') {
-                inserted = BraceCompletion.completeQuote((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+            if (Utilities.isSelectionShowing(context.getComponent().getCaret())) {
+                Document doc = context.getDocument();
+                Caret caret = context.getComponent().getCaret();
+                if (insertedChar == '\"' || insertedChar == '\'') {
+                    if (doc != null) {
+                        try {
+                            int p0 = Math.min(caret.getDot(), caret.getMark());
+                            int p1 = Math.max(caret.getDot(), caret.getMark());
+                            if (p0 != p1) {
+                                doc.remove(p0, p1 - p0);
+                            }
+                            int caretPosition = caret.getDot();
+                            if (doc instanceof BaseDocument) {
+                                inserted = BraceCompletion.completeQuote(
+                                        (BaseDocument) doc,
+                                        caretPosition,
+                                        caret, insertedChar);
+                            }
+                        } catch (BadLocationException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+            else {
+                if (insertedChar == '\"' || insertedChar == '\'') {
+                    inserted = BraceCompletion.completeQuote((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+                }
             }
         }
 
@@ -657,6 +692,15 @@ public class JavaKit extends NbEditorKit {
 
         @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
         public static class Factory implements TypedTextInterceptor.Factory {
+
+            @Override
+            public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                return new JavaTypedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements TypedTextInterceptor.Factory {
 
             @Override
             public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {

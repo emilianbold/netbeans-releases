@@ -60,7 +60,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.util.FileUtils;
@@ -129,8 +129,8 @@ public class JiraStorageManager {
      * MAY access IO (on the first access)
      * @param repository a repository which's queries will be returned
      */
-    HashSet<Query> getQueries (JiraRepository repository) {
-        HashSet<Query> queries = new HashSet<Query>(10);
+    HashSet<QueryProvider> getQueries (JiraRepository repository) {
+        HashSet<QueryProvider> queries = new HashSet<QueryProvider>(10);
         for (Entry<String, JiraQueryData> e : getCachedQueries().entrySet()) {
             if (e.getKey().startsWith(repository.getID() + QUERY_DELIMITER)) {
                 queries.add(createQuery(repository, e.getValue()));

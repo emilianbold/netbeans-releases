@@ -179,8 +179,6 @@ made subject to such option by the copyright holder.
             <extra-compilation-unit>
                 <package-root>extsrc</package-root>
                 <classpath>${module.classpath}:${cluster}/${module.jar}:${extsrc.cp.extra}</classpath>
-                <built-to>build/extclasses</built-to>
-                <built-to>build/external/libs.oracle.cloud-ext.jar</built-to>
             </extra-compilation-unit>
         </data>
     </configuration>

@@ -68,5 +68,10 @@ class ClassName {
 $a = $b = 5;
 foobar($b);
 
+function functionNameArrayAccess() {
+    $subnodes[] = 1;
+    return $subnodes;
+}
+
 //END
 ?>

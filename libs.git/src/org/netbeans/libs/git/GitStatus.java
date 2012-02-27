@@ -46,8 +46,10 @@ import java.io.File;
 import org.eclipse.jgit.diff.DiffEntry;
 
 /**
- *
- * @author ondra
+ * Provides overall information about git status of a certain resource 
+ * in a git repository.
+ * 
+ * @author Ondra Vrabec
  */
 public final class GitStatus {
 
@@ -62,57 +64,103 @@ public final class GitStatus {
     private DiffEntry diffEntry;
     private final String workTreePath;
 
+    /**
+     * File's status, respectively the state of a file between two trees
+     * (can be HEAD vs. index, HEAD vs. working tree or index vs. working tree).
+     */
     public enum Status {
         STATUS_ADDED, STATUS_REMOVED, STATUS_NORMAL, STATUS_MODIFIED, STATUS_IGNORED
     }
 
-    public GitStatus (String workTreePath, File file, String relativePath, boolean tracked) {
+    GitStatus (String workTreePath, File file, String relativePath, boolean tracked) {
         this.workTreePath = workTreePath;
         this.file = file;
         this.relativePath = relativePath;
         this.tracked = tracked;
     }
     
+    /**
+     * @return file the status is associated with
+     */
     public File getFile () {
         return file;
     }
 
+    /**
+     * @return relative path of the file in the repository
+     */
     public String getRelativePath () {
         return relativePath;
     }
 
+    /**
+     * @return file's state/difference between the HEAD and Index
+     */
     public Status getStatusHeadIndex () {
         return statusHeadIndex;
     }
 
+    /**
+     * @return file's state/difference between the Index and Working tree
+     */
     public Status getStatusIndexWC () {
         return statusIndexWC;
     }
 
+    /**
+     * @return file's state/difference between the HEAD and Working tree
+     */
     public Status getStatusHeadWC () {
         return statusHeadWC;
     }
 
+    /**
+     * @return <code>true</code> if the file is tracked by Git, 
+     * meaning it has been already committed or added to the Index
+     */
     public boolean isTracked () {
         return tracked;
     }
 
+    /**
+     * States if the file is currently in conflict and needs to be resolved.
+     * If the file is in conflict then:
+     * <ul>
+     * <li>more information can be acquired with the <code>getConflictDescriptor</code> method</li>
+     * <li>contents of the file in conflict (base, mine and others) can be acquired via 
+     * {@link GitClient#catIndexEntry(java.io.File, int, java.io.OutputStream, org.netbeans.libs.git.progress.ProgressMonitor) }. </li>
+     * </ul>
+     * @return <code>true</code> if the file is currently in conflict.
+     */
     public boolean isConflict () {
         return conflictDescriptor != null;
     }
 
+    /**
+     * @return <code>true</code> if the file references a folder.
+     */
     public boolean isFolder () {
         return isFolder;
     }
 
+    /**
+     * @return <code>true</code> if the file is tracked in the Index as copied.
+     */
     public boolean isCopied () {
         return diffEntry != null && diffEntry.getChangeType().equals(DiffEntry.ChangeType.COPY);
     }
 
+    /**
+     * @return <code>true</code> if the file is tracked in the Index as renamed.
+     */
     public boolean isRenamed () {
         return diffEntry != null && diffEntry.getChangeType().equals(DiffEntry.ChangeType.RENAME);
     }
 
+    /**
+     * @return <code>null</code> if the file is neither copied or renamed, the original file this 
+     * file has been copied or renamed from otherwise.
+     */
     public File getOldPath () {
         if (isRenamed() || isCopied()) {
             return new File(workTreePath + File.separator + diffEntry.getOldPath());
@@ -121,6 +169,9 @@ public final class GitStatus {
         }
     }
 
+    /**
+     * @return more information about the conflict or <code>null</code> if the file is not in conflict.
+     */
     public GitConflictDescriptor getConflictDescriptor () {
         return conflictDescriptor;
     }

@@ -46,21 +46,12 @@ import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.issue.JiraIssueProvider;
 import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
-import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -68,10 +59,6 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  */
 public class Jira {
-
-    private Set<JiraRepository> repositories;
-
-    private static final Object REPOSITORIES_LOCK = new Object();
 
     private JiraRepositoryConnector jrc;
     private static Jira instance;
@@ -81,7 +68,6 @@ public class Jira {
     private RequestProcessor rp;
 
     private KenaiSupport kenaiSupport;
-    private JiraConnector connector;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
@@ -125,74 +111,8 @@ public class Jira {
         return rp;
     }
 
-    public void addRepository(JiraRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            Set<JiraRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            if(!(repository instanceof KenaiRepository)) {
-                // we don't store kenai repositories - XXX  shouldn't be even called
-                repos.add(repository);
-                JiraConfig.getInstance().putRepository(repository.getID(), repository);
-            }
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-        }
-        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
-    }
-
-    public void removeRepository(JiraRepository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
-        synchronized(REPOSITORIES_LOCK) {
-            Set<JiraRepository> repos = getStoredRepositories();
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            repos.remove(repository);
-            newRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(repos));
-            JiraConfig.getInstance().removeRepository(repository.getID());
-        }
-        getConnector().fireRepositoriesChanged(oldRepos, newRepos);
-        JiraIssueProvider.getInstance().removeAllFor(repository);
-    }
-
     public JiraConnector getConnector() {
-        if (connector == null) {
-            connector = Lookup.getDefault().lookup(JiraConnector.class);
-        }
-        return connector;
-    }
-
-    public JiraRepository[] getRepositories() {
-        synchronized(REPOSITORIES_LOCK) {
-            Set<JiraRepository> s = getStoredRepositories();
-            return s.toArray(new JiraRepository[s.size()]);
-        }
-    }
-
-    private Set<JiraRepository> getStoredRepositories() {
-        if (repositories == null) {
-            repositories = new HashSet<JiraRepository>();
-            String[] names = JiraConfig.getInstance().getRepositories();
-            if (names == null || names.length == 0) {
-                return repositories;
-            }
-            for (String name : names) {
-                JiraRepository repo = JiraConfig.getInstance().getRepository(name);
-                if (repo != null) {
-                    repositories.add(repo);
-                }
-            }
-        }
-        return repositories;
-    }
-
-    public JiraRepository getRepository(String name) {
-        for(JiraRepository repo : getRepositories()) {
-            if(repo.getDisplayName().equals(name)) {
-                return repo;
-            }
-        }
-        return null;
+        return JiraConnector.getInstance();
     }
 
     public JiraRepositoryConnector getRepositoryConnector() {

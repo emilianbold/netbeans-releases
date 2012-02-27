@@ -61,10 +61,17 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-nbs",
+    position=210,
+    displayName="#NBSResolver",
+    extension={ "nbs" }
+)
 public class LanguagesDataObject extends MultiDataObject {
 
     public LanguagesDataObject(FileObject pf, LanguagesDataLoader loader) throws DataObjectExistsException, IOException {

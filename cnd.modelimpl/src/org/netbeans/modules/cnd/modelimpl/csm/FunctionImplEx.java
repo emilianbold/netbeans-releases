@@ -81,8 +81,12 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
     protected FunctionImplEx(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-    
+
     public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global) throws AstRendererException {
+        return create(ast, file, scope, register, global, null);
+    }
+    
+    public static<T> FunctionImplEx<T> create(AST ast, CsmFile file, CsmScope scope, boolean register, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
@@ -108,7 +112,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
         
         functionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
-        functionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionImplEx, file));
+        functionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionImplEx, file, objects));
         functionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImplEx, file, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
@@ -164,7 +168,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         child = AstRenderer.getFirstSiblingSkipInline(child);
         child = AstRenderer.getFirstSiblingSkipQualifiers(child);
-	if( child != null && child.getType() == CPPTokenTypes.ID ) {
+	if( child != null && child.getType() == CPPTokenTypes.IDENT ) {
 	    AST next = child.getNextSibling();
 	    if( next != null && next.getType() == CPPTokenTypes.LESSTHAN ) {
                 next = AstRenderer.skipTemplateParameters(next);
@@ -176,7 +180,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 		begin:
 		for( next = next.getNextSibling(); next != null; next = next.getNextSibling() ) {
 		    switch( next.getType() ) {
-			case CPPTokenTypes.ID:
+			case CPPTokenTypes.IDENT:
 			    l.add(manager.getString(AstUtil.getText(next)));
                             break;
 			case CPPTokenTypes.SCOPE:
@@ -206,7 +210,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 int type2 = token.getType();
                 switch (type2) {
-                    case CPPTokenTypes.ID:
+                    case CPPTokenTypes.IDENT:
                         id = new StringBuilder(token.getText());
                         break;
                     case CPPTokenTypes.GREATERTHAN:

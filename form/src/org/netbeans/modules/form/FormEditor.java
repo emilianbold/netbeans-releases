@@ -363,7 +363,7 @@ public class FormEditor {
 
         getCodeGenerator().initialize(formModel);
         ResourceSupport resupport = getResourceSupport(); // make sure ResourceSupport is created and initialized
-        if (resupport.getDesignLocale() != null) {
+        if (resupport.getDesignLocale() != null && !"".equals(resupport.getDesignLocale())) { // NOI18N
             resupport.updateDesignLocale();
         }
 

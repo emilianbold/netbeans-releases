@@ -113,6 +113,7 @@ public final class SearchBar extends JPanel {
     private final ExpandMenu expandMenu;
     private Map<String, Object> findProps = EditorFindSupport.getInstance().getFindProperties();
     private boolean searched = false;
+    private boolean popupMenuWasCanceled = false;
 
     public static SearchBar getInstance() {
         if (searchbarInstance == null) {
@@ -147,7 +148,7 @@ public final class SearchBar extends JPanel {
         setForeground(DEFAULT_FG_COLOR); //NOI18N
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
-
+        
         incSearchComboBox = createIncSearchComboBox();
         incSearchTextField = createIncSearchTextField(incSearchComboBox);
         incSearchTextFieldListener = createIncSearchTextFieldListener(incSearchTextField);
@@ -219,10 +220,9 @@ public final class SearchBar extends JPanel {
         add(closeButton);
 
         makeBarExpandable(expandMenu);
-
-        setVisible(false);
+        setVisible(false);       
     }
-
+    
     private void makeBarExpandable(ExpandMenu expMenu) {
         expMenu.addToInbar(matchCaseCheckBox);
         expMenu.addToInbar(wholeWordsCheckBox);
@@ -233,9 +233,10 @@ public final class SearchBar extends JPanel {
         remove(getExpandButton());
         getExpandButton().setVisible(false);
     }
-
+    
     void updateIncSearchComboBoxHistory(String incrementalSearchText) {
-        incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
+        EditorFindSupport.getInstance().addToHistory(new EditorFindSupport.SPW(incrementalSearchText, 
+                wholeWordsCheckBox.isSelected(), matchCaseCheckBox.isSelected(), regexpCheckBox.isSelected()));
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) incSearchComboBox.getItemAt(i);
@@ -247,7 +248,7 @@ public final class SearchBar extends JPanel {
         incSearchComboBox.setSelectedIndex(0);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
-
+    
     private FocusAdapter createFocusAdapterForComponent() {
         return new FocusAdapter() {
 
@@ -433,7 +434,15 @@ public final class SearchBar extends JPanel {
     }
 
     private JCheckBox createRegExpCheckBox(String resName, final String findConstant) {
-        final JCheckBox regExpCheckBox = new JCheckBox();
+        final JCheckBox regExpCheckBox = new JCheckBox() {
+
+            @Override
+            public void setSelected(boolean b) {
+                super.setSelected(b);
+                wholeWordsCheckBox.setEnabled(!regexpCheckBox.isSelected());
+            }
+            
+        };
         regExpCheckBox.setOpaque(false);
         Mnemonics.setLocalizedText(regExpCheckBox, NbBundle.getMessage(SearchBar.class, resName));
         regExpCheckBox.addActionListener(new ActionListener() {
@@ -651,7 +660,7 @@ public final class SearchBar extends JPanel {
 
     private JComboBox createIncSearchComboBox() {
         JComboBox incrementalSearchComboBox = new JComboBox() {
-
+            
             @Override
             public Dimension getMinimumSize() {
                 return getPreferredSize();
@@ -679,6 +688,41 @@ public final class SearchBar extends JPanel {
         };
 
         incrementalSearchComboBox.setEditable(true);
+        incrementalSearchComboBox.addPopupMenuListener(new PopupMenuListener() {
+            private boolean canceled = false;
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                if (!canceled) {
+                    Object selectedItem = incSearchComboBox.getModel().getSelectedItem();
+                    if (selectedItem instanceof String) {
+                        String findWhat = (String) selectedItem;
+                        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
+                            if (findWhat.equals(spw.getSearchExpression())) {
+                                getRegexpCheckBox().setSelected(spw.isRegExp());
+                                break;
+                            }
+                    }
+                    
+                        
+                    
+                } else  {
+                    canceled = false;
+                }
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                canceled = true;
+                popupMenuWasCanceled = true;
+            }
+
+            
+        });
         return incrementalSearchComboBox;
     }
 
@@ -770,7 +814,10 @@ public final class SearchBar extends JPanel {
                 if (!CLOSE_ON_ENTER && !searched) {
                     findNext();
                 }
-                looseFocus();
+                if (!popupMenuWasCanceled)
+                    looseFocus();
+                else
+                    popupMenuWasCanceled = false;
             }
         });
     }
@@ -844,6 +891,12 @@ public final class SearchBar extends JPanel {
     void gainFocus() {
         hadFocusOnIncSearchTextField = true;
         setVisible(true);
+        MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
+        for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
+            comboBoxModelIncSearch.removeElementAt(i);
+        }
+        for (EditorFindSupport.SPW spw : EditorFindSupport.getInstance().getHistory())
+            comboBoxModelIncSearch.addElement(spw.getSearchExpression());
         initBlockSearch();
 
         incSearchTextField.requestFocusInWindow();
@@ -1123,4 +1176,14 @@ public final class SearchBar extends JPanel {
     JComponent getExpandButton() {
         return expandMenu.getExpandButton();
     }
+
+    public boolean isPopupMenuWasCanceled() {
+        return popupMenuWasCanceled;
+    }
+
+    public void setPopupMenuWasCanceled(boolean popupMenuWasCanceled) {
+        this.popupMenuWasCanceled = popupMenuWasCanceled;
+    }
+    
+    
 }

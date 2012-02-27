@@ -123,14 +123,20 @@ public class ProviderUtil {
         if (null == providerClass || "".equals(providerClass.trim())) {
             return getContainerManagedProvider(project);
         }
+        
+       String ver = PersistenceUtils.getJPAVersion(project);
+       ver = ver == null ? Persistence.VERSION_2_0 : ver;
 
-        for (Provider each : getAllProviders()) {
+       Provider ret = DEFAULT_PROVIDER;// some unknown provider
+       
+       for (Provider each : getAllProviders()) {
             if (each.getProviderClass().equals(providerClass.trim())) {
-                return each;
+                ret = each;
+                if(ver.equals(ProviderUtil.getVersion(each)))return each;
             }
         }
-        // some unknown provider
-        return DEFAULT_PROVIDER;
+        
+        return ret;
 
     }
 

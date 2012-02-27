@@ -307,8 +307,19 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
 
                 case IN_COMMENT:
                     if (cc == '*') {
-                        state = State.AFTER_SUBSTATE;
-                        return TplTopTokenId.T_COMMENT;
+                        int nextChar = input.read();
+                        if (nextChar != LexerInput.EOF) {
+                            if (isSmartyCloseDelimiter(input.readText())) {
+                                input.backup(1);
+                                state = State.AFTER_SUBSTATE;
+                                return TplTopTokenId.T_COMMENT;
+                            } else {
+                                input.backup(1);
+                                return TplTopTokenId.T_COMMENT;
+                            }
+                        } else {
+                            input.backup(1);
+                        }
                     }
                     return TplTopTokenId.T_COMMENT;
 

@@ -171,38 +171,9 @@ file (that is, <samp>*.xml</samp>) whose root element is
 <code>default</code> (value unspecified).</p>
 
 
-<p>Registration in the module XML layer
-<samp>org/nb/modules/ant/layer.xml</samp>:</p>
-
-<pre>
-&lt;?<font class="keyword">xml</font> <font class="variable-name">version</font>=<font class="string">"1.0"</font> <font class="variable-name">encoding</font>=<font class="string">"UTF-8"</font>?&gt;
-&lt;!<font class="keyword">DOCTYPE</font> <font class="type">filesystem</font> <font class="keyword">PUBLIC</font>
-          <font class="string">"-//NetBeans//DTD Filesystem 1.0//EN"</font>
-          <font class="string">"http://www.netbeans.org/dtds/filesystem-1_0.dtd"</font>&gt;
-&lt;<font class="function-name">filesystem</font>&gt;
-    &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"Services"</font>&gt;
-        &lt;<font class="function-name">folder</font> <font class="variable-name">name</font>=<font class="string">"MIMEResolver"</font>&gt;
-            &lt;<font class="function-name">file</font> <font class="variable-name">name</font>=<font class="string">"org-nb-modules-ant-mime-resolver.xml"</font>
-                  <font class="variable-name">url</font>=<font class="string">"mime-resolver.xml"</font>&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"SystemFileSystem.localizingBundle"</font>
-                      <font class="variable-name">stringvalue</font>=<font class="string">"org.nb.modules.ant.Bundle"</font>/&gt;
-                &lt;<font class="function-name">attr</font> <font class="variable-name">name</font>=<font class="string">"position"</font> <font class="variable-name">intvalue</font>=<font class="string">"1234"</font>/&gt;
-            &lt;/<font class="function-name">file</font>&gt;
-        &lt;/<font class="function-name">folder</font>&gt;
-    &lt;/<font class="function-name">folder</font>&gt;
-&lt;/<font class="function-name">filesystem</font>&gt;
-</pre>
-
-<p>The resolver is registered as
-<samp>Services/MIMEResolver/org-nb-modules-ant-mime-resolver.xml</samp>.
-It is given a pleasant display name since the user may see
-the resolver presented under XML Layer node. The bundle file
-<samp>org/nb/modules/ant/Bundle.properties</samp> would contain a
-matching key:</p>
-
-<pre>
-<font class="variable-name">Services/MIMEResolver/org-nb-modules-ant-mime-resolver.xml</font>=<font class="string">Ant project files</font>
-</pre>
+<p>Register this file using <a href="@TOP@/org/openide/filesystems/MIMEResolver.Registration.html">@MIMEResolver.Registration</a>
+annotation. It allows to specify nice display name and position among other resolvers in the <code>Services/MIMEResolver</code>
+folder.
 
 <p>
     Note that an <a href="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers.txt">open position</a>

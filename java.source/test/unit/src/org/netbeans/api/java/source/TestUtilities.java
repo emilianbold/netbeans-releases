@@ -64,6 +64,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.zip.GZIPInputStream;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.usages.BinaryAnalyser;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
@@ -249,15 +250,15 @@ public final class TestUtilities {
         js.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController parameter) throws Exception {                
                 for (final URL url : urls) {
-                    final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);            
-                    ClassIndexManager.getDefault().writeLock(new IndexManager.Action<Void>() {
-                        public Void run() throws IOException, InterruptedException {
-                            BinaryAnalyser ba = cii.getBinaryAnalyser();            
-                            ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
-                            ba.finish();
-                            return null;
-                        }
-                    });            
+                    TransactionContext ctx = TransactionContext.beginStandardTransaction(false, url);
+                    try {
+                        final ClassIndexImpl cii = mgr.createUsagesQuery(url, false);
+                        final BinaryAnalyser ba = cii.getBinaryAnalyser();            
+                        ba.start(url, new AtomicBoolean(false), new AtomicBoolean(false));
+                        ba.finish();
+                    } finally {
+                        ctx.commit();
+                    }
                 }
             }
         }, true);

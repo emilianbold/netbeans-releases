@@ -95,6 +95,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
         private String comment = "";
         private int bracketBalance = 0;
         private boolean unexpectedCharacter = false;
+        private boolean commentMatched = false;
 
         public static CommentExtractor create(String methodName) {
             return new CommentExtractorImpl(methodName);
@@ -111,7 +112,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
             int index = 0;
             while ((index = currentDescription.lastIndexOf('(')) > -1) {
                 findComment(index);
-                if (!comment.isEmpty()) {
+                if (commentMatched) {
                     break;
                 }
             }
@@ -124,6 +125,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
             int matchingBraceIndex = getMatchingBraceIndex(postDesc);
             if (preDesc.trim().endsWith(methodName) && (matchingBraceIndex != 0)) {
                 comment = postDesc.substring(matchingBraceIndex + 1).trim();
+                commentMatched = true;
             } else {
                 currentDescription = preDesc;
             }

@@ -102,7 +102,7 @@ public class DataView {
         try {
             dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv);
-            SQLExecutionHelper.initialDataLoad(dv, dbConn, dv.execHelper);
+            dv.execHelper.initialDataLoad();
             dv.stmtGenerator = new SQLStatementGenerator(dv);
         } catch (Exception ex) {
             dv.setErrorStatusText(ex);

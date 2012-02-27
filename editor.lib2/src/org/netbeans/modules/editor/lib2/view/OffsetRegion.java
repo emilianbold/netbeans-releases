@@ -75,7 +75,7 @@ public final class OffsetRegion {
     }
 
     public static OffsetRegion union(OffsetRegion region1, OffsetRegion region2, boolean ignoreEmpty) {
-        return (region1 != null) ? region1.union(region2, ignoreEmpty) : region1;
+        return (region1 != null) ? region1.union(region2, ignoreEmpty) : region2;
     }
 
     private static Position createPos(Document doc, int offset) {
@@ -105,7 +105,7 @@ public final class OffsetRegion {
         return startPos.getOffset();
     }
     
-    private Position startPos() {
+    public Position startPosition() {
         return startPos;
     }
     
@@ -113,7 +113,7 @@ public final class OffsetRegion {
         return endPos.getOffset();
     }
     
-    private Position endPos() {
+    public Position endPosition() {
         return endPos;
     }
 

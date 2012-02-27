@@ -64,6 +64,7 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.subversion.config.PasswordFile;
 import org.netbeans.modules.subversion.ui.repository.RepositoryConnection;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.VCSHyperlinkProvider;
 import org.openide.filesystems.FileUtil;
@@ -132,6 +133,7 @@ public class Subversion {
         return instance;
     }
     private RequestProcessor parallelRP;
+    private HistoryProvider historyProvider;
 
     private Subversion() {
     }
@@ -199,6 +201,13 @@ public class Subversion {
     public Annotator getAnnotator() {
         return annotator;
     }
+    
+    public HistoryProvider getHistoryProvider() {
+        if(historyProvider == null) {
+            historyProvider = new HistoryProvider();
+        }
+        return historyProvider;
+    }    
 
     public SvnClientRefreshHandler getRefreshHandler() {
         return refreshHandler;

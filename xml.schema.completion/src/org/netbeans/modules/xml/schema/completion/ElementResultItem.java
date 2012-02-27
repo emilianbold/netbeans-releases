@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.axi.AnyAttribute;
 import org.netbeans.modules.xml.axi.Attribute;
 import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.CompletionPaintComponent.ElementPaintComponent;
+import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.modules.xml.schema.model.Attribute.Use;
 
@@ -80,7 +81,8 @@ public class ElementResultItem extends CompletionResultItem {
     /**
      * Creates a new instance of ElementResultItem
      */
-    public ElementResultItem(AbstractElement element, String prefix, CompletionContext context) {
+    // not the impl dependency is necessary to handle namespaces well.
+    public ElementResultItem(AbstractElement element, String prefix, CompletionContextImpl context) {
         super(element, context);        
         itemText = prefix + ":" + element.getName();
         icon = new ImageIcon(CompletionResultItem.class.
@@ -112,7 +114,9 @@ public class ElementResultItem extends CompletionResultItem {
         replacingText = null;
 
         AbstractElement element = (AbstractElement)axiComponent;
-        StringBuffer buffer = new StringBuffer();
+        StringBuffer buffer = new StringBuffer(CompletionUtil.TAG_FIRST_CHAR);
+        buffer.append(itemText);
+
         boolean firstAttr = false;
         for (AbstractAttribute aa : element.getAttributes()) {
             if (aa instanceof AnyAttribute) continue;
@@ -129,10 +133,8 @@ public class ElementResultItem extends CompletionResultItem {
                 }                
             }
         }
-        replacingText = 
-            (CompletionUtil.TAG_FIRST_CHAR +
-            itemText + buffer.toString() +
-            CompletionUtil.TAG_LAST_CHAR);
+        buffer.append(CompletionUtil.TAG_LAST_CHAR);
+        replacingText = buffer.toString();
         return replacingText;
     }
         

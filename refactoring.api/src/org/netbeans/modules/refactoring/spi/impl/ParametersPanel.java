@@ -359,11 +359,13 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             canceledDialog = true;
             if (evt!=null && evt.getSource() instanceof Cancellable) {
                 putResult(null);
-                dialog.setVisible(false);
+                if (dialog!=null)
+                    dialog.setVisible(false);
             } else {
                 rui.getRefactoring().cancelRequest();
                 putResult(null);
-                dialog.setVisible(false);
+                if (dialog!=null)
+                    dialog.setVisible(false);
                 cancelRequest = true;
             }
         }
@@ -554,6 +556,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
     
     // disables all components in the custom panel
     private void disableComponents(Container c) {
+        if (c==null) {
+            assert customPanel == null;
+            return;
+        }
         RefactoringPanel.checkEventThread();
         Component children[] = c.getComponents();
         for (int i = 0; i < children.length; i++) {
@@ -979,9 +985,21 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
             }
             
             try {
-                RefactoringSession refactoringSession = getResult ();
-                if (refactoringSession != null)
-                    problem = rui.getRefactoring ().prepare (refactoringSession);
+                final RefactoringSession refactoringSession = getResult ();
+                if (refactoringSession != null) {
+                    if (rui.isQuery() && isInstant()) {
+                        //run queries asynchronously
+                        RequestProcessor.getDefault().post(new Runnable() {
+
+                            @Override
+                            public void run() {
+                                problem = rui.getRefactoring().prepare(refactoringSession);
+                            }
+                        });
+                    } else {
+                        problem = rui.getRefactoring().prepare(refactoringSession);
+                    }
+                }
             } catch (RuntimeException e) {
                 setVisibleLater(false);
                 throw e;
@@ -996,6 +1014,10 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     }});
             }
         }
+    }
+    
+    static boolean isInstant() {
+        return Boolean.parseBoolean(System.getProperty("org.netbeans.modules.refactoring.instant.find.usages", "false"));
     }
     
     private void setButtonsEnabled(boolean enabled) {

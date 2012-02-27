@@ -52,10 +52,13 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+
 import java.awt.Container;
 import javax.swing.JComponent;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -80,6 +83,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -112,6 +116,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import com.sun.source.tree.ClassTree;
@@ -571,35 +576,42 @@ public class Util {
     {
         final Set<String> entities = new HashSet<String>();
         for (FileObject file : files) {
-            JavaSource source = JavaSource.forFileObject(file);
-            source.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                    TypeElement classElement = SourceUtils.
-                        getPublicTopLevelElement(controller);
-                    if (classElement != null) {
-                        String entityName = null;
-                        TypeElement annotationElement = controller.getElements().
-                            getTypeElement(Constants.PERSISTENCE_TABLE);
-                        if (annotationElement != null) {
-                            entityName = TypeUtil.getAnnotationValueName(controller, 
-                                    classElement, annotationElement);
-                            if (entityName == null) {
-                                annotationElement =  controller.getElements().
-                                    getTypeElement(Constants.PERSISTENCE_ENTITY);
-                                if (annotationElement != null) {
-                                    entityName = TypeUtil.getAnnotationValueName(
-                                            controller, classElement, annotationElement);
-                                }
+            final JavaSource source = JavaSource.forFileObject(file);
+            final EntityCollector collector = new EntityCollector();
+            source.runUserActionTask( collector, true);
+            if ( collector.isIncomplete() && 
+                    org.netbeans.api.java.source.SourceUtils.isScanInProgress())
+            {
+                final Runnable runnable = new Runnable(){
+                    public void run() {
+                        try {
+                            source.runUserActionTask(collector, true);
+                            if (collector.getEntityFqn()!=null) {
+                                entities.add( collector.getEntityFqn());
                             }
                         }
-                        if (entityName != null) {
-                            entities.add(classElement.getQualifiedName().toString());
+                        catch( IOException e ){
+                            Logger.getLogger(Util.class.getCanonicalName()).log(
+                                    Level.WARNING, null , e);
                         }
                     }
+                };
+                if ( SwingUtilities.isEventDispatchThread()){
+                    ScanDialog.runWhenScanFinished(runnable, NbBundle.getMessage(
+                            Util.class, "LBL_AnalyzeEntities"));        // NOI18N
                 }
-            }, true);
+                else {
+                    SwingUtilities.invokeLater( new Runnable(){
+                        public void run() {
+                            ScanDialog.runWhenScanFinished(runnable, NbBundle.getMessage(
+                                    Util.class, "LBL_AnalyzeEntities"));        // NOI18N
+                        }
+                    });
+                }
+            }
+            else if (collector.getEntityFqn()!=null) {
+                entities.add( collector.getEntityFqn());
+            }
         }
         return entities;
     }
@@ -642,13 +654,65 @@ public class Util {
             if (entityFileObject == null) {
                 return;
             }
-            JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
+            final JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
             if (javaSource == null) {
                 return;
             }
+            final boolean isIncomplete[] = new boolean[0];
+            final Task<CompilationController> task = new Task<CompilationController>(){
+                @Override
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(Phase.RESOLVED);
+                    
+                    isIncomplete[0] = controller.getElements().getTypeElement(
+                            XMLROOT_ANNOTATION) == null;
+                }
+            };
+            
+            javaSource.runUserActionTask(task, true);
+            if ( isIncomplete[0] && 
+                    org.netbeans.api.java.source.SourceUtils.isScanInProgress())
+            {
+                final Runnable runnable = new Runnable(){
+                    public void run() {
+                        try {
+                            javaSource.runUserActionTask(task, true);
+                        }
+                        catch( IOException e ){
+                            Logger.getLogger( Util.class.getCanonicalName()).
+                                log(Level.WARNING, null, e );
+                        }
+                    }
+                };
+                if ( SwingUtilities.isEventDispatchThread() ){
+                    ScanDialog.runWhenScanFinished( runnable, NbBundle.
+                            getMessage(Util.class, "LBL_EntityModification"));      // NOI18N
+                }
+                else {
+                    try {
+                        SwingUtilities.invokeAndWait( new Runnable(){
+                            public void run() {
+                                ScanDialog.runWhenScanFinished( runnable, NbBundle.
+                                   getMessage(Util.class, "LBL_EntityModification"));      // NOI18N
+                            }
+                        });
+                    }
+                    catch( InterruptedException e ){
+                        return;
+                    }
+                    catch( InvocationTargetException e ){
+                        return;
+                    }
+                }
+            }
+            if (isIncomplete[0]) {
+                return;
+            }
+            
             ModificationResult result = javaSource
                     .runModificationTask(new Task<WorkingCopy>() {
 
+                        @Override
                         public void run( final WorkingCopy working )
                                 throws IOException
                         {
@@ -656,8 +720,8 @@ public class Util {
 
                             TreeMaker make = working.getTreeMaker();
                             
-                            if (working.getElements().getTypeElement(
-                                    XMLROOT_ANNOTATION) == null )
+                            if ( working.getElements().getTypeElement(
+                                    XMLROOT_ANNOTATION) == null)
                             {
                                 return;
                             }
@@ -705,4 +769,55 @@ public class Util {
     
     private static final FacadeGeneratorProvider FACADE_GENERATOR =
         Lookup.getDefault().lookup(FacadeGeneratorProvider.class);
+    
+    private static class EntityCollector implements Task<CompilationController>{
+        
+        /* (non-Javadoc)
+         * @see org.netbeans.api.java.source.Task#run(java.lang.Object)
+         */
+        @Override
+        public void run( CompilationController controller ) throws Exception {
+            entityFqn = null;
+            controller.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement classElement = SourceUtils.
+                getPublicTopLevelElement(controller);
+            if (classElement == null) {
+                return;
+            }
+            String entityName = null;
+            TypeElement annotationElement = controller.getElements()
+                    .getTypeElement(Constants.PERSISTENCE_TABLE);
+            if (annotationElement == null) {
+                isIncomplete = true;
+            }
+            else {
+                entityName = TypeUtil.getAnnotationValueName(controller,
+                        classElement, annotationElement);
+            }
+            if (entityName == null) {
+                annotationElement = controller.getElements().getTypeElement(
+                        Constants.PERSISTENCE_ENTITY);
+                if (annotationElement == null) {
+                    isIncomplete = true;
+                    return;
+                }
+                entityName = TypeUtil.getAnnotationValueName(controller,
+                        classElement, annotationElement);
+            }
+            if (entityName != null) {
+                entityFqn = classElement.getQualifiedName().toString();
+            }
+        }
+                
+        boolean isIncomplete(){
+            return isIncomplete;
+        }
+        
+        String getEntityFqn(){
+            return entityFqn;
+        }
+    
+        private boolean isIncomplete;
+        private String entityFqn;
+    }    
 }

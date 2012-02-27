@@ -89,9 +89,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.modules.editor.lib.ColoringMap;
-import org.netbeans.modules.editor.lib2.view.LockedViewHierarchy;
-import org.netbeans.modules.editor.lib2.view.ParagraphViewDescriptor;
-import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
+import org.netbeans.modules.editor.lib2.view.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -244,6 +242,19 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
         prefsListener.preferenceChange(null);
     }
     
+    private void checkRepaint(ViewHierarchyEvent vhe) {
+        if (!vhe.isChangeY()) {
+            // does not obscur sidebar graphics
+            return;
+        }
+        
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                GlyphGutter.this.update();
+            }
+        });
+    }
+    
     /* Read accessible context
      * @return - accessible context
      */
@@ -287,6 +298,14 @@ public class GlyphGutter extends JComponent implements Annotations.AnnotationsLi
             }
         });
         
+        // piggyback on view hierarchy changes, update if some Y-coordinate change has happened
+        ViewHierarchy.get(editorUI.getComponent()).addViewHierarchyListener(new ViewHierarchyListener() {
+            @Override
+            public void viewHierarchyChanged(ViewHierarchyEvent evt) {
+                checkRepaint(evt);
+            }
+            
+        });
     }
     
     /** Update colors, fonts, sizes and invalidate itself. This method is

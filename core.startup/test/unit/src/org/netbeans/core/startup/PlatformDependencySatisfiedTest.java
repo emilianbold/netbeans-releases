@@ -76,7 +76,6 @@ public class PlatformDependencySatisfiedTest extends SetupHid {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("org.netbeans.core.modules.NbInstaller.noAutoDeps", "true");
-        Main.getModuleSystem (); // init module system
         
         clearWorkDir();
         moduleJarFile = new File(getWorkDir(), "PlatformDependencySatisfiedModule.jar");

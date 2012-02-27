@@ -307,9 +307,7 @@ public final class GenerateBeanInfoAction extends NodeAction implements java.awt
             checkState(0);
             state = 1;
             try {
-                Future<Void> f = JavaSource.forFileObject(javaFile).runWhenScanFinished(this, true);
-                f.get();
-                isCancelled = f.isCancelled();
+                JavaSource.forFileObject(javaFile).runUserActionTask(this, true);
             } catch (Exception ex) {
                 isCancelled = true;
                 Exceptions.printStackTrace(ex);

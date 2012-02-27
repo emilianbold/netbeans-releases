@@ -43,7 +43,6 @@
  */
 package org.netbeans;
 
-import java.awt.EventQueue;
 import java.awt.KeyboardFocusManager;
 import java.awt.Window;
 import java.awt.datatransfer.Clipboard;
@@ -62,6 +61,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ClipboardEvent;
 import org.openide.util.datatransfer.ClipboardListener;
@@ -207,7 +207,7 @@ public class NbClipboardTest extends NbTestCase {
         }
     }
     
-
+    @RandomlyFails // NB-Core-Build #7876: no new change expected:<1> but was:<2>
     public void testAddRemoveClipboardListener () throws Throwable {
         final NbClipboard clipboard = new NbClipboard(new Clipboard("testAddRemoveClipboardListener"));
         class L implements ClipboardListener, FlavorListener {

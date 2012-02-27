@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -67,7 +68,7 @@ import org.openide.util.Utilities;
  *
  * @author Tomas Zezula
  */
-public final class FileObjectCrawler extends Crawler {
+final class FileObjectCrawler extends Crawler {
 
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
     private static final boolean isUnix = Utilities.isUnix();
@@ -78,15 +79,26 @@ public final class FileObjectCrawler extends Crawler {
     private final ClassPath.Entry entry;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, true, true, cancelRequest);
+    FileObjectCrawler(
+            @NonNull final FileObject root,
+            final boolean checkTimeStamps,
+            @NullAllowed final ClassPath.Entry entry,
+            @NonNull final CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendStatus) throws IOException {
+        super (root.getURL(), checkTimeStamps, true, true, cancelRequest, suspendStatus);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, false, supportsAllFiles(root, files), cancelRequest);
+    FileObjectCrawler(
+            @NonNull final FileObject root,
+            @NullAllowed final FileObject[] files,
+            final boolean checkTimeStamps,
+            @NullAllowed final ClassPath.Entry entry,
+            @NonNull final CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendStatus) throws IOException {
+        super (root.getURL(), checkTimeStamps, false, supportsAllFiles(root, files), cancelRequest, suspendStatus);
         this.root = root;
         this.entry = entry;
         this.files = files;
@@ -181,6 +193,7 @@ public final class FileObjectCrawler extends Crawler {
             final @NullAllowed LinkType parentLinkType,
             final @NonNull StringBuilder relativePathBuilder)
     {
+        parkWhileSuspended();
         int parentPathEnd = relativePathBuilder.length();
 
         for (FileObject fo : fos) {

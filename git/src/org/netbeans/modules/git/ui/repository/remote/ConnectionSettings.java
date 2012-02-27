@@ -111,11 +111,11 @@ public class ConnectionSettings {
         this.saveCredentials = saveCredentials;
     }
 
-    ConnectionSettings copy () {
+    public ConnectionSettings copy () {
         ConnectionSettings copy = new ConnectionSettings(getUri().setUser(null).setPass(null));
         copy.setIdentityFile(getIdentityFile());
-        copy.setPassphrase(getPassphrase());
-        copy.setPassword(getPassword());
+        copy.setPassphrase(getPassphrase() == null ? null : getPassphrase().clone());
+        copy.setPassword(getPassword() == null ? null : getPassword().clone());
         copy.setPrivateKeyAuth(isPrivateKeyAuth());
         copy.setSaveCredentials(isSaveCredentials());
         copy.setUser(getUser());

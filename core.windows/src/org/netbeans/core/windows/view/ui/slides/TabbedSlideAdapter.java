@@ -65,14 +65,13 @@ import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.actions.ActionUtils;
-import org.netbeans.core.windows.view.ui.Tabbed;
 import org.netbeans.swing.tabcontrol.DefaultTabDataModel;
 import org.netbeans.core.windows.view.dnd.DragAndDropFeedbackVisualizer;
-import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.swing.tabcontrol.SlideBarDataModel;
 import org.netbeans.swing.tabcontrol.TabData;
 import org.netbeans.swing.tabcontrol.TabDataModel;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.openide.util.ChangeSupport;
 import org.openide.windows.TopComponent;
 
@@ -83,7 +82,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Dafe Simonek
  */
-public final class TabbedSlideAdapter implements Tabbed {
+public final class TabbedSlideAdapter extends Tabbed {
     
     /** data model of informations about top components in container */
     private TabDataModel dataModel;
@@ -115,8 +114,17 @@ public final class TabbedSlideAdapter implements Tabbed {
     public void cancelRequestAttention (TopComponent tc) {
         slideBar.setBlinking(tc, false);
     }
-    
 
+    @Override
+    public void makeBusy( TopComponent tc, boolean busy ) {
+        slideBar.makeBusy( tc, busy );
+    }
+
+    @Override
+    public boolean isBusy( TopComponent tc ) {
+        return WindowManagerImpl.getInstance().isTopComponentBusy( tc );
+    }
+    
     private void setSide (String side) {
         int orientation = SlideBarDataModel.WEST;
         if (Constants.LEFT.equals(side)) {
@@ -313,7 +321,7 @@ public final class TabbedSlideAdapter implements Tabbed {
     }
     
     @Override
-    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer, 
+    public Shape getIndicationForLocation(Point location, TopComponent startingTransfer, 
                             Point startingPoint, boolean attachingPossible) {
         
 //        int tab = tabForCoordinate(location);

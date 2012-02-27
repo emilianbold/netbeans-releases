@@ -59,6 +59,8 @@ import org.eclipse.osgi.baseadaptor.bundlefile.MRUBundleFileList;
 import org.eclipse.osgi.baseadaptor.bundlefile.ZipBundleFile;
 import org.netbeans.core.netigso.spi.BundleContent;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
+import org.openide.modules.ModuleInfo;
+import org.openide.util.Lookup;
 
 /** This is fake bundle. It is created by the Netbinox infrastructure to 
  * use the {@link NetigsoArchive} to get cached data and speed up the start.
@@ -216,7 +218,28 @@ final class JarBundleFile extends BundleFile implements BundleContent {
         return arr;
     }
 
-    private BundleEntry findEntry(String why, String name) {
+    private BundleEntry findEntry(String why, final String name) {
+        if (!name.equals("META-INF/MANIFEST.MF") && // NOI18N
+            data != null && 
+            data.getLocation() != null && 
+            data.getLocation().startsWith("netigso://") // NOI18N
+        ) { 
+            String cnb = data.getLocation().substring(10);
+            for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+                if (mi.getCodeNameBase().equals(cnb)) {
+                    if (!mi.isEnabled()) {
+                        break;
+                    }
+                    final URL url = mi.getClassLoader().getResource(name);
+                    if (url != null) {
+                        return new ModuleEntry(url, name);
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        
         BundleEntry u;
         for (;;) {
             BundleFile d = delegate(why, name);
@@ -281,10 +304,10 @@ final class JarBundleFile extends BundleFile implements BundleContent {
     }
 
     @Override
-    public Enumeration getEntryPaths(String prefix) {
+    public Enumeration<String> getEntryPaths(String prefix) {
         BundleFile d = delegate("getEntryPaths", prefix);
         if (d == null) {
-            return Collections.enumeration(Collections.emptyList());
+            return Collections.enumeration(Collections.<String>emptyList());
         }
         return d.getEntryPaths(prefix);
     }

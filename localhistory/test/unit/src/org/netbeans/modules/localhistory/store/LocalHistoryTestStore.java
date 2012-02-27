@@ -56,8 +56,9 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
     }
 
-    public void setLabel(File file, long ts, String label) {
-        store.setLabel(file, ts, label);
+    @Override
+    public StoreEntry setLabel(File file, long ts, String label) {
+        return store.setLabel(file, ts, label);
     }
 
     public void removeVersioningListener(VersioningListener l) {

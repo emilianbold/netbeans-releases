@@ -406,9 +406,8 @@ public class MethodChooserSupport implements PropertyChangeListener {
             }
         }
 
-        final Future<Void> scanFinished;
         try {
-            scanFinished = js.runWhenScanFinished(new CancellableTask<CompilationController>() {
+            js.runUserActionTask(new CancellableTask<CompilationController>() {
                 public void cancel() {
                 }
                 public void run(CompilationController ci) throws Exception {
@@ -475,18 +474,6 @@ public class MethodChooserSupport implements PropertyChangeListener {
                 }
 
             }, true);
-            if (!scanFinished.isDone()) {
-                if (java.awt.EventQueue.isDispatchThread()) {
-                    return;
-                } else {
-                    try {
-                        scanFinished.get();
-                    } catch (InterruptedException iex) {
-                    } catch (java.util.concurrent.ExecutionException eex) {
-                        ErrorManager.getDefault().notify(eex);
-                    }
-                }
-            }
         } catch (IOException ioex) {
             ErrorManager.getDefault().notify(ioex);
         }

@@ -51,16 +51,25 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.annotations.LayerBuilder.File;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  * processor for {@link ServiceTabNodeRegistration} annotation.
  * @author Jaroslav Tulach
  */
+@NbBundle.Messages("PlainResolver=Text Files")
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/plain",
+    position=140,
+    displayName="#PlainResolver",
+    extension={ "TXT", "txt" }
+)
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
 public class ServiceTabProcessor extends LayerGeneratingProcessor {

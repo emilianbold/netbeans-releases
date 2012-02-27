@@ -44,6 +44,7 @@
 
 package org.netbeans.core.ui.warmup;
 
+import java.awt.GraphicsEnvironment;
 import java.awt.dnd.DragSource;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -62,7 +63,9 @@ public final class DnDWarmUpTask implements Runnable {
      */
     @Override
     public void run() {
-        DragSource.getDefaultDragSource();
+        if (!GraphicsEnvironment.isHeadless()) {
+            DragSource.getDefaultDragSource();
+        }
     }
 
 }

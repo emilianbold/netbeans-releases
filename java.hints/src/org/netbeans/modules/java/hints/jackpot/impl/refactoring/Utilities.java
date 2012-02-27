@@ -189,11 +189,10 @@ public class Utilities {
         public synchronized void compute() {
             if (hints != null) return ;
             
-            Set<ClassPath> classPath = new HashSet<ClassPath>();
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE));
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
-            classPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
-            List<HintDescription> listedHints = org.netbeans.modules.java.hints.jackpot.impl.Utilities.listClassPathHints(classPath);
+            Set<ClassPath> binaryClassPath = new HashSet<ClassPath>();
+            binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.COMPILE));
+            binaryClassPath.addAll(GlobalPathRegistry.getDefault().getPaths(ClassPath.BOOT));
+            List<HintDescription> listedHints = org.netbeans.modules.java.hints.jackpot.impl.Utilities.listClassPathHints(GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE), binaryClassPath);
             
             this.hints = sortByMetadata(listedHints);
         }
