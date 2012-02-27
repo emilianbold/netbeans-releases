@@ -42,7 +42,9 @@
 package org.netbeans.api.search.ui;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.openide.util.Lookup;
+import org.netbeans.modules.search.FindDialogMemory;
+import org.netbeans.modules.search.ui.DefaultFileNameComboBox;
+import org.netbeans.modules.search.ui.DefaultScopeSettingsPanel;
 
 /**
  * Factory class containing methods for creating GUI components that can be used
@@ -52,26 +54,24 @@ import org.openide.util.Lookup;
  */
 public abstract class ComponentFactory {
 
-    public static @NonNull ComponentFactory getDefault() {
-        ComponentFactory def =
-                Lookup.getDefault().lookup(ComponentFactory.class);
-        if (def == null) {
-            throw new NullPointerException(
-                    "No default implementation, please ensure " //NOI18N
-                    + "that module Utilities is available.");           //NOI18N
-        }
-        return def;
+    private ComponentFactory() {
+        // hiding default constructor
     }
 
     /**
      * Creates combo box for specifying file name pattern.
      */
-    public abstract @NonNull FileNameComboBox createFileNameComboBox();
+    public static @NonNull FileNameComboBox createFileNameComboBox() {
+        return new DefaultFileNameComboBox();
+    }
 
     /**
      * Creates combo box for specifying search scope.
      */
-    public abstract @NonNull ScopeComboBox createScopeComboBox();
+    public static @NonNull ScopeComboBox createScopeComboBox() {
+        return new org.netbeans.modules.search.ScopeComboBox(
+                FindDialogMemory.getDefault().getScopeTypeId());
+    }
 
     /**
      * Creates panel for specifying search scope options.
@@ -84,6 +84,10 @@ public abstract class ComponentFactory {
      * archives, search in generated sources, use ignore list, treat file name
      * pattern as regular expression matching file path)
      */
-    public abstract @NonNull ScopeSettingsPanel createScopeSettingsPanel(
-            boolean searchAndReplace, @NonNull FileNameComboBox fileNameComboBox);
+    public static @NonNull ScopeSettingsPanel createScopeSettingsPanel(
+            boolean searchAndReplace,
+            @NonNull FileNameComboBox fileNameComboBox) {
+         return new DefaultScopeSettingsPanel(fileNameComboBox,
+                searchAndReplace);
+    }
 }
