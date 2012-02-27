@@ -98,7 +98,28 @@ public abstract class Completor {
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            HashSet<String> providers = new HashSet<String>();
+            Project project = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument()));
+            for(Provider provider: Util.getProviders(project)){
+                String cl = provider.getProviderClass();
+                if(cl.toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                    providers.add(cl);
+                }
+            }
+
+
+            for (String cl: providers) {
+                    JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            cl);
+                    results.add(item);
+            }
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
         }
     }
     private int anchorOffset = -1;
