@@ -39,25 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.PaddingT;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class PaddingTop extends NodeModel implements Box<BoxEdgeSize> {
 
-    public MarginR(Node node) {
+    public PaddingT paddingT;
+
+    public PaddingTop(Node node) {
         super(node);
     }
 
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+    public BoxEdgeSize getEdge(Edge edge) {
+        switch (edge) {
+            case TOP:
+                return paddingT.getBoxEdgeSize();
+            default:
+                return null;
+        }
     }
 }

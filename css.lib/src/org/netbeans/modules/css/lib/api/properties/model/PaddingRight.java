@@ -39,36 +39,30 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.properties.model.PaddingR;
 
 /**
  *
  * @author marekfukala
  */
-public abstract class AbstractMarginWidthBox extends NodeModel implements Box<MarginWidth> {
+public class PaddingRight extends NodeModel implements Box<BoxEdgeSize> {
 
-    public MarginWidth marginWidth;
-    
-    public AbstractMarginWidthBox(Node node) {
+    public PaddingR paddingR;
+
+    public PaddingRight(Node node) {
         super(node);
-    }
-    
-    public MarginWidth getMarginWidth() {
-        return marginWidth;
     }
 
     @Override
-    public MarginWidth getEdge(Edge edge) {
-        return getRepresentedEdges().contains(edge) ? getMarginWidth() : null;
+    public BoxEdgeSize getEdge(Edge edge) {
+        switch (edge) {
+            case RIGHT:
+                return paddingR.getBoxEdgeSize();
+            default:
+                return null;
+        }
     }
-    
-    public abstract Collection<Edge> getRepresentedEdges();
-
 }

@@ -50,9 +50,9 @@ import org.netbeans.modules.css.lib.api.properties.model.Edge;
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class PaddingR extends AbstractBEBox {
 
-    public MarginR(Node node) {
+    public PaddingR(Node node) {
         super(node);
     }
 

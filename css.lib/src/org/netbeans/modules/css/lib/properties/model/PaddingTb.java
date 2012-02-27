@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.EnumSet;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 
@@ -50,14 +50,14 @@ import org.netbeans.modules.css.lib.api.properties.model.Edge;
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class PaddingTb extends AbstractBEBox {
 
-    public MarginR(Node node) {
+    public PaddingTb(Node node) {
         super(node);
     }
 
     @Override
     public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+        return EnumSet.of(Edge.TOP, Edge.BOTTOM);
     }
 }

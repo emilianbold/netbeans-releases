@@ -48,7 +48,7 @@ import org.netbeans.modules.css.lib.properties.model.MarginR;
  *
  * @author marekfukala
  */
-public class MarginRight extends NodeModel implements Box<MarginWidth> {
+public class MarginRight extends NodeModel implements Box<BoxEdgeSize> {
 
     public MarginR marginR;
 
@@ -57,10 +57,10 @@ public class MarginRight extends NodeModel implements Box<MarginWidth> {
     }
 
     @Override
-    public MarginWidth getEdge(Edge edge) {
+    public BoxEdgeSize getEdge(Edge edge) {
         switch (edge) {
             case RIGHT:
-                return marginR.getMarginWidth();
+                return marginR.getBoxEdgeSize();
             default:
                 return null;
         }

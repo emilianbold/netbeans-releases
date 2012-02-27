@@ -42,22 +42,33 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public abstract class AbstractBEBox extends NodeModel implements Box<BoxEdgeSize> {
 
-    public MarginR(Node node) {
+    public BoxEdgeSize boxEdgeSize;
+    
+    public AbstractBEBox(Node node) {
         super(node);
+    }
+    
+    public BoxEdgeSize getBoxEdgeSize() {
+        return boxEdgeSize;
     }
 
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+    public BoxEdgeSize getEdge(Edge edge) {
+        return getRepresentedEdges().contains(edge) ? getBoxEdgeSize() : null;
     }
+    
+    public abstract Collection<Edge> getRepresentedEdges();
+
 }

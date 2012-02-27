@@ -50,7 +50,7 @@ public class Utils {
     private Utils() {
     }
 
-    public static void dumpBox(Box<MarginWidth> box) {
+    public static void dumpBox(Box<BoxEdgeSize> box) {
         System.out.println("\n\t" + box.getEdge(Edge.TOP));
         System.out.println(box.getEdge(Edge.LEFT) + "\t\t" + box.getEdge(Edge.RIGHT));
         System.out.println("\t" + box.getEdge(Edge.BOTTOM) + "\n");

@@ -51,17 +51,17 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class MarginWidth extends NodeModel {
+public class BoxEdgeSize extends NodeModel {
 
     public TokenNodeModel auto;
     public Length length;
     public TokenNodeModel percentage;
 
-    public MarginWidth(Node node) {
+    public BoxEdgeSize(Node node) {
         super(node);
     }
 
-    public MarginWidth(TokenNodeModel auto, Length length, TokenNodeModel percentage) {
+    public BoxEdgeSize(TokenNodeModel auto, Length length, TokenNodeModel percentage) {
         this.auto = auto;
         this.length = length;
         this.percentage = percentage;
@@ -89,7 +89,7 @@ public class MarginWidth extends NodeModel {
         }
     }
     
-    public static MarginWidth parseMarginWidth(CharSequence tokenImage) {
+    public static BoxEdgeSize parseValue(CharSequence tokenImage) {
         TokenAcceptor lengthTokenAcceptor = TokenAcceptor.getAcceptor("length"); //NOI18N
         TokenAcceptor percentageTokenAcceptor = TokenAcceptor.getAcceptor("percentage"); //NOI18N
         
@@ -97,11 +97,11 @@ public class MarginWidth extends NodeModel {
         Token token = tokenizer.token();
         
         if(lengthTokenAcceptor.accepts(token)) {
-            return SemanticModelElementFactory.createMarginWidth_Length(tokenImage);
+            return SemanticModelElementFactory.createBoxEdgeSize_Length(tokenImage);
         } else if(percentageTokenAcceptor.accepts(token)) {
-            return SemanticModelElementFactory.createMarginWidth_Percentage(tokenImage);
+            return SemanticModelElementFactory.createBoxEdgeSize_Percentage(tokenImage);
         } else if(LexerUtils.equals("auto", tokenImage, true, true)) {
-            return SemanticModelElementFactory.createMarginWidth_Auto();
+            return SemanticModelElementFactory.createBoxEdgeSize_Auto();
         }
         
         return null;
@@ -115,7 +115,7 @@ public class MarginWidth extends NodeModel {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final MarginWidth other = (MarginWidth) obj;
+        final BoxEdgeSize other = (BoxEdgeSize) obj;
         if (this.auto != other.auto && (this.auto == null || !this.auto.equals(other.auto))) {
             return false;
         }

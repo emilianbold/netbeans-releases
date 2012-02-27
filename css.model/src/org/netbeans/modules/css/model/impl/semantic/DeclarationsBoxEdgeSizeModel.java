@@ -47,38 +47,33 @@ import java.util.EnumMap;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.*;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-@NbBundle.Messages({
-    "CTL_MarginDisplayName=Margin", // NOI18N
-    "CTL_MarginDescription=Margin Box Model", // NOI18N
-    "CTL_MarginCategory=Box" //NOI18N
-})
-public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
+public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdgeSize> {
 
     private static final String MODEL_NAME = "margin"; //NOI18N
     private Model model;
     private Declarations declarations;
-    private final CascadedBox<MarginWidth> cascadedBox = new CascadedBox<MarginWidth>();
+    private final CascadedBox<BoxEdgeSize> cascadedBox = new CascadedBox<BoxEdgeSize>();
     private final Collection<Declaration> involved = new ArrayList<Declaration>();
     private final SemanticModelListenerSupport LISTENERS = new SemanticModelListenerSupport();
 
-    public DeclarationsMarginBoxModel(Model model, Declarations element) {
+    public DeclarationsBoxEdgeSizeModel(Model model, Declarations element) {
         this.model = model;
         this.declarations = element;
-        
         updateModel();
     }
-
+    
+    protected abstract PropertyModelId getPropertyModelId();
+    
     private void updateModel() {
         for (Declaration declaration : declarations.getDeclarations()) {
-            ModelBuilderNodeVisitor<MarginWidth> modelvisitor = new ModelBuilderNodeVisitor<MarginWidth>(PropertyModelId.MARGIN);
+            ModelBuilderNodeVisitor<BoxEdgeSize> modelvisitor = new ModelBuilderNodeVisitor<BoxEdgeSize>(getPropertyModelId());
             declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
-            Box<MarginWidth> model = (Box<MarginWidth>) modelvisitor.getModel();
+            Box<BoxEdgeSize> model = (Box<BoxEdgeSize>) modelvisitor.getModel();
             if (model != null) {
                 cascadedBox.addBox(model);
                 involved.add(declaration);
@@ -90,14 +85,14 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
     }
 
     @Override
-    public void setEdge(Edge edge, MarginWidth value) {
-        MarginWidth current = getEdge(edge);
+    public void setEdge(Edge edge, BoxEdgeSize value) {
+        BoxEdgeSize current = getEdge(edge);
         if (current == null && value == null || current != null && current.equals(value)) {
             return; //no change
         }
 
         //merge the original Box with the new edge setting
-        EnumMap<Edge, MarginWidth> map = new EnumMap<Edge, MarginWidth>(Edge.class);
+        EnumMap<Edge, BoxEdgeSize> map = new EnumMap<Edge, BoxEdgeSize>(Edge.class);
         map.put(Edge.TOP, getEdge(Edge.TOP));
         map.put(Edge.BOTTOM, getEdge(Edge.BOTTOM));
         map.put(Edge.LEFT, getEdge(Edge.LEFT));
@@ -110,25 +105,25 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
         }
 
         ElementFactory f = model.getElementFactory();
-        Property p = f.createProperty("margin"); //NOI18N
+        Property p = f.createProperty(getPropertyModelId().getBasePropertyName()); //NOI18N
 
         //TODO remove the hardcoding - make the algorithm generic
 
-        MarginWidth t = map.get(Edge.TOP);
-        MarginWidth r = map.get(Edge.RIGHT);
-        MarginWidth b = map.get(Edge.BOTTOM);
-        MarginWidth l = map.get(Edge.LEFT);
+        BoxEdgeSize t = map.get(Edge.TOP);
+        BoxEdgeSize r = map.get(Edge.RIGHT);
+        BoxEdgeSize b = map.get(Edge.BOTTOM);
+        BoxEdgeSize l = map.get(Edge.LEFT);
 
         if (t == null || r == null || b == null || l == null) {
             //use single properties
             for(Edge e : Edge.values()) {
-                MarginWidth mw = map.get(e);
+                BoxEdgeSize mw = map.get(e);
                 if(mw != null) {
                     CharSequence propVal = mw.getTextRepresentation();
                     Expression expr = f.createExpression(propVal);
                     PropertyValue pv = f.createPropertyValue(expr);
                     
-                    String propertyName = String.format("margin-%s", e.name().toLowerCase()); //NOI18N
+                    String propertyName = String.format("%s-%s", getPropertyModelId().getBasePropertyName(), e.name().toLowerCase()); //NOI18N
                     Property prop = f.createProperty(propertyName);
                     Declaration newD = f.createDeclaration(prop, pv, false);
                     
@@ -193,7 +188,7 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
     }
 
     @Override
-    public MarginWidth getEdge(Edge edge) {
+    public BoxEdgeSize getEdge(Edge edge) {
         return cascadedBox.getEdge(edge);
     }
 
@@ -212,18 +207,4 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
         return MODEL_NAME;
     }
 
-    @Override
-    public String getDisplayName() {
-        return Bundle.CTL_MarginDisplayName();
-    }
-
-    @Override
-    public String getDescription() {
-        return Bundle.CTL_MarginDescription();
-    }
-
-    @Override
-    public String getCategoryName() {
-        return Bundle.CTL_MarginCategory();
-    }
 }

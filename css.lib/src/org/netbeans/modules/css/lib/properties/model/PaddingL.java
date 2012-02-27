@@ -50,14 +50,16 @@ import org.netbeans.modules.css.lib.api.properties.model.Edge;
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+public class PaddingL extends AbstractBEBox {
 
-    public MarginR(Node node) {
+    
+    public PaddingL(Node node) {
         super(node);
     }
 
     @Override
     public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+        return Collections.singleton(Edge.LEFT);
     }
+    
 }

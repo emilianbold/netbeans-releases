@@ -47,7 +47,8 @@ package org.netbeans.modules.css.lib.api.properties.model;
  */
 public enum PropertyModelId {
             
-    MARGIN(Margin.class, MarginTop.class, MarginBottom.class, MarginLeft.class, MarginRight.class);
+    MARGIN(Margin.class, MarginTop.class, MarginBottom.class, MarginLeft.class, MarginRight.class),
+    PADDING(Padding.class, PaddingTop.class, PaddingBottom.class, PaddingLeft.class, PaddingRight.class);
     
     private Class[] modelClasses;
 
@@ -58,4 +59,9 @@ public enum PropertyModelId {
     public Class[] getModelClasses() {
         return modelClasses;
     }
+    
+    public String getBasePropertyName() {
+        return name().toLowerCase();
+    }
+    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.model.impl.semantic;
 
-import java.util.Collection;
-import java.util.Collections;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginR extends AbstractBEBox {
+@NbBundle.Messages({
+    "CTL_MarginDisplayName=Margin", // NOI18N
+    "CTL_MarginDescription=Margin Box Model", // NOI18N
+    "CTL_MarginCategory=Box" //NOI18N
+})
+public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel {
 
-    public MarginR(Node node) {
-        super(node);
+    public DeclarationsMarginModel(Model model, Declarations element) {
+        super(model, element);
     }
 
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.RIGHT);
+    protected PropertyModelId getPropertyModelId() {
+        return PropertyModelId.MARGIN;
     }
+
+      @Override
+    public String getDisplayName() {
+        return Bundle.CTL_MarginDisplayName();
+    }
+
+    @Override
+    public String getDescription() {
+        return Bundle.CTL_MarginDescription();
+    }
+
+    @Override
+    public String getCategoryName() {
+        return Bundle.CTL_MarginCategory();
+    }
+    
 }

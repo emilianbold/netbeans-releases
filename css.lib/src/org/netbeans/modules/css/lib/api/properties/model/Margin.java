@@ -51,7 +51,7 @@ import org.netbeans.modules.css.lib.properties.model.*;
  *
  * @author marekfukala
  */
-public class Margin extends NodeModel implements Box<MarginWidth> {
+public class Margin extends NodeModel implements Box<BoxEdgeSize> {
 
     public MarginTblr marginTblr;
     public MarginTb marginTb;
@@ -65,15 +65,15 @@ public class Margin extends NodeModel implements Box<MarginWidth> {
         super(margin);
     }
 
-    private Collection<? extends Box<MarginWidth>> getDefinedBoxes() {
-        List<AbstractMarginWidthBox> sorted = new ArrayList<AbstractMarginWidthBox>();
+    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
+        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
         for (NodeModel model : getSubmodels()) {
-            sorted.add((AbstractMarginWidthBox) model);
+            sorted.add((AbstractBEBox) model);
         }
-        Collections.sort(sorted, new Comparator<AbstractMarginWidthBox>() {
+        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
 
             @Override
-            public int compare(AbstractMarginWidthBox t, AbstractMarginWidthBox t1) {
+            public int compare(AbstractBEBox t, AbstractBEBox t1) {
                 return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
             }
         });
@@ -82,21 +82,17 @@ public class Margin extends NodeModel implements Box<MarginWidth> {
     }
 
     @Override
-    public MarginWidth getEdge(Edge edge) {
+    public BoxEdgeSize getEdge(Edge edge) {
         //bit cryptic so ... it takes the margin models sorted by the number of accepted edges
         //and use the one which resolves the given edge
-        for (Box<MarginWidth> box : getDefinedBoxes()) {
-            MarginWidth mw = box.getEdge(edge);
+        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
+            BoxEdgeSize mw = box.getEdge(edge);
             if (mw != null) {
                 return mw;
             }
         }
         return null;
     }
-
-   
-    
-    
     
     //possibly remove following methods
     
