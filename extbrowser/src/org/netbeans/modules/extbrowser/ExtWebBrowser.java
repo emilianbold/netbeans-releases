@@ -77,16 +77,15 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     /** DDE openURL timeout property name */
     public static final String PROP_DDE_OPENURL_TIMEOUT = "openurlTimeout";     // NOI18N
     
-    /** Name of DDE server corresponding to Netscape Navigator 4.x */
-    public static final String NETSCAPE = "NETSCAPE";   // NOI18N
+    /** Name of DDE server corresponding to Google Chrome */
+    public static final String CHROME = "CHROME";   // NOI18N
     /** Name of DDE server corresponding to Internet Explorer */
     public static final String IEXPLORE = "IEXPLORE";   // NOI18N
     /** Name of DDE server corresponding to Mozilla */
     public static final String MOZILLA  = "MOZILLA";    // NOI18N
     /** Name of DDE server corresponding to Firefox */
     public static final String FIREFOX  = "FIREFOX";    // NOI18N
-    /** Name of DDE server corresponding to Netscape 6.x */
-    public static final String NETSCAPE6 = "NETSCAPE6";   // NOI18N
+
     
 //    /** Default timeout for starting the browser */
 //    protected static final int DEFAULT_BROWSER_START_TIMEOUT = 5000;
@@ -278,12 +277,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                         setDDEServer(MOZILLA);
                     } else if (processName.toUpperCase().indexOf("FIREFOX.EXE") > -1) { // NOI18N
                         setDDEServer(FIREFOX);
-                    } else if (processName.toUpperCase().indexOf("NETSCP6.EXE") > -1) { // NOI18N
-                        setDDEServer(NETSCAPE6);
-                    } else if (processName.toUpperCase().indexOf("NETSCP.EXE") > -1) {  // NOI18N
-                        setDDEServer(NETSCAPE6);
-                    } else if (processName.toUpperCase().indexOf("NETSCAPE.EXE") > -1) { // NOI18N
-                        setDDEServer(NETSCAPE);
+                    } else if (processName.toUpperCase().indexOf("CHROME.EXE") > -1) { // NOI18N
+                        setDDEServer(CHROME);
                     } else {
                         setDDEServer(null);
                     }
@@ -298,7 +293,7 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      * @return netscape without any argument.
      */
     protected NbProcessDescriptor defaultBrowserExecutable () {
-        String b = "netscape";  // NOI18N
+        String b = "mozilla";  // NOI18N
         if (err.isLoggable(Level.FINE)) {
             err.log(Level.FINE, "" + System.currentTimeMillis() + "> ExtBrowser: defaultBrowserExecutable: ");
         }
@@ -322,12 +317,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                     setDDEServer(MOZILLA);
                 } else if (args[0].toUpperCase().indexOf("FIREFOX.EXE") > -1) { // NOI18N
                     setDDEServer(FIREFOX);
-                } else if (args[0].toUpperCase().indexOf("NETSCP6.EXE") > -1) { // NOI18N
-                    setDDEServer(NETSCAPE6);
-                } else if (args[0].toUpperCase().indexOf("NETSCP.EXE") > -1) {  // NOI18N
-                    setDDEServer(NETSCAPE6);
-                } else if (args[0].toUpperCase().indexOf("NETSCAPE.EXE") > -1) { // NOI18N
-                    setDDEServer(NETSCAPE);
+                } else if (args[0].toUpperCase().indexOf("CHROME.EXE") > -1) { // NOI18N
+                    setDDEServer(CHROME);
                 }
                 params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                 return new NbProcessDescriptor(b, params);
@@ -355,27 +346,12 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                         return new NbProcessDescriptor(b, params);
                     }
 
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscp"); // NOI18N
+                    b = NbDdeBrowserImpl.getBrowserPath("chrome"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(NETSCAPE6);
+                        setDDEServer(CHROME);
                         params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
                         return new NbProcessDescriptor(b, params);
                     }
-                    
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscp6"); // NOI18N
-                    if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(NETSCAPE6);
-                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
-                        return new NbProcessDescriptor(b, params);
-                    }
-
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscape"); // NOI18N
-                    if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(NETSCAPE);
-                        params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
-                        return new NbProcessDescriptor(b, params);
-                    }
-                    
                 } catch (NbBrowserException e2) {
                     setDDEServer(IEXPLORE);
                     b = "C:\\Program Files\\Internet Explorer\\iexplore.exe";     // NOI18N            
@@ -404,8 +380,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 }
             // Solaris -> Netscape should be default
             } else if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                b = "netscape";                                                 // NOI18N
-                java.io.File f = new java.io.File ("/usr/dt/bin/sun_netscape"); // NOI18N
+                b = "mozilla";                                                 // NOI18N
+                java.io.File f = new java.io.File ("/usr/sfw/lib/mozilla"); // NOI18N
                 if (f.exists()) {
                     b = f.getAbsolutePath();
                 }

@@ -49,17 +49,19 @@ import java.beans.*;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
+public class ChromeBrowserBeanInfo extends SimpleBeanInfo {
 
+    @Override
     public BeanDescriptor getBeanDescriptor() {
-        BeanDescriptor descr = new BeanDescriptor (NetscapeBrowser.class);
-        descr.setDisplayName (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "CTL_NetscapeBrowserName"));
-        descr.setShortDescription (NbBundle.getMessage (NetscapeBrowserBeanInfo.class, "HINT_NetscapeBrowserName"));
+        BeanDescriptor descr = new BeanDescriptor (ChromeBrowser.class);
+        descr.setDisplayName (NbBundle.getMessage (ChromeBrowserBeanInfo.class, "CTL_ChromeBrowserName"));
+        descr.setShortDescription (NbBundle.getMessage (ChromeBrowserBeanInfo.class, "HINT_ChromeBrowserName"));
 
         descr.setValue ("helpID", "org.netbeans.modules.extbrowser.ExtWebBrowser");  // NOI18N //TODO
-	return descr;
+        return descr;
     }
 
+    @Override
     public PropertyDescriptor[] getPropertyDescriptors() {
         return new PropertyDescriptor [0];
     }
@@ -67,6 +69,7 @@ public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
     /**
     * Returns the icon. 
     */
+    @Override
     public Image getIcon (int type) {
         return loadImage("/org/netbeans/modules/extbrowser/resources/extbrowser.gif"); // NOI18N
     }
@@ -76,6 +79,7 @@ public class NetscapeBrowserBeanInfo extends SimpleBeanInfo {
      * may override this if you want to (for example) return a
      * BeanInfo for a base class.
      */
+    @Override
     public BeanInfo[] getAdditionalBeanInfo () {
         try {
             return new BeanInfo[] { Introspector.getBeanInfo (ExtWebBrowser.class) };
