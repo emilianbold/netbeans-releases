@@ -107,6 +107,17 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="typing-hooks-replace">
+            <summary>Replace is done before insert and fix inserting empty text</summary>
+            <version major="3" minor="20" subminor="1"/>
+            <date day="27" month="2" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility binary="compatible" semantic="incompatible" modification="yes"/>
+            <description>
+                <p>Change in assert to fix inserting empty text to TypedTextInterceptor.MutableContext </p>
+                <p>Replace is done before perform insert, before typing hooks insert method</p>
+            </description>
+        </change>
 
         <change id="deprecating-formatting">
             <summary>Deprecating old formatting API</summary>
