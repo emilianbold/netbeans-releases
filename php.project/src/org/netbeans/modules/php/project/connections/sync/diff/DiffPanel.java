@@ -193,6 +193,7 @@ public final class DiffPanel extends JPanel {
                             DiffController diffController = DiffController.createEnhanced(remoteStream, editableTmpLocalFileStreamSource);
                             remove(loadingLabel);
                             add(diffController.getJComponent(), BorderLayout.CENTER);
+                            revalidate();
                             repaint();
                             descriptor.setValid(true);
                         } catch (IOException ex) {
