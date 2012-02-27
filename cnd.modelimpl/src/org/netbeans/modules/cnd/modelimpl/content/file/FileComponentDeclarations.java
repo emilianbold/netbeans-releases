@@ -107,12 +107,18 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
+    FileComponentDeclarations(FileComponentDeclarations other) {
+        super(other);
+        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(other.declarations);
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(other.staticFunctionDeclarationUIDs);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(other.staticVariableUIDs);
+    }
+    
     public FileComponentDeclarations(FileImpl file, boolean persistent) {
-        super(persistent ? new FileDeclarationsKey(file) : null);
+        super(new FileDeclarationsKey(file), persistent);
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
-        put();
     }
 
     public FileComponentDeclarations(RepositoryDataInput input) throws IOException {
@@ -137,7 +143,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
     // only for EMPTY static field
     private FileComponentDeclarations() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super(null, false);
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
