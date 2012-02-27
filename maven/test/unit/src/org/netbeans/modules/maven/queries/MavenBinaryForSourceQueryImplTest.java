@@ -78,10 +78,10 @@ public class MavenBinaryForSourceQueryImplTest extends NbTestCase {
         FileObject tsrc = FileUtil.createFolder(d, "src/test/java");
         FileObject gtsrc = FileUtil.createFolder(d, "target/generated-test-sources/jaxb");
         gtsrc.createData("Whatever.class");
-        assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.getURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.getURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.getURL()).getRoots()));
-        assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.getURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(src.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.toURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.toURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.toURL()).getRoots()));
     }
 
 }
