@@ -1116,6 +1116,7 @@ public class PackageViewTest extends NbTestCase {
         // XXX test PathFinder
     }
 
+    @RandomlyFails // NB-Core-Build #7966
     public void testReducedTreeBasics() throws Exception { // #53192
         SourceGroup g = sampleGroup();
         Node n = new TreeRootNode(g, true);
@@ -1144,6 +1145,7 @@ public class PackageViewTest extends NbTestCase {
         assertTree("TestGroup{org.netbeans{api.stuff{Stuff.java}, spi.stuff.support{AbstractStuffImplementation.java}}}", n);
     }
 
+    @RandomlyFails // NB-Core-Build #7974
     public void testReducedTreeRename() throws Exception {
         final AtomicReference<Node> node = new AtomicReference<Node>();
         final AtomicReference<String> newName = new AtomicReference<String>();
