@@ -3550,6 +3550,11 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   balanceParensInExpression 
             |   balanceSquaresInExpression 
+                (options {greedy = true;}:  
+                    (balanceParensInExpression)? 
+                    (trailing_type)? 
+                    compound_statement
+                )?
 
             |   constant
 
