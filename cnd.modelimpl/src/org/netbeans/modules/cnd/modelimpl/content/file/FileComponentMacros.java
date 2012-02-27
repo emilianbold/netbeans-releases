@@ -92,10 +92,14 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return EMPTY;
     }
 
+    FileComponentMacros(FileComponentMacros other) {
+        super(other);
+        macros = createMacros(other.macros);
+    }
+    
     public FileComponentMacros(FileImpl file, boolean persistent) {
-        super(persistent ? new FileMacrosKey(file) : (org.netbeans.modules.cnd.repository.spi.Key) null);
-        macros = createMacros();
-        put();
+        super(new FileMacrosKey(file), persistent);
+        macros = createMacros(null);
     }
 
     public FileComponentMacros(RepositoryDataInput input) throws IOException {
@@ -106,8 +110,8 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
 
     // only for EMPTY static field
     private FileComponentMacros() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
-        macros = createMacros();
+        super(null, false);
+        macros = createMacros(null);
     }
 
     public void clean() {
@@ -176,8 +180,12 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return uids;
     }
 
-    private TreeMap<NameSortedKey, CsmUID<CsmMacro>> createMacros() {
-        return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
+    private TreeMap<NameSortedKey, CsmUID<CsmMacro>> createMacros(TreeMap<NameSortedKey, CsmUID<CsmMacro>> other) {
+        if (other != null) {
+            return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>(other);
+        } else {
+            return new TreeMap<NameSortedKey, CsmUID<CsmMacro>>();
+        }
     }
 
     @Override

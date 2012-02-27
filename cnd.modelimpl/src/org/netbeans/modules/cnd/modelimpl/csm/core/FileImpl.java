@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponent;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -265,28 +266,33 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         fileDeclarationsKey = new FileDeclarationsKey(this);
         weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey);
-        new FileComponentDeclarations(this, true);
+        FileComponent fc  = new FileComponentDeclarations(this, true);
+        fc.put();
         weakFileDeclarations.clear();
 
         fileMacrosKey = new FileMacrosKey(this);
         weakFileMacros = new WeakContainer<FileComponentMacros>(project, fileMacrosKey);
-        new FileComponentMacros(this, true);
+        fc  = new FileComponentMacros(this, true);
+        fc.put();
         weakFileMacros.clear();
 
         fileIncludesKey = new FileIncludesKey(this);
         weakFileIncludes = new WeakContainer<FileComponentIncludes>(project, fileIncludesKey);
-        new FileComponentIncludes(this, true);
+        fc  = new FileComponentIncludes(this, true);
+        fc.put();
         weakFileIncludes.clear();
         hasBrokenIncludes = new AtomicBoolean(false);
 
         fileReferencesKey = new FileReferencesKey(this);
         weakFileReferences = new WeakContainer<FileComponentReferences>(project, fileReferencesKey);
-        new FileComponentReferences(this, true);
+        fc  = new FileComponentReferences(this, true);
+        fc.put();
         weakFileReferences.clear();
 
         fileInstantiationsKey = new FileInstantiationsKey(this);
         weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey);
-        new FileComponentInstantiations(this, true);
+        fc  = new FileComponentInstantiations(this, true);
+        fc.put();
         weakFileInstantiationReferences.clear();
         
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
@@ -944,7 +950,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final class ParseDescriptor {
 
         private final CsmParserProvider.CsmParseCallback callback;
-        private final FileImplContent content;
+        private final FileContent content;
         private final boolean lazyCompound;
         private final APTFile fullAPT;
         private APTPreprocHandler curPreprocHandler;
@@ -958,7 +964,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 boolean lazyCompound) {
             assert fileImpl != null : "null file is not allowed";
             assert fullAPT != null : "null APTFile is not allowed";
-            this.content = new FileImplContent(fileImpl);
+            this.content = new FileContent(fileImpl);
             this.fullAPT = fullAPT;
             this.callback = callback;
             this.lazyCompound = lazyCompound;
@@ -974,7 +980,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             return curPreprocHandler;
         }
 
-        public FileImplContent getFileContent() {
+        public FileContent getFileContent() {
             return content;
         }
     }
