@@ -5,7 +5,8 @@ with (a) {
 } 
 
 with(a)
-// one statement
+// comment
+ // one statement
  doOneThing();
  // ee
  

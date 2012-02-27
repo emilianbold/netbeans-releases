@@ -1,5 +1,5 @@
 if (x)
-    // test
+// test
     "hello"
 else
     "neco"

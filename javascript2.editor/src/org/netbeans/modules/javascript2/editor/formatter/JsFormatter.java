@@ -118,11 +118,12 @@ public class JsFormatter implements Formatter {
 
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
+                    FormatToken next = null;
 
                     switch (token.getKind()) {
                         case AFTER_BINARY_OPERATOR:
                         case AFTER_COMMA:
-                            FormatToken next = getNextNonVirtual(token);
+                            next = getNextNonVirtual(token);
                             if (next != null
                                     && next.getKind() != FormatToken.Kind.WHITESPACE
                                     && next.getKind() != FormatToken.Kind.EOL) {
@@ -154,6 +155,15 @@ public class JsFormatter implements Formatter {
                                 start = start.next();
                             }
                             // do indentation
+                            if (i < tokens.size() - 1) {
+                                // do not do indentation for line comments starting
+                                // at the beginning of the line to support comment/uncomment
+                                next = getNextNonVirtual(token);
+                                if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                                    break;
+                                }
+                            }
+
                             FormatToken indentationStart = null;
                             FormatToken indentationEnd = null;
                             StringBuilder current = new StringBuilder();
