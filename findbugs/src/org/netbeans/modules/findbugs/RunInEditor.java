@@ -116,7 +116,7 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
             }
         }.scan(parameter.getTopLevelElements(), null);
 
-        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, sourceRoot, classNames, new SigFilesValidator() {
+        List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, null, null, sourceRoot, classNames, new SigFilesValidator() {
             @Override public boolean validate(Iterable<? extends FileObject> files) {
                 StringBuilder timeStamps = new StringBuilder();
 

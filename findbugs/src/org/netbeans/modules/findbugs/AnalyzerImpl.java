@@ -50,6 +50,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -72,7 +73,7 @@ public class AnalyzerImpl implements Analyzer {
         ctx.start(sourceRoots.size());
 
         for (FileObject sr : sourceRoots) {
-            result.addAll(RunFindBugs.runFindBugs(null, sr, null, null));
+            result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sr, null, null));
             ctx.progress(++i);
         }
 
@@ -88,22 +89,17 @@ public class AnalyzerImpl implements Analyzer {
     }
 
     @Override
-    public WarningDescription getWarningDescription(String id) {
-        if (!id.startsWith(RunFindBugs.PREFIX_FINDBUGS)) return null;
-        
-        id = id.substring(RunFindBugs.PREFIX_FINDBUGS.length());
-
+    public Iterable<? extends WarningDescription> getWarnings() {
+        List<WarningDescription> result = new ArrayList<WarningDescription>();
         DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
 
         for (DetectorFactory df : dfc.getFactories()) {
             for (BugPattern bp : df.getReportedBugPatterns()) {
-                if (id.equals(bp.getType())) {
-                    return WarningDescription.create(bp.getShortDescription(), bp.getCategory(), dfc.getBugCategory(bp.getCategory()).getShortDescription());
-                }
+                result.add(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bp.getType(), bp.getShortDescription(), bp.getCategory(), dfc.getBugCategory(bp.getCategory()).getShortDescription()));
             }
         }
 
-        throw new IllegalStateException();
+        return result;
     }
 
     @Override
@@ -116,4 +112,28 @@ public class AnalyzerImpl implements Analyzer {
         return Collections.emptyList();
     }
 
+    @Override
+    public CustomizerProvider<Void, FindBugsPanel> getCustomizerProvider() {
+        return new CustomizerProvider<Void, FindBugsPanel>() {
+            @Override public Void initialize() {
+                return null;
+            }
+            @Override public FindBugsPanel createComponent(CustomizerContext<Void, FindBugsPanel> context) {
+                FindBugsPanel result = context.getPreviousComponent();
+
+                if (result == null) {
+                    result = new FindBugsPanel(null, context);
+                }
+
+                result.setSettings(context.getSettings());
+                
+                return result;
+            }
+        };
+    }
+
+    @Override
+    public String getId() {
+        return "findbugs";
+    }
 }

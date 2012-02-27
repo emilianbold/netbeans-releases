@@ -45,11 +45,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import junit.framework.TestCase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.findbugs.RunFindBugs.SigFilesValidator;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -107,7 +105,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -125,7 +123,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         SourceUtilsTestUtil.compileRecursively(sourceRoot);
 
-        assertEquals(0, RunFindBugs.runFindBugs(null, sourceRoot, null, null).size());
+        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null).size());
     }
 
     public void testFieldAnnotation() throws Exception {
@@ -136,7 +134,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -152,7 +150,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -167,7 +165,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, sourceRoot, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null)) {
             errors.add(ed.toString());
         }
 

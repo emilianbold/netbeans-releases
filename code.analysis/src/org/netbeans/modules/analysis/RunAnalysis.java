@@ -54,6 +54,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -68,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -75,7 +78,9 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
@@ -107,6 +112,8 @@ public class RunAnalysis {
                 progress.start();
 
                 final Analyzer toRun = rap.getSelectedAnalyzer();
+                final String configuration = rap.getConfiguration();
+                final String singleWarningId = rap.getSingleWarningId();
 
                 WORKER.post(new Runnable() {
                     @Override public void run() {
@@ -174,7 +181,9 @@ public class RunAnalysis {
 
                     private void doRunAnalyzer(Analyzer analyzer, List<FileObject> sourceRoots, List<NonRecursiveFolder> nonRecursiveFolders, List<FileObject> files, ProgressHandle handle, int bucketStart, int bucketSize, final Map<Analyzer, List<ErrorDescription>> result) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
-                        for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(Scope.create(sourceRoots, nonRecursiveFolders, files), handle, bucketStart, bucketSize))) {
+                        Scope scope = Scope.create(sourceRoots, nonRecursiveFolders, files);
+                        Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(analyzer.getId()) : null;
+                        for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize))) {
                             current.add(ed);
                         }
                         if (!current.isEmpty())
@@ -195,6 +204,35 @@ public class RunAnalysis {
         d.setVisible(true);
     }
 
+    public static Preferences getConfigurationsRoot() {
+        return NbPreferences.forModule(AdjustConfigurationPanel.class).node("configurations");
+    }
+
+    public static Preferences getConfigurationSettingsRoot(String configuration) {
+        return getConfigurationsRoot().node(configuration);
+    }
+
+    public static Iterable<? extends Configuration> readConfigurations() {
+        List<Configuration> result = new ArrayList<Configuration>();
+        Preferences root = getConfigurationsRoot();
+
+        try {
+            for (String configurationName : root.childrenNames()) {
+                Preferences node = root.node(configurationName);
+                String displayName = node != null ? node.get("displayName", null) : null;
+
+                if (displayName != null) {
+                    result.add(new Configuration(configurationName, displayName));
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        return result;
+    }
+
+    
     private static Map<Project, Map<FileObject, ClassPath>> projects2RegisteredContent(AtomicBoolean cancel) {
         Set<String> sourceIds = new HashSet<String>();
 

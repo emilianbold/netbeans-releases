@@ -51,6 +51,7 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.JPanel;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
@@ -61,6 +62,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Resource;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.ProgressHandleWrapper;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
+import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
 import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
@@ -122,21 +124,19 @@ public class AnalyzerImpl implements Analyzer {
     private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
 
     @Override
-    public WarningDescription getWarningDescription(String id) {
-        id = id.substring("text/x-java:".length());
+    public Iterable<? extends WarningDescription> getWarnings() {
+        List<WarningDescription> result = new ArrayList<WarningDescription>();
 
         for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
-            if (e.getKey().id.equals(id)) {
-                String displayName = e.getKey().displayName;
-                String category = e.getKey().category;
-                FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + id);
-                String categoryDisplayName = getFileObjectLocalizedName(catFO);
+            String displayName = e.getKey().displayName;
+            String category = e.getKey().category;
+            FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
+            String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : "Unknown";
 
-                return WarningDescription.create(displayName, category, categoryDisplayName);
-            }
+            result.add(WarningDescription.create("text/x-java:" + e.getKey().id, displayName, category, categoryDisplayName));
         }
 
-        throw new IllegalStateException();
+        return result;
     }
 
     static String getFileObjectLocalizedName( FileObject fo ) {
@@ -163,6 +163,26 @@ public class AnalyzerImpl implements Analyzer {
     @Override
     public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
         return Collections.emptyList();
+    }
+
+    @Override
+    public CustomizerProvider<ClassPathBasedHintWrapper, JPanel> getCustomizerProvider() {
+        return new CustomizerProvider<ClassPathBasedHintWrapper, JPanel>() {
+            @Override public ClassPathBasedHintWrapper initialize() {
+                ClassPathBasedHintWrapper w = new ClassPathBasedHintWrapper();
+                
+                w.compute();
+                return w;
+            }
+            @Override public JPanel createComponent(CustomizerContext context) {
+                return new JPanel();
+            }
+        };
+    }
+
+    @Override
+    public String getId() {
+        return "java.hints";
     }
 
 }

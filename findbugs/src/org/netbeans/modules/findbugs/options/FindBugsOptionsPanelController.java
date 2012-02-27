@@ -100,7 +100,7 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
 
     private FindBugsPanel getPanel(OptionsFilter options) {
         if (panel == null) {
-            panel = new FindBugsPanel(this, options);
+            panel = new FindBugsPanel(options, null);
         }
         return panel;
     }

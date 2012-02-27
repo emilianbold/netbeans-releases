@@ -326,7 +326,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     public static synchronized AnalysisResultTopComponent findInstance() {
         TopComponent win = WindowManager.getDefault().findTopComponent(PREFERRED_ID);
         if (win == null) {
-            throw new IllegalStateException();
+            return new AnalysisResultTopComponent();
         }
         if (win instanceof AnalysisResultTopComponent) {
             return (AnalysisResultTopComponent) win;

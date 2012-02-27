@@ -61,6 +61,7 @@ import java.util.TreeMap;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
 import javax.swing.event.TreeSelectionEvent;
@@ -71,6 +72,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.findbugs.RunFindBugs;
 import org.netbeans.modules.findbugs.RunInEditor;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
@@ -78,15 +80,14 @@ import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
-final class FindBugsPanel extends javax.swing.JPanel {
+public final class FindBugsPanel extends javax.swing.JPanel {
 
-    private final FindBugsOptionsPanelController controller;
-    private ModifiedPreferences settings;
+    private Preferences settings;
+    private final boolean defaultsToDisabled;
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
     private final DefaultTreeModel treeModel;
 
-    FindBugsPanel(FindBugsOptionsPanelController controller, OptionsFilter filter) {
-        this.controller = controller;
+    public FindBugsPanel(OptionsFilter filter, final CustomizerContext<?, ?> cc) {
         this.settings = new ModifiedPreferences(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         initComponents();
         this.treeModel = new DefaultTreeModel(createRootNode());
@@ -117,7 +118,24 @@ final class FindBugsPanel extends javax.swing.JPanel {
         }
         bugsTree.setRootVisible(false);
         bugsTree.setShowsRootHandles(true);
-        bugsTree.setCellRenderer(new CheckBoxRenderer());
+
+        if (cc == null || cc.getPreselectId() == null) {
+            bugsTree.setCellRenderer(new CheckBoxRenderer());
+        } else {
+            bugsTree.setCellRenderer(new PlainRenderer());
+            bugsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+                @Override public void valueChanged(TreeSelectionEvent e) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) bugsTree.getSelectionPath().getLastPathComponent();
+                    Object user = node.getUserObject();
+
+                    if (user instanceof BugPattern) {
+                        BugPattern bp = (BugPattern) user;
+
+                        cc.setSelectedId(RunFindBugs.PREFIX_FINDBUGS + bp.getType());
+                    }
+                }
+            });
+        }
 
         bugsTree.addTreeSelectionListener(new TreeSelectionListener() {
             @Override public void valueChanged(TreeSelectionEvent e) {
@@ -152,6 +170,9 @@ final class FindBugsPanel extends javax.swing.JPanel {
                 }
             }
         });
+
+        runInEditor.setVisible(cc == null);
+        defaultsToDisabled = cc != null;
     }
 
     private boolean toggle( TreePath treePath ) {
@@ -271,13 +292,18 @@ final class FindBugsPanel extends javax.swing.JPanel {
     }
 
     void store() {
-        this.settings.store(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
+        ((ModifiedPreferences) this.settings).store(NbPreferences.forModule(FindBugsPanel.class).node("global-settings"));
         NbPreferences.forModule(RunInEditor.class).putBoolean(RunInEditor.RUN_IN_EDITOR, this.runInEditor.isSelected());
     }
 
     boolean valid() {
         // TODO check whether form is consistent and complete
         return true;
+    }
+
+    public void setSettings(Preferences settings) {
+        this.settings = settings;
+        bugsTree.repaint();
     }
 
     private TreeNode createRootNode() {
@@ -339,7 +365,7 @@ final class FindBugsPanel extends javax.swing.JPanel {
 
         if (setting != null) return Boolean.valueOf(setting);
 
-        return RunFindBugs.isEnabledByDefault(bp);
+        return !defaultsToDisabled && RunFindBugs.isEnabledByDefault(bp);
     }
 
     private boolean enabled(BugCategory bc) {
@@ -379,6 +405,26 @@ final class FindBugsPanel extends javax.swing.JPanel {
             }
 
             return renderer;
+        }
+    }
+
+    private class PlainRenderer extends DefaultTreeCellRenderer {
+
+        public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+            Object user = ((DefaultMutableTreeNode) value).getUserObject();
+
+            if (user instanceof BugCategory) {
+                value = ((BugCategory) user).getShortDescription();
+            } else if (user instanceof BugPattern) {
+                value = ((BugPattern) user).getShortDescription();
+            }
+
+            super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
+
+            setIcon(null);
+            setDisabledIcon(null);
+
+            return this;
         }
     }
 

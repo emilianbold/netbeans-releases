@@ -60,6 +60,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.openide.actions.OpenAction;
@@ -105,7 +106,7 @@ public class Nodes {
                     Analyzer analyzer = typeEntry.getValue().keySet().iterator().next();
                     final Image icon = analyzer.getIcon();
 
-                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(analyzer.getWarningDescription(typeEntry.getKey())) : null;
+                    String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzer, typeEntry.getKey())) : null;
                     long typeWarnings = 0;
 
                     for (List<ErrorDescription> v1 : typeEntry.getValue().values()) {
@@ -212,9 +213,24 @@ public class Nodes {
                 Logger.getLogger(Nodes.class.getName()).log(Level.FINE, "No ID for: {0}", ed.toString());
                 return "Unknown";
             }
-            return SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(a.getWarningDescription(id));
+
+            WarningDescription wd = findWarningDescription(a, id);
+
+            if (wd == null) return "Unknown";
+            else return SPIAccessor.ACCESSOR.getWarningCategoryDisplayName(wd);
         }
     };
+
+    private static WarningDescription findWarningDescription(Analyzer a, String id) {
+        //XXX: performance - should cache the results
+        for (WarningDescription wd : a.getWarnings()) {
+            if (id.equals(SPIAccessor.ACCESSOR.getWarningId(wd))) {
+                return wd;
+            }
+        }
+
+        return null;
+    }
 
     private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
         return Children.create(new ChildFactory<Node>() {

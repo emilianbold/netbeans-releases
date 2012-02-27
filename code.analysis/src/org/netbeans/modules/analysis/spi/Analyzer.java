@@ -43,6 +43,8 @@ package org.netbeans.modules.analysis.spi;
 
 import java.awt.Image;
 import java.util.Collection;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
@@ -73,6 +75,8 @@ public interface Analyzer {
      */
     public Collection<? extends MissingPlugin> requiredPlugins(Context context);
 
+    public String getId();
+    
     /**The name of this analyzer, in the format it should be shown to the user.
      *
      * @return the name of this analyzer
@@ -85,17 +89,23 @@ public interface Analyzer {
      */
     public Image  getIcon();
     
-    public WarningDescription getWarningDescription(String warningId);
+    public Iterable<? extends WarningDescription> getWarnings();
+
+    public <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider();
 
     public static final class Context {
         private final Scope scope;
+        private final Preferences settings;
+        private final String singleWarningId;
         private final ProgressHandle progress;
         private final int bucketStart;
         private final int bucketSize;
         private int totalWork;
 
-        Context(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize) {
+        Context(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize) {
             this.scope = scope;
+            this.settings = settings;
+            this.singleWarningId = singleWarningId;
             this.progress = progress;
             this.bucketStart = bucketStart;
             this.bucketSize = bucketSize;
@@ -103,6 +113,14 @@ public interface Analyzer {
 
         public Scope getScope() {
             return scope;
+        }
+
+        public Preferences getSettings() {
+            return settings;
+        }
+
+        public String getSingleWarningId() {
+            return singleWarningId;
         }
 
         public void start(int workunits) {
@@ -132,8 +150,8 @@ public interface Analyzer {
         static {
             SPIAccessor.ACCESSOR = new SPIAccessor() {
                 @Override
-                public Context createContext(Scope scope, ProgressHandle progress, int bucketStart, int bucketSize) {
-                    return new Context(scope, progress, bucketStart, bucketSize);
+                public Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize) {
+                    return new Context(scope, settings, singleWarningId, progress, bucketStart, bucketSize);
                 }
 
                 @Override
@@ -159,6 +177,16 @@ public interface Analyzer {
                 @Override
                 public String getWarningCategoryDisplayName(WarningDescription description) {
                     return description.categoryDisplayName;
+                }
+
+                @Override
+                public String getWarningId(WarningDescription description) {
+                    return description.warningId;
+                }
+
+                @Override
+                public String getSelectedId(CustomizerContext<?, ?> cc) {
+                    return cc.selectedId;
                 }
             };
         }
@@ -198,18 +226,62 @@ public interface Analyzer {
 
     public static final class WarningDescription {
 
-        public static WarningDescription create(String warningDisplayName, String categoryId, String categoryDisplayName) {
-            return new WarningDescription(warningDisplayName, categoryId, categoryDisplayName);
+        public static WarningDescription create(String warningId, String warningDisplayName, String categoryId, String categoryDisplayName) {
+            return new WarningDescription(warningId, warningDisplayName, categoryId, categoryDisplayName);
         }
         
+        private final String warningId;
         private final String warningDisplayName;
         private final String categoryId;
         private final String categoryDisplayName;
 
-        private WarningDescription(String warningDisplayName, String categoryId, String categoryDisplayName) {
+        private WarningDescription(String warningId, String warningDisplayName, String categoryId, String categoryDisplayName) {
+            this.warningId = warningId;
             this.warningDisplayName = warningDisplayName;
             this.categoryId = categoryId;
             this.categoryDisplayName = categoryDisplayName;
+        }
+
+    }
+
+    public interface CustomizerProvider<D, C extends JComponent> {
+        public D initialize();
+        public C createComponent(CustomizerContext<D, C> context);
+    }
+
+    public static final class CustomizerContext<D, C extends JComponent> {
+        private final Preferences preferences;
+        private final String preselectId;
+        private final C      previousComponent;
+        private final D      data;
+
+        /*XXX*/ public CustomizerContext(Preferences preferences, String preselectId, C previousComponent, D data) {
+            this.preferences = preferences;
+            this.preselectId = preselectId;
+            this.previousComponent = previousComponent;
+            this.data = data;
+        }
+
+        public Preferences getSettings() {
+            return preferences;
+        }
+
+        public String getPreselectId() {
+            return preselectId;
+        }
+
+        public C getPreviousComponent() {
+            return previousComponent;
+        }
+
+        public D getData() {
+            return data;
+        }
+
+        private String selectedId;
+
+        public void setSelectedId(String id) {
+            this.selectedId = id;
         }
 
     }

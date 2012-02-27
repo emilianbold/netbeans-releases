@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,47 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.analysis;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.analysis.spi.Analyzer.Context;
-import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
-import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
-import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
-import org.netbeans.modules.refactoring.api.Scope;
-import org.openide.util.Exceptions;
+import org.openide.util.NbPreferences;
 
 /**
  *
- * @author lahvac
+ * @author Jan Becicka
  */
-public abstract class SPIAccessor {
-
-    public static SPIAccessor ACCESSOR;
-
-    static {
-        try {
-            Class.forName(Analyzer.Context.class.getName(), true, Analyzer.Context.class.getClassLoader());
-        } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+public class Configuration {
+    
+    private String displayName;
+    private String id;
+    
+    Configuration(String id, String displayName) {
+        this.displayName = displayName;
+        this.id = id;
+        Preferences prefs = NbPreferences.forModule(this.getClass()).node(id());
+        prefs.put("display.name", displayName);
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+        
+    }
+    
+    public String id() {
+        return id;
     }
 
-    public abstract Context createContext(Scope scope, Preferences settings, String singleWarningId, ProgressHandle progress, int bucketStart, int bucketSize);
+    public void setDisplayName(String displayName) {
+        Preferences oldPrefs = NbPreferences.forModule(this.getClass()).node(id());
+        oldPrefs.put("display.name", displayName);
+        this.displayName = displayName;
+    }
 
-    public abstract String getDisplayName(MissingPlugin missing);
-
-    public abstract String getCNB(MissingPlugin missing);
-
-    public abstract String getWarningId(WarningDescription description);
-    public abstract String getWarningDisplayName(WarningDescription description);
-    public abstract String getWarningCategoryId(WarningDescription description);
-    public abstract String getWarningCategoryDisplayName(WarningDescription description);
-
-    public abstract String getSelectedId(CustomizerContext<?, ?> cc);
+    @Override
+    public String toString() {
+        return displayName;
+    }
 
 }

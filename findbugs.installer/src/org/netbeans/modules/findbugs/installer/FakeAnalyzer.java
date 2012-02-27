@@ -45,6 +45,8 @@ import java.awt.Image;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.lookup.ServiceProvider;
@@ -67,8 +69,8 @@ public class FakeAnalyzer implements Analyzer {
     }
 
     @Override
-    public WarningDescription getWarningDescription(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Iterable<? extends WarningDescription> getWarnings() {
+        return Collections.emptyList();
     }
 
     @Override
@@ -79,6 +81,23 @@ public class FakeAnalyzer implements Analyzer {
     @Override
     public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
         return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", "FindBugs Integration"));
+    }
+
+    @Override
+    public String getId() {
+        return "findbugs";
+    }
+
+    @Override
+    public CustomizerProvider<?, ?> getCustomizerProvider() {
+        return new CustomizerProvider<Void, JComponent>() {
+            @Override public Void initialize() {
+                return null;
+            }
+            @Override public JComponent createComponent(CustomizerContext<Void, JComponent> context) {
+                return new JPanel();
+            }
+        };
     }
 
 }
