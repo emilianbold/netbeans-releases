@@ -148,10 +148,10 @@ public final class AWTTask extends org.openide.util.Task {
             for(;;) {
                 AWTTask t = PENDING.poll();
                 if (t == null) {
-                    LOG.log(Level.INFO, " processing finished");
+                    LOG.log(Level.FINER, " processing finished");
                     return;
                 }
-                LOG.log(Level.INFO, " processing {0}", t);
+                LOG.log(Level.FINER, " processing {0}", t);
                 t.run();
             }
         }
