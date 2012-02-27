@@ -117,7 +117,49 @@ public final class SimpleSearchInfoDefinition extends SearchInfoDefinition {
             filters = null;
         }
         this.rootFile = rootFile;
-        this.filters = filters;
+        this.filters = filters != null ? niceFilters(rootFile, filters) : null;
+    }
+
+    /**
+     * Return sub-array of filters that are nice to a file.
+     */
+    private static SearchFilterDefinition[] niceFilters(FileObject fo,
+            SearchFilterDefinition[] allFilters) {
+
+        boolean[] mask = new boolean[allFilters.length]; // mask for bad filters
+        if (fo.isFolder()) {
+            for (int i = 0; i < allFilters.length; i++) {
+                FolderResult result = allFilters[i].traverseFolder(fo);
+                mask[i] = (result != FolderResult.DO_NOT_TRAVERSE);
+            }
+        } else {
+            assert fo.isData();
+            for (int i = 0; i < allFilters.length; i++) {
+                mask[i] = allFilters[i].searchFile(fo);
+            }
+        }
+        SearchFilterDefinition[] nice =
+                new SearchFilterDefinition[countTrues(mask)];
+        int niceIndex = 0;
+        for (int i = 0; i < allFilters.length; i++) {
+            if (mask[i]) {
+                nice[niceIndex++] = allFilters[i];
+            }
+        }
+        return nice;
+    }
+
+    /**
+     * Count true values in a boolean array.
+     */
+    private static int countTrues(boolean[] booleans) {
+        int trues = 0;
+        for (boolean b : booleans) {
+            if (b) {
+                trues++;
+            }
+        }
+        return trues;
     }
 
     /**

@@ -69,10 +69,6 @@ public final class ResultModel {
     /** */
     private int totalDetailsCount = 0;
     /**
-     */
-    private ResultTreeModel treeModel;
-    /** */
-    private ResultViewPanel resultView;
     
     /**
      * limit (number of found files or matches) reached during search
@@ -94,7 +90,7 @@ public final class ResultModel {
     final boolean searchAndReplace;
     /** list of matching objects (usually {@code DataObject}s) */
     private final List<MatchingObject> matchingObjects =
-            new ArraySet<MatchingObject>(Constants.COUNT_LIMIT).ordering(true).
+            new ArraySet<MatchingObject>(Constants.COUNT_LIMIT).ordering(false).
             nullIsAllowed(false);
 
     /** Contains optional finnish message often reason why finished. */
@@ -118,24 +114,6 @@ public final class ResultModel {
         return creationTime;
     }
     
-    /**
-     * Sets an observer which will be notified whenever an object is found.
-     *
-     * @param  observer  observer or <code>null</code>
-     */
-    void setObserver(ResultTreeModel observer) {
-        this.treeModel = observer;
-    }
-    
-    /**
-     * Sets an observer which will be notified whenever an object is found.
-     *
-     * @param  observer  observer or <code>null</code>
-     */
-    void setObserver(ResultViewPanel observer) {
-        this.resultView = observer;
-    }
-
     /**
      * Clean the allocated resources. Do not rely on GC there as we are often
      * referenced from various objects. So keep leak as small as possible.
@@ -163,22 +141,17 @@ public final class ResultModel {
      * @param  charset  charset used for full-text search of the object,
      *                  or {@code null} if the object was not full-text searched
      */
-    synchronized boolean objectFound(Object object, Charset charset,
+    public synchronized boolean objectFound(FileObject object, Charset charset,
             List<TextDetail> textDetails) {
         assert limitReached == null;
-        assert treeModel != null;
-        assert resultView != null;
         MatchingObject mo = new MatchingObject(this, object, charset,
                 textDetails);
         if(add(mo)) {
             totalDetailsCount += getDetailsCount(mo);
-            treeModel.objectFound(mo, matchingObjects.indexOf(mo));
-            resultView.objectFound(mo, totalDetailsCount);
-            return !checkLimits();
         } else {
             mo.cleanup();
         }
-        return false; // MatchingObject already exists
+        return !checkLimits();
     }
 
     private boolean add(MatchingObject matchingObject) {
@@ -214,13 +187,12 @@ public final class ResultModel {
         
         int index = matchingObjects.indexOf(matchingObj);
         assert index != -1;
-        
-        treeModel.objectBecameInvalid(matchingObj);
+        //TODO
     }
     
     /**
      */
-    synchronized int getTotalDetailsCount() {
+    public synchronized int getTotalDetailsCount() {
         return totalDetailsCount;
     }
     
@@ -228,13 +200,13 @@ public final class ResultModel {
      * @return a list of the {@code MatchingObject}s associated to this
      * {@code ResultModel}.
      */
-    synchronized List<MatchingObject> getMatchingObjects() {
+    public synchronized List<MatchingObject> getMatchingObjects() {
         return matchingObjects;
     }
     
     /**
      */
-    boolean hasDetails() {
+    public boolean hasDetails() {
         return totalDetailsCount != 0;      //PENDING - synchronization?
     }
     
@@ -248,7 +220,7 @@ public final class ResultModel {
      *          {@code null} if matching objects may have details
      *                         (if more time consuming check would be necessary)
      */
-    Boolean canHaveDetails() {
+    public Boolean canHaveDetails() {
         Boolean ret;
         if (isFullText) {
             ret = Boolean.TRUE;
@@ -363,13 +335,13 @@ public final class ResultModel {
     
     /**
      */
-    synchronized int size() {
+    public synchronized int size() {
         return matchingObjects.size();
     }
 
     /**
      */
-    synchronized boolean wasLimitReached() {
+    public synchronized boolean wasLimitReached() {
         return limitReached != null;
     }
 
@@ -397,10 +369,6 @@ public final class ResultModel {
      */
     synchronized String getExceptionMsg() {
         return finishMessage;
-    }
-
-    ResultViewPanel getResultView(){
-        return resultView;
     }
 
     /**

@@ -167,7 +167,7 @@ public final class TextDetail {
     }
 
     /** Getter for <code>lineText</code> property. */
-    String getLineText() {
+    public String getLineText() {
         return lineText;
     }
     

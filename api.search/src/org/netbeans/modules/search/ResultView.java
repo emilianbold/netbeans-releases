@@ -58,7 +58,6 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
-import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
@@ -217,7 +216,7 @@ public final class ResultView extends TopComponent {
     public void requestFocus() {
         ResultViewPanel panel = getCurrentResultViewPanel();
         if (panel != null)
-            panel.tree.requestFocus();
+            panel.requestFocus();
     }
 
     @Override
@@ -225,7 +224,7 @@ public final class ResultView extends TopComponent {
     public boolean requestFocusInWindow() {
         ResultViewPanel panel = getCurrentResultViewPanel();
         if (panel != null)
-            return panel.tree.requestFocusInWindow();
+            return panel.requestFocusInWindow();
         else
             return false;
     }
@@ -352,11 +351,8 @@ public final class ResultView extends TopComponent {
     void notifySearchPending(final SearchTask task,final int blockingTask) {
         assert EventQueue.isDispatchThread();
 
-        if (task.getDisplayer() instanceof ResultDisplayer) {
-
-            ResultDisplayer rd = (ResultDisplayer) task.getDisplayer();
-
-            ResultViewPanel panel = rd.getResultModel().getResultView();
+        ResultViewPanel panel = searchToViewMap.get(task);
+        if (panel != null) {
             panel.removeIssuesPanel();
             String msgKey = null;
             switch (blockingTask) {
@@ -385,11 +381,11 @@ public final class ResultView extends TopComponent {
      */
     void searchTaskStateChanged(final SearchTask task, final int changeType) {
         assert EventQueue.isDispatchThread();
-        if (!(task.getDisplayer() instanceof ResultDisplayer)) {
+
+        ResultViewPanel panel = searchToViewMap.get(task);
+        if (panel == null) {
             return;
         }
-        ResultDisplayer rd = (ResultDisplayer) task.getDisplayer();
-        ResultViewPanel panel = rd.getResultModel().getResultView();
         switch (changeType) {
             case Manager.EVENT_SEARCH_STARTED:
                 panel.removeIssuesPanel();
@@ -448,7 +444,8 @@ public final class ResultView extends TopComponent {
 
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel == null){
-            panel = new ResultViewPanel(task.getComposition());
+            panel = new ResultViewPanel(
+                    task.getComposition().getSearchResultsDisplayer());
             if( isMacLaf ) {
                 panel.setBackground(macBackground);
             }
@@ -501,19 +498,16 @@ public final class ResultView extends TopComponent {
         SearchTask lastSearchTask = replaceToSearchMap.get(task);
         SearchTask newSearchTask = lastSearchTask.createNewGeneration();
 
-        if (lastSearchTask.getDisplayer() instanceof ResultDisplayer) {
+        ResultViewPanel panel = searchToViewMap.get(lastSearchTask);
 
-            ResultDisplayer sd = (ResultDisplayer) lastSearchTask.getDisplayer();
-
-            if(sd.getResultModel() != null){
-            ResultViewPanel panel = sd.getResultModel().getResultView();
-            if (panel != null){
-                ResultView.getInstance().addSearchPair(sd.getResultModel().getResultView(), newSearchTask);
+        if (panel != null) {
+           if (panel != null){
+                ResultView.getInstance().addSearchPair(panel, newSearchTask);
                 panel.removeIssuesPanel();
             }
         }
         Manager.getInstance().scheduleSearchTask(newSearchTask);
-        }
+    }
     }
 
     private void closeAll(boolean butCurrent) {
@@ -594,7 +588,7 @@ public final class ResultView extends TopComponent {
      */
     public void addTab(SearchResultsDisplayer<?> resultDisplayer) {
 
-        JComponent panel = resultDisplayer.createVisualComponent();
+        ResultViewPanel panel = new ResultViewPanel(resultDisplayer);
         String title = resultDisplayer.getTitle();
 
         Component comp = getComponent(0);

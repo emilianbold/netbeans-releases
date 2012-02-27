@@ -45,6 +45,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.search.ui.BasicSearchResultsPanel;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -59,6 +60,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     private ResultModel resultModel;
     private BasicSearchCriteria criteria;
     private BasicComposition composition;
+    private BasicSearchResultsPanel resultPanel;
 
     public ResultDisplayer(BasicSearchCriteria criteria,
             BasicComposition composition) {
@@ -74,17 +76,16 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     @Override
     public JComponent createVisualComponent() {
 
-        ResultViewPanel panel = new ResultViewPanel(composition);
-        panel.setResultModel(resultModel);
-        resultModel.setObserver(panel);
-        panel.setName(getTitle());
-        return panel;
+        resultPanel = new BasicSearchResultsPanel(resultModel);
+        return resultPanel;
     }
 
     @Override
     public void addMatchingObject(MatchingObject.Def object) {
-        resultModel.objectFound(object.getFileObject(), object.getCharset(),
-                object.getTextDetails());
+        if (resultModel.objectFound(object.getFileObject(), object.getCharset(),
+                object.getTextDetails())) {
+            resultPanel.update();
+        }
         if (resultModel.wasLimitReached()) {
             composition.terminate(null);
         }

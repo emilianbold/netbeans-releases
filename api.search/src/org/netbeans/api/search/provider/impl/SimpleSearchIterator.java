@@ -79,7 +79,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
      */
     private boolean upToDate = false;
     /**
-     * <code>DataObject</code> to be returned the next time method {@link #next()}
+     * <code>FileObject</code> to be returned the next time method {@link #next()}
      * is called
      */
     private FileObject nextObject;
