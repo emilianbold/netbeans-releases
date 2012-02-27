@@ -166,5 +166,10 @@ final class GitClassFactoryImpl extends GitClassFactory {
         }
         return new GitUser(personIdent.getName(), personIdent.getEmailAddress());
     }
+    
+    @Override
+    public void setBranchTracking (GitBranch branch, GitBranch trackedBranch) {
+        branch.setTrackedBranch(trackedBranch);
+    }
 
 }
