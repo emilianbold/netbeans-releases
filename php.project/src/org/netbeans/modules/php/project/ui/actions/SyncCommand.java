@@ -118,7 +118,8 @@ public class SyncCommand extends RemoteCommand implements Displayable {
         @NbBundle.Messages({
             "SyncCommand.download.title=Download",
             "SyncCommand.upload.title=Upload",
-            "SyncCommand.delete.title=Delete",
+            "SyncCommand.localDelete.title=Local Delete",
+            "SyncCommand.remoteDelete.title=Remote Delete",
         })
         @Override
         public void process(SyncResult result) {
@@ -130,7 +131,8 @@ public class SyncCommand extends RemoteCommand implements Displayable {
             remoteLog.select();
             processTransferInfo(result.getDownloadTransferInfo(), remoteLog, Bundle.SyncCommand_download_title());
             processTransferInfo(result.getUploadTransferInfo(), remoteLog, Bundle.SyncCommand_upload_title());
-            processTransferInfo(result.getDeleteTransferInfo(), remoteLog, Bundle.SyncCommand_delete_title());
+            processTransferInfo(result.getLocalDeleteTransferInfo(), remoteLog, Bundle.SyncCommand_localDelete_title());
+            processTransferInfo(result.getRemoteDeleteTransferInfo(), remoteLog, Bundle.SyncCommand_remoteDelete_title());
         }
 
     }

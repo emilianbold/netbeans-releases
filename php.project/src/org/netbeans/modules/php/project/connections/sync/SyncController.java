@@ -41,27 +41,38 @@
  */
 package org.netbeans.modules.php.project.connections.sync;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ProjectSettings;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
+import org.netbeans.modules.php.project.connections.TmpLocalFile;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferInfo;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -71,6 +82,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class SyncController implements Cancellable {
 
+    static final Logger LOGGER = Logger.getLogger(SyncController.class.getName());
     static final RequestProcessor SYNC_RP = new RequestProcessor("Remote PHP Synchronization", 1); // NOI18N
 
     final PhpProject phpProject;
@@ -131,84 +143,23 @@ public final class SyncController implements Cancellable {
             public void run() {
                 SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient);
                 if (panel.open(lastTimeStamp == -1)) {
-                    doSynchronize(panel.getItems(), resultProcessor);
+                    doSynchronize(items, panel.getItems(), resultProcessor);
                 } else {
                     disconnect();
+                    items.cleanup();
                 }
-                items.cleanup();
             }
         });
     }
 
-    @NbBundle.Messages("SyncController.error.unknown=Unknown reason")
-    void doSynchronize(final List<SyncItem> items, final SyncResultProcessor resultProcessor) {
+    void doSynchronize(final SyncItems syncItems, final List<SyncItem> itemsToSynchronize, final SyncResultProcessor resultProcessor) {
+        assert SwingUtilities.isEventDispatchThread();
+
         if (cancelled) {
             // in fact, cannot happen here
             return;
         }
-        SYNC_RP.post(new Runnable() {
-            @Override
-            public void run() {
-                SyncResult syncResult = new SyncResult();
-                for (SyncItem syncItem : items) {
-                    TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
-                    TransferFile localTransferFile = syncItem.getLocalTransferFile();
-                    switch (syncItem.getOperation()) {
-                        case NOOP:
-                            // noop
-                            break;
-                        case DOWNLOAD:
-                        case DOWNLOAD_REVIEW:
-                            try {
-                                TransferInfo downloadInfo = remoteClient.download(Collections.singleton(remoteTransferFile));
-                                mergeTransferInfo(downloadInfo, syncResult.getDownloadTransferInfo());
-                            } catch (RemoteException ex) {
-                                syncResult.getDownloadTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
-                            }
-                            break;
-                        case UPLOAD:
-                        case UPLOAD_REVIEW:
-                            try {
-                                TransferInfo uploadInfo = remoteClient.upload(Collections.singleton(localTransferFile));
-                                mergeTransferInfo(uploadInfo, syncResult.getUploadTransferInfo());
-                            } catch (RemoteException ex) {
-                                syncResult.getUploadTransferInfo().addFailed(localTransferFile, ex.getLocalizedMessage());
-                            }
-                            break;
-                        case DELETE:
-                            // local
-                            // XXX recursive delete
-                            long start = System.currentTimeMillis();
-                            if (!syncItem.getLocalTransferFile().resolveLocalFile().delete()) {
-                                syncResult.getDeleteTransferInfo().addFailed(remoteTransferFile, Bundle.SyncController_error_unknown());
-                            }
-                            // remote
-                            try {
-                                // XXX recursive delete
-                                TransferInfo deleteInfo = remoteClient.delete(remoteTransferFile);
-                                mergeTransferInfo(deleteInfo, syncResult.getDeleteTransferInfo());
-                            } catch (RemoteException ex) {
-                                syncResult.getDeleteTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
-                            }
-                            break;
-                        default:
-                            assert false : "Unsupported synchronization operation: " + syncItem.getOperation();
-                    }
-                }
-                disconnect();
-                ProjectSettings.setSyncTimestamp(phpProject, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
-                resultProcessor.process(syncResult);
-            }
-
-            private void mergeTransferInfo(TransferInfo from, TransferInfo to) {
-                to.setRuntime(to.getRuntime() + from.getRuntime());
-                to.getTransfered().addAll(from.getTransfered());
-                to.getIgnored().putAll(from.getIgnored());
-                to.getPartiallyFailed().putAll(from.getPartiallyFailed());
-                to.getFailed().putAll(from.getFailed());
-            }
-
-        });
+        new Synchronizer(syncItems, itemsToSynchronize, resultProcessor).sync();
     }
 
     @Override
@@ -221,8 +172,8 @@ public final class SyncController implements Cancellable {
     void disconnect() {
         try {
             remoteClient.disconnect();
-        } catch (RemoteException ex1) {
-            // XXX log INFO
+        } catch (RemoteException ex) {
+            LOGGER.log(Level.INFO, null, ex);
         }
     }
 
@@ -299,14 +250,11 @@ public final class SyncController implements Cancellable {
 
         private final TransferInfo downloadTransferInfo = new TransferInfo();
         private final TransferInfo uploadTransferInfo = new TransferInfo();
-        private final TransferInfo deleteTransferInfo = new TransferInfo();
+        private final TransferInfo localDeleteTransferInfo = new TransferInfo();
+        private final TransferInfo remoteDeleteTransferInfo = new TransferInfo();
 
 
         SyncResult() {
-        }
-
-        public TransferInfo getDeleteTransferInfo() {
-            return deleteTransferInfo;
         }
 
         public TransferInfo getDownloadTransferInfo() {
@@ -317,10 +265,212 @@ public final class SyncController implements Cancellable {
             return uploadTransferInfo;
         }
 
+        public TransferInfo getLocalDeleteTransferInfo() {
+            return localDeleteTransferInfo;
+        }
+
+        public TransferInfo getRemoteDeleteTransferInfo() {
+            return remoteDeleteTransferInfo;
+        }
+
     }
 
     public interface SyncResultProcessor {
         void process(SyncResult result);
+    }
+
+    private final class Synchronizer {
+
+        private final SyncItems syncItems;
+        private final List<SyncItem> itemsToSynchronize;
+        private final SyncResultProcessor resultProcessor;
+
+
+        public Synchronizer(SyncItems syncItems, List<SyncItem> itemsToSynchronize, SyncResultProcessor resultProcessor) {
+            this.syncItems = syncItems;
+            this.itemsToSynchronize = itemsToSynchronize;
+            this.resultProcessor = resultProcessor;
+        }
+
+        public void sync() {
+            assert SwingUtilities.isEventDispatchThread();
+            // XXX show modal progress window
+            SYNC_RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    doSync();
+                }
+            });
+        }
+
+        @NbBundle.Messages("SyncController.error.tmpFileCopyFailed=Failed to copy content of temporary file.")
+        void doSync() {
+            assert !SwingUtilities.isEventDispatchThread();
+
+            Set<TransferFile> remoteFilesForDelete = new HashSet<TransferFile>();
+            Set<TransferFile> localFilesForDelete = new HashSet<TransferFile>();
+            final SyncResult syncResult = new SyncResult();
+            for (SyncItem syncItem : itemsToSynchronize) {
+                TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
+                TransferFile localTransferFile = syncItem.getLocalTransferFile();
+                switch (syncItem.getOperation()) {
+                    case NOOP:
+                        // noop
+                        break;
+                    case DOWNLOAD:
+                    case DOWNLOAD_REVIEW:
+                        try {
+                            TransferInfo downloadInfo = remoteClient.download(Collections.singleton(remoteTransferFile));
+                            mergeTransferInfo(downloadInfo, syncResult.getDownloadTransferInfo());
+                        } catch (RemoteException ex) {
+                            syncResult.getDownloadTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
+                        }
+                        break;
+                    case UPLOAD:
+                    case UPLOAD_REVIEW:
+                        try {
+                            // tmp file?
+                            if (copyContent(syncItem.getTmpLocalFile(), localTransferFile.resolveLocalFile())) {
+                                TransferInfo uploadInfo = remoteClient.upload(Collections.singleton(localTransferFile));
+                                mergeTransferInfo(uploadInfo, syncResult.getUploadTransferInfo());
+                            } else {
+                                // valid fileobject not found??
+                                LOGGER.log(Level.WARNING, "Cannot find FileObject for file {0}", localTransferFile.resolveLocalFile());
+                                syncResult.getUploadTransferInfo().addFailed(localTransferFile, Bundle.SyncController_error_tmpFileCopyFailed());
+                            }
+                        } catch (RemoteException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                            syncResult.getUploadTransferInfo().addFailed(localTransferFile, ex.getLocalizedMessage());
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
+                            syncResult.getUploadTransferInfo().addFailed(localTransferFile, Bundle.SyncController_error_tmpFileCopyFailed());
+                        }
+                        break;
+                    case DELETE:
+                        // local
+                        if (localTransferFile != null) {
+                            localFilesForDelete.add(localTransferFile);
+                        }
+                        // remote
+                        if (remoteTransferFile != null) {
+                            remoteFilesForDelete.add(remoteTransferFile);
+                        }
+                        break;
+                    default:
+                        assert false : "Unsupported synchronization operation: " + syncItem.getOperation();
+                }
+            }
+            deleteFiles(syncResult, remoteFilesForDelete, localFilesForDelete);
+            syncItems.cleanup();
+            disconnect();
+            ProjectSettings.setSyncTimestamp(phpProject, TimeUnit.SECONDS.convert(System.currentTimeMillis(), TimeUnit.MILLISECONDS));
+            resultProcessor.process(syncResult);
+        }
+
+        private boolean copyContent(TmpLocalFile source, File target) throws IOException {
+            if (source == null) {
+                // no tmp file
+                return true;
+            }
+            FileObject fileObject = FileUtil.toFileObject(target);
+            if (fileObject == null || !fileObject.isValid()) {
+                return false;
+            }
+            InputStream inputStream = source.getInputStream();
+            try {
+                OutputStream outputStream = fileObject.getOutputStream();
+                try {
+                    FileUtil.copy(inputStream, outputStream);
+                } finally {
+                    outputStream.close();
+                }
+            } finally {
+                inputStream.close();
+            }
+            return true;
+        }
+
+        private void mergeTransferInfo(TransferInfo from, TransferInfo to) {
+            to.setRuntime(to.getRuntime() + from.getRuntime());
+            to.getTransfered().addAll(from.getTransfered());
+            to.getIgnored().putAll(from.getIgnored());
+            to.getPartiallyFailed().putAll(from.getPartiallyFailed());
+            to.getFailed().putAll(from.getFailed());
+        }
+
+        private void deleteFiles(SyncResult syncResult, Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
+            deleteRemoteFiles(syncResult, remoteFiles);
+            deleteLocalFiles(syncResult, localFiles);
+        }
+
+        private void deleteRemoteFiles(SyncResult syncResult, Set<TransferFile> remoteFiles) {
+            if (remoteFiles.isEmpty()) {
+                return;
+            }
+            try {
+                TransferInfo deleteInfo = remoteClient.delete(remoteFiles);
+                mergeTransferInfo(deleteInfo, syncResult.getRemoteDeleteTransferInfo());
+            } catch (RemoteException ex) {
+                // should not happen, can be 'ignored', we are simply not connected
+                LOGGER.log(Level.INFO, null, ex);
+                for (TransferFile transferFile : remoteFiles) {
+                    syncResult.getRemoteDeleteTransferInfo().addFailed(transferFile, ex.getLocalizedMessage());
+                    break;
+                }
+            }
+        }
+
+        @NbBundle.Messages({
+            "SyncController.error.deleteLocalFile=Cannot delete local file.",
+            "SyncController.error.localFolderNotEmpty=Cannot delete local folder because it is not empty."
+        })
+        private void deleteLocalFiles(SyncResult syncResult, Set<TransferFile> localFiles) {
+            // first, delete files
+            long start = System.currentTimeMillis();
+            TransferInfo deleteInfo = new TransferInfo();
+            try {
+                Set<TransferFile> folders = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
+                    @Override
+                    public int compare(TransferFile file1, TransferFile file2) {
+                        // longest paths first to be able to delete directories properly
+                        int cmp = StringUtils.explode(file2.getLocalPath(), File.separator).size() - StringUtils.explode(file1.getLocalPath(), File.separator).size();
+                        return cmp != 0 ? cmp : 1;
+                    }
+
+                });
+                // first, delete files
+                for (TransferFile transferFile : localFiles) {
+                    File localFile = transferFile.resolveLocalFile();
+                    if (localFile.isDirectory()) {
+                        folders.add(transferFile);
+                    } else if (localFile.isFile()) {
+                        if (localFile.delete()) {
+                            deleteInfo.addTransfered(transferFile);
+                        } else {
+                            deleteInfo.addFailed(transferFile, Bundle.SyncController_error_deleteLocalFile());
+                        }
+                    }
+                }
+                // now delete non-empty directories
+                for (TransferFile folder : folders) {
+                    File localDir = folder.resolveLocalFile();
+                    String[] children = localDir.list();
+                    if (children != null && children.length == 0) {
+                        if (localDir.delete()) {
+                            deleteInfo.addTransfered(folder);
+                        } else {
+                            deleteInfo.addFailed(folder, Bundle.SyncController_error_deleteLocalFile());
+                        }
+                    } else {
+                        deleteInfo.addIgnored(folder, Bundle.SyncController_error_localFolderNotEmpty());
+                    }
+                }
+            } finally {
+                deleteInfo.setRuntime(System.currentTimeMillis() - start);
+                mergeTransferInfo(deleteInfo, syncResult.getLocalDeleteTransferInfo());
+            }
+        }
+
     }
 
 }
