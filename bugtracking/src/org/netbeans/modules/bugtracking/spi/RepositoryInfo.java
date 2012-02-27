@@ -167,7 +167,10 @@ public final class RepositoryInfo {
                 sb.append(key);
                 sb.append(DELIMITER);
                 if(!(dropUser && key.equals(PROPERTY_USERNAME))) {
-                    sb.append(map.get(key));
+                    String value = map.get(key);
+                    if(value != null) {
+                        sb.append(value);
+                    }
                 }
             }
         }
