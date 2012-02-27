@@ -50,7 +50,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
-public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeListener {
+
+
+public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
     private static final long serialVersionUID = -2097024098026706995L;
 
@@ -58,65 +60,35 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
     //protected int browserStartTimeout = 6000;
 
     /** Creates new ExtWebBrowser */
-    public NetscapeBrowser() {
-        init();
+    public ChromeBrowser() {
+        ddeServer = ExtWebBrowser.CHROME;
     }
     
-    public void init() {
-        //Windows - we don't care about executable changes, because there's no need to setup ddeserver on non-windows platform
-        if (Utilities.isWindows()) {
-            ddeServer = ExtWebBrowser.NETSCAPE6;
-            pcs.addPropertyChangeListener(this);
-            //browserStartTimeout = 6000;
-        }
-    }
-
-    /** Determines whether the browser should be visible or not
-     *  @return true when OS is Windows.
-     *          false in all other cases.
-     */
     public static Boolean isHidden () {
         String detectedPath = null;
         if (Utilities.isWindows()) {
             try {
-                detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCP");       // NOI18N
+                detectedPath = NbDdeBrowserImpl.getBrowserPath("chrome");       // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 7 : " + e);   // NOI18N
+                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect chrome : " + e);   // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
             }
 
-            try {
-                detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCP6");      // NOI18N
-            } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 6 : " + e);   // NOI18N
-            }
-            if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
-                return Boolean.FALSE;
-            }
-            
-            try {
-                detectedPath = NbDdeBrowserImpl.getBrowserPath("NETSCAPE");     // NOI18N
-            } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Netscape 4 : " + e);   // NOI18N
-            }
-            if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
-                return Boolean.FALSE;
-            }
-            
             return Boolean.TRUE;
         }
         
-        return (Utilities.isUnix() && !Utilities.isMac()) ? Boolean.FALSE : Boolean.TRUE;
+        return Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;
     }
 
     /** Getter for browser name
      *  @return name of browser
      */
+    @Override
     public String getName () {
         if (name == null) {
-            this.name = NbBundle.getMessage(NetscapeBrowser.class, "CTL_NetscapeBrowserName");
+            this.name = NbBundle.getMessage(ChromeBrowser.class, "CTL_ChromeBrowserName");  // NOI18N
         }
         return name;
     }
@@ -126,15 +98,19 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
      * @throws UnsupportedOperationException when method is called and OS is not Windows.
      * @return browserImpl implementation of browser.
      */
+    @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         ExtBrowserImpl impl = null;
 
         if (org.openide.util.Utilities.isWindows ()) {
             impl = new NbDdeBrowserImpl (this);
+        } else if (Utilities.isMac()) {
+            impl = new MacBrowserImpl(this);
         } else if (Utilities.isUnix() && !Utilities.isMac()) {
             impl = new UnixBrowserImpl(this);
         } else {
-            throw new UnsupportedOperationException (NbBundle.getMessage (NetscapeBrowser.class, "MSG_CannotUseBrowser"));
+            throw new UnsupportedOperationException (NbBundle.
+                    getMessage(FirefoxBrowser.class, "MSG_CannotUseBrowser"));  // NOI18N
         }
         
         return impl;
@@ -152,68 +128,61 @@ public class NetscapeBrowser extends ExtWebBrowser implements PropertyChangeList
         
         //Windows
         if (Utilities.isWindows()) {
-            params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";
+            params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";  // NOI18N
             try {
                 try {
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscp"); // NOI18N
+                    b = NbDdeBrowserImpl.getBrowserPath("chrome"); // NOI18N
                     if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(ExtWebBrowser.NETSCAPE6);
+                        setDDEServer(ExtWebBrowser.CHROME);
                         return new NbProcessDescriptor(b, params);
                     }
                 } catch (NbBrowserException e) {
                     if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 7: " + e);   // NOI18N
+                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Chrome: " + e);   // NOI18N
                     }
                 }
 
-                try {
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscp6");  // NOI18N
-                    if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(ExtWebBrowser.NETSCAPE6);
-                        return new NbProcessDescriptor(b, params);
-                    }
-                } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 6: " + e);   // NOI18N
-                    }
-                }
-
-                try {
-                    b = NbDdeBrowserImpl.getBrowserPath("Netscape");  // NOI18N
-                    if ((b != null) && (b.trim().length() > 0)) {
-                        setDDEServer(ExtWebBrowser.NETSCAPE);
-                        return new NbProcessDescriptor(b, params);
-                    }
-                } catch (NbBrowserException e) {
-                    if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
-                        ExtWebBrowser.getEM().log(Level.FINE, "Cannot get Path for Netscape 4: " + e);   // NOI18N
-                    }
-                }
-                
             } catch (UnsatisfiedLinkError e) {
                 if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
                     ExtWebBrowser.getEM().log(Level.FINE, "Some problem here:" + e);   // NOI18N
                 }
             }
 
-            b = "C:\\PROGRA~1\\Netscape\\NETSCA~1\\netscp.exe";  // NOI18N
-            setDDEServer(ExtWebBrowser.NETSCAPE6);
+            String localFiles = System.getenv("LOCALAPPDATA");
+            b = b+"\\Google\\Chrome\\Application\\chrome.exe";  // NOI18N
+            setDDEServer(ExtWebBrowser.CHROME);
             
             retValue = new NbProcessDescriptor (b, params);
+         // Mac
+        } else if (Utilities.isMac()) {
+            params += "-a chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
+            retValue = new NbProcessDescriptor ("/usr/bin/open", params, // NOI18N
+                    ExtWebBrowser.UnixBrowserFormat.getHint());
+            return retValue;
+
         
         //Unix
         } else {
-
-            b = "netscape"; // NOI18N
-            if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
-                java.io.File f = new java.io.File ("/usr/dt/bin/sun_netscape"); // NOI18N
-                if (f.exists()) {
-                    b = f.getAbsolutePath();
-                }
+            boolean found = false;
+            b = "chrome"; // NOI18N
+            java.io.File f = new java.io.File ("/opt/google/chrome/chrome"); // NOI18N
+            if (f.exists()) {
+                found = true;
+                b = f.getAbsolutePath();
+            }
+            f = new java.io.File ("/usr/bin/google-chrome"); // NOI18N
+            if (f.exists()) {
+                found = true;
+                b = f.getAbsolutePath();
+            }
+            f = new java.io.File ("/usr/local/bin/google-chrome"); // NOI18N
+            if (f.exists()) {
+                found = true;
+                b = f.getAbsolutePath();
             }
             retValue = new NbProcessDescriptor (
-                b, "-remote \"openURL({" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "})\"", // NOI18N
-                NbBundle.getMessage (NetscapeBrowser.class, "MSG_BrowserExecutorHint")
+                b, "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}", // NOI18N
+                NbBundle.getMessage (ChromeBrowser.class, "MSG_BrowserExecutorHint")
             );                
         }
         

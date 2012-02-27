@@ -91,9 +91,10 @@ public final class Utils {
 
         if (!Utilities.isWindows()) {
             return userHome;
-        } else {
+        } 
+        else {
             BufferedReader br = null;
-            try {
+            /*try {
                 Process process = Runtime.getRuntime().exec(APPDATA_CMD);
                 process.waitFor();
 
@@ -127,9 +128,10 @@ public final class Utils {
                                         ex );      
                     }
                 }
-            }
+            }*/
 
-            return userHome + File.separator + "Application Data";  // NOI18N
+            //return userHome + File.separator + "Application Data";  // NOI18N
+            return System.getenv("AppData");                          // NOI18N
         }
     }
 
@@ -222,6 +224,7 @@ public final class Utils {
                 } 
                 else {
                     File file = new File(destDir, fileName);
+                    file.getParentFile().mkdirs();
                     if (file.exists() && file.isDirectory()) {
                         throw new IOException("Cannot write normal file " +
                         		"to existing directory with the same path");  // NOI18N

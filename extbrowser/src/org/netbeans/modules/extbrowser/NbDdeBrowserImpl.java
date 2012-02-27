@@ -192,12 +192,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                     return ExtWebBrowser.IEXPLORE;
                 }
 
-                if (cmd.toUpperCase ().indexOf ("NETSCP") >= 0) { // NOI18N
-                    return ExtWebBrowser.NETSCAPE6;
-                }
-                
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.NETSCAPE) >= 0) {
-                    return ExtWebBrowser.NETSCAPE;
+                if (cmd.toUpperCase ().indexOf ("CHROME") >= 0) { // NOI18N
+                    return ExtWebBrowser.CHROME;
                 }
                 
                 if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
