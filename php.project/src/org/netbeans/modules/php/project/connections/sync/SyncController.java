@@ -97,7 +97,10 @@ public final class SyncController implements Cancellable {
         });
     }
 
-    @NbBundle.Messages("SyncController.fetching=Fetching {0} files")
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "SyncController.fetching=Fetching {0} files"
+    })
     SyncItems fetchSyncItems() {
         assert !SwingUtilities.isEventDispatchThread();
         SyncItems items = null;

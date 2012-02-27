@@ -295,8 +295,15 @@ public final class SyncPanel extends JPanel {
         descriptor.setValid(true);
     }
 
-    @NbBundle.Messages("SyncPanel.info.status=Download: {0} files, upload: {1} files, delete: {2} files, "
-            + "no operation: {3} files, errors: {4} files.")
+    @NbBundle.Messages({
+        "# {0} - number",
+        "# {1} - number",
+        "# {2} - number",
+        "# {3} - number",
+        "# {4} - number",
+        "SyncPanel.info.status=Download: {0} files, upload: {1} files, delete: {2} files, "
+            + "no operation: {3} files, errors: {4} files."
+    })
     void updateSyncInfo() {
         int download = 0;
         int upload = 0;
