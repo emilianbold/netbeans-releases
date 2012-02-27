@@ -110,28 +110,19 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private void init() {
 
-        List<SearchProvider.Presenter> extraPresenters = makeExtraPresenters();
-        SearchProvider basicProvider = BasicSearchProvider.getInstance();
-        final SearchProvider.Presenter basicPresenter =
-                basicProvider.createPresenter(replacing);
-
-        presenters = new LinkedList<SearchProvider.Presenter>();
-        presenters.add(basicPresenter);
+        presenters = makePresenters();
         setLayout(new GridLayout(1, 1));
 
-        if (extraPresenters.isEmpty()) {
-            add(basicPresenter.createForm());
+        if (presenters.isEmpty()) {
+            throw new IllegalStateException("No presenter found");      //NOI18N
+        } else if (presenters.size() == 1) {
+            add(presenters.get(0).createForm());
         } else {
-
             tabbedPane = new JTabbedPane();
-            tabbedPane.add(basicPresenter.createForm());
-
-            for (SearchProvider.Presenter presenter : extraPresenters) {
+            for (SearchProvider.Presenter presenter : presenters) {
                 tabbedPane.add(presenter.createForm());
-                presenters.add(presenter);
             }
             tabbedPane.addChangeListener(new ChangeListener() {
-
                 @Override
                 public void stateChanged(ChangeEvent e) {
                     tabChanged();
@@ -141,7 +132,7 @@ public class SearchPanel extends JPanel implements FocusListener,
             // TODO select last opened tab.
         }
 
-        selectedPresenter = basicPresenter;
+        selectedPresenter = presenters.get(0);
 
         for (final SearchProvider.Presenter p : presenters) {
             p.addChangeListener(new ChangeListener() {
@@ -154,6 +145,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         }
         initLocalStrings();
         initAccessibility();
+        okButton.setEnabled(selectedPresenter.isUsable());
     }
 
     private void initLocalStrings() throws MissingResourceException {
@@ -184,17 +176,17 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Make list of presenters created for all available search providers.
      */
-    private List<SearchProvider.Presenter> makeExtraPresenters() {
+    private List<SearchProvider.Presenter> makePresenters() {
 
-        List<SearchProvider.Presenter> extraPresenters =
+        List<SearchProvider.Presenter> presenterList =
                 new LinkedList<SearchProvider.Presenter>();
         for (SearchProvider p :
                 Lookup.getDefault().lookupAll(SearchProvider.class)) {
             if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
-                extraPresenters.add(p.createPresenter(replacing));
+                presenterList.add(p.createPresenter(replacing));
             }
         }
-        return extraPresenters;
+        return presenterList;
     }
 
     public void showDialog() {

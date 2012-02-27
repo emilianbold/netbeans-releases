@@ -50,6 +50,7 @@ import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.modules.search.IgnoreListPanel.IgnoreListManager;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
+import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchFilterDefinition.FolderResult;
 import org.netbeans.spi.search.SearchScopeDefinition;
@@ -58,11 +59,13 @@ import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
-/**
+/** Basic Search provider
  *
  * @author jhavlin
  */
+@ServiceProvider(service=SearchProvider.class, position=0)
 public class BasicSearchProvider extends SearchProvider {
 
     private static final BasicSearchProvider INSTANCE = new BasicSearchProvider();
@@ -110,7 +113,8 @@ public class BasicSearchProvider extends SearchProvider {
                 form = new BasicSearchForm(
                         FindDialogMemory.getDefault().getScopeTypeId(),
                         replacing);
-                form.setName("Basic Search");                       //TODO I18N
+                form.setName(UiUtils.getText(
+                        "BasicSearchForm.tabText"));                    //NOI18N
                 form.setUsabilityChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
