@@ -29,10 +29,12 @@ import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -81,7 +83,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
         }
 
         SummaryProperty summaryProperty = (SummaryProperty) value;
-        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssue();
+        NbJiraIssue issue = (NbJiraIssue) summaryProperty.getIssueData();
 
         if(issue.hasSubtasks() || issue.isSubtask()) {
             return getSubtaskRenderer(issue, summaryProperty, table, isSelected, row);
@@ -153,7 +155,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
         if (query.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, query, issueTable, p, isSelected, row);
+            style = QueryTableCellRenderer.getCellStyle(table, JiraUtils.getQuery(query), issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }
@@ -241,9 +243,9 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 String id = issue.getParentID();
                 NbJiraIssue parent = (NbJiraIssue) issue.getRepository().getIssueCache().getIssue(id);
                 if(parent != null) {
-                    parent.open();
+                    JiraUtils.openIssue(parent);
                 } else {
-                    IssueProvider.open(issue.getRepository(), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
+                    BugtrackingUtil.openIssue(JiraUtils.getRepository(issue.getRepository()), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
                 }
             }
         });

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.jira.query;
 
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
 
 /**
  * Notifies changes on a query
@@ -59,7 +59,7 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(IssueProvider issue);
+    public void notifyData(NbJiraIssue issue);
 
     /**
      * Query execution was finished

@@ -59,6 +59,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -75,9 +76,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
@@ -152,7 +153,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
         this.repository = repository;
         this.query = query;
         
-        issueTable = new IssueTable(query, query.getColumnDescriptors());
+        issueTable = new IssueTable(BugzillaUtil.getRepository(repository), query, query.getColumnDescriptors());
         setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent(), this);
 
@@ -251,7 +252,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void setupRenderer(IssueTable issueTable) {
-        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer(new QueryTableCellRenderer(query, issueTable));
+        BugzillaQueryCellRenderer renderer = new BugzillaQueryCellRenderer((QueryTableCellRenderer)issueTable.getRenderer());
         issueTable.setRenderer(renderer);
     }
 
@@ -627,8 +628,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         QueryNameValidator v = new QueryNameValidator() {
             @Override
             public String isValid(String name) {
-                QueryProvider[] queries = repository.getQueries ();
-                for (QueryProvider q : queries) {
+                Collection<BugzillaQuery> queries = repository.getQueries ();
+                for (BugzillaQuery q : queries) {
                     if(q.getDisplayName().equals(name)) {
                         return NbBundle.getMessage(QueryController.class, "MSG_SAME_NAME");
                     }
@@ -652,11 +653,11 @@ public class QueryController extends BugtrackingController implements DocumentLi
     public void selectFilter(final Filter filter) {
         if(filter != null) {
             // XXX this part should be handled in the issues table - move the filtercombo and the label over
-            IssueProvider[] issues = query.getIssues();
+            Collection<BugzillaIssue> issues = query.getIssues();
             int c = 0;
             if(issues != null) {
-                for (IssueProvider issue : issues) {
-                    if(filter.accept(issue)) c++;
+                for (BugzillaIssue issue : issues) {
+                    if(filter.accept(issue.getNode())) c++;
                 }
             }
             final int issueCount = c;
@@ -725,7 +726,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
 
     protected void openIssue(BugzillaIssue issue) {
         if (issue != null) {
-            issue.open();
+            BugzillaUtil.openIssue(issue);
         } else {
             // XXX nice message?
         }
@@ -781,20 +782,24 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     public void autoRefresh() {
-        onRefresh(true);
+        refresh(true, false);
     }
 
+    public void refresh(boolean synchronously) {
+        refresh(false, synchronously);
+    }
+    
     public void onRefresh() {
-        onRefresh(false);
+        refresh(false, false);
     }
 
-    private void onRefresh(final boolean auto) {
+    private void refresh(final boolean auto, boolean synchronously) {
         if(refreshTask == null) {
             refreshTask = new QueryTask();
         } else {
             refreshTask.cancel();
         }
-        refreshTask.post(auto);
+        refreshTask.post(auto, synchronously);
     }
 
     private void onModify() {
@@ -805,8 +810,8 @@ public class QueryController extends BugtrackingController implements DocumentLi
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
-                IssueProvider[] issues = query.getIssues();
-                for (IssueProvider issue : issues) {
+                Collection<BugzillaIssue> issues = query.getIssues();
+                for (BugzillaIssue issue : issues) {
                     try {
                         ((BugzillaIssue) issue).setSeen(true);
                     } catch (IOException ex) {
@@ -834,13 +839,13 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFindIssues() {
-        QueryProvider.openNew(repository);
+        Query.openNew(BugzillaUtil.getRepository(repository));
     }
 
     private void onCloneQuery() {
         String p = getUrlParameters();
         BugzillaQuery q = new BugzillaQuery(null, getRepository(), p, false, false, true);
-        BugtrackingUtil.openQuery(q, getRepository(), false);
+        BugzillaUtil.openQuery(q);
     }
 
     private void onAutoRefresh() {
@@ -1115,13 +1120,17 @@ public class QueryController extends BugtrackingController implements DocumentLi
             }
         }
 
-        synchronized void post(boolean autoRefresh) {
+        synchronized void post(boolean autoRefresh, boolean synchronously) {
             if(task != null) {
                 task.cancel();
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
-            task.schedule(0);
+            if(synchronously) {
+                task.run();
+            } else {
+                task.schedule(0);
+            }
         }
 
         @Override
@@ -1134,9 +1143,9 @@ public class QueryController extends BugtrackingController implements DocumentLi
         }
 
         @Override
-        public void notifyData(final IssueProvider issue) {
-            issueTable.notifyData(issue);
-            if(!query.contains(issue)) {
+        public void notifyData(final BugzillaIssue issue) {
+            issueTable.addNode(issue.getNode());
+            if(!query.contains(issue.getID())) {
                 // XXX this is quite ugly - the query notifies an archoived issue
                 // but it doesn't "contain" it!
                 return;
@@ -1160,7 +1169,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             // XXX move to API
             BugtrackingOwnerSupport.getInstance().setLooseAssociation(
                 BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                getRepository());                 
+                BugzillaUtil.getRepository(getRepository()));                 
         }
 
         @Override

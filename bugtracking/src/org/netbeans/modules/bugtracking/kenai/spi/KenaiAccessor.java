@@ -51,8 +51,8 @@ import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
@@ -194,19 +194,18 @@ public abstract class KenaiAccessor {
                 BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(tc instanceof QueryTopComponent) {
                     QueryTopComponent qtc = (QueryTopComponent) tc;
-                    QueryProvider query = qtc.getQuery();
+                    Query query = qtc.getQuery();
                     if(query == null) {
                         return;
                     }
-                    RepositoryProvider repository = query.getRepository();
+                    Repository repository = query.getRepository();
                     if(repository == null) {
                         return;
                     }
-                    KenaiSupport support = repository.getLookup().lookup(KenaiSupport.class);
-                    if(support == null || query != support.getAllIssuesQuery(repository)) {
+                    if(!KenaiUtil.isKenai(repository) || query != KenaiUtil.getAllIssuesQuery(repository)) {
                         return;
                     }
-                    KenaiProject kenaiProject = repository.getLookup().lookup(KenaiProject.class);
+                    KenaiProject kenaiProject = KenaiUtil.getKenaiProject(repository);
                     if(kenaiProject == null) {
                         return;
                     }

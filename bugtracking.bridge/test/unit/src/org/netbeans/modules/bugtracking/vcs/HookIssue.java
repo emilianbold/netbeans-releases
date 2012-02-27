@@ -47,8 +47,8 @@ import java.io.File;
 import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
@@ -56,16 +56,12 @@ import org.openide.util.HelpCtx;
  *
  * @author tomas
  */
-public class HookIssue extends IssueProvider {
+public class HookIssue extends TestIssue {
     static HookIssue instance;
 
     boolean closed;
     String comment;
     private BugtrackingController controller;
-
-    private HookIssue() {
-        super(null);
-    }
 
     static HookIssue getInstance() {
         if(instance == null) {
@@ -146,17 +142,16 @@ public class HookIssue extends IssueProvider {
     }
 
     @Override
-    public void setContext(Node[] nodes) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void setContext(Node[] nodes) { }
 
     @Override
-    public void removePropertyChangeListener(PropertyChangeListener listener) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+    public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) { }
+
+    @Override
+    public TestIssue createFor(String id) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

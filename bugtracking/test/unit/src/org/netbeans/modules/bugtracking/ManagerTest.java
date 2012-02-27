@@ -46,6 +46,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -98,7 +99,7 @@ public class ManagerTest extends NbTestCase {
         }
 
         @Override
-        public RepositoryProvider createRepository() {
+        public Repository createRepository() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -107,7 +108,7 @@ public class ManagerTest extends NbTestCase {
         }
 
         @Override
-        public RepositoryProvider createRepository(RepositoryInfo info) {
+        public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
