@@ -44,7 +44,9 @@ package org.netbeans.modules.maven.queries;
 
 import java.net.URL;
 import java.util.Arrays;
+import java.util.logging.Level;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,6 +84,26 @@ public class MavenBinaryForSourceQueryImplTest extends NbTestCase {
         assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gsrc.getURL()).getRoots()));
         assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tsrc.getURL()).getRoots()));
         assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(gtsrc.getURL()).getRoots()));
+    }
+
+    public void testResources() throws Exception { // #208816
+        TestFileUtils.writeFile(d,
+                "pom.xml",
+                "<project xmlns='http://maven.apache.org/POM/4.0.0'>" +
+                "<modelVersion>4.0.0</modelVersion>" +
+                "<groupId>grp</groupId>" +
+                "<artifactId>art</artifactId>" +
+                "<packaging>jar</packaging>" +
+                "<version>0</version>" +
+                "</project>");
+        FileObject res = FileUtil.createFolder(d, "src/main/resources");
+        FileObject tres = FileUtil.createFolder(d, "src/test/resources");
+        CharSequence log = Log.enable(BinaryForSourceQuery.class.getName(), Level.FINE);
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(res.getURL()).getRoots()));
+        assertEquals(Arrays.asList(new URL(d.getURL(), "target/test-classes/")), Arrays.asList(BinaryForSourceQuery.findBinaryRoots(tres.getURL()).getRoots()));
+        String logS = log.toString();
+        assertFalse(logS, logS.contains("-> nil"));
+        assertTrue(logS, logS.contains("ProjectBinaryForSourceQuery"));
     }
 
 }
