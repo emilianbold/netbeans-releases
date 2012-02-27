@@ -140,7 +140,10 @@ final class Manager {
     synchronized void scheduleSearchTask(SearchTask task) {
         assert EventQueue.isDispatchThread();
 
-        ResultView.getInstance().addTab(task.getDisplayer());
+        ResultView resultView = ResultView.getInstance();
+        resultView.open();
+        resultView.requestActive();
+        resultView.addTab(task.getDisplayer());
         pendingTasks.add(task);
         processNextPendingTask();
     }

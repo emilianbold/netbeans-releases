@@ -95,7 +95,7 @@ final class ResultTreeModel implements TreeModel {
         this.rootPath = new TreePath(this);
         
         if (resultModel != null) {
-            resultModel.setObserver(this);
+            //resultModel.setObserver(this);
         }
     }
 
@@ -313,14 +313,14 @@ final class ResultTreeModel implements TreeModel {
             }
         }
         if (!expanded.isEmpty()) {
-            final JTree tree = resultModel.getResultView().tree;
-            resultModel.getResultView().setScrollControllerEnabled(false);
+            //final JTree tree = resultModel.getResultView().tree;
+            //resultModel.getResultView().setScrollControllerEnabled(false);
             for (MatchingObject mo : expanded) {
                 TreePath tp = new TreePath(
                         new Object[]{ResultTreeModel.this, mo});
-                tree.expandPath(tp);
+                //tree.expandPath(tp);
             }
-            resultModel.getResultView().setScrollControllerEnabled(true);
+            //resultModel.getResultView().setScrollControllerEnabled(true);
         }
     }
 

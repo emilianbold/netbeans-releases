@@ -58,8 +58,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import static java.util.logging.Level.FINER;
@@ -72,6 +70,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -111,11 +110,6 @@ public final class MatchingObject
     /** */
     List<TextDetail> textDetails;
     
-    /**
-     * matching object as returned by the {@code SearchGroup}
-     * (usually either a {@code DataObject} or a {@code FileObject})
-     */
-    private final Object object;
     /**
      * charset used for full-text search of the object.
      * It is {@code null} if the object was not full-text searched.
@@ -166,32 +160,29 @@ public final class MatchingObject
      * Creates a new {@code MatchingObject} with a reference to the found
      * object (returned by {@code SearchGroup}).
      * 
-     * @param  object  found object returned by the {@code SearchGroup}
+     * @param  fileObject  found object returned by the {@code SearchGroup}
      *                 (usually a {@code DataObject}) - must not be {@code null}
      * @param  charset  charset used for full-text search of the object,
      *                  or {@code null} if the object was not full-text searched
      * @exception  java.lang.IllegalArgumentException
      *             if the passed {@code object} is {@code null}
      */
-    MatchingObject(ResultModel resultModel, Object object, Charset charset,
-            List<TextDetail> textDetails) {
-
-        assert object instanceof FileObject || object instanceof DataObject;
+    MatchingObject(ResultModel resultModel, FileObject fileObject,
+            Charset charset, List<TextDetail> textDetails) {
 
         if (resultModel == null) {
             throw new IllegalArgumentException("resultModel = null");   //NOI18N
         }
-        if (object == null) {
+        if (fileObject == null) {
             throw new IllegalArgumentException("object = null");        //NOI18N
         }
 
         this.textDetails = textDetails;
         this.resultModel = resultModel;
-        this.object = object;
         this.charset = charset;
+        this.fileObject = fileObject;
         
         dataObject = dataObject();
-        fileObject = fileObject();
         timestamp = fileObject.lastModified().getTime();
         valid = (timestamp != 0L);
 
@@ -244,16 +235,10 @@ public final class MatchingObject
         // #190819
         return valid && dataObject != null ? dataObject.isValid() : false;
     }
-    
-    private FileObject fileObject() {
-        return object instanceof FileObject ?
-            (FileObject) object :
-            dataObject.getPrimaryFile();
-    }
 
     /**
      */
-    FileObject getFileObject() {
+    public FileObject getFileObject() {
         return fileObject;
     }
     
@@ -423,15 +408,7 @@ public final class MatchingObject
     }
 
     String getHtmlDisplayName() {
-        String name = null;
-        if(object instanceof FileObject) {
-            // TODO return HTML text instead of plain text
-            return getFileObject().getNameExt();
-        }
-        if(dataObject != null) {
-            name = dataObject.getNodeDelegate().getHtmlDisplayName();
-        }
-        return name;
+        return getFileObject().getNameExt();
     }
 
     /**
@@ -453,11 +430,11 @@ public final class MatchingObject
          return (txt != null)?  txt.toString() : null;
     }
 
-    List<TextDetail> getTextDetails() {
+    public List<TextDetail> getTextDetails() {
         return textDetails;
     }
 
-    int getDetailsCount() {
+    public int getDetailsCount() {
         if (textDetails == null) {
             return 0;
         } else {
@@ -561,15 +538,9 @@ public final class MatchingObject
 
     /** Initialize DataObject from object. */
     private DataObject dataObject() {
-         try {
-            if (object instanceof DataObject) {
-                return (DataObject) object;
-            } else if (object instanceof FileObject) {
-                return DataObject.find((FileObject) object);
-            }
-            throw new IOException("Unknown object in search: " +
-                                  object);// NOI18N
-        } catch (IOException ex) {       
+        try {
+            return DataObject.find(fileObject);
+        } catch (DataObjectNotFoundException ex) {
             valid = false;
             return null;
         }
@@ -582,7 +553,7 @@ public final class MatchingObject
     /**
      * Describes invalidity status of this item.
      */
-    enum InvalidityStatus {
+    public enum InvalidityStatus {
         
         DELETED(true, "Inv_status_Err_deleted"),                        //NOI18N
         BECAME_DIR(true, "Inv_status_Err_became_dir"),                  //NOI18N

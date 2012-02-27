@@ -182,8 +182,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         lblScope.setLabelFor(cboxScope);
 
         lblFileNamePattern = new JLabel();
-        cboxFileNamePattern =
-                ComponentFactory.getDefault().createFileNameComboBox();
+        cboxFileNamePattern = ComponentFactory.createFileNameComboBox();
         cboxFileNamePattern.setEditable(true);
         lblFileNamePattern.setLabelFor(cboxFileNamePattern);        
         
@@ -254,8 +253,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
 
     private void initScopeOptionsRow(boolean searchAndReplace) {
-        this.scopeSettingsPanel =
-                ComponentFactory.getDefault().createScopeSettingsPanel(
+        this.scopeSettingsPanel = ComponentFactory.createScopeSettingsPanel(
                 searchAndReplace, cboxFileNamePattern);
         formPanel.addRow(new JLabel(), scopeSettingsPanel);
     }

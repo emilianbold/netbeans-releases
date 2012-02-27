@@ -135,10 +135,6 @@ public class BasicSearchProvider extends SearchProvider {
             BasicSearchCriteria basicSearchCriteria =
                     form.getBasicSearchCriteria();
 
-            ResultView resultView = ResultView.getInstance();
-            resultView.open();
-            resultView.requestActive();
-
             SearchScopeOptions so = basicSearchCriteria.getSearcherOptions();
             if (basicSearchCriteria.isUseIgnoreList()) {
                 so.addFilter(new IgnoreListFilter());

@@ -75,8 +75,10 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -181,7 +183,27 @@ class ResultViewPanel extends JPanel{
     /** */
     private int objectsCount = 0;           //accessed only from the EventQueue
 
-    public ResultViewPanel(final SearchComposition composition) {
+    private SearchComposition<MatchingObject.Def> searchComposition;
+
+    public ResultViewPanel(final SearchResultsDisplayer<?> resultDisplayer) {
+
+        setLayout(new GridBagLayout());
+        tree = null;
+        nodeListener = null;
+        treeView = null;
+        resultsPanel = new JPanel(resultViewCards = new CardLayout());
+        toolBar = null;
+        arrowUpdater = null;
+        setName(resultDisplayer.getTitle());
+        add(resultsPanel, getMainPanelConstraints());
+        resultsPanel.add(resultDisplayer.createVisualComponent(), "outline");
+    }
+
+    public SearchListener createListener() {
+        return new GraphicalSearchListener(searchComposition);
+    }
+
+    public ResultViewPanel(final SearchComposition composition, boolean b) {
         setLayout(new GridBagLayout());
         arrowUpdater = new ArrowStatusUpdater(this);
 
@@ -367,7 +389,7 @@ class ResultViewPanel extends JPanel{
         if (resultModel != null) {
             hasResults = resultModel.size() != 0;
             hasDetails = hasResults && resultModel.hasDetails();
-            resultModel.setObserver(this);
+            //resultModel.setObserver(this);
         } else {
             hasResults = false;
             hasDetails = false;
