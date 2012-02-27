@@ -309,46 +309,53 @@ public final class SyncItem {
             return Operation.UPLOAD;
         }
         long localTimestamp = localTransferFile.getTimestamp();
-        long remoteTimestamp = remoteTransferFile.getTimestamp();
-        if (localTimestamp == remoteTimestamp) {
-            // in fact, cannot happen
+        RemoteTimestamp remoteTimestamp = new RemoteTimestamp(remoteTransferFile.getTimestamp());
+        long localSize = localTransferFile.getSize();
+        long remoteSize = remoteTransferFile.getSize();
+        if (remoteTimestamp.equalsTo(localTimestamp)
+                && localSize == remoteSize) {
+            // simply equal files
             return Operation.NOOP;
         }
-        if (localTimestamp > remoteTimestamp) {
-            return Operation.UPLOAD_REVIEW;
+        if (remoteTimestamp.newerThan(localTimestamp)) {
+            return Operation.DOWNLOAD_REVIEW;
         }
-        return Operation.DOWNLOAD_REVIEW;
+        return Operation.UPLOAD_REVIEW;
     }
 
     private Operation calculateNewDefaultOperation(long lastTimestamp) {
         if (localTransferFile == null
                 || remoteTransferFile == null) {
             if (localTransferFile == null) {
-                return remoteTransferFile.getTimestamp() > lastTimestamp ? Operation.DOWNLOAD : Operation.DELETE;
+                return new RemoteTimestamp(remoteTransferFile.getTimestamp()).newerThan(lastTimestamp) ? Operation.DOWNLOAD : Operation.DELETE;
             }
             return localTransferFile.getTimestamp() > lastTimestamp ? Operation.UPLOAD : Operation.DELETE;
         }
         long localTimestamp = localTransferFile.getTimestamp();
-        long remoteTimestamp = remoteTransferFile.getTimestamp();
-        if (localTimestamp == remoteTimestamp) {
-            // in fact, cannot happen
+        RemoteTimestamp remoteTimestamp = new RemoteTimestamp(remoteTransferFile.getTimestamp());
+        long localSize = localTransferFile.getSize();
+        long remoteSize = remoteTransferFile.getSize();
+        if (remoteTimestamp.equalsTo(localTimestamp)
+                && localSize == remoteSize) {
+            // simply equal files
             return Operation.NOOP;
         }
         if (localTimestamp <= lastTimestamp
-                && remoteTimestamp <= lastTimestamp) {
+                && remoteTimestamp.equalsOrOlderThan(lastTimestamp)
+                && localSize == remoteSize) {
             // already synchronized
             return Operation.NOOP;
         }
         if (localTimestamp > lastTimestamp
-                && remoteTimestamp > lastTimestamp) {
+                && remoteTimestamp.newerThan(lastTimestamp)) {
             // both files are newer
             return Operation.FILE_CONFLICT;
         }
         // only one file is newer
-        if (localTimestamp > remoteTimestamp) {
-            return Operation.UPLOAD;
+        if (remoteTimestamp.newerThan(localTimestamp)) {
+            return Operation.DOWNLOAD;
         }
-        return Operation.DOWNLOAD;
+        return Operation.UPLOAD;
     }
 
     private boolean verifyChildrenOperation(TransferFile transferFile, Operation operation) {
@@ -375,6 +382,45 @@ public final class SyncItem {
                 + ", valid: " + valid // NOI18N
                 + ", tmpLocalFile: " + (tmpLocalFile != null) // NOI18N
                 + "}"; // NOI18N
+    }
+
+    //~ Inner classes
+
+    private static final class RemoteTimestamp {
+
+        private static final long TIMEDIFF_TOLERANCE = 30L; // in seconds
+
+        private final long remoteTimestamp;
+
+
+        public RemoteTimestamp(long remoteTimestamp) {
+            this.remoteTimestamp = remoteTimestamp;
+        }
+
+        public boolean equalsTo(long timestamp) {
+            // similarly as ant
+            return Math.abs(timestamp - remoteTimestamp) < TIMEDIFF_TOLERANCE;
+        }
+
+        public boolean equalsOrOlderThan(long timestamp) {
+            if (equalsTo(timestamp)) {
+                return true;
+            }
+            return remoteTimestamp <= timestamp;
+        }
+
+        public boolean newerThan(long timestamp) {
+            if (equalsTo(timestamp)) {
+                return false;
+            }
+            return remoteTimestamp > timestamp;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(remoteTimestamp);
+        }
+
     }
 
 }
