@@ -95,7 +95,7 @@ public class SingleLineStreamMatcher extends AbstractMatcher {
                 return new Def(file, charset, textDetails);
             }
         } catch (Exception e) {
-            listener.generalError(e);
+            listener.fileContentMatchingError(file.getPath(), e);
             return null;
         }
     }

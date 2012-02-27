@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.search;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -145,7 +145,11 @@ public class GraphicalSearchListener<R> extends SearchListener {
 
     @Override
     public void generalError(Throwable t) {
-        //LOG.info(t.getMessage());
-        Exceptions.printStackTrace(t);
+        LOG.log(Level.INFO, t.getMessage(), t);
+    }
+
+    @Override
+    public void fileContentMatchingError(String fileName, Throwable t) {
+        LOG.log(Level.INFO, "Error matching file " + fileName, t);      //NOI18N
     }
 }

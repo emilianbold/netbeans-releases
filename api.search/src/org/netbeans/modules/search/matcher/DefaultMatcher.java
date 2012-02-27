@@ -106,7 +106,12 @@ public class DefaultMatcher extends AbstractMatcher {
         if (trivial) {
             return realMatcher.check(file, listener);
         } else if (isTextFile(file)) {
-            return realMatcher.check(file, listener);
+            try {
+                return realMatcher.check(file, listener);
+            } catch (Exception e) {
+                listener.fileContentMatchingError(file.getPath(), e);
+                return null;
+            }
         } else {
             listener.fileSkipped(file, null, "Not a text file");
             return null;
