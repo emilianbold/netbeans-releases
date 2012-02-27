@@ -82,6 +82,8 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRepositoryState;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.libs.git.SearchCriteria;
+import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitRepositories;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.branch.CreateBranchAction;
@@ -246,10 +248,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
 
     private File lookupRepository (Node selectedNode) {
         // there should ALWAYS be a repository node somewhere in the root
-        while (!(selectedNode instanceof RepositoryNode)) {
+        while (!(selectedNode instanceof RepositoryNode) && selectedNode != null) {
             selectedNode = selectedNode.getParentNode();
         }
-        return ((RepositoryNode) selectedNode).getRepository();
+        return selectedNode == null ? null : ((RepositoryNode) selectedNode).getRepository();
     }
 
     public void selectRepository (File repository) {
@@ -785,11 +787,15 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private boolean active;
         private final String branchName;
         private String branchId;
+        private final GitBranch trackedBranch;
+        private String lastTrackingMyId;
+        private String lastTrackingOtherId;
 
         public BranchNode (File repository, GitBranch branch) {
             super(Children.LEAF, Lookups.fixed(new Revision(branch.getId(), branch.getName())));
             branchName = branch.getName();
             branchId = branch.getId();
+            trackedBranch = branch.getTrackedBranch();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/branch.png"); //NOI18N
             RepositoryInfo info = RepositoryInfo.getInstance(repository);
             if (info == null) {
@@ -805,6 +811,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 }, info));
                 refreshActiveBranch(info.getActiveBranch());
             }
+            refreshTracking(branch.getTrackedBranch(), repository);
         }
 
         @Override
@@ -830,6 +837,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 sb.append(branchName);
             }
             if (options.contains(Option.DISPLAY_COMMIT_IDS)) {
+                if (trackedBranch != null) {
+                    sb.append(NbBundle.getMessage(RepositoryBrowserPanel.class, "LBL_BranchNode.basedOn", trackedBranch.getName())); //NOI18N
+                }
                 sb.append(" - ").append(branchId); //NOI18N
             }
             return sb.toString();
@@ -841,6 +851,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             if (activeBranch.getName().equals(branchName)) {
                 active = true;
                 this.branchId = activeBranch.getId();
+                refreshTracking(activeBranch.getTrackedBranch(), lookupRepository(this));
             } else {
                 active = false;
             }
@@ -921,6 +932,61 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 });
             }
             return actions.toArray(new Action[actions.size()]);
+        }
+
+        private void refreshTracking (final GitBranch trackedBranch, final File repository) {
+            if (trackedBranch != null && repository != null && options.contains(Option.DISPLAY_COMMIT_IDS)
+                    && (!branchId.equals(lastTrackingMyId) || !trackedBranch.getId().equals(lastTrackingOtherId))) {
+                lastTrackingMyId = branchId;
+                lastTrackingOtherId = trackedBranch.getId();
+                if (trackedBranch.getId().equals(branchId)) {
+                    setShortDescription(NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.inSync", trackedBranch.getName())); //NOI18N
+                } else {
+                    final String id = branchId;
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run () {
+                            String tt = null;
+                            try {
+                                GitClient client = Git.getInstance().getClient(repository);
+                                GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
+                                if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
+                                    tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
+                                } else {
+                                    SearchCriteria crit = new SearchCriteria();
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        crit.setRevisionFrom(trackedBranch.getId());
+                                        crit.setRevisionTo(id);
+                                    } else if (info.getRevision().equals(id)) {
+                                        crit.setRevisionFrom(id);
+                                        crit.setRevisionTo(trackedBranch.getId());
+                                    }
+                                    GitRevisionInfo[] revs = client.log(crit, GitUtils.NULL_PROGRESS_MONITOR);
+                                    int diff = (revs.length - 1);
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
+                                                ? "MSG_BranchNode.tracking.ahead.commit" : "MSG_BranchNode.tracking.ahead.commits", //NOI18N
+                                                trackedBranch.getName(), diff);
+                                    } else if (info.getRevision().equals(id)) {
+                                        tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
+                                                ? "MSG_BranchNode.tracking.behind.commit" : "MSG_BranchNode.tracking.behind.commits", //NOI18N
+                                                trackedBranch.getName(), diff);
+                                    }
+                                }
+                            } catch (GitException ex) {
+                                LOG.log(Level.INFO, null, ex);
+                            }
+                            final String toolTip = tt;
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    setShortDescription(toolTip);
+                                }
+                            });
+                        }
+                    });
+                }
+            }
         }
         
     }
