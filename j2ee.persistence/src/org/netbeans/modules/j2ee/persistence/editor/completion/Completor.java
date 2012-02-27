@@ -43,14 +43,18 @@ package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
 import java.util.*;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -65,7 +69,6 @@ import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.openide.filesystems.FileObject;
@@ -85,7 +88,23 @@ public abstract class Completor {
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            Project project = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument()));
+            JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+            if(dsProvider != null){
+                for (JPADataSource val : dsProvider.getDataSources()) {
+                    if(val.getDisplayName().toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                        JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                                val.getDisplayName());
+                        results.add(item);
+                    }
+                }
+            }
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
         }
     }
 
