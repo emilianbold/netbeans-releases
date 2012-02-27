@@ -42,45 +42,65 @@
 
 package org.netbeans.modules.maven.hyperlinks;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collections;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.lexer.XMLTokenId;
-import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt;
+import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.Constants;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.grammar.POMDataObject;
 import org.openide.awt.HtmlBrowser;
 import org.openide.cookies.EditCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 
 /**
  * adds hyperlinking support to pom.xml files..
  * @author mkleint
  */
 @MimeRegistrations({
-    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=HyperlinkProvider.class),
-    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProvider.class)
+    @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=HyperlinkProviderExt.class),
+    @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=HyperlinkProviderExt.class)
 })
-public class HyperlinkProviderImpl implements HyperlinkProvider {
+public class HyperlinkProviderImpl implements HyperlinkProviderExt {
+    private static Logger LOG = Logger.getLogger(HyperlinkProviderImpl.class.getName());
     
-    public boolean isHyperlinkPoint(Document doc, int offset) {
+    @Override
+    public boolean isHyperlinkPoint(Document doc, int offset, HyperlinkType type) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
         xml.moveNext();
         Token<XMLTokenId> token = xml.token();
+
         // when it's not a value -> do nothing.
         if (token == null) {
             return false;
         }
+        int tokenOff = xml.offset();        
         if (token.id() == XMLTokenId.TEXT) {
             //we are in element text
             FileObject fo = getProjectDir(doc);
@@ -94,11 +114,26 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
                     (text.startsWith("https://")))) { //NOI18N
                 return true;
             }
+            if (text != null) {
+                int ff = offset - tokenOff;
+                if (ff > -1 && ff < text.length()) {
+                    String before = text.substring(0, ff);
+                    String after = text.substring(ff, text.length());
+                    int bo = before.lastIndexOf("${");
+                    int bc = before.lastIndexOf("}");
+                    int ao = after.indexOf("${");
+                    int ac = after.indexOf("}");
+                    if (bo > bc && ac > -1 && (ac < ao || ao == -1)) {
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
 
-    public int[] getHyperlinkSpan(Document doc, int offset) {
+    @Override
+    public int[] getHyperlinkSpan(Document doc, int offset, HyperlinkType type) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
@@ -108,24 +143,32 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
         if (token == null) {
             return null;
         }
+        int tokenOff = xml.offset();        
         if (token.id() == XMLTokenId.TEXT) {
             //we are in element text
             FileObject fo = getProjectDir(doc);
             String text = token.text().toString();
             if (getPath(fo, text) != null) {
-                return new int[] { xml.offset(), xml.offset() + text.length() };
+                return new int[] { tokenOff, tokenOff + text.length() };
             }
             // urls get opened..
             if (text != null &&
                     (text.startsWith("http://") || //NOI18N
                     (text.startsWith("https://")))) { //NOI18N
-                return new int[] { xml.offset(), xml.offset() + text.length() };
+                return new int[] { tokenOff, tokenOff + text.length() };
             }
+            if (text != null) {
+                Tuple prop = findProperty(text, tokenOff, offset);
+                if (prop != null) {
+                    return new int[] { prop.spanStart, prop.spanEnd};
+                }
+            }            
         }
         return null;
     }
 
-    public void performClickAction(Document doc, int offset) {
+    @Override
+    public void performClickAction(Document doc, int offset, HyperlinkType type) {
         TokenHierarchy th = TokenHierarchy.get(doc);
         TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
         xml.move(offset);
@@ -135,6 +178,7 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
         if (token == null) {
             return;
         }
+        int tokenOff = xml.offset();
         if (token.id() == XMLTokenId.TEXT) {
             //we are in element text
             FileObject fo = getProjectDir(doc);
@@ -154,12 +198,12 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
                     DataObject dobj;
                     try {
                         dobj = DataObject.find(file);
-                        EditCookie edit = dobj.getCookie(EditCookie.class);
+                        EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                         if (edit != null) {
                             edit.edit();
                         }
                     } catch (DataObjectNotFoundException ex) {
-                        ex.printStackTrace();
+                        LOG.log(Level.FINE, "Cannot find dataobject", ex);
                     }
                 }
             }
@@ -168,13 +212,163 @@ public class HyperlinkProviderImpl implements HyperlinkProvider {
                     (text.startsWith("http://") || //NOI18N
                     (text.startsWith("https://")))) { //NOI18N
                 try {
-                    URL url = new URL(text);
+                    String urlText = text;
+                    if (urlText.contains("${")) {
+                        //special case, need to evaluate expression
+                        Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
+                         if (prj != null) {
+                            NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                            Object exRes;
+                            try {
+                                exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(urlText);
+                                if (exRes != null) {
+                                   urlText = exRes.toString();
+                                } 
+                            } catch (ExpressionEvaluationException ex) {
+                                //just ignore
+                                LOG.log(Level.FINE, "Expression evaluation failed", ex);
+                            }
+
+                        }
+                    }
+                    URL url = new URL(urlText);
                     HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                 } catch (MalformedURLException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINE, "malformed url for hyperlink", ex);
+                }
+            }
+            else if (text != null) {
+                Tuple tup = findProperty(text, tokenOff, offset);
+                if (tup != null) {
+                    String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
+                    Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
+                    if (prj != null) {
+                        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                        if (nbprj != null) {
+                            if (prop != null && (prop.startsWith("project.") || prop.startsWith("pom."))) {
+                                String val = prop.substring(prop.indexOf('.') + 1, prop.length());
+                                //TODO eventually we want to process everything through an evaluation engine..
+                                InputLocation iloc = nbprj.getMavenProject().getModel().getLocation(val);
+                                if (iloc != null) {
+                                    openAtSource(iloc);
+                                    return;
+                                }
+                            }
+                            InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);
+                            if (location != null) {
+                                openAtSource(location);
+                            }
+
+                        }
+                    }
                 }
             }
         }
+    }
+    
+    @Override
+    public Set<HyperlinkType> getSupportedHyperlinkTypes() {
+        return Collections.singleton(HyperlinkType.GO_TO_DECLARATION);
+    }
+
+
+    @Override
+    public String getTooltipText(Document doc, int offset, HyperlinkType type) {
+
+        TokenHierarchy th = TokenHierarchy.get(doc);
+        TokenSequence<XMLTokenId> xml = th.tokenSequence(XMLTokenId.language());
+        xml.move(offset);
+        xml.moveNext();
+        Token<XMLTokenId> token = xml.token();
+        // when it's not a value -> do nothing.
+        if (token == null) {
+            return null;
+        }
+        int tokenOff = xml.offset();
+ 
+        if (token.id() == XMLTokenId.TEXT) {
+            //we are in element text
+            String text = token.text().toString();
+            Tuple tup = findProperty(text, tokenOff, offset);
+
+            if (tup != null) {
+               String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
+                try {
+                    Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
+                    if (prj != null) {
+                        NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
+                        Object exRes = PluginPropertyUtils.createEvaluator(nbprj.getMavenProject()).evaluate(tup.value);
+                        if (exRes != null) {
+                            return prop + " resolves to '" + exRes  + "'\nNavigate to definition.";
+                        } else {
+                            
+                        }
+                    } else {
+                        //pom file in repository or settings file.
+                    }
+                } catch (ExpressionEvaluationException ex) {
+                    return "Cannot resolve expression\nNavigates to definition.";
+                }
+            }  
+        }
+        return null;
+    }
+    
+    private void openAtSource(InputLocation location) {
+        InputSource source = location.getSource();
+        if (source != null && source.getLocation() != null) {
+            FileObject fobj = FileUtil.toFileObject(FileUtil.normalizeFile(new File(source.getLocation())));
+            if (fobj != null) {
+                try {
+                    DataObject dobj = DataObject.find(fobj);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
+                    if (edit != null) {
+                        edit.edit();
+                    }
+                    LineCookie lc = dobj.getLookup().lookup(LineCookie.class);
+                    lc.getLineSet().getOriginal(location.getLineNumber() - 1).show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS, location.getColumnNumber() - 1);
+                } catch (DataObjectNotFoundException ex) {
+                    LOG.log(Level.FINE, "dataobject not found", ex);
+                }
+            }
+        }
+    }
+    
+    private static class Tuple {
+        final int spanStart;
+        final int spanEnd;
+        final String value;
+        public Tuple(String val, int start, int end) {
+            this.value = val;
+            this.spanStart = start;
+            this.spanEnd = end; 
+        }
+    } 
+    
+    
+    private Tuple findProperty(String textToken, int tokenOffset, int currentOffset) {
+        if (textToken == null) {
+            return null;
+        }
+        int ff = currentOffset - tokenOffset;
+
+        if (ff > -1 && ff < textToken.length()) {
+            String before = textToken.substring(0, ff);
+            String after = textToken.substring(ff, textToken.length());
+            int bo = before.lastIndexOf("${");
+            int bc = before.lastIndexOf("}");
+            int ao = after.indexOf("${");
+            int ac = after.indexOf("}");
+            if (bo > bc && ac > -1 && (ac < ao || ao == -1)) { //case where currentOffset is on property
+                return new Tuple(textToken.substring(bo, before.length() + ac + 1), tokenOffset + bo, tokenOffset + ff + ac + 1);
+            }
+         
+            if (before.length() == 0 && ao == 0 && ac > 0) { //case where currentOffset is at beginning
+                return new Tuple(textToken.substring(0, ac + 1), tokenOffset, tokenOffset +  ac + 1);
+            }
+            
+        }
+        return null;
     }
     
     private FileObject getProjectDir(Document doc) {

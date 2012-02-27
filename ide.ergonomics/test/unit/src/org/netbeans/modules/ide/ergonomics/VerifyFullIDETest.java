@@ -126,9 +126,8 @@ public class VerifyFullIDETest extends NbTestCase {
         List<XMLFileSystem> all = new ArrayList<XMLFileSystem>();
 
         for (FeatureInfo fi : FeatureManager.features()) {
-            FileSystem fs = fi.getXMLFileSystem();
-            assertEquals("It is xml fs: " + fi, XMLFileSystem.class, fs.getClass());
-            all.add((XMLFileSystem)fs);
+            XMLFileSystem xfs = new XMLFileSystem(fi.getLayerURL());
+            all.add(xfs);
         }
 
         MultiFileSystem mfs = new MultiFileSystem(all.toArray(new FileSystem[0]));

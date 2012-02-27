@@ -122,7 +122,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         AST token = ast.getNextSibling();
         if( token != null) {
             AST enumList = null;
-            if (token.getType() == CPPTokenTypes.ID) {
+            if (token.getType() == CPPTokenTypes.IDENT) {
                 //typedef enum C { a2, b2, c2 } D;
                 token = token.getNextSibling();
             }
@@ -138,7 +138,7 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     
     private void addList(AST token, final CsmFile file, boolean global){
         for( AST t = token.getFirstChild(); t != null; t = t.getNextSibling() ) {
-            if( t.getType() == CPPTokenTypes.ID ) {
+            if( t.getType() == CPPTokenTypes.IDENT ) {
                 EnumeratorImpl ei = EnumeratorImpl.create(t, file, this, global);
                 CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
                 enumerators.add(uid);

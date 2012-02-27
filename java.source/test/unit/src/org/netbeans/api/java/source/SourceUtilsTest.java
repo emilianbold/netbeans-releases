@@ -68,10 +68,15 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.TestUtil;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.usages.ClassIndexEventsTransaction;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl.State;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.java.source.usages.PersistentClassIndex;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -83,7 +88,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Jan Lahoda
  */
-public class SourceUtilsTest extends NbTestCase {       
+public class SourceUtilsTest extends ClassIndexTestCase {       
 
     private JavaSource js;
     private CompilationInfo info;
@@ -295,7 +300,9 @@ public class SourceUtilsTest extends NbTestCase {
         FileObject src = workFo.createFolder("src");
         FileObject userDir = workFo.createFolder("ud");
         CacheFolder.setCacheFolder(userDir);
-        ClassIndexManager.getDefault().createUsagesQuery(src.getURL(), true);
+        
+        ensureRootValid(src.getURL());
+        
         FileObject srcInDefPkg = src.createData("Foo","java");
         assertNotNull(srcInDefPkg);
         FileObject sourceFile = src.createFolder("org").createFolder("me").createData("Test", "java");

@@ -60,6 +60,7 @@ import javax.swing.ImageIcon;
 import javax.swing.KeyStroke;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.TopComponentTracker;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
@@ -212,6 +213,7 @@ public final class RecentViewListAction extends AbstractAction
     private TopComponent[] getRecentDocuments() {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] documents = wm.getRecentViewList();
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         
         List<TopComponent> docsList = new ArrayList<TopComponent>();
         for (int i = 0; i < documents.length; i++) {
@@ -224,7 +226,7 @@ public final class RecentViewListAction extends AbstractAction
                 continue;
             }
             
-            if (mode.getKind() == Constants.MODE_KIND_EDITOR) {
+            if (mode.getKind() == Constants.MODE_KIND_EDITOR || tcTracker.isEditorTopComponent( tc ) ) {
                 docsList.add(tc);
             }
         }

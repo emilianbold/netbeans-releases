@@ -51,8 +51,8 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.Timer;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -75,7 +75,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
      * changes to listeners. */
     static final int COALESCE_TIME = 200;
 
-    private Map<Repository, Set<Issue>> issuesCached = new HashMap<Repository, Set<Issue>>();
+    private Map<RepositoryProvider, Set<IssueProvider>> issuesCached = new HashMap<RepositoryProvider, Set<IssueProvider>>();
 
     /** Singleton */
     private ResultsModel () {
@@ -93,21 +93,21 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         maybeFireChanges();
     }
 
-    synchronized void cacheIssues(Repository repo, Issue[] issues) {
-        HashSet<Issue> s = new HashSet<Issue>();
-        for (Issue issue : issues) {
+    synchronized void cacheIssues(RepositoryProvider repo, IssueProvider[] issues) {
+        HashSet<IssueProvider> s = new HashSet<IssueProvider>();
+        for (IssueProvider issue : issues) {
             assert issue != null;
             s.add(issue);
         }
         issuesCached.put(repo, s);
     }
 
-    synchronized Issue[] getCachedIssues(Repository repo) {
+    synchronized IssueProvider[] getCachedIssues(RepositoryProvider repo) {
         if(issuesCached != null) {
-            Set<Issue> s = issuesCached.get(repo);
-            if(s != null) return s.toArray(new Issue[s.size()]);
+            Set<IssueProvider> s = issuesCached.get(repo);
+            if(s != null) return s.toArray(new IssueProvider[s.size()]);
         }
-        return new Issue[0];
+        return new IssueProvider[0];
     }
     /******* AbstractListModel impl ********/
 

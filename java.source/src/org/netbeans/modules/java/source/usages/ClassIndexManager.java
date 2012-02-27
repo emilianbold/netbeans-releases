@@ -48,16 +48,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -66,23 +66,18 @@ import org.openide.util.Exceptions;
  */
 public final class ClassIndexManager {
 
+    public static final String PROP_DIRTY_ROOT = "dirty"; //NOI18N
     public static final String PROP_SOURCE_ROOT = "source";  //NOI18N
-    
-    private static final byte OP_ADD    = 1;
-    private static final byte OP_REMOVE = 2;
 
     private static ClassIndexManager instance;
     private final Map<URL, ClassIndexImpl> instances = new HashMap<URL, ClassIndexImpl> ();
     private final Map<URL, ClassIndexImpl> transientInstances = new HashMap<URL, ClassIndexImpl> ();
-    private final InternalLock internalLock;
+    private final InternalLock internalLock = new InternalLock();
     private final Map<ClassIndexManagerListener,Void> listeners = Collections.synchronizedMap(new IdentityHashMap<ClassIndexManagerListener, Void>());
     private boolean invalid;
-    private Set<URL> added;
-    private Set<URL> removed;
-    private int depth = 0;
+
 
     private ClassIndexManager() {
-        this.internalLock = new InternalLock();
     }
 
     public void addClassIndexManagerListener (final ClassIndexManagerListener listener) {
@@ -94,105 +89,81 @@ public final class ClassIndexManager {
         assert listener != null;
         this.listeners.remove(listener);
     }
-
-    @Deprecated
-    public <T> T writeLock (final Action<T> r) throws IOException, InterruptedException {
-        //Ugly, in scala much more cleaner.
-        return prepareWriteLock(
-            new Action<T>() {
-                @Override
-                public T run() throws IOException, InterruptedException {
-                    return IndexManager.writeAccess(r);
-                }
-            });
+    
+    /**
+     * Convenience method to check whether a root has been indexed.
+     * Use in preference to direct call {@link #getUsagesQuery} for this check.
+     * 
+     * @param root root URL
+     * @return true, if the class/usage index has been already created for this root.
+     */
+    public boolean isIndexed(@NonNull final URL root) {
+        return getUsagesQuery(root, false) != null;
     }
 
-    public <T> T prepareWriteLock(final Action<T> r) throws IOException, InterruptedException {
-        synchronized (internalLock) {
-            depth++;
-            if (depth == 1) {
-                this.added = new HashSet<URL>();
-                this.removed = new HashSet<URL>();
-            }
-        }
-        try {
-            try {
-                return r.run();
-            } finally {
-                Set<URL> addedCp = null;
-                Set<URL> removedCp = null;
-                synchronized (internalLock) {
-                    if (depth == 1) {
-                        if (!removed.isEmpty()) {
-                            removedCp = new HashSet<URL>(removed);
-                            removed.clear();
-                        }
-                        if (!added.isEmpty()) {
-                            addedCp = new HashSet<URL>(added);
-                            added.clear();
-                        }
-                    }
-                }
-                if (removedCp != null) {
-                    fire (removedCp, OP_REMOVE);
-                }
-                if (addedCp != null) {
-                    fire (addedCp, OP_ADD);
-                }
-            }
-        } finally {
-            synchronized (internalLock) {
-                depth--;
-            }
-        }
-    }
-          
     @CheckForNull
     public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {
-        synchronized (internalLock) {
-            assert root != null;
-            if (invalid) {
-                return null;
-            }
-            Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
-            ClassIndexImpl index = pair.first;
-            if (index != null) {
-                return index;
-            }
-            URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
-            if (translatedRoot != null) {
-                pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
-                index = pair.first;
-                if (index != null) {
-                    return index;
-                }
-            } else {
-                translatedRoot = root;
-            }
-            if (beforeCreateAllowed) {
-                String attr = null;
-                try {
-                    attr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);            
-                    if (Boolean.TRUE.toString().equals(attr)) {
-                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), true);
-                        this.transientInstances.put(root,index);
-                    } else if (Boolean.FALSE.toString().equals(attr)) {
-                        index = PersistentClassIndex.create (root, JavaIndex.getIndex(root), false);
-                        this.transientInstances.put(root,index);
+        final ClassIndexImpl[] index = new ClassIndexImpl[] {null};
+        FileUtil.runAtomicAction(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (internalLock) {
+                    assert root != null;
+                    if (invalid) {
+                        return;
                     }
-                } catch(IOException ioe) {/*Handled bellow by return null*/
-                } catch(IllegalStateException ise) {
-                  /* Required by some wrongly written tests
-                   * which access ClassIndex without setting the cache dir
-                   * Handled bellow by return null
-                   */
+                    Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
+                    index[0] = pair.first;
+                    if (index[0] != null) {
+                        return;
+                    }
+                    URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
+                    if (translatedRoot != null) {
+                        pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
+                        index[0] = pair.first;
+                        if (index[0] != null) {
+                            return;
+                        }
+                    } else {
+                        translatedRoot = root;
+                    }
+                    if (beforeCreateAllowed) {
+                        try {
+                            final String typeAttr = JavaIndex.getAttribute(translatedRoot, PROP_SOURCE_ROOT, null);
+                            final String dirtyAttr = JavaIndex.getAttribute(translatedRoot, PROP_DIRTY_ROOT, null);
+                            if (Boolean.TRUE.toString().equals(typeAttr)) {
+                                index[0] = PersistentClassIndex.create (
+                                        root,
+                                        JavaIndex.getIndex(root),
+                                        ClassIndexImpl.Type.SOURCE,
+                                        ClassIndexImpl.Type.SOURCE);
+                                transientInstances.put(root,index[0]);
+                            } else if (Boolean.FALSE.toString().equals(typeAttr)) {
+                                index[0] = PersistentClassIndex.create (
+                                        root,
+                                        JavaIndex.getIndex(root),
+                                        ClassIndexImpl.Type.BINARY,
+                                        ClassIndexImpl.Type.BINARY);
+                                transientInstances.put(root,index[0]);
+                            }
+                        } catch(IOException ioe) {
+                            /*Handled bellow by return null*/
+                        } catch(IllegalStateException ise) {
+                          /* Required by some wrongly written tests
+                           * which access ClassIndex without setting the cache dir
+                           * Handled bellow by return null
+                           */
+                        }
+                    }
                 }
             }
-            return index;
-        }
+        });
+        return index[0];
     }
 
-    public ClassIndexImpl createUsagesQuery (final URL root, final boolean source) throws IOException {
+    public ClassIndexImpl createUsagesQuery (
+            final URL root,
+            final boolean source) throws IOException {
         assert root != null;
         synchronized (internalLock) {
             if (invalid) {
@@ -201,40 +172,44 @@ public final class ClassIndexManager {
             Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
             ClassIndexImpl qi = pair.first;
             if (qi == null) {
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
-                this.instances.put(root,qi);
-                if (added != null) {
-                    added.add (root);
+                qi = getUsagesQuery(root, true);
+                if (qi == null) {
+                    qi = PersistentClassIndex.create (
+                            root,
+                            JavaIndex.getIndex(root),
+                            ClassIndexImpl.Type.EMPTY,
+                            source ? ClassIndexImpl.Type.SOURCE : ClassIndexImpl.Type.BINARY);
+                    this.instances.put(root,qi);
+                    markAddedRoot(root);
                 }
-            } else if (source && !qi.isSource()){
+            }
+            if (source && qi.getType() == ClassIndexImpl.Type.BINARY){
                 //Wrongly set up freeform project, which is common for it, prefer source
                 qi.close ();
-                qi = PersistentClassIndex.create (root, JavaIndex.getIndex(root), source);
+                qi = PersistentClassIndex.create (
+                        root,
+                        JavaIndex.getIndex(root),
+                        ClassIndexImpl.Type.SOURCE,
+                        ClassIndexImpl.Type.SOURCE);
                 this.instances.put(root,qi);
-                if (added != null) {
-                    added.add (root);
-                }
+                markAddedRoot(root);
             } else if (pair.second) {
-                if (added != null) {
-                    added.add (root);
-                }
+                markAddedRoot(root);
             }
             return qi;
         }
     }
-    
+
     public void removeRoot (final URL root) throws IOException {
         synchronized (internalLock) {
             ClassIndexImpl ci = this.instances.remove(root);
             if (ci != null) {
                 ci.close();
-                if (removed != null) {
-                    removed.add (root);
-                }
+                markRemovedRoot(root);
             }
         }
     }
-    
+
     public void close () {
         synchronized (internalLock) {
             invalid = true;
@@ -247,23 +222,30 @@ public final class ClassIndexManager {
             }
         }
     }
-            
-    private void fire (final Set<? extends URL> roots, final byte op) {
+
+    void fire (
+        @NonNull final Set<? extends URL> added,
+        @NonNull final Set<? extends URL> removed) {
+        final ClassIndexManagerEvent addEvent = added.isEmpty() ? null : new ClassIndexManagerEvent (this, added);
+        final ClassIndexManagerEvent rmEvent = removed.isEmpty()? null : new ClassIndexManagerEvent (this, removed);
+        fire(addEvent, rmEvent);
+    }
+
+
+    private void fire(
+        @NullAllowed ClassIndexManagerEvent addEvent,
+        @NullAllowed ClassIndexManagerEvent rmEvent) {
         if (!this.listeners.isEmpty()) {
             ClassIndexManagerListener[] _listeners;
             synchronized (this.listeners) {
                 _listeners = this.listeners.keySet().toArray(new ClassIndexManagerListener[this.listeners.size()]);
             }
-            final ClassIndexManagerEvent event = new ClassIndexManagerEvent (this, roots);
             for (ClassIndexManagerListener listener : _listeners) {
-                if (op == OP_ADD) {
-                    listener.classIndexAdded(event);
+                if (addEvent != null) {
+                    listener.classIndexAdded(addEvent);
                 }
-                else if (op == OP_REMOVE) {
-                    listener.classIndexRemoved(event);
-                }
-                else {
-                    assert false : "Unknown op: " + op;     //NOI18N
+                if (rmEvent != null) {
+                    listener.classIndexRemoved(rmEvent);
                 }
             }
         }
@@ -289,8 +271,18 @@ public final class ClassIndexManager {
         }
         return Pair.<ClassIndexImpl,Boolean>of(index,promoted);
     }
-    
-    
+
+    private void markAddedRoot(@NonNull URL root) {
+        final TransactionContext txCtx = TransactionContext.get();
+        txCtx.get(ClassIndexEventsTransaction.class).rootAdded(root);
+    }
+
+    private void markRemovedRoot(@NonNull URL root) {
+        final TransactionContext txCtx = TransactionContext.get();
+        txCtx.get(ClassIndexEventsTransaction.class).rootRemoved(root);
+    }
+
+
     public static synchronized ClassIndexManager getDefault () {
         if (instance == null) {
             instance = new ClassIndexManager ();            
@@ -298,8 +290,5 @@ public final class ClassIndexManager {
         return instance;
     }
 
-    private static final class InternalLock {
-        
-        private InternalLock(){}
-    }
+    private class InternalLock {}
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -46,12 +46,10 @@ package org.netbeans.modules.dbschema.jdbcimpl.wizard;
 
 import java.util.ArrayList;
 import java.util.ResourceBundle;
-
 import javax.swing.event.ChangeListener;
-
+import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.WizardDescriptor;
 
 public abstract class DBSchemaPanel implements WizardDescriptor.Panel {
 
@@ -76,20 +74,23 @@ public abstract class DBSchemaPanel implements WizardDescriptor.Panel {
         return new java.awt.Dimension (DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
 
-    public HelpCtx getHelp() {
-        return new HelpCtx("dbschema_ctxhelp_wizard"); //NOI18N
-    }
+    @Override
+    public abstract HelpCtx getHelp();
 
+    @Override
     public void readSettings (Object settings) {
     }
 
+    @Override
     public void storeSettings (Object settings) {
     }
     
+    @Override
     public synchronized void addChangeListener (ChangeListener listener) {
         list.add(listener);
     }
 
+    @Override
     public synchronized void removeChangeListener (ChangeListener listener) {
         list.remove(listener);
     }

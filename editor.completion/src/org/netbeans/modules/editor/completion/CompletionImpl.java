@@ -855,8 +855,12 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
                         if(baseDoc != null)
                             baseDoc.atomicUnlock();
                     }
+                    return;
                 }
             }
+            CompletionItem item = layout.getSelectedCompletionItem();
+            if (item != null)
+                item.defaultAction(c);
         }
     }
     

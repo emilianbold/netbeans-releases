@@ -70,6 +70,7 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.execute.Bundle.*;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.options.MavenOptionController;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -423,7 +424,7 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer<Abstract
         }
 
         @Override public void actionPerformed(ActionEvent e) {
-            OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH);
+            OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH);
         }
 
     }

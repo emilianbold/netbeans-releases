@@ -46,10 +46,8 @@ package org.netbeans.modules.masterfs.filebasedfs.naming;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.*;
+import org.netbeans.modules.masterfs.filebasedfs.utils.FileInfo;
 import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 
@@ -60,25 +58,38 @@ public final class NamingFactory {
     private static NameRef[] names = new NameRef[2];
     private static int namesCount;
 
-    public static synchronized FileNaming fromFile(final File file) {
-        final LinkedList<File> list = new LinkedList<File>();
+    public static FileNaming fromFile(final File file) {
+        final LinkedList<FileInfo> list = new LinkedList<FileInfo>();
         File current = file;
         while (current != null) {
-            list.addFirst(current);
+            list.addFirst(new FileInfo(current));
             current = current.getParentFile();
         }
 
+        List<FileInfo> checkDirs = new ArrayList<FileInfo>();
         FileNaming fileName = null;
-        for (int i = 0; i < list.size(); i++) {
-            File f = list.get(i);
-            if("\\\\".equals(f.getPath())) {
+        for (int i = 0; i < list.size(); ) {
+            FileInfo f = list.get(i);
+            if("\\\\".equals(f.getFile().getPath())) {
                 // UNC file - skip \\, \\computerName
                 i++;
                 continue;
             }
+            for (FileInfo fi : checkDirs) {
+                fi.isDirectory();
+            }
+            checkDirs.clear();
+            
             // returns unknown if last in the list, otherwise directory
             FileType type = (i == list.size() - 1) ? FileType.unknown : FileType.directory;
-            fileName = NamingFactory.registerInstanceOfFileNaming(fileName, f, type);
+            synchronized (NamingFactory.class) {
+                FileNaming fn = NamingFactory.registerInstanceOfFileNaming(fileName, f, type, checkDirs);
+                if (fn == null) {
+                    continue;
+                }
+                fileName = fn;
+                i++;
+            }
         }
 
         return fileName;
@@ -88,8 +99,24 @@ public final class NamingFactory {
         return namesCount;
     }
     
-    public static synchronized FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
-        return NamingFactory.registerInstanceOfFileNaming(parentFn, file, null, ignoreCache, FileType.unknown);
+    public static FileNaming fromFile(final FileNaming parentFn, final File file, boolean ignoreCache) {
+        FileInfo info = new FileInfo(file);
+        List<FileInfo> checkDirs = new ArrayList<FileInfo>();
+        for (;;) {
+            for (FileInfo fileInfo : checkDirs) {
+                fileInfo.isDirectory();
+            }
+            FileNaming ret;
+            synchronized (NamingFactory.class) {
+                ret = NamingFactory.registerInstanceOfFileNaming(
+                    parentFn, info, null, ignoreCache,
+                    FileType.unknown, checkDirs
+                );
+            }
+            if (ret != null) {
+                return ret;
+            }
+        }
     }
     
     public static synchronized FileNaming checkCaseSensitivity(final FileNaming childName, final File f) throws IOException {
@@ -144,8 +171,13 @@ public final class NamingFactory {
     public static Integer createID(final File file) {
         return Utils.hashCode(file);
     }
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, FileType type) {
-        return NamingFactory.registerInstanceOfFileNaming(parentName, file, null,false, type);       
+    private static FileNaming registerInstanceOfFileNaming(
+        FileNaming parentName, FileInfo file, FileType type,
+        Collection<? super FileInfo> computeDirectoryStatus
+    ) {
+        return NamingFactory.registerInstanceOfFileNaming(
+            parentName, file, null,false, type, computeDirectoryStatus
+        );
     }
     
     private static void rehash(int newSize) {
@@ -178,15 +210,19 @@ public final class NamingFactory {
         names = arr;
     }
 
-    private static FileNaming registerInstanceOfFileNaming(final FileNaming parentName, final File file, final FileNaming newValue,boolean ignoreCache, FileType type) {
+    private static FileNaming registerInstanceOfFileNaming(
+        final FileNaming parentName, final FileInfo file, 
+        final FileNaming newValue,boolean ignoreCache, FileType type,
+        Collection<? super FileInfo> computeDirectoryStatus
+    ) {
         assert Thread.holdsLock(NamingFactory.class);
         
         cleanQueue();
         
         FileNaming retVal;
-        Integer key = createID(file);
+        Integer key = createID(file.getFile());
         int index = Math.abs(key) % names.length;
-        NameRef ref = getReference(names[index], file);
+        NameRef ref = getReference(names[index], file.getFile());
 
         FileNaming cachedElement = (ref != null) ? (FileNaming) ref.get() : null;
         Boolean cachedIsDirectory = null;
@@ -194,6 +230,10 @@ public final class NamingFactory {
         if (ignoreCache) {
             if (cachedElement != null) {
                 cachedIsDirectory = cachedElement.isDirectory();
+                if (!file.isDirectoryComputed()) {
+                    computeDirectoryStatus.add(file);
+                    return null;
+                }
                 fileIsDirectory = file.isDirectory();
                 if (cachedIsDirectory != fileIsDirectory) {
                     cachedElement = null;
@@ -201,7 +241,7 @@ public final class NamingFactory {
             }
             if (cachedElement != null) {
                 try {
-                    checkCaseSensitivity(cachedElement, file);
+                    checkCaseSensitivity(cachedElement, file.getFile());
                 } catch (IOException ex) {
                     // OK, give up
                 }
@@ -211,11 +251,19 @@ public final class NamingFactory {
         Boolean filesEqual = null;
         if (
             cachedElement != null && 
-            (filesEqual = Utils.equals(cachedElement.getFile(), file))
+            (filesEqual = Utils.equals(cachedElement.getFile(), file.getFile()))
         ) {
             retVal = cachedElement;
         } else {
-            retVal = (newValue == null) ? NamingFactory.createFileNaming(file, key, parentName, type) : newValue;
+            if (newValue == null) {
+                if (type == FileType.unknown && !file.isDirectoryComputed()) {
+                    computeDirectoryStatus.add(file);
+                    return null;
+                }
+                retVal = NamingFactory.createFileNaming(file, key, parentName, type);
+            } else {
+                retVal = newValue;
+            }
             NameRef refRetVal = new NameRef(retVal);
 
             NameRef prev = names[index];
@@ -273,7 +321,7 @@ public final class NamingFactory {
     static enum FileType {file, directory, unknown}
     
     private static FileNaming createFileNaming(
-        final File f, Integer theKey, final FileNaming parentName, FileType type
+        final FileInfo f, Integer theKey, final FileNaming parentName, FileType type
     ) {
         FileName retVal = null;
         //TODO: check all tests for isFile & isDirectory
@@ -287,10 +335,10 @@ public final class NamingFactory {
         }
         switch(type) {
             case file:
-                retVal = new FileName(parentName, f, theKey);
+                retVal = new FileName(parentName, f.getFile(), theKey);
                 break;
             case directory:
-                retVal = new FolderName(parentName, f, theKey);
+                retVal = new FolderName(parentName, f.getFile(), theKey);
                 break;
         }
         return retVal;

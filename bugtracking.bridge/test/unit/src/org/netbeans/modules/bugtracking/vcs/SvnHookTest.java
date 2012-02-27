@@ -57,8 +57,8 @@ import javax.swing.DefaultComboBoxModel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
 import org.netbeans.modules.versioning.hooks.SvnHook;
@@ -231,7 +231,7 @@ public class SvnHookTest extends NbTestCase {
 
     private void setRepository(HookPanel panel) {
         HookRepository repo = new HookRepository();
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new Repository[] {repo});
+        DefaultComboBoxModel model = new DefaultComboBoxModel(new RepositoryProvider[] {repo});
         panel.repositoryComboBox.setModel(model);
         panel.repositoryComboBox.setSelectedItem(repo);
     }
@@ -240,7 +240,7 @@ public class SvnHookTest extends NbTestCase {
         Field f = panel.getClass().getDeclaredField("qs");
         f.setAccessible(true);
         QuickSearchComboBar qs = (QuickSearchComboBar) f.get(panel);
-        Method m = qs.getClass().getDeclaredMethod("setIssue", Issue.class);
+        Method m = qs.getClass().getDeclaredMethod("setIssue", IssueProvider.class);
         m.setAccessible(true);
         HookIssue.getInstance().reset();
         m.invoke(qs, HookIssue.getInstance());

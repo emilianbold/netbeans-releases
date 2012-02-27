@@ -201,7 +201,7 @@ public class TemplateUtils {
                 case CPPTokenTypes.LITERAL_typename:
                     parameterStart = child;
                     break;
-                case CPPTokenTypes.ID:
+                case CPPTokenTypes.IDENT:
                     // now create parameter
                     AST fakeAST = null;
                     if (parameterStart == null) {
@@ -269,7 +269,7 @@ public class TemplateUtils {
                             case CPPTokenTypes.CSM_TYPE_BUILTIN:
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
                                 for(AST p = varDecl.getFirstChild(); p != null; p = p.getNextSibling()){
-                                    if (p.getType() == CPPTokenTypes.ID) {
+                                    if (p.getType() == CPPTokenTypes.IDENT) {
                                        res.add(new TemplateParameterImpl(parameterStart, AstUtil.getText(p), file, scope, global));
                                        break;
                                     }
@@ -281,7 +281,7 @@ public class TemplateUtils {
                 case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
                     parameterStart = child;
                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
-                        if (paramChild.getType() == CPPTokenTypes.ID) {
+                        if (paramChild.getType() == CPPTokenTypes.IDENT) {
                             // IZ 141842 : If template parameter declared as a template class, its usage is unresolved
                             // Now all IDs of template template parameter are added to template parameters of template.
                             // When CsmClassifierBasedTemplateParameter will be finished, this should be replaced. 

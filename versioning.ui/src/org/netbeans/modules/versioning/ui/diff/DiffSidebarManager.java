@@ -60,6 +60,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Document;
 import java.io.File;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
@@ -170,7 +171,11 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
             if (sideBar == null) {
                 Document doc = target.getDocument();
                 FileObject file = fileForDocument(doc);
-                if (file == null || !file.isValid()) return null;
+                if (file == null || !file.isValid()) {
+                    LOG.log(Level.FINE, "no valid file");
+                    return null;
+                }
+                LOG.log(Level.FINE, "requested sidebar for {0}", file.getPath());
     
                 sideBar = new DiffSidebar(target, file);
                 sideBars.put(sideBar, null);
@@ -182,7 +187,9 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
 
     private FileObject fileForDocument(Document doc) {
         DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+        LOG.log(Level.FINEST, "document {0} returns {1} for property=" + Document.StreamDescriptionProperty, new Object[] {doc, dobj});
         if (dobj == null) return null;
+        LOG.log(Level.FINER, "looking up file for {0}", dobj);
         if (dobj instanceof MultiDataObject) {
             return fileForDataobject(doc, (MultiDataObject) dobj);
         } else if (dobj != null) {

@@ -424,6 +424,12 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     }
     private static void scanForSubmodulesIn(ModelBase projectOrProfile, File basedir, Set<File> registered) throws IllegalArgumentException {
         for (String module : projectOrProfile.getModules()) {
+            if (module == null) {
+                //#205690 apparently in some rare scenarios module can be null, I was not able to reproduce myself
+                //maven itself checks for null value during validation, but at later stages doesn't always check.
+                //additional aspect for consideration is that in this case the value is taken from Model class not MavenProject
+                continue;
+            }
             registerWithSubmodules(FileUtilities.resolveFilePath(basedir, module), registered);
         }
     }

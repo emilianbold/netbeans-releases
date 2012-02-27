@@ -54,6 +54,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import static org.netbeans.modules.maven.queries.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.SpecialIcon;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 
@@ -73,7 +74,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
 
     @Messages({
         "# {0} - dir basename", "LBL_misconfigured_project={0} [unloadable]",
-        "TXT_Maven_project_at=Maven project at {0}"
+        "# {0} - path to project", "TXT_Maven_project_at=Maven project at {0}"
     })
     @Override public @NonNull String getDisplayName() {
         MavenProject pr = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
@@ -87,7 +88,7 @@ public final class Info implements ProjectInformation, PropertyChangeListener {
             if (grId != null && artId != null) {
                 toReturn = grId + ":" + artId; //NOI18N
             } else {
-                toReturn = TXT_Maven_project_at(project.getProjectDirectory().getPath());
+                toReturn = TXT_Maven_project_at(FileUtil.getFileDisplayName(project.getProjectDirectory()));
             }
         }
         return toReturn;

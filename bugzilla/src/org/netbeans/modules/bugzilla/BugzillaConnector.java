@@ -42,61 +42,50 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.awt.Image;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class),
-                                           @ServiceProvider(service=org.netbeans.modules.bugzilla.BugzillaConnector.class)})
+@BugtrackingConnector.Registration (
+        id=BugzillaConnector.ID,
+        displayName="#LBL_ConnectorName",
+        tooltip="#LBL_ConnectorTooltip"
+)    
 public class BugzillaConnector extends BugtrackingConnector {
+
+    public static final String ID = "org.netbeans.modules.bugzilla";
+    private static BugzillaConnector instance;
 
     private BugzillaIssueFinder issueFinder;
 
     public BugzillaConnector() {
-        System.out.println("");
+        instance = this;
+    }
+    
+    static BugzillaConnector getInstance() {
+        return instance;
     }
 
     @Override
-    public String getID() {
-        return "org.netbeans.modules.bugzilla";                                 //  NOI18N
-    }
-
-    @Override
-    public Image getIcon() {
-        return null;
-    }
-
-    @Override
-    public String getDisplayName() {
-        return getConnectorName();
-    }
-
-    @Override
-    public String getTooltip() {
-        return NbBundle.getMessage(BugzillaConnector.class, "LBL_ConnectorTooltip");        // NOI18N
+    public RepositoryProvider createRepository(RepositoryInfo info) {
+        return new BugzillaRepository(info);
     }
     
     @Override
-    public Repository createRepository() {
+    public RepositoryProvider createRepository() {
         Bugzilla.init();
         return new BugzillaRepository();
-    }
-
-    @Override
-    public Repository[] getRepositories() {
-        return Bugzilla.getInstance().getRepositories();
     }
 
     public static String getConnectorName() {
@@ -114,11 +103,6 @@ public class BugzillaConnector extends BugtrackingConnector {
     @Override
     public Lookup getLookup() {
         return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
-    }
-
-    @Override
-    public void fireRepositoriesChanged(Collection<Repository> oldRepos, Collection<Repository> newRepos) {
-        super.fireRepositoriesChanged(oldRepos, newRepos);
     }
 
 }

@@ -77,7 +77,11 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.javaee.specs.support.api.JaxRpc;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -463,7 +467,12 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     @Override
     public Lookup getLookup() {
         String gfRootStr = dm.getProperties().getGlassfishRoot();
-        Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl() );
+        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
+                new Hk2JaxWsStack(gfRootStr, this ), WSStack.Source.SERVER);
+        WSStack<JaxRpc> rpcStack = WSStackFactory.createWSStack(JaxRpc.class ,
+                new Hk2JaxRpcStack(gfRootStr), WSStack.Source.SERVER);
+        Lookup baseLookup = Lookups.fixed(gfRootStr, new JaxRsStackSupportImpl() , 
+                wsStack , rpcStack );
         return LookupProviderSupport.createCompositeLookup(baseLookup, pf.getLookupKey()); 
     }
 

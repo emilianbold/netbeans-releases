@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -67,7 +68,7 @@ import org.openide.util.NbPreferences;
  * a netbeans settings for global options that cannot be put into the settings file.
  * @author mkleint
  */
-public class MavenSettings  {
+public final class MavenSettings  {
     private static final String PROP_DEFAULT_OPTIONS = "defaultOptions"; // NOI18N
     private static final String PROP_SOURCE_DOWNLOAD = "sourceDownload"; //NOI18N
     private static final String PROP_JAVADOC_DOWNLOAD = "javadocDownload"; //NOI18N
@@ -125,7 +126,7 @@ public class MavenSettings  {
                     }
                 }
             } catch (Exception ex) {
-                Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + defOpts);
+                Logger.getLogger(MavenSettings.class.getName()).log(Level.FINE, "Error parsing global options:{0}", defOpts);
                 //will check for contains of -X be enough?
                 return defOpts.contains(longName) || defOpts.contains(shortName);
             }

@@ -43,15 +43,8 @@
 package org.netbeans.modules.php.editor;
 
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.nav.TestBase;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 public class DocRendererTest extends TestBase {
 
@@ -78,9 +71,6 @@ public class DocRendererTest extends TestBase {
                 "<b1>test5</ b>",
                 "&lt;b1>test5</ b>");
         testCases.put(
-                "<code>test6</code>",
-                "<pre>test6</pre>");
-        testCases.put(
                 "<input>",
                 "&lt;input>");
         // #183594
@@ -90,12 +80,15 @@ public class DocRendererTest extends TestBase {
         testCases.put(
                 "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot",
                 "NoList:\n-minus\n+plus\n#hash\nocircle\n3-number\n3.number with dot");
+        testCases.put(
+                "NoList:\n/**\n * @assert (0, 0) == 0\n */\n",
+                "NoList:\n/**\n * @assert (0, 0) == 0\n */\n");
 
         for (Map.Entry<String, String> entry : testCases.entrySet()) {
             String expected = entry.getValue();
             String processed = DocRenderer.PHPDocExtractor.processPhpDoc(entry.getKey());
             if (!expected.equals(processed)) {
-                System.err.println("[" + processed + "] => [" + expected + "]");
+                System.err.println("[" + expected + "] => [" + processed + "]");
             }
             assertEquals(expected, processed);
         }

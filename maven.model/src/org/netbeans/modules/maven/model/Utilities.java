@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
@@ -62,6 +63,8 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
 import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
+import org.netbeans.modules.xml.xam.ComponentEvent;
+import org.netbeans.modules.xml.xam.ComponentListener;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
@@ -134,7 +137,7 @@ public class Utilities {
             if (doc instanceof BaseDocument) {
                 return (BaseDocument) doc;
             } else {
-                logger.log(Level.FINE, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
+                logger.log(Level.FINER, "Got document of unexpected {0} from {1}", new Object[] {doc.getClass(), modelSourceDataObject});
                 // Replace with a BaseDocument. Mostly useful for unit test.
                 final BaseDocument doc2 = new GuardedDocument("text/xml");
                 try {
@@ -274,7 +277,7 @@ public class Utilities {
      * @param pomFileObject
      * @param operations
      */
-    public static void performPOMModelOperations(FileObject pomFileObject, List<? extends ModelOperation<POMModel>> operations) {
+    public static void performPOMModelOperations(final FileObject pomFileObject, List<? extends ModelOperation<POMModel>> operations) {
         assert pomFileObject != null;
         assert operations != null;
         ModelSource source = Utilities.createModelSource(pomFileObject);
@@ -290,12 +293,40 @@ public class Utilities {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", NbBundle.getMessage(Utilities.class,"ERR_INVALID_MODEL")), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                     return;
                 }
-                model.startTransaction();
-                for (ModelOperation<POMModel> op : operations) {
-                    op.performOperation(model);
+                if (!model.startTransaction()) {
+                    logger.log(Level.WARNING, "Could not start transaction on {0}", pomFileObject);
+                    return;
                 }
-                model.endTransaction();
-                Utilities.saveChanges(model);
+                final AtomicBoolean modified = new AtomicBoolean();
+                ComponentListener listener = new ComponentListener() {
+                    private void change(ComponentEvent evt) {
+                        logger.log(Level.FINE, "{0}: {1}", new Object[] {pomFileObject, evt});
+                        modified.set(true);
+                    }
+                    @Override public void valueChanged(ComponentEvent evt) {
+                        change(evt);
+                    }
+                    @Override public void childrenAdded(ComponentEvent evt) {
+                        change(evt);
+                    }
+                    @Override public void childrenDeleted(ComponentEvent evt) {
+                        change(evt);
+                    }
+                };
+                model.addComponentListener(listener);
+                try {
+                    for (ModelOperation<POMModel> op : operations) {
+                        op.performOperation(model);
+                    }
+                    model.endTransaction();
+                } finally {
+                    model.removeComponentListener(listener);
+                }
+                if (modified.get()) {
+                    Utilities.saveChanges(model);
+                } else {
+                    logger.log(Level.FINE, "no changes recorded in {0}", pomFileObject);
+                }
             } catch (IOException ex) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(Utilities.class, "ERR_POM", ex.getLocalizedMessage()), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT).clear(10000);
                 logger.log(Level.INFO, "Canot write POM", ex);

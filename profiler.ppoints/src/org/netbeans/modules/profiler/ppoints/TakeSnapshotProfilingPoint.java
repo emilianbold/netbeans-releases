@@ -80,6 +80,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.project.ProjectStorage;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.ppoints.ui.ProfilingPointReport;
 import org.openide.util.Lookup;
 
 
@@ -96,7 +97,6 @@ import org.openide.util.Lookup;
     "TakeSnapshotProfilingPoint_NHitsString=<b>{0} hits</b>, last at {1}, <a href='#'>report</a>",
     "TakeSnapshotProfilingPoint_NoResultsString=No results available",
     "TakeSnapshotProfilingPoint_ReportAccessDescr=Report of {0}",
-    "TakeSnapshotProfilingPoint_NoHitsString=no hits",
     "TakeSnapshotProfilingPoint_HeaderTypeString=<b>Type:</b> {0}",
     "TakeSnapshotProfilingPoint_HeaderEnabledString=<b>Enabled:</b> {0}",
     "TakeSnapshotProfilingPoint_HeaderProjectString=<b>Project:</b> {0}",
@@ -134,7 +134,7 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         }
     }
 
-    private class Report extends TopComponent {
+    private class Report extends ProfilingPointReport {
         //~ Instance fields ------------------------------------------------------------------------------------------------------
 
         private HTMLTextArea dataArea;
@@ -145,20 +145,12 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         public Report() {
             initDefaults();
             initComponents();
-            refreshData();
+            refresh();
         }
 
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
-        public int getPersistenceType() {
-            return TopComponent.PERSISTENCE_NEVER;
-        }
-
-        protected String preferredID() {
-            return this.getClass().getName();
-        }
-
-        void refreshData() {
+        protected void refresh() {
             StringBuilder headerAreaTextBuilder = new StringBuilder();
 
             headerAreaTextBuilder.append(getHeaderName());
@@ -192,8 +184,8 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
             StringBuilder dataAreaTextBuilder = new StringBuilder();
 
             synchronized(resultsSync) {
-                if (!hasResults()) {
-                    dataAreaTextBuilder.append("&nbsp;&nbsp;&lt;").append(Bundle.TakeSnapshotProfilingPoint_NoHitsString()).append("&gt;"); // NOI18N
+                if (results.isEmpty()) {
+                    dataAreaTextBuilder.append(ProfilingPointReport.getNoDataHint(TakeSnapshotProfilingPoint.this));
                 } else {
                     for (int i = 0; i < results.size(); i++) {
                         dataAreaTextBuilder.append("&nbsp;&nbsp;");
@@ -482,26 +474,26 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
 
     public void hideResults() {
         SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (hasReport()) {
-                        getReport().close();
-                    }
-                }
-            });
+            public void run() {
+                Report report = getReport(false);
+                if (report != null) report.close();
+            }
+        });
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        if (hasReport()) {
+        Report report = getReport(false);
+        if (report != null) {
             if (evt.getPropertyName() == PROPERTY_NAME) {
-                getReport().refreshProperties();
+                report.refreshProperties();
             }
 
-            getReport().refreshData();
+            report.refresh();
         }
     }
 
     public void showResults(URL url) {
-        TopComponent topComponent = getReport();
+        TopComponent topComponent = getReport(true);
         topComponent.open();
         topComponent.requestActive();
     }
@@ -622,14 +614,12 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         }
     }
 
-    private Report getReport() {
-        if (hasReport()) {
-            return reportReference.get();
+    private Report getReport(boolean create) {
+        Report report = reportReference == null ? null : reportReference.get();
+        if (report == null && create) {
+            report = new Report();
+            reportReference = new WeakReference<Report>(report);
         }
-
-        Report report = new Report();
-        reportReference = new WeakReference(report);
-
         return report;
     }
 
@@ -639,10 +629,6 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                                   + ResultsManager.HEAPDUMP_EXTENSION; // NOI18N
 
         return new File(heapDumpFileName);
-    }
-
-    private boolean hasReport() {
-        return (reportReference != null) && (reportReference.get() != null);
     }
 
     private String takeHeapdumpHit(long time) {

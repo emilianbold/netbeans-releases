@@ -43,6 +43,8 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.table;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -92,9 +94,7 @@ public class ResultSetTableModel extends DefaultTableModel {
 
             case Types.CHAR:
             case Types.VARCHAR:
-            case Types.LONGVARCHAR:
             case -15:
-            case -16:
             case -9:
             case -8:
                 return String.class;
@@ -103,8 +103,13 @@ public class ResultSetTableModel extends DefaultTableModel {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
+                return Blob.class;
+            case Types.LONGVARCHAR:
+            case -16:
             case Types.CLOB:
             case 2011: /*NCLOB */
+                return Clob.class;
             case Types.OTHER:
             default:
                 return Object.class;

@@ -85,8 +85,8 @@ import org.netbeans.lib.profiler.ui.UIUtils;
     "StopwatchCustomizer_MeasureLabelText=Measure:",
     "StopwatchCustomizer_TimestampRadioText=&Timestamp",
     "StopwatchCustomizer_DurationRadioText=Timestamp and &duration",
-    "StopwatchCustomizer_BeginLocationLabelText=Location (begin)",
-    "StopwatchCustomizer_EndLocationLabelText=Location (end)"
+    "StopwatchCustomizer_BeginLocationLabelText=Location (start)",
+    "StopwatchCustomizer_EndLocationLabelText=Location (stop)"
 })
 public class StopwatchCustomizer extends ValidityAwarePanel implements DocumentListener, ChangeListener, ValidityListener,
                                                                        HelpCtx.Provider {

@@ -46,13 +46,11 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Stack;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -71,7 +69,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class VyletelaZezulickaTest extends NbTestCase {
+public class VyletelaZezulickaTest extends IndexingAwareTestCase {
     
     public VyletelaZezulickaTest (String testName) {
         super (testName);

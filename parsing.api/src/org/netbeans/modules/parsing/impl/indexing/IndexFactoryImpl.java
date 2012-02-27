@@ -43,7 +43,7 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.IOException;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -57,7 +57,7 @@ public interface IndexFactoryImpl {
 
     public IndexDocument createDocument (Indexable indexable);
 
-    public DocumentIndex createIndex (final Context ctx) throws IOException;
+    public LayeredDocumentIndex createIndex (final Context ctx) throws IOException;
 
-    public DocumentIndex getIndex (final FileObject indexFolder) throws IOException;
+    public LayeredDocumentIndex getIndex (final FileObject indexFolder) throws IOException;
 }

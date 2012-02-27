@@ -110,6 +110,7 @@ public final class SearchPattern {
         return regExp;
     }
 
+    @Override
     public boolean equals(Object obj){
         if (!(obj instanceof SearchPattern)){
             return false;
@@ -121,6 +122,7 @@ public final class SearchPattern {
                 this.regExp == sp.isRegExp());
     }
     
+    @Override
     public int hashCode() {
         int result = 17;
         result = 37*result + (this.wholeWords ? 1:0);
@@ -129,4 +131,28 @@ public final class SearchPattern {
         result = 37*result + this.searchExpression.hashCode();
         return result;
     }
+    
+    String toCanonicalString() {
+        char m = isMatchCase() ? 'M' : 'm';
+        char r = isRegExp() ? 'R' : 'r';
+        char w = isWholeWords() ? 'W' : 'w';
+        return "" + m + r + w + "-" + getSearchExpression();
+    }
+
+    static SearchPattern parseSearchPattern(String canonicalString) {
+        //format mrw-findwhat
+        if (canonicalString == null
+                || Character.toUpperCase(canonicalString.charAt(0)) != 'M'
+                || Character.toUpperCase(canonicalString.charAt(1)) != 'R'
+                || Character.toUpperCase(canonicalString.charAt(2)) != 'W'
+                || canonicalString.charAt(3) != '-') {
+            return null;
+        }
+        boolean matchCase = Character.isUpperCase(canonicalString.charAt(0));
+        boolean regExp = Character.isUpperCase(canonicalString.charAt(1));
+        boolean wholeWords = Character.isUpperCase(canonicalString.charAt(2));
+        String findWhat = canonicalString.substring(4);
+        return new SearchPattern(findWhat, wholeWords, matchCase, regExp);
+    }
+
 }

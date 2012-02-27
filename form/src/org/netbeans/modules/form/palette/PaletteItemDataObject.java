@@ -68,7 +68,12 @@ import org.netbeans.modules.form.project.ClassSource;
  *
  * @author Tomas Pavek
  */
-
+@MIMEResolver.ExtensionRegistration(
+    position=50037, 
+    displayName="org/netbeans/modules/form/resources/Bundle#Services/MIMEResolver/SwingPaletteItemResolver.xml",
+    mimeType="text/x-palette-item",
+    extension="palette_item"
+)
 public class PaletteItemDataObject extends MultiDataObject implements CookieSet.Factory {
 
     static final String XML_ROOT = "palette_item"; // NOI18N

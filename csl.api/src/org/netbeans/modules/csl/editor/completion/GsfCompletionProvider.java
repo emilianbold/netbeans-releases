@@ -84,6 +84,7 @@ import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -315,36 +316,28 @@ public class GsfCompletionProvider implements CompletionProvider {
                     //        js = Source.forFileObject(fo);
                     //}
                     if (source != null) {
-                        final Future<Void> f = ParserManager.parseWhenScanFinished(
-                            Collections.<Source> singleton (source),
-                            new UserTask () {
-
-                                public void run (ResultIterator resultIterator) throws Exception {
-                                    Parser.Result result = resultIterator.getParserResult (caretOffset);
-                                    if(!(result instanceof ParserResult)) {
-                                        return ;
-                                    }
-                                    ParserResult parserResult = (ParserResult) result;
-                                    if (parserResult == null) {
-                                        return;
-                                    }
-                                    if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                                        resolveCompletion(parserResult);
-                                    } else if (queryType == TOOLTIP_QUERY_TYPE) {
-                                        resolveToolTip(parserResult);
-                                    } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
-                                        resolveDocumentation(parserResult);
-                                    }
-                                    GsfCompletionItem.tipProposal = null;
+                        final Collection<Source> sources = Collections.<Source> singleton (source);
+                        final UserTask task = new UserTask () {
+                            public void run (ResultIterator resultIterator) throws Exception {
+                                Parser.Result result = resultIterator.getParserResult (caretOffset);
+                                if(!(result instanceof ParserResult)) {
+                                    return ;
                                 }
-
-                                public void cancel() {
+                                ParserResult parserResult = (ParserResult) result;
+                                if (parserResult == null) {
+                                    return;
                                 }
-                        });
-                        if (!f.isDone()) {
-                            component.putClientProperty("completion-active", Boolean.FALSE);    //NOI18N
-                            resultSet.setWaitText(NbBundle.getMessage(GsfCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                        }
+                                if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
+                                    resolveCompletion(parserResult);
+                                } else if (queryType == TOOLTIP_QUERY_TYPE) {
+                                    resolveToolTip(parserResult);
+                                } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
+                                    resolveDocumentation(parserResult);
+                                }
+                                GsfCompletionItem.tipProposal = null;
+                            }
+                        };
+                        ParserManager.parse(sources, task);
                         if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                             if (results != null)
                                 resultSet.addAllItems(results);

@@ -47,10 +47,7 @@ package org.netbeans.modules.j2ee.deployment.impl.ui.actions;
 
 import org.netbeans.modules.j2ee.deployment.impl.ServerException;
 import org.netbeans.modules.j2ee.deployment.impl.ServerInstance;
-import org.netbeans.modules.j2ee.deployment.impl.ServerRegistry;
 import org.netbeans.modules.j2ee.deployment.impl.ui.ProgressUI;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
-import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
@@ -92,21 +89,21 @@ public class ProfileAction extends ControlAction {
         }
         final ServerInstance si = (ServerInstance)nodes[0].getCookie(ServerInstance.class);
         if (si != null) {
-            Profiler profiler = ServerRegistry.getProfiler();
-            if (profiler == null) {
-                return;
-            }
-            final ProfilerServerSettings settings = profiler.getSettings(si.getUrl());
-            if (settings == null) {
-                return;
-            }
+//            Profiler profiler = ServerRegistry.getProfiler();
+//            if (profiler == null) {
+//                return;
+//            }
+//            final ProfilerServerSettings settings = profiler.getSettings(si.getUrl());
+//            if (settings == null) {
+//                return;
+//            }
             RP.post(new Runnable() {
                 public void run() {
                     String title = NbBundle.getMessage(DebugAction.class, "LBL_Profiling", si.getDisplayName());
                     ProgressUI progressUI = new ProgressUI(title, false);
                     try {
                         progressUI.start();
-                        si.startProfile(settings, false, progressUI);
+                        si.startProfile(false, progressUI);
                     } catch (ServerException ex) {
                         String msg = ex.getLocalizedMessage();
                         NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.ERROR_MESSAGE);

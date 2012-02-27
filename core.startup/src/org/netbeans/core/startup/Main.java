@@ -57,6 +57,7 @@ import javax.swing.UIManager;
 import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -155,6 +156,7 @@ public final class Main extends Object {
             try {
                 moduleSystem = new ModuleSystem();
                 moduleSystem.init(FileUtil.getConfigRoot().getFileSystem());
+                SystemFileSystem.registerMutex(moduleSystem.getManager().mutex());
             } catch (IOException ioe) {
                 // System will be screwed up.
                 throw (IllegalStateException) new IllegalStateException("Module system cannot be created").initCause(ioe); // NOI18N

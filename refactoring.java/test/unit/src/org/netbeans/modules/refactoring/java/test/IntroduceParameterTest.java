@@ -114,35 +114,35 @@ public class IntroduceParameterTest extends RefactoringTestBase {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", source = "package t;\n"
                 + "public class A {\n"
-                + "public int length() {\n"
+                + "public int length(String unused) {\n"
                 + "    String introduced = \"Hello World!\";\n"
                 + "    return introduced.length();\n"
                 + "}\n"
                 + "}\n"),
                 new File("t/F.java", "package t;\n"
                 + "public class F extends A {\n"
-                + "    public int length() {\n"
-                + "        return super.length();\n"
+                + "    public int length(String unused) {\n"
+                + "        return super.length(unused);\n"
                 + "    }\n"
                 + "    public void bar() {\n"
-                + "        System.out.println(length());\n"
+                + "        System.out.println(length(\"\"));\n"
                 + "    }\n"
                 + "}\n"));
         performIntroduce(src.getFileObject("t/A.java"), source.indexOf("introduced"), Javadoc.NONE, false, false );
         verifyContent(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
-                + "public int length(String introduced) {\n"
+                + "public int length(String unused, String introduced) {\n"
                 + "    return introduced.length();\n"
                 + "}\n"
                 + "}\n"),
                 new File("t/F.java", "package t;\n"
                 + "public class F extends A {\n"
-                + "    public int length(String introduced) {\n"
-                + "        return super.length(introduced);\n"
+                + "    public int length(String unused, String introduced) {\n"
+                + "        return super.length(unused, introduced);\n"
                 + "    }\n"
                 + "    public void bar() {\n"
-                + "        System.out.println(length(\"Hello World!\"));\n"
+                + "        System.out.println(length(\"\", \"Hello World!\"));\n"
                 + "    }\n"
                 + "}\n"));
         

@@ -48,6 +48,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.csl.api.CslActions;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -134,7 +135,7 @@ public class ToggleBlockCommentAction extends BaseAction{
             }
         }
         if(!processedHere) {
-            BaseAction action = new org.netbeans.modules.csl.api.ToggleBlockCommentAction();
+            BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
             if (getValue(FORCE_COMMENT) != null) {
                 action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
             }

@@ -122,6 +122,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToASTOffset;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 
 /**
  *
@@ -298,11 +299,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             request.prefix = prefix;
             request.index = ElementQueryFactory.getIndexQuery(info);
 
-            try {
-                request.currentlyEditedFileURL = fileObject.getURL().toString();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            request.currentlyEditedFileURL = fileObject.toURL().toString();
             switch (context) {
                 case DEFAULT_PARAMETER_VALUE:
                     final Prefix nameKindPrefix = NameKind.prefix(prefix);
@@ -385,10 +382,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                    autoCompleteClassMembers(completionResult, request, true);
                     break;
                 case PHPDOC:
+                    PHPDOCCodeCompletion.complete(completionResult, request);
                     if (PHPDOCCodeCompletion.isTypeCtx(request)) {
                         autoCompleteTypeNames(completionResult, request);
-                    } else {
-                        PHPDOCCodeCompletion.complete(completionResult, request);
                     }
                     break;
                 case CLASS_CONTEXT_KEYWORDS:
@@ -891,7 +887,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private TypeElement getEnclosingType(CompletionRequest request, Collection<? extends TypeScope> types) {
         final ClassDeclaration enclosingClass = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
         final String enclosingClassName = (enclosingClass != null) ? CodeUtils.extractClassName(enclosingClass) : null;
-        final NameKind.Exact enclosingClassNameKind = (enclosingClassName != null && !enclosingClassName.trim().isEmpty()) ? NameKind.exact(enclosingClassName) : null;
+        NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
+        final String enclosingFQClassName = VariousUtils.qualifyTypeNames(enclosingClassName, request.anchor, namespaceScope);
+        final NameKind.Exact enclosingClassNameKind = (enclosingFQClassName != null && !enclosingFQClassName.trim().isEmpty()) ? NameKind.exact(enclosingFQClassName) : null;
         Set<FileObject> preferedFileObjects = new HashSet<FileObject>();
         Set<TypeElement> enclosingTypes = null;
         FileObject currentFile = request.result.getSnapshot().getSource().getFileObject();

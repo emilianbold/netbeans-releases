@@ -48,6 +48,7 @@ import java.awt.event.KeyEvent;
 import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.OptionsOperator;
@@ -152,12 +153,14 @@ public class KeyMapOperator extends JDialogOperator {
 
     private JListOperator clickShortcutEllipsisButton(JTableOperator tab, int row) {
         TableModel tm = tab.getModel();
-        org.netbeans.modules.options.keymap.ShortcutCellPanel sc = (org.netbeans.modules.options.keymap.ShortcutCellPanel) tm.getValueAt(row, 1);
-        final JButton button = sc.getButton();
-        int x = button.getX() + button.getWidth() / 2;
-        int y = button.getY() + button.getHeight() / 2;
+        TableCellRenderer cellRenderer = tab.getCellRenderer(row, row);
+        Rectangle cellRect = tab.getCellRect(row, 1, true);
+        //org.netbeans.modules.options.keymap.ShortcutCellPanel sc = (org.netbeans.modules.options.keymap.ShortcutCellPanel) tm.getValueAt(row, 1);
+//        final JButton button = sc.getButton();
+//        int x = button.getX() + button.getWidth() / 2;
+//        int y = button.getY() + button.getHeight() / 2;
         Rectangle r = tab.getCellRect(row, 1, false);
-        tab.clickMouse(r.x + x, r.y + y, 1);
+        tab.clickMouse(r.x + r.width-3, r.y + (r.height/2), 1);
         System.out.println("[TEST_DEBUG]  Pressed [...] button on row " + (row + 1));
         return new JListOperator(new JPopupMenuOperator());
     }

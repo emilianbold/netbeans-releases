@@ -63,6 +63,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Pokorsky
  */
 final class CallNode extends AbstractNode {
+    private String htmlDisplayName;
     
     private CallNode() {
         super(Children.LEAF);
@@ -71,6 +72,10 @@ final class CallNode extends AbstractNode {
     private CallNode(Children children, CallDescriptor desc) {
         super(children, Lookups.singleton(desc));
         setDisplayName(desc.getDisplayName());
+    }
+    
+    void setHtmlDisplayName(String s) {
+        this.htmlDisplayName = s;
     }
 
     public static CallNode createDefault() {
@@ -89,7 +94,14 @@ final class CallNode extends AbstractNode {
     private static CallNode createCanceled() {
         CallNode node = new CallNode();
         node.setDisplayName(NbBundle.getMessage(CallNode.class, "CallNode.Canceled.displayName"));
-        
+        return node;
+    }
+
+    private static CallNode createIncomplete() {
+        CallNode node = new CallNode();
+        node.setHtmlDisplayName(NbBundle.getMessage(CallNode.class, "CallNode.Incomplete.htmlDisplayName"));
+        node.setDisplayName(NbBundle.getMessage(CallNode.class, "CallNode.Incomplete.displayName"));
+        node.setIconBaseWithExtension("org/netbeans/modules/java/navigation/resources/wait.gif"); // NOI18N
         return node;
     }
 
@@ -110,7 +122,18 @@ final class CallNode extends AbstractNode {
         if (model != null) {
             root = model.getRoot();
         }
-        return root != null ? createCall(root) : createDefault();
+        
+        if (root == null) {
+            return createDefault();
+        }
+        if (root.isBroken()) {
+            return createBroken();
+        } else if (root.isCanceled()) {
+            return createCanceled();
+        } else if (root.isIncomplete()) {
+            return createPleaseWait();
+        }
+        return createCall(root);
     }
 
     @Override
@@ -127,6 +150,9 @@ final class CallNode extends AbstractNode {
 
     @Override
     public String getHtmlDisplayName() {
+        if (htmlDisplayName != null) {
+            return htmlDisplayName;
+        }
         CallDescriptor desc = getLookup().lookup(CallDescriptor.class);
         String htmlDisplayName = desc != null ? desc.getHtmlDisplayName() : null;
         return htmlDisplayName != null ? htmlDisplayName : super.getHtmlDisplayName();
@@ -217,10 +243,23 @@ final class CallNode extends AbstractNode {
                 keys = Collections.emptyList();
             } else {
                 keys = desc.getReferences();
+                ArrayList<Object> temp = null;
+                
                 if (!isOccurrenceView && (desc.isCanceled() || desc.isBroken())) {
-                    ArrayList<Object> temp = new ArrayList<Object>(keys.size() + 1);
+                    // speculatively allocate +1 for potential 'incomplete'
+                    temp = new ArrayList<Object>(keys.size() + 2);
                     temp.addAll(keys);
                     temp.add(desc.isBroken() ? CallNode.createBroken() : CallNode.createCanceled());
+                    keys = temp;
+                }
+                if (desc.isIncomplete()) {
+                    if (temp == null) {
+                        temp = new ArrayList<Object>(keys.size() + 1);
+                        temp.add(CallNode.createIncomplete());
+                        temp.addAll(keys);
+                    } else {
+                        temp.add(0, CallNode.createIncomplete());
+                    }
                     keys = temp;
                 }
             }

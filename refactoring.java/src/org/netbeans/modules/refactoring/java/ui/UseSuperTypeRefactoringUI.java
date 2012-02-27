@@ -51,16 +51,21 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
+import javax.lang.model.element.Element;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -71,10 +76,10 @@ import org.openide.util.NbBundle;
  *
  * @author Bharath Ravi Kumar
  */
-public class UseSuperTypeRefactoringUI implements RefactoringUI{
+public class UseSuperTypeRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     
-    private final TreePathHandle subType;
-    private final UseSuperTypeRefactoring refactoring;
+    private TreePathHandle subType;
+    private UseSuperTypeRefactoring refactoring;
     private UseSuperTypePanel panel;
     private ElementHandle superType;
     private String className;
@@ -84,11 +89,14 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
      * @param selectedElement The sub type being used
      * @param info  
      */
-    public UseSuperTypeRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
+    private UseSuperTypeRefactoringUI(TreePathHandle selectedElement, CompilationInfo info) {
         this.subType = selectedElement;
         refactoring = new UseSuperTypeRefactoring(subType);
         refactoring.getContext().add(RefactoringUtils.getClasspathInfoFor(subType));
         this.className = refactoring.getTypeElement().resolveElement(info).getSimpleName().toString();
+    }
+
+    private UseSuperTypeRefactoringUI() {
     }
     
     /**
@@ -172,6 +180,26 @@ public class UseSuperTypeRefactoringUI implements RefactoringUI{
         if(panel == null)
             panel = new UseSuperTypePanel(refactoring, className);
         return panel;
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        Element selected = handles[0].resolveElement(info);
+        TreePathHandle s = handles[0];
+        if (selected == null || !(selected.getKind().isClass() || selected.getKind().isInterface())) {
+            TreePath classTreePath = JavaRefactoringUtils.findEnclosingClass(info, handles[0].resolve(info), true, true, true, true, true);
+
+            if (classTreePath == null) {
+                return null;
+            }
+            s = TreePathHandle.create(classTreePath, info);
+        }
+        return new UseSuperTypeRefactoringUI(s, info);
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new UseSuperTypeRefactoringUI();
     }
     
 }

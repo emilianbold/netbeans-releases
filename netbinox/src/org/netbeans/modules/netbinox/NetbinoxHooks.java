@@ -44,17 +44,9 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URL;
 import java.net.URLConnection;
 import java.security.ProtectionDomain;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.eclipse.osgi.baseadaptor.BaseAdaptor;
@@ -70,7 +62,6 @@ import org.eclipse.osgi.baseadaptor.hooks.ClassLoadingHook;
 import org.eclipse.osgi.baseadaptor.loader.BaseClassLoader;
 import org.eclipse.osgi.baseadaptor.loader.ClasspathEntry;
 import org.eclipse.osgi.baseadaptor.loader.ClasspathManager;
-import org.eclipse.osgi.framework.adaptor.BundleData;
 import org.eclipse.osgi.framework.adaptor.BundleProtectionDomain;
 import org.eclipse.osgi.framework.adaptor.ClassLoaderDelegate;
 import org.eclipse.osgi.framework.log.FrameworkLog;
@@ -83,13 +74,14 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.FrameworkEvent;
+import org.osgi.framework.FrameworkListener;
 
 /**
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
 public final class NetbinoxHooks implements HookConfigurator, ClassLoadingHook,
-BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
+BundleFileFactoryHook, FrameworkLog, FrameworkListener, AdaptorHook, LookupListener {
     private static Map<Bundle,ClassLoader> map;
     private static NetigsoArchive archive;
     private static Lookup.Result<HookConfigurator> configurators;
@@ -130,113 +122,13 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         final String pref = "netigso://"; // NOI18N
         ClassLoader ml = null;
         if (loc != null && loc.startsWith(pref)) {
-            String cnb = loc.substring(pref.length());
             ml = classLoaderForBundle(bd);
         }
         if (ml == null) {
             return new NetbinoxLoader(parent, delegate, bpd, bd, classpath);
+        } else {
+            return new NetigsoBaseLoader(ml, delegate, bpd, bd);
         }
-        class Del extends ClassLoader implements BaseClassLoader {
-            public Del(ClassLoader parent) {
-                super(parent);
-            }
-
-            @Override
-            public ProtectionDomain getDomain() {
-                return bpd;
-            }
-
-            @Override
-            public ClasspathEntry createClassPathEntry(BundleFile bf, ProtectionDomain pd) {
-                return null;
-            }
-
-            @Override
-            public Class defineClass(String string, byte[] bytes, ClasspathEntry ce, BundleEntry be) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public Class publicFindLoaded(String name) {
-                return super.findLoadedClass(name);
-            }
-
-            @Override
-            public Object publicGetPackage(String name) {
-                return super.getPackage(name);
-            }
-
-            @Override
-            public Object publicDefinePackage(String s1, String s2, String s3, String s4, String s5, String s6, String s7, URL url) {
-                return super.definePackage(s1, s2, s3, s4, s5, s6, s7, url);
-            }
-
-            @Override
-            public ClasspathManager getClasspathManager() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            @Override
-            public void initialize() {
-            }
-
-            @Override
-            public URL findLocalResource(String name) {
-                return null;
-                /*
-                ProxyClassLoader pcl = (ProxyClassLoader)getParent();
-                return pcl.findResource(name);
-                 *
-                 */
-            }
-
-            @Override
-            public Enumeration<URL> findLocalResources(String name) {
-                return null;
-                /*
-                ProxyClassLoader pcl = (ProxyClassLoader)getParent();
-                try {
-                    return pcl.findResources(name);
-                } catch (IOException ex) {
-                    return Enumerations.empty();
-                }
-                 */
-            }
-
-            @Override
-            protected URL findResource(String name) {
-                return findLocalResource(name);
-            }
-
-            @Override
-            protected Enumeration<URL> findResources(String name) throws IOException {
-                return findLocalResources(name);
-            }
-
-            @Override
-            public Class findLocalClass(String name) throws ClassNotFoundException {
-                return getParent().loadClass(name);
-            }
-
-            @Override
-            public void close() {
-            }
-
-            @Override
-            public void attachFragment(BundleData bd, ProtectionDomain pd, String[] strings) {
-            }
-
-            @Override
-            public ClassLoaderDelegate getDelegate() {
-                return delegate;
-            }
-
-            @Override
-            public Bundle getBundle() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        }
-        return new Del(ml);
     }
 
     @Override
@@ -259,6 +151,13 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
         return null;
     }
 
+    @Override
+    public void frameworkEvent(FrameworkEvent ev) {
+		if (ev.getType() == FrameworkEvent.ERROR) {
+            log(ev);
+		}
+    }
+    
     @Override
     public void log(FrameworkEvent fe) {
         Level l = Level.FINE;
@@ -310,10 +209,12 @@ BundleFileFactoryHook, FrameworkLog, AdaptorHook, LookupListener {
 
     @Override
     public void frameworkStart(BundleContext bc) throws BundleException {
+        bc.addFrameworkListener(this);
     }
 
     @Override
     public void frameworkStop(BundleContext bc) throws BundleException {
+        bc.removeFrameworkListener(this);
     }
 
     @Override

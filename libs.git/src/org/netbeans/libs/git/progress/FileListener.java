@@ -43,11 +43,24 @@
 package org.netbeans.libs.git.progress;
 
 import java.io.File;
+import org.netbeans.libs.git.GitClient;
 
 /**
- *
- * @author ondra
+ * The listener interface for receiving notifications triggered when a file is 
+ * processed by a git command. 
+ * The class that is interested in processing such a notification
+ * implements this interface and registers itself with an instance 
+ * of {@link GitClient}. 
+ * When a file is processed by a git command, that object's 
+ * <code>notifyFile</code> method is invoked.
+ * 
+ * @see NotificationListener
  */
 public interface FileListener extends NotificationListener {
+    /**
+     * Invoked when a file is processed by a git command.
+     * @param file processed file
+     * @param relativePathToRoot relative path of the <code>file</code> to the root of its repository, without the leading '/'.
+     */
     public void notifyFile (File file, String relativePathToRoot);
 }

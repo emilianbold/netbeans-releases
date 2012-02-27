@@ -48,11 +48,12 @@ import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import org.netbeans.modules.maven.indexer.spi.ui.ArtifactViewerPanelProvider;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
 /**
@@ -60,33 +61,40 @@ import org.openide.windows.TopComponent;
  * @author mkleint
  */
 public class BasicArtifactMD implements MultiViewDescription, Serializable {
-    private Lookup lookup;
+    private final Lookup lookup;
 
     BasicArtifactMD(Lookup lkp) {
         lookup = lkp;
     }
 
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
     }
 
+    @Messages("TAB_Basic=Basic")
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(BasicArtifactMD.class, "TAB_Basic");
+        return TAB_Basic();
     }
 
+    @Override
     public Image getIcon() {
         return ImageUtilities.loadImage(NodeUtils.ICON_DEPENDENCY_JAR, true);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }
 
+    @Override
     public String preferredID() {
         return ArtifactViewer.HINT_ARTIFACT;
     }
 
+    @Override
     public MultiViewElement createElement() {
         return new BasicArtifactPanel(lookup);
     }
@@ -94,6 +102,7 @@ public class BasicArtifactMD implements MultiViewDescription, Serializable {
     @org.openide.util.lookup.ServiceProvider(service=ArtifactViewerPanelProvider.class, position=100)
     public static class Factory implements ArtifactViewerPanelProvider {
 
+        @Override
         public MultiViewDescription createPanel(Lookup content) {
             return new BasicArtifactMD(content);
         }

@@ -137,7 +137,7 @@ public class VersioningAnnotationProvider {
 
                 // check if there is at least ine file managed by local hisotry
                 VersioningSystem localHistory = VersioningManager.getInstance().getLocalHistory(file, !fo.isFolder());
-                if(localHistoryAction == null && localHistory != null && localHistory.getAnnotator() != null) {
+                if(localHistoryAction == null && localHistory != null && localHistory.getVCSAnnotator() != null) {
                     localHistoryAction = SystemAction.get(LocalHistoryActions.class);
                     localHistoryAction.setVersioningSystem(localHistory);
                     actions.add(localHistoryAction);
@@ -164,7 +164,7 @@ public class VersioningAnnotationProvider {
         
         VCSAnnotator an = null;
         if (vs != null) {
-            an = vs.getAnnotator();
+            an = vs.getVCSAnnotator();
         }
         if (an != null) {
             VersioningSystemActions action = SystemAction.get(VersioningSystemActions.class);
@@ -264,14 +264,14 @@ public class VersioningAnnotationProvider {
             private boolean popupContructed;
 
             public VersioningSystemMenuItem() {
-                Mnemonics.setLocalizedText(this, system.getDisplayName());
+                Mnemonics.setLocalizedText(this, Utils.getSystemMenuName(system));
             }
 
             @Override
             public void setSelected(boolean selected) {
                 if (selected && popupContructed == false) {
                     // lazy submenu construction
-                    Action [] actions = system.getAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
+                    Action [] actions = system.getVCSAnnotator().getActions(context, VCSAnnotator.ActionDestination.PopupMenu);
                     for (int i = 0; i < actions.length; i++) {
                         Action action = actions[i];
                         if (action == null) {
@@ -475,7 +475,7 @@ public class VersioningAnnotationProvider {
         FileObject fo = null;
         for (VCSFileProxy parent = file; parent != null && fo == null; parent = parent.getParentFile()) {
             // find the fileobject
-            fo = file.toFileObject();
+            fo = parent.toFileObject();
         }
         return fo;
     }
@@ -658,7 +658,7 @@ public class VersioningAnnotationProvider {
                 if (vs == null) {
                     return null;
                 }
-                an = vs.getAnnotator();
+                an = vs.getVCSAnnotator();
                 if (an == null) {
                     return null;
                 }

@@ -52,18 +52,7 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    <folder name="OptionsDialog">
-        <folder name="Advanced">
-            <file name="org-netbeans-modules-javacard-options-javacardAdvancedOption.instance">
-                <attr name="controller" newvalue="org.netbeans.modules.javacard.options.JavacardOptionsPanelController"/>
-                <attr name="displayName" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_DisplayName_javacard"/>
-                <attr name="instanceCreate" methodvalue="org.netbeans.spi.options.AdvancedOption.createSubCategory"/>
-                <attr name="keywords" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_Keywords_javacard"/>
-                <attr name="keywordsCategory" stringvalue="Advanced/null"/>
-                <attr name="toolTip" bundlevalue="org.netbeans.modules.javacard.options.Bundle#AdvancedOption_Tooltip_javacard"/>
-            </file>
-        </folder>
-    </folder>
+    
     <folder name="Templates">
         <folder name="Project">
             <!-- The main project types of Java Card 3.0 -->

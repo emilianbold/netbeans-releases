@@ -134,6 +134,18 @@ made subject to such option by the copyright holder.
         </patternset>
     </target>
 
+    <target name="-javac-init-nbjdk" depends="-jdk-preinit" if="nbjdk.valid">
+        <macrodef name="custom-javac-presetdef">
+            <attribute name="javacval"/>
+            <sequential>
+                <presetdef name="custom-javac">
+                    <custom-javac fork="yes" executable="@{javacval}"/>
+                </presetdef>
+            </sequential>
+        </macrodef>
+        <custom-javac-presetdef javacval="${nbjdk.javac}"/>
+    </target>
+
     <target name="-javac-init-bootclasspath-prepend" depends="build-init" if="bootclasspath.prepend">
         <presetdef name="nb-javac">
             <custom-javac>
@@ -155,7 +167,7 @@ made subject to such option by the copyright holder.
         </presetdef>
     </target>
 
-    <target name="-javac-init" depends="build-init,-javac-init-bootclasspath-prepend,-javac-init-no-bootclasspath-prepend">
+    <target name="-javac-init" depends="build-init,-javac-init-nbjdk,-javac-init-bootclasspath-prepend,-javac-init-no-bootclasspath-prepend">
         <path id="cp">
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>

@@ -65,6 +65,8 @@ import org.glassfish.embeddable.archive.ScatteredArchive;
  * Once the user finishes accessing the application, the application is
  * undeployed and embedded GlassFish is stopped.
  * 
+ * @author Bhavanishankar Sapaliga
+ * @author Sakshi Jain 
  * @author Bhakti Mehta
  */
 public class EmbeddedTelephoneDirectory {

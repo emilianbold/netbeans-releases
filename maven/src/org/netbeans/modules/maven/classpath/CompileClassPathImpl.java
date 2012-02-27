@@ -61,6 +61,7 @@ class CompileClassPathImpl extends AbstractProjectClassPathImpl {
         super(proj);
     }
     
+    @Override
     URI[] createPath() {
         List<URI> lst = new ArrayList<URI>();
         // according the current 2.1 sources this is almost the same as getCompileClasspath()

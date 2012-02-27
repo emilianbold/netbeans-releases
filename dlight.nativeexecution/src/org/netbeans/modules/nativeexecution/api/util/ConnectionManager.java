@@ -133,7 +133,7 @@ public final class ConnectionManager {
                 }
             });
         }
-        restoreRecentConnectionsList();
+        restoreRecentConnectionsList();        
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -315,6 +315,9 @@ public final class ConnectionManager {
                         // Note that AUTH_FAIL is generated not only on bad password,
                         // but on socket timeout as well. These cases are
                         // indistinguishable based on information from JSch.
+                        if (problem.cause instanceof Error) {
+                            log.log(Level.INFO, "Error when connecting " + env, problem.cause); //NOI18N
+                        }
                         throw new IOException(env.getDisplayName() + ": " + problem.type.name(), problem.cause); // NOI18N
                 }
             }
@@ -333,6 +336,7 @@ public final class ConnectionManager {
     }
 
     public static ConnectionManager getInstance() {
+        HostInfoCache.initializeIfNeeded();
         return instance;
     }
 

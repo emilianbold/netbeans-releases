@@ -81,6 +81,14 @@ class MetalEditorTabCellRenderer extends AbstractTabCellRenderer {
         return d;
     }
 
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
+    }
+
     private static class MetalTabPainter implements TabPainter {
         public Insets getBorderInsets(Component c) {
             MetalEditorTabCellRenderer mtr = (MetalEditorTabCellRenderer) c;

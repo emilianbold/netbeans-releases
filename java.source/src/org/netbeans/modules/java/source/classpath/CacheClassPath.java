@@ -50,16 +50,17 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -75,24 +76,34 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener {
+public class CacheClassPath implements ClassPathImplementation, PropertyChangeListener, ClassIndexManagerListener {
     
     public static final boolean KEEP_JARS = Boolean.getBoolean("CacheClassPath.keepJars");     //NOI18N
     private static final Logger LOG = Logger.getLogger(CacheClassPath.class.getName());
     
-    private final ClassPath cp;    
+    private final ClassPath cp;
     private final boolean translate;
+    private final boolean scan;
     private final PropertyChangeSupport listeners;
+    //@GuardedBy("this")
     private List<PathResourceImplementation> cache;
+    //@GuardedBy("this")
+    private Set<URL> expectedSourceRoots;
+    //@GuardedBy("this")
     private long eventId;
-    
+
     /** Creates a new instance of CacheClassPath */
     @SuppressWarnings("LeakingThisInConstructor")
-    private CacheClassPath (ClassPath cp, boolean translate) {
+    private CacheClassPath (ClassPath cp, boolean translate, boolean scan) {
         this.listeners = new PropertyChangeSupport (this);
         this.cp = cp;
         this.translate = translate;
-        this.cp.addPropertyChangeListener (WeakListeners.propertyChange(this,cp));
+        this.scan = scan;
+        if (!scan) {
+            this.cp.addPropertyChangeListener (WeakListeners.propertyChange(this,cp));
+            final ClassIndexManager cim = ClassIndexManager.getDefault();
+            cim.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, cim));
+        }
     }
 
     @Override
@@ -117,6 +128,32 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     }
 
     @Override
+    public void classIndexAdded(ClassIndexManagerEvent event) {
+        final Set<? extends URL> added = event.getRoots();
+        boolean fire = false;
+        synchronized (this) {
+            if (expectedSourceRoots != null) {
+                for (URL ar : added) {
+                    if (expectedSourceRoots.contains(ar)) {
+                        this.cache = null;
+                        this.eventId++;
+                        fire = true;
+                        break;
+                    }
+                }
+            }
+        }
+        if (fire) {
+            this.listeners.firePropertyChange(PROP_RESOURCES,null,null);
+        }
+    }
+
+    @Override
+    public void classIndexRemoved(@NonNull final ClassIndexManagerEvent event) {
+        //Pass: Not needed, handled by ClassPathChanges
+    }
+
+    @Override
     public List<? extends PathResourceImplementation> getResources() {
         long currentEventId;
         synchronized (this) {
@@ -128,24 +165,29 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
         final List<ClassPath.Entry> entries = this.cp.entries();
         final Set<PathResourceImplementation> _cache = new LinkedHashSet<PathResourceImplementation> ();
         final PathRegistry preg = PathRegistry.getDefault();
+        final Set<URL> unInitializedSourceRoots = new HashSet<URL>();
         for (ClassPath.Entry entry : entries) {
             URL url = entry.getURL();
             URL[] sourceUrls;
             if (translate) {
                 sourceUrls = preg.sourceForBinaryQuery(url, this.cp, true);
             }
-            else {        
+            else {
                 sourceUrls = new URL[] {url};
             }
             if (sourceUrls != null) {
                 for (URL sourceUrl : sourceUrls) {
-                    try {
-                        File cacheFolder = JavaIndex.getClassFolder(sourceUrl);
-                        URL cacheUrl = FileUtil.urlForArchiveOrDir(cacheFolder);
-                        _cache.add(ClassPathSupport.createResource(cacheUrl));
-                    } catch (IOException ioe) {
-                        if (LOG.isLoggable(Level.SEVERE))
-                            LOG.log(Level.SEVERE, ioe.getMessage(), ioe);
+                    if (scan || JavaIndex.hasSourceCache(sourceUrl, false)) {
+                        try {
+                            File cacheFolder = JavaIndex.getClassFolder(sourceUrl);
+                            URL cacheUrl = FileUtil.urlForArchiveOrDir(cacheFolder);
+                            _cache.add(ClassPathSupport.createResource(cacheUrl));
+                        } catch (IOException ioe) {
+                            if (LOG.isLoggable(Level.SEVERE))
+                                LOG.log(Level.SEVERE, ioe.getMessage(), ioe);
+                        }
+                    } else {
+                        unInitializedSourceRoots.add(sourceUrl);
                     }
                 }
                 if (KEEP_JARS && translate) {
@@ -174,13 +216,14 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
                     }
                 }
                 _cache.add(new CachingPathResourceImpl(url));
-                _cache.add (ClassPathSupport.createResource(url));                
+                _cache.add (ClassPathSupport.createResource(url));
             }
         }
         List<? extends PathResourceImplementation> res;
         synchronized (this) {
-            if (currentEventId == this.eventId) {                
+            if (currentEventId == this.eventId) {
                 this.cache = new ArrayList<PathResourceImplementation>(_cache);
+                expectedSourceRoots = unInitializedSourceRoots.isEmpty() ? null : Collections.unmodifiableSet(unInitializedSourceRoots);
                 res = this.cache;
             }
             else {
@@ -192,19 +235,19 @@ public class CacheClassPath implements ClassPathImplementation, PropertyChangeLi
     }
     
     
-    public static ClassPath forClassPath (final ClassPath cp) {
+    public static ClassPath forClassPath (final ClassPath cp, final boolean ru) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true));
+        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true,ru));
     }
     
-    public static ClassPath forBootPath (final ClassPath cp) {
+    public static ClassPath forBootPath (final ClassPath cp, final boolean ru) {
         assert cp != null;
-        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true));
+        return ClassPathFactory.createClassPath(new CacheClassPath(cp,true, ru));
     }
     
-    public static ClassPath forSourcePath (final ClassPath sourcePath) {
+    public static ClassPath forSourcePath (final ClassPath sourcePath, final boolean ru) {
         assert sourcePath != null;
-        return ClassPathFactory.createClassPath(new CacheClassPath(sourcePath,false));
+        return ClassPathFactory.createClassPath(new CacheClassPath(sourcePath,false, ru));
     }
 
     private static final class CachingPathResourceImpl implements PathResourceImplementation {

@@ -367,11 +367,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         targetLabel.setLabelFor(targetTextField);
         Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetLabel.text")); // NOI18N
-        targetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetButton.text")); // NOI18N
         targetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -384,11 +379,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         configLabel.setLabelFor(configTextField);
         Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configLabel.text")); // NOI18N
-        configButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(configButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configButton.text")); // NOI18N
         configButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
