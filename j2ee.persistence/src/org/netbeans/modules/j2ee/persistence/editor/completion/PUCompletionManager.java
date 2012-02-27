@@ -90,6 +90,9 @@ public final class PUCompletionManager {
         
         Completor.ProviderCompletor providerCompletor = new Completor.ProviderCompletor();
         registerCompletor(PersistenceCfgXmlConstants.PROVIDER, null, providerCompletor);
+        
+        Completor.ExUnlistedClassesCompletor exClassesCompletor = new Completor.ExUnlistedClassesCompletor();
+        registerCompletor(PersistenceCfgXmlConstants.EXCLUDE_UNLISTED_CLASSES, null, exClassesCompletor);
 
         Completor.JtaDatasourceCompletor jtaDatasourceCompletor = new Completor.JtaDatasourceCompletor();
         registerCompletor(PersistenceCfgXmlConstants.JTA_DATA_SOURCE, null, jtaDatasourceCompletor);

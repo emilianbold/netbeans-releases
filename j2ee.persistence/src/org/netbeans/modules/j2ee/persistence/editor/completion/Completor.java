@@ -80,6 +80,7 @@ import org.w3c.dom.Node;
  */
 public abstract class Completor {
 
+
     static class JtaDatasourceCompletor extends Completor {
 
         public JtaDatasourceCompletor() {
@@ -92,9 +93,6 @@ public abstract class Completor {
     }
 
     static class ProviderCompletor extends Completor {
-
-        public ProviderCompletor() {
-        }
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
@@ -111,7 +109,6 @@ public abstract class Completor {
                 }
             }
 
-
             for (String cl: providers) {
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             cl);
@@ -122,6 +119,28 @@ public abstract class Completor {
             return results;
         }
     }
+    
+
+    static class ExUnlistedClassesCompletor  extends Completor {
+        
+        @Override
+        public List<JPACompletionItem> doCompletion(CompletionContext context) {
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            for (String val : new String[]{"true", "false"}) {//NOI18N
+                if(val.toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                    JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            val);
+                    results.add(item);
+                }
+            }
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
+        }
+    }    
+    
+    
     private int anchorOffset = -1;
 
     public abstract List<JPACompletionItem> doCompletion(CompletionContext context);
