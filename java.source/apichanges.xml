@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="class-members-order">
+             <api name="general"/>
+             <summary>Added several methods to <code>CodeStyle</code> supporting customization of the generated class members order and other minor formatting enhancements.</summary>
+             <version major="0" minor="96"/>
+             <date day="21" month="2" year="2012"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>CodeStyle.getClassMemberGroups</code>, <code>CodeStyle.getClassMemberInsertionPoint</code>,
+                 to support customization of the generated class members order, and <code>CodeStyle.wrapAfterDotInChainedMethodCalls</code>,
+                 <code>CodeStyle.getBlankLinesAfterAnonymousClassHeader</code>, <code>CodeStyle.spaceAroundAnnotationValueAssignOps</code>
+                 to support minor formatting enhancements.
+             </description>
+             <issue number="208503"/>
+        </change>
         <change id="SourceUtils-backgroundScan">
              <api name="general"/>
              <summary>Added <code>SourceUtils.waitUserActionTask</code>.</summary>

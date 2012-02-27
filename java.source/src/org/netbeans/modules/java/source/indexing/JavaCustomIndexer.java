@@ -86,7 +86,7 @@ import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
 import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
+import org.netbeans.modules.java.source.parsing.PrefetchableJavaFileObject;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.usages.*;
@@ -536,7 +536,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                         File f = new File (aptFolder, fileName);
                         if (f.exists() && FileObjects.JAVA.equals(FileObjects.getExtension(f.getName()))) {
                             Indexable i = accessor.create(new FileObjectIndexable(root, fileName));
-                            InferableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
+                            PrefetchableJavaFileObject ffo = FileObjects.fileFileObject(f, aptFolder, null, javaContext.encoding);
                             ret |= aptGenerated.add(new CompileTuple(ffo, i, false, true, true));
                         }
                     }
@@ -856,6 +856,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     Exceptions.printStackTrace(ioe);
                 }
             }
+            
+            JavaIndexEvents.getDefault().fireIndexUpdated(context.getRootURI());
         }
         
         @Override
@@ -970,18 +972,18 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     public static final class CompileTuple {
-        public final InferableJavaFileObject jfo;
+        public final PrefetchableJavaFileObject jfo;
         public final Indexable indexable;
         public final boolean virtual;
         public final boolean index;
         public final boolean aptGenerated;
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable,
                 final boolean virtual, final boolean index) {
             this(jfo, indexable, virtual, index, false);
         }
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable,
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable,
                 final boolean virtual, final boolean index, final boolean aptGenerated) {
             this.jfo = jfo;
             this.indexable = indexable;
@@ -990,7 +992,7 @@ public class JavaCustomIndexer extends CustomIndexer {
             this.aptGenerated = aptGenerated;
         }
 
-        public CompileTuple (final InferableJavaFileObject jfo, final Indexable indexable) {
+        public CompileTuple (final PrefetchableJavaFileObject jfo, final Indexable indexable) {
             this(jfo,indexable,false, true);
         }
     }

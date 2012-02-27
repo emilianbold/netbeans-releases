@@ -342,8 +342,10 @@ public class I18nServiceImpl implements I18nService {
 
     /**
      * Returns all currently available locales for given bundle in two arrays
-     * os strings. The first one containes locale suffixes, the second one
+     * of strings. The first one containes locale suffixes, the second one
      * corresponding display names for the user (should be unique).
+     * Returning null means that working with design locales is not supported
+     * by this service.
      */
     public String[][] getAvailableLocales(FileObject srcFile, String bundleName) {
         PropertiesDataObject dobj = null;
@@ -353,8 +355,9 @@ public class I18nServiceImpl implements I18nService {
         catch (IOException ex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
         }
-        if (dobj == null)
-            return null;
+        if (dobj == null) {
+            return new String[][] {};
+        }
 
         List list = new ArrayList();
         list.add(dobj.getPrimaryEntry());

@@ -139,4 +139,14 @@ public abstract class ModelImplBaseTestCase extends ModelBasedTestCase {
         return null;
     }
 
+    public static String convertToModelImplDataDir(File curDir, String moduleToReplace) {
+        assert curDir != null;
+        String dataPath = curDir.getAbsolutePath().replaceAll("/" + moduleToReplace + "/", "/modelimpl/").replaceAll("\\\\" + moduleToReplace + "\\\\", "\\modelimpl\\"); //NOI18N
+        dataPath = dataPath.replaceAll("/cnd." + moduleToReplace + "/", "/cnd.modelimpl/").replaceAll("\\\\cnd." + moduleToReplace + "\\\\", "\\cnd.modelimpl\\"); //NOI18N
+        return dataPath;
+    }
+    
+    protected String convertToModelImplDataDir(String moduleToReplace) {
+        return convertToModelImplDataDir(getDataDir(), moduleToReplace);
+    }    
 }

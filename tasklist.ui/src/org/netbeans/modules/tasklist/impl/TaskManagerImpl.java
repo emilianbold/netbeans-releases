@@ -53,6 +53,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,7 @@ import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -241,6 +243,10 @@ public class TaskManagerImpl extends TaskManager {
     boolean isObserved() {
         return !Accessor.getEmptyScope().equals( getScope() );
     }
+
+    boolean isCurrentEditorScope(){
+        return scope instanceof CurrentEditorScanningScope;
+    }
     
     public TaskScanningScope getScope() {
         return scope;
@@ -346,7 +352,12 @@ public class TaskManagerImpl extends TaskManager {
                         if( getFilter().isEnabled( scanner ) )
                             scanner.setScope( scopeToRefresh, Accessor.createCallback( this, scanner ) );
                     }
-                    startLoading();
+                    boolean dirtyCache = NbPreferences.forModule(TaskManagerImpl.class).getBoolean("dirtyCache", false);
+                    if (dirtyCache && isCurrentEditorScope()) {
+                        cacheCurrentEditorFile();
+                    } else {
+                        startLoading();
+                    }
                 }
             }
         }
@@ -466,6 +477,26 @@ public class TaskManagerImpl extends TaskManager {
                     }
                 }
             });            
+        }
+    }
+
+    private void cacheCurrentEditorFile() {
+        try {
+            Iterator<FileObject> it = scope.iterator();
+            FileObject fo;
+            if (it.hasNext()) {
+                fo = it.next();
+            } else {
+                return;
+            }
+            ArrayList<URL> toRefresh = new ArrayList<URL>(1);
+            toRefresh.add(fo.getURL());
+            Collection<FileObject> roots = QuerySupport.findRoots(fo, null, null, null);
+            for (FileObject root : roots) {
+                IndexingManager.getDefault().refreshIndex(root.getURL(), toRefresh);
+            }
+        } catch (FileStateInvalidException ex) {
+            getLogger().log(Level.INFO, "Error while refreshing files.", ex);
         }
     }
 }

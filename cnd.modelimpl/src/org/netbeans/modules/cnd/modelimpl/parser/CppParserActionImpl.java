@@ -322,11 +322,11 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override
-    public void declaration(Token token) {
+    public void simple_declaration(Token token) {
     }
 
     @Override
-    public void end_declaration(Token token) {
+    public void end_simple_declaration(Token token) {
     }
     
     @Override
@@ -339,6 +339,26 @@ public class CppParserActionImpl implements CppParserActionEx {
         globalSymTab.pop();
     }
 
+    @Override
+    public void decl_specifier(int kind, Token token) {
+    }
+
+    @Override
+    public void simple_type_specifier(Token token) {
+    }
+
+    @Override
+    public void nested_name_specifier(Token token) {
+    }
+
+    @Override
+    public void simple_template_id_nocheck(Token token) {
+    }
+
+    @Override
+    public void simple_template_id(Token token) {
+    }    
+    
     @Override
     public void id(Token token) {
         APTToken aToken = (APTToken) token;
@@ -366,7 +386,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         
     }
-
+    
     @Override
     public boolean isType(String name) {
         SymTabEntry entry = globalSymTab.lookup(CharSequences.create(name));

@@ -45,6 +45,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -295,10 +296,7 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
                 LOG.log(Level.FINE, "Starting bundle {0}: {1}", new Object[] { m.getCodeNameBase(), start });
                 if (start) {
                     b.start();
-                    if (
-                        findCoveredPkgs() &&
-                        b.getState() == Bundle.INSTALLED && isRealBundle(b)
-                    ) {
+                    if (findCoveredPkgs() && !isResolved(b) && isRealBundle(b)) {
                         throw new IOException("Cannot start " + m.getCodeName() + " state remains INSTALLED after start()"); // NOI18N
                     }
                 }
@@ -312,6 +310,14 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
         } catch (BundleException ex) {
             throw new IOException("Cannot start " + jar, ex);
         }
+    }
+    private static boolean isResolved(Bundle b) {
+        if (b.getState() == Bundle.INSTALLED) {
+            // try to ask for a known resource which is known to resolve 
+            // the bundle
+            b.findEntries("META-INF", "MANIFEST.MF", false); // NOI18N
+        }
+        return b.getState() != Bundle.INSTALLED;
     }
 
     private static boolean isRealBundle(Bundle b) {
@@ -440,7 +446,9 @@ public final class Netigso extends NetigsoFramework implements Stamps.Updater {
             } else if (symbolicName != null) { // NOI18N
                 if (original != null) {
                     LOG.log(Level.FINE, "Updating bundle {0}", original.getLocation());
-                    original.update();
+                    FileInputStream is = new FileInputStream(m.getJarFile());
+                    original.update(is);
+                    is.close();
                     b = original;
                 } else {
                     BundleContext bc = framework.getBundleContext();

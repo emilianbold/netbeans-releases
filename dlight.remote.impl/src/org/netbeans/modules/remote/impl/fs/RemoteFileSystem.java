@@ -64,8 +64,11 @@ import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.netbeans.modules.remote.spi.FileSystemCacheProvider;
 import org.netbeans.modules.remote.impl.RemoteLogger;
@@ -114,6 +117,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
     private final List<FileSystemProblemListener> problemListeners =
             new ArrayList<FileSystemProblemListener>();
     transient private final StatusImpl status = new StatusImpl();
+    private final LinkedHashSet<String> deleteOnExitFiles = new LinkedHashSet<String>();
 
     /*package*/ RemoteFileSystem(ExecutionEnvironment execEnv) throws IOException {
         RemoteLogger.assertTrue(execEnv.isRemote());
@@ -261,6 +265,48 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         } else {
             return getRoot().getFileObject(name);
         }
+    }
+
+    @Override
+    public FileObject getTempFolder() throws IOException {
+        try {
+            String tmpName = HostInfoUtils.getHostInfo(execEnv).getTempDir();
+            RemoteFileObject tmpDir = findResource(tmpName);
+            if (tmpDir != null && tmpDir.isFolder() && tmpDir.isValid()) {
+                return tmpDir;
+            }
+        } catch (CancellationException ex) {
+            //
+        }
+        throw new IOException("Cannot find temporary folder"); // NOI18N
+    }
+    
+    @Override
+    public FileObject createTempFile(FileObject parent, String prefix, String suffix, boolean deleteOnExit) throws IOException {
+        if (parent.isFolder() && parent.isValid()) {
+            while(true) {
+                File tmpFile = File.createTempFile(prefix, suffix);
+                String tmpName = tmpFile.getName();
+                tmpFile.delete();
+                try {
+                    FileObject fo = parent.createData(tmpName);
+                    if (fo != null && fo.isData() && fo.isValid()) {
+                        if (deleteOnExit) {
+                            addDeleteOnExit(fo.getPath());
+                        }
+                        return fo;
+                    }
+                    break;   
+                } catch (IOException ex) {
+                    FileObject test = parent.getFileObject(tmpName);
+                    if (test != null) {
+                        continue;
+                    }
+                    throw ex;
+                }
+            }
+        }
+        throw new IOException("Cannot create temporary file"); // NOI18N
     }
     
     /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
@@ -511,10 +557,49 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             }
         }
     }
-    
+
+    @Override
+    public final SystemAction[] getActions(final Set<FileObject> foSet) {
+        SystemAction[] some = status.getActions (foSet);
+        if (some != null) {
+            return some;
+        }        
+        return new SystemAction[] {};
+    }
+
     @Override
     public Status getStatus() {
         return status;
+    }
+    
+    private void addDeleteOnExit(String path) {
+        synchronized(deleteOnExitFiles) {
+            if (deleteOnExitFiles.isEmpty()) {
+                Runtime.getRuntime().addShutdownHook(new Thread() {
+
+                    @Override
+                    public void run() {
+                        releaseResources();
+                    }
+
+                });
+            }
+            deleteOnExitFiles.add(path);
+        }
+    }
+    
+    private void releaseResources() {
+    	ArrayList<String> toBeDeleted;
+        synchronized(deleteOnExitFiles) {
+        	toBeDeleted = new ArrayList<String>(deleteOnExitFiles);
+        }
+    	Collections.reverse(toBeDeleted);
+        for (String filename : toBeDeleted) {
+            if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                 return;
+            }
+            CommonTasksSupport.rmFile(execEnv, filename, null);
+        }
     }
 
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {

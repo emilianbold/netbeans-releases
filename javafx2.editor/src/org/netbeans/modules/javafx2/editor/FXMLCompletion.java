@@ -55,6 +55,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -83,10 +84,11 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
+@MimeRegistration(mimeType=JavaFXEditorUtils.MIME_TYPE, service=CompletionProvider.class)
 public class FXMLCompletion implements CompletionProvider {
     
-    private static final String MIME_TYPE = "text/x-java";
-    private static final String FX_BASE_CLASS = "javafx.scene.Node";
+    private static final String MIME_TYPE = "text/x-java"; // NOI18N
+    private static final String FX_BASE_CLASS = "javafx.scene.Node"; // NOI18N
     
     /**
      * Creates a new instance of WordCompletion
@@ -130,7 +132,7 @@ public class FXMLCompletion implements CompletionProvider {
                         if (ts.moveNext()) {
                             Token<?> t = ts.token();
                             List<DocumentElement> path = getPathToRoot(document, caretOffset);
-                            String prefix = "";
+                            String prefix = ""; // NOI18N
   //                        System.out.println("TOKEN ID= " + t.id() + " TEXT: " + t.text()); // TODO: remove me
                             if (t.id() == XMLTokenId.TAG) {
                                 if (ts.offset() < caretOffset) {

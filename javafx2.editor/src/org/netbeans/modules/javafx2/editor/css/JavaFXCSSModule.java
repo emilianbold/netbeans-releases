@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.javafx2.editor.css;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
@@ -59,12 +56,10 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Anton Chechel <anton.chechel@oracle.com>
  * @version 1.0
  */
-// XXX uncomment when properties will be parsable
-// TODO acceptors?
-//@ServiceProvider(service = CssEditorModule.class)
+@ServiceProvider(service = CssEditorModule.class)
 public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
-    private static final String NAMESPACE_KEYWORD = "@namespace"; // NOI18N
+//    private static final String NAMESPACE_KEYWORD = "@namespace"; // NOI18N
     static ElementKind JFX_CSS_ELEMENT_KIND = ElementKind.GLOBAL;
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
@@ -157,13 +152,13 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 //        return JavaFXEditorUtils.filterCompletionProposals(proposals, context.getPrefix(), true);
 //    }
     
-    private static List<CompletionProposal> getJavaFXCSSCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
-            proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-        }
-        return proposals;
-    }
+//    private static List<CompletionProposal> getJavaFXCSSCompletionProposals(CompletionContext context) {
+//        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+//        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
+//            proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
+//        }
+//        return proposals;
+//    }
 
     @Override
     public String getName() {

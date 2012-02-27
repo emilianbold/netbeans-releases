@@ -153,7 +153,7 @@ public class CanonicalTestCase extends RemoteFileTestBase {
             final FileObject[] canonical = new FileObject[3];
             final CountDownLatch latch = new CountDownLatch(1);
             final String[] operations = new String[4];
-            final AtomicReference<Integer> idx = new AtomicReference(1);
+            final AtomicReference<Integer> idx = new AtomicReference(Integer.valueOf(1));
             
             Runnable r = new Runnable() {
                 public void run() {

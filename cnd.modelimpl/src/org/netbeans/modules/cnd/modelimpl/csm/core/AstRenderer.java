@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
 import java.util.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -71,22 +72,28 @@ import org.openide.util.Exceptions;
 public class AstRenderer {
 
     private final FileImpl file;
+    private final FileImplContent fileContent;
     private boolean registeredFakeInclude = false;
     private Map<Integer, CsmObject> objects;
 
-    public AstRenderer(FileImpl fileImpl, Map<Integer, CsmObject> objects) {
+    public AstRenderer(FileImpl fileImpl, FileImplContent fileContent, Map<Integer, CsmObject> objects) {
         this.file = fileImpl;
+        this.fileContent = fileContent;
         this.objects = objects;
     }
 
     public AstRenderer(FileImpl fileImpl) {
-        this(fileImpl, null);
+        this(fileImpl, null, null);
     }
     
     protected CsmFile getContainingFile() {
         return file;
     }
 
+    protected FileImplContent getFileContent() {
+        return fileContent;
+    }
+    
     protected boolean hasRegisteredFakeIncludes() {
         return registeredFakeInclude;
     }
@@ -121,7 +128,7 @@ public class AstRenderer {
                         CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
                         if(o instanceof ClassImpl) {
                             ClassImpl cls = (ClassImpl)o;
-                            cls.render(token, isRenderingLocalContext());
+                            cls.render(token, getContainingFile(), fileContent, isRenderingLocalContext());
                             //container.addDeclaration(cls);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -133,8 +140,8 @@ public class AstRenderer {
                     }                    
                     if(planB) {
                         ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                            ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container) :
-                                            ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                            ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container) :
+                                            ClassImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
                         container.addDeclaration(cls);
                         addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                         renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -242,7 +249,7 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if (isClassSpecialization(token)) {
-                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
                         container.addDeclaration(spec);
                         addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
                     } else {
@@ -250,7 +257,7 @@ public class AstRenderer {
                             if (isMemberDefinition(token)) {
                                 if(!isFunctionSpecialization(token)) {
                                     // this is a template method specialization declaration (without a definition)
-                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
                                     container.addDeclaration(spec);
                                     MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, file, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
                                     spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
@@ -298,7 +305,7 @@ public class AstRenderer {
                     try {
                         if (isMemberDefinition(token)) {
                             if(!isFunctionSpecialization(token)) {
-                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext(), container);
+                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
                                 container.addDeclaration(spec);
                             }
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, currentNamespace, !isRenderingLocalContext(), objects);
@@ -679,7 +686,7 @@ public class AstRenderer {
 
     protected void checkInnerIncludes(CsmOffsetableDeclaration inclContainer, Collection<? extends CsmObject> containerInnerObjects) {
         // Check for include directives in class
-        if (!isRenderingLocalContext()) {
+        if (fileContent != null && !isRenderingLocalContext()) {
             CsmFile curFile = getContainingFile();
             boolean alreadyInInclude = !curFile.equals(inclContainer.getContainingFile());
             if (alreadyInInclude) {
@@ -687,9 +694,9 @@ public class AstRenderer {
                 // TODO: we somehow should check includes in curFile which are valid in context of parsing from inclContainer's file
                 return;
             }
-            if (curFile instanceof FileImpl) {
+            if (fileContent != null) {
                 Outer:
-                for (CsmInclude include : curFile.getIncludes()) {
+                for (CsmInclude include : fileContent.getIncludes()) {
                     if (include instanceof IncludeImpl) {
                         if (include.getStartOffset() > inclContainer.getStartOffset() && include.getEndOffset() < inclContainer.getEndOffset()) {
                             // check that not inside body of container's elemens
@@ -1790,7 +1797,7 @@ public class AstRenderer {
         class AstRendererEx extends AstRenderer {
 
             public AstRendererEx() {
-                super((FileImpl) file, null);
+                super((FileImpl) file, null, null);
             }
 
             @Override
@@ -1968,7 +1975,7 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_ENUM_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                if(new AstRenderer((FileImpl) file, objects).isExpressionLikeDeclaration(ast, scope)) {
+                if(new AstRenderer((FileImpl) file, null, objects).isExpressionLikeDeclaration(ast, scope)) {
                     return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
                     return DeclarationStatementImpl.create(ast, file, scope);

@@ -86,10 +86,6 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
     private FileObject targetFolder;
     private Lookup lookup;
 
-    private CopyClassRefactoringUI(FileObject resource) {
-        this(resource, null);
-    }
-
     private CopyClassRefactoringUI(FileObject resource, FileObject target) {
         refactoring = new SingleCopyRefactoring(Lookups.singleton(resource));
         this.resource = resource;
@@ -227,14 +223,14 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                 if (fo != null) {
                     DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
                     if (d.getName().equals(e.getSimpleName().toString())) {
-                        return new CopyClassRefactoringUI(d.getPrimaryFile());
+                        return new CopyClassRefactoringUI(d.getPrimaryFile(), tar);
                     }
                 }
             } catch (DataObjectNotFoundException ex) {
                 throw new RuntimeException(ex);
             }
         }
-        return new CopyClassRefactoringUI(info.getFileObject());
+        return new CopyClassRefactoringUI(info.getFileObject(), tar);
 
     }
     

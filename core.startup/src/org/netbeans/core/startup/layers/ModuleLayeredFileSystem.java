@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.NbRepository;
 import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileStateInvalidException;
@@ -63,10 +64,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.Repository.LayerProvider;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbCollections;
+import org.openide.util.*;
 
 /** Layered file system serving itself as either the user or installation layer.
  * Holds one layer of a writable system directory, and some number
@@ -83,6 +81,8 @@ implements LookupListener {
     /** lookup result for registered filesystems */
     private static Lookup.Result<FileSystem> fsResult = Lookup.getDefault().lookupResult(FileSystem.class);
     private static Lookup.Result<LayerProvider> layerResult = Lookup.getDefault().lookupResult(LayerProvider.class);
+    /** a mutex to verify setURL calls are safe */
+    private static Mutex mutex;
 
     /** current list of URLs - r/o; or null if not yet set */
     private List<URL> urls;
@@ -227,6 +227,7 @@ implements LookupListener {
      * @param urls the urls describing module layers to use. List<URL>
      */
     public void setURLs (List<URL> urls) throws Exception {
+        assert mutex == null || mutex.isWriteAccess();
         if (urls == null) {
             urls = this.prevs;
         }
@@ -297,22 +298,33 @@ implements LookupListener {
     }
     
     /** Refresh layers */
-    @Override public void resultChanged(LookupEvent ev) {
-        if (ev.getSource() == fsResult) {
-            setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
-            return;
-        }
-        if (ev.getSource() == layerResult) {
-            if (prevs != null) {
-                try {
-                    setURLs(prevs);
-                } catch (Exception ex) {
-                    err.log(Level.INFO, null, ex);
+    @Override public void resultChanged(final LookupEvent ev) {
+        class ProcessEv implements Mutex.Action<Void> {
+            @Override
+            public Void run() {
+                if (ev.getSource() == fsResult) {
+                    setDelegates(appendLayers(writableLayer, addLookupBefore, otherLayers, cacheLayer, addLookupBefore));
+                    return null;
                 }
+                if (ev.getSource() == layerResult) {
+                    if (prevs != null) {
+                        try {
+                            setURLs(prevs);
+                        } catch (Exception ex) {
+                            err.log(Level.INFO, null, ex);
+                        }
+                    }
+                    return null;
+                }
+                throw new IllegalStateException("Unknown source: " + ev.getSource());
             }
-            return;
         }
-        throw new IllegalStateException("Unknown source: " + ev.getSource());
+        ProcessEv pev = new ProcessEv();
+        if (mutex != null) {
+            mutex.writeAccess(pev);
+        } else {
+            pev.run();
+        }
     }
     
     public static List<URL> collectLayers(ClassLoader loader) throws IOException {
@@ -338,5 +350,9 @@ implements LookupListener {
             layerUrls.add(generatedLayer);
         }
         return layerUrls;
+    }
+    
+    static void registerMutex(Mutex m) {
+        mutex = m;
     }
 }

@@ -63,6 +63,7 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
+import org.netbeans.modules.form.project.ClassPathUtils;
 
 import java.awt.*;
 import java.beans.*;
@@ -71,6 +72,8 @@ import java.lang.reflect.*;
 import java.util.*;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.form.project.ClassSource.Entry;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.Lookup;
@@ -183,6 +186,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private boolean initialized = false;
     private boolean canGenerate = true;
     private boolean codeUpToDate = true;
+
+    private boolean mnemonicsClassPathUpdated;
 
     private String listenerClassName;
     private String listenerVariableName;
@@ -602,6 +607,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     bundle.getString("PROP_GENERATE_MNEMONICS"), // NOI18N
                     bundle.getString("HINT_GENERATE_MNEMONICS2")) // NOI18N
                 {
+                    private boolean writable = JavaCodeGenerator.this.canGenerate
+                                && !component.isReadOnly()
+                        // don't allow turing mnemonics on if not supported (and not already on)
+                                && (isUsingMnemonics(component)
+                                    || formEditorSupport.canGenerateNBMnemonicsCode());
                     @Override
                     public void setValue(Object value) {
                         Object oldValue = getValue();
@@ -620,12 +630,18 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     @Override
                     public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
+                        return writable;
                     }
 
                     @Override
                     public boolean supportsDefaultValue() {
                         return true;
+                    }
+
+                    @Override
+                    public boolean isDefaultValue() {
+                        Object mnem = component.getAuxValue(PROP_GENERATE_MNEMONICS);
+                        return mnem == null || mnem.equals(formModel.getSettings().getGenerateMnemonicsCode());
                     }
 
                     @Override
@@ -2188,6 +2204,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (propValueCode != null) {
                     initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText(" // NOI18N
                         + comp.getName() + ", " + propValueCode + ");\n"); // NOI18N
+                    updateProjectClassPathForMnemonics();
                 }
             }
             // Mnemonics support - end -
@@ -2675,6 +2692,23 @@ class JavaCodeGenerator extends CodeGenerator {
             return Boolean.TRUE.equals(mnem);
 
         return comp.getFormModel().getSettings().getGenerateMnemonicsCode();
+    }
+
+    private void updateProjectClassPathForMnemonics() {
+        if (!mnemonicsClassPathUpdated) {
+            FileObject srcFile = formEditor.getFormDataObject().getPrimaryFile();
+            if (!ClassPathUtils.checkUserClass("org.openide.awt.Mnemonics", srcFile)) { // NOI18N
+                Entry cpe = ClassSource.unpickle("dependency", "org.openide.awt"); // NOI18N
+                if (cpe != null) {
+                    try {
+                        cpe.addToProjectClassPath(srcFile,  ClassPath.COMPILE);
+                    } catch (Exception ex) {
+                        Logger.getLogger(JavaCodeGenerator.class.getName()).log(Level.INFO, null, ex);
+                    }
+                }
+            }
+            mnemonicsClassPathUpdated = true;
+        }
     }
     // Mnemonics support - end -
 
@@ -4287,7 +4321,12 @@ class JavaCodeGenerator extends CodeGenerator {
     }
     
     private class GenerateMnemonicsCodeProperty extends PropertySupport.ReadWrite {
-        
+        private boolean writable = JavaCodeGenerator.this.canGenerate
+                                   && !JavaCodeGenerator.this.formModel.isReadOnly()
+                // don't allow turing mnemonics on if not supported (and not already on)
+                                   && (formModel.getSettings().getGenerateMnemonicsCode()
+                                       || formEditorSupport.canGenerateNBMnemonicsCode());
+
         private GenerateMnemonicsCodeProperty() {
             super(PROP_GENERATE_MNEMONICS,
                 Boolean.TYPE,
@@ -4316,25 +4355,13 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
+            return writable;
         }
-        
+
         @Override
         public boolean supportsDefaultValue() {
-            return true;
+            return false;
         }
-        
-        @Override
-        public void restoreDefaultValue() {
-            setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getGenerateMnemonicsCode()));
-        }
-        
-        @Override
-        public boolean isDefaultValue() {
-            return (formModel.getSettings().getGenerateMnemonicsCode() == 
-                FormLoaderSettings.getInstance().getGenerateMnemonicsCode());
-        }
-        
     }
 
     private class ListenerGenerationStyleProperty extends PropertySupport.ReadWrite {

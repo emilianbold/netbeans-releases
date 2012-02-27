@@ -69,6 +69,7 @@ import org.openide.filesystems.LocalFileSystem;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.filesystems.MultiFileSystem;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
@@ -96,6 +97,12 @@ implements FileChangeListener {
     private static final String SYSTEM_NAME = "SystemFileSystem"; // NOI18N
 
     private static final Logger LOG = Logger.getLogger(SystemFileSystem.class.getName());
+
+    /** A mutex to use to guard access to changes of layers in the 
+     * system file system. */
+    public static void registerMutex(Mutex mutex) {
+        ModuleLayeredFileSystem.registerMutex(mutex);
+    }
 
     /** user fs */
     private ModuleLayeredFileSystem user;

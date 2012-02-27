@@ -623,7 +623,16 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Scope getThisPackageScope() {
-        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(fileObject.isFolder()?fileObject:fileObject.getParent())));
+        final FileObject packageFolder = fileObject.isFolder()?fileObject:fileObject.getParent();
+        NonRecursiveFolder pkg = new NonRecursiveFolder() {
+
+            @Override
+            public FileObject getFolder() {
+                return packageFolder;
+            }
+        };
+                
+        return Scopes.specifiedFoldersScope(Folder.convert(Collections.singleton(pkg)));
     }
 
     private Scope getThisFileScope() {

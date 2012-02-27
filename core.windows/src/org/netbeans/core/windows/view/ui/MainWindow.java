@@ -146,7 +146,7 @@ public final class MainWindow {
            return;
        }
        inited = true;
-
+       
        JPanel contentPane = new JPanel(new BorderLayout()) {
            @Override
            public void paint(Graphics g) {
@@ -653,10 +653,8 @@ public final class MainWindow {
 
 
    public void setFullScreenMode( boolean fullScreenMode ) {
-       if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode ) {
-           return;
-       }
-       if( fullScreenMode && !MacFullScreenSupport.check() ) {
+       if( isFullScreenMode == fullScreenMode || isSwitchingFullScreenMode 
+               || Utilities.isMac()) { //Mac OS X has its own built-in full screen support, see applemenu module
            return;
        }
        isSwitchingFullScreenMode = true;

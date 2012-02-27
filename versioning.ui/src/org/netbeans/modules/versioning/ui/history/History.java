@@ -99,8 +99,13 @@ public class History {
     VersioningSystem getLocalHistory(VCSFileProxy[] files) {
         File file = files[0].toFile();
         if(file == null) {
+            LOG.fine("local history available only for local files"); // NOI18N
             return null; // XXX currently LocalHistory works only with io.File. 
         }
-        return Utils.getLocalHistory(file);
+        VersioningSystem vs = Utils.getLocalHistory(file);
+        if(vs != null) {
+            LOG.fine("local history not available"); // NOI18N
+        } 
+        return vs;
     }
 }

@@ -141,6 +141,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
         files = filesList.toArray(new VCSFileProxy[filesList.size()]);
         VersioningSystem vs = files.length > 0 ? Utils.getOwner(files[0]) : null;
+        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{files[0], vs != null ? vs.getDisplayName() : null});
         init(vs, files);    
     }
     
@@ -151,6 +152,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         }
         this.files = proxies;
         VersioningSystem vs = files.length > 0 ? Utils.getOwner(proxies[0]) : null;
+        History.LOG.log(Level.FINE, "owner of {0} is {1}", new Object[]{proxies[0], vs != null ? vs.getDisplayName() : null});
         init(vs, true, proxies);
     }
     

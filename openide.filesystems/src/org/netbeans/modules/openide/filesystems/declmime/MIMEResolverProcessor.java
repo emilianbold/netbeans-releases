@@ -97,9 +97,10 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
         }
         return true;
     }
+    private static final String SUFFIX = ".xml";
     private void registerExt(Element e, ExtensionRegistration r) throws LayerGenerationException {
         final LayerBuilder b = layer(e);
-        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Extension.instance"); // NOI18N
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Extension" + SUFFIX); // NOI18N
         f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
         f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
         f.stringvalue("mimeType", r.mimeType()); // NOI18N
@@ -116,7 +117,7 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
         String absRes = LayerBuilder.absolutizeResource(e, relRes);
         final LayerBuilder b = layer(e);
         FileObject fo = b.validateResource(absRes, e, r, null, false);
-        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Registration.instance"); // NOI18N
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Registration" + SUFFIX); // NOI18N
         f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
         f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
         f.serialvalue("bytes", generateInstanceResolver(fo, e)); // NOI18N
@@ -156,7 +157,7 @@ public class MIMEResolverProcessor extends LayerGeneratingProcessor {
     }
     private void registerNamespace(Element e, NamespaceRegistration r) throws LayerGenerationException {
         final LayerBuilder b = layer(e);
-        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Namespace.instance"); // NOI18N
+        File f = b.file("Services/MIMEResolver/" + getName(e).replace('.', '-') + "-Namespace" + SUFFIX); // NOI18N
         f.methodvalue("instanceCreate", MIMEResolver.class.getName(), "create"); // NOI18N
         f.stringvalue("instanceClass", MIMEResolver.class.getName()); // NOI18N
         f.stringvalue("mimeType", r.mimeType()); // NOI18N

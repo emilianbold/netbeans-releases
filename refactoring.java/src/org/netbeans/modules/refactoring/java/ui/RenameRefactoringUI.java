@@ -184,7 +184,7 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
         if (panel == null) {
             String name = oldName;
             String suffix = "";
-            if (handle != null) {
+            if (handle != null && handle.getElementHandle() !=null) {
                 ElementKind kind = handle.getElementHandle().getKind();
                 if (kind!=null && (kind.isClass() || kind.isInterface())) {
                     suffix  = kind.isInterface() ? getString("LBL_Interface") : getString("LBL_Class");
@@ -403,6 +403,15 @@ public class RenameRefactoringUI implements RefactoringUI, RefactoringUIBypass, 
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         if (packages.length == 1) {
             return new RenameRefactoringUI(packages[0]);
+        }
+        final String n = RefactoringActionsProvider.getName(lookup);
+        if (n != null) {
+            return new RenameRefactoringUI(files[0], n, null, null);
+        }
+
+        if (handles.length == 0) {
+            assert files.length == 1;
+            return new RenameRefactoringUI(files[0], null, null);
         }
         assert handles.length == 1;
         TreePathHandle selectedElement = handles[0];

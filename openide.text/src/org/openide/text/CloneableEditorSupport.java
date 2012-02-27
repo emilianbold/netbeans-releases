@@ -230,7 +230,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private transient Reference<Pane> lastSelected;
 
     /** The time of the last save to determine the real external modifications */
-    private long lastSaveTime = -1;
+    private long lastSaveTime;
 
     /** Whether the reload dialog is currently opened. Prevents poping of multiple
      * reload dialogs if there is more external saves.
@@ -2868,32 +2868,25 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     //   clash in-between and we're safe for potential reload.
                     SwingUtilities.invokeLater(
                         new Runnable() {
-                            boolean inWriteAccess;
 
                             public void run() {
-                                if (!inWriteAccess) {
-                                    inWriteAccess = true;
+                                StyledDocument sd = getDoc();
 
-                                    StyledDocument sd = getDoc();
-
-                                    if (sd == null) {
-                                        return;
-                                    }
-
-                                    // #57104 - avoid notifyModified() which takes file lock
-                                    documentReloading = true;
-                                    NbDocument.runAtomic(sd, this);
-                                    documentReloading = false; // #57104
-
+                                if (sd == null) {
                                     return;
                                 }
+
+                                // #57104 - avoid notifyModified() which takes file lock
+                                documentReloading = true;
                                 ERR.fine("checkReload starting"); // NOI18N
                                 boolean noAsk = time == null || !isModified();
                                 ERR.fine("checkReload noAsk: " + noAsk);
                                 checkReload(noAsk);
+                                documentReloading = false; // #57104
                             }
                         }
                     );
+
                     ERR.fine("reload task posted"); // NOI18N
                 }
             }
@@ -2966,6 +2959,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         @Override
         public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+            if (documentReloading) {
+                modificationNotAllowed(offset);
+            }
             boolean origModified = checkModificationAllowed(offset);
             boolean success = false;
             try {
@@ -2986,6 +2982,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         @Override
         public void remove(FilterBypass fb, int offset, int length) throws BadLocationException {
+            if (documentReloading) {
+                modificationNotAllowed(offset);
+            }
             boolean origModified = checkModificationAllowed(offset);
             boolean success = false;
             try {
@@ -3027,9 +3026,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private boolean checkModificationAllowed(int offset) throws BadLocationException {
             boolean alreadyModified = isAlreadyModified();
             if (!callNotifyModified()) {
-                throw new BadLocationException("Modification not allowed", offset); // NOI18N
+                modificationNotAllowed(offset);
             }
             return alreadyModified;
+        }
+        
+        private void modificationNotAllowed(int offset) throws BadLocationException {
+            throw new BadLocationException("Modification not allowed", offset); // NOI18N
         }
 
     }

@@ -44,8 +44,11 @@
 package org.netbeans.api.java.queries;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
@@ -67,6 +70,9 @@ import org.openide.util.Lookup;
 public final class BinaryForSourceQuery {
     
     
+    private static final Logger LOG = Logger.getLogger(BinaryForSourceQuery.class.getName());
+    
+    
     /** Creates a new instance of BInaryForSOurceQuery */
     private BinaryForSourceQuery() {
     }
@@ -84,9 +90,22 @@ public final class BinaryForSourceQuery {
        for (BinaryForSourceQueryImplementation impl : Lookup.getDefault().lookupAll(BinaryForSourceQueryImplementation.class)) {
            BinaryForSourceQuery.Result result = impl.findBinaryRoots (sourceRoot);
            if (result != null) {
+               if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(
+                        Level.FINE,
+                        "findBinaryRoots({0}) -> {1} from {2}", //NOI18N
+                        new Object[] {
+                            sourceRoot,
+                            Arrays.asList(result.getRoots()),
+                            impl});
+                }
                return result;
            }
        }
+       LOG.log(
+           Level.FINE,
+           "findBinaryRoots({0}) -> nil",  //NOI18N
+           sourceRoot);
        return new DefaultResult (sourceRoot);
     }
     

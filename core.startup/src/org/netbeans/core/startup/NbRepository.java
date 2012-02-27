@@ -51,10 +51,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 
 import org.openide.filesystems.*;
@@ -62,6 +58,7 @@ import org.openide.filesystems.*;
 import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /** Default repository.
@@ -190,10 +187,16 @@ public final class NbRepository extends Repository {
 
     @Override
     protected void refreshAdditionalLayers() {
-        try {
-            ModuleLayeredFileSystem.getInstallationModuleLayer().setURLs(null);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Main.getModuleSystem().getManager().mutex().writeAccess(new Mutex.Action<Void>() {
+            @Override
+            public Void run() {
+                try {
+                    ModuleLayeredFileSystem.getInstallationModuleLayer().setURLs(null);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return null;
+            }
+        });
     }
 }

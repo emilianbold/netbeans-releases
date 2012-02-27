@@ -360,14 +360,17 @@ public class LuceneIndex implements Index.Transactional {
                 return;
             }
             final LowMemoryWatcher lmListener = LowMemoryWatcher.getInstance();
-            final IndexWriterConfig iwc = new IndexWriterConfig(Version.LUCENE_35, dirCache.getAnalyzer());
             Directory memDir = null;
             IndexWriter activeOut = null;
             if (lmListener.isLowMemory()) {
                 activeOut = out;
             } else {
                 memDir = new RAMDirectory ();
-                activeOut = new IndexWriter (memDir, iwc);
+                activeOut = new IndexWriter (
+                    memDir,
+                    new IndexWriterConfig(
+                        Version.LUCENE_35,
+                        dirCache.getAnalyzer()));
             }
             for (Iterator<T> it = data.iterator(); it.hasNext();) {
                 T entry = it.next();
@@ -378,7 +381,11 @@ public class LuceneIndex implements Index.Transactional {
                     activeOut.close();
                     out.addIndexes(memDir);
                     memDir = new RAMDirectory ();
-                    activeOut = new IndexWriter (memDir, iwc);
+                    activeOut = new IndexWriter (
+                        memDir,
+                        new IndexWriterConfig(
+                            Version.LUCENE_35,
+                            dirCache.getAnalyzer()));
                 }
             }
             if (memDir != null) {
