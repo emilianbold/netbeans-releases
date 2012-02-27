@@ -41,11 +41,15 @@
  */
 package org.netbeans.spi.search.provider;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.HelpCtx;
+import org.openide.util.Parameters;
 
 /**
  * Search provider can register complex search feature to the IDE.
@@ -162,6 +166,9 @@ public abstract class SearchProvider {
      */
     public static abstract class Presenter {
 
+        private final List<ChangeListener> changeListeners =
+                new CopyOnWriteArrayList<ChangeListener>();
+
         /** Constructor for subclasses. */
         protected Presenter() {}
 
@@ -196,14 +203,40 @@ public abstract class SearchProvider {
         public abstract boolean isUsable();
 
         /**
-         * Add change listener to the form. This listener should be notified
-         * when usability of the search settings changes.
+         * Add change listener to the form. This listener is notified when the
+         * search settings change.
          *
-         * @param cl Change listener that should be notified when usability of
-         * the form changes.
+         * @param changeListener Change listener that is notified when values in
+         * the form change.
          */
-        public abstract void addUsabilityChangeListener(
-                @NonNull ChangeListener cl);
+        public final void addChangeListener(
+                @NonNull ChangeListener changeListener) {
+
+            Parameters.notNull("changeListener", changeListener);
+            changeListeners.add(changeListener);
+        }
+
+        /**
+         * Remove listener added by {@link #addChangeListener(ChangeListener)}.
+         *
+         * @param changeListener Listener to remove.
+         */
+        public final void removeChangeListener(
+                @NonNull ChangeListener changeListener) {
+            Parameters.notNull("changeListener", changeListener);
+            changeListeners.remove(changeListener);
+        }
+
+        /**
+         * Call this method to notify all change listeners whenever a change in
+         * the presenter occurs.
+         */
+        protected final void fireChange() {
+            ChangeEvent e = new ChangeEvent(this);
+            for (ChangeListener cl : changeListeners) {
+                cl.stateChanged(e);
+            }
+        }
 
         /**
          * Method called when the dialog is closed. It should release allocated

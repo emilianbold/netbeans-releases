@@ -144,7 +144,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         selectedPresenter = basicPresenter;
 
         for (final SearchProvider.Presenter p : presenters) {
-            p.addUsabilityChangeListener(new ChangeListener() {
+            p.addChangeListener(new ChangeListener() {
 
                 @Override
                 public void stateChanged(ChangeEvent e) {

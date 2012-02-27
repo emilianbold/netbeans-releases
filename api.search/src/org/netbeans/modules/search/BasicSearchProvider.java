@@ -43,6 +43,7 @@ package org.netbeans.modules.search;
 
 import java.util.List;
 import javax.swing.JComponent;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -110,6 +111,12 @@ public class BasicSearchProvider extends SearchProvider {
                         FindDialogMemory.getDefault().getScopeTypeId(),
                         replacing);
                 form.setName("Basic Search");                       //TODO I18N
+                form.setUsabilityChangeListener(new ChangeListener() {
+                    @Override
+                    public void stateChanged(ChangeEvent e) {
+                        fireChange();
+                    }
+                });
             }
             return form;
         }
@@ -150,11 +157,6 @@ public class BasicSearchProvider extends SearchProvider {
         @Override
         public boolean isUsable() {
             return form.isUsable();
-        }
-
-        @Override
-        public void addUsabilityChangeListener(ChangeListener cl) {
-            form.setUsabilityChangeListener(cl);
         }
 
         @Override

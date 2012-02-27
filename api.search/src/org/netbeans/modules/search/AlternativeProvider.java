@@ -44,7 +44,6 @@ package org.netbeans.modules.search;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.util.lookup.ServiceProvider;
@@ -89,10 +88,6 @@ public class AlternativeProvider extends SearchProvider {
         @Override
         public boolean isUsable() {
             return true;
-        }
-
-        @Override
-        public void addUsabilityChangeListener(ChangeListener cl) {
         }
     }
 }
