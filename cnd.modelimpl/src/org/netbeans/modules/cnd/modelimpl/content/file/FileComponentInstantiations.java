@@ -82,9 +82,13 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         return EMPTY;
     }
 
+    FileComponentInstantiations(FileComponentInstantiations other) {
+        super(other);
+        instantiations.addAll(other.instantiations);
+    }
+    
     public FileComponentInstantiations(FileImpl file, boolean persistent) {
-        super(persistent ? new FileInstantiationsKey(file) : null);
-        put();
+        super(new FileInstantiationsKey(file), persistent);
     }
 
     public FileComponentInstantiations(RepositoryDataInput input) throws IOException {
@@ -95,7 +99,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
 
     // only for EMPTY static field
     private FileComponentInstantiations() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super(null, false);
     }
 
     public void clean() {

@@ -60,7 +60,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
@@ -83,7 +83,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         super(ast, name, file, getStartOffset(ast), getEndOffset(ast));
     }
 
-    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileImplContent fileContent, boolean register, DeclarationsContainer container) {
+    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) {
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
         ClassImplFunctionSpecialization impl = new ClassImplFunctionSpecialization(ast, nameHolder, file);
         impl.initQualifiedName(ast, scope, false);

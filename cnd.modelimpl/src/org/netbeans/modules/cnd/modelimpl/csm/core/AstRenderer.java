@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.file.FileImplContent;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import java.util.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
@@ -72,11 +72,11 @@ import org.openide.util.Exceptions;
 public class AstRenderer {
 
     private final FileImpl file;
-    private final FileImplContent fileContent;
+    private final FileContent fileContent;
     private boolean registeredFakeInclude = false;
     private Map<Integer, CsmObject> objects;
 
-    public AstRenderer(FileImpl fileImpl, FileImplContent fileContent, Map<Integer, CsmObject> objects) {
+    public AstRenderer(FileImpl fileImpl, FileContent fileContent, Map<Integer, CsmObject> objects) {
         this.file = fileImpl;
         this.fileContent = fileContent;
         this.objects = objects;
@@ -90,7 +90,7 @@ public class AstRenderer {
         return file;
     }
 
-    protected FileImplContent getFileContent() {
+    protected FileContent getFileContent() {
         return fileContent;
     }
     
