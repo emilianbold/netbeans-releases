@@ -41,73 +41,27 @@
  */
 package org.netbeans.modules.openide.loaders.data;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectExistsException;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.HelpCtx;
+import org.openide.filesystems.MIMEResolver;
 
 /**
- * @see DataObjectFactoryProcessorTest
+ *
  * @author Eric Barboni <skygo@netbeans.org>
  */
-@DataObject.Registration(mimeType =  "text/test1", displayName = "labeltest", position = 3565, iconBase = "org/openide/loaders/unknown.gif")
-public class DoFPDataObject extends DataObject {
+public class DoFPMIMEType {
 
-    public DoFPDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
-        super(pf, loader);
+    @MIMEResolver.ExtensionRegistration(displayName = "tt1", extension = "tt1", mimeType = "text/test1",position=1000)
+    public void tt1() {
     }
 
-    @Override
-    public boolean isDeleteAllowed() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @MIMEResolver.ExtensionRegistration(displayName = "tt3", extension = "tt3", mimeType = "text/test3",position=1002)
+    public void tt3() {
     }
 
-    @Override
-    public boolean isCopyAllowed() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @MIMEResolver.ExtensionRegistration(displayName = "ttm1", extension = "ttm1", mimeType = "text/testm1",position=1003)
+    public void ttm1() {
     }
 
-    @Override
-    public boolean isMoveAllowed() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    @MIMEResolver.ExtensionRegistration(displayName = "ttm2", extension = "ttm2", mimeType = "text/testm2",position=1004)
+    public void ttm2() {
     }
-
-    @Override
-    public boolean isRenameAllowed() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected DataObject handleCopy(DataFolder f) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected void handleDelete() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected FileObject handleRename(String name) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected FileObject handleMove(DataFolder df) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
 }
