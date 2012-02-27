@@ -41,23 +41,30 @@
  */
 package org.netbeans.modules.css.visual.v2;
 
-import java.beans.PropertyEditorSupport;
+import java.awt.Component;
+import java.beans.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.netbeans.modules.css.lib.api.properties.model.MarginWidth;
+import org.openide.explorer.propertysheet.ExPropertyEditor;
+import org.openide.explorer.propertysheet.InplaceEditor;
+import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author marekfukala
  */
-public class EditableBoxPropertyEditor extends PropertyEditorSupport {
+public class EditableBoxPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor {
 
     private static final String SEPARATOR = " "; //NOI18N
     private static final String NO_VALUE = "-"; //NOI18N
-    private EditableBox<MarginWidth> editableBox;
+    
+    EditableBox<MarginWidth> editableBox;
     MarginModelProperty property;
 
     public EditableBoxPropertyEditor(MarginModelProperty property) {
@@ -65,6 +72,16 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport {
         editableBox = property.model;
     }
 
+    @Override
+    public Component getCustomEditor() {
+        return new EditableBoxCustomEditor(this);
+    }
+
+    @Override
+    public boolean supportsCustomEditor() {
+        return true;
+    }
+    
     @Override
     public String getAsText() {
         StringBuilder b = new StringBuilder();
@@ -79,11 +96,45 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport {
     @Override
     public void setAsText(String string) throws IllegalArgumentException {
         StringTokenizer st = new StringTokenizer(string, SEPARATOR);
+        int defined = 0;
+        Map<Edge, String> edges = new EnumMap<Edge, String>(Edge.class);
+        String[] values = new String[4];
+        while(st.hasMoreTokens()) {
+            values[defined++] = st.nextToken();
+        }
+        
+        if(defined == 0) {
+            throw new IllegalArgumentException("Too few arguments");
+        }
+        
+        if(defined == 1) {
+            //T == R == B == L
+            edges.put(Edge.TOP, values[0]);
+            edges.put(Edge.BOTTOM, values[0]);
+            edges.put(Edge.RIGHT, values[0]);
+            edges.put(Edge.LEFT, values[0]);
+        } else if(defined == 2) {
+            //T == B , L == R
+            edges.put(Edge.TOP, values[0]);
+            edges.put(Edge.BOTTOM, values[0]);
+            edges.put(Edge.RIGHT, values[1]);
+            edges.put(Edge.LEFT, values[1]);
+        } else if(defined == 3) {
+            //T == B, L, R
+            edges.put(Edge.TOP, values[0]);
+            edges.put(Edge.BOTTOM, values[0]);
+            edges.put(Edge.RIGHT, values[1]);
+            edges.put(Edge.LEFT, values[2]);
+        } else {
+            //T, B, L, R
+            edges.put(Edge.TOP, values[0]);
+            edges.put(Edge.RIGHT, values[1]);
+            edges.put(Edge.BOTTOM, values[2]);
+            edges.put(Edge.LEFT, values[3]);
+        }
+        
         for (Edge e : Edge.values()) {
-            if (!st.hasMoreTokens()) {
-                throw new IllegalArgumentException("Too few arguments");
-            }
-            String token = st.nextToken();
+            String token = edges.get(e);
             MarginWidth mw;
             if (NO_VALUE.equalsIgnoreCase(token)) {
                 mw = null;
@@ -96,6 +147,10 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport {
             editableBox.setEdge(e, mw);
         }
 
+        setPropertyValue();
+    }
+    
+    void setPropertyValue() {
         try {
             property.setValue(editableBox);
         } catch (IllegalAccessException ex) {
@@ -103,5 +158,18 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport {
         } catch (InvocationTargetException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public void attachEnv(PropertyEnv env) {
+        //xxx workaround I think
+        env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
+        env.addVetoableChangeListener(new VetoableChangeListener() {
+
+            @Override
+            public void vetoableChange(PropertyChangeEvent pce) throws PropertyVetoException {
+                setPropertyValue();
+            }
+        });
     }
 }

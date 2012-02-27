@@ -47,10 +47,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginBoxModel;
-import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.util.CharSequences;
 
 /**
  *
@@ -118,7 +119,8 @@ public class DeclarationsI extends ModelElement implements Declarations {
         //update the whitespaces after the declaration element
         PlainElement after = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
         if(after != null) {
-            if(LexerUtils.equals(";", after.getContent(), true, true)) {
+            String afterTrimmed = after.getContent().toString().trim();
+            if(";".equals(afterTrimmed)) {
                 //semicolon - remove
                 removeElement(index);
                 PlainElement afterafter = getElementAt(index, PlainElement.class);//the indexes shifted by the removal!
