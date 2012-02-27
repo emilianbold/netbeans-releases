@@ -52,13 +52,17 @@ import org.netbeans.api.annotations.common.NullAllowed;
  */
 public final class SearchControl {
 
+    private SearchControl() {
+        // hiding default constructor
+    }
+
     /**
      * Shows dialog for basic search task.
      *
      * If options are not specified (null is passed), previous or default values
      * are used.
      */
-    public void openFindDialog(
+    public static void openFindDialog(
             @NullAllowed SearchPattern searchPattern,
             @NullAllowed SearchScopeOptions searchScopeOptions,
             @NullAllowed Boolean useIgnoreList,
@@ -71,7 +75,7 @@ public final class SearchControl {
      * If options are not specified (null is passed), previous or default values
      * are used.
      */
-    public void openReplaceDialog(
+    public static void openReplaceDialog(
             @NullAllowed SearchPattern searchPattern,
             @NullAllowed String replaceString,
             @NullAllowed Boolean preserveCase,
@@ -87,7 +91,7 @@ public final class SearchControl {
      * @throws IllegalArgumentException if neither non-trivial file name pattern
      * nor non-empty text search pattern is specified.
      */
-    public void startBasicSearch (
+    public static void startBasicSearch (
             @NonNull SearchPattern searchPattern,
             @NonNull SearchScopeOptions searchScopeOptions,
             @NullAllowed String scopeId) throws IllegalArgumentException {
