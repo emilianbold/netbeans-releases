@@ -198,17 +198,17 @@ public enum CppTokenId implements TokenId {
 
 
     // C++11    
-    FINAL("final", "keyword"), // c++11
-    OVERRIDE("override", "keyword"), // c++11
-    CONSTEXPR("constexpr", "keyword"), // c++11
-    DECLTYPE("decltype", "keyword"), // c++11
-    NULLPTR("nullptr", "keyword"), // c++11
-    THREAD_LOCAL("thread_local", "keyword"), // c++11
-    STATIC_ASSERT("static_assert", "keyword"), // c++11
-    ALIGNAS("alignas", "keyword"), // c++11
-    CHAR16_T("char16_t", "keyword"), // c++11
-    CHAR32_T("char32_t", "keyword"), // c++11
-    NOEXCEPT("noexcept", "keyword"), // c++11
+    FINAL("final", "keyword"), // c++11 // NOI18N
+    OVERRIDE("override", "keyword"), // c++11 // NOI18N
+    CONSTEXPR("constexpr", "keyword"), // c++11 // NOI18N
+    DECLTYPE("decltype", "keyword"), // c++11 // NOI18N
+    NULLPTR("nullptr", "keyword"), // c++11 // NOI18N
+    THREAD_LOCAL("thread_local", "keyword"), // c++11 // NOI18N
+    STATIC_ASSERT("static_assert", "keyword"), // c++11 // NOI18N
+    ALIGNAS("alignas", "keyword"), // c++11 // NOI18N
+    CHAR16_T("char16_t", "keyword"), // c++11 // NOI18N
+    CHAR32_T("char32_t", "keyword"), // c++11 // NOI18N
+    NOEXCEPT("noexcept", "keyword"), // c++11 // NOI18N
     
     // extension points
     BUILT_IN_TYPE(null, "keyword"), // NOI18N
