@@ -574,6 +574,9 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
         public HistoryEntry[] getHistory(VCSFileProxy[] proxies, Date fromDate) {
             File[] files = toFiles(proxies);
             final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry[] history = getDelegate().getVCSHistoryProvider().getHistory(files, fromDate);
+            if(history == null) {
+                return new HistoryEntry[0];
+            }
             HistoryEntry[] proxyHistory = new HistoryEntry[history.length];
             for (int i = 0; i < proxyHistory.length; i++) {
                 final org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry he = history[i];
