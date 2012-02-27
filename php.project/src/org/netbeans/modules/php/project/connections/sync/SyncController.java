@@ -427,7 +427,7 @@ public final class SyncController implements Cancellable {
         private void deleteLocalFiles(SyncResult syncResult, Set<TransferFile> localFiles) {
             // first, delete files
             long start = System.currentTimeMillis();
-            TransferInfo deleteInfo = new TransferInfo();
+            TransferInfo deleteInfo = syncResult.getLocalDeleteTransferInfo();
             try {
                 Set<TransferFile> folders = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
                     @Override
@@ -467,7 +467,6 @@ public final class SyncController implements Cancellable {
                 }
             } finally {
                 deleteInfo.setRuntime(System.currentTimeMillis() - start);
-                mergeTransferInfo(deleteInfo, syncResult.getLocalDeleteTransferInfo());
             }
         }
 
