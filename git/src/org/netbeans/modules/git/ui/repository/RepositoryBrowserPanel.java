@@ -950,26 +950,28 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                             try {
                                 GitClient client = Git.getInstance().getClient(repository);
                                 GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
-                                SearchCriteria crit = new SearchCriteria();
-                                if (info.getRevision().equals(trackedBranch.getId())) {
-                                    crit.setRevisionFrom(trackedBranch.getId());
-                                    crit.setRevisionTo(id);
-                                } else if (info.getRevision().equals(id)) {
-                                    crit.setRevisionFrom(id);
-                                    crit.setRevisionTo(trackedBranch.getId());
-                                }
-                                GitRevisionInfo[] revs = client.log(crit, GitUtils.NULL_PROGRESS_MONITOR);
-                                int diff = (revs.length - 1);
-                                if (info.getRevision().equals(trackedBranch.getId())) {
-                                    tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
-                                            ? "MSG_BranchNode.tracking.ahead.commit" : "MSG_BranchNode.tracking.ahead.commits", //NOI18N
-                                            trackedBranch.getName(), diff);
-                                } else if (info.getRevision().equals(id)) {
-                                    tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
-                                            ? "MSG_BranchNode.tracking.behind.commit" : "MSG_BranchNode.tracking.behind.commits", //NOI18N
-                                            trackedBranch.getName(), diff);
-                                } else {
+                                if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
                                     tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
+                                } else {
+                                    SearchCriteria crit = new SearchCriteria();
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        crit.setRevisionFrom(trackedBranch.getId());
+                                        crit.setRevisionTo(id);
+                                    } else if (info.getRevision().equals(id)) {
+                                        crit.setRevisionFrom(id);
+                                        crit.setRevisionTo(trackedBranch.getId());
+                                    }
+                                    GitRevisionInfo[] revs = client.log(crit, GitUtils.NULL_PROGRESS_MONITOR);
+                                    int diff = (revs.length - 1);
+                                    if (info.getRevision().equals(trackedBranch.getId())) {
+                                        tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
+                                                ? "MSG_BranchNode.tracking.ahead.commit" : "MSG_BranchNode.tracking.ahead.commits", //NOI18N
+                                                trackedBranch.getName(), diff);
+                                    } else if (info.getRevision().equals(id)) {
+                                        tt = NbBundle.getMessage(RepositoryBrowserPanel.class, diff == 1 
+                                                ? "MSG_BranchNode.tracking.behind.commit" : "MSG_BranchNode.tracking.behind.commits", //NOI18N
+                                                trackedBranch.getName(), diff);
+                                    }
                                 }
                             } catch (GitException ex) {
                                 LOG.log(Level.INFO, null, ex);
