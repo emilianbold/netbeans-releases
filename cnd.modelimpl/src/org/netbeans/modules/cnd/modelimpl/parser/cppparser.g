@@ -3548,8 +3548,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   TILDE
             |   ELLIPSIS
 
-            |   balanceParensInExpression
-            |   balanceSquaresInExpression
+            |   balanceParensInExpression 
+            |   balanceSquaresInExpression 
 
             |   constant
 
@@ -3582,6 +3582,15 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   LITERAL_alignof
             |   LITERAL___alignof__
+
+            |   LITERAL_auto
+            |   LITERAL_final
+            |   LITERAL_override
+            |   LITERAL_constexpr
+            |   LITERAL_thread_local
+            |   LITERAL_static_assert
+            |   LITERAL_alignas
+            |   LITERAL_noexcept
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3749,6 +3758,15 @@ lazy_expression_predicate
 
     |   LITERAL_alignof
     |   LITERAL___alignof__
+
+    |   LITERAL_auto
+    |   LITERAL_final
+    |   LITERAL_override
+    |   LITERAL_constexpr
+    |   LITERAL_thread_local
+    |   LITERAL_static_assert
+    |   LITERAL_alignas
+    |   LITERAL_noexcept
 
     |   GREATERTHAN lazy_expression_predicate
     ;
