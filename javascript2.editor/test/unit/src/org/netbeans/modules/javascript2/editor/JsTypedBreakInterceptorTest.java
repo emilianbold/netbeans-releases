@@ -251,4 +251,31 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testNoContcomment2() throws Exception {
         insertBreak("x = /*\n*/^", "x = /*\n*/\n^");
     }
+
+    public void testCommentUnbalancedBraces() throws Exception {
+        insertBreak("var MyObj = {\n"
+            + "    version: 10,\n"
+            + "    factory: function () {\n"
+            + "        return this;\n"
+            + "    },\n"
+            + "\n"
+            + "    /*^\n"
+            + "    create: function () {\n"
+            + "        return new MyObj();\n"
+            + "    }"
+            + "}",
+            "var MyObj = {\n"
+            + "    version: 10,\n"
+            + "    factory: function () {\n"
+            + "        return this;\n"
+            + "    },\n"
+            + "\n"
+            + "    /*\n"
+            + "     * ^\n"
+            + "     */\n"
+            + "    create: function () {\n"
+            + "        return new MyObj();\n"
+            + "    }"
+            + "}");
+    }
 }

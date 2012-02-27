@@ -112,7 +112,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // Insert a missing }
         boolean insertRightBrace = isEndMissing(doc, offset);
 
-        if (insertMatching && insertRightBrace) {
+        if (id != JsTokenId.UNKNOWN && insertMatching && insertRightBrace) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
