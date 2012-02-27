@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -113,6 +118,19 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     for(JsObject param: ((JsFunction)object).getParameters()) {
                         count(result, param, highlights);
                     }
+                    break;
+                case PROPERTY_GETTER:
+                case PROPERTY_SETTER:
+                    int offset = object.getDeclarationName().getOffsetRange().getStart();
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(result.getSnapshot(), offset);
+                    ts.move(offset);
+                    if (ts.moveNext() && ts.movePrevious()) {
+                        Token token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.DOC_COMMENT));
+                        if (token.id() == JsTokenId.IDENTIFIER && token.length() == 3) {
+                            highlights.put(new OffsetRange(ts.offset(), ts.offset() + token.length()), ColoringAttributes.METHOD_SET);
+                        }
+                    }
+                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     break;
                 case OBJECT:
                     if (parent.getParent() == null) {

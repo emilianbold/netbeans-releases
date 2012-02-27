@@ -142,7 +142,15 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testProperty05() throws Exception {
         checkOccurrences("testfiles/coloring/czechChars.js", "    test.anotherProperty = test.myPrope^rty;", true);
     }
+    
+    public void testGetterSetterInObjectLiteral01() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "set yea^rs(count){this.old = count + 1;},", true);
+    }
 
+    public void testGetterSetterInObjectLiteral02() throws Exception {
+        checkOccurrences("testfiles/model/getterSettterInObjectLiteral.js", "Dog.yea^rs = 10;", true);
+    }
+    
     @Override
     protected void assertDescriptionMatches(FileObject fileObject,
             String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {

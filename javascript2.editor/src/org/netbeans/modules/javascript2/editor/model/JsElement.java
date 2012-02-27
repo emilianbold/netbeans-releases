@@ -63,7 +63,9 @@ public interface JsElement extends ElementHandle {
         FIELD(7),
         FILE(8),
         PARAMETER(9),
-        ANONYMOUS_OBJECT(10);
+        ANONYMOUS_OBJECT(10),
+        PROPERTY_GETTER(11),
+        PROPERTY_SETTER(12);
         
         private final int id;
         private static Map<Integer, Kind> lookup = new HashMap<Integer, Kind>();
@@ -87,7 +89,12 @@ public interface JsElement extends ElementHandle {
         }
         
         public boolean isFunction() {
-            return this == FUNCTION || this == METHOD || this == CONSTRUCTOR;
+            return this == FUNCTION || this == METHOD || this == CONSTRUCTOR
+                    || this == PROPERTY_GETTER || this == PROPERTY_SETTER;
+        }
+        
+        public boolean isPropertyGetterSetter() {
+            return this == PROPERTY_GETTER || this == PROPERTY_SETTER;
         }
         
     }
