@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
  * this content can be used as new file content
  * @author Vladimir Voskresensky
  */
-public final class FileImplContent implements DeclarationsContainer {
+public final class FileContent implements DeclarationsContainer {
 
     private final FileImpl fileImpl;
     private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
@@ -86,7 +86,7 @@ public final class FileImplContent implements DeclarationsContainer {
     private final FileComponentInstantiations fileComponentInstantiations;
     private final FileComponentReferences fileComponentReferences;
 
-    public FileImplContent(FileImpl fileImpl) {
+    public FileContent(FileImpl fileImpl) {
         this.fileImpl = fileImpl;
         this.fileComponentDeclarations = new FileComponentDeclarations(fileImpl, false);
         this.fileComponentMacros = new FileComponentMacros(fileImpl, false);
@@ -95,6 +95,15 @@ public final class FileImplContent implements DeclarationsContainer {
         this.fileComponentReferences = new FileComponentReferences(fileImpl, false);
     }
 
+    public FileContent(FileContent other) {
+        this.fileImpl = other.fileImpl;
+        this.fileComponentDeclarations = new FileComponentDeclarations(other.fileComponentDeclarations);
+        this.fileComponentMacros = new FileComponentMacros(other.fileComponentMacros);
+        this.fileComponentIncludes = new FileComponentIncludes(other.fileComponentIncludes);
+        this.fileComponentInstantiations = new FileComponentInstantiations(other.fileComponentInstantiations);
+        this.fileComponentReferences = new FileComponentReferences(other.fileComponentReferences);
+    }
+    
     public final int getErrorCount() {
         return errorCount;
     }

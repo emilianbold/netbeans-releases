@@ -103,12 +103,18 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return EMPTY;
     }
 
+    FileComponentReferences(FileComponentReferences other) {
+        super(other);
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.references);
+        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.type2classifier);
+        this.fileUID = other.fileUID;
+    }
+    
     public FileComponentReferences(FileImpl file, boolean persistent) {
-        super(persistent ? new FileReferencesKey(file) : null);
+        super(new FileReferencesKey(file), persistent);
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         this.fileUID = file.getUID();
-        put();
     }
 
     public FileComponentReferences(RepositoryDataInput input) throws IOException {
@@ -133,7 +139,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     // only for EMPTY static field
     private FileComponentReferences() {
-        super((org.netbeans.modules.cnd.repository.spi.Key) null);
+        super(null, false);
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         fileUID = null;
