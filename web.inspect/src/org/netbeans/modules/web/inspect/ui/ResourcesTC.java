@@ -42,11 +42,17 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.web.inspect.PageInspectorImpl;
+import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -79,27 +85,71 @@ import org.openide.windows.TopComponent;
 public final class ResourcesTC extends TopComponent {
     /** TopComponent ID. */
     public static final String ID = "ResourcesTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
-    private ResourcesPanel resourcesPanel;
 
     /**
      * Creates a new {@code ResourcesTC}.
      */
     public ResourcesTC() {
-        initComponents();
         setName(Bundle.CTL_ResourcesTC());
         setToolTipText(Bundle.HINT_ResourcesTC());
-        Lookup lookup = ExplorerUtils.createLookup(resourcesPanel.getExplorerManager(), getActionMap());
-        associateLookup(lookup);
+        setLayout(new BorderLayout());
+        associateLookup(new ResourcesTCLookup());
+        PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
+        update();
     }
 
     /**
-     * Initializes the components in this {@code TopComponent}.
+     * Updates the content of this {@code TopComponent}.
      */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        resourcesPanel = new ResourcesPanel();
-        add(resourcesPanel);
+    private void update() {
+        if (EventQueue.isDispatchThread()) {
+            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            removeAll();
+            ResourcesPanel panel = new ResourcesPanel(pageModel);
+            add(panel);
+            ((ResourcesTCLookup)getLookup()).setPanel(panel);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update();
+                }
+            });
+        }
+    }
+
+    /**
+     * Creates a page inspector listener.
+     * 
+     * @return page inspector listener.
+     */
+    private PropertyChangeListener createInspectorListener() {
+        return new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
+                    update();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lookup of {@code ResourcesTC}.
+     */
+    private class ResourcesTCLookup extends ProxyLookup {
+
+        /**
+         * Updates the content of this lookup according to the given panel.
+         * 
+         * @param panel new panel to display in {@code ResourcesTC}.
+         */
+        void setPanel(ResourcesPanel panel) {
+            Lookup lookup = ExplorerUtils.createLookup(panel.getExplorerManager(), getActionMap());
+            setLookups(lookup);
+        }
+
     }
 
 }

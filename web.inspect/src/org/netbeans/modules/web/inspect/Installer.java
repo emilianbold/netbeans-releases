@@ -41,19 +41,7 @@
  */
 package org.netbeans.modules.web.inspect;
 
-import java.awt.EventQueue;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.web.common.websocket.WebSocketServer;
-import org.netbeans.modules.web.inspect.ui.ResourcesTC;
 import org.openide.modules.ModuleInstall;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponentGroup;
-import org.openide.windows.WindowManager;
 
 /**
  * Installer of {@code web.inspect} module.
@@ -61,80 +49,11 @@ import org.openide.windows.WindowManager;
  * @author Jan Stola
  */
 public class Installer extends ModuleInstall {
-    /** Port of the WebSocket server for page inspection. */
-    private static int PORT = 8010;
-
-    @Override
-    public void restored() {
-        // PENDING should we postpone creation of the server socket? Where?
-        try {
-            WebSocketServer server = new WebSocketServer(new InetSocketAddress(PORT));
-            server.setWebSocketReadHandler(new WSHandler(server));
-            new Thread(server).start();
-        } catch (IOException ex) {
-            Logger.getLogger(Installer.class.getName()).log(Level.INFO, null, ex);
-        }
-        // PENDING what is a suitable place for this
-        PageModel.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propName = evt.getPropertyName();
-                if (PageModel.PROP_MODEL.equals(propName)) {
-                    boolean show = PageModel.getDefault().isValid();
-                    setPageInspectionGroupVisible(show);
-                }
-            }
-        });
-    }
 
     @Override
     public boolean closing() {
-        setPageInspectionGroupVisible(false);
+        PageInspectionTCGroupManager.getInstance().setPageInspectionGroupVisible(false);
         return true;
-    }
-
-    /**
-     * Opens/closes the page inspection window group.
-     * 
-     * @param visible determines whether the group should be closed or opened.
-     */
-    private void setPageInspectionGroupVisible(final boolean visible) {
-        if (EventQueue.isDispatchThread()) {
-            setPageInspectionGroupVisibleAWT(visible);
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    setPageInspectionGroupVisibleAWT(visible);
-                }
-            });
-        }
-    }
-
-    /**
-     * Opens/closes the page inspection window group. This method should
-     * be called from event-dispatch thread only.
-     * 
-     * @param visible determines whether the group should be closed or opened.
-     */
-    private void setPageInspectionGroupVisibleAWT(boolean visible) {
-        WindowManager manager = WindowManager.getDefault();
-        TopComponentGroup group = manager.findTopComponentGroup("webinspect"); // NOI18N
-        if (group == null) {
-            Logger.getLogger(Installer.class.getName()).log(
-                    Level.INFO, "TopComponentGroup webinspect not found!"); // NOI18N
-        } else if (visible) {
-            group.open();
-            TopComponent tc = manager.findTopComponent(ResourcesTC.ID);
-            if (tc == null) {
-                Logger.getLogger(Installer.class.getName()).log(
-                        Level.INFO, "TopComponent {0} not found!", ResourcesTC.ID); // NOI18N
-            } else {
-                tc.requestVisible();
-            }
-        } else {
-            group.close();
-        }        
     }
 
 }

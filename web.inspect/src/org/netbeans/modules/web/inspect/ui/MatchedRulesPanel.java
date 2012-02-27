@@ -59,15 +59,18 @@ import org.openide.util.NbBundle;
  */
 public class MatchedRulesPanel extends JPanel {
     /** Page model used by this panel. */
-    private PageModel pageModel = PageModel.getDefault();
+    private PageModel pageModel;
 
     /**
      * Creates a new {@code MatchedRulesPanel}.
      */
-    public MatchedRulesPanel() {
+    public MatchedRulesPanel(PageModel pageModel) {
+        this.pageModel = pageModel;
         setBackground(UIManager.getColor("TextArea.background")); // NOI18N
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        pageModel.addPropertyChangeListener(createModelListener());
+        if (pageModel != null) {
+            pageModel.addPropertyChangeListener(createModelListener());
+        }
         update();
     }
 
@@ -75,7 +78,12 @@ public class MatchedRulesPanel extends JPanel {
      * Updates the data shown in the panel.
      */
     private void update() {
-        Collection<ElementHandle> selection = pageModel.getSelectedElements();
+        Collection<ElementHandle> selection;
+        if (pageModel == null) {
+            selection = Collections.EMPTY_LIST;
+        } else {
+            selection = pageModel.getSelectedElements();
+        }
         final int selectionSize = selection.size();
         final Map<ElementHandle, List<PageModel.RuleInfo>> ruleData;
         final ElementHandle selectedElement;

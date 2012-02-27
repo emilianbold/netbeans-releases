@@ -39,63 +39,25 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.actions;
+package org.netbeans.modules.extbrowser;
 
-import org.netbeans.modules.web.inspect.PageInspectorImpl;
-import org.netbeans.modules.web.inspect.PageModel.ResourceInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.openide.modules.ModuleInstall;
 
 /**
- * Reloads the resource in the inspected page.
- *
+ * Life-cycle manager of {@code extbrowser} module. 
+ * 
  * @author Jan Stola
  */
-public class ReloadResourceAction extends NodeAction  {
+public class Installer extends ModuleInstall {
 
     @Override
-    protected void performAction(Node[] activatedNodes) {        
-        for (int i=0; i<activatedNodes.length; i++) {
-            final ResourceInfo resource = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (resource != null) {
-                ResourceInfo.Type type = resource.getType();
-                if (type != ResourceInfo.Type.HTML) {
-                    PageInspectorImpl.getDefault().getPage().reloadResource(resource);
-                }
-            }
-        }
+    public void restored() {
+        // Start WebSocket server. We cannot postpone startup of this server
+        // till it is really needed because it receives (among other)
+        // connections not initiated by any action within IDE (for example,
+        // the connections triggered by Inspect in NetBeans menu item
+        // in an external browser).
+        ExternalBrowserPlugin.getInstance();
     }
-
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        for (int i=0; i<activatedNodes.length; i++) {
-            ResourceInfo info = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (info == null) {
-                return false;
-            }
-            ResourceInfo.Type type = info.getType();
-            if (type == ResourceInfo.Type.HTML) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(OpenResourceAction.class, "ReloadResourceAction.name"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
 }

@@ -42,11 +42,17 @@
 package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.web.inspect.PageInspectorImpl;
+import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 
 /**
@@ -79,27 +85,71 @@ import org.openide.windows.TopComponent;
 public final class DomTC extends TopComponent {
     /** TopComponent ID. */
     public static final String ID = "DomTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
-    private DomPanel domPanel;
 
     /**
      * Creates a new {@code DomTC}.
      */
     public DomTC() {
-        initComponents();
         setName(Bundle.CTL_DomTC());
         setToolTipText(Bundle.HINT_DomTC());
-        Lookup lookup = ExplorerUtils.createLookup(domPanel.getExplorerManager(), getActionMap());
-        associateLookup(lookup);
+        setLayout(new BorderLayout());
+        associateLookup(new DomTCLookup());
+        PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
+        update();
     }
 
     /**
-     * Initializes the components in this {@code TopComponent}.
+     * Updates the content of this {@code TopComponent}.
      */
-    private void initComponents() {
-        setLayout(new BorderLayout());
-        domPanel = new DomPanel();
-        add(domPanel);
+    private void update() {
+        if (EventQueue.isDispatchThread()) {
+            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            removeAll();
+            DomPanel panel = new DomPanel(pageModel);
+            add(panel);
+            ((DomTCLookup)getLookup()).setPanel(panel);
+        } else {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    update();
+                }
+            });
+        }
+    }
+
+    /**
+     * Creates a page inspector listener.
+     * 
+     * @return page inspector listener.
+     */
+    private PropertyChangeListener createInspectorListener() {
+        return new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
+                    update();
+                }
+            }
+        };
+    }
+
+    /**
+     * Lookup of {@code DomTC}.
+     */
+    private class DomTCLookup extends ProxyLookup {
+
+        /**
+         * Updates the content of this lookup according to the given panel.
+         * 
+         * @param panel new panel to display in {@code DomTC}.
+         */
+        void setPanel(DomPanel panel) {
+            Lookup lookup = ExplorerUtils.createLookup(panel.getExplorerManager(), getActionMap());
+            setLookups(lookup);
+        }
+
     }
 
 }

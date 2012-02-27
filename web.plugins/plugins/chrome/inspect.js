@@ -73,7 +73,7 @@ Context.prototype.cleanup = function() {
 
 Context.prototype.initSocket = function(tabId) {
     var self = this;
-    this.socket = new WebSocket("ws://127.0.0.1:8010/");
+    this.socket = new WebSocket("ws://127.0.0.1:8008/");
     this.socket.onerror = function(e) {
         console.log('Socket error!');
         console.log(e);
@@ -81,6 +81,10 @@ Context.prototype.initSocket = function(tabId) {
     }
     this.socket.onopen = function() {
         self.connectedSuccessfully = true;
+        this.send(JSON.stringify({
+            message: 'inspect',
+            tabId: tabId
+        }));
     }
     this.socket.onclose = function() {
         if (!self.connectedSuccessfully) {

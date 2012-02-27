@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,5 +39,24 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.common.spi.browser;
 
-typeof(NetBeans) === 'object'
+/**
+ * Executor of scripts.
+ *
+ * @author Jan Stola
+ */
+public interface ScriptExecutor {
+    /** Return value of a script whose execution has failed. */
+    Object ERROR_RESULT = new Object();
+
+    /**
+     * Executes the specified script.
+     * 
+     * @param script script to execute.
+     * @return result of the script or {@code ERROR_RESULT} if the execution
+     * has failed for whatever reason.
+     */
+    Object execute(String script);
+
+}
