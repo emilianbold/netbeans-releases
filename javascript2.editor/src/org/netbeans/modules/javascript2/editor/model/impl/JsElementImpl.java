@@ -85,6 +85,8 @@ public abstract class JsElementImpl implements JsElement {
                 break;
             case METHOD:
             case FUNCTION:
+            case PROPERTY_GETTER:
+            case PROPERTY_SETTER:
                 result = ElementKind.METHOD;
                 break;
             case OBJECT:

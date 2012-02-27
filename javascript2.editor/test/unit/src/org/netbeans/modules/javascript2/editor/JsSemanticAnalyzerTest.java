@@ -63,4 +63,8 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testCzechChars() throws Exception {
         checkSemantic("testfiles/coloring/czechChars.js");
     }
+    
+    public void testGetterSetterInObjectLiteral() throws Exception {
+        checkSemantic("testfiles/model/getterSettterInObjectLiteral.js");
+    }
 }

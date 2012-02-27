@@ -381,7 +381,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         isAnonymous = true;
                     } else if (node instanceof AccessNode && getPreviousFromPath(4) instanceof CallNode) {
                         String methodName = ((AccessNode)node).getProperty().getName();
-                        if ("call".equals(methodName) || "apply".equals(methodName)) {
+                        if ("call".equals(methodName) || "apply".equals(methodName)) {  //NOI18N
                             isAnonymous = true;
                         }
                     }
@@ -401,7 +401,11 @@ public class ModelVisitor extends PathNodeVisitor {
 
             for (FunctionNode fn : functions) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
-                    fn.accept(this);
+                    String functionName = fn.getIdent().getName();
+                    if (!(functionName.startsWith("get ") || functionName.startsWith("set "))) {  //NOI18N
+                        // don't visit setter and getters in object literal
+                        fn.accept(this);
+                    }
                 }
             }
 
@@ -519,6 +523,16 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     property = newProperty;
                 }
+                
+                if (propertyNode.getGetter() != null) {
+                    FunctionNode getter = ((FunctionNode)((ReferenceNode)propertyNode.getGetter()).getReference());
+                    property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, getter.getIdent().getStart(), getter.getIdent().getFinish()));
+                }
+                
+                if (propertyNode.getSetter() != null) {
+                    FunctionNode setter = ((FunctionNode)((ReferenceNode)propertyNode.getSetter()).getReference());
+                    property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, setter.getIdent().getStart(), setter.getIdent().getFinish()));
+                }
                 scope.addProperty(name.getName(), property);
                 property.setDeclared(true);
                 Node value = propertyNode.getValue();
@@ -624,6 +638,19 @@ public class ModelVisitor extends PathNodeVisitor {
 
     private List<Identifier> getName(PropertyNode propertyNode) {
         List<Identifier> name = new ArrayList(1);
+        if (propertyNode.getGetter() != null || propertyNode.getSetter() != null) {
+            // check whether this is not defining getter or setter of a property.
+            Node previousNode = getPreviousFromPath(1);
+            if (previousNode instanceof FunctionNode) {
+                FunctionNode fNode = (FunctionNode)previousNode;
+                String fName = fNode.getIdent().getName();
+                if (fName.startsWith("get ") || fName.startsWith("set ")) { //NOI18N
+                    name.add(new IdentifierImpl(fName,
+                        ModelUtils.documentOffsetRange(parserResult, fNode.getIdent().getStart(), fNode.getIdent().getFinish())));
+                    return name;
+                }
+            }
+        }
         if (propertyNode.getKey() instanceof IdentNode) {
             IdentNode ident = (IdentNode) propertyNode.getKey();
             name.add(new IdentifierImpl(ident.getName(),

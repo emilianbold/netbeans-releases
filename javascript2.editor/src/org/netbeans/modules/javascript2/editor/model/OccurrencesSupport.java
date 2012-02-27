@@ -77,6 +77,15 @@ public class OccurrencesSupport {
         if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
                 && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
                 && !ModelUtils.isGlobal(object)) {
+            if (kind.isPropertyGetterSetter()) {
+                // if it's getter or setter in object literal, return it as occurrence of the property
+                String propertyName = object.getName();
+                propertyName = propertyName.substring(propertyName.lastIndexOf(' ') + 1);
+                JsObject property = object.getParent().getProperty(propertyName);
+                if (property != null) {
+                    return new OccurrenceImpl(property.getDeclarationName().getOffsetRange(), property); 
+                }
+            } 
             result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
         } else {
             for(Occurrence occurrence: object.getOccurrences()) {

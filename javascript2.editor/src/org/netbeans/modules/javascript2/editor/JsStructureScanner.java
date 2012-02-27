@@ -76,7 +76,7 @@ public class JsStructureScanner implements StructureScanner {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if (child.getJSKind() != JsElement.Kind.FUNCTION && child.getJSKind() != JsElement.Kind.METHOD) {
+            if (!child.getJSKind().isFunction() || child.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 // don't count children for functions and methods
                 children = getEmbededItems(result, child, children);
             }
