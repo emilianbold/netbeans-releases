@@ -154,14 +154,13 @@ public class JsFormatter implements Formatter {
                                 }
                                 start = start.next();
                             }
-                            // do indentation
-                            if (i < tokens.size() - 1) {
-                                // do not do indentation for line comments starting
-                                // at the beginning of the line to support comment/uncomment
-                                next = getNextNonVirtual(token);
-                                if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
-                                    break;
-                                }
+                            // following code handles the indentation
+
+                            // do not do indentation for line comments starting
+                            // at the beginning of the line to support comment/uncomment
+                            next = getNextNonVirtual(token);
+                            if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
+                                break;
                             }
 
                             FormatToken indentationStart = null;
