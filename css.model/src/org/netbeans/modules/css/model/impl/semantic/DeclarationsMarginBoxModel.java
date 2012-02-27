@@ -137,10 +137,6 @@ public class DeclarationsMarginBoxModel implements EditableBox<MarginWidth> {
                 }
             }
             
-            
-
-            
-            
         } else {
 
             StringBuilder sb = new StringBuilder();
