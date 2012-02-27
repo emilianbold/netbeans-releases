@@ -508,7 +508,6 @@ public final class ResultView extends TopComponent {
         }
         Manager.getInstance().scheduleSearchTask(newSearchTask);
     }
-    }
 
     private void closeAll(boolean butCurrent) {
         Component comp = getComponent(0);
