@@ -856,8 +856,6 @@ public class JavaCustomIndexer extends CustomIndexer {
                     Exceptions.printStackTrace(ioe);
                 }
             }
-            
-            JavaIndexEvents.getDefault().fireIndexUpdated(context.getRootURI());
         }
         
         @Override
