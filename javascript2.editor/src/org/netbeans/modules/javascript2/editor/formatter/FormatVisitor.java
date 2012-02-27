@@ -72,6 +72,8 @@ public class FormatVisitor extends NodeVisitor {
 
             if (caseNodes.contains(block)) {
                 handleCaseBlock(block);
+            } else if (isScript(block)){
+                handleBlockContent(block);
             } else {
                 handleStandardBlock(block);
             }
