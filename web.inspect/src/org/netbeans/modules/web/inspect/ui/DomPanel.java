@@ -82,21 +82,26 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     /** Label used when no DOM tree is available. */
     private JLabel noDomLabel;
     /** Page model used by this panel. */
-    private PageModel pageModel = PageModel.getDefault();
+    private PageModel pageModel;
     /** Context actions (actions shown when the panel/view is right-clicked) of this panel. */
     private Action[] contextActions;
 
     /**
      * Creates a new {@code DomPanel}.
+     * 
+     * @param pageModel page model for the panel (can be {@code null}).
      */
-    public DomPanel() {
+    public DomPanel(PageModel pageModel) {
+        this.pageModel = pageModel;
         setLayout(new BorderLayout());
         initTreeView();
         initNoDOMLabel();
         add(noDomLabel);
-        pageModel.addPropertyChangeListener(createModelListener());
-        manager.addPropertyChangeListener(createSelectedNodesListener());
-        update(true);
+        if (pageModel != null) {
+            pageModel.addPropertyChangeListener(createModelListener());
+            manager.addPropertyChangeListener(createSelectedNodesListener());
+            update(true);
+        }
     }
 
     /**
@@ -134,12 +139,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                final Document document;
-                if (pageModel.isValid()) {
-                    document = pageModel.getDocument();
-                } else {
-                    document = null;
-                }
+                final Document document = pageModel.getDocument();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -235,7 +235,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageModel.PROP_SELECTED_ELEMENTS.equals(propName)) {
-                    Collection<ElementHandle> selection = PageModel.getDefault().getSelectedElements();
+                    Collection<ElementHandle> selection = pageModel.getSelectedElements();
                     List<Node> nodeSelection = new ArrayList<Node>();
                     for (ElementHandle handle : selection) {
                         Node root = manager.getRootContext();
@@ -254,8 +254,6 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                     } catch (PropertyVetoException pvex) {
                         Logger.getLogger(DomPanel.class.getName()).log(Level.INFO, null, pvex);
                     }
-                } else if (PageModel.PROP_MODEL.equals(propName)) {
-                    update(true);
                 }
             }
         };

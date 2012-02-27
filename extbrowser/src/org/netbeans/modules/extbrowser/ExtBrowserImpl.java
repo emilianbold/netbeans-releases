@@ -50,6 +50,8 @@ import java.net.URL;
 import org.netbeans.modules.extbrowser.plugins.DOMInspectionFeatureImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
+import org.netbeans.modules.extbrowser.plugins.MessageDispatcherImpl;
+import org.netbeans.modules.extbrowser.plugins.RemoteScriptExecutor;
 import org.netbeans.modules.web.plugins.BrowserId;
 import org.netbeans.modules.web.plugins.ExtensionManager;
 import org.openide.awt.HtmlBrowser;
@@ -62,6 +64,8 @@ import org.openide.util.lookup.Lookups;
  * @author Radim Kubacki
  */
 public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
+    /** Lookup of this {@code HtmlBrowser.Impl}.  */
+    private Lookup lookup;
 
     /** standart helper variable */
     protected PropertyChangeSupport pcs;
@@ -80,6 +84,12 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
       */
     public ExtBrowserImpl () {
         pcs = new PropertyChangeSupport (this);
+        // XXX: this should be provided only by browsers which has corresponding plugin installed
+        lookup = Lookups.fixed(
+                new DOMInspectionFeatureImpl(this),
+                new MessageDispatcherImpl(),
+                new RemoteScriptExecutor(this)
+        );
     }
     
     /** Dummy implementations */
@@ -191,8 +201,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     }
 
     public Lookup getLookup() {
-        // XXX: this should be provided only by browsers which has corresponding plugin installed
-        return Lookups.fixed(new DOMInspectionFeatureImpl(this));
+        return lookup;
     }
 
     public void wasClosed() {

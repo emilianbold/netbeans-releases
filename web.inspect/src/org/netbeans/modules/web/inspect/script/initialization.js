@@ -569,10 +569,14 @@ NetBeans.insertGlassPane = function() {
     canvas.style.top = 0;
     canvas.style.left = 0;
     canvas.style.zIndex = zIndex;
-    canvas.onclick=function(event) {
+    canvas.onclick = function(event) {
         var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
         canvas.style.visibility = 'hidden';
         var element = document.elementFromPoint(event.clientX, event.clientY);
+        // Do not select helper elements introduced by page inspection
+        while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
+            element = element.parentNode;
+        }
         canvas.style.visibility = 'visible';
         var handle = self.getElementHandle(element);
         // Extremely ugly and fragile hack, 'port' refers to variable in eval.js
@@ -603,6 +607,7 @@ NetBeans.insertGlassPane = function() {
 
     window.onscroll=this.repaintGlassPane;
     document.body.onresize=this.repaintGlassPane;
+    this.repaintGlassPane();
 }
 
 // Updates the selection mode according to the 'Select Mode' check-box

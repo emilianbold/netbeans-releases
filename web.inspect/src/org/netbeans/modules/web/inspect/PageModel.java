@@ -54,37 +54,10 @@ import org.w3c.dom.Document;
  * @author Jan Stola
  */
 public abstract class PageModel {
-    /**
-     * Model property - property change with this property name is fired when
-     * the model has changed significantly.
-     */
-    public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the property that is fired when the set of selected elements is changed. */
     public static final String PROP_SELECTED_ELEMENTS = "selectedElements"; // NOI18N
-    /** Default instance of the model. */
-    private static final PageModel INSTANCE = new PageModelImpl();
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
-
-    /**
-     * Returns the default {@code PageModel} instance.
-     * 
-     * @return default {@code PageModel} instance.
-     */
-    public static PageModel getDefault() {
-        return INSTANCE;
-    }
-
-    /**
-     * Determines whether the model is valid. When the model is not valid
-     * then other methods of this interface may return misleading values
-     * or even throw exceptions. When the value of this flag changes then
-     * {@code PROP_MODEL} property is fired.
-     * 
-     * @return {@code true} when the model is valid, returns {@code false}
-     * otherwise.
-     */
-    public abstract boolean isValid();
 
     /**
      * Returns a simplified DOM of the page that can be used to determine

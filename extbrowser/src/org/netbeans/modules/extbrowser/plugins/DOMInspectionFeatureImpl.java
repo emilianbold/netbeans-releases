@@ -57,7 +57,7 @@ public class DOMInspectionFeatureImpl implements DOMInspectionFeature {
     
     @Override
     public Object getDOM() {
-        return ExternalBrowserPlugin.getInstance().getDOM(impl.getBrowserTabDescriptor());
+        return null; // PENDING
     }
     
 }

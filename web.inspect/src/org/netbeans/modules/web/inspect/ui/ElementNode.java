@@ -46,6 +46,7 @@ import java.util.*;
 import javax.swing.Action;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.ElementHandle;
+import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.GoToElementSourceAction;
 import org.openide.nodes.*;
@@ -126,7 +127,7 @@ public class ElementNode extends AbstractNode {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                PageModel pageModel = PageModel.getDefault();
+                PageModel pageModel = PageInspectorImpl.getDefault().getPage();
                 ElementHandle handle = ElementHandle.forElement(element);
                 updateProperties(SET_ATTRIBUTES_INDEX, pageModel.getAtrributes(handle));
                 updateProperties(SET_STYLE_INDEX, pageModel.getComputedStyle(handle));

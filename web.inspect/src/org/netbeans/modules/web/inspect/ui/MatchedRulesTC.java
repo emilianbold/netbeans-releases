@@ -43,8 +43,12 @@ package org.netbeans.modules.web.inspect.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JScrollPane;
 import javax.swing.UIManager;
+import org.netbeans.modules.web.inspect.PageInspectorImpl;
+import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.TopComponent;
@@ -81,16 +85,18 @@ public final class MatchedRulesTC extends TopComponent {
     static final String ICON_BASE = "org/netbeans/modules/web/inspect/resources/matchedRules.png"; // NOI18N
     /** TopComponent ID. */
     public static final String ID = "MatchedRulesTC"; // NOI18N
-    /** Panel shown in this {@code TopComponent}. */
-    private MatchedRulesPanel matchedRulesPanel;
+    /** Scrollpane in the root of component hierarchy.  */
+    private JScrollPane scrollPane;
 
     /**
      * Creates a new {@code MatchedRulesTC}.
      */
     public MatchedRulesTC() {
-        initComponents();
         setName(Bundle.CTL_MatchedRulesTC());
         setToolTipText(Bundle.HINT_MatchedRulesTC());
+        initComponents();
+        PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
+        update();
     }
 
     /**
@@ -98,15 +104,39 @@ public final class MatchedRulesTC extends TopComponent {
      */
     private void initComponents() {
         setLayout(new BorderLayout());
-        matchedRulesPanel = new MatchedRulesPanel();
-        JScrollPane scrollPane = new JScrollPane();
+        scrollPane = new JScrollPane();
         scrollPane.setBorder(null);
-        scrollPane.setViewportView(matchedRulesPanel);
         Font font = UIManager.getFont("Label.font"); // NOI18N
         int unitIncrement = (int)(font.getSize()*1.5);
         scrollPane.getHorizontalScrollBar().setUnitIncrement(unitIncrement);
         scrollPane.getVerticalScrollBar().setUnitIncrement(unitIncrement);
         add(scrollPane);
+    }
+
+    /**
+     * Updates the content of this {@code TopComponent}.
+     */
+    private void update() {
+        PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+        MatchedRulesPanel panel = new MatchedRulesPanel(pageModel);
+        scrollPane.setViewportView(panel);
+    }
+
+    /**
+     * Creates a page inspector listener.
+     * 
+     * @return page inspector listener.
+     */
+    private PropertyChangeListener createInspectorListener() {
+        return new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                String propName = evt.getPropertyName();
+                if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
+                    update();
+                }
+            }
+        };
     }
 
 }

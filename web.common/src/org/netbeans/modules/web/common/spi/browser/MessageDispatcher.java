@@ -39,63 +39,70 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.actions;
+package org.netbeans.modules.web.common.spi.browser;
 
-import org.netbeans.modules.web.inspect.PageInspectorImpl;
-import org.netbeans.modules.web.inspect.PageModel.ResourceInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Reloads the resource in the inspected page.
+ * Dispatcher of messages from a web-browser pane to features implemented
+ * on top of the pane.
  *
  * @author Jan Stola
  */
-public class ReloadResourceAction extends NodeAction  {
+public class MessageDispatcher {
+    /** Listeners interested in messages from this dispatcher. */
+    private final List<MessageListener> listeners = new ArrayList<MessageListener>();
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {        
-        for (int i=0; i<activatedNodes.length; i++) {
-            final ResourceInfo resource = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (resource != null) {
-                ResourceInfo.Type type = resource.getType();
-                if (type != ResourceInfo.Type.HTML) {
-                    PageInspectorImpl.getDefault().getPage().reloadResource(resource);
-                }
-            }
+    /**
+     * Adds a listener to this message dispatcher.
+     * 
+     * @param listener listener interested in messages from this dispatcher.
+     */
+    public void addMessageListener(MessageListener listener) {
+        synchronized(listeners) {
+            listeners.add(listener);
         }
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        for (int i=0; i<activatedNodes.length; i++) {
-            ResourceInfo info = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (info == null) {
-                return false;
-            }
-            ResourceInfo.Type type = info.getType();
-            if (type == ResourceInfo.Type.HTML) {
-                return false;
-            }
+    /**
+     * Removes a listener from this message dispatcher.
+     * 
+     * @param listener listener to unregister.
+     */
+    public void removeMessageListener(MessageListener listener) {
+        synchronized(listeners) {
+            listeners.remove(listener);
         }
-        return true;
     }
 
-    @Override
-    protected boolean asynchronous() {
-        return true;
+    /**
+     * Dispatches a new message to all registered listeners.
+     * 
+     * @param featureId ID of a feature the message being dispatched is related to.
+     * @param message message to dispatch.
+     */
+    protected void dispatchMessage(String featureId, String message) {
+        MessageListener[] listenersCopy;
+        synchronized(listeners) {
+            listenersCopy = listeners.toArray(new MessageListener[listeners.size()]);
+        }
+        for (MessageListener listener : listenersCopy) {
+            listener.messageReceived(featureId, message);
+        }
     }
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(OpenResourceAction.class, "ReloadResourceAction.name"); // NOI18N
+    /**
+     * Message listener.
+     */
+    public static interface MessageListener {
+        /**
+         * Invoked when a new message is being dispatched by the message dispatcher.
+         * 
+         * @param featureId ID of a feature the message being dispatched is related to.
+         * @param message message to dispatch.
+         */
+        void messageReceived(String featureId, String message);
     }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
-
+    
 }

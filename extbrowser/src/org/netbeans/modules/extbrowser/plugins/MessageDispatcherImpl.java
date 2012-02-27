@@ -39,24 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect;
+package org.netbeans.modules.extbrowser.plugins;
+
+import org.netbeans.modules.web.common.spi.browser.MessageDispatcher;
 
 /**
- * Executor of scripts.
+ * Implementation of {@code MessageDispatcher} for {@code ExtBrowserImpl}.
  *
  * @author Jan Stola
  */
-public interface ScriptExecutor {
-    /** Return value of a script whose execution has failed. */
-    Object ERROR_RESULT = new Object();
+public class MessageDispatcherImpl extends MessageDispatcher {
 
-    /**
-     * Executes the specified script.
-     * 
-     * @param script script to execute.
-     * @return result of the script or {@code ERROR_RESULT} if the execution
-     * has failed for whatever reason.
-     */
-    Object execute(String script);
-    
+    @Override
+    public void dispatchMessage(String featureId, String message) {
+        super.dispatchMessage(featureId, message);
+    }
+
 }

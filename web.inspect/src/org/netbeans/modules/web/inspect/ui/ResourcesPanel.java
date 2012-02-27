@@ -46,9 +46,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.*;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
@@ -73,20 +72,20 @@ public class ResourcesPanel extends JPanel implements ExplorerManager.Provider {
     private BeanTreeView treeView;
     /** Label used when no page is inspected. */
     private JLabel noResourcesLabel;
-    /** Page model used by this panel. */
-    private PageModel pageModel = PageModel.getDefault();
     /** Context actions (actions shown when the panel/view is right-clicked) of this panel. */
     private Action[] contextActions;
+   /** Page model used by this panel. */
+    private PageModel pageModel;
 
     /**
      * Creates a new {@code ResourcesPanel}.
      */
-    public ResourcesPanel() {
+    public ResourcesPanel(PageModel pageModel) {
+        this.pageModel = pageModel;
         setLayout(new BorderLayout());
         initTreeView();
         initResourcesLabel();
         add(noResourcesLabel);
-        pageModel.addPropertyChangeListener(createModelListener());
         update(true);
     }
 
@@ -126,10 +125,10 @@ public class ResourcesPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public void run() {
                 final Collection<PageModel.ResourceInfo> resources;
-                if (pageModel.isValid()) {
-                    resources = pageModel.getResources();
+                if (pageModel == null) {
+                    resources = Collections.EMPTY_LIST;
                 } else {
-                    resources = null;
+                    resources = pageModel.getResources();
                 }
                 EventQueue.invokeLater(new Runnable() {
                     @Override
@@ -209,23 +208,6 @@ public class ResourcesPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public void actionPerformed(ActionEvent e) {
                 update(false);
-            }
-        };
-    }
-
-    /**
-     * Creates {@code PageModel} listener.
-     * 
-     * @return {@code PageModel} listener.
-     */
-    private PropertyChangeListener createModelListener() {
-        return new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                String propName = evt.getPropertyName();
-                if (PageModel.PROP_MODEL.equals(propName)) {
-                    update(true);
-                }
             }
         };
     }

@@ -39,63 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.inspect.actions;
+package org.netbeans.modules.web.common.api.browser;
 
-import org.netbeans.modules.web.inspect.PageInspectorImpl;
-import org.netbeans.modules.web.inspect.PageModel.ResourceInfo;
-import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.NodeAction;
+import org.openide.util.Lookup;
 
 /**
- * Reloads the resource in the inspected page.
+ * Web-page inspector.
  *
  * @author Jan Stola
  */
-public class ReloadResourceAction extends NodeAction  {
+public abstract class PageInspector {
+    /** Feature ID used by page-inspection when it sends messages through {@code MessageDispatcher}. */
+    public static final String MESSAGE_DISPATCHER_FEATURE_ID = "inspect"; // NOI18N
+    /** Default {@code PageInspector}. */
+    private static PageInspector DEFAULT = Lookup.getDefault().lookup(PageInspector.class);
 
-    @Override
-    protected void performAction(Node[] activatedNodes) {        
-        for (int i=0; i<activatedNodes.length; i++) {
-            final ResourceInfo resource = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (resource != null) {
-                ResourceInfo.Type type = resource.getType();
-                if (type != ResourceInfo.Type.HTML) {
-                    PageInspectorImpl.getDefault().getPage().reloadResource(resource);
-                }
-            }
-        }
+    /**
+     * Returns the default {@code PageInspector}.
+     * 
+     * @return default {@code PageInspector}.
+     */
+    public static PageInspector getDefault() {
+        return DEFAULT;
     }
 
-    @Override
-    protected boolean enable(Node[] activatedNodes) {
-        for (int i=0; i<activatedNodes.length; i++) {
-            ResourceInfo info = activatedNodes[i].getLookup().lookup(ResourceInfo.class);
-            if (info == null) {
-                return false;
-            }
-            ResourceInfo.Type type = info.getType();
-            if (type == ResourceInfo.Type.HTML) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    @Override
-    protected boolean asynchronous() {
-        return true;
-    }
-
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(OpenResourceAction.class, "ReloadResourceAction.name"); // NOI18N
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    /**
+     * Starts the inspection of the web-page described by the given context.
+     * 
+     * @param pageContext tools for accessing the data about the web-page
+     * (it is usually equal to {@code HtmlBrowser.Impl.getLookup()} of
+     * the web-browser pane that displays the web-page).
+     */
+    public abstract void inspectPage(Lookup pageContext);
 
 }

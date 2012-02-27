@@ -53,15 +53,20 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.web.common.api.browser.PageInspector;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 
 
 /**
  * Support class running a WebSocket server for communication with browser plugins.
  */
 public final class ExternalBrowserPlugin {
+    /** ID of 'reload of save' feature. */
+    private static final String FEATURE_ROS = "RoS"; // NOI18N
     
     private static final int PORT = 8008;
     
@@ -114,30 +119,61 @@ public final class ExternalBrowserPlugin {
      * Show URL in browser in given browser tab.
      */
     public void showURLInTab(BrowserTabDescriptor tab, URL url) {
-        server.sendMessage(tab.key, createReloadMessage(tab.tabID, url));
-
+        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
     }
 
     private void removeKey( SelectionKey key ) {
+        notifyDispatchers(null, key); // Notify MessageDispatcher(s) about the closed socket
         for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
             BrowserTabDescriptor browserTab = iterator.next();
-            if ( key.equals( browserTab.key )) {
-                iterator.remove();
+            if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
                 browserTab.browserImpl.wasClosed();
+            }
+            browserTab.unregisterKey(key);
+            if (!browserTab.isAnyKeyRegistered()) {
+                // SelectionKey of the last feature (that was interested in this tab)
+                // was removed => we can forget this tab.
+                iterator.remove();
             }
         }
     }
-    
+
     /**
-     * Just an example/placeholder.
+     * Notifies {@code MessageDispatcher}(s) that correspond to the given
+     * {@code SelectionKey} about a new message.
+     * 
+     * @param message message to dispatch.
+     * @param key origin of the message.
      */
-    public Object getDOM(BrowserTabDescriptor browserTab) {
-        if (browserTab != null && browserTab.key != null ){
-            server.sendMessage(browserTab.key, "a message to retrieve DOM description for "+ browserTab.tabID);
-            // wait for response and return it
-            return new Object(/* data from response*/);
+    private void notifyDispatchers(final String message, SelectionKey key) {
+        for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
+            String featureId = browserTab.featureForKey(key);
+            if (featureId != null) {
+                Lookup lookup = browserTab.browserImpl.getLookup();
+                final MessageDispatcherImpl dispatcher = lookup.lookup(MessageDispatcherImpl.class);
+                if (dispatcher != null) {
+                    dispatcher.dispatchMessage(featureId, message);
+                }
+            }
         }
-        return null;
+    }
+
+    /**
+     * Sends a message to the specified feature of the specified web-browser pane.
+     * 
+     * @param message message to deliver.
+     * @param impl web-pane where the message should be sent.
+     * @param featureId ID of the feature the message is related to.
+     */
+    public void sendMessage(String message, ExtBrowserImpl impl, String featureId) {
+        for (BrowserTabDescriptor browserTab : knownBrowserTabs) {
+            if (browserTab.browserImpl == impl) {
+                SelectionKey key = browserTab.keyForFeature(featureId);
+                if (key != null) {
+                    server.sendMessage(key, message);
+                }
+            }
+        }
     }
 
     class BrowserPluginHandler implements WebSocketReadHandler {
@@ -154,7 +190,8 @@ public final class ExternalBrowserPlugin {
             }
             String message = new String( data , Charset.forName( WebSocketServer.UTF_8));
             Message msg = Message.parse(message);
-            if ( msg == null ){
+            if (msg == null || (msg.getType() == null)) {
+                notifyDispatchers(message, key);
                 return;
             }
             Message.MessageType type = msg.getType();
@@ -167,6 +204,9 @@ public final class ExternalBrowserPlugin {
                     break;
                 case URLCHANGE:
                     handleURLChange(msg, key);
+                    break;
+                case INSPECT:
+                    handleInspect(msg, key);
                     break;
                 default:
                     assert false;
@@ -205,7 +245,8 @@ public final class ExternalBrowserPlugin {
                 Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toString());
             } else  {
-                BrowserTabDescriptor tab = new BrowserTabDescriptor(key, tabId, browserImpl);
+                BrowserTabDescriptor tab = new BrowserTabDescriptor(tabId, browserImpl);
+                tab.registerKeyForFeature(FEATURE_ROS, key);
                 browserImpl.setBrowserTabDescriptor(tab);
                 knownBrowserTabs.add(tab);
                 Map<String,String> map = new HashMap<String, String>();
@@ -245,6 +286,53 @@ public final class ExternalBrowserPlugin {
             }
         }
 
+        /**
+         * Handles a request for web-page inspection.
+         * 
+         * @param message initial message of the inspection.
+         * @param key origin of the message.
+         */
+        private void handleInspect(Message message, SelectionKey key) {
+            final PageInspector inspector = PageInspector.getDefault();
+            if (inspector == null) {
+                LOG.log(Level.INFO, "No PageInspector found: ignoring the request for page inspection!"); // NOI18N
+            } else {
+                String tabId = message.getValue(Message.TAB_ID);
+                
+                // Find if the tab is known to RoS already
+                BrowserTabDescriptor browserTab = null;
+                for (BrowserTabDescriptor descriptor : knownBrowserTabs) {
+                    if (descriptor.tabID.equals(tabId)) {
+                        browserTab = descriptor;
+                    }
+                }
+                if (browserTab == null) {
+                    // Tab not opened from the IDE => using a dummy ExtBrowserImpl
+                    ExtBrowserImpl impl = new ExtBrowserImpl() {
+                        @Override
+                        protected void loadURLInBrowser(URL url) {
+                            throw new UnsupportedOperationException();
+                        }
+                    };
+                    browserTab = new BrowserTabDescriptor(tabId, impl);
+                    knownBrowserTabs.add(browserTab);
+                }
+                browserTab.registerKeyForFeature(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, key);
+                final Lookup context = browserTab.browserImpl.getLookup();
+                RemoteScriptExecutor executor = context.lookup(RemoteScriptExecutor.class);
+                if (executor != null) {
+                    executor.activate();
+                }
+                // Do not block WebSocket thread
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        inspector.inspectPage(context);
+                    }
+                });
+            }
+        }
+
         @Override
         public void accepted(SelectionKey key) {
         }
@@ -279,15 +367,74 @@ public final class ExternalBrowserPlugin {
      * Descriptor of tab opened in the external browser.
      */
     public static class BrowserTabDescriptor {
-        private SelectionKey key;
+        /** Maps IDs of features (related to this tab) to their correponding sockets. */
+        private Map<String,SelectionKey> keyMap = new HashMap<String,SelectionKey>();
         private String tabID;
         private ExtBrowserImpl browserImpl;
 
-        public BrowserTabDescriptor(SelectionKey key, String tabID, ExtBrowserImpl browserImpl) {
-            this.key = key;
+        public BrowserTabDescriptor(String tabID, ExtBrowserImpl browserImpl) {
             this.tabID = tabID;
             this.browserImpl = browserImpl;
         }
+
+        /**
+         * Registers the given selection key for the specified feature.
+         * 
+         * @param featureId ID of the feature.
+         * @param key selection key for the feature.
+         */
+        synchronized void registerKeyForFeature(String featureId, SelectionKey key) {
+            keyMap.put(featureId, key);
+        }
+
+        /**
+         * Returns selection key registered for the specified feature.
+         * 
+         * @param featureId ID of the feature.
+         * @return selection key registered for the specified feature
+         * or {@code null} if there is no such feature.
+         */
+        synchronized SelectionKey keyForFeature(String featureId) {
+            return keyMap.get(featureId);
+        }
+
+        /**
+         * Unregisters the specified key.
+         * 
+         * @param key selection key to unregister.
+         */
+        synchronized void unregisterKey(SelectionKey key) {
+            keyMap.values().removeAll(Collections.singleton(key));
+        }
+
+        /**
+         * Determines whether any key/feature is registerd for this tab.
+         * 
+         * @return {@code true} if any key/feature is registered for this tab,
+         * returns {@code false} otherwise.
+         */
+        synchronized boolean isAnyKeyRegistered() {
+            return !keyMap.isEmpty();
+        }
+
+        /**
+         * Returns ID of the feature for which the specified selection key
+         * is registered.
+         * 
+         * @param key selection key of the feature we are interested in.
+         * @return ID of the feature for which the specified selection key
+         * is registered or {@code null} when there is no such feature.
+         */
+        synchronized String featureForKey(SelectionKey key) {
+            String featureId = null;
+            for (Map.Entry<String,SelectionKey> entry : keyMap.entrySet()) {
+                if (entry.getValue() == key) {
+                    featureId = entry.getKey();
+                }
+            }
+            return featureId;
+        }
+        
     }
     
 }

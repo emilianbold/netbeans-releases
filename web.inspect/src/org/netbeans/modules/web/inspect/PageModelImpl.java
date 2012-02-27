@@ -52,7 +52,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.netbeans.modules.web.inspect.script.Script;
+import org.netbeans.modules.web.common.spi.browser.ScriptExecutor;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -76,7 +76,7 @@ public class PageModelImpl extends PageModel {
     private static final String RULE_SELECTOR = "selector"; // NOI18N
     /** JSON attribute holding styling information of a rule. */
     private static final String RULE_STYLE = "style"; // NOI18N
-    /** Lock guarding access to modifiable field. */
+    /** Lock guarding access to modifiable fields. */
     private final Object LOCK = new Object();
     /** Selected elements. */
     private Collection<ElementHandle> selectedElements = Collections.EMPTY_LIST;
@@ -84,39 +84,21 @@ public class PageModelImpl extends PageModel {
     private ScriptExecutor executor;
 
     /**
-     * Sets executor for the model.
+     * Creates a page model whose data are obtain using the specified executor.
      * 
-     * @param executor 
+     * @param executor executor for the data retrieval from the target page.
      */
-    void setExecutor(ScriptExecutor executor) {
-        if (this.executor == executor) {
-            return;
-        }
-        synchronized (LOCK) {
-            this.executor = executor;
-            setSelectedElements(Collections.EMPTY_LIST);
-        }
-        firePropertyChange(PROP_MODEL, null, null);
+    PageModelImpl(ScriptExecutor executor) {
+        this.executor = executor;
     }
 
     /**
-     * Returns executor for the model.
-     * 
-     * @return executor for the model.
+     * Disposes this page model.
      */
-    ScriptExecutor getExecutor() {
-        synchronized (LOCK) {
-            return executor;
-        }
+    void dispose() {
+        // PENDING
     }
-
-    @Override
-    public boolean isValid() {
-        synchronized (LOCK) {
-            return (executor != null);
-        }
-    }
-
+    
     /**
      * Throws an exception if this thread is the event-dispatch thread.
      * 
@@ -139,44 +121,29 @@ public class PageModelImpl extends PageModel {
      */
     private Object executeScript(String script) {
         checkThread();
-        String isInitScript = Script.getScript("isInitialized"); // NOI18N
-        ScriptExecutor currentExecutor = getExecutor();
-        Object initialized = currentExecutor.execute(isInitScript);
-        if (initialized == ScriptExecutor.ERROR_RESULT) {
-            return ScriptExecutor.ERROR_RESULT;
-        }
-        if ((initialized != null) && "false".equals(initialized.toString())) { // NOI18N
-            String initScript = Script.getScript("initialization"); // NOI18N
-            initialized = currentExecutor.execute(initScript);
-            if (initialized == ScriptExecutor.ERROR_RESULT) {
-                return ScriptExecutor.ERROR_RESULT;
-            }
-        }
-        return currentExecutor.execute(script);
+        return executor.execute(script);
     }
 
     @Override
     public Document getDocument() {
         Document document = null;
-        if (isValid()) {
-            try {
-                Object xml = executeScript("NetBeans.getDOM()"); // NOI18N
-                if (xml != ScriptExecutor.ERROR_RESULT) {
-                    InputSource source = new InputSource(new StringReader(xml.toString()));
-                    document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
-                    // Set document URL
-                    Object url = executeScript("document.URL"); // NOI18N
-                    if (url != ScriptExecutor.ERROR_RESULT) {
-                        document.setDocumentURI(url.toString());
-                    }
+        try {
+            Object xml = executeScript("NetBeans.getDOM()"); // NOI18N
+            if (xml != ScriptExecutor.ERROR_RESULT) {
+                InputSource source = new InputSource(new StringReader(xml.toString()));
+                document = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(source);
+                // Set document URL
+                Object url = executeScript("document.URL"); // NOI18N
+                if (url != ScriptExecutor.ERROR_RESULT) {
+                    document.setDocumentURI(url.toString());
                 }
-            } catch (SAXException ex) {
-                LOG.log(Level.INFO, null, ex);
-            } catch (IOException ex) {
-                LOG.log(Level.INFO, null, ex);
-            } catch (ParserConfigurationException ex) {
-                LOG.log(Level.INFO, null, ex);
             }
+        } catch (SAXException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, null, ex);
+        } catch (ParserConfigurationException ex) {
+            LOG.log(Level.INFO, null, ex);
         }
         return document;
     }
@@ -186,16 +153,14 @@ public class PageModelImpl extends PageModel {
         synchronized (LOCK) {
             selectedElements = elements;
         }
-        if (isValid()) {
-            List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
-            for (ElementHandle handle : elements) {
-                JSONObject jsonHandle = handle.toJSONObject();
-                jsonHandles.add(jsonHandle);
-            }
-            JSONArray array = new JSONArray(jsonHandles);
-            String code = array.toString();
-            executeScript("NetBeans.selectElements("+code+")"); // NOI18N
+        List<JSONObject> jsonHandles = new ArrayList<JSONObject>(elements.size());
+        for (ElementHandle handle : elements) {
+            JSONObject jsonHandle = handle.toJSONObject();
+            jsonHandles.add(jsonHandle);
         }
+        JSONArray array = new JSONArray(jsonHandles);
+        String code = array.toString();
+        executeScript("NetBeans.selectElements("+code+")"); // NOI18N
         firePropertyChange(PROP_SELECTED_ELEMENTS, null, null);
     }
 
@@ -209,20 +174,16 @@ public class PageModelImpl extends PageModel {
     @Override
     public Map<String, String> getAtrributes(ElementHandle element) {
         Map<String,String> map;
-        if (isValid()) {
-            JSONObject jsonHandle = element.toJSONObject();
-            String code = jsonHandle.toString();
-            Object result = executeScript("NetBeans.getAttributes("+code+")"); // NOI18N
-            if (result == ScriptExecutor.ERROR_RESULT) {
-                map = Collections.EMPTY_MAP;
-            } else if (result instanceof JSONObject) {
-                JSONObject json = (JSONObject)result;
-                map = toMap(json);
-            } else {
-                LOG.log(Level.INFO, "Unexpected attributes: {0}", result); // NOI18N
-                map = Collections.EMPTY_MAP;
-            }
+        JSONObject jsonHandle = element.toJSONObject();
+        String code = jsonHandle.toString();
+        Object result = executeScript("NetBeans.getAttributes("+code+")"); // NOI18N
+        if (result == ScriptExecutor.ERROR_RESULT) {
+            map = Collections.EMPTY_MAP;
+        } else if (result instanceof JSONObject) {
+            JSONObject json = (JSONObject)result;
+            map = toMap(json);
         } else {
+            LOG.log(Level.INFO, "Unexpected attributes: {0}", result); // NOI18N
             map = Collections.EMPTY_MAP;
         }
         return map;
@@ -231,21 +192,17 @@ public class PageModelImpl extends PageModel {
     @Override
     public Map<String, String> getComputedStyle(ElementHandle element) {
         Map<String,String> map;
-        if (isValid()) {
-            JSONObject jsonHandle = element.toJSONObject();
-            String code = jsonHandle.toString();
-            Object result = executeScript("NetBeans.getComputedStyle("+code+")"); // NOI18N
-            if (result == ScriptExecutor.ERROR_RESULT) {
-                map = Collections.EMPTY_MAP;
-            } else if (result instanceof JSONObject) {
-                JSONObject json = (JSONObject)result;
-                map = toMap(json);
-            } else {
-                LOG.log(Level.INFO, "Unexpected computed style: {0}", result); // NOI18N
-                map = Collections.EMPTY_MAP;
-            }
+        JSONObject jsonHandle = element.toJSONObject();
+        String code = jsonHandle.toString();
+        Object result = executeScript("NetBeans.getComputedStyle("+code+")"); // NOI18N
+        if (result == ScriptExecutor.ERROR_RESULT) {
+            map = Collections.EMPTY_MAP;
+        } else if (result instanceof JSONObject) {
+            JSONObject json = (JSONObject)result;
+            map = toMap(json);
         } else {
-            map = Collections.EMPTY_MAP;    
+            LOG.log(Level.INFO, "Unexpected computed style: {0}", result); // NOI18N
+            map = Collections.EMPTY_MAP;
         }
         return map;
     }
@@ -275,75 +232,69 @@ public class PageModelImpl extends PageModel {
     @Override
     public Collection<ResourceInfo> getResources() {
         List<ResourceInfo> resources = null;
-        if (isValid()) {
-            Object result = executeScript("NetBeans.getResources()"); // NOI18N
-            if (result instanceof JSONArray) {
-                JSONArray array = (JSONArray)result;
-                resources = new LinkedList<ResourceInfo>();
-                for (int i=0; i<array.length(); i++) {
-                    try {
-                        JSONObject resource = array.getJSONObject(i);
-                        String url = resource.getUnsafeString(RESOURCE_URL);
-                        String typeCode = resource.getUnsafeString(RESOURCE_TYPE);
-                        ResourceInfo.Type type = ResourceInfo.Type.fromCode(typeCode);
-                        if (type == null) {
-                            LOG.log(Level.INFO, "Unexpected resource type: {0}", typeCode); // NOI18N
-                        } else {
-                            resources.add(new ResourceInfo(type, url));
-                        }
-                    } catch (JSONException ex) {
-                        LOG.log(Level.INFO, "Unexpected resource on index {0} in {1}", new Object[]{i, array}); // NOI18N
+        Object result = executeScript("NetBeans.getResources()"); // NOI18N
+        if (result instanceof JSONArray) {
+            JSONArray array = (JSONArray)result;
+            resources = new LinkedList<ResourceInfo>();
+            for (int i=0; i<array.length(); i++) {
+                try {
+                    JSONObject resource = array.getJSONObject(i);
+                    String url = resource.getUnsafeString(RESOURCE_URL);
+                    String typeCode = resource.getUnsafeString(RESOURCE_TYPE);
+                    ResourceInfo.Type type = ResourceInfo.Type.fromCode(typeCode);
+                    if (type == null) {
+                        LOG.log(Level.INFO, "Unexpected resource type: {0}", typeCode); // NOI18N
+                    } else {
+                        resources.add(new ResourceInfo(type, url));
                     }
+                } catch (JSONException ex) {
+                    LOG.log(Level.INFO, "Unexpected resource on index {0} in {1}", new Object[]{i, array}); // NOI18N
                 }
-            } else if (result != ScriptExecutor.ERROR_RESULT) {
-                LOG.log(Level.INFO, "Unexpected resources: {0}", result); // NOI18N
             }
+        } else if (result != ScriptExecutor.ERROR_RESULT) {
+            LOG.log(Level.INFO, "Unexpected resources: {0}", result); // NOI18N
         }
         return resources;
     }
 
     @Override
     public void reloadResource(ResourceInfo resource) {
-        if (isValid()) {
-            String url = JSONObject.quote(resource.getURL());
-            ResourceInfo.Type type = resource.getType();
-            if (type == ResourceInfo.Type.STYLESHEET) {
-                executeScript("NetBeans.reloadCSS("+url+")");
-            } else if (type == ResourceInfo.Type.IMAGE) {
-                executeScript("NetBeans.reloadImage("+url+")");
-            } else if (type == ResourceInfo.Type.SCRIPT) {
-                executeScript("NetBeans.reloadScript("+url+")");
-            }
+        String url = JSONObject.quote(resource.getURL());
+        ResourceInfo.Type type = resource.getType();
+        if (type == ResourceInfo.Type.STYLESHEET) {
+            executeScript("NetBeans.reloadCSS("+url+")");
+        } else if (type == ResourceInfo.Type.IMAGE) {
+            executeScript("NetBeans.reloadImage("+url+")");
+        } else if (type == ResourceInfo.Type.SCRIPT) {
+            executeScript("NetBeans.reloadScript("+url+")");
         }
     }
 
     @Override
     public List<RuleInfo> getMatchedRules(ElementHandle element) {
         List<RuleInfo> rules = Collections.EMPTY_LIST;
-        if (isValid()) {
-            JSONObject jsonHandle = element.toJSONObject();
-            String code = jsonHandle.toString();
-            Object result = executeScript("NetBeans.getMatchedRules("+code+")"); // NOI18N
-            if (result instanceof JSONArray) {
-                JSONArray array = (JSONArray)result;
-                rules = new LinkedList<RuleInfo>();
-                for (int i=0; i<array.length(); i++) {
-                    try {
-                        JSONObject resource = array.getJSONObject(i);
-                        String selector = resource.getUnsafeString(RULE_SELECTOR);
-                        String sourceURL = null;
-                        if (!resource.isNull(RULE_SOURCE_URL)) {
-                            sourceURL = resource.getUnsafeString(RULE_SOURCE_URL);
-                        }
-                        JSONObject style = resource.getJSONObject(RULE_STYLE);
-                        rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
-                    } catch (JSONException ex) {
-                        LOG.log(Level.INFO, "Unexpected matched rule on index {0} in {1}", new Object[]{i, array}); // NOI18N
+        JSONObject jsonHandle = element.toJSONObject();
+        String code = jsonHandle.toString();
+        Object result = executeScript("NetBeans.getMatchedRules("+code+")"); // NOI18N
+        if (result instanceof JSONArray) {
+            JSONArray array = (JSONArray)result;
+            rules = new LinkedList<RuleInfo>();
+            for (int i=0; i<array.length(); i++) {
+                try {
+                    JSONObject resource = array.getJSONObject(i);
+                    String selector = resource.getUnsafeString(RULE_SELECTOR);
+                    String sourceURL = null;
+                    if (!resource.isNull(RULE_SOURCE_URL)) {
+                        sourceURL = resource.getUnsafeString(RULE_SOURCE_URL);
                     }
+                    JSONObject style = resource.getJSONObject(RULE_STYLE);
+                    rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
+                } catch (JSONException ex) {
+                    LOG.log(Level.INFO, "Unexpected matched rule on index {0} in {1}", new Object[]{i, array}); // NOI18N
                 }
-            } else if (result != ScriptExecutor.ERROR_RESULT) {
-                LOG.log(Level.INFO, "Unexpected matched rules: {0}", result); // NOI18N
             }
+        } else if (result != ScriptExecutor.ERROR_RESULT) {
+            LOG.log(Level.INFO, "Unexpected matched rules: {0}", result); // NOI18N
         }
         return rules;
     }

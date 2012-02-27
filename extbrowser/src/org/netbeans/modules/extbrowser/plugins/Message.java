@@ -61,7 +61,8 @@ class Message {
         INIT,
         RELOAD,
         URLCHANGE,
-        CLOSE;
+        CLOSE,
+        INSPECT;
         
         @Override
         public String toString() {
