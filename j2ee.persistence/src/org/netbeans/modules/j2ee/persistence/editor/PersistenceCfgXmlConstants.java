@@ -54,6 +54,7 @@ public class PersistenceCfgXmlConstants {
     public static final String CLASS = "class";//NO18N
     public static final String MAPPING_FILE = "mapping-file";//NO18N
     public static final String PROVIDER = "provider";//NO18N
+    public static final String EXCLUDE_UNLISTED_CLASSES = "exclude-unlisted-classes";//NOI18N
     
     public static final String NAME_ATTRIB = "name";//NO18N
     public static final String VALUE_ATTRIB = "value";//NO18N
