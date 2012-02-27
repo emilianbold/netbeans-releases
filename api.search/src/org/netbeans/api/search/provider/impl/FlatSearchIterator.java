@@ -67,7 +67,7 @@ public class FlatSearchIterator extends AbstractFileObjectIterator {
     private Enumeration<? extends FileObject> childrenEnum;
     private boolean upToDate = false;
     /**
-     * <code>DataObject</code> to be returned the next time method {@link #next()}
+     * <code>FileObject</code> to be returned the next time method {@link #next()}
      * is called
      */
     private FileObject nextObject;
