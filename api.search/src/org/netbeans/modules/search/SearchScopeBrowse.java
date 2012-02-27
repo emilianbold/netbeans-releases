@@ -41,17 +41,34 @@
  */
 package org.netbeans.modules.search;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.search.SearchRoot;
+import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.search.ui.UiUtils;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
+import org.netbeans.spi.search.provider.TerminationFlag;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
+ * Search scope that shows a file chooser to select directories that should be
+ * searched.
+ *
+ * TODO: Show several last selected directories as additional search scopes.
  *
  * @author jhavlin
  */
 public class SearchScopeBrowse extends SearchScopeDefinition {
+
+    private SearchInfo searchInfo = SearchInfoUtils.createForDefinition(
+            new BrowseSearchInfo());
 
     @Override
     public String getTypeId() {
@@ -60,7 +77,7 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
 
     @Override
     public String getDisplayName() {
-        return "Browse";                                            // TODO I18N
+        return UiUtils.getText("LBL_ScopeBrowseName");                  //NOI18N
     }
 
     @Override
@@ -70,8 +87,7 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
 
     @Override
     public SearchInfo getSearchInfo() {
-        List<SearchRoot> roots = Collections.emptyList();
-        return null; // TODO
+        return searchInfo;
     }
 
     @Override
@@ -82,5 +98,53 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
     @Override
     public void clean() {
         // nothing to do
+    }
+
+    /**
+     * Search info definition that opens file chooser when search roots or file
+     * iterator is requested for the first time.
+     */
+    private static class BrowseSearchInfo extends SearchInfoDefinition {
+
+        private SearchInfo delegate;
+
+        @Override
+        public boolean canSearch() {
+            return true;
+        }
+
+        @Override
+        public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
+                SearchListener listener, TerminationFlag terminationFlag) {
+
+            return getDelegate().getFilesToSearch(options, listener,
+                    terminationFlag);
+        }
+
+        @Override
+        public List<SearchRoot> getSearchRoots() {
+            return getDelegate().getSearchRoots();
+        }
+
+        private synchronized SearchInfo getDelegate() {
+            if (delegate == null) {
+                delegate = createDelegate();
+            }
+            return delegate;
+        }
+
+        private SearchInfo createDelegate() {
+            FileChooserBuilder chooserBuilder =
+                    new FileChooserBuilder(SearchScopeBrowse.class);
+            File[] files = chooserBuilder.showMultiOpenDialog();
+            if (files == null) {
+                files = new File[0];
+            }
+            FileObject[] fileObjects = new FileObject[files.length];
+            for (int i = 0; i < files.length; i++) {
+                fileObjects[i] = FileUtil.toFileObject(files[i]);
+            }
+            return SearchInfoUtils.createSearchInfoForRoots(fileObjects);
+        }
     }
 }
