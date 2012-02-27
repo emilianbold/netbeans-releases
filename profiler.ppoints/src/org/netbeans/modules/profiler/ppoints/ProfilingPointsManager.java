@@ -428,12 +428,11 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
 
             // Bugfix #162132, the factory may already be unloaded
             if (factory != null) {
-                if (ppClass.isInstance(profilingPoint)) {
-                    if (containsProject(projectsLoc, profilingPoint.getProject())) {
-                        if (inclUnavailable || factory.isAvailable()) {
-                            filteredProfilingPoints.add((T) profilingPoint);
-                        }
-                    }
+                if (ppClass.isInstance(profilingPoint) && (inclUnavailable || factory.isAvailable())) {
+                    Lookup.Provider ppProject = profilingPoint.getProject();
+                    if (matchesScope(ppProject, project, projects) ||
+                            containsProject(projectsLoc, ppProject))
+                        filteredProfilingPoints.add((T) profilingPoint);
                 }
             } else {
                 // TODO: profiling points without factories should be cleaned up somehow
@@ -1115,15 +1114,53 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
             }
         }
     }
+    
+    private final List<ProfilingPointScopeProvider> scopeProviders = new ArrayList();
+    private final List<Lookup.Provider> providedScopes = new ArrayList();
+    
+    private void cacheProvidedScopes() {
+        scopeProviders.clear();
+        providedScopes.clear();
+        
+        Collection<? extends ProfilingPointScopeProvider> allScopeProviders =
+                Lookup.getDefault().lookupAll(ProfilingPointScopeProvider.class);
+        for (ProfilingPointScopeProvider scopeProvider : allScopeProviders) {
+            Lookup.Provider providedScope = scopeProvider.getScope();
+            if (providedScope != null) {
+                scopeProviders.add(scopeProvider);
+                providedScopes.add(providedScope);
+            }
+        }
+    }
+    
+    public List<Lookup.Provider> getProvidedScopes() {
+        return new ArrayList(providedScopes);
+    }
+    
+    public boolean isDefaultScope(Lookup.Provider scope) {
+        int index = providedScopes.indexOf(scope);
+        return index == -1 ? false : scopeProviders.get(index).isDefaultScope();
+    }
+    
+    private boolean matchesScope(Lookup.Provider scope, Lookup.Provider project,
+                                     Set<Lookup.Provider> projects) {
+        int index = providedScopes.indexOf(scope);
+        if (index < 0) return false;
+        return scopeProviders.get(index).matchesScope(project, projects);
+    }
 
     private void processOpenedProjectsChanged() {
         Collection<Lookup.Provider> lastOpenedProjects = new ArrayList();
+        List<Lookup.Provider> lastProvidedScopes = new ArrayList();
         synchronized (openedProjects) {
             lastOpenedProjects.addAll(openedProjects);
             openedProjects.clear();
 
             Lookup.Provider[] openProjects = ProjectUtilities.getOpenedProjects();
             openedProjects.addAll(Arrays.asList(openProjects));
+            
+            lastProvidedScopes.addAll(providedScopes);
+            cacheProvidedScopes();
 
             Set<FileObject> openedProjectsLoc = locations(openedProjects);
             for (Lookup.Provider project : lastOpenedProjects) {
@@ -1132,10 +1169,24 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 }
             }
             
+            Set<FileObject> providedScopesLoc = locations(providedScopes);
+            for (Lookup.Provider scope : lastProvidedScopes) {
+                if (!containsProject(providedScopesLoc, scope)) {
+                    projectClosed(scope);
+                }
+            }
+            
             Set<FileObject> lastOpenedProjectsLoc = locations(lastOpenedProjects);
             for (Lookup.Provider openProject : openedProjects) {
                 if (!containsProject(lastOpenedProjectsLoc, openProject)) {
                     projectOpened(openProject);
+                }
+            }
+            
+            Set<FileObject> lastProvidedScopesLoc = locations(lastProvidedScopes);
+            for (Lookup.Provider providedScope : providedScopes) {
+                if (!containsProject(lastProvidedScopesLoc, providedScope)) {
+                    projectOpened(providedScope);
                 }
             }
         }
