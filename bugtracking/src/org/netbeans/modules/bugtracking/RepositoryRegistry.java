@@ -67,7 +67,6 @@ import org.openide.util.NbPreferences;
  */
 public class RepositoryRegistry {
 
-
     /**
      * A repository was created or removed, where old value is a Collection of all repositories 
      * before the change and new value a Collection of all repositories after the change.
@@ -76,7 +75,7 @@ public class RepositoryRegistry {
     
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     
-    private static final String REPO_ID           = "bugracking.repository_";   // NOI18N
+    private static final String BUGTRACKING_REPO  = "bugracking.repository_";   // NOI18N
     private static final String DELIMITER         = "<=>";                      // NOI18N    
     
     private static final Object REPOSITORIES_LOCK = new Object();
@@ -173,9 +172,10 @@ public class RepositoryRegistry {
         Collection<Repository> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-            String connectorID = APIAccessor.IMPL.getConnectorId(repository);
+            RepositoryInfo info = APIAccessor.IMPL.getInfo(repository);
+            String connectorID = info.getConnectorId();  
             // persist remove
-            getPreferences().remove(REPO_ID + DELIMITER + connectorID + DELIMITER + repository.getId()); 
+            getPreferences().remove(getRepositoryKey(info)); 
             // remove from cache
             getStoredRepositories().remove(connectorID, repository);
             
@@ -230,7 +230,7 @@ public class RepositoryRegistry {
     }
 
     private String getRepositoryKey(RepositoryInfo info) {
-        return REPO_ID + info.getConnectorId() + DELIMITER + info.getId();
+        return BUGTRACKING_REPO + info.getConnectorId() + DELIMITER + info.getId();
     }
     
     private RepositoriesMap getStoredRepositories() {
@@ -246,8 +246,8 @@ public class RepositoryRegistry {
             }
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
             for (String id : ids) {
-                String idArray[] = id.split(DELIMITER);
-                String connectorId = idArray[1];
+                String[] idArray = id.split(DELIMITER);
+                String connectorId = idArray[0].substring(BUGTRACKING_REPO.length());
                 for (DelegatingConnector c : connectors) {
                     if(c.getID().equals(connectorId)) {
                         RepositoryInfo info = SPIAccessor.IMPL.read(getPreferences(), id);
@@ -265,7 +265,7 @@ public class RepositoryRegistry {
     }
   
     private String[] getRepositoryIds() {
-        return getKeysWithPrefix(REPO_ID);
+        return getKeysWithPrefix(BUGTRACKING_REPO);
     }
     
     /**
@@ -273,7 +273,7 @@ public class RepositoryRegistry {
      */
     void putRepository(Repository repository) {
         RepositoryInfo info = APIAccessor.IMPL.getInfo(repository);
-        final String key = REPO_ID + DELIMITER + info.getConnectorId() + DELIMITER + info.getId();
+        final String key = getRepositoryKey(info);
         SPIAccessor.IMPL.store(getPreferences(), info, key);
 
         char[] password = info.getPassword();
