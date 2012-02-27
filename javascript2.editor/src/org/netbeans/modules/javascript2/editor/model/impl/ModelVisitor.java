@@ -413,9 +413,9 @@ public class ModelVisitor extends PathNodeVisitor {
             if (fncScope != null) {
                 
                 DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult); 
-                Types types = docProvider.getReturnType(functionNode);
-                if (types != null && !types.getTypes().isEmpty()) {
-                    for(Type type : types.getTypes()) {
+                List<Type> types = docProvider.getReturnType(functionNode);
+                if (types != null && !types.isEmpty()) {
+                    for(Type type : types) {
                         fncScope.addReturnType(new TypeUsageImpl(type.getType(), -1, true));
                     }
                 }

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
+import java.util.List;
+
 /**
  * Represents parameter element which does not need any parameter name.
  * <p>
@@ -51,17 +53,17 @@ package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 public class UnnamedParameterElement extends ParameterElement {
 
     private UnnamedParameterElement(Type type,
-            org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
+            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
         super(type, paramTypes, paramDescription);
     }
 
     /** Creates unnamed parameter element.
      * @param type type of the element
-     * @param paramType type of the parameter
+     * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
     public static UnnamedParameterElement create(Type type,
-            org.netbeans.modules.javascript2.editor.model.Types paramTypes, String paramDescription) {
+            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
         return new UnnamedParameterElement(type, paramTypes, paramDescription);
     }
 

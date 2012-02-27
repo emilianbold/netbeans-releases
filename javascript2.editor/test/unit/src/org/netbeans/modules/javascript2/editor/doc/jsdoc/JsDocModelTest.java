@@ -394,7 +394,14 @@ public class JsDocModelTest extends JsDocTestBase {
                 NamedParameterElement namedParameterElement = (NamedParameterElement) parsed;
                 assertEquals(expected.getProperty("name"), namedParameterElement.getParamName().toString());
                 assertEquals(expected.getProperty("desc"), namedParameterElement.getParamDescription().toString());
-                assertEquals(expected.getProperty("type"), namedParameterElement.getParamTypes().toString());
+                if (expected.getProperty("type").indexOf("|") != -1) {
+                    String[] splitedType = expected.getProperty("type").split("[|]");
+                    for (int i = 0; i < splitedType.length; i++) {
+                        assertEquals(splitedType[i], namedParameterElement.getParamTypes().get(i).toString());
+                    }
+                } else {
+                    assertEquals(expected.getProperty("type"), namedParameterElement.getParamTypes().get(0).toString());
+                }
                 break;
             case SIMPLE:
                 assertTrue(parsed instanceof SimpleElement);
@@ -403,7 +410,14 @@ public class JsDocModelTest extends JsDocTestBase {
                 assertTrue(parsed instanceof UnnamedParameterElement);
                 UnnamedParameterElement unnamedParameterElement = (UnnamedParameterElement) parsed;
                 assertEquals(expected.getProperty("desc"), unnamedParameterElement.getParamDescription().toString());
-                assertEquals(expected.getProperty("type"), unnamedParameterElement.getParamTypes().toString());
+                if (expected.getProperty("type").indexOf("|") != -1) {
+                    String[] splitedType = expected.getProperty("type").split("[|]");
+                    for (int i = 0; i < splitedType.length; i++) {
+                        assertEquals(splitedType[i], unnamedParameterElement.getParamTypes().get(i).toString());
+                    }
+                } else {
+                    assertEquals(expected.getProperty("type"), unnamedParameterElement.getParamTypes().get(0).toString());
+                }
                 break;
             default:
                 throw new AssertionError();

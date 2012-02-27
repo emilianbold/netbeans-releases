@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
 import com.oracle.nashorn.ir.Node;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
@@ -52,11 +53,8 @@ import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.NamedParameterEle
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
-import org.netbeans.modules.javascript2.editor.model.Types;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
+import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -75,7 +73,7 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     // TODO - rewrite for getting all associated comments and call getter for all and merge results
     // TODO - process shared tags and nocode comments
     @Override
-    public Types getReturnType(Node node) {
+    public List<Type> getReturnType(Node node) {
         JsComment comment = getCommentForOffset(node.getStart());
         if (comment != null) {
             JsDocBlock jsDocBlock = (JsDocBlock) comment;
@@ -85,7 +83,7 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
                             || jsDocElement.getType() == JsDocElement.Type.RETURNS) {
                         return ((UnnamedParameterElement) jsDocElement).getParamTypes();
                     } else if (jsDocElement.getType() == JsDocElement.Type.TYPE) {
-                        return new TypesImpl(((DeclarationElement) jsDocElement).getDeclaredType());
+                        return Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType());
                     }
                 }
             }

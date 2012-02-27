@@ -41,10 +41,12 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
-import org.netbeans.modules.javascript2.editor.model.Types;
+import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -74,7 +76,8 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 if (expected == null) {
                     assertNull(documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)));
                 } else {
-                    assertEquals(expected, documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)).toString());
+                    assertEquals(expected,
+                            documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)).get(0).toString());
                 }
             }
         });
@@ -154,63 +157,72 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
     public void testGetParametersForOnlyNameParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "", false, new TypesImpl(""));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "", false,
+                Arrays.asList(new TypeImpl("")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line1(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false, 
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndMoreTypesParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line2(product){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("product", null, "", false, new TypesImpl("String|Number"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("product", null, "", false,
+                Arrays.asList(new TypeImpl("String"), new TypeImpl("Number")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForFullDocParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line6(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "name of the user", false, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "name of the user", false,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForFullDocOptionalParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "accessLevel is optional", true, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "accessLevel is optional", true,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line4(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", "\"author\"", "accessLevel is optional", true, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", "\"author\"", "accessLevel is optional", true,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndTypeArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line7(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line8(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"Jackie\"", "userName is optional", true, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"Jackie\"", "userName is optional", true,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueWithSpacesArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line9(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"for example Jackie Chan\"", "userName is optional", true, new TypesImpl("String"));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"for example Jackie Chan\"", "userName is optional", true,
+                Arrays.asList(new TypeImpl("String")));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
@@ -218,16 +230,15 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
 
         String paramName, defaultValue, paramDesc;
         boolean optional;
-        Types paramTypes;
+        List<? extends Type> paramTypes;
 
-        public FakeDocParameter(String paramName, String defaultValue, String paramDesc, boolean optional, Types paramTypes) {
+        public FakeDocParameter(String paramName, String defaultValue, String paramDesc, boolean optional, List<? extends Type> paramTypes) {
             this.paramName = paramName;
             this.defaultValue = defaultValue;
             this.paramDesc = paramDesc;
             this.optional = optional;
             this.paramTypes = paramTypes;
         }
-
         @Override
         public String getParamName() {
             return paramName;
@@ -249,7 +260,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         }
 
         @Override
-        public Types getParamTypes() {
+        public List<? extends Type> getParamTypes() {
             return paramTypes;
         }
 

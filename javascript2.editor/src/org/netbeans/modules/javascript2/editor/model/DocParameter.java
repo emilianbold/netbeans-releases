@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import java.util.List;
+
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
@@ -75,6 +77,6 @@ public interface DocParameter {
      * Gets the parameter type.
      * @return parameter type, or {@code null} when no type is set
      */
-    Types getParamTypes();
+    List<? extends Type> getParamTypes();
 
 }

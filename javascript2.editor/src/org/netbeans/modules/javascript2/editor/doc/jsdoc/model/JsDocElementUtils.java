@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 
 /**
  * Contains helper classes for work with jsDoc model.
@@ -86,6 +89,19 @@ public class JsDocElementUtils {
         }
     }
 
+    /**
+     * Gets list of {@link Type}s parsed from given string.
+     * @param typesString string to be parsed for types
+     * @return list of {@code type}s
+     */
+    public static List<Type> parseTypes(String typesString) {
+        List<Type> types = new LinkedList<Type>();
+        for (String string : Arrays.asList(typesString.split("[|]+"))) { //NOI18N
+            types.add(new TypeImpl(string));
+        }
+        return types;
+    }
+
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
             String elementText, boolean named) {
         String types = "", desc = ""; //NOI18N
@@ -124,9 +140,10 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return NamedParameterElement.createWithDiagnostics(elementType, new Name(name.toString()), new TypesImpl(types), desc);
+            return NamedParameterElement.createWithDiagnostics(elementType,
+                    new Name(name.toString()), parseTypes(types), desc);
         } else {
-            return UnnamedParameterElement.create(elementType, new TypesImpl(types), desc);
+            return UnnamedParameterElement.create(elementType, parseTypes(types), desc);
         }
     }
 
