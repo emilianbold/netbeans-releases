@@ -101,8 +101,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
             searchCriteria.setReplaceExpr("");                        //NOI18N
         }
-        setValuesOfComponents(initialCriteria, searchAndReplace);
         initInteraction(searchAndReplace);
+        setValuesOfComponents(initialCriteria, searchAndReplace);
     }
 
     /**
@@ -291,25 +291,24 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private void initValuesFromCriteria(BasicSearchCriteria initialCriteria,
             boolean searchAndReplace) {
-        searchCriteria = initialCriteria;
-        cboxTextToFind.setSelectedItem(searchCriteria.getTextPatternExpr());
+        cboxTextToFind.setSelectedItem(initialCriteria.getTextPatternExpr());
         if (cboxReplacement != null) {
-            cboxReplacement.setSelectedItem(searchCriteria.getReplaceExpr());
+            cboxReplacement.setSelectedItem(initialCriteria.getReplaceExpr());
         }
 
-        selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
-        chkWholeWords.setSelected(searchCriteria.isWholeWords());
-        chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
-        chkRegexp.setSelected(searchCriteria.isRegexp());
-        scopeSettingsPanel.setFileNameRegexp(searchCriteria.isFileNameRegexp());
-        scopeSettingsPanel.setUseIgnoreList(searchCriteria.isUseIgnoreList());
-        cboxFileNamePattern.setRegularExpression(searchCriteria.isFileNameRegexp());
-        cboxFileNamePattern.setSelectedItem(searchCriteria.getFileNamePatternExpr());
+        selectChk(chkPreserveCase, initialCriteria.isPreserveCase());
+        chkWholeWords.setSelected(initialCriteria.isWholeWords());
+        chkCaseSensitive.setSelected(initialCriteria.isCaseSensitive());
+        chkRegexp.setSelected(initialCriteria.isRegexp());
+        scopeSettingsPanel.setFileNameRegexp(initialCriteria.isFileNameRegexp());
+        scopeSettingsPanel.setUseIgnoreList(initialCriteria.isUseIgnoreList());
+        cboxFileNamePattern.setRegularExpression(initialCriteria.isFileNameRegexp());
+        cboxFileNamePattern.setSelectedItem(initialCriteria.getFileNamePatternExpr());
         if (!searchAndReplace) {
             scopeSettingsPanel.setSearchInArchives(
-                    searchCriteria.isSearchInArchives());
+                    initialCriteria.isSearchInArchives());
             scopeSettingsPanel.setSearchInGenerated(
-                    searchCriteria.isSearchInGenerated());
+                    initialCriteria.isSearchInGenerated());
         }
     }
 
