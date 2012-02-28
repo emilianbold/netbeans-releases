@@ -104,8 +104,8 @@ public class IssueAccessorImpl extends KenaiIssueAccessor {
     @Override
     public IssueHandle[] getRecentIssues() {
         Map<String, List<RecentIssue>> recentIssues = BugtrackingUtil.getAllRecentIssues();
-        Repository[] knownRepos = BugtrackingUtil.getKnownRepositories(false);
-        Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.length);
+        Collection<Repository> knownRepos = BugtrackingUtil.getKnownRepositories(false);
+        Map<String, Repository> repoMap = new HashMap<String, Repository>(knownRepos.size());
         for (Repository repository : knownRepos) {
             repoMap.put(repository.getId(), repository);
         }

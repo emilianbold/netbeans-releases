@@ -158,7 +158,7 @@ class FileToRepoMappingStorage {
     }
 
     private Repository getRepositoryByUrl(String requestedUrl) {
-        Repository[] repositories = RepositoryRegistry.getInstance().getRepositories();
+        Collection<Repository> repositories = RepositoryRegistry.getInstance().getRepositories();
         for (Repository repository : repositories) {
             String repositoryUrl = cutTrailingSlashes(repository.getUrl());
             if (repositoryUrl.equals(requestedUrl)) {

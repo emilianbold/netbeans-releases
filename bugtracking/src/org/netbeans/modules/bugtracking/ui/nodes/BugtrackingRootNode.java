@@ -149,7 +149,7 @@ public class BugtrackingRootNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<Repository> toPopulate) {
-            toPopulate.addAll(Arrays.asList(RepositoryRegistry.getInstance().getRepositories()));
+            toPopulate.addAll(RepositoryRegistry.getInstance().getRepositories());
             Collections.sort(toPopulate, new RepositoryComparator());
             return true;
         }

@@ -52,11 +52,7 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -411,7 +407,7 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        Repository[] repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        Collection<Repository> repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
         for (Repository repository : repositories) {
             // all issues for this repository
             List<String> issueAttributes = repositoryIssues.get(repository.getUrl());

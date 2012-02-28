@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.repository;
 
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -87,7 +88,7 @@ public class NBRepositorySupport extends BugzillaRepository {
      * @return a BugzillaRepository
      */
     public Repository getNBRepository() {
-        Repository[] repos;
+        Collection<Repository> repos;
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
             if(!isKenai) {

@@ -77,7 +77,7 @@ public class RepositoryRegistryTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {   
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
         for (Repository repository : repos) {
             RepositoryRegistry.getInstance().removeRepository(repository);
         }
@@ -85,10 +85,10 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
 
     public void testEmpty() {
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(0, repos.length);
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        assertEquals(0, repos.size());
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
-        assertEquals(0, repos.length);
+        assertEquals(0, repos.size());
     }
     
     public void testAddGetRemove() {
@@ -96,13 +96,13 @@ public class RepositoryRegistryTest extends NbTestCase {
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(1, repos.length);
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        assertEquals(1, repos.size());
         
         // remove
         RepositoryRegistry.getInstance().removeRepository(repo);
         repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(0, repos.length);
+        assertEquals(0, repos.size());
     }
     
     public void testWrongConnector() {
@@ -110,11 +110,11 @@ public class RepositoryRegistryTest extends NbTestCase {
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(1, repos.length);
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        assertEquals(1, repos.size());
     
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
-        assertEquals(0, repos.length);
+        assertEquals(0, repos.size());
     }
     
     public void testDifferentConnectors() {
@@ -128,26 +128,26 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryRegistry.getInstance().addRepository(repo2c1);
         RepositoryRegistry.getInstance().addRepository(repo1c2);
         RepositoryRegistry.getInstance().addRepository(repo2c2);
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(4, repos.length);
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        assertEquals(4, repos.size());
         repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
-        assertEquals(2, repos.length);
-        assertTrue(Arrays.asList(repos).contains(repo1c1));
-        assertTrue(Arrays.asList(repos).contains(repo2c1));
+        assertEquals(2, repos.size());
+        assertTrue(repos.contains(repo1c1));
+        assertTrue(repos.contains(repo2c1));
         
         // remove
         RepositoryRegistry.getInstance().removeRepository(repo1c1);
         repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
-        assertEquals(1, repos.length);
-        assertTrue(Arrays.asList(repos).contains(repo2c1));
+        assertEquals(1, repos.size());
+        assertTrue(repos.contains(repo2c1));
         RepositoryRegistry.getInstance().removeRepository(repo2c1);
         repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
-        assertEquals(0, repos.length);
+        assertEquals(0, repos.size());
         
         repos = RepositoryRegistry.getInstance().getRepositories();
-        assertEquals(2, repos.length);
-        assertTrue(Arrays.asList(repos).contains(repo1c2));
-        assertTrue(Arrays.asList(repos).contains(repo2c2));
+        assertEquals(2, repos.size());
+        assertTrue(repos.contains(repo1c2));
+        assertTrue(repos.contains(repo2c2));
     }
 
     public void testListener() {
@@ -207,10 +207,11 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryInfo info = new RepositoryInfo("repoid", ID_CONNECTOR1, "http://url", null, null, null, null, null, null);
         RepositoryRegistry.getInstance().putRepository(getRepository(ID_CONNECTOR1, new MyRepository(info)));
         
-        Repository[] repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
-        assertEquals(1, repos.length);
-        assertEquals("repoid", repos[0].getId());
-        assertEquals(ID_CONNECTOR1, APIAccessor.IMPL.getInfo(repos[0]).getConnectorId());
+        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        assertEquals(1, repos.size());
+        Repository repo = repos.iterator().next();
+        assertEquals("repoid", repo.getId());
+        assertEquals(ID_CONNECTOR1, APIAccessor.IMPL.getInfo(repo).getConnectorId());
     }
 
     private Repository getRepository(String connecrorID, MyRepository myRepository) {

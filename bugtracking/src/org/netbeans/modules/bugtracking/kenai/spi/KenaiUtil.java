@@ -165,7 +165,7 @@ public class KenaiUtil {
     /**
      * @see KenaiRepositories#getRepositories()
      */
-    public static Repository[] getRepositories(boolean pingOpenProjects) {
+    public static Collection<Repository> getRepositories(boolean pingOpenProjects) {
         return KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
     }
 

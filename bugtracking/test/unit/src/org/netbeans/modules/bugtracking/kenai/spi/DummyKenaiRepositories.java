@@ -42,8 +42,9 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  * Dummy implementation that returns an empty array of repositories.
@@ -52,11 +53,9 @@ import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
  */
 public class DummyKenaiRepositories extends KenaiRepositories {
 
-    private static final Repository[] NO_REPOSITORIES = new Repository[0];
-
     @Override
-    public Repository[] getRepositories(boolean allOpenProjects) {
-        return NO_REPOSITORIES;
+    public Collection<Repository> getRepositories(boolean allOpenProjects) {
+        return Collections.EMPTY_LIST;
     }
 
 }

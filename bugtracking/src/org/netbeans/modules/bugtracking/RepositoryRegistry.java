@@ -103,10 +103,10 @@ public class RepositoryRegistry {
      * 
      * @return 
      */
-    public Repository[] getRepositories() {
+    public Collection<Repository> getRepositories() {
         synchronized(REPOSITORIES_LOCK) {
             List<Repository> l = getStoredRepositories().getRepositories();
-            return l.toArray(new Repository[l.size()]);
+            return new LinkedList<Repository>(l);
         }
     }
 
@@ -116,20 +116,19 @@ public class RepositoryRegistry {
      * @param connectorID
      * @return 
      */
-    public Repository[] getRepositories(String connectorID) {
+    public Collection<Repository> getRepositories(String connectorID) {
         synchronized(REPOSITORIES_LOCK) {
             final Map<String, Repository> m = getStoredRepositories().get(connectorID);
             if(m != null) {
-                Collection<Repository> c = m.values();
-                return c.toArray(new Repository[c.size()]);
+                return new LinkedList<Repository>(m.values());
             } else {
-                return new Repository[0];
+                return Collections.emptyList();
             }
         }
     }
 
     public Repository getRepository(String connectorId, String repoId) {
-        Repository[] repos = getRepositories(connectorId);
+        Collection<Repository> repos = getRepositories(connectorId);
         for (Repository repo : repos) {
             if(repo.getId().equals(repoId)) {
                 return repo;
@@ -193,12 +192,12 @@ public class RepositoryRegistry {
      *                          currently opened in the IDE
      * @return repositories
      */
-    public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        Repository[] otherRepos = getRepositories();
-        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
-        System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
-        System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
+    public Collection<Repository> getKnownRepositories(boolean pingOpenProjects) {
+        Collection<Repository> kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        Collection<Repository> otherRepos = getRepositories();
+        List<Repository> ret = new ArrayList<Repository>(kenaiRepos.size() + otherRepos.size());
+        ret.addAll(kenaiRepos);
+        ret.addAll(otherRepos);
         return ret;
     }
     

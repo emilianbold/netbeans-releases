@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -154,7 +155,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         }
 
         // is name unique?
-        Repository[] repositories = null;
+        Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
             for (Repository repo : repositories) {

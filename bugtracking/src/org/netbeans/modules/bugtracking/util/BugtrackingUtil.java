@@ -259,10 +259,14 @@ public class BugtrackingUtil {
         return editRepository(repository, null);
     }
 
-    public static Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        return BugtrackingManager.getInstance().getKnownRepositories(pingOpenProjects);
+    public static Collection<Repository> getKnownRepositories(boolean pingOpenProjects) {
+        return RepositoryRegistry.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
+    public static Collection<Repository> getRepositories(String id) {
+        return RepositoryRegistry.getInstance().getRepositories(id);
+    }    
+    
     public static BugtrackingConnector[] getBugtrackingConnectors() {
         DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
         BugtrackingConnector[] cons = new BugtrackingConnector[dcs.length];
@@ -619,10 +623,6 @@ public class BugtrackingUtil {
         return "******"; // NOI18N
     }
 
-    public static Repository[] getRepositories(String id) {
-        return RepositoryRegistry.getInstance().getRepositories(id);
-    }    
-    
     private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
     private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
     

@@ -68,6 +68,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import java.util.Arrays;
+import java.util.Collection;
 import static java.util.logging.Level.FINEST;
 
 /**
@@ -612,7 +613,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if(refFile != null) {
             pingNBRepository(refFile);
         }
-        repositories = BugtrackingUtil.getKnownRepositories(true);
+        Collection<Repository> repos = BugtrackingUtil.getKnownRepositories(true);
+        repositories = repos.toArray(new Repository[repos.size()]);
 
         long endTimeMillis = System.currentTimeMillis();
         if (LOG.isLoggable(FINEST)) {

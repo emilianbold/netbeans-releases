@@ -105,22 +105,6 @@ public final class BugtrackingManager implements LookupListener {
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
-    /**
-     *
-     * Returns all known repositories incl. the Kenai ones
-     *
-     * @param pingOpenProjects 
-     * @return repositories
-     */
-    public Repository[] getKnownRepositories(boolean pingOpenProjects) {
-        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        Repository[] otherRepos = RepositoryRegistry.getInstance().getRepositories();
-        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
-        System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
-        System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
-        return ret;
-    }
-
     public RequestProcessor getRequestProcessor() {
         return rp;
     }

@@ -43,9 +43,12 @@
 package org.netbeans.modules.bugtracking.kenai.spi;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
@@ -53,7 +56,6 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -158,7 +160,7 @@ abstract class KenaiRepositories {
      * @return  array of repositories collected from the projects
      *          (never {@code null})
      */
-    public abstract Repository[] getRepositories(boolean allOpenProjects);
+    public abstract Collection<Repository> getRepositories(boolean allOpenProjects);
 
     //--------------------------------------------------------------------------
 
@@ -170,7 +172,7 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         @Override
-        public Repository[] getRepositories(boolean allOpenProjects) {
+        public Collection<Repository> getRepositories(boolean allOpenProjects) {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
                 allOpenProjects = false; 
             }
@@ -179,15 +181,14 @@ abstract class KenaiRepositories {
                                                    getProjectsViewProjects())
                                            : getDashboardProjects();
 
-            Repository[] result = new Repository[kenaiProjects.length];
+            List<Repository> result = new ArrayList<Repository>(kenaiProjects.length);
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
-            int count = 0;
             for (KenaiProject kp : kenaiProjects) {
                 if(!reluctantSupports.contains(kp.getType())) {
                     Repository repo = getRepository(kp);
                     if (repo != null) {
-                        result[count++] = repo;
+                        result.add(repo);
                     } else {
                         if(KenaiUtil.isSupported(kp)) {
                             BugtrackingManager.LOG.log(
@@ -209,7 +210,7 @@ abstract class KenaiRepositories {
                                     new Object[]{kp.getWebLocation(), kp.getType()});
                 }
             }
-            return stripTrailingNulls(result);
+            return result;
         }
 
         private KenaiProject[] getDashboardProjects() {

@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URI;
 import java.net.URL;
+import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
@@ -60,7 +61,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
@@ -152,7 +152,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
         }
 
         // is name unique?
-        Repository[] repositories = null;
+        Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
             repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
             for (Repository rp : repositories) {

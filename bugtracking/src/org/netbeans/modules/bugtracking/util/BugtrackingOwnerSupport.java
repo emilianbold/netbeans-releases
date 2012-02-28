@@ -596,12 +596,12 @@ public abstract class BugtrackingOwnerSupport {
         }
 
         private Repository askUserToSpecifyRepository(Repository suggestedRepo) {
-            Repository[] repos = BugtrackingUtil.getKnownRepositories(true);
+            Collection<Repository> repos = BugtrackingUtil.getKnownRepositories(true);
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
 
             final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
             selectorBuilder.setDisplayFormForExistingRepositories(true);
-            selectorBuilder.setExistingRepositories(repos);
+            selectorBuilder.setExistingRepositories(repos.toArray(new Repository[repos.size()]));
             selectorBuilder.setBugtrackingConnectors(connectors);
             selectorBuilder.setPreselectedRepository(suggestedRepo);
             selectorBuilder.setLabelAboveComboBox();
