@@ -41,19 +41,16 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.lang.CharSequence;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
