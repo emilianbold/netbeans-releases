@@ -596,11 +596,18 @@ public class JavaKit extends NbEditorKit {
 
         @Override
         public void remove(Context context) throws BadLocationException {            
-            if (context.getText().length() == 1) {
-                if (context.isBackwardDelete())
-                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getComponent().getCaret(), context.getText().charAt(0));
-                else
-                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
+            char removedChar = context.getText().charAt(0);
+            switch(removedChar) {
+                case '(':
+                case '[':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.removeBrackets(context);
+                    break;
+                case '\"':
+                case '\'':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.removeCompletedQuote(context);
+                    break;
             }
         }
 
@@ -632,8 +639,7 @@ public class JavaKit extends NbEditorKit {
     }
     
     public static class JavaTypedTextInterceptor implements TypedTextInterceptor {
-
-        private boolean inserted = false;
+        private int caretPosition = -1;
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
@@ -643,46 +649,34 @@ public class JavaKit extends NbEditorKit {
         @Override
         public void insert(MutableContext context) throws BadLocationException {
             char insertedChar = context.getText().charAt(0);
-            if (Utilities.isSelectionShowing(context.getComponent().getCaret())) {
-                Document doc = context.getDocument();
-                Caret caret = context.getComponent().getCaret();
-                if (insertedChar == '\"' || insertedChar == '\'') {
-                    if (doc != null) {
-                        try {
-                            int p0 = Math.min(caret.getDot(), caret.getMark());
-                            int p1 = Math.max(caret.getDot(), caret.getMark());
-                            if (p0 != p1) {
-                                doc.remove(p0, p1 - p0);
-                            }
-                            int caretPosition = caret.getDot();
-                            if (doc instanceof BaseDocument) {
-                                inserted = BraceCompletion.completeQuote(
-                                        (BaseDocument) doc,
-                                        caretPosition,
-                                        caret, insertedChar);
-                            }
-                        } catch (BadLocationException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-            else {
-                if (insertedChar == '\"' || insertedChar == '\'') {
-                    inserted = BraceCompletion.completeQuote((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
-                }
+            switch(insertedChar) {
+                case '(':
+                case '[':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.completeOpeningBracket(context);
+                    break;
+                case ')':
+                case ']':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.skipClosingBracket(context);
+                    break;
+                case ';':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.moveSemicolon(context);
+                    break;
+                case '\"':
+                case '\'':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.completeQuote(context);
+                    break;
             }
         }
 
         @Override
-        public void afterInsert(Context context) throws BadLocationException {
-            if (inserted) {
-                context.getDocument().remove(context.getOffset(), 1);
-                context.getComponent().getCaret().setDot(context.getOffset() + 1);
-                inserted = false;
-            } else {
-                char insertedChar = context.getText().charAt(0);
-                BraceCompletion.charInserted((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+        public void afterInsert(Context context) throws BadLocationException { 
+            if (caretPosition != -1) {
+                context.getComponent().setCaretPosition(caretPosition);
+                caretPosition = -1;
             }
         }
 
