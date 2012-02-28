@@ -393,6 +393,26 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void visit(ConstantDeclaration node) {
+            List<Identifier> names = node.getNames();
+            if (!names.isEmpty()) {
+                for (Identifier identifier : names) {
+                    addOffsetRange(identifier, ColoringAttributes.STATIC_FIELD_SET);
+                }
+            }
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(StaticConstantAccess node) {
+            Identifier constant = node.getConstant();
+            if (constant != null) {
+                addOffsetRange(constant, ColoringAttributes.STATIC_FIELD_SET);
+            }
+            super.visit(node);
+        }
+
+        @Override
         public void visit(NamespaceName node) {
             if (isCancelled()) {
                 return;
