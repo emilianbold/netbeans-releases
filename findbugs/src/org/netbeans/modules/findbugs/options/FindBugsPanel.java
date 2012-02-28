@@ -312,6 +312,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         for (BugPattern bp : dfc.getBugPatterns()) {
             BugCategory c = dfc.getBugCategory(bp.getCategory());
+
+            if (c.isHidden()) continue;
+
             List<BugPattern> bugs = categorizedBugs.get(c);
 
             if (bugs == null) {

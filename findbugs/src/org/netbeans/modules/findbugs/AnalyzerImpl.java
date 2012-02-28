@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.findbugs;
 
+import edu.umd.cs.findbugs.BugCategory;
 import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
@@ -95,7 +96,11 @@ public class AnalyzerImpl implements Analyzer {
 
         for (DetectorFactory df : dfc.getFactories()) {
             for (BugPattern bp : df.getReportedBugPatterns()) {
-                result.add(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bp.getType(), bp.getShortDescription(), bp.getCategory(), dfc.getBugCategory(bp.getCategory()).getShortDescription()));
+                BugCategory c = dfc.getBugCategory(bp.getCategory());
+
+                if (c.isHidden()) continue;
+
+                result.add(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bp.getType(), bp.getShortDescription(), bp.getCategory(), c.getShortDescription()));
             }
         }
 

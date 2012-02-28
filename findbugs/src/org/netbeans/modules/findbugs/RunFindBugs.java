@@ -44,6 +44,7 @@ package org.netbeans.modules.findbugs;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.VariableTree;
+import edu.umd.cs.findbugs.BugCategory;
 import edu.umd.cs.findbugs.BugCollectionBugReporter;
 import edu.umd.cs.findbugs.BugInstance;
 import edu.umd.cs.findbugs.BugPattern;
@@ -355,11 +356,16 @@ public class RunFindBugs {
     private static UserPreferences readPreferences(Preferences settings, boolean defaultsToDisabled) {
         boolean atLeastOneEnabled = false;
         UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
+        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
 
-        for (DetectorFactory df : DetectorFactoryCollection.instance().getFactories()) {
+        for (DetectorFactory df : dfc.getFactories()) {
             boolean enable = false;
 
             for (BugPattern bp : df.getReportedBugPatterns()) {
+                BugCategory c = dfc.getBugCategory(bp.getCategory());
+
+                if (c.isHidden()) continue;
+
                 enable |= settings.getBoolean(bp.getType(), !defaultsToDisabled && prefs.isDetectorEnabled(df));
             }
 
