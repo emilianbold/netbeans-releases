@@ -966,7 +966,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (LCURLY | SEMICOLON)
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -1326,7 +1326,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (LCURLY | SEMICOLON) )=>
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1912,24 +1912,33 @@ fix_fake_enum_members
     ;
 
 enum_specifier
-{int ts = 0;}
+{int ts = 0;
+ String qid;}
 :   LITERAL_enum
     (LITERAL_class! | LITERAL_struct!)?    
     (   (COLON ts = builtin_cv_type_specifier[ts])?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
-    |   id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
-        {action.enum_name(id);}
-
+    |   
+        ( (IDENT SCOPE) =>
+            qid = qualified_id
+        |
+            id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
+            {action.enum_name(id);}
+        )
                      // elaborated_type_specifier        
         {beginEnumDefinition(id.getText());}
-        (   (COLON ts = builtin_cv_type_specifier[ts])?
-            {action.enum_body(LT(1));}
-            LCURLY enumerator_list 
-            {action.end_enum_body(LT(1));}
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | RCURLY )
+        (   (options {greedy=true;} : 
+                COLON ts = type_specifier[dsInvalid, false]
+            )?
+            (options {greedy=true;} :
+                {action.enum_body(LT(1));}
+                LCURLY enumerator_list 
+                {action.end_enum_body(LT(1));}
+                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                | RCURLY )
+            )?
         )
         {endEnumDefinition();}
     )
