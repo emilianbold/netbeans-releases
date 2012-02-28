@@ -57,4 +57,6 @@ public interface Type {
       
     public String getType();
 
+    public int getOffset();
+
 }

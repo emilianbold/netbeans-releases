@@ -44,10 +44,11 @@ package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
-import org.netbeans.modules.javascript2.editor.model.impl.TypesImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -65,7 +66,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         super(testName);
     }
 
-    private static void checkReturnType(Source source, final int offset, final String expected) throws Exception {
+    private static void checkReturnType(Source source, final int offset, final List<? extends Type> expected) throws Exception {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result result = resultIterator.getParserResult();
@@ -76,8 +77,9 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                 if (expected == null) {
                     assertNull(documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)));
                 } else {
-                    assertEquals(expected,
-                            documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)).get(0).toString());
+                    for (int i = 0; i < expected.size(); i++) {
+                        assertEquals(expected.get(i), documentationProvider.getReturnType(getNodeForOffset(parserResult, offset)).get(i));
+                    }
                 }
             }
         });
@@ -98,8 +100,10 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
                     assertEquals(expectedParam.getDefaultValue(), parameters.get(0).getDefaultValue());
                     assertEquals(expectedParam.getParamDescription(), parameters.get(0).getParamDescription());
                     assertEquals(expectedParam.getParamName(), parameters.get(0).getParamName());
-                    assertEquals(expectedParam.getParamTypes().toString(), parameters.get(0).getParamTypes().toString());
                     assertEquals(expectedParam.isOptional(), parameters.get(0).isOptional());
+                    for (int i = 0; i < expectedParam.getParamTypes().size(); i++) {
+                        assertEquals(expectedParam.getParamTypes().get(i), parameters.get(0).getParamTypes().get(i));
+                    }
                 }
             }
         });
@@ -107,132 +111,132 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
 
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
-
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
-        checkReturnType(testSource, caretOffset, "Shape");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 3605)));
     }
 
     public void testGetReturnTypeForReturns() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone2 = function(){^");
-        checkReturnType(testSource, caretOffset, "Shape");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 3759)));
     }
 
     public void testGetReturnTypeForType() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
         final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getClassName= function(){^");
-        checkReturnType(testSource, caretOffset, "String");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("String", 5079)));
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
 
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = function(){^");
-        checkReturnType(testSource, caretOffset, null);
+        checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
     public void testGetNullReturnTypeByMissingComment() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
 
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = function(){^");
-        checkReturnType(testSource, caretOffset, null);
+        checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
     public void testGetReturnTypeAtFunction() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
 
         final int caretOffset = getCaretOffset(testSource, "function martion () {^");
-        checkReturnType(testSource, caretOffset, "Number");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 571)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/returnTypes.js"));
 
         final int caretOffset = getCaretOffset(testSource, "getVersion: function() {^");
-        checkReturnType(testSource, caretOffset, "Number");
+        checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 478)));
     }
 
     public void testGetParametersForOnlyNameParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "", false,
-                Arrays.asList(new TypeImpl("")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 348), null, "", false,
+                Arrays.asList(new TypeImpl("", -1)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line1(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false, 
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 23), null, "", false,
+                Arrays.asList(new TypeImpl("String", 15)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndMoreTypesParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line2(product){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("product", null, "", false,
-                Arrays.asList(new TypeImpl("String"), new TypeImpl("Number")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 94), null, "", false,
+                Arrays.asList(new TypeImpl("String", 79), new TypeImpl("Number", 86)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForFullDocParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line6(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "name of the user", false,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 418), null, "name of the user", false,
+                Arrays.asList(new TypeImpl("String", 410)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForFullDocOptionalParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", null, "accessLevel is optional", true,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 157), null, "accessLevel is optional", true,
+                Arrays.asList(new TypeImpl("String", 148)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueParam() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line4(accessLevel){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("accessLevel", "\"author\"", "accessLevel is optional", true,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 253), "\"author\"", "accessLevel is optional", true,
+                Arrays.asList(new TypeImpl("String", 244)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForNameAndTypeArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line7(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", null, "", false,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 502), null, "", false,
+                Arrays.asList(new TypeImpl("String", 494)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line8(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"Jackie\"", "userName is optional", true,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 570), "\"Jackie\"", "userName is optional", true,
+                Arrays.asList(new TypeImpl("String", 561)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     public void testGetParametersForDefaultValueWithSpacesArgument() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/parameterTypes.js"));
         final int caretOffset = getCaretOffset(testSource, "function line9(userName){^}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter("userName", "\"for example Jackie Chan\"", "userName is optional", true,
-                Arrays.asList(new TypeImpl("String")));
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 669), "\"for example Jackie Chan\"", "userName is optional", true,
+                Arrays.asList(new TypeImpl("String", 660)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
 
     private static class FakeDocParameter implements DocParameter {
 
-        String paramName, defaultValue, paramDesc;
+        DocIdentifier paramName;
+        String defaultValue, paramDesc;
         boolean optional;
         List<? extends Type> paramTypes;
 
-        public FakeDocParameter(String paramName, String defaultValue, String paramDesc, boolean optional, List<? extends Type> paramTypes) {
+        public FakeDocParameter(DocIdentifier paramName, String defaultValue, String paramDesc, boolean optional, List<? extends Type> paramTypes) {
             this.paramName = paramName;
             this.defaultValue = defaultValue;
             this.paramDesc = paramDesc;
@@ -240,7 +244,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
             this.paramTypes = paramTypes;
         }
         @Override
-        public String getParamName() {
+        public DocIdentifier getParamName() {
             return paramName;
         }
 

@@ -48,11 +48,13 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class TypeImpl implements Type {
-        
-    private final String type;
 
-    public TypeImpl(String type) {
+    private final String type;
+    private final int offset;
+
+    public TypeImpl(String type, int offset) {
         this.type = type;
+        this.offset = offset;
     }
 
     @Override
@@ -62,14 +64,25 @@ public class TypeImpl implements Type {
 
     @Override
     public String toString() {
-        return type;
+        return "TypeImpl[type=" + type + ",offset=" + offset + "]";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || !(obj instanceof TypeImpl)) return false;
-        return type.equals(((Type)obj).getType());
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TypeImpl other = (TypeImpl) obj;
+        if ((this.type == null) ? (other.type != null) : !this.type.equals(other.type)) {
+            return false;
+        }
+        if (this.offset != other.offset) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -77,6 +90,11 @@ public class TypeImpl implements Type {
         int hash = 1;
         hash = hash * 31 + (type != null ? type.hashCode() : 0);
         return hash;
+    }
+
+    @Override
+    public int getOffset() {
+        return offset;
     }
     
 }

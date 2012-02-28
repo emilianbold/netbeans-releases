@@ -377,7 +377,7 @@ public class JsDocModelTest extends JsDocTestBase {
             case DECLARATION:
                 assertTrue(parsed instanceof DeclarationElement);
                 DeclarationElement declarationElement = (DeclarationElement) parsed;
-                assertEquals(expected.getProperty("type"), declarationElement.getDeclaredType().toString());
+                assertEquals(expected.getProperty("type"), declarationElement.getDeclaredType().getType());
                 break;
             case DESCRIPTION:
                 assertTrue(parsed instanceof DescriptionElement);
@@ -392,15 +392,15 @@ public class JsDocModelTest extends JsDocTestBase {
             case NAMED_PARAMETER:
                 assertTrue(parsed instanceof NamedParameterElement);
                 NamedParameterElement namedParameterElement = (NamedParameterElement) parsed;
-                assertEquals(expected.getProperty("name"), namedParameterElement.getParamName().toString());
+                assertEquals(expected.getProperty("name"), namedParameterElement.getParamName().getName());
                 assertEquals(expected.getProperty("desc"), namedParameterElement.getParamDescription().toString());
                 if (expected.getProperty("type").indexOf("|") != -1) {
                     String[] splitedType = expected.getProperty("type").split("[|]");
                     for (int i = 0; i < splitedType.length; i++) {
-                        assertEquals(splitedType[i], namedParameterElement.getParamTypes().get(i).toString());
+                        assertEquals(splitedType[i], namedParameterElement.getParamTypes().get(i).getType());
                     }
                 } else {
-                    assertEquals(expected.getProperty("type"), namedParameterElement.getParamTypes().get(0).toString());
+                    assertEquals(expected.getProperty("type"), namedParameterElement.getParamTypes().get(0).getType());
                 }
                 break;
             case SIMPLE:
@@ -413,10 +413,10 @@ public class JsDocModelTest extends JsDocTestBase {
                 if (expected.getProperty("type").indexOf("|") != -1) {
                     String[] splitedType = expected.getProperty("type").split("[|]");
                     for (int i = 0; i < splitedType.length; i++) {
-                        assertEquals(splitedType[i], unnamedParameterElement.getParamTypes().get(i).toString());
+                        assertEquals(splitedType[i], unnamedParameterElement.getParamTypes().get(i).getType());
                     }
                 } else {
-                    assertEquals(expected.getProperty("type"), unnamedParameterElement.getParamTypes().get(0).toString());
+                    assertEquals(expected.getProperty("type"), unnamedParameterElement.getParamTypes().get(0).getType());
                 }
                 break;
             default:
