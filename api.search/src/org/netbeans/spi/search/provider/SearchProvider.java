@@ -41,15 +41,13 @@
  */
 package org.netbeans.spi.search.provider;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.JComponent;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.Parameters;
 
 /**
  * Search provider can register complex search feature to the IDE.
@@ -166,8 +164,7 @@ public abstract class SearchProvider {
      */
     public static abstract class Presenter {
 
-        private final List<ChangeListener> changeListeners =
-                new CopyOnWriteArrayList<ChangeListener>();
+        private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         /** Constructor for subclasses. */
         protected Presenter() {}
@@ -203,39 +200,47 @@ public abstract class SearchProvider {
         public abstract boolean isUsable();
 
         /**
-         * Add change listener to the form. This listener is notified when the
-         * search settings change.
+         * Adds a <code>ChangeListener</code> to the listener list. The same
+         * listener object may be added more than once, and will be called as
+         * many times as it is added. If <code>listener</code> is null, no
+         * exception is thrown and no action is taken.
          *
-         * @param changeListener Change listener that is notified when values in
-         * the form change.
+         * @param changeListener the <code>ChangeListener</code> to be added.
          */
         public final void addChangeListener(
-                @NonNull ChangeListener changeListener) {
-
-            Parameters.notNull("changeListener", changeListener);
-            changeListeners.add(changeListener);
+                @NullAllowed ChangeListener changeListener) {
+            changeSupport.addChangeListener(changeListener);
         }
 
         /**
-         * Remove listener added by {@link #addChangeListener(ChangeListener)}.
+         * Removes a <code>ChangeListener</code> from the listener list. If
+         * <code>listener</code> was added more than once, it will be notified
+         * one less time after being removed. If <code>listener</code> is null,
+         * or was never added, no exception is thrown and no action is taken.
          *
-         * @param changeListener Listener to remove.
+         * @param listener the <code>ChangeListener</code> to be removed.
          */
         public final void removeChangeListener(
-                @NonNull ChangeListener changeListener) {
-            Parameters.notNull("changeListener", changeListener);
-            changeListeners.remove(changeListener);
+                @NullAllowed ChangeListener changeListener) {
+            changeSupport.removeChangeListener(changeListener);
         }
 
         /**
-         * Call this method to notify all change listeners whenever a change in
-         * the presenter occurs.
+         * Fires a change event to all registered listeners.
          */
         protected final void fireChange() {
-            ChangeEvent e = new ChangeEvent(this);
-            for (ChangeListener cl : changeListeners) {
-                cl.stateChanged(e);
-            }
+            changeSupport.fireChange();
+        }
+
+        /**
+         * Checks if there are any listeners registered to
+         * this<code>ChangeSupport</code>.
+         *
+         * @return true if there are one or more listeners for the given
+         * property, false otherwise.
+         */
+        public final boolean hasListeners() {
+            return changeSupport.hasListeners();
         }
 
         /**
