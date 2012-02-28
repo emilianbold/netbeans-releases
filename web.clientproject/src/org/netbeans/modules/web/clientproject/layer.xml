@@ -75,5 +75,15 @@
         </folder>
     </folder>   
 
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="LibraryTypeProviders">
+            <file name="javascript_library_provider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.project.libraries.LibraryTypeProvider"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.web.clientproject.libraries.JavaScriptLibraryTypeProvider"/>
+                <attr name="position" intvalue="345"/>
+            </file>
+        </folder>
+    </folder>
+    
 </filesystem>
 

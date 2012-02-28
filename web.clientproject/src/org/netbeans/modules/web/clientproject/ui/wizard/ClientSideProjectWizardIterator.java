@@ -72,6 +72,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
     private WizardDescriptor wiz;
     
     private SiteTemplateWizardPanel sitesPanel;
+    private JavaScriptLibrarySelectionPanel librariesPanel;
 
     public ClientSideProjectWizardIterator() {
     }
@@ -82,9 +83,11 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
 
     private WizardDescriptor.Panel[] createPanels() {
         sitesPanel = new SiteTemplateWizardPanel();
+        librariesPanel = new JavaScriptLibrarySelectionPanel();
         return new WizardDescriptor.Panel[]{
                     new ClientSideProjectWizardPanel(),
                     sitesPanel,
+                    librariesPanel,
         };
     }
 
@@ -92,6 +95,7 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
         return new String[]{
                     NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_CreateProjectStep"),
                     NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_ChooseSiteStep"),
+                    NbBundle.getMessage(ClientSideProjectWizardIterator.class, "LBL_JavaScriptLibrarySelectionStep"),
                 };
     }
 
@@ -109,6 +113,9 @@ public class ClientSideProjectWizardIterator implements WizardDescriptor.Progres
 
         if (index >= 1) {
             sitesPanel.apply(dir, handle);
+        }
+        if (index >= 2) {
+            librariesPanel.apply(dir, handle);
         }
 
         File parent = dirF.getParentFile();

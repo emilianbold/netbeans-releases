@@ -60,7 +60,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 @NbBundle.Messages({"MSG_Loading=loading...",
-    "MSG_None=Do not use any"})
+    "MSG_None=Do not use any",
+    "SiteTemplateWizard_Label1=Site Template to initialize project structure"})
 public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeListener {
 
     private SiteTemplateCustomizer customizer = null;
@@ -91,6 +92,10 @@ public class SiteTemplateWizard extends javax.swing.JPanel implements ChangeList
         });
     }
 
+    public String getName() {
+        return Bundle.SiteTemplateWizard_Label1();
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
