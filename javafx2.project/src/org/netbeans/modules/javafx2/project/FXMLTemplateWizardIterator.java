@@ -154,6 +154,9 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         String controller = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
         boolean createCSS = (Boolean) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE);
         String css = (String) wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
+        
+        //remove file extension from name
+        css = css.substring(0, css.length() - CSS_FILE_EXTENSION.length() - 1);
 
         Map<String, String> params = new HashMap<String, String>();
         if (controller != null) {
