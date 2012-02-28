@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
@@ -69,6 +70,9 @@ public class UnusedUsesHint extends AbstractRule {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (CodeUtils.isPhp_52(fileObject)) {
+            return;
+        }
         for (UnusedOffsetRanges unusedOffsetRanges : SemanticAnalysis.computeUnusedUsesOffsetRanges(phpParseResult)) {
             hints.add(new Hint(UnusedUsesHint.this, Bundle.UnsedUsesHintDisp(), fileObject, unusedOffsetRanges.getRangeToVisualise(), createHintFixes(context.doc, unusedOffsetRanges), 500));
         }
