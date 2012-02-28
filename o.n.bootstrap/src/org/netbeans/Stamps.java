@@ -873,7 +873,7 @@ public final class Stamps {
         }
         return false;
     }
-    public static String findRelativePath(String file) {
+    static String findRelativePath(String file) {
         List<String> arrayList = new ArrayList<String>();
         try {
             produceRelativePath(file, arrayList);
