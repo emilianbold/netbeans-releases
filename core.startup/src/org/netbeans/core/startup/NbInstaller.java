@@ -80,6 +80,7 @@ import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
+import org.netbeans.core.startup.preferences.RelPaths;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
@@ -1199,8 +1200,10 @@ final class NbInstaller extends ModuleInstaller {
             }
             for (Map.Entry<File, DateAndManifest> entry : m.entrySet()) {
                 File jar = entry.getKey();
-                os.write(jar.getAbsolutePath().getBytes("UTF-8")); // NOI18N
-                os.write(0);
+                String[] relPath = RelPaths.findRelativePath(jar.getAbsolutePath());
+                assert relPath != null;
+                os.writeUTF(relPath[0]);
+                os.writeUTF(relPath[1]);
                 long time = entry.getValue().date;
                 for (int i = 7; i >= 0; i--) {
                     os.write((int) ((time >> (i * 8)) & 0xFF));
@@ -1264,9 +1267,9 @@ final class NbInstaller extends ModuleInstaller {
             if (pos == data.limit()) {
                 return;
             }
-            int end = findNullByte(data, pos);
-            if (end == -1) throw new IOException("Could not find next manifest JAR name from " + pos); // NOI18N
-            File jar = new File(new String(toArray(data, pos, end - pos), "UTF-8")); // NOI18N
+            data.position(pos);
+            File jar = new File(RelPaths.readRelativePath(data)); // NOI18N
+            int end = data.position();
             long time = 0L;
             if (end + 8 >= data.limit()) throw new IOException("Ran out of space for timestamp for " + jar); // NOI18N
             for (int i = 0; i < 8; i++) {
