@@ -3512,7 +3512,8 @@ assignment_expression
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
             )
-            assignment_expression
+            (assignment_expression
+            | array_initializer)
         )?
     ;
 
