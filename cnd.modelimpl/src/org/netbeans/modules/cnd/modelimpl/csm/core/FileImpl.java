@@ -71,12 +71,10 @@ import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.ArrayList;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
@@ -92,19 +90,12 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
-import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponent;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
-import org.netbeans.modules.cnd.modelimpl.repository.FileDeclarationsKey;
-import org.netbeans.modules.cnd.modelimpl.repository.FileIncludesKey;
-import org.netbeans.modules.cnd.modelimpl.repository.FileInstantiationsKey;
-import org.netbeans.modules.cnd.modelimpl.repository.FileMacrosKey;
-import org.netbeans.modules.cnd.modelimpl.repository.FileReferencesKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
@@ -124,7 +115,7 @@ import org.openide.util.Exceptions;
  * CsmFile implementations
  * @author Vladimir Kvashin
  */
-public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
+public final class FileImpl implements CsmFile,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
     private static final ThreadLocal<AtomicBoolean> inParse = new ThreadLocal<AtomicBoolean>() {
@@ -209,10 +200,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /**
      * It's a map since we need to eliminate duplications
      */
-    private final Set<ErrorDirectiveImpl> errors = createErrors();
-    private final ReadWriteLock errorsLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
-    private int errorCount = 0;
     private int lastParseTime;
 
     public static enum State {
@@ -241,8 +229,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private FileType fileType = FileType.UNDEFINED_FILE;
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
-    private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
-    private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
+    private FileContent currentFileContent;
+//    private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
+//    private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
@@ -263,38 +252,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         parsingState = ParsingState.NOT_BEING_PARSED;
         this.projectUID = UIDCsmConverter.projectToUID(project);
         this.fileBuffer = fileBuffer;
-
-        fileDeclarationsKey = new FileDeclarationsKey(this);
-        weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(project, fileDeclarationsKey);
-        FileComponent fc  = new FileComponentDeclarations(this, true);
-        fc.put();
-        weakFileDeclarations.clear();
-
-        fileMacrosKey = new FileMacrosKey(this);
-        weakFileMacros = new WeakContainer<FileComponentMacros>(project, fileMacrosKey);
-        fc  = new FileComponentMacros(this, true);
-        fc.put();
-        weakFileMacros.clear();
-
-        fileIncludesKey = new FileIncludesKey(this);
-        weakFileIncludes = new WeakContainer<FileComponentIncludes>(project, fileIncludesKey);
-        fc  = new FileComponentIncludes(this, true);
-        fc.put();
-        weakFileIncludes.clear();
-        hasBrokenIncludes = new AtomicBoolean(false);
-
-        fileReferencesKey = new FileReferencesKey(this);
-        weakFileReferences = new WeakContainer<FileComponentReferences>(project, fileReferencesKey);
-        fc  = new FileComponentReferences(this, true);
-        fc.put();
-        weakFileReferences.clear();
-
-        fileInstantiationsKey = new FileInstantiationsKey(this);
-        weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey);
-        fc  = new FileComponentInstantiations(this, true);
-        fc.put();
-        weakFileInstantiationReferences.clear();
         
+        hasBrokenIncludes = new AtomicBoolean(false);
+        this.currentFileContent = FileContent.createFileContent(FileImpl.this, project);
         if (TraceFlags.TRACE_CPU_CPP && getAbsolutePath().toString().endsWith("cpu.cc")) { // NOI18N
             new Exception("cpu.cc file@" + System.identityHashCode(FileImpl.this) + " of prj@"  + System.identityHashCode(project) + ":UID@" + System.identityHashCode(this.projectUID) + this.projectUID).printStackTrace(System.err); // NOI18N
         }
@@ -549,7 +509,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             }
                             time = System.currentTimeMillis();
                             try {
-                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null);
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, false);
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     _parse(parseParams);
@@ -577,7 +537,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             boolean first = true;
                             time = System.currentTimeMillis();
                             try {
-                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null);
+                                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, true);
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     if (first) {
@@ -670,7 +630,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 if (parseLevel > 1 && TraceFlags.TIMING_PARSE_PER_FILE_FLAT) {
                     System.err.printf(parseLevel + ((curState == State.PARSED) ? " additional " : " ") + "include parse with curState " + curState + "for %s\n", getAbsolutePath()); // NOI18N
                 }
-                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler);
+                ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, semaHandler, false);
                 for (APTPreprocHandler preprocHandler : handlers) {
                     parseParams.setCurrentPreprocHandler(preprocHandler);
                     _parse(parseParams);
@@ -814,7 +774,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public final int getErrorCount() {
-        return errorCount;
+        return currentFileContent.getErrorCount();
     }
     
     public void parseOnInclude(APTPreprocHandler.State stateBefore, CsmParserProvider.CsmParseCallback semaHandler) {
@@ -858,12 +818,6 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         synchronized(snapShotLock) {
             fileSnapshot = new FileSnapshot(this);
         }
-        getFileIncludes().clean();
-        hasBrokenIncludes.set(false);
-        getFileMacros().clean();
-        getFileReferences().clean();
-        getFileInstantiations().clean();
-        _clearErrors();
         if (reportParse || logState || TraceFlags.DEBUG) {
             logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
         }
@@ -917,29 +871,17 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private void disposeAll(boolean clearNonDisposable) {
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         //for( Iterator iter = declarations.values().iterator(); iter.hasNext(); ) {
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getFileDeclarations().clean();
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = currentFileContent.cleanDeclarations();
         clearFakeRegistrations();
 
+        hasBrokenIncludes.set(false);
         if (clearNonDisposable) {
-            clearStateCache();
-            getFileIncludes().clean();
-            hasBrokenIncludes.set(false);
-            getFileMacros().clean();
-            getFileInstantiations().clean();
-            _clearErrors();
+            currentFileContent.cleanOther();
         }
+        currentFileContent.put();
         Collection<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
         Utils.disposeAll(arr);
         RepositoryUtils.remove(uids);
-    }
-
-    private void _clearErrors() {
-        try {
-            errorsLock.writeLock().lock();
-            errors.clear();
-        } finally {
-            errorsLock.writeLock().unlock();
-        }
     }
 
     private Set<ErrorDirectiveImpl> createErrors() {
@@ -955,16 +897,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private final APTFile fullAPT;
         private APTPreprocHandler curPreprocHandler;
 
-        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback) {
-            this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND);
+        public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent) {
+            this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent);
         }
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT,
                 CsmParserProvider.CsmParseCallback callback,
-                boolean lazyCompound) {
+                boolean lazyCompound, boolean emptyFileContent) {
             assert fileImpl != null : "null file is not allowed";
             assert fullAPT != null : "null APTFile is not allowed";
-            this.content = new FileContent(fileImpl);
+            this.content = FileContent.getHardReferenceBasedCopy(fileImpl.currentFileContent, emptyFileContent);
             this.fullAPT = fullAPT;
             this.callback = callback;
             this.lazyCompound = lazyCompound;
@@ -1379,7 +1321,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (TraceFlags.DUMP_AST) {
                 parseResult.dumpAST();
             }
-            errorCount = parseResult.getErrorCount();
+            parseParams.content.setErrorCount(parseResult.getErrorCount());
             if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                 parseResult = null;
                 if (TraceFlags.TRACE_CACHE) {
@@ -1416,31 +1358,16 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     void updateModelAfterParsing(ParseDescriptor parseParams) {
-        // handle fake includes
-        parseParams.content.getFakeIncludeRegistrations();
-        // handle fake functions
-        parseParams.content.getFakeFunctionRegistrations();
-        // handle includes
-        FileComponentIncludes newFileIncludes = parseParams.content.getFileIncludes();
-        getFileIncludes().appendFrom(newFileIncludes);
-        boolean hasBroken = parseParams.content.hasBrokenIncludes();
-        // update hasBrokenIncludes marker accordingly and store if changed
-        boolean updated = false;
-        if (hasBrokenIncludes.compareAndSet(!hasBroken, hasBroken) && isValid()) {
-            updated = true;
+        Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = parseParams.content.getFakeASTs();
+        ProjectBase projectImpl = getProjectImpl(true);
+        CsmUID<CsmFile> thisFileUID = getUID();
+        for (Map.Entry<CsmUID<FunctionImplEx<?>>, AST> entry : fakeASTs.entrySet()) {
+            projectImpl.trackFakeFunctionAST(thisFileUID, entry.getKey(), entry.getValue());
         }
-        // handle errors
-        Set<ErrorDirectiveImpl> newErrors = parseParams.content.getErrors();
-        try {
-            errorsLock.writeLock().lock();
-            errors.clear();
-            errors.addAll(newErrors);            
-        } finally {
-            errorsLock.writeLock().unlock();
-        }
-        //
-        FileComponentMacros newFileMacros = parseParams.content.getFileMacros();
-        getFileMacros().appendFrom(newFileMacros);
+        hasBrokenIncludes.set(parseParams.content.hasBrokenIncludes());
+        // handle file content
+        currentFileContent = parseParams.content.toWeakReferenceBasedCopy();
+        currentFileContent.put();
         RepositoryUtils.put(this);
     }
 
@@ -1511,14 +1438,15 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     @Override
     public Collection<CsmErrorDirective> getErrors() {
-        Collection<CsmErrorDirective> out = new ArrayList<CsmErrorDirective>(0);
-        try {
-            errorsLock.readLock().lock();
-            out.addAll(errors);
-        } finally {
-            errorsLock.readLock().unlock();
-        }
-        return out;
+        return new ArrayList<CsmErrorDirective>(currentFileContent.getErrors());
+//        Collection<CsmErrorDirective> out = new ArrayList<CsmErrorDirective>(0);
+//        try {
+//            errorsLock.readLock().lock();
+//            out.addAll(errors);
+//        } finally {
+//            errorsLock.readLock().unlock();
+//        }
+//        return out;
     }
 
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
@@ -1599,43 +1527,54 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     void addMacro(CsmMacro macro) {
         getFileMacros().addMacro(macro);
     }
-
-    void addError(ErrorDirectiveImpl error) {
-        try {
-            errorsLock.writeLock().lock();
-            errors.add(error);
-        } finally {
-            errorsLock.writeLock().unlock();
-        }
-    }
+//
+//    void addError(ErrorDirectiveImpl error) {
+//        try {
+//            errorsLock.writeLock().lock();
+//            errors.add(error);
+//        } finally {
+//            errorsLock.writeLock().unlock();
+//        }
+//    }
 
     @Override
     public Collection<CsmMacro> getMacros() {
+        assert !inParse.get().get();
         return getFileMacros().getMacros();
     }
 
     public Iterator<CsmMacro> getMacros(CsmFilter filter) {
+        assert !inParse.get().get();
         return getFileMacros().getMacros(filter);
     }
 
     public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
+        assert !inParse.get().get();
         return getFileMacros().findMacroUids(name);
     }
 
-    @Override
-    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-        return getFileDeclarations().findExistingDeclaration(startOffset, endOffset, name);
-    }
 
-    @Override
-    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
-        return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
-    }
-    
-    @Override
-    public void addDeclaration(CsmOffsetableDeclaration decl) {
-        getFileDeclarations().addDeclaration(decl);
-    }
+//    @Override
+//    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
+//        return getFileDeclarations().findExistingDeclaration(startOffset, endOffset, name);
+//    }
+//
+//    @Override
+//    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+//        return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
+//    }
+//    
+//    @Override
+//    public void addDeclaration(CsmOffsetableDeclaration decl) {
+//        assert !inParse.get().get();
+//        getFileDeclarations().addDeclaration(decl);
+//    }
+//
+//    //    @Override
+//    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
+//        assert !inParse.get().get();
+//        getFileDeclarations().removeDeclaration(declaration);
+//    }
 
     /**
      * Gets the list of the static functions declarations (not definitions)
@@ -1643,24 +1582,23 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
+        assert !inParse.get().get();
         return getFileDeclarations().getStaticFunctionDeclarations();
     }
 
     public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
+        assert !inParse.get().get();
         return getFileDeclarations().getStaticFunctionDeclarations(filter);
     }
 
     public Collection<CsmVariable> getStaticVariableDeclarations() {
+        assert !inParse.get().get();
         return getFileDeclarations().getStaticVariableDeclarations();
     }
 
     public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
+        assert !inParse.get().get();
         return getFileDeclarations().getStaticVariableDeclarations(filter);
-    }
-
-    @Override
-    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-        getFileDeclarations().removeDeclaration(declaration);
     }
 
     @Override
@@ -1675,10 +1613,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        List<CsmScopeElement> l = new ArrayList<CsmScopeElement>();
-        l.addAll(getStaticVariableDeclarations());
-        l.addAll(getStaticFunctionDeclarations());
-        return l;
+        assert !inParse.get().get();
+        return currentFileContent.getScopeElements();
     }
 
     @Override
@@ -1767,58 +1703,23 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
     }
 
     public final void onFakeRegisration(FunctionImplEx<?> decl, AST fakeRegistrationAst) {
-        synchronized (fakeFunctionRegistrations) {
-            CsmUID<?> aUid = UIDCsmConverter.declarationToUID(decl);
-            @SuppressWarnings("unchecked")
-            CsmUID<FunctionImplEx<?>> uidDecl = (CsmUID<FunctionImplEx<?>>) aUid;
-            fakeFunctionRegistrations.add(uidDecl);
-            getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
-        }
-    }
-
-    public final boolean onFakeIncludeRegistration(IncludeImpl include, CsmOffsetableDeclaration container) {
-        synchronized (fakeIncludeRegistrations) {
-            if(include != null && container != null) {
-                CsmUID<IncludeImpl> includeUid = UIDCsmConverter.identifiableToUID(include);
-                CsmUID<CsmOffsetableDeclaration> containerUID = UIDCsmConverter.declarationToUID(container);
-                if(includeUid != null && containerUID != null) {
-                    // extra check to track possible double registrations like
-                    // namespace AAA {
-                    //   namespace Inner {
-                    //        class B {
-                    // #include "classBody.h"
-                    //           class Inner {
-                    // #include "innerBody.h"
-                    //           }; end of class Inner
-                    //        }; end of class B
-                    //   } // end of namespace Inner
-                    // } // end of namespace AAA
-                    // 
-                    for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
-                        if (fakeIncludePair.getIncludeUid().equals(includeUid)) {
-                            // inner object always has higher priority
-                            if (!fakeIncludePair.getContainerUid().equals(containerUID)) {
-                                assert false : "trying to replace? " + include + " for container " + container + " was: " + fakeIncludePair;
-                            }
-                            return false;
-                        }
-                    }
-                    fakeIncludeRegistrations.add(new FakeIncludePair(includeUid, containerUID));
-                    return true;
-                }
-            }
-        }
-        return false;
+//        synchronized (fakeFunctionRegistrations) {
+//            fakeFunctionRegistrations.add(uidDecl);
+//        }
+        CsmUID<?> aUid = UIDCsmConverter.declarationToUID(decl);
+        @SuppressWarnings("unchecked")
+        CsmUID<FunctionImplEx<?>> uidDecl = (CsmUID<FunctionImplEx<?>>) aUid;
+        getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
     }
 
     private void clearFakeRegistrations() {
-        synchronized (fakeFunctionRegistrations) {
-            getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
-            fakeFunctionRegistrations.clear();
-        }
-        synchronized (fakeIncludeRegistrations) {
-            fakeIncludeRegistrations.clear();
-        }
+        getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
+//        synchronized (fakeFunctionRegistrations) {
+//            fakeFunctionRegistrations.clear();
+//        }
+//        synchronized (fakeIncludeRegistrations) {
+//            fakeIncludeRegistrations.clear();
+//        }
     }
 
     private volatile boolean alreadyInFixFakeRegistrations = false;
@@ -1837,6 +1738,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private boolean fixFakeFunctionRegistrations(boolean projectParsedMode) {
         boolean wereFakes = false;
+        FileContent curContent = currentFileContent;
+        List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = curContent.getFakeFunctionRegistrations();
         synchronized (fakeFunctionRegistrations) {
             if (!alreadyInFixFakeRegistrations) {
                 alreadyInFixFakeRegistrations = true;
@@ -1853,7 +1756,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                             if (curElem instanceof FunctionImplEx<?>) {
                                 wereFakes = true;
                                 incParseCount();
-                                if (((FunctionImplEx<?>) curElem).fixFakeRegistration(projectParsedMode, fakeAST)) {
+                                if (((FunctionImplEx<?>) curElem).fixFakeRegistration(curContent, projectParsedMode, fakeAST)) {
                                     getProjectImpl(true).trackFakeFunctionAST(getUID(), fakeUid, null);
                                 }
                                 incParseCount();
@@ -1871,7 +1774,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private boolean fixFakeIncludeRegistrations(boolean projectParsedMode) {
         boolean wereFakes = false;
-        for (FakeIncludePair fakeIncludePair : fakeIncludeRegistrations) {
+        FileContent fileContent = currentFileContent;
+        for (FakeIncludePair fakeIncludePair : fileContent.getFakeIncludeRegistrations()) {
             synchronized (fakeIncludePair) {
                 if (!fakeIncludePair.isFixed()) {
                     CsmInclude include = UIDCsmConverter.UIDtoIdentifiable(fakeIncludePair.getIncludeUid());
@@ -1880,6 +1784,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                         if (container != null && container.isValid()) {
                             FileImpl file = (FileImpl) include.getIncludeFile();
                             if (file != null && file.isValid()) {                                
+                                FileContent includedFileContent = file.currentFileContent;
                                 TokenStream ts = this.getTokenStreamOfIncludedFile(include);                               
                                 if (ts != null) {
                                     CsmParser parser = CsmParserProvider.createParser(file);
@@ -1900,12 +1805,12 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
                                                 kind == CsmDeclaration.Kind.UNION) {
                                             visibility = CsmVisibility.PUBLIC;
                                         }
-                                        result.render(file, cls, visibility, Boolean.FALSE);
+                                        result.render(includedFileContent, cls, visibility, Boolean.FALSE);
                                         fakeIncludePair.markFixed();
                                         wereFakes = true;
                                     } else if (container instanceof NamespaceDefinitionImpl) {
                                         CsmParserResult result = parser.parse(CsmParser.ConstructionKind.NAMESPACE_DEFINITION_BODY);
-                                        result.render(file, (NamespaceDefinitionImpl) container);
+                                        result.render(includedFileContent, (NamespaceDefinitionImpl) container);
                                         fakeIncludePair.markFixed();
                                         wereFakes = true;
                                     }
@@ -1953,20 +1858,9 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         }
         PersistentUtils.writeBuffer(this.fileBuffer, output);
 
-        PersistentUtils.writeErrorDirectives(this.errors, output);
-
-        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        fileDeclarationsKey.write(output);
-        fileIncludesKey.write(output);
         output.writeBoolean(hasBrokenIncludes.get());
-        fileMacrosKey.write(output);
-        fileReferencesKey.write(output);
-        fileInstantiationsKey.write(output);
-        factory.writeUIDCollection(this.fakeFunctionRegistrations, output, false);
+        currentFileContent.write(output);
 
-        FakeIncludePair.write(fakeIncludeRegistrations, output);
-
-        //output.writeUTF(state.toString());
         output.writeByte(fileType.ordinal());
 
         output.writeLong(lastParsed);
@@ -1997,34 +1891,8 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
         this.fileBuffer = PersistentUtils.readBuffer(input);
 
-        PersistentUtils.readErrorDirectives(this.errors, input);
-
-        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-
-        fileDeclarationsKey = new FileDeclarationsKey(input);
-        assert fileDeclarationsKey != null : "file declaratios key can not be null";
-        weakFileDeclarations = new WeakContainer<FileComponentDeclarations>(this._getProject(false), fileDeclarationsKey);
-
-        fileIncludesKey = new FileIncludesKey(input);
-        assert fileIncludesKey != null : "file includes key can not be null";
-        weakFileIncludes = new WeakContainer<FileComponentIncludes>(this._getProject(false), fileIncludesKey);
         hasBrokenIncludes = new AtomicBoolean(input.readBoolean());
-
-        fileMacrosKey = new FileMacrosKey(input);
-        assert fileMacrosKey != null : "file macros key can not be null";
-        weakFileMacros = new WeakContainer<FileComponentMacros>(this._getProject(false), fileMacrosKey);
-
-        fileReferencesKey = new FileReferencesKey(input);
-        assert fileReferencesKey != null : "file referebces key can not be null";
-        weakFileReferences = new WeakContainer<FileComponentReferences>(this._getProject(false), fileReferencesKey);
-
-        fileInstantiationsKey = new FileInstantiationsKey(input);
-        assert fileInstantiationsKey != null : "file instantiation references key can not be null";
-        weakFileInstantiationReferences = new WeakContainer<FileComponentInstantiations>(this._getProject(false), fileInstantiationsKey);
-                
-        factory.readUIDCollection(this.fakeFunctionRegistrations, input);
-
-        FakeIncludePair.read(this.fakeIncludeRegistrations, input);
+        currentFileContent = new FileContent(this, this._getProject(false), input);
 
         fileType = FileType.values()[input.readByte()];
 
@@ -2113,39 +1981,39 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         
     }
 
-    private final FileDeclarationsKey fileDeclarationsKey;
-    private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
+//    private final FileDeclarationsKey fileDeclarationsKey;
+//    private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
     private FileComponentDeclarations getFileDeclarations() {
-        FileComponentDeclarations fd = weakFileDeclarations.getContainer();
+        FileComponentDeclarations fd = currentFileContent.getFileDeclarations();
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
 
-    private final FileMacrosKey fileMacrosKey;
-    private final WeakContainer<FileComponentMacros> weakFileMacros;
+//    private final FileMacrosKey fileMacrosKey;
+//    private final WeakContainer<FileComponentMacros> weakFileMacros;
     private FileComponentMacros getFileMacros() {
-        FileComponentMacros fd = weakFileMacros.getContainer();
+        FileComponentMacros fd = currentFileContent.getFileMacros();
         return fd != null ? fd : FileComponentMacros.empty();
     }
 
     private final AtomicBoolean hasBrokenIncludes;
-    private final FileIncludesKey fileIncludesKey;
-    private final WeakContainer<FileComponentIncludes> weakFileIncludes;
+//    private final FileIncludesKey fileIncludesKey;
+//    private final WeakContainer<FileComponentIncludes> weakFileIncludes;
     private FileComponentIncludes getFileIncludes() {
-        FileComponentIncludes fd = weakFileIncludes.getContainer();
+        FileComponentIncludes fd = currentFileContent.getFileIncludes();
         return fd != null ? fd : FileComponentIncludes.empty();
     }
 
-    private final FileReferencesKey fileReferencesKey;
-    private final WeakContainer<FileComponentReferences> weakFileReferences;
+//    private final FileReferencesKey fileReferencesKey;
+//    private final WeakContainer<FileComponentReferences> weakFileReferences;
     private FileComponentReferences getFileReferences() {
-        FileComponentReferences fd = weakFileReferences.getContainer();
+        FileComponentReferences fd = currentFileContent.getFileReferences();
         return fd != null ? fd : FileComponentReferences.empty();
     }
 
-    private final FileInstantiationsKey fileInstantiationsKey;
-    private final WeakContainer<FileComponentInstantiations> weakFileInstantiationReferences;
+//    private final FileInstantiationsKey fileInstantiationsKey;
+//    private final WeakContainer<FileComponentInstantiations> weakFileInstantiationReferences;
     private FileComponentInstantiations getFileInstantiations() {
-        FileComponentInstantiations fd = weakFileInstantiationReferences.getContainer();
+        FileComponentInstantiations fd = currentFileContent.getFileInstantiations();
         return fd != null ? fd : FileComponentInstantiations.empty();
     }
     
@@ -2184,10 +2052,7 @@ public final class FileImpl implements CsmFile, MutableDeclarationsContainer,
         printOut.printf("FI: %s, of %s prj=%s disposing=%s (%d)\n\tprjUID=(%d) %s\n\tfileType=%s, hasSnap=%s hasBroken=%s\n", getName(), // NOI18N 
                 projectImpl.getClass().getSimpleName(), projectImpl.getName(), projectImpl.isDisposing(), System.identityHashCode(projectImpl), 
                 System.identityHashCode(projectUID), projectUID,
-                this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(this.hasBrokenIncludes.get()));
-        if (this.hasBrokenIncludes.get()) {
-            
-        }
+                this.fileType, toYesNo(this.fileSnapshot!=null), toYesNo(hasBrokenIncludes()));
         printOut.printf("\tlastParsedTime=%d, lastParsed=%d %s %s\n", this.lastParseTime, this.lastParsed, this.parsingState, this.state);// NOI18N 
         FileBuffer buffer = getBuffer();
         printOut.printf("\tfileBuf=%s lastModified=%d\n", toYesNo(buffer.isFileBased()), buffer.lastModified());// NOI18N 
