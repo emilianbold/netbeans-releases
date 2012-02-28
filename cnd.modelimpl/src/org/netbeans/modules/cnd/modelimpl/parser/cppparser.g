@@ -1175,7 +1175,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 decl_namespace
 	{String qid; String name = "";}
 	:	
-		token:LITERAL_namespace
+		(literal_inline)? token:LITERAL_namespace
 		(
                         {action.namespace_declaration(token);}
 			(ns:IDENT{_td = true; name=ns.getText(); declaratorID(name,qiType);} {action.namespace_name(ns);})?
@@ -3081,7 +3081,7 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
         |
-                ( is_declaration | LITERAL_namespace | LITERAL_static_assert ) =>
+                ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
