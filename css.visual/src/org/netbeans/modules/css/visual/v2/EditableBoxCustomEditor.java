@@ -121,7 +121,7 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     
     private ComboBoxModel modelFor(Edge e) {
         BoxEdgeSize mw = editor.editableBox.getEdge(e);
-        String value = mw != null ? mw.getTextRepresentation().toString() : null;
+        String value = mw != null ? mw.getTextRepresentation().toString() : "";
         
         Set<String> set = new TreeSet<String>();
         set.add(value);
