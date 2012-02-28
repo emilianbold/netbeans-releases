@@ -57,6 +57,7 @@ import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescrip
 import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.editor.hints.Fix;
@@ -157,7 +158,7 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
                 @Override public void transform(WorkingCopy copy, OccurrenceDescription occurrence) {
                     try {
                         Fix toFix = JavaFix.rewriteFix(copy, "whatever", occurrence.getOccurrenceRoot(), toCode[0], occurrence.getVariables(), occurrence.getMultiVariables(), occurrence.getVariables2Names(), Collections.<String, TypeMirror>emptyMap());
-                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false);
+                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false, new ArrayList<RefactoringElementImplementation>());
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }

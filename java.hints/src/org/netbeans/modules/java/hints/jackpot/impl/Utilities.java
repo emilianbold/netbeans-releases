@@ -50,8 +50,8 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
@@ -70,14 +70,14 @@ import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
-import com.sun.tools.javac.comp.AttrContext;
-import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.code.Flags;
+import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.Attr;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
-import com.sun.tools.javac.parser.EndPosParser;
 import com.sun.tools.javac.parser.JavacParser;
 import com.sun.tools.javac.parser.Lexer;
 import com.sun.tools.javac.parser.Parser;
@@ -90,11 +90,12 @@ import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 import com.sun.tools.javac.tree.JCTree.JCExpression;
+import com.sun.tools.javac.tree.JCTree.JCFieldAccess;
+import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCModifiers;
 import com.sun.tools.javac.tree.JCTree.JCStatement;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
-import org.netbeans.modules.java.source.javac.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Log;
@@ -118,8 +119,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.AnnotationValueVisitor;
@@ -158,13 +157,14 @@ import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.Trigger.PatternDescription;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.builder.TreeFactory;
+import org.netbeans.modules.java.source.javac.CancelService;
+import org.netbeans.modules.java.source.javac.NBParserFactory;
 import org.netbeans.modules.java.source.javac.NBParserFactory.NBEndPosParser;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Lookup;
 import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
@@ -406,19 +406,54 @@ public class Utilities {
 
             if (isError(type) && expression) {
                 //maybe type?
-                Elements el = jti.getElements();
                 if (Utilities.isPureMemberSelect(patternTree, false)) {
                     SourcePositions[] varPositions = new SourcePositions[1];
                     List<Diagnostic<? extends JavaFileObject>> varErrors = new LinkedList<Diagnostic<? extends JavaFileObject>>();
-                    Tree var = parseExpression(c, pattern + ".class;", false, varPositions, varErrors);
+                    Tree var = parseExpression(c, pattern + ".Class.class;", false, varPositions, varErrors);
 
-                    type = attributeTree(jti, var, scope, varErrors);
+                    attributeTree(jti, var, scope, varErrors);
 
-                    Tree typeTree = ((MemberSelectTree) var).getExpression();
-                    Trees trees = JavacTrees.instance(c);
+                    ExpressionTree typeTree = ((MemberSelectTree) ((MemberSelectTree) var).getExpression()).getExpression();
+                    final Symtab symtab = Symtab.instance(c);
+                    final Elements el = jti.getElements();
+                    final Trees trees = JavacTrees.instance(c);
                     CompilationUnitTree cut = ((JavacScope) scope).getEnv().toplevel;
+                    final boolean[] found = new boolean[1];
 
-                    if (!isError(trees.getElement(new TreePath(new TreePath(cut), typeTree)))) {
+                    new TreePathScanner<Void, Void>() {
+                        @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                            Element currentElement = trees.getElement(getCurrentPath());
+
+                            if (!isError(currentElement)) {
+                                if (currentElement.getKind() == ElementKind.PACKAGE && el.getPackageElement(node.toString()) == null) {
+                                    ((JCFieldAccess) node).sym = symtab.errSymbol;
+                                    ((JCFieldAccess) node).type = symtab.errType;
+                                } else {
+                                    found[0] = true;
+                                    return null;
+                                }
+                            }
+
+                            return super.visitMemberSelect(node, p);
+                        }
+                        @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                            Element currentElement = trees.getElement(getCurrentPath());
+
+                            if (!isError(currentElement)) {
+                                if (currentElement.getKind() == ElementKind.PACKAGE && el.getPackageElement(node.toString()) == null) {
+                                    ((JCIdent) node).sym = symtab.errSymbol;
+                                    ((JCIdent) node).type = symtab.errType;
+                                } else {
+                                    found[0] = true;
+                                    return null;
+                                }
+                            }
+                            return super.visitIdentifier(node, p);
+                        }
+
+                    }.scan(new TreePath(new TreePath(cut), typeTree), null);
+
+                    if (found[0]) {
                         sourcePositions[0] = varPositions[0];
                         offset = 0;
                         patternTreeErrors = varErrors;
@@ -457,7 +492,7 @@ public class Utilities {
         return patternTree;
     }
 
-    private static boolean isError(Element el) {
+    static boolean isError(Element el) {
         return (el == null || (el.getKind() == ElementKind.CLASS) && isError(((TypeElement) el).asType()));
     }
 
@@ -1390,7 +1425,7 @@ public class Utilities {
         
         
     }
-    
+
     private static final class DummyJFO extends SimpleJavaFileObject {
         private DummyJFO() {
             super(URI.create("dummy.java"), JavaFileObject.Kind.SOURCE);

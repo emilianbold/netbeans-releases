@@ -96,6 +96,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.ProjectDependencyUpgrader;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -111,6 +112,10 @@ public class BatchUtilities {
     private static final Logger LOG = Logger.getLogger(BatchUtilities.class.getName());
     
     public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super MessageImpl> problems) {
+        return applyFixes(candidates, progress, cancel, new ArrayList<RefactoringElementImplementation>(), problems);
+    }
+    
+    public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super RefactoringElementImplementation> fileChanges, final Collection<? super MessageImpl> problems) {
         final Map<Project, Set<String>> processedDependencyChanges = new IdentityHashMap<Project, Set<String>>();
         final Map<FileObject, List<ModificationResult.Difference>> result = new LinkedHashMap<FileObject, List<ModificationResult.Difference>>();
 
@@ -134,7 +139,7 @@ public class BatchUtilities {
                 copy.toPhase(Phase.RESOLVED);
                 progress.tick();
                 
-                if (applyFixes(copy, processedDependencyChanges, hints, problems)) {
+                if (applyFixes(copy, processedDependencyChanges, hints, fileChanges, problems)) {
                     return false;
                 }
 
@@ -209,6 +214,10 @@ public class BatchUtilities {
     }
 
     public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
+        return applyFixes(copy, processedDependencyChanges, hints, new ArrayList<RefactoringElementImplementation>(), problems);
+    }
+
+    public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Collection<? super RefactoringElementImplementation> fileChanges, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
         List<JavaFix> fixes = new ArrayList<JavaFix>();
         for (ErrorDescription ed : hints) {
             if (!ed.getFixes().isComputed()) {
@@ -247,7 +256,7 @@ public class BatchUtilities {
         for (JavaFix f : fixes) {
 //                    if (cancel.get()) return ;
 
-            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false);
+            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false, fileChanges);
         }
         return false;
     }

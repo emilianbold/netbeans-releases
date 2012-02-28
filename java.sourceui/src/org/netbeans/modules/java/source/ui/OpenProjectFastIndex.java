@@ -63,9 +63,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.source.indexing.JavaIndexEvents;
-import org.netbeans.modules.java.source.indexing.JavaIndexEvents.IndexEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -91,7 +91,7 @@ import org.openide.util.*;
  * 
  * @author sdedic
  */
-class OpenProjectFastIndex implements JavaIndexEvents.Listener {
+class OpenProjectFastIndex implements ClassIndexManagerListener {
     private static final Logger LOG = Logger.getLogger(OpenProjectFastIndex.class.getName());
 
     /**
@@ -165,7 +165,12 @@ class OpenProjectFastIndex implements JavaIndexEvents.Listener {
         recognizers.addLookupListener(weakLookupL);
         globalRegistry.addGlobalPathRegistryListener(weakGlobalL);
         
-        JavaIndexEvents.getDefault().addIndexEventListener(this);
+        ClassIndexManager.getDefault().addClassIndexManagerListener(
+                WeakListeners.create(
+                    ClassIndexManagerListener.class, 
+                    this, ClassIndexManager.getDefault()
+                ) 
+        );
     }
     
     OpenProjectFastIndex(boolean register) {
@@ -238,13 +243,31 @@ class OpenProjectFastIndex implements JavaIndexEvents.Listener {
     }
 
     @Override
-    public void indexUpdated(IndexEvent event) {
-        URL rootURL = event.getRoot();
-        FileObject fo = URLMapper.findFileObject(rootURL);
-        LOG.log(Level.FINE, "Index updated, removing {0} ", rootURL);
-        removeRoots(Collections.singleton(fo));
+    public void classIndexAdded(ClassIndexManagerEvent event) {
+        Collection<FileObject> c = getFileRoots(event.getRoots());
+        LOG.log(Level.FINE, "Index updated, removing {0} ", c);
+        removeRoots(c);
     }
-    
+
+    @Override
+    public void classIndexRemoved(ClassIndexManagerEvent event) {
+        Collection<FileObject> c = getFileRoots(event.getRoots());
+        LOG.log(Level.FINE, "Roots removed from ClassIndexes, removing {0} ", c);
+        removeRoots(c);
+    }
+
+    private Collection<FileObject>  getFileRoots(Iterable<? extends URL> roots) {
+        Collection c = new ArrayList<FileObject>(5);
+        for (Iterator<? extends URL> it = roots.iterator(); it.hasNext(); ) {
+            URL rootURL = it.next();
+            FileObject fo = URLMapper.findFileObject(rootURL);
+            if (fo != null) {
+                c.add(fo);
+            }
+        }
+        return c;
+    }
+
     private void updateSourceIds() {
         Set<String> ids = new HashSet<String>();
         for (PathRecognizer r : recognizers.allInstances()) {
