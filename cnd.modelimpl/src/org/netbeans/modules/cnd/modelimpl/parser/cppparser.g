@@ -1694,7 +1694,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   (LITERAL_auto declarator[declOther, 0]) => 
+    (   ( (LITERAL_constexpr)? LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr)?
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
