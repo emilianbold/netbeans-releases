@@ -71,6 +71,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexFactory;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
@@ -829,7 +830,6 @@ public final class ClassIndex {
                 final Set<? super URL> attachListener, final boolean translate) throws IOException {
             final List<ClassPath.Entry> entries = cp.entries();
             final PathRegistry preg = PathRegistry.getDefault();
-            final ClassIndexManager mgr = ClassIndexManager.getDefault();
             boolean result = false;
             for (ClassPath.Entry entry : entries) {
                 URL url = entry.getURL();
@@ -839,7 +839,7 @@ public final class ClassIndex {
                 }
                 if (srcRoots == null) {
                     if (!roots.remove(url)) {
-                        if (mgr.isIndexed(url)) {
+                        if (JavaIndex.isIndexed(url)) {
                             newRoots.add (url);
                             result = true;
                         } else {
@@ -850,7 +850,7 @@ public final class ClassIndex {
                 else {
                     for (URL _url : srcRoots) {
                         if (!roots.remove(_url)) {
-                            if (mgr.isIndexed(_url)) {
+                            if (JavaIndex.isIndexed(_url)) {
                                 newRoots.add (_url);
                                 result = true;
                             } else {
@@ -902,7 +902,7 @@ public final class ClassIndex {
                         final ClassIndexManager mgr = ClassIndexManager.getDefault();
                         for (Iterator<URL> it = unknownRoots.iterator(); it.hasNext();) {
                             final URL url = it.next();
-                            if (!mgr.isIndexed(url)) {
+                            if (!JavaIndex.isIndexed(url)) {
                                 it.remove();
                             }
                         }
