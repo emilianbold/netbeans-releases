@@ -142,18 +142,22 @@ class Netbinox extends Equinox {
             return delegate.installBundle(url, in);
         }
         
-        public <S extends Object> Collection<ServiceReference<S>> getServiceReferences(Class<S> type, String string) throws InvalidSyntaxException {
+        @Override
+        public Collection getServiceReferences(Class type, String string) throws InvalidSyntaxException {
             return delegate.getServiceReferences(type, string);
         }
         
-        public <S extends Object> ServiceReference<S> getServiceReference(Class<S> type) {
+        @Override
+        public ServiceReference getServiceReference(Class type) {
             return delegate.getServiceReference(type);
         }
 
-        public <S extends Object> ServiceRegistration<S> registerService(Class<S> type, S s, Dictionary<String, ?> dctnr) {
+        @Override
+        public ServiceRegistration registerService(Class type, Object s, Dictionary dctnr) {
             return delegate.registerService(type, s, dctnr);
         }
 
+        @Override
         public ServiceReference[] getServiceReferences(String string, String string1) throws InvalidSyntaxException {
             return delegate.getServiceReferences(string, string1);
         }

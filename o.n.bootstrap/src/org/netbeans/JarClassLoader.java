@@ -786,7 +786,11 @@ public class JarClassLoader extends ProxyClassLoader {
 
         @Override
         public String getIdentifier() {
-            return getURL().toExternalForm();
+            String tmp = getURL().toExternalForm();
+            if (tmp.startsWith("jar:file:") && tmp.endsWith("!/")) {
+                return Stamps.findRelativePath(tmp.substring(9));
+            }
+            return tmp;
         }
     }
 
