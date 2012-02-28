@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javafx2.scenebuilder;
 
+import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;

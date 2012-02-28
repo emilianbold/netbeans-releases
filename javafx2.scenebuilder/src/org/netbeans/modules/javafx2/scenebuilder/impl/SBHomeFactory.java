@@ -39,14 +39,17 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.scenebuilder;
+package org.netbeans.modules.javafx2.scenebuilder.impl;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
+import org.netbeans.modules.javafx2.scenebuilder.Home;
+import org.netbeans.modules.javafx2.scenebuilder.HomeFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -54,13 +57,13 @@ import org.openide.util.Utilities;
  * @author Jaroslav Bachorik
  */
 public class SBHomeFactory {
-    private static final String VER_CURRENT = "1.0"; // NOI18N
+    private static final String VER_CURRENT = NbBundle.getMessage(SBHomeFactory.class, "SB_Version"); // NOI18N
     
     private static final HomeFactory WINDOWS_HOME_LOCATOR = new HomeFactory() {
-        final private static String WKIP = "C:\\Program Files\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
-        final private static String WKIP_MIX = "C:\\Program Files (x86)\\Oracle\\JavaFX Scene Builder " + VER_CURRENT; // NOI18N
-        final private static String LAUNCHER_PATH = "bin/scenebuilder.exe"; // NOI18N
-        final private static String PROPERTIES_PATH = "bin/scenebuilder.properties"; // NOI18N
+        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP") + " " + VER_CURRENT; // NOI18N
+        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP_MIX") + " " + VER_CURRENT; // NOI18N
+        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_LAUNCHER"); // NOI18N
+        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_PROPERTIES"); // NOI18N
         @Override
         public Home loadHome(String customPath) {
             return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
@@ -77,9 +80,9 @@ public class SBHomeFactory {
         }
     };
     private static final HomeFactory MAC_HOME_LOCATOR = new HomeFactory() {
-        final private static String WKIP = "/Applications/JavaFX Scene Builder " + VER_CURRENT + ".app"; // NOI18N
-        final private static String LAUNCHER_PATH = "Contents/MacOS/scenebuilder-launcher.sh"; // NOI18N
-        final private static String PROPERTIES_PATH = "Contents/Resources/SceneBuilder/bin/scenebuilder.properties"; // NOI18N
+        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "MAC_WKIP") + " " + VER_CURRENT + ".app"; // NOI18N
+        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_LAUNCHER"); // NOI18N
+        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_PROPERTIES"); // NOI18N
         
         @Override
         public Home defaultHome() {
