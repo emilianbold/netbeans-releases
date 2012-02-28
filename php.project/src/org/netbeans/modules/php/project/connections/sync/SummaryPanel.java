@@ -101,8 +101,12 @@ public class SummaryPanel extends JPanel {
         decreaseNumber(downloadNumberLabel);
     }
 
-    public void decreaseDeleteNumber() {
-        decreaseNumber(deleteNumberLabel);
+    public void decreaseNoopNumber() {
+        decreaseNumber(noopNumberLabel);
+    }
+
+    public void resetDeleteNumber() {
+        deleteNumberLabel.setText(String.valueOf(0));
     }
 
     private void setNumber(JLabel numberLabel, int number) {

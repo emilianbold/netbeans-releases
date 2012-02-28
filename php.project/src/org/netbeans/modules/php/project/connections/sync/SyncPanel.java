@@ -325,7 +325,7 @@ public final class SyncPanel extends JPanel {
         syncInfoLabel.setText(Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors));
     }
 
-    SyncInfo getSyncInfo() {
+    public SyncInfo getSyncInfo() {
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : items) {
             switch (syncItem.getOperation()) {
@@ -660,7 +660,7 @@ public final class SyncPanel extends JPanel {
 
     }
 
-    private static final class SyncInfo {
+    public static final class SyncInfo {
 
         public int download = 0;
         public int upload = 0;

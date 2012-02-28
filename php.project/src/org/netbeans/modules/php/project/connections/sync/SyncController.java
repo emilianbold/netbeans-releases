@@ -143,7 +143,7 @@ public final class SyncController implements Cancellable {
             public void run() {
                 SyncPanel panel = new SyncPanel(phpProject, remoteConfiguration.getDisplayName(), items.getItems(), remoteClient);
                 if (panel.open(lastTimeStamp == -1)) {
-                    doSynchronize(items, panel.getItems(), resultProcessor);
+                    doSynchronize(items, panel.getItems(), panel.getSyncInfo(), resultProcessor);
                 } else {
                     disconnect();
                     items.cleanup();
@@ -152,14 +152,14 @@ public final class SyncController implements Cancellable {
         });
     }
 
-    void doSynchronize(final SyncItems syncItems, final List<SyncItem> itemsToSynchronize, final SyncResultProcessor resultProcessor) {
+    void doSynchronize(final SyncItems syncItems, final List<SyncItem> itemsToSynchronize, final SyncPanel.SyncInfo syncInfo, final SyncResultProcessor resultProcessor) {
         assert SwingUtilities.isEventDispatchThread();
 
         if (cancelled) {
             // in fact, cannot happen here
             return;
         }
-        new Synchronizer(syncItems, itemsToSynchronize, resultProcessor).sync();
+        new Synchronizer(syncItems, itemsToSynchronize, syncInfo, resultProcessor).sync();
     }
 
     @Override
@@ -284,21 +284,28 @@ public final class SyncController implements Cancellable {
         private final SyncItems syncItems;
         private final List<SyncItem> itemsToSynchronize;
         private final SyncResultProcessor resultProcessor;
+        final ProgressPanel progressPanel;
 
 
-        public Synchronizer(SyncItems syncItems, List<SyncItem> itemsToSynchronize, SyncResultProcessor resultProcessor) {
+        public Synchronizer(SyncItems syncItems, List<SyncItem> itemsToSynchronize, SyncPanel.SyncInfo syncInfo, SyncResultProcessor resultProcessor) {
+            assert SwingUtilities.isEventDispatchThread();
             this.syncItems = syncItems;
             this.itemsToSynchronize = itemsToSynchronize;
             this.resultProcessor = resultProcessor;
+            progressPanel = new ProgressPanel(syncInfo);
         }
 
         public void sync() {
             assert SwingUtilities.isEventDispatchThread();
-            // XXX show modal progress window
+            progressPanel.showPanel();
             SYNC_RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    doSync();
+                    try {
+                        doSync();
+                    } finally {
+                        progressPanel.finish();
+                    }
                 }
             });
         }
@@ -315,7 +322,7 @@ public final class SyncController implements Cancellable {
                 TransferFile localTransferFile = syncItem.getLocalTransferFile();
                 switch (syncItem.getOperation()) {
                     case NOOP:
-                        // noop
+                        progressPanel.decreaseNoopNumber();
                         break;
                     case DOWNLOAD:
                     case DOWNLOAD_REVIEW:
@@ -324,6 +331,9 @@ public final class SyncController implements Cancellable {
                             mergeTransferInfo(downloadInfo, syncResult.getDownloadTransferInfo());
                         } catch (RemoteException ex) {
                             syncResult.getDownloadTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
+                            progressPanel.errorOccurred();
+                        } finally {
+                            progressPanel.decreaseDownloadNumber();
                         }
                         break;
                     case UPLOAD:
@@ -341,9 +351,13 @@ public final class SyncController implements Cancellable {
                         } catch (RemoteException ex) {
                             LOGGER.log(Level.INFO, null, ex);
                             syncResult.getUploadTransferInfo().addFailed(localTransferFile, ex.getLocalizedMessage());
+                            progressPanel.errorOccurred();
                         } catch (IOException ex) {
                             LOGGER.log(Level.WARNING, null, ex);
                             syncResult.getUploadTransferInfo().addFailed(localTransferFile, Bundle.SyncController_error_tmpFileCopyFailed());
+                            progressPanel.errorOccurred();
+                        } finally {
+                            progressPanel.decreaseUploadNumber();
                         }
                         break;
                     case DELETE:
@@ -401,6 +415,7 @@ public final class SyncController implements Cancellable {
         private void deleteFiles(SyncResult syncResult, Set<TransferFile> remoteFiles, Set<TransferFile> localFiles) {
             deleteRemoteFiles(syncResult, remoteFiles);
             deleteLocalFiles(syncResult, localFiles);
+            progressPanel.resetDeleteNumber();
         }
 
         private void deleteRemoteFiles(SyncResult syncResult, Set<TransferFile> remoteFiles) {
@@ -417,6 +432,7 @@ public final class SyncController implements Cancellable {
                     syncResult.getRemoteDeleteTransferInfo().addFailed(transferFile, ex.getLocalizedMessage());
                     break;
                 }
+                progressPanel.errorOccurred();
             }
         }
 
@@ -448,6 +464,7 @@ public final class SyncController implements Cancellable {
                             deleteInfo.addTransfered(transferFile);
                         } else {
                             deleteInfo.addFailed(transferFile, Bundle.SyncController_error_deleteLocalFile());
+                            progressPanel.errorOccurred();
                         }
                     }
                 }
@@ -460,6 +477,7 @@ public final class SyncController implements Cancellable {
                             deleteInfo.addTransfered(folder);
                         } else {
                             deleteInfo.addFailed(folder, Bundle.SyncController_error_deleteLocalFile());
+                            progressPanel.errorOccurred();
                         }
                     } else {
                         deleteInfo.addIgnored(folder, Bundle.SyncController_error_localFolderNotEmpty());
