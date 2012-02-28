@@ -847,12 +847,12 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                 |  
                         // User-defined type cast
                         {isCPlusPlus()}?
-                        ((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+                        ((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
                         {if (statementTrace>=1) 
                                 printf("external_declaration_6[%d]: Operator function\n",
                                         LT(1).getLine());
                         }
-                        (template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+                        (template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
                         { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #external_declaration_template);
                             else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|
@@ -1022,12 +1022,12 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 	|  
 		// User-defined type cast
 		{isCPlusPlus()}?
-		((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+		((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_6[%d]: Operator function\n",
 				LT(1).getLine());
 		}
-		(template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+		(template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
 		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
 		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
     |
@@ -1291,11 +1291,11 @@ member_declaration_template
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
     |
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_13d[%d]: Templated operator " + "function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
@@ -1497,11 +1497,11 @@ member_declaration
 		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
     |
         // User-defined type cast
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_8[%d]: Operator function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
          else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
