@@ -111,7 +111,7 @@ is the proper place.
   <changes>
       <change id="DataObjec.Registration">
           <api name="loaders"/>
-          <summary>Introduced <code>DataObject.Registration</code></summary>
+          <summary>Introduced <code>DataObject.Registration</code> and <code>DataObject.Registrations</code></summary>
           <version major="7" minor="36"/>
           <date day="23" month="1" year="2012"/>
           <author login="skygo"/>
@@ -123,6 +123,7 @@ is the proper place.
           </description>
           <class package="org.openide.loaders" name="DataObject"/>
           <issue number="207219"/>
+          <issue number="208670"/>
       </change>
       <change id="ToolbarPool.isFinished">
           <api name="awt"/>
