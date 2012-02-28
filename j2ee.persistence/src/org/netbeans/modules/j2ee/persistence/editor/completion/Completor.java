@@ -43,60 +43,120 @@ package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
 import java.util.*;
-import javax.lang.model.element.*;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.swing.text.Document;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import org.netbeans.api.java.source.ClassIndex.SearchScope;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.*;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
+import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourcePopulator;
 import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.w3c.dom.Node;
 
 /**
- * Various completor for code completing XML tags and attributes in Hibername 
+ * Various completor for code completing XML tags and attributes in Hibername
  * configuration and mapping file
- * 
+ *
  * @author Dongmei Cao
  */
 public abstract class Completor {
 
-    static class JtaDatasourceCompletor extends Completor{
 
-        public JtaDatasourceCompletor() {
-        }
+    static class JtaDatasourceCompletor extends Completor {
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            Project project = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument()));
+            JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+            if(dsProvider != null){
+                for (JPADataSource val : dsProvider.getDataSources()) {
+                    if(val.getDisplayName().toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                        JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                                val.getDisplayName());
+                        results.add(item);
+                    }
+                }
+            }
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
         }
     }
 
     static class ProviderCompletor extends Completor {
 
-        public ProviderCompletor() {
-        }
-
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            HashSet<String> providers = new HashSet<String>();
+            Project project = FileOwnerQuery.getOwner(
+                    NbEditorUtilities.getFileObject(context.getDocument()));
+            for(Provider provider: Util.getProviders(project)){
+                String cl = provider.getProviderClass();
+                if(cl.toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                    providers.add(cl);
+                }
+            }
+
+            for (String cl: providers) {
+                    JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            cl);
+                    results.add(item);
+            }
+
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
         }
     }
+    
 
-
+    static class ExUnlistedClassesCompletor  extends Completor {
+        
+        @Override
+        public List<JPACompletionItem> doCompletion(CompletionContext context) {
+            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+            for (String val : new String[]{"true", "false"}) {//NOI18N
+                if(val.toLowerCase().startsWith(typedChars.trim().toLowerCase())){
+                    JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
+                            val);
+                    results.add(item);
+                }
+            }
+            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
+            return results;
+        }
+    }    
+    
+    
     private int anchorOffset = -1;
 
     public abstract List<JPACompletionItem> doCompletion(CompletionContext context);
@@ -111,10 +171,11 @@ public abstract class Completor {
 
     /**
      * A simple completor for general attribute value items
-     * 
-     * Takes an array of strings, the even elements being the display text of the items
-     * and the odd ones being the corresponding documentation of the items
-     * 
+     *
+     * Takes an array of strings, the even elements being the display text of
+     * the items and the odd ones being the corresponding documentation of the
+     * items
+     *
      */
     public static class AttributeValueCompletor extends Completor {
 
@@ -144,54 +205,9 @@ public abstract class Completor {
     }
 
     /**
-     * A  completor for completing the cascade attribute with cascade styles
-     * 
+     * A completor for completing class tag
      */
-    public static class CascadeStyleCompletor extends Completor {
-
-        private String[] itemTextAndDocs;
-
-        public CascadeStyleCompletor(String[] itemTextAndDocs) {
-            this.itemTextAndDocs = itemTextAndDocs;
-        }
-
-        @Override
-        public List<JPACompletionItem> doCompletion(CompletionContext context) {
-            List<JPACompletionItem> results = new ArrayList<JPACompletionItem>();
-            int caretOffset = context.getCaretOffset();
-            String typedChars = context.getTypedPrefix();
-
-            String styleName = null;
-            if (typedChars.contains(",")) {
-                int index = typedChars.lastIndexOf(",");
-                styleName = typedChars.substring(index + 1);
-            } else {
-                styleName = typedChars;
-            }
-
-            for (int i = 0; i < itemTextAndDocs.length; i += 2) {
-                if (itemTextAndDocs[i].startsWith(styleName.trim())) {
-                    JPACompletionItem item = JPACompletionItem.createCascadeStyleItem(caretOffset - styleName.length(),
-                            itemTextAndDocs[i], itemTextAndDocs[i + 1]);
-                    results.add(item);
-                }
-            }
-
-            setAnchorOffset(context.getCurrentToken().getOffset() + 1);
-            return results;
-        }
-    }
-
-    /**
-     * A completor for completing the Java class attributes
-     */
-    public static class JavaClassCompletor extends Completor {
-
-        private boolean packageOnly = false;
-
-        public JavaClassCompletor(boolean packageOnly) {
-            this.packageOnly = packageOnly;
-        }
+    public static class EntityClassCompletor extends Completor {
 
         @Override
         public List<JPACompletionItem> doCompletion(final CompletionContext context) {
@@ -204,12 +220,8 @@ public abstract class Completor {
                 if (js == null) {
                     return Collections.emptyList();
                 }
-
-                if (typedChars.contains(".") || typedChars.equals("")) { // Switch to normal completion
-                    doNormalJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
-                } else { // Switch to smart class path completion
-                    doSmartJavaCompletion(js, results, typedChars, context.getCurrentToken().getOffset() + 1);
-                }
+                FileObject fo = NbEditorUtilities.getFileObject(context.getDocument());
+                doJavaCompletion(fo, js, results, typedChars, context.getCurrentToken().getOffset());
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -217,87 +229,41 @@ public abstract class Completor {
             return results;
         }
 
-        private void doNormalJavaCompletion(JavaSource js, final List<JPACompletionItem> results,
+        private void doJavaCompletion(final FileObject fo, final JavaSource js, final List<JPACompletionItem> results,
                 final String typedPrefix, final int substitutionOffset) throws IOException {
             js.runUserActionTask(new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController cc) throws Exception {
                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getClasspathInfo().getClassIndex();
-                    int index = substitutionOffset;
-                    String packName = typedPrefix;
-                    String classPrefix = "";
-                    int dotIndex = typedPrefix.lastIndexOf('.'); // NOI18N
-                    if (dotIndex != -1) {
-                        index += (dotIndex + 1);  // NOI18N
-                        packName = typedPrefix.substring(0, dotIndex);
-                        classPrefix = (dotIndex + 1 < typedPrefix.length()) ? typedPrefix.substring(dotIndex + 1) : "";
+                    Project project = FileOwnerQuery.getOwner(fo);
+                    EntityClassScopeProvider provider = (EntityClassScopeProvider) project.getLookup().lookup(EntityClassScopeProvider.class);
+                    EntityClassScope ecs = null;
+                    Entity[] entities = null;
+                    if (provider != null) {
+                        ecs = provider.findEntityClassScope(fo);
                     }
-                    addPackages(ci, results, typedPrefix, index);
+                    if (ecs != null) {
+                        entities = ecs.getEntityMappingsModel(false).runReadAction(new MetadataModelAction<EntityMappingsMetadata, Entity[]>() {
 
-                    PackageElement pkgElem = cc.getElements().getPackageElement(packName);
-                    if (pkgElem == null) {
-                        return;
-                    }
-
-                    if (!packageOnly) {
-                        List<? extends Element> pkgChildren = pkgElem.getEnclosedElements();
-                        for (Element pkgChild : pkgChildren) {
-                            if ((pkgChild.getKind() == ElementKind.CLASS) && pkgChild.getSimpleName().toString().startsWith(classPrefix)) {
-                                TypeElement typeElement = (TypeElement) pkgChild;
-                                JPACompletionItem item = JPACompletionItem.createTypeItem(substitutionOffset,
-                                        typeElement, ElementHandle.create(typeElement),
-                                        cc.getElements().isDeprecated(pkgChild), false);
-                                results.add(item);
+                            @Override
+                            public Entity[] run(EntityMappingsMetadata metadata) throws Exception {
+                                return metadata.getRoot().getEntity();
                             }
+                        });
+                    }
+                    // add classes 
+                    for (Entity entity : entities) {
+                        if (typedPrefix.length() == 0 || entity.getClass2().toLowerCase().startsWith(typedPrefix.toLowerCase()) || entity.getName().toLowerCase().startsWith(typedPrefix.toLowerCase())) {
+                            JPACompletionItem item = JPACompletionItem.createAttribValueItem(substitutionOffset, entity.getClass2());
+                            results.add(item);
                         }
                     }
 
-                    setAnchorOffset(index);
-                }
-            }, true);
-        }
-
-        private void doSmartJavaCompletion(final JavaSource js, final List<JPACompletionItem> results,
-                final String typedPrefix, final int substitutionOffset) throws IOException {
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                @Override
-                public void run(CompilationController cc) throws Exception {
-                    cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                    ClassIndex ci = cc.getClasspathInfo().getClassIndex();
-                    // add packages
-                    addPackages(ci, results, typedPrefix, substitutionOffset);
-
-                    if (!packageOnly) {
-                        // add classes 
-                        Set<ElementHandle<TypeElement>> matchingTypes = ci.getDeclaredTypes(typedPrefix,
-                                NameKind.CASE_INSENSITIVE_PREFIX, EnumSet.allOf(SearchScope.class));
-                        for (ElementHandle<TypeElement> eh : matchingTypes) {
-                            if (eh.getKind() == ElementKind.CLASS) {
-                                if (eh.getKind() == ElementKind.CLASS) {
-                                    JPACompletionItem item = null;
-                                    //LazyTypeCompletionItem item = LazyTypeCompletionItem.create(substitutionOffset, eh, js);
-                                    results.add(item);
-                                }
-                            }
-                        }
-                    }
                 }
             }, true);
 
             setAnchorOffset(substitutionOffset);
-        }
-
-        private void addPackages(ClassIndex ci, List<JPACompletionItem> results, String typedPrefix, int substitutionOffset) {
-            Set<String> packages = ci.getPackageNames(typedPrefix, true, EnumSet.allOf(SearchScope.class));
-            for (String pkg : packages) {
-                if (pkg.length() > 0) {
-                    JPACompletionItem item = JPACompletionItem.createPackageItem(substitutionOffset, pkg, false);
-                    results.add(item);
-                }
-            }
         }
     }
 
@@ -358,8 +324,9 @@ public abstract class Completor {
     }
 
     /**
-     * A completor for completing the persistence property names in persistence.xml file
-     * 
+     * A completor for completing the persistence property names in
+     * persistence.xml file
+     *
      */
     public static class PersistencePropertyNameCompletor extends Completor {
 
@@ -376,16 +343,19 @@ public abstract class Completor {
             String typedChars = context.getTypedPrefix();
             String providerClass = getProviderClass(context.getTag());
             Project enclosingProject = FileOwnerQuery.getOwner(
-                    NbEditorUtilities.getFileObject(context.getDocument())
-                    );
+                    NbEditorUtilities.getFileObject(context.getDocument()));
             Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             ArrayList<String> keys = new ArrayList<String>();
-            if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider)))keys.addAll(allKeyAndValues.get(null).keySet());
-            if(provider != null)keys.addAll(allKeyAndValues.get(provider).keySet());
-            String itemTexts[] = keys.toArray(new String[]{});//TODO: get proper provider
-            for (int i = 0; i < itemTexts.length; i ++) {
-                if (itemTexts[i].startsWith(typedChars.trim()) 
-                        || itemTexts[i].startsWith( "javax.persistence." + typedChars.trim()) ) { // NOI18N
+            if (provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
+                keys.addAll(allKeyAndValues.get(null).keySet());
+            }
+            if (provider != null) {
+                keys.addAll(allKeyAndValues.get(provider).keySet());
+            }
+            String itemTexts[] = keys.toArray(new String[]{});
+            for (int i = 0; i < itemTexts.length; i++) {
+                if (itemTexts[i].startsWith(typedChars.trim())
+                        || itemTexts[i].startsWith("javax.persistence." + typedChars.trim())) { // NOI18N
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             itemTexts[i]);
                     results.add(item);
@@ -396,9 +366,11 @@ public abstract class Completor {
             return results;
         }
     }
+
     /**
-     * A completor for completing the persistence property value in persistence.xml file
-     * 
+     * A completor for completing the persistence property value in
+     * persistence.xml file
+     *
      */
     public static class PersistencePropertyValueCompletor extends Completor {
 
@@ -414,23 +386,24 @@ public abstract class Completor {
             int caretOffset = context.getCaretOffset();
             String typedChars = context.getTypedPrefix();
             String propertyName = getPropertyName(context.getTag());
-            if(propertyName == null || propertyName.equals("")) return results;
+            if (propertyName == null || propertyName.equals("")) {
+                return results;
+            }
             String providerClass = getProviderClass(context.getTag());
             Project enclosingProject = FileOwnerQuery.getOwner(
-                    NbEditorUtilities.getFileObject(context.getDocument())
-                    );
+                    NbEditorUtilities.getFileObject(context.getDocument()));
             Provider provider = ProviderUtil.getProvider(providerClass, enclosingProject);
             String[] values = null;
-            if(provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))){
+            if (provider == null || Persistence.VERSION_2_0.equals(ProviderUtil.getVersion(provider))) {
                 values = allKeyAndValues.get(null).get(propertyName);
             }
-            if(values == null && provider != null){
+            if (values == null && provider != null) {
                 values = allKeyAndValues.get(provider).get(propertyName);
-                if(values == null && propertyName.equals(provider.getJdbcUrl())){
-   
+                if (values == null && propertyName.equals(provider.getJdbcUrl())) {
+
                     //always allow this property completion, even for container managed(it's in jta-data-source  tag, not in properties)
                     DatabaseConnection[] cns = ConnectionManager.getDefault().getConnections();
-                    for(DatabaseConnection cn:cns){
+                    for (DatabaseConnection cn : cns) {
                         JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                                 cn.getDatabaseURL());
                         results.add(item);
@@ -438,10 +411,12 @@ public abstract class Completor {
                     results.add(new JPACompletionItem.AddConnectionElementItem());
                 }
             }
-            if(values != null)for (int i = 0; i < values.length; i ++) {
+            if (values != null) {
+                for (int i = 0; i < values.length; i++) {
                     JPACompletionItem item = JPACompletionItem.createAttribValueItem(caretOffset - typedChars.length(),
                             values[i]);
                     results.add(item);
+                }
             }
 
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
@@ -477,42 +452,46 @@ public abstract class Completor {
             setAnchorOffset(context.getCurrentToken().getOffset() + 1);
             return results;
         }
-        
+
         // Gets the list of mapping files.
         private String[] getMappingFilesFromProject(CompletionContext context) {
             Project enclosingProject = FileOwnerQuery.getOwner(
-                    NbEditorUtilities.getFileObject(context.getDocument())
-                    );
+                    NbEditorUtilities.getFileObject(context.getDocument()));
             //HibernateEnvironment env = enclosingProject.getLookup().lookup(HibernateEnvironment.class);
-            if(null != null) {
+            if (null != null) {
                 return null;//env.getAllHibernateMappings().toArray(new String[]{});
             } else {
                 return new String[0];
             }
-                
+
         }
     }
-    
-    private static String getProviderClass(Node tag){
+
+    private static String getProviderClass(Node tag) {
         String name = null;
-        while(tag!=null && !"persistence-unit".equals(tag.getNodeName()))tag = tag.getParentNode();//NOI18N
-        if(tag != null){
-            for(Node ch = tag.getFirstChild(); ch != null;ch = ch.getNextSibling()){
-                if("provider".equals(ch.getNodeName())){//NOI18N
+        while (tag != null && !"persistence-unit".equals(tag.getNodeName())) {
+            tag = tag.getParentNode();//NOI18N
+        }
+        if (tag != null) {
+            for (Node ch = tag.getFirstChild(); ch != null; ch = ch.getNextSibling()) {
+                if ("provider".equals(ch.getNodeName())) {//NOI18N
                     name = ch.getFirstChild().getNodeValue();
                 }
             }
         }
         return name;
     }
-    private static String getPropertyName(Node tag){
+
+    private static String getPropertyName(Node tag) {
         String name = null;
-        while(tag!=null && !"property".equals(tag.getNodeName()))tag = tag.getParentNode();//NOI18N
-        if(tag != null){
-             Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
-             if(nmN != null){
-                 name = nmN.getNodeValue();
-             }
+        while (tag != null && !"property".equals(tag.getNodeName())) {
+            tag = tag.getParentNode();//NOI18N
+        }
+        if (tag != null) {
+            Node nmN = tag.getAttributes().getNamedItem("name");//NOI18N
+            if (nmN != null) {
+                name = nmN.getNodeValue();
+            }
         }
         return name;
     }

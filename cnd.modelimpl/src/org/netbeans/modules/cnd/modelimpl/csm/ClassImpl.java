@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import java.util.*;
 import org.netbeans.modules.cnd.api.model.*;
@@ -129,7 +130,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return classImpl;
     }
 
-    public void init(CsmScope scope, AST ast, CsmFile file, FileImplContent fileContent, boolean register) {
+    public void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) {
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
         initClassDefinition(scope);
@@ -170,7 +171,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
     }
 
-    public final void render(AST ast, CsmFile file, FileImplContent fileContent, boolean localClass) {
+    public final void render(AST ast, CsmFile file, FileContent fileContent, boolean localClass) {
         new ClassAstRenderer(file, fileContent, CsmVisibility.PRIVATE, localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
@@ -197,7 +198,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         return out;
     }
     
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, FileImplContent fileContent, boolean register, DeclarationsContainer container) {
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) {
         ClassImpl impl = findExistingClassImplInContainer(container, ast);
         if (impl != null && !(ClassImpl.class.equals(impl.getClass()))) {
             // not our instance
@@ -607,7 +608,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private final boolean renderingLocalContext;
         private CsmVisibility curentVisibility;
 
-        public ClassAstRenderer(CsmFile containingFile, FileImplContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext) {
+        public ClassAstRenderer(CsmFile containingFile, FileContent fileContent, CsmVisibility curentVisibility, boolean renderingLocalContext) {
             super((FileImpl) containingFile, fileContent, null);
             this.renderingLocalContext = renderingLocalContext;
             this.curentVisibility = curentVisibility;

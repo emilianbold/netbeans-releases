@@ -307,8 +307,8 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     }
 
     /** Clone the node. The newly created node should reference the same
-    * object is this node does, but it should not be inserted as a child
-    * to any other node. Also it should have an empty set of listeners.
+    * object as this node does, but it may be added as a child
+    * to a different parent node. Also it should have an empty set of listeners.
     * In all other respects the node should behave exactly as the
     * original one does.
     *
@@ -353,7 +353,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 }
                 IllegalStateException ex = new IllegalStateException(
                     "Cannot initialize " + index + "th child of node " + parent.getNode() +
-                    "; it already belongs to node " + ch.getNode() + "\nChildren of new node: " +
+                    "; it already belongs to node " + ch.getNode() + " (did you forgot to use cloneNode?)\nChildren of new node: " +
                     parentNodes + "\nChildren of old node: " +
                     chNodes
                 ); // NOI18N

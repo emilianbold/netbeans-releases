@@ -687,7 +687,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         createProfilingPointsTable();
 
         JExtendedTablePanel tablePanel = new JExtendedTablePanel(profilingPointsTable);
-        tablePanel.setBorder(BorderFactory.createEmptyBorder());
+        tablePanel.clearBorders();
 
         showInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowSourceItemText());
         showInSourceItem.setFont(showInSourceItem.getFont().deriveFont(Font.BOLD));

@@ -329,6 +329,7 @@
                 <friend>com.sun.tools.tuxedo.source</friend>
                 <friend>org.netbeans.modules.cnd.classview</friend>
                 <friend>org.netbeans.modules.cnd.qnavigator</friend>
+                <package>org.netbeans.modules.cnd.refactoring.api</package>
                 <package>org.netbeans.modules.cnd.refactoring.api.ui</package>
                 <package>org.netbeans.modules.cnd.refactoring.spi</package>
             </friend-packages>

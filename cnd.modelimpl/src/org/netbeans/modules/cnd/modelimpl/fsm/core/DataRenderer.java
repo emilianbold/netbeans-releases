@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParameterImpl;
@@ -71,7 +70,7 @@ public class DataRenderer {
         render(objs, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
     }
 
-    public void render(List<Object> objs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+    public void render(List<Object> objs, NamespaceImpl currentNamespace, FileImpl container) {
         if (objs == null) {
             return;
         }
@@ -82,7 +81,7 @@ public class DataRenderer {
         }
     }
 
-    public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+    public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, FileImpl container) {
         if (object instanceof FortranParserEx.ProgramData) {
             FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
             final ProgramImpl<Object> program = ProgramImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
