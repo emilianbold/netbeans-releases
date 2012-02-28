@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -123,11 +121,6 @@ public class SyncCommand extends RemoteCommand implements Displayable {
         })
         @Override
         public void process(SyncResult result) {
-            try {
-                remoteLog.getOut().reset();
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
             remoteLog.select();
             processTransferInfo(result.getDownloadTransferInfo(), remoteLog, Bundle.SyncCommand_download_title());
             processTransferInfo(result.getUploadTransferInfo(), remoteLog, Bundle.SyncCommand_upload_title());
