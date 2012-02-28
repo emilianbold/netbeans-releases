@@ -166,10 +166,18 @@ public class IndexedElement extends JsElementImpl {
         result.append(property.getName()).append(';');  //NOI18N
         result.append(jsKind.getId()).append(';');  //NOI18N
         result.append(property.isDeclared() ? "1" : "0").append(';'); //NOI18N
-        if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
+        if (jsKind.isFunction()) {
             for (Iterator<? extends JsObject> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
                 JsObject parametr = it.next();
                 result.append(parametr.getName());
+                if (it.hasNext()) {
+                    result.append(',');
+                }
+            }
+            result.append(";");
+            for (Iterator<? extends TypeUsage> it = ((JsFunction)property).getReturnTypes().iterator(); it.hasNext();) {
+                TypeUsage type = it.next();
+                result.append(type.getType());
                 if (it.hasNext()) {
                     result.append(',');
                 }
@@ -180,18 +188,23 @@ public class IndexedElement extends JsElementImpl {
     }
     
     private static IndexedElement decodeProperty(String text, FileObject fo) {
-        StringTokenizer st = new StringTokenizer(text, ";");
-        String name = st.nextToken();
-        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(st.nextToken()));
-        boolean isDeclared = "1".equals(st.nextToken());
-        if (st.hasMoreTokens()) {
-            String paramsText = st.nextToken();
-            if (jsKind == JsElement.Kind.FUNCTION || jsKind == JsElement.Kind.METHOD || jsKind == JsElement.Kind.CONSTRUCTOR) {
+        String[] parts = text.split(";");
+        String name = parts[0];
+        JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(parts[1]));
+        boolean isDeclared = "1".equals(parts[2]);
+        if (parts.length > 3) {
+            if (jsKind.isFunction()) {
+                String paramsText = parts[3];
                 Collection<String> parameters = new ArrayList();
                 for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
                     parameters.add(stringTokenizer.nextToken());
                 }
-                return new FunctionIndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters);
+                Collection<String> returnTypes = new ArrayList();
+                String returnTypesText = parts[4];
+                for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
+                    returnTypes.add(stringTokenizer.nextToken());
+                }
+                return new FunctionIndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
             }
         }
         return new IndexedElement(fo, name, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
@@ -199,14 +212,20 @@ public class IndexedElement extends JsElementImpl {
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final Collection<String> parameters;
+        private final Collection<String> returnTypes;
         
-        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<String> parameters) {
+        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<String> parameters, Collection<String> returnTypes) {
             super(fileObject, name, true, kind, offsetRange, modifiers);
             this.parameters = parameters;
+            this.returnTypes = returnTypes;
         }
         
         public Collection<String> getParameters() {
             return this.parameters;
+        }
+        
+        public Collection<String> getReturnTypes() {
+            return this.returnTypes;
         }
     }
 }

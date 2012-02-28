@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
 
@@ -170,9 +171,10 @@ public class JsCompletionItem implements CompletionProposal {
             formatter.appendText("(");
             appendParamsStr(formatter);
             formatter.appendText(")");
+            appendReturnTypes(formatter);
             return formatter.getText();
         }
-        
+
         private void appendParamsStr(HtmlFormatter formatter){
             Collection<String> allParameters = new ArrayList<String>();
             
@@ -191,6 +193,28 @@ public class JsCompletionItem implements CompletionProposal {
                 if (it.hasNext()) {
                     formatter.appendText(", ");  //NOI18N
                 }    
+            }
+        }
+
+        private void appendReturnTypes(HtmlFormatter formatter) {
+            Collection<String> returnTypes = new ArrayList<String>();
+            if(getElement() instanceof JsFunction) {
+                for(TypeUsage type: ((JsFunction)getElement()).getReturnTypes()) {
+                    returnTypes.add((type.getType()));
+                }
+            } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
+                returnTypes.addAll(((IndexedElement.FunctionIndexedElement)getElement()).getReturnTypes());
+            }
+            if (!returnTypes.isEmpty()) {
+                formatter.appendText(": "); //NOI18N
+                formatter.type(true);
+                for (Iterator<String> it = returnTypes.iterator(); it.hasNext();) {
+                    formatter.appendText(it.next());
+                    if (it.hasNext()) {
+                        formatter.appendText("|"); //NOI18N
+                    }
+                }
+                formatter.type(false);
             }
         }
     }

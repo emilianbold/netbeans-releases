@@ -409,6 +409,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             for (JsObject resolved : lastResolvedObjects) {
                 addObjectPropertiesToCC(resolved, request, resultList, added);
             }
+            // TODO there should be added objects from prototype chain
             // add as last type Object
             lastResolvedTypes.add(0, new TypeUsageImpl("Object", -1, true));
             for (TypeUsage typeUsage : lastResolvedTypes) {
