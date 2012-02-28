@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor.actions;
+
+import java.util.Collection;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class IconsUtils {
 
-    public PHPHintsTest(String testName) {
-        super(testName);
+    private static final String PNG_EXTENSION = ".png"; //NOI18N
+    private static final String GIF_EXTENSION = ".gif"; //NOI18N
+    private static final String ICON_BASE = "org/netbeans/modules/php/editor/resources/"; //NOI18N
+    private static final String EMPTY_FILE_ICON_BASE = "org/netbeans/modules/csl/source/resources/icons/emptyfile-icon"; //NOI18N
+
+    private IconsUtils() {
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public static ImageIcon getElementIcon(PhpElementKind elementKind, Collection<Modifier> modifiers) {
+        ImageIcon imageIcon;
+        switch (elementKind) {
+            case CLASS: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "class" + PNG_EXTENSION, false); //NOI18N
+                break;
+            case IFACE: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "interface" + PNG_EXTENSION, false); //NOI18N
+                break;
+            case TRAIT: imageIcon = ImageUtilities.loadImageIcon(ICON_BASE + "trait" + PNG_EXTENSION, false); //NOI18N
+                break;
+            default: imageIcon = ImageUtilities.loadImageIcon(EMPTY_FILE_ICON_BASE + PNG_EXTENSION, false);
+        }
+        return imageIcon;
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    public static ImageIcon getElementIcon(PhpElementKind elementKind) {
+        return getElementIcon(elementKind, null);
     }
 
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
-    }
-
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
-    }
-
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
-    }
-
-    public void testUnusedUsesHint() throws Exception {
-        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
+    public static ImageIcon getErrorGlyphIcon() {
+        return ImageUtilities.loadImageIcon(ICON_BASE + "error-glyph" + GIF_EXTENSION, false); //NOI18N
     }
 
 }

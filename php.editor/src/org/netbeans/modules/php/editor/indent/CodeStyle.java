@@ -615,6 +615,12 @@ public final class CodeStyle {
         return preferences.getBoolean(wrapStatementsOnTheLine, getDefaultAsBoolean(wrapStatementsOnTheLine));
     }
 
+    // Uses
+
+    public boolean preferFullyQualifiedNames() {
+        return preferences.getBoolean(preferFullyQualifiedNames, getDefaultAsBoolean(preferFullyQualifiedNames));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         @Override

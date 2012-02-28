@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor.actions;
+
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class UsedNamespaceName {
+    private final NamespaceName node;
+    private final QualifiedName qualifiedName;
 
-    public PHPHintsTest(String testName) {
-        super(testName);
+    public UsedNamespaceName(NamespaceName node) {
+        this.node = node;
+        this.qualifiedName = QualifiedName.create(node);
     }
 
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
+    public int getOffset() {
+        return node.getStartOffset();
     }
 
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
+    public int getReplaceLength() {
+        return qualifiedName.toString().length();
     }
 
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
+    public String getReplaceName() {
+        return qualifiedName.getName();
     }
 
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
+    public String getName() {
+        return qualifiedName.toString();
     }
 
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
-    }
-
-    public void testUnusedUsesHint() throws Exception {
-        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
+    @Override
+    public String toString() {
+        return qualifiedName.toString();
     }
 
 }

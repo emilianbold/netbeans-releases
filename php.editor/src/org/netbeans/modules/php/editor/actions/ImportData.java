@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.verification;
+package org.netbeans.modules.php.editor.actions;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.swing.Icon;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTest extends PHPHintsTestBase {
+public class ImportData {
+    public boolean shouldShowUsesPanel;
+    public final String[] names;
+    public final String[][] variants;
+    public final Icon[][] icons;
+    public final String[] defaults;
+    public Map<Integer, List<UsedNamespaceName>> usedNamespaceNames;
+    public int caretPosition;
 
-    public PHPHintsTest(String testName) {
-        super(testName);
+    public ImportData(int size) {
+        names = new String[size];
+        variants = new String[size][];
+        icons = new Icon[size][];
+        defaults = new String[size];
+        usedNamespaceNames = new HashMap<Integer, List<UsedNamespaceName>>();
     }
-
-    public void testModifiersCheckHint() throws Exception {
-        checkHintsInStartEndFile(new ModifiersCheckHint(), "testModifiersCheckHint.php");
-    }
-
-    public void testAbstractClassInstantiationHint() throws Exception {
-        checkHintsInStartEndFile(new AbstractClassInstantiationHint(), "testAbstractClassInstantiationHint.php");
-    }
-
-    public void testImplementAbstractMethodsHint() throws Exception {
-        checkHintsInStartEndFile(new ImplementAbstractMethodsHint(), "testImplementAbstractMethodsHint.php");
-    }
-
-    public void testMethodRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new MethodRedeclarationHint(), "testMethodRedeclarationHint.php");
-    }
-
-    public void testTypeRedeclarationHint() throws Exception {
-        checkHintsInStartEndFile(new TypeRedeclarationHint(), "testTypeRedeclarationHint.php");
-    }
-
-    public void testWrongOrderOfArgsHint() throws Exception {
-        checkHintsInStartEndFile(new WrongOrderOfArgsHint(), "testWrongOrderOfArgsHint.php");
-    }
-
-    public void testUnusedUsesHint() throws Exception {
-        checkHintsInStartEndFile(new UnusedUsesHint(), "testUnusedUsesHint.php");
-    }
-
 }
