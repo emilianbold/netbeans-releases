@@ -42,7 +42,13 @@
  */
 package org.netbeans.modules.web.plugins.chrome;
 
+import java.io.File;
+import java.io.FileFilter;
+import java.util.Locale;
+
 import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.web.plugins.Utils;
+import org.openide.util.Utilities;
 
 
 
@@ -61,15 +67,61 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
     }
 
     
-    private static class ChromeExtensionManager implements BrowserExtensionManager{
+    private static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
+
+        private static final String LAST_USED = "\"last_used\":";               // NOI18N
+        
+        private static final String VERSION = "\"version\":";                   // NOI18N
+        
+        private static final String STATE = "\"state\":";                       // NOI18N
+        
+        private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
+        
+        private static final String CURRENT_VERSION = "0.3.2";                      // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
          */
         @Override
         public boolean isInstalled() {
-            // TODO Auto-generated method stub
-            return false;
+            File defaultProfile = getDefaultProfile();
+            if ( defaultProfile == null ){
+                return false;
+            }
+            File[] prefs = defaultProfile.listFiles( new FileFinder("preferences"));
+            if ( prefs == null || prefs.length == 0){
+                return false;
+            }
+            String preferences = Utils.readFile( prefs[0] );
+            int index = preferences.indexOf(PLUGIN_NAME);
+            if ( index == -1 ){
+                return false;
+            }
+            String firstPart = preferences.substring( 0, index );
+            int start = firstPart.lastIndexOf('}');
+            if ( start == -1){
+                return false;
+            }
+            int end = preferences.indexOf( '}', start+1);
+            if ( end == -1 ){
+                return false;
+            }
+            String version = getValue(preferences, start, end, VERSION);
+            if ( isUpdateRequired( version )){
+                return false;
+            }
+            start = end;
+            end = preferences.indexOf('}' , start +1);
+            if ( end == -1 ){
+                return false;
+            }
+            String state = getValue(preferences, start, end, STATE);
+            try {
+                return Byte.valueOf((byte)1).equals(Byte.parseByte(state ));
+            }
+            catch ( NumberFormatException e ){
+                return false;
+            }
         }
 
         /* (non-Javadoc)
@@ -81,5 +133,121 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             return false;
         }
         
+        /*
+         *  TODO : this method should automatically retrieve current plugin 
+         *  version to avoid manual source update
+         */
+        @Override
+        protected String getCurrentPluginVersion(){
+            return CURRENT_VERSION;
+        }
+        
+        private String getValue(String content, int start , int end , String key){
+            String part = content.substring( start , end );
+            int index = part.indexOf(key);
+            if ( index == -1 ){
+                return null;
+            }
+            String value = part.substring( index +key.length() ).trim();
+            return Utils.unquote(value);
+        }
+        
+        private File getDefaultProfile() {
+            String[] userData = getUserData();
+            if ( userData != null ){
+                for (String dataDir : userData) {
+                    File dir = new File(dataDir);
+                    if (dir.isDirectory() && dir.exists()) {
+                        File[] localState = dir.listFiles( 
+                                new FileFinder("local state"));         // NOI18N
+                        boolean guessDefault = localState == null || 
+                                    localState.length == 0;
+                        
+                        if ( !guessDefault ) {
+                            String localStateContent = Utils.readFile( localState[0]);
+                            int index = localStateContent.indexOf("\"profile\":");       // NOI18N
+                            if ( index == -1){
+                                guessDefault = true;
+                            }
+                            else {
+                                index = localStateContent.indexOf( LAST_USED , index); 
+                            }
+                            if ( index == -1){
+                                guessDefault = true;
+                            }
+                            else {
+                                int end = localStateContent.indexOf( '}', 
+                                        index +LAST_USED.length());
+                                if ( end == -1){
+                                    guessDefault = true;
+                                }
+                                else {
+                                    String profile = localStateContent.substring( 
+                                            index +LAST_USED.length(), end ).trim();
+                                    profile = Utils.unquote( profile );
+                                    File[] listFiles = dir.listFiles( new FileFinder( 
+                                            profile , true));
+                                    if ( listFiles != null && listFiles.length >0 ){
+                                        return listFiles[0];
+                                    }
+                                    else {
+                                        guessDefault = true;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if( guessDefault ) {
+                            File[] listFiles = dir.listFiles( 
+                                    new FileFinder("default"));  // NOI18N
+                            if ( listFiles!= null && listFiles.length >0 ) { 
+                                    return listFiles[0];
+                            }
+                        }
+
+                    }
+                }
+            }
+            return null;
+        }
+        
+        private String[] getUserData(){
+            if (Utilities.isWindows()) {
+                String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
+                return new String[]{ localAppData+"\\Google\\Chrome\\User Data"};   // NOI18N
+            } 
+            else if (Utilities.isMac()) {
+                return Utils.getUserPaths("/Library/Application Support/Google/Chrome");// NOI18N
+            } 
+            else {
+                return Utils.getUserPaths("/.config/google-chrome", "/.config/chrome");// NOI18N
+            }
+        }
+        
+        static private class FileFinder implements FileFilter {
+            FileFinder(String name){
+                this( name, false );
+            }
+            
+            FileFinder(String name , boolean caseSensitive ){
+                myName = name;
+                isCaseSensitive = caseSensitive;
+            }
+            
+            /* (non-Javadoc)
+             * @see java.io.FileFilter#accept(java.io.File)
+             */
+            @Override
+            public boolean accept( File file ) {
+                if ( isCaseSensitive ){
+                    return file.getName().equals( myName);
+                }
+                else {
+                    return file.getName().toLowerCase(Locale.US).equals( myName);
+                }
+            }
+            private String myName;
+            private boolean isCaseSensitive;
+        }
     }
 }

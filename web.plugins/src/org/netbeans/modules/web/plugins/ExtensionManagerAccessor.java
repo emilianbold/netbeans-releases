@@ -42,6 +42,8 @@
  */
 package org.netbeans.modules.web.plugins;
 
+import java.util.List;
+
 
 /**
  * @author ads
@@ -50,6 +52,38 @@ package org.netbeans.modules.web.plugins;
 public interface ExtensionManagerAccessor {
 
     BrowserExtensionManager getManager();
+    
+    public static abstract class AbstractBrowserExtensionManager 
+        implements BrowserExtensionManager 
+    {
+        
+        protected abstract String getCurrentPluginVersion();
+        
+        protected boolean isUpdateRequired(String extVersion) {
+            String currentVersion = getCurrentPluginVersion();
+            if (extVersion == null) {
+                return true;
+            }else if (currentVersion == null) {
+                return false;
+            }
+
+            List<Integer> extList = Utils.getVersionParts(extVersion);
+            List<Integer> minList = Utils.getVersionParts(currentVersion);
+
+            for (int i = 0; i < Math.max(extList.size(), minList.size()); i++) {
+                int extValue = i >= extList.size() ? 0 : extList.get(i);
+                int minValue = i >= minList.size() ? 0 : minList.get(i);
+
+                if (extValue < minValue) {
+                    return true;
+                } else if (extValue > minValue) {
+                    return false;
+                }
+            }
+
+            return false;
+        }
+    }
     
     static interface BrowserExtensionManager {
         

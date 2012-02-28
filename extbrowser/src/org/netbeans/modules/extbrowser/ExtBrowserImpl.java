@@ -173,6 +173,9 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         if ( extBrowserFactory instanceof FirefoxBrowser ){
             return BrowserId.FIREFOX;
         }
+        /*else if ( extBrowserFactory instanceof ChromeBrowser ){
+            return BrowserId.CHROME;
+        }*/
         return null;
     }
     

@@ -48,15 +48,17 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-
 
 import org.openide.util.Utilities;
 
@@ -86,53 +88,50 @@ public final class Utils {
         return result;
     }
     
-    private static String getUserHome() {
-        String userHome = System.getProperty("user.home"); // NOI18N
-
-        if (!Utilities.isWindows()) {
-            return userHome;
-        } 
-        else {
-            BufferedReader br = null;
-            /*try {
-                Process process = Runtime.getRuntime().exec(APPDATA_CMD);
-                process.waitFor();
-
-                InputStream input = process.getInputStream();
-                br = new BufferedReader(new InputStreamReader(input));
-
-                while (br.ready()) {
-                    String nextLine = br.readLine();
-
-                    if (nextLine.trim().length() == 0) continue;
-
-                    File f = new File(nextLine.trim());
-                    if (f.exists() && f.isDirectory()) {
-                        return f.getAbsolutePath();
-                    }
-                }
-            }
-            catch (Exception ex) {
-                Logger.getLogger(Utils.class.getCanonicalName()).
-                    log(Level.INFO, "Unable to run process: " + APPDATA_CMD, ex );      // NOI18N
-            }
-            finally {
-                if (br != null) {
-                    try {
-                        br.close();
-                    }
-                    catch (IOException ex) {
-                        Logger.getLogger(Utils.class.getCanonicalName()).
-                            log(Level.INFO, 
-                                    "Unable close process input stream reader " ,       // NOI18N 
-                                        ex );      
-                    }
-                }
-            }*/
-
-            //return userHome + File.separator + "Application Data";  // NOI18N
-            return System.getenv("AppData");                          // NOI18N
+    public static String unquote( String string ){
+        if ( string.isEmpty() ){
+            return string;
         }
+        if ( string.charAt(0) == '"'){
+            string = string.substring( 1 );
+        }
+        if ( string.charAt(string.length() -1) == '"'){
+            string = string.substring( 0, string.length() -1);
+        }
+        return string;
+    }
+    
+    public static String readFile( File file ){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            String line;
+            StringBuilder builder = new StringBuilder();
+            do {
+                line = reader.readLine();
+                if ( line != null ){
+                    builder.append( line );
+                }
+            }
+            while ( line != null );
+            return builder.toString();
+        }
+        catch ( IOException e ){
+            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
+                    null , e );
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(Utils.class.
+                            getCanonicalName()).log(Level.WARNING, null, ex);
+                }
+            }
+        }
+        return null;
     }
 
     public static boolean compareChecksum( File zipFile, File checksumFile) {
@@ -252,5 +251,94 @@ public final class Utils {
             zip.close();
         }
     }
+    
+    public static List<Integer> getVersionParts(String version) {
+        List<Integer> result = new ArrayList<Integer>();
+        
+        StringTokenizer tokens = new StringTokenizer(version, ".");
+        while (tokens.hasMoreTokens()) {
+            String nextToken = tokens.nextToken();
+            try {
+                if (nextToken.contains("a")) {
+                    int index = nextToken.indexOf("a");
 
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, 
+                            nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(Integer.parseInt(first) - 1);
+                    result.add(-1);
+                    result.add(Integer.parseInt(second));
+                } else if (nextToken.contains("b")) {
+                    int index = nextToken.indexOf("b");
+
+                    String first = nextToken.substring(0, index);
+                    String second = nextToken.substring(index + 1, 
+                            nextToken.length());
+
+                    // version xxbyy is greater than any version xx-1 without a beta
+                    // but less than version xx without a beta
+                    result.add(Integer.parseInt(first) - 1);
+                    result.add(Integer.parseInt(second));
+                } else {
+                    result.add(Integer.parseInt(nextToken));
+                }
+            } catch (NumberFormatException ex) {
+                // skip values that are not numbers
+            }
+        }
+        
+        return result;
+    }
+
+    private static String getUserHome() {
+        String userHome = System.getProperty("user.home"); // NOI18N
+
+        if (!Utilities.isWindows()) {
+            return userHome;
+        } 
+        else {
+            /*BufferedReader br = null;
+            try {
+                Process process = Runtime.getRuntime().exec(APPDATA_CMD);
+                process.waitFor();
+
+                InputStream input = process.getInputStream();
+                br = new BufferedReader(new InputStreamReader(input));
+
+                while (br.ready()) {
+                    String nextLine = br.readLine();
+
+                    if (nextLine.trim().length() == 0) continue;
+
+                    File f = new File(nextLine.trim());
+                    if (f.exists() && f.isDirectory()) {
+                        return f.getAbsolutePath();
+                    }
+                }
+            }
+            catch (Exception ex) {
+                Logger.getLogger(Utils.class.getCanonicalName()).
+                    log(Level.INFO, "Unable to run process: " + APPDATA_CMD, ex );      // NOI18N
+            }
+            finally {
+                if (br != null) {
+                    try {
+                        br.close();
+                    }
+                    catch (IOException ex) {
+                        Logger.getLogger(Utils.class.getCanonicalName()).
+                            log(Level.INFO, 
+                                    "Unable close process input stream reader " ,       // NOI18N 
+                                        ex );      
+                    }
+                }
+            }*/
+
+            //return userHome + File.separator + "Application Data";  // NOI18N
+            return System.getenv("AppData");                          // NOI18N
+        }
+    }
 }

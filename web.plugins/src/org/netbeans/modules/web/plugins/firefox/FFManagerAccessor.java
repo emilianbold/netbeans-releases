@@ -55,7 +55,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -94,7 +93,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         return new FFExtensionManager();
     }
     
-    private static class FFExtensionManager implements BrowserExtensionManager{
+    private static class FFExtensionManager extends AbstractBrowserExtensionManager {
         
         private static final long BUTTON_DELAY = 10000L; // 10 second delay
         private static final long CHECK_PERIOD = 700L;   // 700ms delay
@@ -123,9 +122,9 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String EXTENSION_CACHE = "extensions.cache";           // NOI18N
         
-        private static final String CURRENT_VERSION = "0.1.3";                      // NOI18N
-        
         private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-firefox-plugin.xpi"; // NOI18N
+        
+        private static final String CURRENT_VERSION = "0.1.3";                      // NOI18N
         
         /* TODO : do we need MD5 checksum ?
         private static final String CHECKSUM_FILENAME = "netbeans-ros-firefox-extension.jar.MD5"; // NOI18N
@@ -150,7 +149,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             
-            if ( extensionUpdateRequired(extensionVersion)) 
+            if ( isUpdateRequired(extensionVersion)) 
                     //|| !checkExtensionChecksum(defaultProfile) )
             {
                 // return false if extension is not initialized
@@ -226,6 +225,15 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             return success;
         }
         
+        /*
+         *  TODO : this method should automatically retrieve current plugin 
+         *  version to avoid manual source update
+         */
+        @Override
+        protected String getCurrentPluginVersion(){
+            return CURRENT_VERSION;
+        }
+        
         private boolean installExtension(File extensionDir, File extensionFile) {      
             // keep a backup of an existing extension just in case
             File backupFolder = null;
@@ -299,31 +307,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             }
         }
         
-        private boolean extensionUpdateRequired(String extVersion) {
-            String currentVersion = getCurrentPluginVersion();
-            if (extVersion == null) {
-                return true;
-            }else if (currentVersion == null) {
-                return false;
-            }
-
-            List<Integer> extList = getVersionParts(extVersion);
-            List<Integer> minList = getVersionParts(currentVersion);
-
-            for (int i = 0; i < Math.max(extList.size(), minList.size()); i++) {
-                int extValue = i >= extList.size() ? 0 : extList.get(i);
-                int minValue = i >= minList.size() ? 0 : minList.get(i);
-
-                if (extValue < minValue) {
-                    return true;
-                } else if (extValue > minValue) {
-                    return false;
-                }
-            }
-
-            return false;
-        }
-        
         /*private boolean checkExtensionChecksum( File profileDir ) {
             File extensionDir = new File(new File(profileDir, "extensions"),    // NOI18N 
                     EXTENSION_ID); 
@@ -335,48 +318,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             File checksumFile = new File(extensionDir, CHECKSUM_FILENAME);
             return Utils.compareChecksum( extensionFile , checksumFile);
         }*/
-        
-        private List<Integer> getVersionParts(String version) {
-            List<Integer> result = new ArrayList<Integer>();
-            
-            StringTokenizer tokens = new StringTokenizer(version, ".");
-            while (tokens.hasMoreTokens()) {
-                String nextToken = tokens.nextToken();
-                try {
-                    if (nextToken.contains("a")) {
-                        int index = nextToken.indexOf("a");
-
-                        String first = nextToken.substring(0, index);
-                        String second = nextToken.substring(index + 1, 
-                                nextToken.length());
-
-                        // version xxbyy is greater than any version xx-1 without a beta
-                        // but less than version xx without a beta
-                        result.add(Integer.parseInt(first) - 1);
-                        result.add(-1);
-                        result.add(Integer.parseInt(second));
-                    } else if (nextToken.contains("b")) {
-                        int index = nextToken.indexOf("b");
-
-                        String first = nextToken.substring(0, index);
-                        String second = nextToken.substring(index + 1, 
-                                nextToken.length());
-
-                        // version xxbyy is greater than any version xx-1 without a beta
-                        // but less than version xx without a beta
-                        result.add(Integer.parseInt(first) - 1);
-                        result.add(Integer.parseInt(second));
-                    } else {
-                        result.add(Integer.parseInt(nextToken));
-                    }
-                } catch (NumberFormatException ex) {
-                    // skip values that are not numbers
-                }
-            }
-            
-            return result;
-        }
-
         
         private String getVersion(File extensionDir) {
             File rdfFile = new File(extensionDir, "install.rdf"); // NOI18N
@@ -763,16 +704,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             
             return !cancelled[0];
         }
-        
-        /*
-         *  TODO : this method should automatically retrieve current plugin 
-         *  version to avoid manual source update
-         */
-        private String getCurrentPluginVersion(){
-            return CURRENT_VERSION;
-        }
-
-        
         
         private static final class FirefoxProfile {
             private boolean relative;
