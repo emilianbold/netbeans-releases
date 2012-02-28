@@ -128,6 +128,7 @@ public class JiraRepository {
     }
 
     public JiraRepository(RepositoryInfo info) {
+        this();
         this.info = info;
         String name = info.getDisplayName();
         String user = info.getUsername();
