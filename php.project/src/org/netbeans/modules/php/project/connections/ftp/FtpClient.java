@@ -96,7 +96,7 @@ public class FtpClient implements RemoteClient {
     private final RequestProcessor.Task keepAliveTask;
     private final AtomicInteger keepAliveCounter = new AtomicInteger();
 
-    // @GuardedBy(this)
+    // @GuardedBy(this) - timestamp diff in seconds
     private Long timestampDiff = null;
 
 
@@ -537,7 +537,7 @@ public class FtpClient implements RemoteClient {
                 if (storeFile(remotePath, is)) {
                     FTPFile remoteFile = getFile(remotePath);
                     if (remoteFile != null) {
-                        timestampDiff = now - remoteFile.getTimestamp().getTimeInMillis();
+                        timestampDiff = (now - remoteFile.getTimestamp().getTime().getTime()) / 1000;
                     }
                     deleteFile(remotePath);
                 }
@@ -690,7 +690,7 @@ public class FtpClient implements RemoteClient {
 
         @Override
         public long getTimestamp() {
-            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTimeInMillis() + getTimestampDiff(), TimeUnit.MILLISECONDS);
+            return TimeUnit.SECONDS.convert(ftpFile.getTimestamp().getTime().getTime(), TimeUnit.MILLISECONDS) + getTimestampDiff();
         }
 
         @Override
