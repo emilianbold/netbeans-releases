@@ -158,7 +158,7 @@ public class POMDataObject extends MultiDataObject {
             if (!super.notifyModified()) {
                 return false;
             }
-            if (getCookie(SaveCookie.class) == null) {
+            if (getLookup().lookup(SaveCookie.class) == null) {
                 getCookieSet().add(save);
                 setModified(true);
             }
@@ -167,7 +167,7 @@ public class POMDataObject extends MultiDataObject {
 
         protected @Override void notifyUnmodified() {
             super.notifyUnmodified();
-            if (getCookie(SaveCookie.class) == save) {
+            if (getLookup().lookup(SaveCookie.class) == save) {
                 getCookieSet().remove(save);
                 setModified(false);
             }
@@ -185,7 +185,7 @@ public class POMDataObject extends MultiDataObject {
         private String annotateWithProjectName(String name) { // #154508
             if (getPrimaryFile().getNameExt().equals("pom.xml")) { // NOI18N
                 try {
-                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(getPrimaryFile().getURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
+                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(getPrimaryFile().toURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
                     if (artifactId != null) {
                         String text = XMLUtil.findText(artifactId);
                         if (text != null) {
@@ -228,7 +228,7 @@ public class POMDataObject extends MultiDataObject {
         }
 
         public @Override CloneableOpenSupport findCloneableOpenSupport() {
-            return getDataObject().getCookie(POMDataEditor.class);
+            return getDataObject().getLookup().lookup(POMDataEditor.class);
         }
 
     }
