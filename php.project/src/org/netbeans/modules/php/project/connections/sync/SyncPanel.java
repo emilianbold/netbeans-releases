@@ -148,16 +148,20 @@ public final class SyncPanel extends JPanel {
                 NotifyDescriptor.OK_OPTION,
                 null);
         notificationLineSupport = descriptor.createNotificationLineSupport();
+        final Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        descriptor.setButtonListener(new OkActionListener(dialog));
+        descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         validateItems();
         updateSyncInfo();
         firstRunInfoLabel.setVisible(firstRun);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
+        boolean okPressed;
         try {
             dialog.setVisible(true);
+            okPressed = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
         } finally {
             dialog.dispose();
         }
-        return descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        return okPressed;
     }
 
     public List<SyncItem> getItems() {
@@ -317,36 +321,37 @@ public final class SyncPanel extends JPanel {
             + "no operation: {3} files, errors: {4} files."
     })
     void updateSyncInfo() {
-        int download = 0;
-        int upload = 0;
-        int delete = 0;
-        int noop = 0;
-        int errors = 0;
+        SyncInfo syncInfo = getSyncInfo();
+        syncInfoLabel.setText(Bundle.SyncPanel_info_status(syncInfo.download, syncInfo.upload, syncInfo.delete, syncInfo.noop, syncInfo.errors));
+    }
+
+    SyncInfo getSyncInfo() {
+        SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : items) {
             switch (syncItem.getOperation()) {
                 case NOOP:
-                    noop++;
+                    syncInfo.noop++;
                     break;
                 case DOWNLOAD:
                 case DOWNLOAD_REVIEW:
-                    download++;
+                    syncInfo.download++;
                     break;
                 case UPLOAD:
                 case UPLOAD_REVIEW:
-                    upload++;
+                    syncInfo.upload++;
                     break;
                 case DELETE:
-                    delete++;
+                    syncInfo.delete++;
                     break;
                 case FILE_CONFLICT:
                 case FILE_DIR_COLLISION:
-                    errors++;
+                    syncInfo.errors++;
                     break;
                 default:
                     assert false : "Unknown operation: " + syncItem.getOperation();
             }
         }
-        syncInfoLabel.setText(Bundle.SyncPanel_info_status(download, upload, delete, noop, errors));
+        return syncInfo;
     }
 
     void openDiffPanel() {
@@ -626,6 +631,42 @@ public final class SyncPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             openDiffPanel();
         }
+
+    }
+
+    private final class OkActionListener implements ActionListener {
+
+        private final Dialog dialog;
+
+
+        public OkActionListener(Dialog dialog) {
+            this.dialog = dialog;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getSource() == NotifyDescriptor.OK_OPTION) {
+                SyncInfo syncInfo = getSyncInfo();
+                SummaryPanel panel = new SummaryPanel(
+                        syncInfo.upload,
+                        syncInfo.download,
+                        syncInfo.delete,
+                        syncInfo.noop);
+                if (panel.open()) {
+                    dialog.setVisible(false);
+                }
+            }
+        }
+
+    }
+
+    private static final class SyncInfo {
+
+        public int download = 0;
+        public int upload = 0;
+        public int delete = 0;
+        public int noop = 0;
+        public int errors = 0;
 
     }
 
