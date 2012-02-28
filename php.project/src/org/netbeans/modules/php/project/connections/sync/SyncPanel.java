@@ -391,14 +391,13 @@ public final class SyncPanel extends JPanel {
         deleteButton = new JButton();
         resetButton = new JButton();
 
-        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
-        itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+        Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text"));
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
 
         Mnemonics.setLocalizedText(syncInfoLabel, "SYNC INFO LABEL"); // NOI18N
-        Mnemonics.setLocalizedText(diffButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.diffButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(diffButton, NbBundle.getMessage(SyncPanel.class, "SyncPanel.diffButton.text"));
         diffButton.setEnabled(false);
 
         Mnemonics.setLocalizedText(noopButton, " "); // NOI18N
