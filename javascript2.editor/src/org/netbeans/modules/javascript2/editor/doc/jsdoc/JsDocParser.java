@@ -156,7 +156,7 @@ public class JsDocParser {
                 if (firstSpace == -1) {
                     type = Type.fromString(stripeText);
                     jsDocElements.add(JsDocElementUtils.createElementForType(
-                            type == null ? Type.UNKNOWN : type, null, -1));
+                            type == null ? Type.UNKNOWN : type, "", -1));
                 } else {
                     type = Type.fromString(stripeText.substring(0, firstSpace));
                     String tagDescription = stripeText.substring(firstSpace).trim();

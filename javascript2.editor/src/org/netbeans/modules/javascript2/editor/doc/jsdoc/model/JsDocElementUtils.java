@@ -60,7 +60,7 @@ public class JsDocElementUtils {
     /**
      * Creates element of correct type for given type and remaining element text.
      * @param type element type
-     * @param tagDescription tag description text - without the initial type and first spaces, can be null for simple types
+     * @param tagDescription tag description text - without the initial type and first spaces, can be empty but never {@code null}
      * @param descBeginOffset type description text start offset
      * @return created {@code JsDocElement)
      */
