@@ -249,6 +249,8 @@ CLASS SomeType<bool Test> (SomeType ) [191:1/3653-192:2/3695] lcurly=3688 SCOPE:
     MEMBERS:
 VARIABLE x1 [193:1/3697-193:33/3729]  TYPE: $unresolved$::std::vector TEXT=std::vector<SomeType<(1>2)> >  [193:1/3697-193:29/3725]  INIT: null  SCOPE: $Global$ 
 CLASS_FORWARD_DECLARATION SomeType [200:1/3805-201:16/3874]
+TYPEDEF TypedefName  [202:1/3876-202:78/3953] TYPE: SomeType TEXT=SomeType<OtherType,Second,5>  [202:48/3923-202:78/3953] SCOPE: $Global$ 
+TYPEDEF OtherType  [203:1/3955-203:35/3989] TYPE: void TEXT=void  [203:19/3973-203:23/3977] SCOPE: $Global$ 
 STRUCT Point (Point ) [211:1/4089-215:2/4178] lcurly=4103 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:
@@ -589,6 +591,8 @@ CLASS SomeType<bool Test> (SomeType ) [191:1/3653-192:2/3695] lcurly=3688 SCOPE:
     BASE CLASSES:
     MEMBERS:
 VARIABLE x1 [193:1/3697-193:33/3729]  TYPE: $unresolved$::std::vector TEXT=std::vector<SomeType<(1>2)> >  [193:1/3697-193:29/3725]  INIT: null  SCOPE: $Global$ 
+TYPEDEF TypedefName  [202:1/3876-202:78/3953] TYPE: SomeType TEXT=SomeType<OtherType,Second,5>  [202:48/3923-202:78/3953] SCOPE: $Global$ 
+TYPEDEF OtherType  [203:1/3955-203:35/3989] TYPE: void TEXT=void  [203:19/3973-203:23/3977] SCOPE: $Global$ 
 STRUCT Point (Point ) [211:1/4089-215:2/4178] lcurly=4103 SCOPE: $Global$ 
     BASE CLASSES:
     MEMBERS:

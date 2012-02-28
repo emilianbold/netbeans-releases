@@ -1151,6 +1151,54 @@ public class AstRenderer {
                                 break;
                         }
                     }
+                } else if(firstChild.getType() == CPPTokenTypes.LITERAL_using || firstChild.getType() == CPPTokenTypes.LITERAL_template) {
+                    AST classifier = null;
+                    int arrayDepth = 0;
+                    AST nameToken = null;
+                    AST ptrOperator = null;
+                    AST templateParams = null;
+                    CharSequence name = "";
+                    
+                    boolean typeof = false;
+                    for (AST curr = firstChild; curr != null; curr = curr.getNextSibling()) {
+                        switch (curr.getType()) {
+                            case CPPTokenTypes.IDENT:
+                                // now token corresponds the name, since the case "struct S" is processed before
+                                nameToken = curr;
+                                name = AstUtil.getText(nameToken);
+                                break;
+                            case CPPTokenTypes.LITERAL_template:
+                                templateParams = curr;
+                                break;
+                            case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                                classifier = curr;
+                                TypeImpl typeImpl = null;
+                                if (classifier != null) {
+                                    typeImpl = TypeFactory.createType(classifier, file, ptrOperator, arrayDepth, null, scope, false, true);
+                                }
+                                if (typeImpl != null) {
+                                    typeImpl.setTypeOfTypedef();
+                                    CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
+                                    if (typedef != null) {
+                                        if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
+                                            ((TypedefImpl) typedef).setTypeUnnamed();
+                                        }
+                                        if(templateParams != null) {
+                                            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
+                                            TemplateDescriptor templateDescriptor = new TemplateDescriptor(params, name, false, !isRenderingLocalContext());
+                                            ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
+                                        }
+                                        results.typedefs.add(typedef);
+                                    }
+                                }
+                                ptrOperator = null;
+                                name = "";
+                                nameToken = null;
+                                arrayDepth = 0;
+                                break;
+                        }
+                    }
                 }
             }
         }

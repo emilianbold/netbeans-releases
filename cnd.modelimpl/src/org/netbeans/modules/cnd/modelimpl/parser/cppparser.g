@@ -881,6 +881,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
+                    { #external_declaration_template = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1282,6 +1283,7 @@ member_declaration_template
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
         (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+        { #member_declaration_template = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration_template); }
     |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
@@ -1521,6 +1523,7 @@ member_declaration
 		}
 		SEMICOLON! //{end_of_stmt();}
         |       (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+                { #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|	using_declaration
         |       static_assert_declaration
 	)
