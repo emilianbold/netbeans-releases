@@ -2483,7 +2483,7 @@ ctor_head
 
 ctor_decl_spec returns [boolean friend = false]
 	:
-    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} )*
+    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} | LITERAL_constexpr )*
 	;
 
 ctor_declarator[boolean definition]
