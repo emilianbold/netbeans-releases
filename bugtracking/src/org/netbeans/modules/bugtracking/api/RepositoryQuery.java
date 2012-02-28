@@ -64,6 +64,9 @@ public final class RepositoryQuery {
     }
     
     public Repository getRepository(FileObject fileObject, boolean askIfUnknown) {
+        if(fileObject == null) {
+            return null;
+        }
         Collection<? extends RepositoryQueryImplementation> impls = getImplementations();
         for (RepositoryQueryImplementation repositoryOwnerQuery : impls) {
             Repository repo = repositoryOwnerQuery.getRepository(fileObject, askIfUnknown);
