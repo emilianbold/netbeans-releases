@@ -88,6 +88,7 @@ class DocumentSwitcherTable extends SwitcherTable {
 
     private int lastRow = -1;
     private int lastCol = -1;
+    private boolean inCloseButtonRect = false;
 
     boolean onMouseEvent( MouseEvent e ) {
         Point p = e.getPoint();
@@ -103,8 +104,8 @@ class DocumentSwitcherTable extends SwitcherTable {
             int y = rect.y + (rect.height-size.height)/2;
             Rectangle btnRect = new Rectangle( x, y, size.width, size.height);
             boolean inButton = btnRect.contains( p );
-            boolean mustRepaint = btnClose.getModel().isRollover() != inButton;
-            btnClose.getModel().setRollover( inButton );
+            boolean mustRepaint = inCloseButtonRect != inButton;
+            inCloseButtonRect = inButton;
             if( inButton ) {
                 if( e.getID() == MouseEvent.MOUSE_PRESSED ) {
                     Item item = ( Item ) getModel().getValueAt( selRow, selCol );
@@ -138,7 +139,13 @@ class DocumentSwitcherTable extends SwitcherTable {
     }
 
     private JButton createCloseButton() {
-        JButton res = CloseButtonFactory.createCloseButton();
+        JButton res = CloseButtonFactory.createBigCloseButton();
+        res.setModel( new DefaultButtonModel() {
+            @Override
+            public boolean isRollover() {
+                return inCloseButtonRect;
+            }
+        });
         //allow third party look and feels to provide their own icons
         Icon defaultIcon = UIManager.getIcon( "nb.popupswitcher.closebutton.defaultIcon" ); //NOI18N
         if( null != defaultIcon )

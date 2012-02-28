@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -104,8 +106,9 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
     protected Collection<MessageImpl> performApplyPattern(Iterable<? extends HintDescription> pattern, Scope scope, RefactoringElementsBag refactoringElements) {
         ProgressHandleWrapper w = new ProgressHandleWrapper(this, 30, 70);
         BatchResult candidates = BatchSearch.findOccurrences(pattern, scope, w);
+        Collection<RefactoringElementImplementation> fileChanges = new ArrayList<RefactoringElementImplementation>();
         Collection<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, problems);
+        Collection<? extends ModificationResult> res = BatchUtilities.applyFixes(candidates, w, cancel, fileChanges, problems);
 
         refactoringElements.registerTransaction(JavaRefactoringPlugin.createTransaction(new LinkedList<ModificationResult>(res)));
 
@@ -115,6 +118,10 @@ public abstract class AbstractApplyHintsRefactoringPlugin extends ProgressProvid
                     refactoringElements.add(refactoring, DiffElement.create(d, file, mr));
                 }
             }
+        }
+
+        for (RefactoringElementImplementation fileChange : fileChanges) {
+            refactoringElements.addFileChange(refactoring, fileChange);
         }
 
         w.finish();

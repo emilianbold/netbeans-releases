@@ -46,48 +46,22 @@ package org.netbeans.modules.groovy.editor.api.completion;
  *
  * @author Petr Hejl
  */
-import java.util.Map;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-
-/**
- *
- * @author Petr Hejl
- */
-public class TransformationsCCTest extends GroovyTestBase {
-
-    String TEST_BASE = "testfiles/completion/transformations/";
+public class TransformationsCCTest extends GroovyCCTestBase {
 
     public TransformationsCCTest(String testName) {
         super(testName);
-        Logger.getLogger(CompletionHandler.class.getName()).setLevel(Level.FINEST);
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
-    }
-
-    protected @Override Map<String, ClassPath> createClassPathsForTest() {
-        Map<String, ClassPath> map = super.createClassPathsForTest();
-        map.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[] {
-            FileUtil.toFileObject(getDataFile("/testfiles/completion/transformations")) }));
-        return map;
+    @Override
+    protected String getTestType() {
+        return "transformations"; //NOI18N
     }
 
     public void testTransformations1() throws Exception {
-        checkCompletion(TEST_BASE + "Transformations1.groovy", "        Transformations1.in^", true);
+        checkCompletion(BASE + "Transformations1.groovy", "        Transformations1.in^", true);
     }
 
     public void testTransformations2() throws Exception {
-        checkCompletion(TEST_BASE + "Transformations2.groovy", "        Transformations2.get^", true);
+        checkCompletion(BASE + "Transformations2.groovy", "        Transformations2.get^", true);
     }
 }

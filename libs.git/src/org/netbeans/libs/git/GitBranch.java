@@ -65,6 +65,7 @@ public final class GitBranch {
     private final boolean remote;
     private final boolean active;
     private final ObjectId id;
+    private GitBranch trackedBranch;
 
     GitBranch (String name, boolean remote, boolean active, ObjectId id) {
         this.name = name;
@@ -101,4 +102,16 @@ public final class GitBranch {
         return id.getName();
     }
     
+    /**
+     * @return tracked branch, <code>null</code> when no tracking is set.
+     */
+    public GitBranch getTrackedBranch () {
+        return trackedBranch;
+    }
+    
+    // ************* package-private ************** //
+    
+    void setTrackedBranch (GitBranch trackedBranch) {
+        this.trackedBranch = trackedBranch;
+    }
 }

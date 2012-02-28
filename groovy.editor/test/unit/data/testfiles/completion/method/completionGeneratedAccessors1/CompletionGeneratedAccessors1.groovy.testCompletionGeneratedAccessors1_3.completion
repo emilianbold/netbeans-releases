@@ -4,4 +4,4 @@ new Test().is|
 ------------------------------------
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
-METHOD     isOkDef()                                  boolean
+METHOD     isOkDef()                       [PUBLIC]   boolean
