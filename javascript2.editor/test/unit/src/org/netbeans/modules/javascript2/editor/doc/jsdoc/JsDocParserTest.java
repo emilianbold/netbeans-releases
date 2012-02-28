@@ -249,7 +249,7 @@ public class JsDocParserTest extends JsTestBase {
     }
 
     private String getFirstPatternMatch(String text) {
-        String[] partsOfComment = JsDocParser.getCleanedPartsOfComment(text);
-        return partsOfComment[0];
+        JsDocParser.CommentStrip[] partsOfComment = JsDocParser.getCleanedCommentStrips(text, -1);
+        return partsOfComment[0].getStrip();
     }
 }

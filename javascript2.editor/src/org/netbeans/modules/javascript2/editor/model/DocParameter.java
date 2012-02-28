@@ -53,7 +53,7 @@ public interface DocParameter {
      * Gets name of the parameter.
      * @return parameter name
      */
-    String getParamName();
+    DocIdentifier getParamName();
 
     /**
      * Gets default value of the parameter.

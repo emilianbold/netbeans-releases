@@ -39,55 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import org.netbeans.modules.javascript2.editor.model.Type;
-import org.netbeans.modules.javascript2.editor.model.Types;
+package org.netbeans.modules.javascript2.editor.model;
 
 /**
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class TypesImpl implements Types {
+public interface DocIdentifier {
 
-    private final List<? extends Type> types;
+    String getName();
 
-    public TypesImpl(Type type) {
-        types = Arrays.asList(type);
-    }
-
-    public TypesImpl(String typesText) {
-        this.types = parseTypes(typesText);
-    }
-
-    private static List<Type> parseTypes(String typesText) {
-        List<Type> types = new LinkedList<Type>();
-        for (String string : Arrays.asList(typesText.split("[|]+"))) { //NOI18N
-            types.add(new TypeImpl(string));
-        }
-        return types;
-    }
-
-    @Override
-    public List<? extends Type> getTypes() {
-        return types;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (Type type : types) {
-            sb.append(type).append("|"); //NOI18N
-        }
-        String string = sb.toString();
-        if (!string.isEmpty()) {
-            return string.substring(0, string.length() - 1);
-        } else {
-            return ""; //NOI18N
-        }
-    }
+    int getOffset();
 
 }

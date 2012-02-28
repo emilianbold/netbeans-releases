@@ -44,9 +44,10 @@ package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.Name;
+import org.netbeans.modules.javascript2.editor.model.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
 
 /**
@@ -59,51 +60,54 @@ public class JsDocElementUtils {
     /**
      * Creates element of correct type for given type and remaining element text.
      * @param type element type
-     * @param elementText element text - without the initial type
+     * @param tagDescription tag description text - without the initial type and first spaces, can be empty but never {@code null}
+     * @param descBeginOffset type description text start offset
      * @return created {@code JsDocElement)
      */
-    public static JsDocElement createElementForType(JsDocElement.Type type, String elementText) {
-        String trimmed = elementText.trim();
+    public static JsDocElement createElementForType(JsDocElement.Type type, String tagDescription, int descStartOffset) {
         switch (type.getCategory()) {
             case ASSIGN:
-                String[] values = trimmed.split("(\\s)*as(\\s)*"); //NOI18N
+                String[] values = tagDescription.split("(\\s)*as(\\s)*"); //NOI18N
                 return AssignElement.create(
                         type,
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
                         (values.length > 1) ? new NamePath(values[1].trim()) : null);
             case DECLARATION:
-                return DeclarationElement.create(type, new TypeImpl(trimmed));
+                return DeclarationElement.create(type, new TypeImpl(tagDescription, descStartOffset));
             case DESCRIPTION:
-                return DescriptionElement.create(type, trimmed);
+                return DescriptionElement.create(type, tagDescription);
             case LINK:
-                return LinkElement.create(type, new NamePath(trimmed));
+                return LinkElement.create(type, new NamePath(tagDescription));
             case NAMED_PARAMETER:
-                return createParameterElement(type, trimmed, true);
+                return createParameterElement(type, tagDescription, true, descStartOffset);
             case SIMPLE:
                 return SimpleElement.create(type);
             case UNNAMED_PARAMETER:
-                return createParameterElement(type, trimmed, false);
+                return createParameterElement(type, tagDescription, false, descStartOffset);
             default:
                 // unknown jsDoc element type
-                return DescriptionElement.create(type, trimmed);
+                return DescriptionElement.create(type, tagDescription);
         }
     }
 
     /**
      * Gets list of {@link Type}s parsed from given string.
      * @param typesString string to be parsed for types
+     * @param offset offset of the typesString in the file
      * @return list of {@code type}s
      */
-    public static List<Type> parseTypes(String typesString) {
+    public static List<Type> parseTypes(String typesString, int offset) {
         List<Type> types = new LinkedList<Type>();
-        for (String string : Arrays.asList(typesString.split("[|]+"))) { //NOI18N
-            types.add(new TypeImpl(string));
+        String[] typesArray = typesString.split("[|]"); //NOI18N
+        for (String string : typesArray) {
+            types.add(new TypeImpl(string, offset + typesString.indexOf(string)));
         }
         return types;
     }
 
     private static ParameterElement createParameterElement(JsDocElement.Type elementType,
-            String elementText, boolean named) {
+            String elementText, boolean named, int descStartOffset) {
+        int typeOffset = -1, nameOffset = -1;
         String types = "", desc = ""; //NOI18N
         StringBuilder name = new StringBuilder();
         int process = 0;
@@ -112,6 +116,7 @@ public class JsDocElementUtils {
         if (parts.length > process) {
             // get type value if any
             if (parts[0].startsWith("{")) { //NOI18N
+                typeOffset = descStartOffset + 1;
                 int rparIndex = parts[0].indexOf("}"); //NOI18N
                 if (rparIndex == -1) {
                     types = parts[0].trim();
@@ -123,6 +128,7 @@ public class JsDocElementUtils {
 
             // get name value (mandatory part)
             if (parts.length > process && named) {
+                nameOffset = descStartOffset + elementText.indexOf(parts[process]);
                 name.append(parts[process].trim());
                 process++;
                 if (name.toString().contains("\"") || name.toString().contains("'")) { //NOI18N
@@ -140,10 +146,10 @@ public class JsDocElementUtils {
         }
 
         if (named) {
-            return NamedParameterElement.createWithDiagnostics(elementType,
-                    new Name(name.toString()), parseTypes(types), desc);
+            return NamedParameterElement.createWithNameDiagnostics(elementType,
+                    new DocIdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
-            return UnnamedParameterElement.create(elementType, parseTypes(types), desc);
+            return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
         }
     }
 

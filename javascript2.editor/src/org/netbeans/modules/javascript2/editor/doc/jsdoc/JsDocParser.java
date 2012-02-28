@@ -99,15 +99,15 @@ public class JsDocParser {
         return blocks;
     }
 
-    private static void storeCommentPart(List<String> storage, String cleanedPart, StringBuilder link) {
+    private static void storeCommentPart(List<CommentStrip> storage, String cleanedPart, int offset, StringBuilder link) {
         if (!"".equals(cleanedPart.trim())) { //NOI18N
             if (cleanedPart.startsWith("@link")) { //NOI18N
                 link.insert(0, cleanedPart);
             } else if (link.length() > 0) {
-                storage.add(cleanedPart + link.toString());
+                storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
                 link = new StringBuilder();
             } else {
-                storage.add(cleanedPart);
+                storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
             }
         }
     }
@@ -117,50 +117,52 @@ public class JsDocParser {
      * @param comment whole comment block string
      * @return array of strings with cleaned
      */
-    protected static String[] getCleanedPartsOfComment(String comment) {
-        List<String> strings = new ArrayList<String>();
+    protected static CommentStrip[] getCleanedCommentStrips(String comment, int commentOffset) {
+        List<CommentStrip> strips = new ArrayList<CommentStrip>();
 
         String processedText = comment;
         StringBuilder linkComment = new StringBuilder();
         int indexOfAt;
         while ((indexOfAt = processedText.lastIndexOf("@")) != -1) { //NOI18N
             String cleaned = cleanElementText(processedText.substring(indexOfAt));
-            storeCommentPart(strings, cleaned, linkComment);
+            storeCommentPart(strips, cleaned, commentOffset + indexOfAt, linkComment);
             processedText = processedText.substring(0, indexOfAt);
         }
 
         // process the rest from string
         String cleaned = cleanElementText(processedText);
-        storeCommentPart(strings, cleaned, linkComment);
-        Collections.reverse(strings);
-        return strings.toArray(new String[strings.size()]);
+        storeCommentPart(strips, cleaned, 0, linkComment);
+        Collections.reverse(strips);
+        return strips.toArray(new CommentStrip[strips.size()]);
     }
 
     private static JsDocBlock parseCommentBlock(CommentBlock block, boolean sharedTag) {
         String commentText = block.getContent();
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
-        String[] commentParts = getCleanedPartsOfComment(commentText);
+        CommentStrip[] commentStrips = getCleanedCommentStrips(commentText, block.getBeginOffset());
         boolean afterDescription = false;
-        for (String commentPart : commentParts) {
+        for (CommentStrip commentStrip : commentStrips) {
+            String stripeText = commentStrip.getStrip();
+
             //TODO - clean shared tag comments
-            if (!commentPart.startsWith("@")) { //NOI18N
+            if (!stripeText.startsWith("@")) { //NOI18N
                 if (!afterDescription) {
                     //TODO - distinguish description and inline comments
-                    jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, commentPart));
+                    jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, stripeText));
                 }
             } else {
                 Type type;
-                int firstSpace = commentPart.indexOf(" "); //NOI18N
+                int firstSpace = stripeText.indexOf(" "); //NOI18N
                 if (firstSpace == -1) {
-                    type = Type.fromString(commentPart);
+                    type = Type.fromString(stripeText);
                     jsDocElements.add(JsDocElementUtils.createElementForType(
-                            type == null ? Type.UNKNOWN : type,
-                            ""));
+                            type == null ? Type.UNKNOWN : type, "", -1));
                 } else {
-                    type = Type.fromString(commentPart.substring(0, firstSpace));
+                    type = Type.fromString(stripeText.substring(0, firstSpace));
+                    String tagDescription = stripeText.substring(firstSpace).trim();
+                    int offset = commentStrip.getOffset() + stripeText.length() - tagDescription.length();
                     jsDocElements.add(JsDocElementUtils.createElementForType(
-                            type == null ? Type.UNKNOWN : type,
-                            commentPart.substring(firstSpace)));
+                            type == null ? Type.UNKNOWN : type, tagDescription, offset));
                 }
             }
             // after description is after first sentence or after any keyword
@@ -221,6 +223,25 @@ public class JsDocParser {
         cleaned = cleaned.replaceAll("\r?\n", " ").trim(); //NOI18N
 
         return cleaned;
+    }
+
+    protected static class CommentStrip {
+
+        private final String strip;
+        private final int offset;
+
+        public CommentStrip(String strip, int offset) {
+            this.strip = strip;
+            this.offset = offset;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
+        public String getStrip() {
+            return strip;
+        }
     }
 
     private static class CommentBlock {
