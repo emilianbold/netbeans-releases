@@ -3610,10 +3610,10 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
-            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression
-            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression
+            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
+            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
             |   SCOPE
-            |   id:IDENT {action.id(id);}
+            |   id:IDENT {action.id(id);} (balanceCurlies)?
             )
         )+
 
