@@ -3423,7 +3423,7 @@ asm_block
 
 static_assert_declaration
     :
-        LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
+        LITERAL_static_assert LPAREN constant_expression COMMA (STRING_LITERAL)+ RPAREN SEMICOLON
     ;
 
 pro_c_statement
