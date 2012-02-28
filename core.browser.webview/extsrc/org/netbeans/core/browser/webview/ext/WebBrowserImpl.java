@@ -44,6 +44,7 @@ package org.netbeans.core.browser.webview.ext;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
@@ -51,6 +52,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.JFXPanel;
@@ -59,12 +62,19 @@ import javafx.scene.Scene;
 import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebEvent;
 import javafx.scene.web.WebView;
+import javax.swing.AbstractAction;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
+import org.netbeans.modules.web.common.api.browser.PageInspector;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -83,6 +93,18 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
     private WebView browser;
     private String status;
     private boolean initialized;
+    /** Lookup of this web-browser tab. */
+    private Lookup lookup;
+
+    /**
+     * Creates a new {@code WebBrowserImpl}.
+     */
+    public WebBrowserImpl() {
+        lookup = Lookups.fixed(
+                new MessageDispatcherImpl(),
+                new ScriptExecutorImpl(this)
+        );
+    }
 
     @Override
     public Component getComponent() {
@@ -95,10 +117,20 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                         createBrowser();
                     }
                 });
+                initComponentPopupMenu(container);
                 initialized = true;
             }
         }
         return container;
+    }
+
+    /**
+     * Returns the lookup of this web-browser tab.
+     * 
+     * @return lookup of this web-browser tab.
+     */
+    Lookup getLookup() {
+        return lookup;
     }
 
     @Override
@@ -284,6 +316,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             }
             browserListners.clear();
             container = null;
+            lastURLNoLongerDisplayed();
         }
     }
 
@@ -378,6 +411,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
 
         eng.locationProperty().addListener(new ChangeListener<String>() {
             @Override public void changed(ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+                lastURLNoLongerDisplayed();
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -396,6 +430,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
                 } );
             }
         });
+        eng.setOnAlert(new EventHandler<WebEvent<String>>() {
+            @Override
+            public void handle(WebEvent<String> event) {
+                processAlert(event.getData());
+            }
+        });
         container.setScene( new Scene( view ) );
         
         browser = view;
@@ -404,6 +444,23 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             _setURL( urlToLoad );
             urlToLoad = null;
         }
+    }
+
+    /** Alert message with this prefix are used for page inspection-related communication. */
+    static final String PAGE_INSPECTION_PREFIX = "NetBeans-Page-Inspection"; // NOI18N
+    /**
+     * Processing of alert messages from this web-browser pane.
+     * 
+     * @param message alert message.
+     */
+    private void processAlert(String message) {
+        if (message.startsWith(PAGE_INSPECTION_PREFIX)) {
+            message = message.substring(PAGE_INSPECTION_PREFIX.length());
+            MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
+            if (dispatcher != null) {
+                dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, message);
+            }
+        } // else whatever suitable processing of regular alerts
     }
 
     private <T> T runInFXThread(final Callable<T> task) {
@@ -437,6 +494,43 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback {
             Exceptions.printStackTrace(ex);
         }
         return result;
+    }
+
+    /**
+     * Initializes popup-menu of the web-browser component.
+     * 
+     * @param browserComponent component whose popup-menu should be initialized.
+     */
+    private void initComponentPopupMenu(JComponent browserComponent) {
+        if (PageInspector.getDefault() != null) {
+            // Web-page inspection support is available in the IDE
+            // => add a menu item that triggers page inspection.
+            String inspectPage = NbBundle.getMessage(WebBrowserImpl.class, "WebBrowserImpl.inspectPage"); // NOI18N
+            JPopupMenu menu = new JPopupMenu();
+            menu.add(new AbstractAction(inspectPage) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    PageInspector inspector = PageInspector.getDefault();
+                    if (inspector == null) {
+                        Logger logger = Logger.getLogger(WebBrowserImpl.class.getName());
+                        logger.log(Level.INFO, "No PageInspector found: ignoring the request for page inspection!"); // NOI18N
+                    } else {
+                        inspector.inspectPage(getLookup());
+                    }
+                }
+            });
+            browserComponent.setComponentPopupMenu(menu);
+        }
+    }
+
+    /**
+     * Invoked when the web-browser pane is closed or when the displayed URL is changed.
+     */
+    private void lastURLNoLongerDisplayed() {
+        MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
+        if (dispatcher != null) {
+            dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
+        }
     }
     
 }

@@ -1,7 +1,7 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-{
-  "name": "NetBeans IDE Support Plugin",
-  "version": "0.3.4",
+package org.netbeans.core.browser.webview.ext;
 
-  "background_page": "main.html",
+import org.netbeans.modules.web.common.spi.browser.MessageDispatcher;
 
-  "permissions": [
-    "contextMenus",
-    "tabs",
-    "<all_urls>"
-  ],
+/**
+ * Implementation of {@code MessageDispatcher} for {@code WebBrowserImpl}.
+ *
+ * @author Jan Stola
+ */
+public class MessageDispatcherImpl extends MessageDispatcher {
 
-  "icons": {
-    "16": "netbeans16.png",
-    "48": "netbeans48.png"
-  }
+    @Override
+    public void dispatchMessage(String featureId, String message) {
+        super.dispatchMessage(featureId, message);
+    }
 
 }

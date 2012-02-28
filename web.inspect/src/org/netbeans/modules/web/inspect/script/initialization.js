@@ -579,8 +579,7 @@ NetBeans.insertGlassPane = function() {
         }
         canvas.style.visibility = 'visible';
         var handle = self.getElementHandle(element);
-        // Extremely ugly and fragile hack, 'port' refers to variable in eval.js
-        port.postMessage({
+        postMessageToNetBeans({
             message: 'selection',
             selection: handle
         });

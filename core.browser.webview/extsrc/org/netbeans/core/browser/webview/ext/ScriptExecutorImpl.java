@@ -1,4 +1,4 @@
-/* 
+/*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
@@ -39,44 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.core.browser.webview.ext;
 
-var listener = function(port) {
-    port.onDisconnect.addListener(function() {
-        chrome.extension.onConnect.removeListener(listener);
-    });
-    port.onMessage.addListener(function(message) {
-        var result = new Object();
-        result.message = 'eval';
-        result.id = message.id;
-        var type = message.message;
-        if (type === 'eval') {
-            // Do not remove this variable - it serves as an API.
-            // Scripts that want to send some message back to IDE call this method.
-            var postMessageToNetBeans = function(message) {
-                port.postMessage(message);
-            };
-            try {
-                result.result = eval(message.script);
-                result.status = 'ok';
-                postMessageToNetBeans(result);
-            } catch (err) {
-                result.status = 'error';
-                console.log('Problem during script evaluation!');
-                console.log(message);
-                console.log(err);
-                if (err instanceof Error) {
-                    result.result = err.name + ':' + err.message;
-                    console.log(result.result);
-                } else {
-                    result.result = err;
-                }
-                postMessageToNetBeans(result);
-            }
-        } else {
-            console.log('Ignoring unexpected message from the background page!');
-            console.log(message);
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.netbeans.modules.web.common.spi.browser.ScriptExecutor;
+
+/**
+ * Script executor for web-browser pane based on {@code WebView}.
+ *
+ * @author Jan Stola
+ */
+public class ScriptExecutorImpl implements ScriptExecutor {
+    /** Web-browser tab this executor belongs to. */
+    private WebBrowserImpl browserTab;
+
+    /**
+     * Creates a new {@code ScriptExecutorImpl}.
+     * 
+     * @param browserTab web-browser tab this executor belongs to.
+     */
+    ScriptExecutorImpl(WebBrowserImpl browserTab) {
+        this.browserTab = browserTab; 
+    }
+
+    @Override
+    public Object execute(String script) {
+        StringBuilder sb = new StringBuilder();
+        // Callback for scripts that want to send some message back to page-inspection.
+        // We utilize custom alert handling of WebEngine for this purpose.
+        sb.append("postMessageToNetBeans=function(e) {alert('"); // NOI18N
+        sb.append(WebBrowserImpl.PAGE_INSPECTION_PREFIX);
+        sb.append("'+JSON.stringify(e));};\n"); // NOI18N
+        String quoted = JSONObject.quote(script);
+        // We don't want to depend on what is the type of WebBrowser.executeJavaScript()
+        // for various types of script results => we stringify the result
+        // (i.e. pass strings only through executeJavaScript()). We decode
+        // the strigified result then.
+        sb.append("JSON.stringify({result : eval(").append(quoted).append(")});"); // NOI18N
+        String wrappedScript = sb.toString();
+        Object result = browserTab.executeJavaScript(wrappedScript);
+        String txtResult = result.toString();
+        try {
+            JSONObject jsonResult = new JSONObject(txtResult);
+            return jsonResult.opt("result"); // NOI18N
+        } catch (JSONException ex) {
+            Logger.getLogger(ScriptExecutorImpl.class.getName()).log(Level.INFO, null, ex);
+            return ScriptExecutor.ERROR_RESULT;
         }
-    });
-};
-
-chrome.extension.onConnect.addListener(listener);
+    }
+    
+}
