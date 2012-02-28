@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -185,20 +186,25 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     }            
                     break;
                 case NAMESPACE_DEFINITION_BODY:
-                    FileImpl nsBodyFile = (FileImpl) context[0];
+                {
+                    FileContent fileContent = (FileContent) context[0];
+                    FileImpl nsBodyFile = fileContent.getFile();
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, null, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, fileContent, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }                    
                     break;
+                }
                 case CLASS_BODY:
-                    FileImpl clsBodyFile = (FileImpl) context[0];
+                {
+                    FileContent fileContent = (FileContent) context[0];
                     ClassImpl cls = (ClassImpl) context[1];
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
-                    cls.fixFakeRender(clsBodyFile, visibility, ast, localClass);
+                    cls.fixFakeRender(fileContent, visibility, ast, localClass);
                     break;
+                }
                 default:
                     assert false : "unexpected parse kind " + kind;
             }
@@ -268,7 +274,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             switch (kind) {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
-                    new DataRenderer(file).render(parser.parsedObjects);
+                    new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
                     file.incParseCount();
                     break;
                 default:

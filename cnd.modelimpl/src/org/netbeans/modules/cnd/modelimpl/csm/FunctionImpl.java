@@ -55,11 +55,11 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
+import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -117,13 +117,8 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             setFlags(FLAGS_OPERATOR, true);
         }
     }
-
-        
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
-        return create(ast, file, type, scope, global, null);
-    }
     
-    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, FileContent fileContent, CsmType type, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
@@ -134,7 +129,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
@@ -148,7 +143,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file, objects));
-        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, global), 
+        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, functionImpl);

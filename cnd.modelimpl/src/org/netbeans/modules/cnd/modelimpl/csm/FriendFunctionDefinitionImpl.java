@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -77,7 +78,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         friendClassUID = UIDs.get(cls);
     }
 
-    public static FriendFunctionDefinitionImpl create(AST ast, final CsmFile file, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
+    public static FriendFunctionDefinitionImpl create(AST ast, final CsmFile file, FileContent fileContent, CsmClass cls, CsmScope scope, boolean global) throws AstRendererException {
 
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
@@ -90,7 +91,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -105,7 +106,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         
         friendFunctionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDefinitionImpl, file));
-        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, global), 
+        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
@@ -121,6 +122,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         friendFunctionDefinitionImpl.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, friendFunctionDefinitionImpl);
+        postFunctionImpExCreateRegistration(fileContent, global, friendFunctionDefinitionImpl);
         nameHolder.addReference(file, friendFunctionDefinitionImpl);
         return friendFunctionDefinitionImpl;
     }

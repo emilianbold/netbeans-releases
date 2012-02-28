@@ -131,7 +131,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
         protected FunctionImpl<?> createFunction(AST ast, CsmFile file, CsmType type, CsmScope scope) {
             FunctionImpl<?> fun = null;
             try {
-                fun = FunctionImpl.create(ast, file, type, getScope(), !isRenderingLocalContext());
+                fun = FunctionImpl.create(ast, file, null, type, getScope(), !isRenderingLocalContext(),objects);
                 declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
@@ -198,7 +198,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         if (renderForwardClassDeclaration(token, currentNamespace, container, (FileImpl) getContainingFile(), isRenderingLocalContext())) {
                             break;
                         }
-                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), currentNamespace);
+                        Pair typedefs = renderTypedef(token, (FileImpl) getContainingFile(), fileContent, getScope(), currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {
                             for (CsmTypedef typedef : typedefs.getTypesefs()) {
                                 declarators.add(typedef);

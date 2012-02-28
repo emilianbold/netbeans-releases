@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -64,7 +65,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
 
-    public static DestructorImpl createDestructor(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static DestructorImpl createDestructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
         
         int startOffset = getStartOffset(ast);
@@ -78,7 +79,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
@@ -107,7 +108,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         
         destructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         destructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorImpl, file));
-        destructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorImpl, file, global), 
+        destructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, destructorImpl);
