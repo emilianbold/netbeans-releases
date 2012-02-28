@@ -88,13 +88,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
     /** Creates new form BasicSearchForm */
     BasicSearchForm(String preferredSearchScopeType,
-		    boolean searchAndReplace) {
+            boolean searchAndReplace, BasicSearchCriteria initialCriteria) {
 
         this.preferredSearchScopeType = preferredSearchScopeType;
         initComponents(searchAndReplace);
         initAccessibility(searchAndReplace);
         initHistory();
-        initInteraction(searchAndReplace);
         if (searchAndReplace && (searchCriteria.getReplaceExpr() == null)) {
             /* We must set the initial replace string, otherwise it might not
              * be initialized at all if the user keeps the field "Replace With:"
@@ -102,7 +101,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
              * BasicSearchCriteria.isSearchAndReplace() would return 'false'. */
             searchCriteria.setReplaceExpr("");                        //NOI18N
         }
-        setValuesOfComponents(false, searchAndReplace); // TODO allow previous values, maybe
+        setValuesOfComponents(initialCriteria, searchAndReplace);
+        initInteraction(searchAndReplace);
     }
 
     /**
@@ -113,10 +113,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * could be disabled although valid values are entered.
      */
     private void setValuesOfComponents(
-            boolean usePreviousValues, boolean searchAndReplace) {
+            BasicSearchCriteria initialCriteria, boolean searchAndReplace) {
         
-        if (usePreviousValues) {
-            initPreviousValues();
+        if (initialCriteria != null) {
+            initValuesFromCriteria(initialCriteria, searchAndReplace);
         } else {
             initValuesFromHistory(searchAndReplace);
         }
@@ -289,23 +289,28 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      * Fills text and sets values of check-boxes according to the current
      * search criteria.
      */
-    private void initPreviousValues() {
+    private void initValuesFromCriteria(BasicSearchCriteria initialCriteria,
+            boolean searchAndReplace) {
+        searchCriteria = initialCriteria;
         cboxTextToFind.setSelectedItem(searchCriteria.getTextPatternExpr());
-        cboxFileNamePattern.setSelectedItem(searchCriteria.getFileNamePatternExpr());
         if (cboxReplacement != null) {
             cboxReplacement.setSelectedItem(searchCriteria.getReplaceExpr());
         }
 
+        selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
         chkWholeWords.setSelected(searchCriteria.isWholeWords());
         chkCaseSensitive.setSelected(searchCriteria.isCaseSensitive());
         chkRegexp.setSelected(searchCriteria.isRegexp());
-        selectChk(chkPreserveCase, searchCriteria.isPreserveCase());
         scopeSettingsPanel.setFileNameRegexp(searchCriteria.isFileNameRegexp());
         scopeSettingsPanel.setUseIgnoreList(searchCriteria.isUseIgnoreList());
-        scopeSettingsPanel.setSearchInArchives(
-                searchCriteria.isSearchInArchives());
-        scopeSettingsPanel.setSearchInGenerated(
-                searchCriteria.isSearchInGenerated());
+        cboxFileNamePattern.setRegularExpression(searchCriteria.isFileNameRegexp());
+        cboxFileNamePattern.setSelectedItem(searchCriteria.getFileNamePatternExpr());
+        if (!searchAndReplace) {
+            scopeSettingsPanel.setSearchInArchives(
+                    searchCriteria.isSearchInArchives());
+            scopeSettingsPanel.setSearchInGenerated(
+                    searchCriteria.isSearchInGenerated());
+        }
     }
 
     private static void selectChk(JCheckBox checkbox, boolean value) {

@@ -72,7 +72,7 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
 
     @Override
     public String getTypeId() {
-        return "Browse";                                                //NOI18N
+        return "browse";                                                //NOI18N
     }
 
     @Override

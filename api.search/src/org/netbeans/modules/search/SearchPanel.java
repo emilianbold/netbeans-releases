@@ -76,7 +76,6 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     private static SearchPanel currentlyShown = null;
     private boolean replacing;
-    private boolean activateWithPreviousValues = false; // TODO
     private boolean projectWide = false; // TODO
     private List<SearchProvider.Presenter> presenters;
     /**
@@ -104,13 +103,23 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Panel that can show form with settings for several search providers.
      */
     public SearchPanel(boolean replacing) {
-        this.replacing = replacing;
-        init();
+        this(replacing, null, null);
     }
 
-    private void init() {
+    /**
+     * Create search panel, using an explicit presenter for one of providers.
+     */
+    public SearchPanel(boolean replacing,
+            Class<? extends SearchProvider> cls,
+            SearchProvider.Presenter presenter) {
+        this.replacing = replacing;
+        init(cls, presenter);
+    }
 
-        presenters = makePresenters();
+    private void init(Class<? extends SearchProvider> cls,
+            BasicSearchProvider.Presenter explicitPresenter) {
+
+        presenters = makePresenters(cls, explicitPresenter);
         setLayout(new GridLayout(1, 1));
 
         if (presenters.isEmpty()) {
@@ -176,14 +185,20 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Make list of presenters created for all available search providers.
      */
-    private List<SearchProvider.Presenter> makePresenters() {
+    private List<SearchProvider.Presenter> makePresenters(
+            Class<? extends SearchProvider> cls,
+            SearchProvider.Presenter explicitPresenter) {
 
         List<SearchProvider.Presenter> presenterList =
                 new LinkedList<SearchProvider.Presenter>();
         for (SearchProvider p :
                 Lookup.getDefault().lookupAll(SearchProvider.class)) {
             if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
-                presenterList.add(p.createPresenter(replacing));
+                if (p.getClass() == cls) {
+                    presenterList.add(explicitPresenter);
+                } else {
+                    presenterList.add(p.createPresenter(replacing));
+                }
             }
         }
         return presenterList;
@@ -302,7 +317,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Get currently displayed search panel, or null if no panel is shown.
      */
-    static SearchPanel getCurrentlyShown() {
+    public static SearchPanel getCurrentlyShown() {
         synchronized (SearchPanel.class) {
             return currentlyShown;
         }

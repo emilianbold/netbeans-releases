@@ -45,6 +45,9 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.modules.search.IgnoreListPanel.IgnoreListManager;
@@ -94,6 +97,25 @@ public class BasicSearchProvider extends SearchProvider {
         return true;
     }
 
+    public static Presenter createBasicPresenter(boolean replacing) {
+        return new BasicSearchPresenter(replacing);
+    }
+
+    public static Presenter createBasicPresenter(
+            boolean replacing,
+            @NullAllowed SearchPattern searchPattern,
+            @NullAllowed String replaceString,
+            @NullAllowed Boolean preserveCase,
+            @NullAllowed SearchScopeOptions searchScopeOptions,
+            @NullAllowed Boolean useIgnoreList,
+            @NullAllowed String scopeId
+            ) {
+        BasicSearchCriteria bsc = createCriteria(searchScopeOptions,
+                useIgnoreList, searchPattern, preserveCase, replacing,
+                replaceString);
+        return new BasicSearchPresenter(replacing, scopeId, bsc);
+    }
+
     /**
      *
      */
@@ -102,17 +124,28 @@ public class BasicSearchProvider extends SearchProvider {
 
         BasicSearchForm form = null;
         private boolean replacing;
+        private String scopeId;
+        private BasicSearchCriteria explicitCriteria;
 
         public BasicSearchPresenter(boolean replacing) {
+            this(replacing, null, null);
+        }
+
+        public BasicSearchPresenter(boolean replacing, String scopeId,
+                BasicSearchCriteria explicitCriteria) {
             this.replacing = replacing;
+            this.scopeId = scopeId;
+            this.explicitCriteria = explicitCriteria;
         }
 
         @Override
         public JComponent createForm() {
             if (form == null) {
-                form = new BasicSearchForm(
-                        FindDialogMemory.getDefault().getScopeTypeId(),
-                        replacing);
+                String scopeToUse = scopeId == null
+                        ? FindDialogMemory.getDefault().getScopeTypeId()
+                        : scopeId;
+                form = new BasicSearchForm(scopeToUse, replacing,
+                        explicitCriteria);
                 form.setName(UiUtils.getText(
                         "BasicSearchForm.tabText"));                    //NOI18N
                 form.setUsabilityChangeListener(new ChangeListener() {
@@ -225,5 +258,70 @@ public class BasicSearchProvider extends SearchProvider {
             }
             return ignoreListManager;
         }
+    }
+
+    /**
+     * Start a search task with specified parameters.
+     */
+    public static void startSearch(
+            @NonNull SearchPattern searchPattern,
+            @NonNull SearchScopeOptions searchScopeOptions,
+            @NullAllowed String scopeId) throws IllegalArgumentException {
+
+        BasicSearchCriteria criteria = createCriteria(searchScopeOptions,
+                Boolean.FALSE, searchPattern, null, false, null);
+        if (!criteria.isUsable()) {
+            throw new IllegalArgumentException(
+                    "Search cannot be started - No restrictions set."); //NOI18N
+        }
+        SearchScopeList ssl = new SearchScopeList();
+        SearchScopeDefinition bestScope = null;
+        for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
+            if (ssd.isApplicable()) {
+                if (scopeId != null && ssd.getTypeId().equals(scopeId)) {
+                    bestScope = ssd;
+                    break;
+                } else if (bestScope == null) {
+                    bestScope = ssd;
+                }
+            }
+        }
+        if (bestScope == null) {
+            throw new IllegalStateException("No default search scope"); //NOI18N
+        }
+        BasicComposition composition = new BasicComposition(
+                bestScope.getSearchInfo(), new DefaultMatcher(searchPattern),
+                criteria);
+        Manager.getInstance().scheduleSearchTask(
+                new SearchTask(composition, false));
+    }
+
+    /**
+     * Create basic search criteria instance for passed arguments.
+     */
+    private static BasicSearchCriteria createCriteria(
+            SearchScopeOptions searchScopeOptions, Boolean useIgnoreList,
+            SearchPattern searchPattern, Boolean preserveCase,
+            boolean replacing, String replaceString) {
+        BasicSearchCriteria bsc = new BasicSearchCriteria();
+        bsc.setFileNamePattern(searchScopeOptions.getPattern());
+        bsc.setFileNameRegexp(searchScopeOptions.isRegexp());
+        bsc.setTextPattern(searchPattern.getSearchExpression());
+        bsc.setCaseSensitive(searchPattern.isMatchCase());
+        bsc.setWholeWords(searchPattern.isWholeWords());
+        bsc.setRegexp(searchPattern.isRegExp());
+        if (preserveCase != null) {
+            bsc.setPreserveCase(preserveCase);
+        }
+        if (useIgnoreList != null) {
+            bsc.setUseIgnoreList(useIgnoreList);
+        }
+        if (replacing) {
+            bsc.setReplaceExpr(replaceString);
+        } else {
+            bsc.setSearchInArchives(searchScopeOptions.isSearchInArchives());
+            bsc.setSearchInGenerated(searchScopeOptions.isSearchInGenerated());
+        }
+        return bsc;
     }
 }

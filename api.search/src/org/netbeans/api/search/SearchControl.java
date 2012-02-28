@@ -43,6 +43,9 @@ package org.netbeans.api.search;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.search.BasicSearchProvider;
+import org.netbeans.modules.search.SearchPanel;
+import org.netbeans.spi.search.provider.SearchProvider;
 
 /**
  * This class enables users to show search dialog and start searches
@@ -67,6 +70,10 @@ public final class SearchControl {
             @NullAllowed SearchScopeOptions searchScopeOptions,
             @NullAllowed Boolean useIgnoreList,
             @NullAllowed String scopeId) {
+
+        SearchControl.openFindDialog(BasicSearchProvider.class,
+                BasicSearchProvider.createBasicPresenter(false, searchPattern,
+                null, false, searchScopeOptions, useIgnoreList, scopeId));
     }
 
     /**
@@ -80,20 +87,71 @@ public final class SearchControl {
             @NullAllowed String replaceString,
             @NullAllowed Boolean preserveCase,
             @NullAllowed SearchScopeOptions searchScopeOptions,
+            @NullAllowed Boolean useIgnoreList,
             @NullAllowed String scopeId) {
+
+        SearchControl.openReplaceDialog(BasicSearchProvider.class,
+                BasicSearchProvider.createBasicPresenter(true, searchPattern,
+                replaceString, preserveCase, searchScopeOptions, useIgnoreList,
+                scopeId));
+    }
+
+    /**
+     * Show find dialog with a concrete presenter for one of provider classes.
+     *
+     * @param providerClass SearchProvider class for which default presenter
+     * will not be created, but concrete {@code presenter} will be used instead.
+     * @param presenter Presenter to use, possibly initialized with proper
+     * values.
+     */
+    public static void openFindDialog(
+            Class<? extends SearchProvider> providerClass,
+            SearchProvider.Presenter presenter) {
+        SearchControl.openDialog(false, providerClass, presenter);
+    }
+
+    /**
+     * Show replace dialog with a concrete presenter for one of provider
+     * classes.
+     *
+     * @param providerClass SearchProvider class for which default presenter
+     * will not be created, but concrete {@code presenter} will be used instead.
+     * @param presenter Presenter to use, possibly initialized with proper
+     * values.
+     */
+    public static void openReplaceDialog(
+            Class<? extends SearchProvider> providerClass,
+            SearchProvider.Presenter presenter) {
+        SearchControl.openDialog(true, providerClass, presenter);
+    }
+
+    /**
+     * Open dialog with one explicit presenter.
+     */
+    private static void openDialog(boolean replaceMode,
+            Class<? extends SearchProvider> cls,
+            SearchProvider.Presenter presenter) {
+        SearchPanel current = SearchPanel.getCurrentlyShown();
+        if (current != null) {
+            current.close();
+        }
+        new SearchPanel(replaceMode, cls, presenter).showDialog();
     }
 
     /**
      * Start basic search for specified parameters.
      *
-     * @param scopeId Identifier of search scope. If not specified, the default
-     * one is used.
+     * @param scopeId Identifier of search scope (e.g. "main project", 
+     * "open projects", "node selection", "browse"). If not specified, the 
+     * default one is used.
      * @throws IllegalArgumentException if neither non-trivial file name pattern
      * nor non-empty text search pattern is specified.
      */
-    public static void startBasicSearch (
+    public static void startBasicSearch(
             @NonNull SearchPattern searchPattern,
             @NonNull SearchScopeOptions searchScopeOptions,
             @NullAllowed String scopeId) throws IllegalArgumentException {
+        BasicSearchProvider.startSearch(searchPattern, searchScopeOptions,
+                scopeId);
     }
 }

@@ -220,32 +220,55 @@ public class DefaultScopeSettingsPanel extends ScopeSettingsPanel {
 
     @Override
     public boolean isSearchInArchives() {
-        return chkArchives.isSelected() && chkArchives.isEnabled();
+        return isOn(chkArchives);
     }
 
     @Override
     public boolean isSearchInGenerated() {
-        return chkGenerated.isSelected() && chkGenerated.isEnabled();
+        return  isOn(chkGenerated);
     }
 
     @Override
     public boolean isUseIgnoreList() {
-        return chkUseIgnoreList.isSelected() && chkUseIgnoreList.isEnabled();
+        return isOn(chkUseIgnoreList);
     }
 
     @Override
     public boolean isFileNameRegExp() {
-        return chkFileNameRegex.isSelected() && chkFileNameRegex.isEnabled();
+        return isOn(chkFileNameRegex);
+    }
+
+    /**
+     * Return true if and only if checkbox is not null, is enabled and selected.
+     */
+    private boolean isOn(JCheckBox chbox) {
+        return chbox != null && chbox.isEnabled() && chbox.isSelected();
     }
 
     @Override
     public void setSearchInArchives(boolean searchInArchives) {
-        chkArchives.setSelected(searchInArchives);
+        if (chkArchives == null) {
+            if (searchInArchives) {
+                throw new IllegalArgumentException(
+                        "Searching in archives not allowed "
+                        + "when replacing");                            //NOI18N
+            }
+        } else {
+            chkArchives.setSelected(searchInArchives);
+        }
     }
 
     @Override
     public void setSearchInGenerated(boolean searchInGenerated) {
-        chkGenerated.setSelected(searchInGenerated);
+        if (chkGenerated == null) {
+            if (searchInGenerated) {
+                throw new IllegalArgumentException(
+                        "Searching in generated sources not allowed "
+                        + "when replacing");                            //NOI18N
+            }
+        } else {
+            chkGenerated.setSelected(searchInGenerated);
+        }
     }
 
     @Override
