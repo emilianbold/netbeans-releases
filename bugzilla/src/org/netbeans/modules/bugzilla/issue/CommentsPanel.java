@@ -84,6 +84,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
@@ -131,9 +132,9 @@ public class CommentsPanel extends JPanel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        IssueProvider is = issue.getRepository().getIssue(issueKey);
+                        BugzillaIssue is = issue.getRepository().getIssue(issueKey);
                         if (is != null) {
-                            is.open();
+                            BugzillaUtil.openIssue(issue);
                         }
                     }
                 });
@@ -249,7 +250,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue));
+            stateLabel = KenaiUtil.createUserWidget(userName, host, KenaiUtil.getChatLink(issue.getID()));
             stateLabel.setText(null);
         }
         
@@ -509,7 +510,7 @@ public class CommentsPanel extends JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getBugzillaRepository().getUrl(), issue.getID());
+                Collection<Long> s = IssueSettingsStorage.getInstance().loadCollapsedCommenst(issue.getRepository().getUrl(), issue.getID());
                 for (Long l : s) {
                     if(!touchedCommenst.contains(l)) {
                         collapsedComments.add(l);
@@ -521,7 +522,7 @@ public class CommentsPanel extends JPanel {
     
     void storeSettings() {
         if(issue != null) {
-            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getBugzillaRepository().getUrl(), issue.getID());
+            IssueSettingsStorage.getInstance().storeCollapsedComments(collapsedComments, issue.getRepository().getUrl(), issue.getID());
         }
     }    
     

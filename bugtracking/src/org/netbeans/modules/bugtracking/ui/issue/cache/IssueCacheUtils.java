@@ -45,13 +45,14 @@ package org.netbeans.modules.bugtracking.ui.issue.cache;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.util.NbBundle;
 
 /**
- * IssueProvider cache utility methods
+ * Issue cache utility methods
  * 
  * @author Tomas Stupka
  */
@@ -62,7 +63,7 @@ public class IssueCacheUtils {
      * @param issue issue
      * @return true if issue was seen otherwise false
      */
-    public static boolean wasSeen(IssueProvider issue) {
+    public static boolean wasSeen(Issue issue) {
         return getCache(issue).wasSeen(issue.getID());
     }
 
@@ -70,7 +71,7 @@ public class IssueCacheUtils {
      * Changes the given issues seen value to ist opposite value
      * @param issue
      */
-    public static void switchSeen(IssueProvider issue) {
+    public static void switchSeen(Issue issue) {
         try {
             IssueCache cache = getCache(issue);
             String id = issue.getID();
@@ -85,13 +86,17 @@ public class IssueCacheUtils {
      * @param issue issue
      * @param seen value to be set
      */
-    public static void setSeen(IssueProvider issue, boolean seen) {
+    public static void setSeen(Issue issue, boolean seen) {
         try {
             getCache(issue).setSeen(issue.getID(), seen);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
         }
     }
+    
+    public static int getStatus(Issue issue) {
+        return getCache(issue).getStatus(issue.getID());
+    }    
 
     /**
      * Returns a description summarizing the changes made
@@ -100,8 +105,8 @@ public class IssueCacheUtils {
      * @param issue
      * @return
      */
-    public static String getRecentChanges(IssueProvider issue) {
-        String changes = getCache(issue).getIssueAccessor().getRecentChanges(issue);
+    public static String getRecentChanges(Issue issue) {
+        String changes = getCache(issue).getRecentChanges(issue.getID());
         if(changes == null) {
             changes = "";
         } else {
@@ -118,7 +123,7 @@ public class IssueCacheUtils {
      * @param issue
      * @param l
      */
-    public static void addCacheListener (IssueProvider issue, PropertyChangeListener l) {
+    public static void addCacheListener (Issue issue, PropertyChangeListener l) {
         getCache(issue).addPropertyChangeListener(issue, l);
     }
 
@@ -127,14 +132,15 @@ public class IssueCacheUtils {
      * @param issue
      * @param l
      */
-    public static void removeCacheListener (IssueProvider issue, PropertyChangeListener l) {
+    public static void removeCacheListener (Issue issue, PropertyChangeListener l) {
         getCache(issue).removePropertyChangeListener(issue, l);
     }
 
-    private static IssueCache getCache(IssueProvider issue) {
-        RepositoryProvider repo = issue.getRepository();
-        IssueCache cache = repo.getLookup().lookup(IssueCache.class);
+    private static IssueCache getCache(Issue issue) {
+        Repository repo = issue.getRepository();
+        IssueCache cache = APIAccessor.IMPL.getLookup(repo).lookup(IssueCache.class);
         assert cache != null;
         return cache;
     }
+
 }

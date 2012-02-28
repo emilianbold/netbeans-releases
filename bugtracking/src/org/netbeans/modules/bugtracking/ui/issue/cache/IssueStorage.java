@@ -193,7 +193,8 @@ class IssueStorage {
                 dos.writeLong(entry.getLastSeenModified());
                 dos.writeInt(entry.getLastUnseenStatus());
                 if(entry.getSeenAttributes() != null) {
-                    for(Entry<String, String> e : entry.getSeenAttributes().entrySet()) {
+                    Map<String, String> sa = entry.getSeenAttributes();
+                    for(Entry<String, String> e : sa.entrySet()) {
                         writeString(dos, e.getKey());
                         writeString(dos, e.getValue());
                     }

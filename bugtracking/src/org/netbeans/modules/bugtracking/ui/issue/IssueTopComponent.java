@@ -66,12 +66,14 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.SPIAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
@@ -93,8 +95,8 @@ import org.openide.windows.TopComponent;
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
-    /** IssueProvider displayed by this top-component. */
-    private IssueProvider issue;
+    /** Issue displayed by this top-component. */
+    private Issue issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
@@ -132,15 +134,15 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return issue displayed by this top-component.
      */
-    public IssueProvider getIssue() {
+    public Issue getIssue() {
         return issue;
     }
 
-    public void initNewIssue(RepositoryProvider toSelect, Node[] context) {
+    public void initNewIssue(Repository toSelect, Node[] context) {
         initNewIssue(toSelect, false, context);
     }
 
-    public void initNewIssue(RepositoryProvider defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
+    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
         BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
         this.context = context;
 
@@ -199,16 +201,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @param issue displayed by this top-component.
      */
-    public void setIssue(IssueProvider issue) {
+    public void setIssue(Issue issue) {
         assert (this.issue == null);
         BugtrackingUtil.logBugtrackingUsage(issue.getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
         preparingLabel.setVisible(false);
-        issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
+        issuePanel.add(APIAccessor.IMPL.getController(issue).getComponent(), BorderLayout.CENTER);
         
         if(isOpened()) {
             // #opened() did not fire beacuse of null issue -> fire afterwards
-            issue.getController().opened();
+            getController().opened();
         }
         ((DelegatingUndoRedoManager)getUndoRedo()).init();
         
@@ -313,7 +315,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
 
     private void onNewClick() {
-        RepositoryProvider repo = BugtrackingUtil.createRepository();
+        Repository repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
@@ -341,7 +343,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 try {
                     handle.start();
                     preparingLabel.setVisible(true);
-                    RepositoryProvider repo = getRepository();
+                    Repository repo = getRepository();
                     if (repo == null) {
                         return;
                     }
@@ -349,18 +351,18 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         if(controller != null) issuePanel.remove(controller.getComponent());
                         issue.removePropertyChangeListener(IssueTopComponent.this);
                     }
-                    issue = repo.createIssue();
+                    issue = APIAccessor.IMPL.createNewIssue(repo);
                     if (issue == null) {
                         return;
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    SPIAccessor.IMPL.setSelection(issue, context);
+                    APIAccessor.IMPL.setContext(issue, context);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            controller = issue.getController();
+                            controller = getController();
                             issuePanel.add(controller.getComponent(), BorderLayout.CENTER);
                             controller.opened(); // XXX TC wasn't realy opened
                             issue.addPropertyChangeListener(IssueTopComponent.this);
@@ -379,12 +381,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
-    private RepositoryProvider getRepository() {
+    private Repository getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof RepositoryProvider)) {
+        if (item == null || !(item instanceof Repository)) {
             return null;
         }
-        return (RepositoryProvider) item;
+        return (Repository) item;
     }
 
     private void focusFirstEnabledComponent() {
@@ -417,7 +419,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public void componentOpened() {
         openIssues.add(this);
         if(issue != null) {
-            issue.getController().opened();
+            getController().opened();
         }
         BugtrackingManager.LOG.log(Level.FINE, "IssueTopComponent Opened {0}", (issue != null ? issue.getID() : "null")); // NOI18N
     }
@@ -427,7 +429,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         openIssues.remove(this);
         if(issue != null) {
             issue.removePropertyChangeListener(this);
-            issue.getController().closed();
+            getController().closed();
         }
         if(prepareTask != null) {
             prepareTask.cancel();
@@ -441,7 +443,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @param issue issue for which the top-component should be found.
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(IssueProvider issue) {
+    public static synchronized IssueTopComponent find(Issue issue) {
         return find(issue, true);
     }
 
@@ -453,7 +455,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(IssueProvider issue, boolean forceCreate) {
+    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
@@ -476,7 +478,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public static synchronized IssueTopComponent find(String issueId) {
         assert issueId != null;
         for (IssueTopComponent tc : openIssues) {
-            IssueProvider i = tc.getIssue();
+            Issue i = tc.getIssue();
             if(i == null) continue;
             if (issueId.equals(i.getID())) {
                 return tc;
@@ -527,8 +529,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if (issue == null) {
             return repositoryComboBox.requestFocusInWindow();
         } else {
-            return issue.getController().getComponent().requestFocusInWindow();
+            return getController().getComponent().requestFocusInWindow();
         }
+    }
+
+    private BugtrackingController getController() {
+        return APIAccessor.IMPL.getController(issue);
     }
 
     private class DelegatingUndoRedoManager implements UndoRedo {

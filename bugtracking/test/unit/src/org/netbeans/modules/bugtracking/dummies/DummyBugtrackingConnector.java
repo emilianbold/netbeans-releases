@@ -45,9 +45,10 @@ package org.netbeans.modules.bugtracking.dummies;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.util.Lookup;
 
 /**
@@ -66,7 +67,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
-    private List<RepositoryProvider> repositories;
+    private List<Repository> repositories;
     public static DummyBugtrackingConnector instance;
 
     public DummyBugtrackingConnector() {
@@ -74,12 +75,12 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
     
     @Override
-    public RepositoryProvider createRepository() {
+    public Repository createRepository() {
         return createRepository(generateNewRepositoryName());
     }
 
-    public RepositoryProvider createRepository(String repositoryName) {
-        RepositoryProvider newRepository = new DummyRepository(this, repositoryName);
+    public Repository createRepository(String repositoryName) {
+        Repository newRepository = TestKit.getRepository(instance, new DummyRepository(this, repositoryName));
         storeRepository(newRepository);
         return newRepository;
     }
@@ -92,15 +93,15 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         }
     }
 
-    private void storeRepository(RepositoryProvider repository) {
+    private void storeRepository(Repository repository) {
         if (repositories == null) {
-            repositories = new ArrayList<RepositoryProvider>();
+            repositories = new ArrayList<Repository>();
         }
         repositories.add(repository);
         RepositoryRegistry.getInstance().addRepository(repository);
     }
 
-    void removeRepository(DummyRepository repository) {
+    void removeRepository(Repository repository) {
         if (repositories == null) {
             return;
         }
@@ -111,7 +112,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     public void reset() {
         if(repositories != null) {
-            for (RepositoryProvider repository : repositories) {
+            for (Repository repository : repositories) {
                 RepositoryRegistry.getInstance().removeRepository(repository);
             }
             repositories = null;
@@ -123,7 +124,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public RepositoryProvider createRepository(RepositoryInfo info) {
+    public Repository createRepository(RepositoryInfo info) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }

@@ -67,6 +67,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
@@ -92,11 +93,11 @@ import org.openide.util.lookup.ServiceProviders;
  */
 @ServiceProviders({
     @ServiceProvider(service=org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.class),
-    @ServiceProvider(service=JiraIssueProvider.class)
+    @ServiceProvider(service=JiraTaskListProvider.class)
 })
-public final class JiraIssueProvider extends TaskListIssueProvider implements PropertyChangeListener {
+public final class JiraTaskListProvider extends TaskListIssueProvider implements PropertyChangeListener {
 
-    private static JiraIssueProvider instance;
+    private static JiraTaskListProvider instance;
     private final Object LOCK = new Object();
     private boolean initialized;
     private HashMap<String, JiraLazyIssue> watchedIssues = new HashMap<String, JiraLazyIssue>(10);
@@ -110,14 +111,14 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
 
     public static final String PROPERTY_ISSUE_REMOVED = "issue-removed"; //NOI18N
 
-    public static synchronized JiraIssueProvider getInstance() {
+    public static synchronized JiraTaskListProvider getInstance() {
         if (instance == null) {
-            instance = Lookup.getDefault().lookup(JiraIssueProvider.class);
+            instance = Lookup.getDefault().lookup(JiraTaskListProvider.class);
         }
         return instance;
     }
 
-    public JiraIssueProvider () {
+    public JiraTaskListProvider () {
         // initialization
         support = new PropertyChangeSupport(this);
         reloadAsync();
@@ -135,12 +136,14 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
         synchronized (LOCK) {
             if (isAdded(url)) return;
             try {
-                JiraRepository repository = issue.getRepository();
+                JiraRepository jiraRepository = issue.getRepository();
+                
+                Repository repository = JiraUtils.getRepository(jiraRepository);
                 repository.removePropertyChangeListener(this);
                 repository.addPropertyChangeListener(this);
                 // create a representation of the real issue for tasklist
                 watchedIssues.put(url.toString(), lazyIssue =
-                        (repository instanceof KenaiRepository) ?
+                        (jiraRepository instanceof KenaiRepository) ?
                             new KenaiJiraLazyIssue(issue, this) :   // kenai lazy issue
                             new JiraLazyIssue(issue, this));        // common jira lazy issue
             } catch (MalformedURLException e) {
@@ -201,9 +204,9 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (RepositoryProvider.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
+        if (Repository.EVENT_ATTRIBUTES_CHANGED.equals(evt.getPropertyName())) {
             if (evt.getOldValue() != null && evt.getOldValue() instanceof Map) {
-                Object oldValue = ((Map)evt.getOldValue()).get(JiraRepository.ATTRIBUTE_URL);
+                Object oldValue = ((Map)evt.getOldValue()).get(Repository.ATTRIBUTE_URL);
                 if (oldValue != null && oldValue instanceof String) {
                     String oldRepoUrl = (String) oldValue;
                     LinkedList<JiraLazyIssue> issuesToRefresh = new LinkedList<JiraLazyIssue>();
@@ -276,6 +279,14 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
             lazyIssue.setIssueReference(issue);
         }
     }
+    
+    Map<String, JiraRepository> jiraRepositories = new HashMap<String, JiraRepository>();
+    public void notifyRepositoryCreated (JiraRepository repository) {
+        jiraRepositories.put(repository.getID(), repository);
+    }
+    public void notifyRepositoryRemoved (JiraRepository repository) {
+        jiraRepositories.remove(repository.getID());
+    }    
 
     // **** private methods ***** //
     private boolean isAdded(URL url) {
@@ -395,9 +406,8 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        RepositoryProvider[] repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
-            for (RepositoryProvider rp : repositories) {
-                JiraRepository repository = (JiraRepository) rp;
+        Repository[] repositories = BugtrackingUtil.getRepositories(JiraConnector.ID);
+            for (Repository repository : repositories) {
                 // all issues for this repository
                 List<String> issueAttributes = repositoryIssues.get(repository.getUrl());
                 if (issueAttributes != null && issueAttributes.size() > 1) {
@@ -413,7 +423,8 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                             LOG.log(Level.WARNING, "Corrupted issue attributes: {0} {1}", new String[]{issueKey, issueName}); //NOI18N
                             break;
                         }
-                        add(issueName, issueKey, repository);
+                        JiraRepository jiraRepository = jiraRepositories.get(repository.getId());
+                        add(issueName, issueKey, jiraRepository);
                     }
                     repository.addPropertyChangeListener(this);
                     // remove processed attributes
@@ -561,7 +572,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                     issue[0] = (NbJiraIssue) repository.getIssue(issueKey);
                 }
             };
-            runCancellableCommand(runnable, NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.loadingIssue"));
+            runCancellableCommand(runnable, NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.loadingIssue"));
         } else {
             LOG.log(Level.FINER, "getIssue: getting issue {0} from the cache", repository.getUrl() + "#" + issueKey); //NOI18N
             issue[0] = (NbJiraIssue) repository.getIssueCache().getIssue(issueKey);
@@ -601,12 +612,12 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
          *  cached repository for the issue
          */
         private WeakReference<JiraRepository> repositoryRef;
-        private final JiraIssueProvider provider;
+        protected final JiraTaskListProvider provider;
         private WeakReference<NbJiraIssue> issueRef;
         private PropertyChangeListener issueListener;
 
-        public JiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
-            super(JiraIssueProvider.getUrl(issue), issue.getDisplayName());
+        public JiraLazyIssue (NbJiraIssue issue, JiraTaskListProvider provider) throws MalformedURLException {
+            super(JiraTaskListProvider.getUrl(issue), issue.getDisplayName());
             this.issueKey = issue.getID();
             this.provider = provider;
             this.repositoryRef = new WeakReference<JiraRepository>(issue.getRepository());
@@ -614,7 +625,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
             attachIssueListener(issue);
         }
 
-        public JiraLazyIssue (String name, URL url, String issueKey, JiraRepository repository, JiraIssueProvider provider) {
+        public JiraLazyIssue (String name, URL url, String issueKey, JiraRepository repository, JiraTaskListProvider provider) {
             super(url, name);
             this.issueKey = issueKey;
             this.repositoryRef = new WeakReference<JiraRepository>(repository);
@@ -622,7 +633,6 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
             this.issueRef = new WeakReference<NbJiraIssue>(null);
         }
 
-        @Override
         public NbJiraIssue getIssue() {
             NbJiraIssue issue = issueRef.get();
             if (issue == null) {
@@ -699,7 +709,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
         @Override
         public List<? extends Action> getActions() {
             List<AbstractAction> actions = new LinkedList<AbstractAction>();
-            actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction")) { //NOI18N
+            actions.add(new AbstractAction(NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.resolveAction")) { //NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -711,15 +721,15 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                             } else {
                                 if (!issue.isResolveAllowed()) {
                                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                                            NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveAction.notPermitted"),
+                                            NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.resolveAction.notPermitted"),
                                             NotifyDescriptor.INFORMATION_MESSAGE));
                                     return;
                                 }
                                 ResolveIssuePanel panel = new ResolveIssuePanel(issue);
-                                String title = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueButton.text"); //NOI18N
+                                String title = NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.resolveIssueButton.text"); //NOI18N
                                 if (BugtrackingUtil.show(panel, title, title)) {
                                     LOG.finer("Resole action: resolving..."); //NOI18N
-                                    String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.resolveIssueMessage"); //NOI18N
+                                    String pattern = NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.resolveIssueMessage"); //NOI18N
                                     final Resolution resolution = panel.getSelectedResolution();
                                     final String comment = panel.getComment();
                                     runCancellableCommand(new Runnable () {
@@ -727,7 +737,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                                         public void run() {
                                             issue.resolve(resolution, comment);
                                             if (issue.submitAndRefresh()) {
-                                                issue.open();
+                                                JiraUtils.openIssue(issue);
                                             }
                                         }
                                     }, MessageFormat.format(pattern, issue.getID()));
@@ -748,7 +758,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                     return allowed;
                 }
             });
-            actions.add(new AbstractAction(NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneAction")) { //NOI18N
+            actions.add(new AbstractAction(NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.logWorkDoneAction")) { //NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     RequestProcessor.getDefault().post(new Runnable() {
@@ -761,7 +771,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                                 final WorkLogPanel panel = new WorkLogPanel(issue);
                                 if (panel.showDialog()) {
                                     LOG.finer("Log Work done action: logging..."); //NOI18N
-                                    String pattern = NbBundle.getMessage(JiraIssueProvider.class, "JiraIssueProvider.logWorkDoneMessage"); // NOI18N
+                                    String pattern = NbBundle.getMessage(JiraTaskListProvider.class, "JiraIssueProvider.logWorkDoneMessage"); // NOI18N
                                     String message = MessageFormat.format(pattern, issue.getID());
                                     runCancellableCommand(new Runnable() {
                                         @Override
@@ -772,7 +782,7 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                                                 issue.setFieldValue(NbJiraIssue.IssueField.ESTIMATE, (remainingEstimate + panel.getTimeSpent()) + ""); // NOI18N
                                             }
                                             if (issue.submitAndRefresh()) {
-                                                issue.open();
+                                                JiraUtils.openIssue(issue);
                                             }
                                         }
                                     }, message);
@@ -802,6 +812,18 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
                 repositoryRef = new WeakReference<JiraRepository>(repository);
             }
         }
+
+        @Override
+        public void open() {
+            NbJiraIssue issue = getIssue();
+            if (issue != null) {
+                LOG.log(Level.FINER, "TaskListProvider: openning issue {0}", getName()); //NOI18N
+                // openning the real issue in it's top component
+                JiraUtils.openIssue(issue);
+            } else {
+                LOG.log(Level.FINE, "null issue returned for {0}", getName()); //NOI18N
+            }
+        }
     }
 
     /**
@@ -812,27 +834,28 @@ public final class JiraIssueProvider extends TaskListIssueProvider implements Pr
         private final String projectName;
         private boolean loginStatusChanged = true;
 
-        public KenaiJiraLazyIssue (NbJiraIssue issue, JiraIssueProvider provider) throws MalformedURLException {
+        public KenaiJiraLazyIssue (NbJiraIssue issue, JiraTaskListProvider provider) throws MalformedURLException {
             super(issue, provider);
-            RepositoryProvider repo = issue.getRepository();
+            JiraRepository repo = issue.getRepository();
             if (!(repo instanceof KenaiRepository)) {
                 throw new IllegalStateException("Cannot instantiate with a non kenai issue: " + issue); //NOI18N
             }
             projectName = ((KenaiRepository) repo).getDisplayName();
         }
 
-        public KenaiJiraLazyIssue (String name, URL url, String issueKey, String projectName, JiraIssueProvider provider) {
+        public KenaiJiraLazyIssue (String name, URL url, String issueKey, String projectName, JiraTaskListProvider provider) {
             super(name, url, issueKey, null, provider);
             this.projectName = projectName;
         }
 
         protected KenaiRepository lookupRepository () {
             KenaiRepository kenaiRepo = null;
-            RepositoryProvider repo = null;
+            JiraRepository repo = null;
             if (loginStatusChanged) {
                 try {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for: " + projectName);
-                    repo = KenaiUtil.getRepository(getUrl().toString(), projectName);
+                    Repository repository = KenaiUtil.getRepository(getUrl().toString(), projectName);
+                    repo = provider.jiraRepositories.get(repository.getId());
                 } catch (IOException ex) {
                     LOG.log(Level.FINE, "KenaiJiraLazyIssue.lookupRepository: getting repository for " + projectName, ex);
                 }

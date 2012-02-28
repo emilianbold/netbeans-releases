@@ -47,7 +47,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -57,11 +56,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
@@ -113,10 +112,10 @@ public final class BugtrackingManager implements LookupListener {
      * @param pingOpenProjects 
      * @return repositories
      */
-    public RepositoryProvider[] getKnownRepositories(boolean pingOpenProjects) {
-        RepositoryProvider[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        RepositoryProvider[] otherRepos = RepositoryRegistry.getInstance().getRepositories();
-        RepositoryProvider[] ret = new RepositoryProvider[kenaiRepos.length + otherRepos.length];
+    public Repository[] getKnownRepositories(boolean pingOpenProjects) {
+        Repository[] kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        Repository[] otherRepos = RepositoryRegistry.getInstance().getRepositories();
+        Repository[] ret = new Repository[kenaiRepos.length + otherRepos.length];
         System.arraycopy(kenaiRepos, 0, ret, 0, kenaiRepos.length);
         System.arraycopy(otherRepos, 0, ret, kenaiRepos.length, otherRepos.length);
         return ret;
@@ -140,28 +139,28 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
     }
 
-    public List<IssueProvider> getRecentIssues(RepositoryProvider repo) {
+    public List<Issue> getRecentIssues(Repository repo) {
         assert repo != null;
-        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
+        List<RecentIssue> l = getRecentIssues().get(repo.getId());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
-        List<IssueProvider> ret = new ArrayList<IssueProvider>(l.size());
+        List<Issue> ret = new ArrayList<Issue>(l.size());
         for (RecentIssue recentIssue : l) {
             ret.add(recentIssue.getIssue());
         }
         return ret;
     }
 
-    public void addRecentIssue(RepositoryProvider repo, IssueProvider issue) {
+    public void addRecentIssue(Repository repo, Issue issue) {
         assert repo != null && issue != null;
         if (issue.getID() == null) {
             return;
         }
-        List<RecentIssue> l = getRecentIssues().get(repo.getInfo().getId());
+        List<RecentIssue> l = getRecentIssues().get(repo.getId());
         if(l == null) {
             l = new LinkedList<RecentIssue>();
-            getRecentIssues().put(repo.getInfo().getId(), l);
+            getRecentIssues().put(repo.getId(), l);
         }
         for (RecentIssue i : l) {
             if(i.getIssue().getID().equals(issue.getID())) {
@@ -177,7 +176,7 @@ public final class BugtrackingManager implements LookupListener {
                         Level.FINE,
                         "recent issue: [{0}, {1}, {2}]",                        // NOI18N
                         new Object[]{
-                            ri.getIssue().getRepository().getInfo().getDisplayName(),
+                            ri.getIssue().getRepository().getDisplayName(),
                             ri.getIssue().getID(),
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
@@ -234,7 +233,7 @@ public final class BugtrackingManager implements LookupListener {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
-                IssueProvider issue = itc.getIssue();
+                Issue issue = itc.getIssue();
                 LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;

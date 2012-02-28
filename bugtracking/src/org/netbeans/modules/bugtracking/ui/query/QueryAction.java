@@ -50,8 +50,8 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -84,23 +84,23 @@ public class QueryAction extends SystemAction {
         openQuery(null, WindowManager.getDefault().getRegistry().getActivatedNodes());
     }
 
-    private static void openQuery(QueryProvider query, Node[] context) {
+    private static void openQuery(Query query, Node[] context) {
         openQuery(query, null, context);
     }
 
-    public static void openQuery(final QueryProvider query, final RepositoryProvider repositoryToSelect) {
+    public static void openQuery(final Query query, final Repository repositoryToSelect) {
         openQuery(query, repositoryToSelect, null);
     }
 
-    private static void openQuery(final QueryProvider query, final RepositoryProvider repositoryToSelect, Node[] context) {
+    private static void openQuery(final Query query, final Repository repositoryToSelect, Node[] context) {
         openQuery(query, repositoryToSelect, false);
     }
 
-    public static void openQuery(final QueryProvider query, final RepositoryProvider repository, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
         openQuery(query, repository, WindowManager.getDefault().getRegistry().getActivatedNodes(), suggestedSelectionOnly);
     }
 
-    private static void openQuery(final QueryProvider query, final RepositoryProvider repository, final Node[] context, final boolean suggestedSelectionOnly) {
+    private static void openQuery(final Query query, final Repository repository, final Node[] context, final boolean suggestedSelectionOnly) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -127,7 +127,7 @@ public class QueryAction extends SystemAction {
         });
     }
 
-    public static void closeQuery(final QueryProvider query) {
+    public static void closeQuery(final Query query) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {

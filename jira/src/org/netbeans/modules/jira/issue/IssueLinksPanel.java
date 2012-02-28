@@ -63,12 +63,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.UIManager;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -120,10 +122,10 @@ public class IssueLinksPanel extends JPanel {
     private void reloadIssueDetails() {
         summaryMap.clear();
         JiraRepository repository = issue.getRepository();
-        IssueCache cache = repository.getIssueCache();
+        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
         for (NbJiraIssue.LinkedIssue linkedIssue : issue.getLinkedIssues()) {
             String issueKey = linkedIssue.getIssueKey();
-            IssueProvider izzue = cache.getIssue(issueKey);
+            NbJiraIssue izzue = cache.getIssue(issueKey);
             if (izzue == null) {
                 izzue = repository.getIssue(issueKey);
             }
@@ -200,10 +202,10 @@ public class IssueLinksPanel extends JPanel {
     }
 
     static class OpenIssueAction extends AbstractAction {
-        private RepositoryProvider repository;
+        private JiraRepository repository;
         private String issueKey;
 
-        public OpenIssueAction(RepositoryProvider repository, String issueKey) {
+        public OpenIssueAction(JiraRepository repository, String issueKey) {
             this.repository = repository;
             this.issueKey = issueKey;
             putValue(Action.NAME, issueKey);
@@ -214,7 +216,12 @@ public class IssueLinksPanel extends JPanel {
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                public void run() {
-                   repository.getIssue(issueKey).open();
+                    NbJiraIssue is = repository.getIssue(issueKey);
+                    if(is != null) {
+                        JiraUtils.openIssue(is);
+                    } else {
+                        // XXX
+                    }
                }
             });
         }
