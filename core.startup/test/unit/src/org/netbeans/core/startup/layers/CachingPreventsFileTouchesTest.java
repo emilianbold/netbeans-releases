@@ -44,7 +44,11 @@
 
 package org.netbeans.core.startup.layers;
 
+import java.beans.PropertyVetoException;
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -55,6 +59,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.LocalFileSystem;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.Places;
 import org.openide.util.Lookup;
 
 /**
@@ -94,10 +101,12 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
                 CachingPreventsFileTouchesTest.class
             ).reuseUserDir(true).enableModules("platform\\d*", ".*").enableClasspathModules(false)
             .honorAutoloadEager(true);
-            conf = conf.addTest("testReadAccess").gui(false);
+            conf = conf.addTest("testReadAccess", "testRememberCacheDir").gui(false);
             suite.addTest(conf.suite());
         }
-
+        
+        suite.addTest(new CachingPreventsFileTouchesTest("testCachesDontUseAbsolutePaths"));
+        
         return suite;
     }
 
@@ -110,8 +119,6 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         }
         FileObject fo = FileUtil.getConfigFile("Services/Browsers");
         fo.delete();
-        // will be reset next time the system starts
-        System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
@@ -139,5 +146,46 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             throw e;
         }
     }
+    
+    public void testRememberCacheDir() {
+        File cacheDir = Places.getCacheDirectory();
+        assertTrue("It is a directory", cacheDir.isDirectory());
+        System.setProperty("mycache", cacheDir.getPath());
+        
+        File boot = InstalledFileLocator.getDefault().locate("lib/boot.jar", "org.netbeans.bootstrap", false);
+        assertNotNull("Boot.jar found", boot);
+        System.setProperty("myinstall", boot.getParentFile().getParentFile().getParentFile().getPath());
+    }
 
+    public void testCachesDontUseAbsolutePaths() throws Exception {
+        String cache = System.getProperty("mycache");
+        String install = System.getProperty("myinstall");
+        
+        assertNotNull("Cache found", cache);
+        assertNotNull("Install found", install);
+        
+        File cacheDir = new File(cache);
+        assertTrue("Cache dir is dir", cacheDir.isDirectory());
+        int cnt = 0;
+        final File[] arr = cacheDir.listFiles();
+        Collections.shuffle(Arrays.asList(arr));
+        for (File f : arr) {
+            if (!f.isDirectory()) {
+                cnt++;
+                assertFileDoesNotContain(f, install);
+            }
+        }
+        assertTrue("Some cache files found", cnt > 4);
+    }
+
+    private static void assertFileDoesNotContain(File file, String text) throws IOException, PropertyVetoException {
+        LocalFileSystem lfs = new LocalFileSystem();
+        lfs.setRootDirectory(file.getParentFile());
+        FileObject fo = lfs.findResource(file.getName());
+        assertNotNull("file object for " + file + " found", fo);
+        String content = fo.asText();
+        if (content.contains(text)) {
+            fail("File " + file + " seems to contain '" + text + "'!");
+        }
+    }
 }
