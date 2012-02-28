@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -67,7 +68,11 @@ public class COSSynchronizingIndexer extends CustomIndexer {
 
     @Override
     protected void index(Iterable<? extends Indexable> files, Context context) {
-        if (!BuildArtifactMapperImpl.isUpdateResources(BuildArtifactMapperImpl.getTargetFolder(context.getRootURI()))) {
+        final URL rootURL = context.getRootURI();
+        if (FileUtil.getArchiveFile(rootURL) != null) {
+            return;
+        }
+        if (!BuildArtifactMapperImpl.isUpdateResources(BuildArtifactMapperImpl.getTargetFolder(rootURL))) {
             return ;
         }
 

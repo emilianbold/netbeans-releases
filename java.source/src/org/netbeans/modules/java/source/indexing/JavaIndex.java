@@ -257,6 +257,17 @@ public final class JavaIndex {
                (!testForInitialized || uq.getState() == ClassIndexImpl.State.INITIALIZED) &&
                uq.getType() == ClassIndexImpl.Type.BINARY;
     }
+    
+    /**
+     * Convenience method to check whether a root has been indexed.
+     * Use in preference to direct call {@link #getUsagesQuery} for this check.
+     * 
+     * @param root root URL
+     * @return true, if the class/usage index has been already created for this root.
+     */
+    public static boolean isIndexed(@NonNull final URL root) {
+        return ClassIndexManager.getDefault().getUsagesQuery(root, false) != null;
+    }
 
     private JavaIndex() {}
 }
