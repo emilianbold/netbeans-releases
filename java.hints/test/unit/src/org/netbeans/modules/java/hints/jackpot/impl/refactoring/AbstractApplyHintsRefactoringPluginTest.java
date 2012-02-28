@@ -39,69 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.java.source.indexing;
+package org.netbeans.modules.java.hints.jackpot.impl.refactoring;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.EventObject;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
+import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
+import org.netbeans.modules.java.hints.jackpot.spi.PatternConvertor;
+import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.api.RefactoringSession;
+import org.netbeans.modules.refactoring.java.test.RefactoringTestBase;
 
 /**
- * Events related to Java Indexer operations. Currently only supports an event informing
- * that a source root has been scanned and index created. 
- * 
- * @author sdedic
+ *
+ * @author lahvac
  */
-public final class JavaIndexEvents {
-    private static final JavaIndexEvents DEFAULT = new JavaIndexEvents();
-    
-    public interface Listener {
-        public void indexUpdated(IndexEvent event);
-    }
-    
-    public final static class IndexEvent extends EventObject { 
-        private URL root;
+public class AbstractApplyHintsRefactoringPluginTest extends RefactoringTestBase {
 
-        IndexEvent(URL root, Object source) {
-            super(source);
-            this.root = root;
-        }
-
-        public URL getRoot() {
-            return root;
-        }
+    public AbstractApplyHintsRefactoringPluginTest(String name) {
+        super(name);
     }
 
-    public static JavaIndexEvents getDefault() {
-        return DEFAULT;
+    public void testFileChanges() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/a/A.java", "package t.a; public class A {\n}\n"));
+        performTransformation("t.$1=>f.$1;;");
+        verifyContent(src,
+                new File("f/a/A.java", "package f.a; public class A {\n}\n"));
     }
     
-    public void addIndexEventListener(Listener l) {
-        synchronized (listeners) {
-            listeners.add(l);
+    private void performTransformation(String rule, Problem... expectedProblems) throws Exception {
+        final FindDuplicatesRefactoring r = new FindDuplicatesRefactoring(false);
+
+        r.setPattern(PatternConvertor.create(rule));
+        r.setScope(Scopes.specifiedFoldersScope(Folder.convert(src)));
+        r.setVerify(true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r.preCheck());
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, r.prepare(rs));
         }
+        if (!problemIsFatal(problems)) {
+            addAllProblems(problems, rs.doRefactoring(true));
+        }
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
     }
-    
-    public void removeIndexEventListener(Listener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
-    }
-    
-    void fireIndexUpdated(URL root) {
-        List<Listener> ll;
-        
-        synchronized (listeners) {
-            if (listeners.isEmpty()) {
-                return;
-            }
-            ll = new ArrayList<Listener>(listeners);
-        }
-        IndexEvent evt = new IndexEvent(root, this);
-        for (Listener l : ll) {
-            l.indexUpdated(evt);
-        }
-    }
-    
-    private List<Listener>  listeners = new ArrayList<Listener>();
 }

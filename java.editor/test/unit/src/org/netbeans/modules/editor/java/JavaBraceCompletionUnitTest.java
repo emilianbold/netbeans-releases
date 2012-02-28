@@ -865,7 +865,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "if (a()|) \n )"
         );
     }
-
+//problem
     public void testSkipWhenBalanced198194a() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "for (int i = a(|); i < 10; i++)"
@@ -1138,6 +1138,34 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals("()|");
     }
     
+    public void testRemoveQuotesBackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\"\"\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    public void testRemoveQuotesDelete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\"\"|\"\"");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    public void testRemoveQuotes2BackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\'\'\'|\'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("\'\'|");
+    }
+    
+    public void testRemoveQuotes2Delete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\'\'|\'\'");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("\'\'|");
+    }
+    
     public void testJumpCharacters() throws Exception {
         Context ctx = new Context(new JavaKit(), "m(\"p|\");");
         ctx.typeChar('"');
@@ -1145,6 +1173,14 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.typeChar(')');
         ctx.assertDocumentTextEquals("m(\"p\")|;");
     }
+    
+    public void testJumpQuote() throws Exception {
+        Context ctx = new Context(new JavaKit(), "\"|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    
 
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));
