@@ -53,10 +53,12 @@ import org.openide.util.HelpCtx;
  * @see DataObjectFactoryProcessorTest
  * @author Eric Barboni <skygo@netbeans.org>
  */
-@DataObject.Registration(mimeType =  "text/test1", displayName = "labeltest", position = 3565, iconBase = "org/openide/loaders/unknown.gif")
-public class DoFPDataObject extends DataObject {
+@DataObject.Registrations({
+    @DataObject.Registration(mimeType = "text/testm1", displayName = "labeltest", position = 3565, iconBase = "org/openide/loaders/unknown.gif"),
+    @DataObject.Registration(mimeType = "text/testm2", displayName = "labeltestm1", position = 4050, iconBase = "org/openide/loaders/unknown.gif")})
+public class DoFPDataObjectMultiple extends DataObject {
 
-    public DoFPDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
+    public DoFPDataObjectMultiple(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
         super(pf, loader);
     }
 
@@ -109,5 +111,4 @@ public class DoFPDataObject extends DataObject {
     protected DataObject handleCreateFromTemplate(DataFolder df, String name) throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
 }
