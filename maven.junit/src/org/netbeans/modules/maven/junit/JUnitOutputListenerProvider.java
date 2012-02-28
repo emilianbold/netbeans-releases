@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.maven.junit;
 
-import org.codehaus.plexus.util.StringUtils;
 import java.io.File;
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -54,10 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.codehaus.plexus.util.FileUtils;
-import org.netbeans.modules.gsf.testrunner.api.RerunType;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.output.OutputVisitor;
+import org.codehaus.plexus.util.StringUtils;
 import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
@@ -65,13 +61,17 @@ import org.jdom.input.SAXBuilder;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
+import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
 
 /**
@@ -128,7 +128,6 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 generateTest();
             }
             runningTestClass = match.group(1);
-            return;
         }
     }
 
@@ -150,10 +149,28 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 public @Override void rerun(Set<Testcase> tests) {
                     //not implemented yet
+                    RunConfig brc = RunUtils.cloneRunconfig(config);
+                    StringBuilder tst = new StringBuilder();    
+                    for (Testcase tc : tests) {
+                        //TODO just when is the classname null??
+                        if (tc.getClassName() != null) {
+                           tst.append(",");
+                           tst.append(tc.getClassName());
+                           //tst.append(tc.getClassName().substring(tc.getClassName().lastIndexOf('.') + 1));
+                           
+                           //#name only in surefire > 2.7.2 and junit > 4.0 or testng
+                           // bug works with the setting also for junit 3.x
+                           tst.append("#").append(tc.getName());
+                        }      
+                    }
+                    if (tst.length() > 0) {
+                        brc.setProperty("test", tst.substring(1));
+                    }
+                    RunUtils.executeMaven(brc);
                 }
                 public @Override boolean enabled(RerunType type) {
                     //TODO debug doesn't property update debug port in runconfig..
-                    return RerunType.ALL.equals(type) && fType.equals(TestSession.SessionType.TEST);
+                    return (RerunType.ALL.equals(type) || RerunType.CUSTOM.equals(type)) && fType.equals(TestSession.SessionType.TEST);
                 }
                 public @Override void addChangeListener(ChangeListener listener) {
                 }
