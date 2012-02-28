@@ -95,7 +95,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     private static final FileComponentReferences EMPTY = new FileComponentReferences() {
 
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -103,10 +103,12 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return EMPTY;
     }
 
-    FileComponentReferences(FileComponentReferences other) {
+    FileComponentReferences(FileComponentReferences other, boolean empty) {
         super(other);
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.references);
-        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.type2classifier);
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.references);
+        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.type2classifier);
         this.fileUID = other.fileUID;
     }
     

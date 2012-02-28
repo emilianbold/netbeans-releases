@@ -74,7 +74,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     private static final FileComponentInstantiations EMPTY = new FileComponentInstantiations() {
 
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -82,9 +82,11 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         return EMPTY;
     }
 
-    FileComponentInstantiations(FileComponentInstantiations other) {
+    FileComponentInstantiations(FileComponentInstantiations other, boolean empty) {
         super(other);
-        instantiations.addAll(other.instantiations);
+        if (!empty) {
+            instantiations.addAll(other.instantiations);
+        }
     }
     
     public FileComponentInstantiations(FileImpl file, boolean persistent) {
@@ -102,7 +104,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         super(null, false);
     }
 
-    public void clean() {
+    void clean() {
         _clearInstantiations();
         put();
     }

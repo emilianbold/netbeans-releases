@@ -82,7 +82,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         }
         
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -90,10 +90,12 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return EMPTY;
     }
 
-    FileComponentIncludes(FileComponentIncludes other) {
+    FileComponentIncludes(FileComponentIncludes other, boolean empty) {
         super(other);
-        includes.addAll(other.includes);
-        brokenIncludes.addAll(other.brokenIncludes);
+        if (!empty) {
+            includes.addAll(other.includes);
+            brokenIncludes.addAll(other.brokenIncludes);
+        }
     }
     
     public FileComponentIncludes(FileImpl file, boolean persistent) {
@@ -112,7 +114,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         super(null, false);
     }
 
-    public void clean() {
+    void clean() {
         _clearIncludes();
         put();
     }

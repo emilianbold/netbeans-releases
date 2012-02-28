@@ -84,7 +84,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
         
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -92,9 +92,9 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return EMPTY;
     }
 
-    FileComponentMacros(FileComponentMacros other) {
+    FileComponentMacros(FileComponentMacros other, boolean empty) {
         super(other);
-        macros = createMacros(other.macros);
+        macros = createMacros(empty ? null : other.macros);
     }
     
     public FileComponentMacros(FileImpl file, boolean persistent) {
@@ -114,7 +114,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         macros = createMacros(null);
     }
 
-    public void clean() {
+    void clean() {
         _clearMacros();
         put();
     }

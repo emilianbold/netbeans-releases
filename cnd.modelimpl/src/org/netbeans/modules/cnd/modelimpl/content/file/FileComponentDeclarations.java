@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.List;
@@ -99,7 +100,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     private static final FileComponentDeclarations EMPTY = new FileComponentDeclarations() {
 
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -107,11 +108,14 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         return EMPTY;
     }
 
-    FileComponentDeclarations(FileComponentDeclarations other) {
+    FileComponentDeclarations(FileComponentDeclarations other, boolean empty) {
         super(other);
-        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(other.declarations);
-        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(other.staticFunctionDeclarationUIDs);
-        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(other.staticVariableUIDs);
+        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(
+                empty ? Collections.<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>emptyMap() : other.declarations);
+        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(
+                empty ? Collections.<CsmUID<CsmFunction>>emptyList() : other.staticFunctionDeclarationUIDs);
+        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(
+                empty ? Collections.<CsmUID<CsmVariable>>emptyList() : other.staticVariableUIDs);
     }
     
     public FileComponentDeclarations(FileImpl file, boolean persistent) {
@@ -149,7 +153,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
     }
 
-    public Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
+    Collection<CsmUID<CsmOffsetableDeclaration>> clean() {
         Collection<CsmUID<CsmOffsetableDeclaration>> uids;
         try {
             declarationsLock.writeLock().lock();
