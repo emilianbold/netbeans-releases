@@ -1503,7 +1503,7 @@ public class CasualDiff {
         return bounds[1];
     }
 
-    protected int diffAssign(JCAssign oldT, JCAssign newT, int[] bounds) {
+    protected int diffAssign(JCAssign oldT, JCAssign newT, JCTree parent, int[] bounds) {
         int localPointer = bounds[0];
         // lhs
         int[] lhsBounds = getBounds(oldT.lhs);
@@ -1518,7 +1518,8 @@ public class CasualDiff {
             tokenSequence.move(rhsBounds[0]);
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
             if (tokenSequence.token().id() != JavaTokenId.EQ) {
-                if (diffContext.style.spaceAroundAssignOps())
+                boolean spaceAroundAssignOps = parent.getKind() == Kind.ANNOTATION ? diffContext.style.spaceAroundAnnotationValueAssignOps() : diffContext.style.spaceAroundAssignOps();
+                if (spaceAroundAssignOps)
                     printer.print(" = ");
                 else
                     printer.print("=");
@@ -3307,7 +3308,7 @@ public class CasualDiff {
               retVal = diffParens((JCParens)oldT, (JCParens)newT, elementBounds);
               break;
           case JCTree.ASSIGN:
-              retVal = diffAssign((JCAssign)oldT, (JCAssign)newT, elementBounds);
+              retVal = diffAssign((JCAssign)oldT, (JCAssign)newT, parent, elementBounds);
               break;
           case JCTree.TYPECAST:
               retVal = diffTypeCast((JCTypeCast)oldT, (JCTypeCast)newT, elementBounds);

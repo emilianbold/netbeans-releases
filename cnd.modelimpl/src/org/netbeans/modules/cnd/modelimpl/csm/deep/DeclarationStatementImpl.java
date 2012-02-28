@@ -169,8 +169,8 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
                     {
                         ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                        ClassImplSpecialization.create(token, null, getContainingFile(), !isRenderingLocalContext(), null) :
-                                        ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext(), null);
+                                        ClassImplSpecialization.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null) :
+                                        ClassImpl.create(token, null, getContainingFile(), getFileContent(), !isRenderingLocalContext(), null);
                         declarators.add(cls);
                         Pair typedefs = renderTypedef(token, cls, currentNamespace);
                         if (!typedefs.getTypesefs().isEmpty()) {

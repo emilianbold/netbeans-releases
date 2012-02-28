@@ -113,4 +113,6 @@ public abstract class GitClassFactory {
 
     public abstract GitUser createUser (PersonIdent personIdent);
 
+    public abstract void setBranchTracking (GitBranch branch, GitBranch trackedBranch);
+
 }

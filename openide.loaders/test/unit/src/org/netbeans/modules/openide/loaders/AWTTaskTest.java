@@ -40,6 +40,7 @@ package org.netbeans.modules.openide.loaders;
 import java.awt.EventQueue;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 
 /**
@@ -98,5 +99,60 @@ public class AWTTaskTest extends NbTestCase {
         assertFalse("Does not finish", at.waitFinished(1000));
         b.goOn(at);
         assertEquals("Executed once", 1, run.run);
+    }
+    
+    public void testInvokedOnce() {
+        assertInvokedOnce(false);
+    }
+    public void testInvokedOnceWithTimeOut() {
+        assertInvokedOnce(true);
+    }
+    
+    private void assertInvokedOnce(final boolean withTimeOut) {
+        class Cnt implements Runnable {
+            int cnt;
+
+            @Override
+            public void run() {
+                assertTrue("In AWT", EventQueue.isDispatchThread());
+                cnt++;
+                AWTTask.flush();
+            }
+        }
+        class CntAndWait implements Runnable {
+            Cnt snd;
+            int cnt;
+            
+            @Override
+            public void run() {
+                snd = new Cnt();
+                final AWTTask[] waitFor = { null };
+                RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        waitFor[0] = new AWTTask(snd);
+                    }
+                }).waitFinished();
+                
+                if (withTimeOut) {
+                    try {
+                        waitFor[0].waitFinished(1000);
+                    } catch (InterruptedException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                } else {
+                    waitFor[0].waitFinished();
+                }
+                cnt++;
+                assertEquals("Already invoked", 1, snd.cnt);
+            }
+        }
+        CntAndWait first = new CntAndWait();
+        new AWTTask(first).waitFinished();
+        assertEquals("Main invoked", 1, first.cnt);
+        Cnt third = new Cnt();
+        new AWTTask(third).waitFinished();
+        assertEquals("Invoked once 3rd", 1, third.cnt);
+        assertEquals("Invoked once inner", 1, first.snd.cnt);
     }
 }

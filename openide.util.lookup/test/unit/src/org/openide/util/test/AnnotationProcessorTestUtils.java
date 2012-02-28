@@ -126,6 +126,9 @@ public class AnnotationProcessorTestUtils {
         args.add("-s");
         File destG = new File(dest.getParentFile(), "generated-" + dest.getName());
         args.add(destG.getAbsolutePath());
+        args.add("-source");
+        args.add("6");
+        args.add("-Xlint:-options");
         dest.mkdirs();
         destG.mkdirs();
         scan(args, src, srcIncludes);

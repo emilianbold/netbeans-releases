@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.refactoring.api;
 
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
-import org.netbeans.modules.cnd.refactoring.support.CsmContext;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;

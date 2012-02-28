@@ -51,16 +51,17 @@ package org.netbeans.modules.vmd.componentssupport.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-    location="Java",
+    location=JavaOptions.JAVA,
     id="JavaME",
     displayName="#JavaME_Option_DisplayName_Componentssupport_TITLE",
     keywords="#KW_JavaMEOptions",
-    keywordsCategory="Java/JavaME"
+    keywordsCategory=JavaOptions.JAVA + "/JavaME"
 )
 public final class ComponentssupportOptionsPanelController extends OptionsPanelController {
 

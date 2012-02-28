@@ -203,7 +203,6 @@ public class ConstructorGenerator implements CodeGenerator {
                             String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                             ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
                             if (fieldHandles != null) {
                                 for (ElementHandle<? extends Element> elementHandle : fieldHandles) {
@@ -221,9 +220,9 @@ public class ConstructorGenerator implements CodeGenerator {
                                         return;
                                     constrElements.add(constr);
                                 }
-                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements, idx);
+                                GeneratorUtils.generateConstructors(copy, path, variableElements, constrElements);
                             } else {
-                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null, idx);
+                                GeneratorUtils.generateConstructor(copy, path, variableElements, constructorHandle != null ? (ExecutableElement)constructorHandle.resolve(copy) : null);
                             }
                         }
                     }

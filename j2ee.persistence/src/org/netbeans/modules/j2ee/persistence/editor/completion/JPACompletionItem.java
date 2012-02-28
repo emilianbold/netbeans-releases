@@ -98,8 +98,8 @@ public abstract class JPACompletionItem implements CompletionItem {
         throw new UnsupportedOperationException("Not yet implemented");
     }
 
-    static JPACompletionItem createPackageItem(int substitutionOffset, String pkg, boolean b) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    static JPACompletionItem createPackageItem(int substitutionOffset, String displayText) {
+        return new AttribValueItem(substitutionOffset, displayText);
     }
 
     static JPACompletionItem createClassPropertyItem(int substitutionOffset, VariableElement variableElem, ElementHandle<VariableElement> elemHandle, boolean deprecated) {

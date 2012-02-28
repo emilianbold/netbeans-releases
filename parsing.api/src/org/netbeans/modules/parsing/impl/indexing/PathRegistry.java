@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -90,7 +91,7 @@ public final class PathRegistry implements Runnable {
 
     // -J-Dorg.netbeans.modules.parsing.impl.indexing.PathRegistry.level=FINE
     private static final Logger LOGGER = Logger.getLogger(PathRegistry.class.getName());
-    private static final Set<String> FAST_HOST_PROTOCOLS = Collections.singleton("nbfs");   //NOI18N
+    private static final Set<String> FAST_HOST_PROTOCOLS = new HashSet<String>(Arrays.asList(new String[] {"nbfs", "rfs"}));   //NOI18N
 
     private final RequestProcessor.Task firerTask;
     private final GlobalPathRegistry regs;

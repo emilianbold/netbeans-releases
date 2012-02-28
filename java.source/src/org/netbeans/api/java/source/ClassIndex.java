@@ -839,7 +839,7 @@ public final class ClassIndex {
                 }
                 if (srcRoots == null) {
                     if (!roots.remove(url)) {
-                        if (mgr.getUsagesQuery(url, false)!=null) {
+                        if (mgr.isIndexed(url)) {
                             newRoots.add (url);
                             result = true;
                         } else {
@@ -850,7 +850,7 @@ public final class ClassIndex {
                 else {
                     for (URL _url : srcRoots) {
                         if (!roots.remove(_url)) {
-                            if (mgr.getUsagesQuery(_url, false)!=null) {
+                            if (mgr.isIndexed(_url)) {
                                 newRoots.add (_url);
                                 result = true;
                             } else {
@@ -902,7 +902,7 @@ public final class ClassIndex {
                         final ClassIndexManager mgr = ClassIndexManager.getDefault();
                         for (Iterator<URL> it = unknownRoots.iterator(); it.hasNext();) {
                             final URL url = it.next();
-                            if (mgr.getUsagesQuery(url, false)==null) {
+                            if (!mgr.isIndexed(url)) {
                                 it.remove();
                             }
                         }

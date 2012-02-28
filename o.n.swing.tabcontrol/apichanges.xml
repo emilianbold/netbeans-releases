@@ -101,12 +101,28 @@ is the proper place.
     <!-- First, a list of API names you may use: -->
 <apidefs>
    <apidef name="tabcontrol">Tab Control APIs</apidef>
+   <apidef name="popupswitcher">Popup Switcher APIs</apidef>
    <!-- etc. -->
 </apidefs>
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+
+    <change id="documentswitcher">
+      <api name="popupswitcher"/>
+      <summary>Allow changes in SwitcherTable content.</summary>
+      <version major="1" minor="35"/>
+      <date day="22" month="2" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        There's a new method <code>void setSwitcherItems(SwitcherTableItems[],int)</code> in
+        <code>SwitcherTable</code> class which allows to change the content of document switcher
+        popup.
+      </description>
+      <class package="org.netbeans.swing.popupswitcher" name="SwitcherTable"/>
+    </change>
 
     <change id="busy_tabs">
       <api name="tabcontrol"/>

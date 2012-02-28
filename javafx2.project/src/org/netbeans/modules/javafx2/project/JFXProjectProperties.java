@@ -762,8 +762,12 @@ public final class JFXProjectProperties {
     }
         
     public static EditableProperties readFromFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
-        final EditableProperties ep = new EditableProperties(true);
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
+        return readFromFile(propsFO);
+    }
+
+    public static EditableProperties readFromFile(final @NonNull FileObject propsFO) throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
         if(propsFO != null) {
             try {
                 final InputStream is = propsFO.getInputStream();
@@ -789,6 +793,10 @@ public final class JFXProjectProperties {
 
     public static void deleteFile(final @NonNull Project project, final @NonNull String relativePath) throws IOException {
         final FileObject propsFO = project.getProjectDirectory().getFileObject(relativePath);
+        deleteFile(propsFO);
+    }
+    
+    public static void deleteFile(final @NonNull FileObject propsFO) throws IOException {
         if(propsFO != null) {
             try {
                 final Mutex.ExceptionAction<Void> action = new Mutex.ExceptionAction<Void>() {
@@ -828,29 +836,35 @@ public final class JFXProjectProperties {
         } else {
             propsFO = f;
         }
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = propsFO.lock();
-                        os = propsFO.getOutputStream(lock);
-                        ep.store(os);
-                    } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
+        saveToFile(propsFO, ep);
+    }
+    
+    public static void saveToFile(final @NonNull FileObject propsFO, final @NonNull EditableProperties ep) throws IOException {
+        if(propsFO != null) {
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        OutputStream os = null;
+                        FileLock lock = null;
+                        try {
+                            lock = propsFO.lock();
+                            os = propsFO.getOutputStream(lock);
+                            ep.store(os);
+                        } finally {
+                            if (lock != null) {
+                                lock.releaseLock();
+                            }
+                            if (os != null) {
+                                os.close();
+                            }
                         }
-                        if (os != null) {
-                            os.close();
-                        }
+                        return null;
                     }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
+                });
+            } catch (MutexException mux) {
+                throw (IOException) mux.getException();
+            }
         }
     }
 

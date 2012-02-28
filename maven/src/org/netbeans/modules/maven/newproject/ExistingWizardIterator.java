@@ -144,7 +144,7 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
         panels = null;
     }
     
-    @Messages("MSG_One_of_Many={0} of {1}")
+    @Messages({"# {0} - index", "# {1} - length", "MSG_One_of_Many={0} of {1}"})
     public String name() {
         return MSG_One_of_Many(index + 1, panels.length);
     }

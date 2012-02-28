@@ -41,25 +41,14 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.EditList;
-import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.csl.api.HintSeverity;
-import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
@@ -70,6 +59,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.openide.filesystems.FileObject;
@@ -128,8 +118,7 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
             if (!classScope.isAbstract()) {
                 Index index = context.getIndex();
                 Set<String> allValidMethods = new HashSet<String>();
-                Set<? extends PhpElement> validInheritedMethods = getValidInheritedMethods(index.getInheritedMethods(classScope));
-                allValidMethods.addAll(toNames(validInheritedMethods));
+                allValidMethods.addAll(toNames(getValidInheritedMethods(getInheritedMethods(classScope, index))));
                 allValidMethods.addAll(toNames(index.getDeclaredMethods(classScope)));
                 ElementFilter declaredMethods = ElementFilter.forExcludedNames(allValidMethods, PhpElementKind.METHOD);
                 Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
@@ -157,7 +146,26 @@ public class ImplementAbstractMethodsHint extends AbstractRule {
         return retval;
     }
 
-    private Set<? extends PhpElement> getValidInheritedMethods(Set<MethodElement> inheritedMethods) {
+    private Set<MethodElement> getInheritedMethods(final ClassScope classScope, final Index index) {
+        Set<MethodElement> inheritedMethods = new HashSet<MethodElement>();
+        Set<MethodElement> declaredSuperMethods =  new HashSet<MethodElement>();
+        Set<MethodElement> accessibleSuperMethods =  new HashSet<MethodElement>();
+        Collection<? extends ClassScope> superClasses = classScope.getSuperClasses();
+        for (ClassScope cls : superClasses) {
+            declaredSuperMethods.addAll(index.getDeclaredMethods(cls));
+            accessibleSuperMethods.addAll(index.getAccessibleMethods(cls, classScope));
+        }
+        Collection<? extends InterfaceScope> superInterface = classScope.getSuperInterfaceScopes();
+        for (InterfaceScope interfaceScope : superInterface) {
+            declaredSuperMethods.addAll(index.getDeclaredMethods(interfaceScope));
+            accessibleSuperMethods.addAll(index.getAccessibleMethods(interfaceScope, classScope));
+        }
+        inheritedMethods.addAll(declaredSuperMethods);
+        inheritedMethods.addAll(accessibleSuperMethods);
+        return inheritedMethods;
+    }
+
+    private Set<MethodElement> getValidInheritedMethods(Set<MethodElement> inheritedMethods) {
         Set<MethodElement> retval = new HashSet<MethodElement>();
         for (MethodElement methodElement : inheritedMethods) {
             if (!methodElement.isAbstract()) {

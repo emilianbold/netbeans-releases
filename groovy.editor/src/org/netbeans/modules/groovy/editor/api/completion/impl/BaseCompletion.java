@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.editor.api.completion.impl;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -107,6 +108,14 @@ public abstract class BaseCompletion {
         } else {
             return false;
         }
+    }
+
+    protected boolean isPrefixed(CompletionRequest request, String name) {
+        return name.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH));
+    }
+
+    protected boolean isPrefixedAndNotEqual(CompletionRequest request, String name) {
+        return isPrefixed(request, name) && !(name.equals(request.prefix));
     }
     
     protected final PackageCompletionRequest getPackageRequest(final CompletionRequest request) {

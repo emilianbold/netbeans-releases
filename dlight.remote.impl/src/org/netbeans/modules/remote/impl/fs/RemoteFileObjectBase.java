@@ -197,6 +197,10 @@ public abstract class RemoteFileObjectBase implements Serializable {
         return cache;
     }
 
+    protected boolean hasCache() {
+        return cache != null && cache.exists();
+    }
+
     public String getPath() {
         return this.remotePath;
     }

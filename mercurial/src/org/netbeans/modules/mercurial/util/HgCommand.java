@@ -455,6 +455,7 @@ public class HgCommand {
     private static final String HG_FLAG_TOPO = "--topo"; //NOI18N
     
     private static final String CMD_EXE = "cmd.exe"; //NOI18N
+    private static ThreadLocal<Boolean> doNotAddHgPlain = new ThreadLocal<Boolean>();
     
     /**
      * Merge working directory with the head revision
@@ -1008,9 +1009,15 @@ public class HgCommand {
         command.showSaveOption = true;
         command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
 
-        List<String> retval = command.invoke();
-
-        return retval;
+        try {
+            // remove when rebase is implemented
+            if ("false".equals(System.getProperty("versioning.mercurial.enableFetchExtension"))) { //NOI18N
+                doNotAddHgPlain.set(true);
+            }
+            return command.invoke();
+        } finally {
+            doNotAddHgPlain.remove();
+        }
     }
 
     public static List<HgLogMessage> processLogMessages (File root, List<File> files, List<String> list) {
@@ -3583,7 +3590,9 @@ public class HgCommand {
     }
 
     private static void setGlobalEnvVariables (Map<String, String> environment) {
-        environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        if (!Boolean.TRUE.equals(doNotAddHgPlain.get())) {
+            environment.put(ENV_HGPLAIN, "true"); //NOI18N
+        }
         if (ENCODING != null) {
             environment.put(ENV_HGENCODING, ENCODING);
         }

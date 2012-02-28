@@ -16,51 +16,41 @@
 <p><small><a href="#seealso">See Also</a></small></p>
 
 <p>The Heap window is typically located in the main editor window of the IDE and displays 
-detailed information about the heap when the heap snapshot was saved.</p>
-<p>You open the heap snapshot in the Heap window by choosing Profile &gt; Load Heap Dump from the main menu.</p>
-<!--
-<p>The toolbar of the Threads window contains the following items:</p>
-<table border="1" cellpadding="0" cellspacing="0">
-    <tr align="left" valign="top">
-        <th scope="col">Button</th>
-        <th scope="col">Function</th>
-    </tr>
-    <tr valign="top">
-    <td><img src="img/saveView.png"></td><td><b>Save Current View.</b>Click this to save an image of the current results as a <tt>.png</tt> file.</td></tr>                        
-    <td><img src="img/zoomIn.png"></td><td><b>Zoom In.</b>Click this to increase the detail of the graph.</td></tr>                        
-    <td><img src="img/zoomOut.png"></td><td><b>Zoom Out.</b> Click this to decreases the detail of the graph.</td></tr>
-    <td><img src="img/scaleToFit.png"></td><td><b>Scale-to-Fit.</b> Click this to modify the display of data so that the entire graph fits in the window.</td></tr>
-    </tr>
-</table>
-<p>The toolbar also contains a dropdown list that enables you to filter the display according to the state of the thread.</p>
+detailed information about the heap when the 
+<object classid="java:com.sun.java.help.impl.JHSecondaryViewer">
+                <param name="content" value="../glossary/heapdump.html">
+                <param name="viewerActivator" value="javax.help.LinkLabel">
+                <param name="viewerStyle" value="javax.help.Popup">
+                <param name="viewerSize" value="400,110">
+                <param name="text" value="heap dump">
+                <param name="textFontSize" value="medium">
+                <param name="textFontFamily" value="SansSerif">
+                <param name="textFontStyle" value="italic">
+                <param name="textFontWeight" value="bold">
+                <param name="textColor" value="blue">
+        </object> was saved.
 
-<p>The Threads window contains the following two tabs:</p>
-        <ul>
-            <li><b>Threads (Timeline).</b> This tab displays thread states over time. 
-            You can zoom in/out on the current view, or switch to the Scale to Fit mode. States can be displayed
-            for all threads, all live threads or all finished threads according to the combobox selection. You can also
-            define a subset of threads to be displayed using a (multi)selection. Double-clicking a thread
-            displays the details of that thread in the Threads (Details) tab.</li>
-            <li><b>Threads (Details).</b> This tab displays more detailed information about 
-            individual threads. Use the dropdown list in the Threads tab toolbar to select which threads 
-            to display. The name, classname and current status (alive/finished) of each thread is 
-            displayed. A short description of the thread is also provided. 
-            The tab contains the following two tabs:
-            <ul>
-                <li><b>General.</b> This tab displays a pie graph illustrating thread state statistics.</li>
-                <li><b>Details.</b> This tab contains a full listing of the thread's states,
-                with timestamps. A timeline for each thread provides a quick 
-                overview of that thread's activity while it is being monitoring.</li>
-            </ul>
-            </li>
-        </ul>
-        
--->
+You do not need to be running a profiling session to open or compare heap dumps.</p>
+
+<p>You can open a heap snapshot in the Heap window by performing the following steps.</p>
+<ul>
+    <li>Choose Profile &gt; Load Heap Dump in the main menu.</li>
+    <li>Locate the heap snapshot on your local system and click Open.</li>
+</ul>
+   
+<p>You can use the Profiler Control Panel to open saved heap snapshots that are 
+    associated with open projects.</p>
+
+<p>You can click the link at the top of the window to compare two heap dumps and
+    view the differences between the heap at two different points in time.</p>
+
 
 
 <dl>
 	<dt><a name="seealso">See Also</a></dt>
+        <dd><a href="../heapwalker.html">Browsing a Heap Dump</a></dd>
         <dd><a href="../heap_taking.html">Taking a Heap Dump</a></dd>
+        <dd><a href="../oqlhelp.html">Analyzing a Heap Dump Using Object Query Language (OQL)</a></dd>
         <dd><a href="../profile_windows.html">Profiling Windows</a></dd>
         <dd><a href="../profile_threads.html">Viewing Thread Activity</a></dd>
 </dl>
