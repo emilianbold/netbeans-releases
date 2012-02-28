@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.deployment.common.api;
+package org.netbeans.modules.web.common.api;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,14 +54,8 @@ import org.openide.util.Parameters;
  * This class is <i>Immutable</i>.
  *
  * @author Petr Hejl
- * @since 1.68
  */
 // TODO add JBoss notation parsing MAJOR.MINOR.MICRO.QUALIFIER
-
-// TODO: I copied this class to org.netbeans.modules.web.common.api.Version
-//       so that it can be reused in other places. Perhaps it should be deprecated
-//       here in favor of web.common one???
-
 public final class Version {
 
     private static final Pattern JSR277_PATTERN = Pattern.compile(
