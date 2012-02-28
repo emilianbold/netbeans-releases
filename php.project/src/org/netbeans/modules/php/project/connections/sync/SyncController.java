@@ -138,6 +138,7 @@ public final class SyncController implements Cancellable {
             items.cleanup();
             return;
         }
+        // XXX save all files!
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -301,6 +302,7 @@ public final class SyncController implements Cancellable {
             SYNC_RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    progressPanel.start(itemsToSynchronize);
                     try {
                         doSync();
                     } finally {
@@ -333,7 +335,7 @@ public final class SyncController implements Cancellable {
                             syncResult.getDownloadTransferInfo().addFailed(remoteTransferFile, ex.getLocalizedMessage());
                             progressPanel.errorOccurred();
                         } finally {
-                            progressPanel.decreaseDownloadNumber();
+                            progressPanel.decreaseDownloadNumber(syncItem);
                         }
                         break;
                     case UPLOAD:
@@ -357,7 +359,7 @@ public final class SyncController implements Cancellable {
                             syncResult.getUploadTransferInfo().addFailed(localTransferFile, Bundle.SyncController_error_tmpFileCopyFailed());
                             progressPanel.errorOccurred();
                         } finally {
-                            progressPanel.decreaseUploadNumber();
+                            progressPanel.decreaseUploadNumber(syncItem);
                         }
                         break;
                     case DELETE:

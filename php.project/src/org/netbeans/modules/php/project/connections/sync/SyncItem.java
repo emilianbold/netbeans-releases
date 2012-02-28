@@ -85,23 +85,25 @@ public final class SyncItem {
     })
     public static enum Operation {
 
-        NOOP(Bundle.Operation_noop_title(), NOOP_ICON_PATH),
-        DOWNLOAD(Bundle.Operation_download_title(), DOWNLOAD_ICON_PATH),
-        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_title(), DOWNLOAD_REVIEW_ICON_PATH),
-        UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH),
-        UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH),
-        DELETE(Bundle.Operation_delete_title(), DELETE_ICON_PATH),
-        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH),
-        FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH);
+        NOOP(Bundle.Operation_noop_title(), NOOP_ICON_PATH, false),
+        DOWNLOAD(Bundle.Operation_download_title(), DOWNLOAD_ICON_PATH, true),
+        DOWNLOAD_REVIEW(Bundle.Operation_downloadReview_title(), DOWNLOAD_REVIEW_ICON_PATH, true),
+        UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH, true),
+        UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH, true),
+        DELETE(Bundle.Operation_delete_title(), DELETE_ICON_PATH, false),
+        FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH, false),
+        FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH, false);
 
 
         private final String title;
         private final String iconPath;
+        private final boolean progress;
 
 
-        private Operation(String title, String iconPath) {
+        private Operation(String title, String iconPath, boolean progress) {
             this.title = title;
             this.iconPath = iconPath;
+            this.progress = progress;
         }
 
         public String getTitle() {
@@ -110,6 +112,10 @@ public final class SyncItem {
 
         public Icon getIcon() {
             return ImageUtilities.loadImageIcon(iconPath, false);
+        }
+
+        public boolean hasProgress() {
+            return progress;
         }
 
     }
@@ -151,6 +157,13 @@ public final class SyncItem {
         return localTransferFile.getRemotePath();
     }
 
+    public long getSize() {
+        if (remoteTransferFile != null) {
+            return remoteTransferFile.getSize();
+        }
+        return localTransferFile.getSize();
+    }
+
     public String getRemotePath() {
         if (remoteTransferFile == null) {
             return null;
@@ -164,6 +177,7 @@ public final class SyncItem {
         }
         return localTransferFile.getLocalPath();
     }
+
 
     public TransferFile getRemoteTransferFile() {
         return remoteTransferFile;
