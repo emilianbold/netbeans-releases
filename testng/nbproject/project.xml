@@ -453,8 +453,8 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.testng.ant</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
-                <package>org.netbeans.modules.contrib.testng.api</package>
-                <package>org.netbeans.modules.contrib.testng.spi</package>
+                <package>org.netbeans.modules.testng.api</package>
+                <package>org.netbeans.modules.testng.spi</package>
             </friend-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/testng/testng-6.4.1beta.jar</runtime-relative-path>

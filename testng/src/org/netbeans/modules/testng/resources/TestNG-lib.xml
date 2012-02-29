@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright © 2008-2012 Oracle and/or its affiliates. All rights reserved.
+Copyright © 1997-2012 Oracle and/or its affiliates. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,7 +40,26 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="testng" default="netbeans" basedir=".">
-    <description>Builds, tests, and runs the project org.netbeans.modules.testng.</description>
-    <import file="../nbbuild/templates/projectized.xml"/>
-</project>
+<!DOCTYPE library PUBLIC "-//NetBeans//DTD Library Declaration 1.0//EN" "http://www.netbeans.org/dtds/library-declaration-1_0.dtd">
+<library version="1.0">
+    <name>TestNG-6.4beta</name>
+    <type>j2se</type>
+    <localizing-bundle>org.netbeans.modules.testng.Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst://org.netbeans.modules.testng/modules/ext/testng/testng-6.4.1beta.jar!/</resource>
+    </volume>
+    <volume>
+        <type>src</type>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst://org.netbeans.modules.testng/modules/ext/testng/testng-6.4beta-javadoc.zip!/</resource>
+    </volume>
+    <volume>
+        <type>maven-pom</type>
+        <!-- snapshot versions are not available :-( -->
+<!--        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.3.2/testng-6.3.2.pom</resource>-->
+        <resource>http://repo1.maven.org/maven2/org/testng/testng/6.3.1/testng-6.3.1.pom</resource>
+    </volume>
+</library>
