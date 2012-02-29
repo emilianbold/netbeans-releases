@@ -160,7 +160,10 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         private int startOffset;
         private int endOffset;
         private EnumImpl enumeration;
-        private final FileContent fileContent = null;
+        private final FileContent fileContent;
+        public EnumeratorBuilder(FileContent fileContent) {
+            this.fileContent = fileContent;
+        }
 
         public void setName(CharSequence name) {
             this.name = name;

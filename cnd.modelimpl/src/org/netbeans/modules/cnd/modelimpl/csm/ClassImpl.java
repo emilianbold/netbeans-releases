@@ -428,7 +428,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private int nameEndOffset;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
-        private final FileContent fileContent = null;
+        private final FileContent fileContent;
         private int startOffset;
         private int endOffset;
         private CsmObjectBuilder parent;
@@ -438,6 +438,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private ClassImpl instance;
         private List<CsmOffsetableDeclaration> declarations = new ArrayList<CsmOffsetableDeclaration>();
 
+        public ClassBuilder(FileContent fileContent) {
+            this.fileContent = fileContent;
+        }
+        
         public void setKind(Kind kind) {
             this.kind = kind;
         }

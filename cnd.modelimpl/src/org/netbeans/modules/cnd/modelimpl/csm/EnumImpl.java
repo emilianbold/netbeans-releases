@@ -183,8 +183,11 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         private CsmFile file;
         private int startOffset;
         private int endOffset;
-        private final FileContent fileContent = null;
-        
+        private final FileContent fileContent;
+        public EnumBuilder(FileContent fileContent) {
+            this.fileContent = fileContent;
+        }
+
         List<EnumeratorBuilder> enumeratorBuilders = new ArrayList<EnumeratorBuilder>();
         
         public void setName(CharSequence name) {
