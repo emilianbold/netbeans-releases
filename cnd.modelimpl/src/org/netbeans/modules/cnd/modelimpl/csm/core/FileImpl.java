@@ -818,25 +818,30 @@ public final class FileImpl implements CsmFile,
     }
 
     private void _reparse(ParseDescriptor parseParams) {
-        if (TraceFlags.DEBUG) {
-            Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
-        }
-        synchronized(snapShotLock) {
-            fileSnapshot = new FileSnapshot(this);
-        }
-        if (reportParse || logState || TraceFlags.DEBUG) {
-            logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
-        }
-        disposeAll(false);
-        CsmParserResult parsing = doParse(parseParams);
-        if (parsing != null) {
-            if (isValid()) {
-                parsing.render(parseParams);
+        inParse.get().set(parseParams.content);
+        try {
+            if (TraceFlags.DEBUG) {
+                Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
             }
-        } else {
-            //System.err.println("null ast for file " + getAbsolutePath());
+            synchronized(snapShotLock) {
+                fileSnapshot = new FileSnapshot(this);
+            }
+            if (reportParse || logState || TraceFlags.DEBUG) {
+                logParse("ReParsing", parseParams.getCurrentPreprocHandler()); //NOI18N
+            }
+            disposeAll(false);
+            CsmParserResult parsing = doParse(parseParams);
+            if (parsing != null) {
+                if (isValid()) {
+                    parsing.render(parseParams);
+                }
+            } else {
+                //System.err.println("null ast for file " + getAbsolutePath());
+            }
+            fileSnapshot = null;
+        } finally {
+            inParse.get().set(null);
         }
-        fileSnapshot = null;
     }
 
     CsmFile getSnapshot(){
@@ -895,13 +900,14 @@ public final class FileImpl implements CsmFile,
     }
 
     /**enapsulates all parameters which should be used during parse or reparse of the file */
-    public static final class ParseDescriptor {
+    public static final class ParseDescriptor implements CsmParserProvider.CsmParserParameters {
 
         private final CsmParserProvider.CsmParseCallback callback;
         private final FileContent content;
         private final boolean lazyCompound;
         private final APTFile fullAPT;
         private APTPreprocHandler curPreprocHandler;
+        private final FileImpl fileImpl;
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent) {
             this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent);
@@ -912,6 +918,7 @@ public final class FileImpl implements CsmFile,
                 boolean lazyCompound, boolean emptyFileContent) {
             assert fileImpl != null : "null file is not allowed";
             assert fullAPT != null : "null APTFile is not allowed";
+            this.fileImpl = fileImpl;
             this.content = FileContent.getHardReferenceBasedCopy(fileImpl.currentFileContent, emptyFileContent);
             this.fullAPT = fullAPT;
             this.callback = callback;
@@ -930,6 +937,11 @@ public final class FileImpl implements CsmFile,
 
         public FileContent getFileContent() {
             return content;
+        }
+
+        @Override
+        public CsmFile getMainFile() {
+            return fileImpl;
         }
     }
     
@@ -1306,7 +1318,7 @@ public final class FileImpl implements CsmFile,
             TokenStream filteredTokenStream = walker.getFilteredTokenStream(getLanguageFilter(ppState));
 
             long time = (emptyAstStatictics) ? System.currentTimeMillis() : 0;
-            CsmParser parser = CsmParserProvider.createParser(this);
+            CsmParser parser = CsmParserProvider.createParser(parseParams);
             assert parser != null : "no parser for " + this;
 
             parser.init(this, filteredTokenStream, parseParams.callback);
@@ -1813,12 +1825,12 @@ public final class FileImpl implements CsmFile,
                     if (include != null) {
                         CsmOffsetableDeclaration container = UIDCsmConverter.UIDtoDeclaration(fakeIncludePair.getContainerUid());
                         if (container != null && container.isValid()) {
-                            FileImpl file = (FileImpl) include.getIncludeFile();
-                            if (file != null && file.isValid()) {                                
-                                FileContent includedFileContent = file.currentFileContent;
+                            FileImpl includedFile = (FileImpl) include.getIncludeFile();
+                            if (includedFile != null && includedFile.isValid()) {
+                                FileContent includedFileContent = includedFile.currentFileContent;
                                 TokenStream ts = this.getTokenStreamOfIncludedFile(include);                               
                                 if (ts != null) {
-                                    CsmParser parser = CsmParserProvider.createParser(file);
+                                    CsmParser parser = CsmParserProvider.createParser(includedFile);
                                     assert parser != null : "no parser for " + this;
                                     parser.init(this, ts, null);                                    
                                     if (container instanceof ClassImpl) {
