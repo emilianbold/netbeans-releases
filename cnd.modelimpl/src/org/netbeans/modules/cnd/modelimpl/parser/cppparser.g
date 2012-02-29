@@ -1291,11 +1291,11 @@ member_declaration_template
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
     |
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr|LITERAL_explicit)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_13d[%d]: Templated operator " + "function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr|LITERAL_explicit)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
@@ -1421,12 +1421,19 @@ member_declaration
 	|
 		// No template_head allowed for dtor member
 		// Backtrack if not a dtor (no TILDE)
-		(dtor_head[true] LCURLY)=>
+		(   dtor_head[true] 
+                    (   LCURLY
+                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                    )
+                )=>
 		{if (statementTrace>=1) 
 			printf("member_declaration_5b[%d]: Destructor definition\n",
 				LT(1).getLine());
 		}
-		dtor_head[true] dtor_body	// Definition
+		dtor_head[true] 
+                (   dtor_body
+                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                )
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
     |
         // Function declaration
@@ -1497,11 +1504,11 @@ member_declaration
 		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
     |
         // User-defined type cast
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr|LITERAL_explicit)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_8[%d]: Operator function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr|LITERAL_explicit)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
          else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
@@ -2644,7 +2651,7 @@ dtor_declarator[boolean definition]
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
-        (ASSIGNEQUAL OCTALINT)?	
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
 	;
 
