@@ -81,15 +81,18 @@ The subfolder should contain a file representing one template and its attributes
 The <code><b>file</b></code> tag has to have a unique <code><b>name</b></code> to
 recognize in the <code>SystemFileSystem</code> and the <code><b>url</b></code>
 property which links to file pattern of the declared template. <p>
-<p>The mandatory file's attributes are:
+<p>The mandatory file's attributes are:</p>
+<ul>
 <li><code><b>SystemFileSystem.localizingBundle</b></code> specifies the <code>ResourceBundle</code>
 which contains the localized display name of template</li>
 <li><code><b>template</b></code> which must have value set to <code><b>true</b></code> otherwise the template will be ignored.</li>
-<br>
-The optional attributes are: <br>
+</ul>
+<p>The optional attributes are:</p>
+<ul>
 <li><code><b>instantiatingWizardURL</b></code> links to a resource with a template's description</li>
 <li><code><b>instantiatingIterator</b></code> specifies a instance of {@link org.openide.WizardDescriptor.InstantiatingIterator}
 which instantiates the new file in specified target folder.</li>
+</ul>
 <blockquote>
 <b>Note:</b> a project type can declare own custom iterator with some project-specific customization,
 it's <b>recommended</b> to use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates#createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[]) Templates.createSimpleTargetChooser(...)},
@@ -109,9 +112,11 @@ For file templates the <code>instantiate()</code> method should return Set of Fi
 automaticaly opened in the editor. Path of coresponding nodes will be
 expanded in the project or files tab.<br>
 </blockquote>
+<ul>
 <li><code><b>templateCategory</b></code> files the template to some category. The template's categories
 helps to filter the templates according to type of project.
 You may specify multiple categories separated by commas, e.g.: <samp>some-type,some-other-type</samp></li>
+</ul>
 <p>
 There are two importatnt interfaces affecting the behavior of the templates. Implementation of these interfaces should
 reside in the project's lookup.
