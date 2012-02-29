@@ -143,7 +143,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
     protected boolean registerInProject() {
         CharSequence prevFQN = qualifiedName;
         boolean out = super.registerInProject();
-        if (CndUtils.isDebugMode()) {
+        if (false && CndUtils.isDebugMode()) {
             if (prevFQN != null && !prevFQN.equals(findQualifiedName())) {
                 assert prevFQN.equals(findQualifiedName());
             }
@@ -153,7 +153,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 
     @Override
     protected boolean unregisterInProject() {
-        if (CndUtils.isDebugMode()) {
+        if (false && CndUtils.isDebugMode()) {
             assert qualifiedName != null;
             if (!qualifiedName.equals(findQualifiedName())) {
                 assert qualifiedName.equals(findQualifiedName());
