@@ -1522,37 +1522,30 @@ public final class FileImpl implements CsmFile,
     }
 
     public Collection<CsmReference> getReferences() {
-        checkNotInParsingThreadImpl();
         return getFileReferences().getReferences();
     }
 
     public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
-        checkNotInParsingThreadImpl();
         return getFileReferences().getReferences(objects);
     }
 
     public boolean addReference(CsmReference ref, CsmObject referencedObject) {
-        checkNotInParsingThreadImpl();
         return getFileReferences().addReference(ref, referencedObject);
     }
 
     public CsmReference getReference(int offset) {
-        checkNotInParsingThreadImpl();
         return getFileReferences().getReference(offset);
     }
 
     public boolean addResolvedReference(CsmReference ref, CsmObject referencedObject) {
-        checkNotInParsingThreadImpl();
         return getFileReferences().addResolvedReference(ref, referencedObject);
     }
 
     public void removeResolvedReference(CsmReference ref) {
-        checkNotInParsingThreadImpl();
         getFileReferences().removeResolvedReference(ref);
     }
 
     public CsmReference getResolvedReference(CsmReference ref) {
-        checkNotInParsingThreadImpl();
         return getFileReferences().getResolvedReference(ref);
     }
 
@@ -1940,10 +1933,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private FileComponentDeclarations getFileDeclarations() {
-        FileContent contentImpl = getParsingFileContent();
-        if (contentImpl == null) {
-            contentImpl = currentFileContent;
-        }
+        FileContent contentImpl = getThreadSensitiveContentImpl();
         FileComponentDeclarations fd = contentImpl.getFileDeclarations();
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
@@ -1962,7 +1952,8 @@ public final class FileImpl implements CsmFile,
     }
 
     private FileComponentReferences getFileReferences() {
-        FileComponentReferences fd = currentFileContent.getFileReferences();
+        FileContent contentImpl = getThreadSensitiveContentImpl();
+        FileComponentReferences fd = contentImpl.getFileReferences();
         return fd != null ? fd : FileComponentReferences.empty();
     }
 
@@ -1970,6 +1961,16 @@ public final class FileImpl implements CsmFile,
         checkNotInParsingThreadImpl();
         FileComponentInstantiations fd = currentFileContent.getFileInstantiations();
         return fd != null ? fd : FileComponentInstantiations.empty();
+    }
+
+    private FileContent getThreadSensitiveContentImpl() {
+        // in parse context we use current parsing FileContent
+        // otherwise currentFileContent
+        FileContent contentImpl = getParsingFileContent();
+        if (contentImpl == null) {
+            contentImpl = currentFileContent;
+        }
+        return contentImpl;
     }
 
     private void checkNotInParsingThreadImpl() {
