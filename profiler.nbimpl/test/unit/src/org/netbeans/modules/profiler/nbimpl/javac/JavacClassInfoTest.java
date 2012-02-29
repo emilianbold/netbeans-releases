@@ -82,14 +82,14 @@ public class JavacClassInfoTest extends BaseProjectTest {
 
     public void testMethodsNoSource() {
         System.out.println("testMethods /no source/");
-        Set<SourceMethodInfo> ms = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.Callable", getProject()).getMethods(true);
+        Set<SourceMethodInfo> ms = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.internal.Callable", getProject()).getMethods(true);
         assertNotNull(ms);
         assertEquals(1, ms.size());
     }
     
     public void testSubclassesNoSource() {
         System.out.println("testSubclasses /no source/");
-        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.Callable", getProject()).getSubclasses();
+        Set<SourceClassInfo> cs = ProfilerTypeUtils.resolveClass("sun.org.mozilla.javascript.internal.Callable", getProject()).getSubclasses();
         assertNotNull(cs);
         assertEquals(1, cs.size());
     }

@@ -127,7 +127,7 @@ public class ElementUtilitiesEx {
         JavaSource js = JavaSource.create(cpInfo);
         
         try {
-            js.runUserActionTask(new Task<CompilationController>() {
+            js.runWhenScanFinished(new Task<CompilationController>() {
                 
                 @Override
                 public void run(CompilationController cc) throws Exception {
@@ -241,7 +241,7 @@ public class ElementUtilitiesEx {
             final TypeElement[] resolvedClassElement = new TypeElement[1];
             JavaSource js = JavaSource.forFileObject(fo);
 
-            js.runUserActionTask(new Task<CompilationController>() {
+            js.runWhenScanFinished(new Task<CompilationController>() {
 
                 @Override
                 public void run(CompilationController cc) throws Exception {
@@ -287,7 +287,7 @@ public class ElementUtilitiesEx {
             JavaSource js = JavaSource.create(cpInfo, new FileObject[0]);
 
             try {
-                js.runUserActionTask(new CancellableTask<CompilationController>() {
+                js.runWhenScanFinished(new CancellableTask<CompilationController>() {
 
                     public void cancel() {
                     }
