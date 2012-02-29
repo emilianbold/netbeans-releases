@@ -90,7 +90,11 @@ public class Doctrine2OptionsPanel extends JPanel {
         init();
     }
 
-    @NbBundle.Messages("Doctrine2OptionsPanel.script.hint=Full path of Doctrine2 script (typically {0} or {1}).")
+    @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
+        "Doctrine2OptionsPanel.script.hint=Full path of Doctrine2 script (typically {0} or {1})."
+    })
     private void init() {
         scriptInfoLabel.setText(Bundle.Doctrine2OptionsPanel_script_hint(Doctrine2Script.SCRIPT_NAME, Doctrine2Script.SCRIPT_NAME_LONG));
         errorLabel.setText(" "); // NOI18N

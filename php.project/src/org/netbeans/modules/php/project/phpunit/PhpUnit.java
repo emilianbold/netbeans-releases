@@ -356,7 +356,10 @@ public final class PhpUnit extends PhpProgram {
         return new File(parent, PhpUnit.makeTestFile(className));
     }
 
-    @NbBundle.Messages("PhpUnit.useTestFileInSources=Use the existing test file {0}? If not, no test will be generated for this file.")
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "PhpUnit.useTestFileInSources=Use the existing test file {0}? If not, no test will be generated for this file."
+    })
     private boolean useExistingTestInSources(File testFile) {
         NotifyDescriptor.Confirmation confirmation = new NotifyDescriptor.Confirmation(
                 Bundle.PhpUnit_useTestFileInSources(testFile.getName()),

@@ -225,6 +225,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         "ApiGenPanel.error.invalidAccessLevels=Access levels must be provided.",
         "ApiGenPanel.warn.nbWillAskForDir=NetBeans will ask for the directory before generating documentation.",
         "ApiGenPanel.warn.targetDirWillBeCreated=Target directory will be created.",
+        "# {0} - encoding",
         "ApiGenPanel.warn.missingCharset=Project encoding ''{0}'' nout found within specified charsets.",
         "ApiGenPanel.warn.configNotNeon=Neon file is expected for configuration."
     })

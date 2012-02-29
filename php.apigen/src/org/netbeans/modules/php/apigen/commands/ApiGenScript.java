@@ -138,7 +138,9 @@ public final class ApiGenScript extends PhpProgram {
     }
 
     @NbBundle.Messages({
+        "# {0} - project name",
         "ApiGenScript.api.generating=Generating API documentation for {0}",
+        "# {0} - project name",
         "ApiGenScript.error.generating=Generating API documentation for {0} failed, review Output window for details."
     })
     public void generateDocumentation(final PhpModule phpModule) {
