@@ -43,6 +43,7 @@
  */
 package org.netbeans.core;
 
+import java.awt.EventQueue;
 import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
@@ -59,6 +60,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Implements necessary callbacks from module system.
@@ -120,8 +122,18 @@ public final class CoreBridgeImpl extends CoreBridge {
         org.openide.awt.StatusDisplayer.getDefault().setStatusText(status);
     }
 
-    public void initializePlaf (Class uiClass, int uiFontSize, java.net.URL themeURL) {
-          Startup.run(uiClass, uiFontSize, themeURL, NbBundle.getBundle(Startup.class));
+    @Override
+    public void initializePlaf (final Class uiClass, final int uiFontSize, final java.net.URL themeURL) {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                if (EventQueue.isDispatchThread()) {
+                    Startup.run(uiClass, uiFontSize, themeURL, NbBundle.getBundle(Startup.class));
+                } else {
+                    EventQueue.invokeLater(this);
+                }
+            }
+        });
     }
 
     @SuppressWarnings("deprecation")
