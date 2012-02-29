@@ -685,7 +685,7 @@ public final class Resolver3 implements Resolver {
             result = null;
         }
         if (result == null) {
-            gatherMaps(file, !FileImpl.isFileBeingParsed(file), origOffset);
+            gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
             if (currLocalClassifier != null && needClassifiers()) {
                 result = currLocalClassifier;
             }
@@ -799,7 +799,7 @@ public final class Resolver3 implements Resolver {
             result = findNamespace(containingNS, fullName);
         }
         if (result == null && needClassifiers()) {
-            gatherMaps(file, !FileImpl.isFileBeingParsed(file), origOffset);
+            gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
             if (currTypedef != null) {
                 CsmType type = currTypedef.getType();
                 if (type != null) {

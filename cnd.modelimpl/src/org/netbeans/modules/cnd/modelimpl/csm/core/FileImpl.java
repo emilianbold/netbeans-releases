@@ -126,7 +126,7 @@ public final class FileImpl implements CsmFile,
         }
     };
 
-    public static boolean isFileBeingParsed(CsmFile file) {
+    public static boolean isFileBeingParsedInCurrentThread(CsmFile file) {
         if (file instanceof FileImpl) {
             return ((FileImpl)file).getParsingFileContent() != null;
         }
