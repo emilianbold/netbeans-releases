@@ -136,7 +136,9 @@ public final class SyncController implements Cancellable {
 
     void showPanel(final SyncItems items, final SyncResultProcessor resultProcessor) {
         if (cancelled || items == null) {
-            items.cleanup();
+            if (items != null) {
+                items.cleanup();
+            }
             return;
         }
         try {
