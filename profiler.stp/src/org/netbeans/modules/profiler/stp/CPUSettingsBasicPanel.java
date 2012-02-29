@@ -736,7 +736,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
 
                         @Override
                         protected void nonResponding() {
-                            pd.showProgress(Bundle.MSG_DefaultRoots, new ProgressDisplayer.ProgressController() {
+                            pd.showProgress(Bundle.MSG_DefaultRoots(), new ProgressDisplayer.ProgressController() {
                                 @Override
                                 public boolean cancel() {
                                     cancelled.set(true);
