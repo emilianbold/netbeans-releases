@@ -60,6 +60,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -138,7 +139,11 @@ public final class SyncController implements Cancellable {
             items.cleanup();
             return;
         }
-        // XXX save all files!
+        try {
+            ProjectManager.getDefault().saveProject(phpProject);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
