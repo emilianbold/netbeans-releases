@@ -170,12 +170,14 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return false;
     }
 
-    private void unregisterInProject() {
+    protected boolean unregisterInProject() {
         CsmProject project = getContainingFile().getProject();
         if (project instanceof ProjectBase) {
             ((ProjectBase) project).unregisterDeclaration(this);
             this.cleanUID();
+            return true;
         }
+        return false;
     }
 
     /** Gets this element name 
