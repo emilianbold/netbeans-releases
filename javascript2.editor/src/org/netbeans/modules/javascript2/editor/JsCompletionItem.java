@@ -44,7 +44,9 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.*;
@@ -176,20 +178,36 @@ public class JsCompletionItem implements CompletionProposal {
         }
 
         private void appendParamsStr(HtmlFormatter formatter){
-            Collection<String> allParameters = new ArrayList<String>();
+            LinkedHashMap<String, Collection<String>> allParameters = new LinkedHashMap<String, Collection<String>>();
             
             if(getElement() instanceof JsFunction) {
                 for (JsObject jsObject: ((JsFunction)getElement()).getParameters()) {
-                    allParameters.add(jsObject.getName());
+                    Collection<String> types = new ArrayList();
+                    for (TypeUsage type : jsObject.getAssignmentForOffset(jsObject.getOffset() + 1)) {
+                        types.add(type.getType());
+                    }
+                    allParameters.put(jsObject.getName(), types);
                 }
             } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
                 allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();
             }
-            for (Iterator<String> it = allParameters.iterator(); it.hasNext();) {
+            for (Iterator<String> it = allParameters.keySet().iterator(); it.hasNext();) {
                 String name = it.next();
                 formatter.parameters(true);
                 formatter.appendText(name);
                 formatter.parameters(false);
+                Collection<String> types = allParameters.get(name);
+                if (!types.isEmpty()) {
+                    formatter.type(true);
+                    formatter.appendText(": ");
+                    for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
+                        formatter.appendText(itTypes.next());
+                        if(itTypes.hasNext()) {
+                            formatter.appendText("|");
+                        }
+                    }
+                    formatter.type(false);
+                }
                 if (it.hasNext()) {
                     formatter.appendText(", ");  //NOI18N
                 }    

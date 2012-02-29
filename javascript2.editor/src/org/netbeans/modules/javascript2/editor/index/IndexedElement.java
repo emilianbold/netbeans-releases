@@ -170,6 +170,14 @@ public class IndexedElement extends JsElementImpl {
             for (Iterator<? extends JsObject> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
                 JsObject parametr = it.next();
                 result.append(parametr.getName());
+                result.append(":");
+                for(Iterator<? extends TypeUsage> itType = parametr.getAssignmentForOffset(parametr.getOffset() + 1).iterator(); itType.hasNext();) {
+                    TypeUsage type = itType.next();
+                    result.append(type.getType());
+                    if (itType.hasNext()) {
+                        result.append("|");
+                    }
+                }
                 if (it.hasNext()) {
                     result.append(',');
                 }
@@ -195,9 +203,17 @@ public class IndexedElement extends JsElementImpl {
         if (parts.length > 3) {
             if (jsKind.isFunction()) {
                 String paramsText = parts[3];
-                Collection<String> parameters = new ArrayList();
+                LinkedHashMap<String, Collection<String>> parameters = new LinkedHashMap<String, Collection<String>>();
                 for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
-                    parameters.add(stringTokenizer.nextToken());
+                    String param = stringTokenizer.nextToken();
+                    int index = param.indexOf(':');
+                    String paramName = param.substring(0, index - 1);
+                    String typesText = param.substring(index + 1);
+                    Collection<String> types = new ArrayList<String>();
+                    for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
+                        types.add(stParamType.nextToken());
+                    }
+                    parameters.put(paramName, types);
                 }
                 Collection<String> returnTypes = new ArrayList();
                 String returnTypesText = parts[4];
@@ -211,16 +227,16 @@ public class IndexedElement extends JsElementImpl {
     }
     
     public static class FunctionIndexedElement extends IndexedElement {
-        private final Collection<String> parameters;
+        private final LinkedHashMap<String, Collection<String>> parameters;
         private final Collection<String> returnTypes;
         
-        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<String> parameters, Collection<String> returnTypes) {
+        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes) {
             super(fileObject, name, true, kind, offsetRange, modifiers);
             this.parameters = parameters;
             this.returnTypes = returnTypes;
         }
         
-        public Collection<String> getParameters() {
+        public LinkedHashMap<String, Collection<String>> getParameters() {
             return this.parameters;
         }
         

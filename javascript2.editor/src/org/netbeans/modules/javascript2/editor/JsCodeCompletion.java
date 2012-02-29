@@ -117,7 +117,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         switch (context) {
             case GLOBAL:
                 for(JsObject object : request.result.getModel().getVariables(caretOffset)) {
-                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous()))
+                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
+                            && startsWith(object.getName(), request.prefix))
                         resultList.add(JsCompletionItem.Factory.create(object, request));
                 }
                 completeKeywords(request, resultList);
