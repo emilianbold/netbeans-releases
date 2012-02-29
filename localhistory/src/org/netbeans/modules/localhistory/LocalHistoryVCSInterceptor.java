@@ -99,6 +99,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
+    @Override
     public boolean beforeDelete(File file) {
         if(!accept(file)) {
             return false;
@@ -108,6 +109,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         return false;
     }
 
+    @Override
     public void afterDelete(File file) {
         if(!toBeDeleted.remove(file)) {
             // do nothing if the file wasn't marked
@@ -132,6 +134,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // MOVE
     // ==================================================================================================
     
+    @Override
     public boolean beforeMove(final File from, final File to) {
         if(!accept(from)) {
             return false;
@@ -146,6 +149,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         return false;
     }
 
+    @Override
     public void afterMove(File from, File to) {
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
@@ -164,11 +168,13 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CREATE
     // ==================================================================================================
 
+    @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
         toBeCreated.add(file);
         return false;
     }
 
+    @Override
     public void afterCreate(File file) {
         if(LocalHistory.getInstance().isManagedByParent(file) == null) {
             // XXX: the VCS interceptor doesn't filter afterCreate because
@@ -198,6 +204,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // CHANGE
     // ==================================================================================================
     
+    @Override
     public void beforeChange(File file) {
         if(toBeCreated.contains(file) || 
            wasJustCreated.remove(file)) 
@@ -213,6 +220,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         storeFile(file, true);
     }
 
+    @Override
     public void afterChange(File file) {
         // just in case
         wasJustCreated.remove(file);
