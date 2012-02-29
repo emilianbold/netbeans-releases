@@ -364,6 +364,7 @@ final class ViewBuilder {
         int endOffset = docView.getEndOffset(); // End offset not yet updated by current modification
         int startCreationPIndex; // Index of first pView to be rebuilt
         ParagraphView startCreationPView = null;
+        int startCreationPViewOffset = -1;
         int startCreationLocalOffset = 0;
         // Index of last pView (in original indexes) affected by modification
         //  -1 remains if there are no pViews (pViewCount == 0)
@@ -374,7 +375,6 @@ final class ViewBuilder {
         if (modLength > 0) { // INSERTION
             createLocalViews = forceCreateLocalViews || (modLength < MAX_CHARS_FOR_CREATE_LOCAL_VIEWS);
             endModOffset = modOffset + modLength;
-            int startCreationPViewOffset = 0;
             // When inserting right at view's begining a previous pView is found by bin-search
             // since insertion shifted affected next pView's start position.
             // But the change in fact belongs to the next view. However the next view's start position
@@ -424,7 +424,6 @@ final class ViewBuilder {
             createLocalViews = true; // By default build local views (later may be corrected)
             int removeLen = -modLength;
             int endRemoveOffset = modOffset + removeLen;
-            int startCreationPViewOffset = -1;
             endModOffset = modOffset;
             int newEndOffset = (endOffset > modOffset)
                     ? Math.max(modOffset, endOffset - removeLen)
@@ -438,6 +437,7 @@ final class ViewBuilder {
                 if (endRemoveOffset > startOffset) { // Removal hits start of VH (or includes whole VH)
                     docView.setStartOffset(modOffset);
                     startCreationPViewOffset = startOffset;
+                    startCreationPView = docView.getParagraphView(0);
                     startCreationPIndex = 0;
                     startCreationLocalOffset = 0;
 
@@ -476,9 +476,6 @@ final class ViewBuilder {
             docView.setEndOffset(newEndOffset);
 
             if (startCreationPIndex != -1) { // REMOVAL: compute lastAffected stuff
-                if (startCreationPView == null) {
-                    startCreationPView = docView.getParagraphView(startCreationPIndex);
-                }
                 // Must go through pViews and examine their lengths (since position are moved to modOffset)
                 lastAffectedPIndex = startCreationPIndex;
                 lastAffectedPView = startCreationPView;
@@ -494,13 +491,29 @@ final class ViewBuilder {
                     lastAffectedPView = docView.getParagraphView(lastAffectedPIndex);
                 }
             }
-        }
+        } // END-of-REMOVAL handling
         
         // Common for insert and remove - determine local offsets and indices in affected pViews
         // And set boundaries for creation and views reuse.
         if (startCreationPIndex != -1) { // Modification needs to be processed
             docReplace.index = startCreationPIndex;
             if (startCreationPView != null) {
+                // Check whether cRegion would affect rebuilding
+                int cRegionStartLocalOffset;
+                int cRegionEndLocalOffset;
+                if (cRegion != null) {
+                    cRegionStartLocalOffset = cRegion.startOffset() - startCreationPViewOffset;
+                    cRegionEndLocalOffset = cRegion.endOffset() - startCreationPViewOffset;
+                    if (cRegionEndLocalOffset == cRegionStartLocalOffset || // Empty
+                            cRegionEndLocalOffset <= 0 || // End before pView start
+                            cRegionStartLocalOffset >= startCreationPView.getLength()) // Start above pView's end
+                    {
+                        cRegion = null;
+                    }
+                } else {
+                    cRegionStartLocalOffset = cRegionEndLocalOffset = 0;
+                }
+
                 docReplace.setRemoveCount(lastAffectedPIndex + 1 - docReplace.index);
                 int lastAffectedPViewLength = lastAffectedPView.getLength();
                 int tillLastAffectedEnd = (lastAffectedPViewLength - lastAffectedLocalOffset);
@@ -527,7 +540,8 @@ final class ViewBuilder {
                             shiftBack = startCreationLocalOffset;
                         } else {
                             if (cRegion != null) {
-                                shiftBack = Math.min(modOffset - cRegion.startOffset(), startCreationLocalOffset);
+                                shiftBack = Math.min(Math.max(cRegionStartLocalOffset, 0), // Could be < 0
+                                        startCreationLocalOffset);
                             }
                             if (!startCreationPView.isChildrenValid()) {
                                 int startInvalidOffset = startCreationPView.children.getStartInvalidChildrenLocalOffset();
