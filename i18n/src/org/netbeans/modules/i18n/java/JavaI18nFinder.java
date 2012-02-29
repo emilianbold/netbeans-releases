@@ -608,30 +608,31 @@ public class JavaI18nFinder implements I18nFinder {
             return false;
         }
 
-        final AnnotationDetector annotationDetector = new AnnotationDetector(currentStringStart);
-        try {
-            boolean firstTry = true;
-            do {
-                if (!firstTry) {
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException exInterrupted) {
-                        Exceptions.printStackTrace(exInterrupted);
-                        //but still continue
+        JavaSource js = JavaSource.forDocument(document);
+        if (js != null) {
+            final AnnotationDetector annotationDetector = new AnnotationDetector(currentStringStart);
+            try {
+                boolean firstTry = true;
+                do {
+                    if (!firstTry) {
+                        try {
+                            Thread.sleep(200);
+                        } catch (InterruptedException exInterrupted) {
+                            Exceptions.printStackTrace(exInterrupted);
+                            //but still continue
+                        }
                     }
-                }
-                annotationDetector.reset();
-                JavaSource.forDocument(document).runUserActionTask(
-                                                        annotationDetector,
-                                                        true);
-                firstTry = false;
-            } while (annotationDetector.wasCancelled());
-        } catch (IOException ioEx) {
-            Exceptions.printStackTrace(ioEx);
-        }
-        if (annotationDetector.wasAnnotationDetected()) {
-            /* the string is within an annotation */
-            return false;
+                    annotationDetector.reset();
+                    js.runUserActionTask(annotationDetector, true);
+                    firstTry = false;
+                } while (annotationDetector.wasCancelled()); // XXX: Does not seem necesary.
+            } catch (IOException ioEx) {
+                Exceptions.printStackTrace(ioEx);
+            }
+            if (annotationDetector.wasAnnotationDetected()) {
+                // the string is within an annotation
+                return false;
+            }
         }
 
         if (regexpTestResult != null) {
