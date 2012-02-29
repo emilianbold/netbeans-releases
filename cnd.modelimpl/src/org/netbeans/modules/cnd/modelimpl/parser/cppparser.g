@@ -1926,9 +1926,9 @@ enum_specifier
         |
             id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
             {action.enum_name(id);}
+            {beginEnumDefinition(id.getText());}
         )
                      // elaborated_type_specifier        
-        {beginEnumDefinition(id.getText());}
         (   (options {greedy=true;} : 
                 COLON ts = type_specifier[dsInvalid, false]
             )?
