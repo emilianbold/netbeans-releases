@@ -193,22 +193,13 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
                 }
             } else {
                 if (kind == ElementKind.METHOD) {
-                    String description = null;
-                    if (panel.isMethodFindUsages()) {
-                        description = getString("DSC_FindUsages");
+                    if (panel.isMethodFindUsages() && panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedAndOverriders", panel.getMethodDeclaringClass() + '.' + name);
+                    } else if(panel.isMethodFindUsages()) {
+                        desc = getString("DSC_WhereUsed", panel.getMethodDeclaringClass() + '.' + name);
+                    } else if(panel.isMethodOverriders()) {
+                        desc = getString("DSC_WhereUsedMethodOverriders", panel.getMethodDeclaringClass() + '.' + name);
                     }
-                    
-                    if (panel.isMethodOverriders()) {
-                        if (description != null) {
-                            description += " " + getString("DSC_And") + " ";
-                        } else {
-                            description = "";
-                        }
-                        description += getString("DSC_WhereUsedMethodOverriders");
-                    }
-                    
-                    description += " " + getString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-                    desc = description;
                 }
             }
         }
