@@ -122,8 +122,7 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
         }
         for (SourceGroup sg : sourceGroups) {
             FileObject dir = sg.getRootFolder();
-            if (base == null
-                    || (dir != null && !FileUtil.isParentOf(base, dir))) {
+            if (dir != null && (base == null || !isUnderBase(base, dir))) {
                 roots.add(dir);
             }
         }
@@ -139,5 +138,13 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
             return SearchInfoUtils.createSearchInfoForRoots(rootArray, false,
                     CompatibilityUtils.subTreeFilters(stso));
         }
+    }
+
+    /**
+     * @return True if {@code dir} is under directory {@code base}, or is
+     * identical. False otherwise.
+     */
+    private static boolean isUnderBase(FileObject base, FileObject dir) {
+        return dir == base || FileUtil.isParentOf(base, dir);
     }
 }
