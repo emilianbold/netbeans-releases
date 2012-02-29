@@ -49,6 +49,7 @@ import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.util.logging.Level;
 
 
@@ -124,11 +125,26 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
     protected NbProcessDescriptor defaultBrowserExecutable() {
         String b = "";
         String params = "";     // NOI18N
-        NbProcessDescriptor retValue;
+        NbProcessDescriptor retValue = null;
         
         //Windows
         if (Utilities.isWindows()) {
             params += "{" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}";  // NOI18N
+            String localFiles = System.getenv("LOCALAPPDATA");
+            b = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";  // NOI18N
+            
+            File file = new File( b );
+            if ( file.exists() && file.canExecute() ){
+                setDDEServer(ExtWebBrowser.CHROME);
+                return new NbProcessDescriptor (b, params);
+            }
+            /*
+             * Chrome is installed at the moment in the local user directory.
+             * Other user could also install Chrome later. In the latter case 
+             * NbDdeBrowserImpl.getBrowserPath() returns path with latest 
+             * chrome installation. As result the executable path could
+             * be inside other user local dir and will not work at all.
+             */
             try {
                 try {
                     b = NbDdeBrowserImpl.getBrowserPath("chrome"); // NOI18N
@@ -147,12 +163,6 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                     ExtWebBrowser.getEM().log(Level.FINE, "Some problem here:" + e);   // NOI18N
                 }
             }
-
-            String localFiles = System.getenv("LOCALAPPDATA");
-            b = b+"\\Google\\Chrome\\Application\\chrome.exe";  // NOI18N
-            setDDEServer(ExtWebBrowser.CHROME);
-            
-            retValue = new NbProcessDescriptor (b, params);
          // Mac
         } else if (Utilities.isMac()) {
             params += "-a chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
