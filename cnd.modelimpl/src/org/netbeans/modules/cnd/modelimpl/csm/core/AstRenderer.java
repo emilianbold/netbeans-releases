@@ -1283,7 +1283,7 @@ public class AstRenderer {
                     if (child.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
                             child.getType() == CPPTokenTypes.CSM_ARRAY_DECLARATION) {
                         //static variable definition
-                        return renderVariable(ast, null, container, false);
+                        return renderVariable(ast, currentNamespace, container, false);
                     } else {
                         //method forward declaratin
                         try {
