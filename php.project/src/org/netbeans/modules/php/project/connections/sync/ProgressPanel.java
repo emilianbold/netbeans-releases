@@ -42,9 +42,7 @@
 package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.util.List;
-import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
