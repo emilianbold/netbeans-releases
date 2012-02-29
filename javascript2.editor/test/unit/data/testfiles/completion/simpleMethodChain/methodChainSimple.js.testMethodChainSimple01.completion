@@ -1,0 +1,9 @@
+Code completion result for source line:
+MyObj.|create().getInfo().big();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     create()                        [PUBLIC]   methodChainSimple.js
+METHOD     factory()                       [PUBLIC]   methodChainSimple.js
+METHOD     getInfo()                       [PUBLIC]   methodChainSimple.js
+METHOD     getVersion()                    [PUBLIC]   methodChainSimple.js
+FIELD      version                         [PUBLIC]   methodChainSimple.js
