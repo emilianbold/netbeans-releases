@@ -118,7 +118,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({
-        "# 0 - project name",
+        "# {0} - project name",
         "InternalWebServer.error.cancelProcess=Cannot cancel running internal web server for project {0}."
     })
     public synchronized void stop() {
@@ -142,7 +142,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({
-        "# 0 - project name",
+        "# {0} - project name",
         "InternalWebServer.output.title=Internal WebServer [{0}]"
     })
     private Future<Integer> createProcess() {
