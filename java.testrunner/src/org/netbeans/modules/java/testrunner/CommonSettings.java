@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.java.testrunner;
 
 import java.util.prefs.Preferences;
 import org.openide.util.HelpCtx;

@@ -45,7 +45,7 @@
 package org.netbeans.modules.junit;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.gsf.testrunner.api.CommonSettings;
+import org.netbeans.modules.java.testrunner.CommonSettings;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;

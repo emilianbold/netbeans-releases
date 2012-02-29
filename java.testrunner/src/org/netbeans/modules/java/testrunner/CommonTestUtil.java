@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.java.testrunner;
 
 import java.net.URL;
 import java.util.*;
@@ -50,7 +50,6 @@ import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.testrunner.Utils;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin.CreateTestParam;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -161,8 +160,7 @@ public class CommonTestUtil {
         }
         
         /* .) get URLs of target SourceGroup's roots: */
-        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(
-                                       sourceGroupOwner.getRootFolder());
+        final URL[] rootURLs = UnitTestForSourceQuery.findUnitTests(sourceGroupOwner.getRootFolder());
         if (rootURLs.length == 0) {
             return new Object[0];
         }
