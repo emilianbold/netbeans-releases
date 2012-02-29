@@ -77,6 +77,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         SYM_TAB, DEFINITION, TYPE
     }
     
+    private final CppParserBuilderContext builderContext;
     private final SymTabStack globalSymTab;
     private Pair currentContext;
     private final Deque<Pair> contexts;
@@ -90,8 +91,6 @@ public class CppParserActionImpl implements CppParserActionEx {
         
     }
 
-    CppParserBuilderContext builderContext;
-    
     public CppParserActionImpl(FileImpl startFile) {
         this.contexts = new ArrayDeque<Pair>();
         currentContext = new Pair(startFile);
