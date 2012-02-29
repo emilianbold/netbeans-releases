@@ -148,7 +148,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                     RunUtils.executeMaven(config);
                 }
                 public @Override void rerun(Set<Testcase> tests) {
-                    RunConfig brc = RunUtils.cloneRunconfig(config);
+                    RunConfig brc = RunUtils.cloneRunConfig(config);
                     StringBuilder tst = new StringBuilder();    
                     for (Testcase tc : tests) {
                         //TODO just when is the classname null??
