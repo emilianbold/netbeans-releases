@@ -60,23 +60,19 @@ import org.openide.filesystems.FileObject;
  *
  * @author Alexander Simon
  */
-public class SpecialRemoteFileObject extends RemoteFileObjectFile {
+public class SpecialRemoteFileObject extends RemoteFileObjectBase {
 
     private final char fileTypeChar;
-    public static SpecialRemoteFileObject createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
-            RemoteDirectory parent, String remotePath, FileType fileType) {
-        return new SpecialRemoteFileObject(fileSystem, execEnv, parent, remotePath, fileType);
-    }
             
-    private SpecialRemoteFileObject(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
+    /*package*/ SpecialRemoteFileObject(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, FileType fileType) {
-        super(fileSystem, execEnv, parent, remotePath, null);
+        super(wrapper, fileSystem, execEnv, parent, remotePath, null);
         fileTypeChar = fileType.toChar(); // TODO: pass when created
     }
 
     @Override
-    public final RemoteFileObjectBase[] getChildren() {
-        return new RemoteFileObjectBase[0];
+    public final RemoteFileObject[] getChildren() {
+        return new RemoteFileObject[0];
     }
 
     @Override
@@ -90,12 +86,12 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    public final RemoteFileObjectBase getFileObject(String name, String ext) {
+    public final RemoteFileObject getFileObject(String name, String ext) {
         return null;
     }
 
     @Override
-    public RemoteFileObjectBase getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath) {
         return null;
     }
 
@@ -110,12 +106,12 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    public FileObject createData(String name, String ext) throws IOException {
+    protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 
     @Override
-    public FileObject createFolder(String name) throws IOException {
+    protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 
@@ -130,14 +126,14 @@ public class SpecialRemoteFileObject extends RemoteFileObjectFile {
     }
 
     @Override
-    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt) 
+    protected void renameChild(FileLock lock, RemoteFileObjectBase toRename, String newNameExt, RemoteFileObjectBase orig) 
             throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // plain file can not be container of children
         RemoteLogger.assertTrueInConsole(false, "renameChild is not supported on " + this.getClass() + " path=" + getPath()); // NOI18N
     }
 
     @Override
-    public OutputStream getOutputStream(FileLock lock) throws IOException {
+    protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         if (!isValid()) {
             throw new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
         }

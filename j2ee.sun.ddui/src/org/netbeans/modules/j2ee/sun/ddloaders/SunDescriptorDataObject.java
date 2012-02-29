@@ -104,6 +104,11 @@ import org.xml.sax.SAXParseException;
  * @author pfiala
  * @author Peter Williams
  */
+@MIMEResolver.Registration(
+    displayName="org.netbeans.modules.j2ee.sun.share.Bundle#SunResolver",
+    position=350,
+    resource="../share/sun-dd-mime-resolver.xml"
+)
 public class SunDescriptorDataObject extends DDMultiViewDataObject
 {
 

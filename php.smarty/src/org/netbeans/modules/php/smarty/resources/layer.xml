@@ -197,17 +197,6 @@
         </folder>
     </folder>
 
-    <!-- Services registrations -->
-    <folder name="Services">
-        <!-- Recognize text/x-tpl -->
-        <folder name="MIMEResolver">
-            <file name="tpl-mime-resolver.xml" url="tpl-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.editor.resources.Bundle"/>
-                <attr name="position" intvalue="373"/>
-            </file>
-        </folder>
-    </folder>
-
     <!-- Templates registrations -->
     <folder name="Templates">
         <folder name="Scripting">

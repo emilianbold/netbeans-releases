@@ -59,6 +59,7 @@ import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.errors.RevisionSyntaxException;
+import org.eclipse.jgit.lib.Config;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
@@ -337,5 +338,25 @@ public final class Utils {
 
     public static boolean isFromNested (int fm) {
         return fm == FileMode.TYPE_GITLINK;
+    }
+
+    public static GitBranch getTrackedBranch (Config config, String branchName, Map<String, GitBranch> allBranches) {
+        String remoteName = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_REMOTE);
+        String trackedBranchName = config.getString(ConfigConstants.CONFIG_BRANCH_SECTION, branchName, ConfigConstants.CONFIG_KEY_MERGE);
+        if (trackedBranchName != null) {
+            if (trackedBranchName.startsWith(Constants.R_HEADS)) {
+                trackedBranchName = trackedBranchName.substring(Constants.R_HEADS.length());
+            }
+        }
+        if (trackedBranchName == null) {
+            return null;
+        } else {
+            if (remoteName != null && ".".equals(remoteName)) { //NOI18N
+                remoteName = ""; //NOI18N
+            } else {
+                remoteName = remoteName + "/"; //NOI18N
+            }
+            return allBranches.get(remoteName + trackedBranchName);
+        }
     }
 }

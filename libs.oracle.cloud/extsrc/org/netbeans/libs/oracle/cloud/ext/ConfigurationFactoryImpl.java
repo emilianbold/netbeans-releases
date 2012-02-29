@@ -56,8 +56,12 @@ public final class ConfigurationFactoryImpl implements ConfigurationFactory {
     
     @Override
     public IClassConfiguration getDefaultClassConfiguration() {
-        return new ClassConfigurationImpl(oracle.cloud.scanning.spi.config.factory.ConfigurationFactory.
+        try {
+            return new ClassConfigurationImpl(oracle.cloud.scanning.spi.config.factory.ConfigurationFactory.
                 getInstance().getDefaultClassConfiguration());
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw ApplicationManagerImpl.wrapException(ex);
+        }
     }
 
     private static class ClassConfigurationImpl implements IClassConfiguration {

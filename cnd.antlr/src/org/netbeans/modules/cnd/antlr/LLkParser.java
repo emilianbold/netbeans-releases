@@ -41,15 +41,18 @@ public class LLkParser extends Parser {
 	 * For example, calling consume() 3 times when k=2, means that the first token
 	 * consumed will be overwritten with the 3rd.
 	 */
-	public final void consume() {
+        @Override
+	public void consume() {
 		input.consume();
 	}
 
-	public final int LA(int i) {
+        @Override
+	public int LA(int i) {
 		return input.LA(i);
 	}
 
-	public final Token LT(int i) {
+        @Override
+	public Token LT(int i) {
 		return input.LT(i);
 	}
 

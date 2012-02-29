@@ -16,12 +16,9 @@
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.nav.hierarchy.Bundle"/>
             </file>
         </folder>
-    </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="PHPMimeResolver.xml" url="PHPMimeResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                <attr name="position" intvalue="282"/>
+        <folder name="Source">
+            <file name="org-netbeans-modules-php-editor-actions-FixUsesAction$GlobalAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.actions.Bundle"/>
             </file>
         </folder>
     </folder>
@@ -147,6 +144,9 @@
 			<attr name="instanceCreate" methodvalue="org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory.editorSubmenuAction"/>
 			<attr name="position" intvalue="680"/>
 		    </file>
+                    <file name="fix-uses">
+                        <attr name="position" intvalue="880"/>
+                    </file>
                     <file name="fast-import">
                         <attr name="position" intvalue="1181"/>
                     </file>
@@ -238,6 +238,11 @@
                           <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtWrapping.getController"/>
                           <attr name="position" intvalue="750"/>
                       </file>
+                      <file name="Uses.instance">
+                          <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                          <attr name="instanceCreate" methodvalue="org.netbeans.modules.php.editor.indent.ui.FmtUses.getController"/>
+                          <attr name="position" intvalue="850"/>
+                      </file>
                     </folder>
                 </folder>
             </folder>
@@ -257,6 +262,12 @@
 
     <!-- registering PHP palette -->
     <folder name="Menu">
+        <folder name="Source">
+            <file name="org-netbeans-modules-php-editor-actions-FixUsesAction$GlobalAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Source/org-netbeans-modules-php-editor-actions-FixUsesAction$GlobalAction.instance"/>
+                <attr name="position" intvalue="2450"/>
+            </file>
+        </folder>
         <folder name="Tools">
             <folder name="PaletteManager">
                 <file name="org-netbeans-modules-html-palette-HtmlPaletteCustomizerAction.shadow_hidden"/>
@@ -307,6 +318,8 @@
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
                         <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-IdenticalComparisonHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-ImmutableVariablesHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance"/>
                     </folder>
                 </folder>
             </folder>

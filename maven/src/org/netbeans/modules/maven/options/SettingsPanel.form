@@ -26,15 +26,15 @@
                       </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblExternalVersion" alignment="0" pref="525" max="32767" attributes="0"/>
+                          <Component id="lblExternalVersion" alignment="0" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="txtOptions" pref="412" max="32767" attributes="0"/>
+                              <Component id="txtOptions" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="btnOptions" linkSize="1" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <Component id="cbSkipTests" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="comMavenHome" pref="403" max="32767" attributes="0"/>
+                              <Component id="comMavenHome" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="122" max="-2" attributes="0"/>
                           </Group>
                       </Group>
@@ -42,9 +42,9 @@
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="198" pref="198" max="198" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="comSource" alignment="0" pref="412" max="32767" attributes="1"/>
-                          <Component id="comJavadoc" alignment="0" pref="412" max="32767" attributes="1"/>
-                          <Component id="comBinaries" alignment="0" pref="412" max="32767" attributes="1"/>
+                          <Component id="comSource" alignment="0" max="32767" attributes="1"/>
+                          <Component id="comJavadoc" alignment="0" max="32767" attributes="1"/>
+                          <Component id="comBinaries" alignment="0" max="32767" attributes="1"/>
                       </Group>
                       <EmptySpace min="113" pref="113" max="113" attributes="0"/>
                   </Group>
@@ -55,7 +55,7 @@
                           <Component id="lblJavadoc" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblBinaries" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblSource" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="jLabel3" alignment="0" pref="605" max="32767" attributes="0"/>
+                          <Component id="jLabel3" alignment="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace min="-2" pref="106" max="-2" attributes="0"/>
                   </Group>
@@ -63,7 +63,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lblIndex" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="comIndex" pref="421" max="32767" attributes="0"/>
+                      <Component id="comIndex" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
                   </Group>

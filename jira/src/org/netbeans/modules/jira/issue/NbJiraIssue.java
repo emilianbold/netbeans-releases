@@ -54,6 +54,8 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.Resolution;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Version;
 import java.awt.Font;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -91,7 +93,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.jira.Jira;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -104,6 +106,7 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -111,7 +114,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka, Jan Stola
  */
-public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
+public class NbJiraIssue extends IssueProvider implements IssueTable.NodeProvider {
     private TaskData taskData;
     private JiraRepository repository;
     private Controller controller;
@@ -140,7 +143,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     private static final String FIXED = "Fixed";                        //NOI18N
 
     /**
-     * Issue wasn't seen yet
+     * IssueProvider wasn't seen yet
      */
     static final int FIELD_STATUS_IRELEVANT = -1;
 
@@ -159,6 +162,7 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     static final int FIELD_STATUS_MODIFIED = 4;
     private Map<String, String> seenAtributes;
+    private final PropertyChangeSupport support;
 
     public enum IssueField {
         KEY(JiraAttribute.ISSUE_KEY.id(), "LBL_KEY"),
@@ -226,13 +230,32 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
      */
     public static ColumnDescriptor[] DESCRIPTORS;
     private IssueNode node;
+    private Node[] context;
     
     public NbJiraIssue(TaskData data, JiraRepository repo) {
         super(repo);
         this.taskData = data;
         this.repository = repo;
+        this.support = new PropertyChangeSupport(this);
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
+    protected void fireDataChanged() {
+        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
+    }
+    
     void opened() {
         if(Jira.LOG.isLoggable(Level.FINE)) Jira.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
         if(!taskData.isNew()) {
@@ -294,6 +317,11 @@ public class NbJiraIssue extends Issue implements IssueTable.NodeProvider {
     @Override
     public String getSummary() {
         return getSummary(taskData);
+    }
+
+    @Override
+    public void setContext(Node[] nodes) {
+        this.context = nodes;
     }
 
     private static String getSummary(TaskData taskData) {

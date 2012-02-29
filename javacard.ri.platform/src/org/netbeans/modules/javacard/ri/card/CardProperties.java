@@ -66,6 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.NbCollections;
 
 /**
@@ -73,7 +74,15 @@ import org.openide.util.NbCollections;
  *
  * @author Tim Boudreau
  */
+@MIMEResolver.ExtensionRegistration(
+    extension="jcplatform", displayName="",
+    mimeType="application/javacard", position=268
+)
 final class CardProperties implements ICardCapability, CapabilitiesProvider {
+    @MIMEResolver.ExtensionRegistration(
+        extension="jcard", displayName="",
+        mimeType="application/x-javacardserver", position=269
+    )
     public static final String DEBUG = "debug";
     public static final String SUSPEND = "suspend";
     private static final String DEFAULT_RAM_SIZE = "24K"; //NOI18N

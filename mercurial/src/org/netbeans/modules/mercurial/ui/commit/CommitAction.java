@@ -82,6 +82,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.logging.Level;
+import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
@@ -174,7 +175,8 @@ public class CommitAction extends ContextAction {
         panel.setCommitTable(data);
         data.setCommitPanel(panel);
         panel.cbAllFiles.setVisible(closingBranch);
-        if (closingBranch) {
+        final boolean afterMerge = WorkingCopyInfo.getInstance(repository).getWorkingCopyParents().length > 1;
+        if (closingBranch && !afterMerge) {
             panel.cbAllFiles.setSelected(false);
             panel.cbAllFiles.doClick();
             panel.cbAllFiles.setEnabled(false);
@@ -235,13 +237,13 @@ public class CommitAction extends ContextAction {
         panel.addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
-                refreshCommitDialog(panel, data, commitButton, branchName);
+                refreshCommitDialog(panel, data, commitButton, branchName, afterMerge);
             }
         });
         data.getTableModel().addTableModelListener(new TableModelListener() {
             @Override
             public void tableChanged(TableModelEvent e) {
-                refreshCommitDialog(panel, data, commitButton, branchName);
+                refreshCommitDialog(panel, data, commitButton, branchName, afterMerge);
             }
         });
         commitButton.setEnabled(containsCommitable(data));
@@ -263,7 +265,7 @@ public class CommitAction extends ContextAction {
         } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
-            final boolean commitAllFiles = panel.cbAllFiles.isSelected();
+            final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge;
             HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
@@ -370,7 +372,7 @@ public class CommitAction extends ContextAction {
      * @param panel
      * @param commit
      */
-    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose) {
+    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose, boolean afterMerge) {
         assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<HgFileNode, CommitOptions> files = table.getCommitFiles();
@@ -405,14 +407,16 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
         if (!conflicts) {
-            if (panel.cbAllFiles.isSelected()) {
+            if (afterMerge) {
+                panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.merge.allFiles")); //NOI18N
+            } else if (panel.cbAllFiles.isSelected()) {
                 panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.closingBranch.allFiles", branchToClose)); //NOI18N
             } else {
                 panel.setErrorLabel(""); //NOI18N
             }
             enabled = true;
         }
-        commit.setEnabled(enabled && (panel.cbAllFiles.isSelected() || containsCommitable(table)));
+        commit.setEnabled(enabled && (afterMerge || panel.cbAllFiles.isSelected() || containsCommitable(table)));
     }
 
     public static void performCommit (String message, Map<HgFileNode, CommitOptions> commitFiles,
@@ -635,8 +639,10 @@ public class CommitAction extends ContextAction {
             void doCmd(File repository, List<File> candidates) throws HgException {
                 boolean commitAfterMerge = false;
                 Set<File> refreshFiles = new HashSet<File>(candidates);
+                List<File> commitedFiles = null;
                 try {                    
                     HgCommand.doCommit(repository, candidates, msg, closingBranch, logger);
+                    commitedFiles = candidates;
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<File> reducedCommitCandidates;
@@ -664,6 +670,7 @@ public class CommitAction extends ContextAction {
                     }
                     Mercurial.LOG.log(Level.INFO, "CommitAction: committing with a reduced set of files: {0}", reducedCommitCandidates.toString()); //NOI18N
                     HgCommand.doCommit(repository, reducedCommitCandidates, msg, closingBranch, logger);
+                    commitedFiles = reducedCommitCandidates;
                 } catch (HgException ex) {
                     if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
                         // committing after a merge, all modified files have to be committed, even excluded files
@@ -682,10 +689,13 @@ public class CommitAction extends ContextAction {
                     }
                 } finally {
                     refreshFilesPerRepository.put(repository, refreshFiles);
+                    if(commitedFiles != null) {
+                        Mercurial.getInstance().getMercurialHistoryProvider().fireHistoryChange(commitedFiles.toArray(new File[commitedFiles.size()]));
+                    }
                 }
 
                 HgLogMessage tip = HgCommand.doTip(repository, logger);
-
+                
                 context = new HgHookContext(hookFiles, msg, new HgHookContext.LogEntry(
                         tip.getMessage(),
                         tip.getAuthor(),

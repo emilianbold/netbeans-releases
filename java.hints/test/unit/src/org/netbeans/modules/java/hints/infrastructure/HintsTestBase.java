@@ -127,6 +127,7 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void doSetUp(String resource) throws Exception {
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml", resource}, new Object[] {
             JavaDataLoader.class,
             new MimeDataProvider() {
@@ -146,7 +147,8 @@ public class HintsTestBase extends NbTestCase {
                         InputAttributes inputAttributes) {
                     return null;
                 }
-            }
+            },
+            new JavaCustomIndexer.Factory()
         });
 
         clearWorkDir();
@@ -198,8 +200,6 @@ public class HintsTestBase extends NbTestCase {
         packageRoot = FileUtil.createFolder(sourceRoot, DATA_EXTENSION);
 
         SourceUtilsTestUtil.setSourceLevel(packageRoot, sourceLevel);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-                    new JavaCustomIndexer.Factory()});
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
         

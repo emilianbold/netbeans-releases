@@ -713,7 +713,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         protected Class[] supportedCookies() {
-            return new Class[] { EditorCookie.class,
+            return new Class[] { 
                     EditorCookie.Observable.class,
                     OpenCookie.class,
                     EditCookie.class,
@@ -726,10 +726,7 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         /**
          */
         public final void registerCookies(CookieSet cookieSet) {
-            Class[] supportedCookies = supportedCookies();
-            for (int i = 0; i < supportedCookies.length; i++) {
-                cookieSet.add(supportedCookies[i], this);
-            }
+            cookieSet.add(supportedCookies(), this);
         }
         
         /** Creates a Node.Cookie of given class. The method

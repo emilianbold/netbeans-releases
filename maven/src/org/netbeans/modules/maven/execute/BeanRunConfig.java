@@ -114,6 +114,7 @@ public class BeanRunConfig implements RunConfig {
         setReactorStyle(parent.getReactorStyle());
     }
 
+    @Override
     public final File getExecutionDirectory() {
         if (parent != null && executionDirectory == null) {
             return parent.getExecutionDirectory();
@@ -121,10 +122,12 @@ public class BeanRunConfig implements RunConfig {
         return executionDirectory;
     }
 
+    @Override
     public final void setExecutionDirectory(File executionDirectory) {
         this.executionDirectory = executionDirectory;
     }
 
+    @Override
     public final Project getProject() {
         if (parent != null && project == null) {
             return parent.getProject();
@@ -145,6 +148,7 @@ public class BeanRunConfig implements RunConfig {
         return null;
     }
 
+    @Override
     public final synchronized MavenProject getMavenProject() {
         if (mp != null) {
             return mp;
@@ -181,6 +185,7 @@ public class BeanRunConfig implements RunConfig {
         mp = null;
     }
 
+    @Override
     public final List<String> getGoals() {
         if (parent != null && goals == null) {
             return parent.getGoals();
@@ -192,6 +197,7 @@ public class BeanRunConfig implements RunConfig {
         this.goals = goals;
     }
 
+    @Override
     public final String getExecutionName() {
         if (parent != null && executionName == null) {
             return parent.getExecutionName();
@@ -227,6 +233,7 @@ public class BeanRunConfig implements RunConfig {
         }
     }
 
+    @Override
     public final boolean isShowDebug() {
         return showDebug;
     }
@@ -235,6 +242,7 @@ public class BeanRunConfig implements RunConfig {
         this.showDebug = showDebug;
     }
 
+    @Override
     public final boolean isShowError() {
         return showError;
     }
@@ -243,14 +251,17 @@ public class BeanRunConfig implements RunConfig {
         this.showError = showError;
     }
 
+    @Override
     public final Boolean isOffline() {
         return offline;
     }
 
+    @Override
     public final void setOffline(Boolean offline) {
         this.offline = offline;
     }
 
+    @Override
     public final List<String> getActivatedProfiles() {
         if (parent != null && activate == null) {
             return parent.getActivatedProfiles();
@@ -261,6 +272,7 @@ public class BeanRunConfig implements RunConfig {
         return Collections.<String>emptyList();
     }
 
+    @Override
     public final void setActivatedProfiles(List<String> activeteProfiles) {
         activate = new ArrayList<String>();
         activate.addAll(activeteProfiles);
@@ -269,6 +281,7 @@ public class BeanRunConfig implements RunConfig {
         }
     }
 
+    @Override
     public final boolean isRecursive() {
         return recursive;
     }
@@ -277,6 +290,7 @@ public class BeanRunConfig implements RunConfig {
         recursive = rec;
     }
 
+    @Override
     public final boolean isUpdateSnapshots() {
         return updateSnapshots;
     }
@@ -285,6 +299,7 @@ public class BeanRunConfig implements RunConfig {
         updateSnapshots = set;
     }
 
+    @Override
     public final String getTaskDisplayName() {
         if (parent != null && taskName == null) {
             return parent.getTaskDisplayName();
@@ -296,6 +311,7 @@ public class BeanRunConfig implements RunConfig {
         taskName = name;
     }
 
+    @Override
     public final boolean isInteractive() {
         return interactive;
     }
@@ -309,6 +325,7 @@ public class BeanRunConfig implements RunConfig {
         this.actionName = actionName;
     }
 
+    @Override
     public String getActionName()
     {
         if (parent != null && actionName == null) {
@@ -317,6 +334,7 @@ public class BeanRunConfig implements RunConfig {
         return actionName;
     }
 
+    @Override
     public FileObject getSelectedFileObject() {
         if (parent != null && selectedFO == null) {
             return parent.getSelectedFileObject();
@@ -328,6 +346,7 @@ public class BeanRunConfig implements RunConfig {
         this.selectedFO = selectedFile;
     }
 
+    @Override
     public RunConfig getPreExecution() {
         if (parent != null && preexecution == null) {
             return parent.getPreExecution();
@@ -339,11 +358,12 @@ public class BeanRunConfig implements RunConfig {
         preexecution = config;
     }
 
-    public ReactorStyle getReactorStyle() {
+    @Override
+    public final ReactorStyle getReactorStyle() {
         return reactor;
     }
 
-    public void setReactorStyle(ReactorStyle style) {
+    public final void setReactorStyle(ReactorStyle style) {
         reactor = style;
     }
 }

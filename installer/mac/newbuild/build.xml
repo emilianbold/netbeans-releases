@@ -144,6 +144,7 @@ Microsystems, Inc. All Rights Reserved.
 					 groovy(groovy),
                                          php(php), 
                                          enterprise(javaee), 
+                                         webcommon(webcommon),
                                          mobility(javame), mobility-mac(javame),
                                          ergonomics(ergonomics),
                                          ide(baseide), nb-etc(baseide), platform(baseide)
@@ -224,6 +225,7 @@ Microsystems, Inc. All Rights Reserved.
                                         javame(${javame-title}),
                                         cpp(${cpp-title}),                                       
                                         groovy(${groovy-title}),
+                                        webcommon(${webcommon-title}),
                                         ergonomics(${ergonomics-title}),
                                         php(${php-title})
                                         "/>
@@ -290,11 +292,11 @@ Microsystems, Inc. All Rights Reserved.
 
 
     <target name="init-bundles">
-        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+        <property name="main.bundles" value="(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/javame-${nb.id}.pkg ./build/cpp-${nb.id}.pkg ./build/php-${nb.id}.pkg ./build/groovy-${nb.id}.pkg ./build/ergonomics-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -javase(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg),
-                                             -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
+                                             -javaee(./build/baseide-${nb.id}.pkg ./build/javase-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/javaee-${nb.id}.pkg ./build/glassfish-v3-${glassfish.v3.id}.pkg ./build/tomcat-${tomcat.id}.pkg),
                                              -cpp(./build/baseide-${nb.id}.pkg ./build/cpp-${nb.id}.pkg),                                             
-                                             -php(./build/baseide-${nb.id}.pkg ./build/php-${nb.id}.pkg)
+                                             -php(./build/baseide-${nb.id}.pkg ./build/webcommon-${nb.id}.pkg ./build/php-${nb.id}.pkg)
                                              "/>
 
         <property name="fx.bundles" value="    
@@ -495,7 +497,7 @@ Microsystems, Inc. All Rights Reserved.
         <chmod file="${basedir}/build/mysql.pkg/Contents/Resources/mysql-admin.server" perm="ugo+x"/>          
 
         <ant target="build-dmg">             
-             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/javaee.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
+             <property name="packages" value="./build/baseide.pkg ./build/javase.pkg ./build/webcommon.pkg ./build/javaee.pkg ./build/glassfish.pkg ./build/mysql*.pkg"/>  
              <property name="bundle.type" value="-mysql"/> 
              <property name="mpkg.name" value="${mpkg.name_nb_mysql}"/> 
              <property name="license.file" value="${basedir}/dmg/Resources/license_mysql.txt"/>                           
@@ -535,7 +537,7 @@ Microsystems, Inc. All Rights Reserved.
                 <filter token="SIZE_CPP" value="${sizeof.cpp}"/>                
                 <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
                 <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/> 
-                <!--<filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>-->
+                <filter token="SIZE_WEBCOMMON" value="${sizeof.webcommon}"/>
                 <filter token="SIZE_JAVAEE" value="${sizeof.javaee}"/>
                 <filter token="SIZE_JAVAME" value="${sizeof.javame}"/>
                 <!--<filter token="SIZE_RUBY" value="${sizeof.ruby}"/>-->

@@ -291,7 +291,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             Set<FileObject> files = getAffectedFiles(generator, helper );
 
             RestUtils.ensureRestDevelopmentReady(project);
-            Set<String> entities = Util.getEntities(project, files);
+            final Set<String> entities = Util.getEntities(project, files);
             RestUtils.configRestPackages(project, 
                     wizard.getProperty(WizardProperties.RESOURCE_PACKAGE).toString());
             
@@ -334,45 +334,85 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                     targetResourceFolder = targetFolder;
                 }
 
-                EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
-                EntityResourceBeanModel model = builder.build();
-                Util.generateRESTFacades(project, entities,  model,
+                assert !files.isEmpty();
+                final EntityResourceBeanModel[] model = new EntityResourceBeanModel[1];
+                JavaSource.forFileObject(files.iterator().next())
+                        .runWhenScanFinished(new Task<CompilationController>() {
+
+                            @Override
+                            public void run( CompilationController controller )
+                                    throws Exception
+                            {
+                                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                EntityResourceModelBuilder builder = 
+                                    new EntityResourceModelBuilder(project, 
+                                            entities);
+                                model[0] = builder.build();
+                            }
+                        }, true).get();
+
+                Util.generateRESTFacades(project, entities, model[0],
                         targetResourceFolder, resourcePackage);
 
-            } else {    
-                EntityResourceModelBuilder builder = new EntityResourceModelBuilder(project, entities);
-                EntityResourceBeanModel model = builder.build();
+            } 
+            else {   
+                assert !files.isEmpty();
+                final EntityResourceBeanModel[] model = new EntityResourceBeanModel[1];
+                JavaSource.forFileObject(files.iterator().next())
+                        .runWhenScanFinished(new Task<CompilationController>() {
+
+                            @Override
+                            public void run( CompilationController controller )
+                                    throws Exception
+                            {
+                                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                                EntityResourceModelBuilder builder = new EntityResourceModelBuilder(
+                                        project, entities);
+                                model[0] = builder.build();
+                            }
+                        }, true).get();
+
 
                 PersistenceUnit pu = new PersistenceHelper(project).getPersistenceUnit();
 
-                FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
+                FileObject targetFolder = (FileObject) wizard.getProperty(
+                        WizardProperties.TARGET_SRC_ROOT);
                 String targetPackage = null;
                 String resourcePackage = null;
                 String controllerPackage = null;
 
                 if (targetFolder != null) {
                     targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
-                    resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-                    controllerPackage = (String) wizard.getProperty(WizardProperties.CONTROLLER_PACKAGE);
-                } else {
+                    resourcePackage = (String) wizard.getProperty(
+                            WizardProperties.RESOURCE_PACKAGE);
+                    controllerPackage = (String) wizard.getProperty(
+                            WizardProperties.CONTROLLER_PACKAGE);
+                } 
+                else {
                     targetFolder = Templates.getTargetFolder(wizard);
                     SourceGroup targetSourceGroup = null;
                     targetPackage = "";
                     if (targetFolder != null) {
-                        SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
-                        targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                        SourceGroup[] sourceGroups = SourceGroupSupport.
+                            getJavaSourceGroups(project);
+                        targetSourceGroup = SourceGroupSupport.
+                            findSourceGroupForFile(sourceGroups, targetFolder);
                         if (targetSourceGroup != null) {
-                            targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                            targetPackage = SourceGroupSupport.
+                                getPackageForFolder(targetSourceGroup, targetFolder);
                         }
                     }
 
-                    targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
-                    resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
-                    controllerPackage = targetPackage + EntityResourcesGenerator.CONTROLLER_FOLDER;
+                    targetPackage = (targetPackage.length() == 0) ? "" : 
+                            targetPackage + ".";            // NOI18N
+                    resourcePackage = targetPackage + 
+                        EntityResourcesGenerator.RESOURCE_FOLDER;
+                    controllerPackage = targetPackage + 
+                        EntityResourcesGenerator.CONTROLLER_FOLDER;
                 }
 
                 final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
-                gen.initialize(model, project, targetFolder, targetPackage, 
+                gen.initialize(model[0], project, targetFolder, targetPackage, 
                         resourcePackage, controllerPackage, pu);
 
                 /*RequestProcessor.Task transformTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -393,7 +433,16 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 transformTask.schedule(50);*/
             }
 
-        } finally {
+        }
+        catch( InterruptedException e ){
+            Logger.getLogger(DatabaseResourceWizardIterator.class.
+                    getCanonicalName()).log( Level.INFO , null , e );
+        }
+        catch( ExecutionException e ){
+            Logger.getLogger(DatabaseResourceWizardIterator.class.
+                    getCanonicalName()).log( Level.INFO , null , e );
+        }
+        finally {
             handle.finish();
             SwingUtilities.invokeLater(new Runnable() {
 

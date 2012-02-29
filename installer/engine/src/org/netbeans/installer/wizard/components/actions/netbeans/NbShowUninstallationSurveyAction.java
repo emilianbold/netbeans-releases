@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,13 +42,9 @@ import java.io.File;
 import java.net.URI;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
-import org.netbeans.installer.utils.BrowserUtils;
-import org.netbeans.installer.utils.FileUtils;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.StringUtils;
-import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.helper.UiMode;
+import org.netbeans.installer.utils.*;
 import org.netbeans.installer.utils.helper.Status;
+import org.netbeans.installer.utils.helper.UiMode;
 import org.netbeans.installer.wizard.components.WizardAction;
 
 /**
@@ -57,6 +53,7 @@ import org.netbeans.installer.wizard.components.WizardAction;
  */
 public class NbShowUninstallationSurveyAction extends WizardAction {
 
+    @Override
     public void execute() {
         try {
             LogManager.logEntry("... execute show uninstallation survey action");
@@ -80,7 +77,7 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
                                 product.getVersion().getMinor();
 
                         LogManager.log("... version : " + version);
-                        final File superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superId");
+                        final File superId = getSuperId();
                         String id = "";
                         if (FileUtils.exists(superId)) {
                             id =  FileUtils.readStringList(superId).get(0);
@@ -101,6 +98,16 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
         } finally {
             LogManager.logExit("... finished show uninstallation survey action");
         }
+    }
+    
+    private File getSuperId() {
+        // 1. check new OS specific place
+        File superId = new File(SystemUtils.getDefaultUserdirRoot() + File.separator + ".superId");
+        // 2. if doesn't exist => use former place
+        if (! superId.exists()) {
+            superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superId");
+        }
+        return superId;
     }
 
     @Override

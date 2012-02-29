@@ -117,8 +117,13 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             setFlags(FLAGS_OPERATOR, true);
         }
     }
-    
+
+        
     public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global) throws AstRendererException {
+        return create(ast, file, type, scope, global, null);
+    }
+    
+    public static<T> FunctionImpl<T> create(AST ast, CsmFile file, CsmType type, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
@@ -142,7 +147,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
         
         functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
-        functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file));
+        functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file, objects));
         functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         

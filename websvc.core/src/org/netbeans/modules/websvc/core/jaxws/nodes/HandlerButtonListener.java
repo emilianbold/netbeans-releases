@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChain;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChains;
 import org.netbeans.modules.websvc.api.jaxws.project.config.HandlerChainsProvider;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
@@ -116,27 +117,38 @@ public class HandlerButtonListener implements ActionListener{
                 //add annotation
                 String servicehandlerFileName = service.getName() + "_handler"; //NOI18N
                 FileObject parent = implBeanClass.getParent();
-                final String handlerFileName = FileUtil.findFreeFileName(parent, servicehandlerFileName, "xml");
-                CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+                final String handlerFileName = FileUtil.findFreeFileName(parent, 
+                        servicehandlerFileName, "xml");                         // NOI18N
+                CancellableTask<WorkingCopy> modificationTask = 
+                    new CancellableTask<WorkingCopy>() 
+                    {
+                    @Override
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
-                        ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
+                        ClassTree javaClass = SourceUtils.getPublicTopLevelTree(
+                                workingCopy);
                         if (javaClass!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            TypeElement chainElement = workingCopy.getElements().getTypeElement("javax.jws.HandlerChain"); //NOI18N
-                            List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
-                            AssignmentTree attr1 = make.Assignment(make.Identifier("file"), make.Literal(handlerFileName + ".xml"));
+                            List<ExpressionTree> attrs = 
+                                new ArrayList<ExpressionTree>();
+                            AssignmentTree attr1 = make.Assignment(
+                                    make.Identifier("file"), 
+                                    make.Literal(handlerFileName + ".xml"));
                             attrs.add(attr1);
                             AnnotationTree chainAnnotation = make.Annotation(
-                                    make.QualIdent(chainElement),
-                                    attrs
-                                    );
-                            GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
-                            ClassTree modifiedClass = genUtils.addAnnotation(javaClass, chainAnnotation);
+                                    make.QualIdent("javax.jws.HandlerChain"),   // NOI18N
+                                    attrs);
+                            GenerationUtils genUtils = GenerationUtils.
+                                newInstance(workingCopy);
+                            ClassTree modifiedClass = genUtils.
+                                addAnnotation(javaClass, chainAnnotation);
                             workingCopy.rewrite(javaClass, modifiedClass);
                         }
                     }
-                    public void cancel() {}
+                    @Override
+                    public void cancel() {
+                        
+                    }
                 };
                 JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
                 try {
@@ -149,7 +161,8 @@ public class HandlerButtonListener implements ActionListener{
                 if(handlerFO == null) {
                     //create handler file
                     try {
-                        WSUtils.retrieveHandlerConfigFromResource(parent,handlerFileName + ".xml");
+                        WSUtils.retrieveHandlerConfigFromResource(parent,
+                                handlerFileName + ".xml");
                         handlerFO = parent.getFileObject(handlerFileName, "xml");
                     }catch(Exception exp){
                         ErrorManager.getDefault().notify(exp);
@@ -188,18 +201,28 @@ public class HandlerButtonListener implements ActionListener{
             OutputStream out = null;
             if(chain.getHandlers().length == 0) {
                 
-                CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+                CancellableTask<WorkingCopy> modificationTask = 
+                    new CancellableTask<WorkingCopy>() 
+                    {
+                    @Override
                     public void run(WorkingCopy workingCopy) throws IOException {
                         workingCopy.toPhase(Phase.RESOLVED);
-                        TypeElement typeElement = SourceUtils.getPublicTopLevelElement(workingCopy);
+                        TypeElement typeElement = SourceUtils.
+                            getPublicTopLevelElement(workingCopy);
                         if (typeElement!=null) {
                             TreeMaker make = workingCopy.getTreeMaker();
-                            AnnotationMirror chainAnnotation = JaxWsNode.getAnnotation(workingCopy, typeElement, "javax.jws.HandlerChain"); //NOI18N
+                            AnnotationMirror chainAnnotation = JaxWsUtils.
+                                getAnnotation( typeElement, 
+                                        "javax.jws.HandlerChain"); //NOI18N
                             if (chainAnnotation!=null) {
-                                ClassTree classTree = workingCopy.getTrees().getTree(typeElement);
-                                AnnotationTree anotTree = (AnnotationTree)workingCopy.getTrees().getTree(typeElement,chainAnnotation);
+                                ClassTree classTree = workingCopy.getTrees().
+                                    getTree(typeElement);
+                                AnnotationTree anotTree = 
+                                    (AnnotationTree)workingCopy.getTrees().
+                                        getTree(typeElement,chainAnnotation);
                                 ClassTree modifiedClass = make.Class(
-                                        make.removeModifiersAnnotation(classTree.getModifiers(), anotTree),
+                                        make.removeModifiersAnnotation(
+                                                classTree.getModifiers(), anotTree),
                                         classTree.getSimpleName(),
                                         classTree.getTypeParameters(),
                                         classTree.getExtendsClause(),
@@ -209,7 +232,10 @@ public class HandlerButtonListener implements ActionListener{
                             }
                         }
                     }
-                    public void cancel() {}
+                    @Override
+                    public void cancel() {
+                        
+                    }
                 };
                 JavaSource targetSource = JavaSource.forFileObject(implBeanClass);
                 try {

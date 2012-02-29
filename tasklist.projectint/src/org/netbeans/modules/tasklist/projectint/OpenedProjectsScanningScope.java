@@ -84,7 +84,7 @@ public class OpenedProjectsScanningScope extends TaskScanningScope
      * @param icon 
      */
     private OpenedProjectsScanningScope( String displayName, String description, Image icon ) {
-        super( displayName, description, icon, true );
+        super( displayName, description, icon );
         Map<String,String> labels = new HashMap<String,String>(1);
         labels.put( Utils.KEY_STATUS_BAR_LABEL, 
                 NbBundle.getMessage(OpenedProjectsScanningScope.class, "LBL_OpenedProjectsStatusBar") ); //NOI18N

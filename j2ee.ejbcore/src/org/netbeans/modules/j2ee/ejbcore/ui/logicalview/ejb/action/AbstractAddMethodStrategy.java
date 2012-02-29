@@ -45,7 +45,12 @@
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 
 import java.io.IOException;
-import javax.swing.SwingUtilities;
+import java.security.Policy;
+import java.util.List;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -55,6 +60,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -91,26 +98,25 @@ public abstract class AbstractAddMethodStrategy {
         if (className == null) {
             return;
         }
-        MethodModel methodModel = getPrototypeMethod();
-        final MethodCustomizer methodCustomizer = createDialog(fileObject, methodModel);
-        if (methodCustomizer.customizeMethod()) {
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
+        final MethodModel methodModel = getPrototypeMethod();
+        ScanDialog.runWhenScanFinished(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final MethodCustomizer methodCustomizer = createDialog(fileObject, methodModel);
+                    if (methodCustomizer.customizeMethod()) {
                         MethodModel method = methodCustomizer.getMethodModel();
                         boolean isOneReturn = methodCustomizer.finderReturnIsSingle();
                         boolean publishToLocal = methodCustomizer.publishToLocal();
                         boolean publishToRemote = methodCustomizer.publishToRemote();
                         String ejbql = methodCustomizer.getEjbQL();
                         generateMethod(method, isOneReturn, publishToLocal, publishToRemote, ejbql, fileObject, className);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
                     }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-            });
-        }
+            }
+        }, getTitle());
     }
 
     protected EjbJar getEjbModule(FileObject fileObject) {
@@ -123,6 +129,63 @@ public abstract class AbstractAddMethodStrategy {
             return null;
         }
         return nodes[0].getLookup().lookup(MethodsNode.class);
+    }
+
+    /**
+     * Gets whether the type of given {@code TypeElement} is Entity bean.
+     * @param compilationController compilationController
+     * @param typeElement examined element
+     * @return {@code true} if the element is subtype of {@code javax.ejb.EntityBean}, {@code false} otherwise
+     */
+    protected static boolean isEntity(CompilationController compilationController, TypeElement typeElement) {
+        Parameters.notNull("compilationController", compilationController);
+        Parameters.notNull("typeElement", typeElement);
+
+        TypeElement entity = compilationController.getElements().getTypeElement("javax.ejb.EntityBean");
+        if (entity != null) {
+            typeElement.getKind().getDeclaringClass().isAssignableFrom(entity.getKind().getDeclaringClass());
+            return (compilationController.getTypes().isSubtype(typeElement.asType(), entity.asType()));
+        }
+        return false;
+    }
+
+    /**
+     * Gets whether the type of given {@code TypeElement} is Session bean.
+     * @param compilationController compilationController
+     * @param typeElement examined element
+     * @return {@code true} if the element is subtype of {@code javax.ejb.Stateless},
+     * {@code javax.ejb.Stateful} or {@code javax.ejb.Singleton}, {@code false} otherwise
+     */
+    protected static boolean isSession(CompilationController compilationController, TypeElement typeElement) {
+        Parameters.notNull("compilationController", compilationController);
+        Parameters.notNull("typeElement", typeElement);
+
+        TypeElement stateless = compilationController.getElements().getTypeElement("javax.ejb.Stateless");
+        TypeElement stateful = compilationController.getElements().getTypeElement("javax.ejb.Stateful");
+        TypeElement singleton = compilationController.getElements().getTypeElement("javax.ejb.Singleton");
+        if (stateful != null && stateless != null && singleton != null) {
+            return (compilationController.getTypes().isSubtype(typeElement.asType(), stateless.asType())
+                    || compilationController.getTypes().isSubtype(typeElement.asType(), stateful.asType())
+                    || compilationController.getTypes().isSubtype(typeElement.asType(), singleton.asType()));
+        }
+        return false;
+    }
+
+    /**
+     * Gets whether the type of given {@code TypeElement} is Stateful Session bean.
+     * @param compilationController compilationController
+     * @param typeElement examined element
+     * @return {@code true} if the element is subtype of {@code javax.ejb.Stateful}, {@code false} otherwise
+     */
+    protected static boolean isStateful(CompilationController compilationController, TypeElement typeElement) {
+        Parameters.notNull("compilationController", compilationController);
+        Parameters.notNull("typeElement", typeElement);
+
+        TypeElement stateful = compilationController.getElements().getTypeElement("javax.ejb.Stateful");
+        if (stateful != null) {
+            return (compilationController.getTypes().isSubtype(typeElement.asType(), stateful.asType()));
+        }
+        return false;
     }
 
 }

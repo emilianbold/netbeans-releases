@@ -111,11 +111,13 @@ public class CheckoutUITest extends JellyTestCase{
     public void testInvokeClose() throws Exception {
         TestKit.showStatusLabels();
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
+        new EventTool().waitNoEvent(2000);
         co.btCancel().pushNoBlock();
     }
     
     public void testChangeAccessTypes() throws Exception {
         TestKit.closeProject(PROJECT_NAME);
+        new EventTool().waitNoEvent(2000);
         TestKit.showStatusLabels();
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
@@ -123,37 +125,42 @@ public class CheckoutUITest extends JellyTestCase{
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
         RepositoryStepOperator rso = new RepositoryStepOperator();
+        new EventTool().waitNoEvent(2000);
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_FILE);
-        Thread.sleep(100);
+        new EventTool().waitNoEvent(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVN);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVN);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_SVN);
-        Thread.sleep(100);
+        new EventTool().waitNoEvent(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_SVNSSH);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_SVNSSH);
-        Thread.sleep(100);
+        new EventTool().waitNoEvent(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTP);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTP);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTP);
-        Thread.sleep(100);
+        new EventTool().waitNoEvent(2000);
         //
         rso.setRepositoryURL(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtUser().setText(RepositoryStepOperator.ITEM_HTTPS);
         rso.txtPassword().setText(RepositoryStepOperator.ITEM_HTTPS);
-        Thread.sleep(100);
+        new EventTool().waitNoEvent(2000);
         co.btCancel().pushNoBlock();
     }
     
     public void testIncorrentUrl() throws Exception {
+        TestKit.closeProject(PROJECT_NAME);
+        new EventTool().waitNoEvent(2000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
         CheckoutWizardOperator co = CheckoutWizardOperator.invoke();
         Operator.setDefaultStringComparator(oldOperator);
+        new EventTool().waitNoEvent(2000);
         RepositoryStepOperator rso = new RepositoryStepOperator();
+        new EventTool().waitNoEvent(2000);
         //wrong file
         rso.setRepositoryURL("dfile:///");
         new EventTool().waitNoEvent(2000);
@@ -317,7 +324,7 @@ public class CheckoutUITest extends JellyTestCase{
         ///rso.lblTunnelCommand();
         //JTextFieldOperator txt = rso.txtTunnelCommand();
         //txt.typeText("plink");
-        Thread.sleep(2000);
+        new EventTool().waitNoEvent(2000);
 
         //file
         rso = new RepositoryStepOperator();
@@ -344,6 +351,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testRepositoryFolder() throws Exception {
+        TestKit.closeProject(PROJECT_NAME);
+        new EventTool().waitNoEvent(2000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -360,14 +369,16 @@ public class CheckoutUITest extends JellyTestCase{
         
         //next step
         rso.next();
-        Thread.sleep(2000);
+        new EventTool().waitNoEvent(2000);
         
         WorkDirStepOperator wdso = new WorkDirStepOperator();
         wdso.verify();
         RepositoryBrowserOperator rbo = wdso.browseRepository();
         rbo.verify();
         //Try to select folders
+        new EventTool().waitNoEvent(2000);
         rbo.table().selectCell(2, 2);
+        new EventTool().waitNoEvent(2000);
 //        rbo.selectFolder("branches");
 //        rbo.selectFolder("tags");
 //        rbo.selectFolder("trunk");
@@ -376,7 +387,9 @@ public class CheckoutUITest extends JellyTestCase{
         
         assertEquals("Wrong folder selection!!!", "tags", wdso.getRepositoryFolder());
         rbo = wdso.browseRepository();
+        new EventTool().waitNoEvent(2000);
         rbo.table().selectCell(1, 2);
+        new EventTool().waitNoEvent(2000);
 //        rbo.selectFolder("trunk|JavaApp");
         rbo.ok();
         assertEquals("Wrong folder selection!!!", "branches", wdso.getRepositoryFolder());
@@ -390,6 +403,8 @@ public class CheckoutUITest extends JellyTestCase{
     }
     
     public void testStopProcess() throws Exception {
+        TestKit.closeProject(PROJECT_NAME);
+        new EventTool().waitNoEvent(2000);
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);

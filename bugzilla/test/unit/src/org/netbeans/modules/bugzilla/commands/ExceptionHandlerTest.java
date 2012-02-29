@@ -106,10 +106,10 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     }
     
     public void testIsLoginHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX", null, null);
+        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX".toCharArray(), null, null);
         assertHandler(repository, "LoginHandler");
 
-        repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, REPO_USER, "XXX", null, null);
+        repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, REPO_USER, "XXX".toCharArray(), null, null);
         assertHandler(repository, "LoginHandler");
         
     }

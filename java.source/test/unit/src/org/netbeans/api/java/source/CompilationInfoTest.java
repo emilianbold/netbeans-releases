@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import javax.lang.model.SourceVersion;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.junit.Test;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -118,6 +119,8 @@ public class CompilationInfoTest extends NbTestCase {
         clearWorkDir();
 
         FileObject source = FileUtil.createData(new File(getWorkDir(), "Test.java"));
+        TestUtilities.copyStringToFile(source, "public class Test {\n void test() {\n  //whatever\n }\n}\n");
+
         DataObject sourceDO = DataObject.find(source);
         EditorCookie ec = sourceDO.getLookup().lookup(EditorCookie.class);
 
@@ -128,8 +131,6 @@ public class CompilationInfoTest extends NbTestCase {
         doc.putProperty(Language.class, JavaTokenId.language());
 
         TokenHierarchy.get(doc).tokenSequence().tokenCount();
-
-        TestUtilities.copyStringToFile(source, "public class Test {\n void test() {\n  //whatever\n }\n}\n");
 
         JavaSource js = JavaSource.forDocument(doc);
         

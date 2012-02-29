@@ -44,11 +44,13 @@
 
 package org.netbeans.modules.editor.lib2.view;
 
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
+import java.text.Bidi;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -78,14 +80,30 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
      */
     private WrapInfo wrapInfo; // 28=super + 4 = 32 bytes
     
-    private int measuredEndIndex; // 32 + 4 = 36 bytes
+    private float childrenHeight; // 32 + 4 = 36 bytes
 
-    private float childrenHeight; // 36 + 4 = 40 bytes
+    /**
+     * Local offset of first invalid child.
+     */
+    private int startInvalidChildrenLocalOffset; // 36 + 4 = 40 bytes
+
+    /**
+     * Ending local offset of last invalid child.
+     */
+    private int endInvalidChildrenLocalOffset; // 40 + 4 = 44 bytes
 
     public ParagraphViewChildren(int capacity) {
         super(capacity);
     }
     
+    boolean isWrapped() {
+        return (wrapInfo != null);
+    }
+    
+    /**
+     * Height of 
+     * @return 
+     */
     float height() {
         return (wrapInfo == null) ? childrenHeight : wrapInfo.height(this);
     }
@@ -95,7 +113,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     double childrenWidth() {
-        return startVisualOffset(measuredEndIndex);
+        return startVisualOffset(size());
     }
     
     float childrenHeight() {
@@ -104,10 +122,6 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     
     int length() {
         return startOffset(size());
-    }
-    
-    boolean isFullyMeasured() {
-        return measuredEndIndex >= size();
     }
     
     Shape getChildAllocation(int index, Shape alloc) {
@@ -131,9 +145,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     int viewIndexNoWrap(ParagraphView pView, double x, Shape pAlloc) {
-        Rectangle2D pViewRect = ViewUtils.shapeAsRect(pAlloc);
-        ensurePointMeasured(pView, x, pViewRect.getY(), pViewRect);
-        return viewIndexFirstVisual(x, measuredEndIndex); // Binary search through relative offsets
+        Rectangle2D pRect = ViewUtils.shapeAsRect(pAlloc);
+        return viewIndexFirstVisual(x, size());
     }
     
     /**
@@ -142,68 +155,140 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
      * @param pView
      * @param index
      * @param removeCount
-     * @param addedViews
-     * @param offsetDelta delta of offsets caused by insert/removal.
+     * @param addedViews views to add; may be null.
      */
-    void replace(ParagraphView pView, int index, int removeCount, View[] addedViews, int offsetDelta) {
+    void replace(ParagraphView pView, int index, int removeCount, View[] addedViews) {
         if (index + removeCount > size()) {
             throw new IllegalArgumentException("index=" + index + ", removeCount=" + // NOI18N
                     removeCount + ", viewCount=" + size()); // NOI18N
         }
-        int removeEndIndex = index + removeCount;
-        int startRelOffset = 0;
-        int endRelOffset = 0;
-        startRelOffset = startOffset(index);
-        endRelOffset = (removeCount == 0) ? startRelOffset : endOffset(removeEndIndex - 1);
-        moveOffsetGap(removeEndIndex, endRelOffset);
-        double x = startVisualOffset(index);
-        // Move visual gap to index since everything above it will be visually recomputed later
-        if (index < measuredEndIndex) {
-            moveVisualGap(index, x);
-            lowerMeasuredEndIndex(index);
+        int addedViewsLength = (addedViews != null) ? addedViews.length : 0;
+        if (removeCount == 0 && addedViewsLength == 0) {
+            return;
         }
-        // Assign visual offset BEFORE possible removal/addition of views is made
-        // since the added views would NOT have the visual offset filled in yet.
-        if (removeCount != 0) { // Removing at least one item => index < size
+
+        int removeEndIndex = index + removeCount;
+        int addEndIndex = index + addedViewsLength;
+        int relEndOffset = startOffset(index); // Offset relative to pView.getStartOffset()
+        int removeEndRelOffset = (removeCount == 0) ? relEndOffset : endOffset(removeEndIndex - 1);
+        moveOffsetGap(removeEndIndex, removeEndRelOffset);
+        double endX = startVisualOffset(index);
+        double removeEndX = (removeCount == 0) ? endX : endVisualOffset(removeEndIndex - 1);
+        moveVisualGap(removeEndIndex, endX);
+        boolean tabableViewsAboveAddedViews = pView.containsTabableViews();
+        DocumentView docView = pView.getDocumentView();
+        if (removeCount != 0) {
             remove(index, removeCount);
         }
-        int endAddedIndex;
-        if (addedViews != null && addedViews.length != 0) {
-            endAddedIndex = index + addedViews.length;
+        if (addedViewsLength > 0) {
             addArray(index, addedViews);
-            int pViewStartOffset = pView.getStartOffset();
+            CharSequence docText = null;
+            int pViewOffset = pView.getStartOffset();
+            boolean nonPrintableCharsVisible = false;
+            boolean tabViewAdded = false;
             for (int i = 0; i < addedViews.length; i++) {
                 EditorView view = (EditorView) addedViews[i];
-                int offset = view.getRawEndOffset();
-                // Below gap => do not use offsetGapLength
-                view.setRawEndOffset(offset - pViewStartOffset);
+                int viewLen = view.getLength();
+                relEndOffset += viewLen;
+                view.setRawEndOffset(relEndOffset); // Below offset-gap
                 view.setParent(pView);
-                // Do not measure added view at this point
-            }
-        } else { // No added views
-            endAddedIndex = index;
-        }
-        // Even if no views would be added (just removal) the tabbable views must be re-computed
-        // Since making the measuredEndIndex smaller => do not need to recompute layout
-        if (gapStorage != null) { // TODO - not used currently (no gap created)
-            gapStorage.offsetGapStart = endRelOffset;
-            gapStorage.offsetGapLength -= offsetDelta;
-        } else { // Move the items one by one
-            if (offsetDelta != 0) {
-                int viewCount = size(); // Refresh (changed by 
-                if (false && viewCount > ViewGapStorage.GAP_STORAGE_THRESHOLD) { // TODO enable when stable
-                    gapStorage = new ViewGapStorage();
-                    gapStorage.initOffsetGap(endRelOffset);
-                    offsetDelta += gapStorage.offsetGapLength; // Move above gap will follow
+                // Possibly assign text layout
+                if (view instanceof HighlightsView) {
+                    HighlightsView hView = (HighlightsView) view;
+                    // Fill in text layout if necessary
+                    if (hView.getTextLayout() == null) { // Fill in text layout
+                        if (docText == null) {
+                            docText = DocumentUtilities.getText(docView.getDocument());
+                            nonPrintableCharsVisible = docView.op.isNonPrintableCharactersVisible();
+                        }
+                        int startOffset = pViewOffset + relEndOffset - viewLen;
+                        String text = docText.subSequence(startOffset, startOffset + viewLen).toString();
+                        String tlText = text;
+                        if (nonPrintableCharsVisible) {
+                            tlText = text.replace(' ', DocumentViewOp.PRINTING_SPACE);
+                        }
+                        Font font = ViewUtils.getFont(hView.getAttributes(), docView.op.getDefaultFont());
+                        TextLayout textLayout = docView.op.createTextLayout(tlText, font);
+                        float width = TextLayoutUtils.getWidth(textLayout, tlText, font);
+                        hView.setTextLayout(textLayout, width);
+                        if (ViewHierarchyImpl.CHECK_LOG.isLoggable(Level.FINE)) {
+                            docView.getTextLayoutVerifier().put(textLayout, text);
+                        }
+                    }
                 }
-                for (int i = endAddedIndex; i < viewCount; i++) {
-                    EditorView view = get(i);
+                // Measure width
+                float width;
+                if (view instanceof TabableView) {
+                    width = ((TabableView) view).getTabbedSpan((float) endX, docView.getTabExpander());
+                    tabViewAdded = true;
+                } else {
+                    width = view.getPreferredSpan(View.X_AXIS);
+                }
+                endX += width;
+                view.setRawEndVisualOffset(endX);
+                // Measure height
+                float height = view.getPreferredSpan(View.Y_AXIS);
+                if (height > childrenHeight) {
+                    childrenHeight = height;
+                }
+            }
+
+            if (tabViewAdded) {
+                pView.markContainsTabableViews();
+            }
+        }
+
+        int offsetDelta = (relEndOffset - removeEndRelOffset);
+        boolean updateAboveAddedViews = true;
+        if (gapStorage != null) {
+            gapStorage.offsetGapStart = relEndOffset;
+            gapStorage.offsetGapLength -= offsetDelta;
+            gapStorage.visualGapIndex = addEndIndex;
+            gapStorage.visualGapStart = endX;
+            gapStorage.visualGapLength -= (endX - removeEndX);
+            offsetDelta = 0;
+            updateAboveAddedViews = false;
+
+        } else { // Check gap creation
+            int viewCount = size();
+            if ((index > 0 || removeCount > 0) && // Modifying existing children
+                (viewCount > ViewGapStorage.GAP_STORAGE_THRESHOLD))
+            {
+                gapStorage = new ViewGapStorage();
+                gapStorage.initOffsetGap(relEndOffset);
+                gapStorage.initVisualGap(addEndIndex, endX);
+                offsetDelta += gapStorage.offsetGapLength;
+            } // else: // Move the above items one by one
+        }
+
+        if (tabableViewsAboveAddedViews || updateAboveAddedViews) {
+            int viewCount = size();
+            for (int i = addEndIndex; i < viewCount; i++) {
+                EditorView view = get(i);
+                if (offsetDelta != 0) {
                     view.setRawEndOffset(view.getRawEndOffset() + offsetDelta);
                 }
+                float width;
+                if (tabableViewsAboveAddedViews && view instanceof TabableView) {
+                    width = ((TabableView) view).getTabbedSpan((float) endX, docView.getTabExpander());
+                } else {
+                    width = view.getPreferredSpan(View.X_AXIS);
+                }
+                endX += width;
+                double rawEndX = (gapStorage != null) ? endX + gapStorage.visualGapLength : endX;
+                view.setRawEndVisualOffset(rawEndX);
+                // Check for possible height change
+                float height = view.getPreferredSpan(View.Y_AXIS);
+                if (height > childrenHeight) {
+                    childrenHeight = height;
+                }
             }
         }
-        // Update paragraph view's length to actual textual length of children.
-        // It cannot be done relatively by just adding offsetDelta to original length
+        pView.markLayoutInvalid();
+        
+        // Update paragraph view's length to actual textual length of children
+        // (can only be done after all offsets updating for correct getLength() operation).
+        // It cannot be done relatively by just adding offset delta to original length
         // since box views with unitialized children already have proper length
         // so later children initialization would double that length.
         int newLength = getLength();
@@ -216,177 +301,83 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         }
     }
     
-    void lowerMeasuredEndIndex(int newMeasuredEndIndex) {
-        assert (newMeasuredEndIndex >= 0) : "newMeasuredEndIndex=" + newMeasuredEndIndex + " < 0"; // NOI18N
-        assert (newMeasuredEndIndex <= measuredEndIndex);
-        while (measuredEndIndex > newMeasuredEndIndex) {
-            wrapInfo = null; // Clear wrapInfo since it would not contain valid content
-            EditorView view = get(--measuredEndIndex);
-            if (view instanceof HighlightsView) {
-                HighlightsView hView = (HighlightsView) view;
-                assert (hView.getTextLayout() != null);
-                hView.setTextLayout(null);
-            }
-        }
+    int getStartInvalidChildrenLocalOffset() {
+        return startInvalidChildrenLocalOffset;
     }
     
-    boolean ensureIndexMeasured(ParagraphView pView, int index, Rectangle2D pViewRect) {
-        int viewCount = size();
-        if (measuredEndIndex < viewCount) {
-            if (measuredEndIndex <= index) { // <= to ensure next on inited too
-                double measuredEndX = startVisualOffset(measuredEndIndex);
-                fixSpansAndRepaint(pView, measuredEndX, viewCount, index, 0d, pViewRect);
-                return true;
-            }
-        }
-        return false;
+    int getEndInvalidChildrenLocalOffset() {
+        return endInvalidChildrenLocalOffset;
     }
     
-    boolean ensurePointMeasured(ParagraphView pView, double x, double y, Rectangle2D pViewRect) {
-        int viewCount = size();
-        if (measuredEndIndex < viewCount) {
-            double relY = y - pViewRect.getY();
-            if (relY >= childrenHeight) {
-                // [TODO] Init just partially till relY
-                ensureIndexMeasured(pView, viewCount, pViewRect);
-                return true;
-            }
-            x -= pViewRect.getX(); // make relative
-            double measuredEndRelX = startVisualOffset(measuredEndIndex);
-            if (measuredEndRelX <= x) { // <= to ensure next one inited too
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("ensurePointMeasured: x=" + x + ",y=" + y + ", mX=" + measuredEndRelX); // NOI18N
-                }
-                fixSpansAndRepaint(pView, measuredEndRelX, viewCount, -1, x, pViewRect);
-                return true;
-            }
-        }
-        return false;
+    void setInvalidChildrenLocalRange(int startInvalidChildrenLocalOffset, int endInvalidChildrenLocalOffset) {
+        this.startInvalidChildrenLocalOffset = startInvalidChildrenLocalOffset;
+        this.endInvalidChildrenLocalOffset = endInvalidChildrenLocalOffset;
     }
 
-    /**
-     * Ensure that all child views occupying the particular y coordinate will be measured.
-     *
-     * @param pView
-     * @param y
-     * @param pViewRect
-     * @return 
-     */
-    boolean ensureYMeasured(ParagraphView pView, double y, Rectangle2D pViewRect) {
-        // Use Integer.MAX_VALUE for reasonable subtracting
-        return ensurePointMeasured(pView, (double) Integer.MAX_VALUE, y, pViewRect);
-    }
-    
-    void fixSpansAndRepaint(ParagraphView pView, double mEndX,
-            int viewCount, int targetIndex, double targetRelX, Rectangle2D pViewRect)
-    {
+    void fixSpans(ParagraphView pView, int startIndex, int endIndex) {
+        double startX = startVisualOffset(startIndex);
+        double endX = startVisualOffset(endIndex);
+        moveVisualGap(endIndex, endX);
+        double x = startX;
         DocumentView docView = pView.getDocumentView();
-        CharSequence docText = null;
-        int mEndOffset = 0;
-        TabExpander tabExpander = null;
-        float origWidth = pView.getWidth();
-        float origHeight = pView.getHeight();
-        // Ensure that a repeated fixing of spans will not be called many times
-        // since there is certain overhead - repaints and possible width preference change.
-        int mEndIndex = measuredEndIndex;
-        int stopIndex = mEndIndex << 1;
-        boolean wrapInfoChecked = false;
-        boolean nonPrintableCharsVisible = false;
-        for (; mEndIndex < viewCount; mEndIndex++) {
-            EditorView view = get(mEndIndex);
-            // First assign parent to the view and then ask for preferred span.
-            // This way the view may get necessary info from its parent regarding its preferred span.
+        boolean containsTabableViews = pView.containsTabableViews();
+        for (int i = startIndex; i < endIndex; i++) {
+            EditorView view = get(i);
             float width;
-            if (view instanceof HighlightsView) {
-                HighlightsView hView = (HighlightsView) view;
-                // Fill in text layout if necessary
-                if (hView.getTextLayout() == null) { // Fill in text layout
-                    if (docText == null) {
-                        mEndOffset = pView.getStartOffset() + startOffset(mEndIndex); // Needed for TextLayout creation
-                        docText = DocumentUtilities.getText(docView.getDocument());
-                        nonPrintableCharsVisible = docView.op.isNonPrintableCharactersVisible();
-                    }
-                    String text = docText.subSequence(mEndOffset, mEndOffset + view.getLength()).toString();
-                    if (nonPrintableCharsVisible) {
-                        text = text.replace(' ', DocumentViewOp.PRINTING_SPACE);
-                    }
-                    TextLayout textLayout = docView.op.createTextLayout(text, hView.getAttributes());
-                    hView.setTextLayout(textLayout);
-                 }
-            }
             // Measure the view
-            if (view instanceof TabableView) {
-                if (tabExpander == null) {
-                    tabExpander = docView.getTabExpander();
-                }
-                width = ((TabableView) view).getTabbedSpan((float) mEndX, tabExpander);
+            if (containsTabableViews && view instanceof TabableView) {
+                width = ((TabableView) view).getTabbedSpan((float) x, docView.getTabExpander());
             } else {
                 width = view.getPreferredSpan(View.X_AXIS);
             }
-            mEndX += width;
-            view.setRawEndVisualOffset(visualOffset2Raw(mEndX));
+            x += width;
+            view.setRawEndVisualOffset(x); // Below visual gap
             // Check for possible height change
             float height = view.getPreferredSpan(View.Y_AXIS);
             if (height > childrenHeight) {
                 childrenHeight = height;
             }
-            mEndOffset += view.getLength();
-            // Check whether stop now
-            if (mEndIndex >= stopIndex &&
-                    ((targetIndex != -1 && mEndIndex > targetIndex) ||
-                    (targetIndex == -1 && mEndX > targetRelX))) // '>' so that the x is contained inside a view
-            {
-                if (!wrapInfoChecked) {
-                    wrapInfoChecked = true;
-                    checkCreateWrapInfo(docView, mEndX);
-                    if (wrapInfo != null) {
-                        stopIndex = viewCount; // Force measure till end
-                        continue;
+        }
+        double deltaX = (x - endX);
+        if (deltaX != 0d) {
+            if (containsTabableViews || gapStorage == null) {
+                int viewCount = size();
+                for (int i = endIndex; i < viewCount; i++) {
+                    EditorView view = get(i);
+                    float width;
+                    // Measure the view
+                    if (containsTabableViews && view instanceof TabableView) {
+                        width = ((TabableView) view).getTabbedSpan((float) x, docView.getTabExpander());
+                    } else {
+                        width = view.getPreferredSpan(View.X_AXIS);
                     }
+                    x += width;
+                    double rawEndX = (gapStorage != null) ? x + gapStorage.visualGapLength : x;
+                    view.setRawEndVisualOffset(rawEndX); // Above visual gap
                 }
-                mEndIndex++;
-                break;
+            } else { // Only update gapStorage
+                gapStorage.visualGapLength -= deltaX;
             }
         }
-        assert (mEndIndex >= measuredEndIndex);
-        measuredEndIndex = mEndIndex;
-        // [TODO] implement lazy incremental update
-        if (!wrapInfoChecked) {
-            checkCreateWrapInfo(docView, mEndX);
-        }
-        if (wrapInfo != null) {
-            buildWrapLines(pView);
-        } // Else no wrapping 
-        boolean fullyMeasured = isFullyMeasured();
-        float newWidth = width();
-        float newHeight = height();
-        if ((fullyMeasured && newWidth != origWidth) || (!fullyMeasured && newWidth > origWidth)) {
-            pView.setWidth(newWidth);
-            pView.notifyChildWidthChange();
-        }
-        boolean repaintHeightChange = false;
-        double deltaY = newHeight - origHeight;
-        boolean nonZeroDeltaY = (deltaY != 0d);
-        if ((fullyMeasured && nonZeroDeltaY) || (!fullyMeasured && deltaY > 0d)) {
-            repaintHeightChange = true;
-            if (nonZeroDeltaY) {
-                pView.setHeight(newHeight);
-                pView.notifyChildHeightChange();
-                docView.validChange().addChangeY(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
-            }
-        }
-        // Repaint full pView [TODO] can be improved
-        Rectangle visibleRect = docView.op.getVisibleRect();
-        pView.notifyRepaint(pViewRect.getX(), pViewRect.getY(), visibleRect.getMaxX(),
-                repaintHeightChange ? visibleRect.getMaxY() : pViewRect.getMaxY());
+        pView.markLayoutInvalid();
     }
-    
-    private void checkCreateWrapInfo(DocumentView docView, double childrenWidth) {
+
+    /**
+     * Layout pView's children according to line wrap setting.
+     * <br/>
+     * This method should ONLY be called by pView which then re-checks children size
+     * and possibly updates itself appropriately.
+     */
+    void updateLayout(DocumentView docView, ParagraphView pView) {
         // For existing wrapInfo tend to create wrap info too since it could just be truncated
         // but it contains up-to-date wrap line height.
-        if (wrapInfo != null || childrenWidth > docView.op.getAvailableWidth()) {
+        // [TODO] Implement incremental wrapInfo update
+        if (wrapInfo != null || (childrenWidth() > docView.op.getAvailableWidth() &&
+                docView.op.getLineWrapType() != LineWrapType.NONE))
+        {
             wrapInfo = new WrapInfo();
-        }
+            buildWrapLines(pView);
+        } // Else no wrapping 
     }
     
     private void buildWrapLines(ParagraphView pView) {
@@ -395,18 +386,11 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         wrapInfo.updater = null; // Finished [TODO] Lazy update
     }
 
-    void resetWidth() {
-        lowerMeasuredEndIndex(0);
-        wrapInfo = null;
-    }
-
     void preferenceChanged(ParagraphView pView, EditorView view, boolean widthChange, boolean heightChange) {
         int index = viewIndexFirst(raw2Offset(view.getRawEndOffset()));
         if (index >= 0 && get(index) == view) {
             if (widthChange) {
-                if (index < measuredEndIndex) {
-                    lowerMeasuredEndIndex(index);
-                }
+                fixSpans(pView, index, index + 1);
             }
             if (heightChange) {
                 float newHeight = view.getPreferredSpan(View.Y_AXIS);
@@ -423,13 +407,11 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     void paint(ParagraphView pView, Graphics2D g, Shape pAlloc, Rectangle clipBounds) {
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(pAlloc);
-        // Ensure whole line gets inited (TODO - check available width for non-wrapping case)
-        ensureIndexMeasured(pView, size(), allocBounds);
+        Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
         if (wrapInfo != null) {
             int startWrapLineIndex;
             int endWrapLineIndex;
-            double wrapY = clipBounds.y - allocBounds.y;
+            double wrapY = clipBounds.y - pRect.y;
             float wrapLineHeight = wrapInfo.wrapLineHeight(this);
             if (wrapY < wrapLineHeight) {
                 startWrapLineIndex = 0;
@@ -446,7 +428,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             wrapInfo.paintWrapLines(this, pView, startWrapLineIndex, endWrapLineIndex, g, pAlloc, clipBounds);
 
         } else { // Regular paint
-            double startX = clipBounds.x - allocBounds.x;
+            double startX = clipBounds.x - pRect.x;
             double endX = startX + clipBounds.width;
             if (size() > 0) {
                 int startIndex = viewIndexNoWrap(pView, startX, pAlloc); // y ignored
@@ -474,23 +456,23 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         }
     }
     
-    Shape modelToViewChecked(ParagraphView pView, int offset, Shape alloc, Bias bias) {
+    Shape modelToViewChecked(ParagraphView pView, int offset, Shape pAlloc, Bias bias) {
         int index = pView.getViewIndex(offset, bias);
         if (index < 0) {
-            return alloc;
+            return pAlloc;
         }
-        ensureIndexMeasured(pView, index, ViewUtils.shapeAsRect(alloc));
+        Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
         if (wrapInfo != null) {
             int wrapLineIndex = findWrapLineIndex(pView, offset);
             WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
-            Rectangle2D wrapLineBounds = wrapLineAlloc(alloc, wrapLineIndex);
+            Rectangle2D wrapLineBounds = wrapLineAlloc(pAlloc, wrapLineIndex);
             Shape ret = null;
             StringBuilder logBuilder = null;
             if (LOG.isLoggable(Level.FINE)) {
                 logBuilder = new StringBuilder(100);
                 logBuilder.append("ParagraphViewChildren.modelToViewChecked(): offset="). // NOI18N
                         append(offset).append(", wrapLineIndex=").append(wrapLineIndex). // NOI18N
-                        append(", orig-allocBounds=").append(ViewUtils.toString(alloc)).append("\n    "); // NOI18N
+                        append(", orig-pAlloc=").append(ViewUtils.toString(pAlloc)).append("\n    "); // NOI18N
             }
 
             if (wrapLine.startPart != null && offset < wrapLine.startPart.getEndOffset()) {
@@ -525,10 +507,9 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             return ret;
 
         } else { // No wrapping
-            ensureIndexMeasured(pView, index, ViewUtils.shapeAsRect(alloc));
             // First find valid child (can lead to change of child allocation bounds)
             EditorView view = get(index);
-            Shape childAlloc = getChildAllocation(index, alloc);
+            Shape childAlloc = getChildAllocation(index, pAlloc);
             // Update the bounds with child.modelToView()
             return view.modelToViewChecked(offset, childAlloc, bias);
         }
@@ -621,7 +602,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         }
         return retOffset;
     }
-
+    
     private int visualPositionNoWrap(ParagraphView pView, Shape alloc, Bias[] biasRet, double x) {
         int childIndex = viewIndexNoWrap(pView, x, alloc);
         EditorView child = pView.getEditorView(childIndex);
@@ -703,7 +684,6 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             return null;
         }
         Rectangle2D pRect = ViewUtils.shapeAsRect(pAlloc);
-        ensurePointMeasured(pView, x, y, pRect);
         if (wrapInfo == null) { // Regular case
             IndexAndAlloc indexAndAlloc = new IndexAndAlloc();
             int index = viewIndexNoWrap(pView, x, pAlloc);
@@ -760,19 +740,19 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         return indexAndAlloc;
     }
 
-    private Rectangle2D.Double wrapLineAlloc(Shape alloc, int wrapLineIndex) {
-        Rectangle2D.Double allocBounds = ViewUtils.shape2Bounds(alloc);
+    private Rectangle2D.Double wrapLineAlloc(Shape pAlloc, int wrapLineIndex) {
+        Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
         float wrapLineHeight = wrapInfo.wrapLineHeight(this);
-        allocBounds.y += wrapLineIndex * wrapLineHeight;
-        allocBounds.height = wrapLineHeight;
-        return allocBounds;
+        pRect.y += wrapLineIndex * wrapLineHeight;
+        pRect.height = wrapLineHeight;
+        return pRect;
     }
     
     private int wrapLineStartOffset(ParagraphView pView, WrapLine wrapLine) {
         if (wrapLine.startPart != null) {
             return wrapLine.startPart.getStartOffset();
         } else if (wrapLine.hasFullViews()) {
-            return pView.getView(wrapLine.firstViewIndex).getStartOffset();
+            return pView.getEditorView(wrapLine.firstViewIndex).getStartOffset();
         } else {
             assert (wrapLine.endPart != null) : "Invalid wrapLine: " + wrapLine;
             return wrapLine.endPart.getStartOffset();
@@ -785,14 +765,28 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         return err;
     }
 
+    @Override
+    protected String checkSpanIntegrity(double span, EditorView view) {
+        String err = null;
+        float prefSpan = view.getPreferredSpan(View.X_AXIS);
+        if (span != prefSpan) {
+            err = "PVChildren: span=" + span + " != prefSpan=" + prefSpan; // NOI18N
+        }
+        return err;
+    }
+
     /**
      * Append pView-related info to string builder.
      *
      * @param pView
      */
     public StringBuilder appendViewInfo(ParagraphView pView, StringBuilder sb) {
+        if (!pView.isChildrenValid()) {
+            int startOffset = pView.getStartOffset();
+            sb.append(" I<").append(startOffset + getStartInvalidChildrenLocalOffset()). // NOI18N
+                    append(',').append(startOffset + getEndInvalidChildrenLocalOffset()).append(">"); // NOI18N
+        }
         sb.append(", chWxH=").append(width()).append("x").append(height()); // NOI18N
-        sb.append(", mI=").append(measuredEndIndex); // NOI18N
         if (wrapInfo != null) {
             sb.append(", Wrapped"); // NOI18N
         }

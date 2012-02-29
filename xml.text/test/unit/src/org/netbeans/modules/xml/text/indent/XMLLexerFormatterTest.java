@@ -141,7 +141,7 @@ public class XMLLexerFormatterTest extends AbstractTestCase {
         BaseDocument inputDoc = getDocument("indent/input_sub2.xml");
         //format a subsection of the inputDoc
         XMLLexerFormatter formatter = new XMLLexerFormatter(null);
-        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 51, 80);
+        BaseDocument formattedDoc = formatter.doReformat(inputDoc, 63, 80);
         System.out.println(formattedDoc.getText(0, formattedDoc.getLength()));
         BaseDocument outputDoc = getDocument("indent/output_sub2.xml");
         assert (compare(formattedDoc, outputDoc));

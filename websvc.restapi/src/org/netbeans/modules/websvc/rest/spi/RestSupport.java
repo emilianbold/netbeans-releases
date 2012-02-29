@@ -315,7 +315,7 @@ public abstract class RestSupport {
         try {
             RestServicesModel model = getRestServicesModel();
             if (model != null) {
-                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
 
                     @Override
                     public Void run(RestServicesMetadata metadata) throws IOException {

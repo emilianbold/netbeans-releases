@@ -65,6 +65,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.ErrorManager;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.HelpCtx;
@@ -78,14 +79,38 @@ import org.openide.util.NbBundle;
  */
 public class ImageDataObject extends MultiDataObject implements CookieSet.Factory {
     
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverJPG",
+        mimeType="image/jpeg",
+        extension={"jpg", "JPG", "jpe", "JPE", "jpeg", "JPEG"},
+        position=110
+    )
     /** Generated serialized version UID. */
     static final long serialVersionUID = -6035788991669336965L;
 
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverGIF",
+        mimeType="image/gif",
+        extension={"gif", "GIF"},
+        position=111
+    )
     /** Base for image resource. */
     private static final String IMAGE_ICON_BASE = "org/netbeans/modules/image/imageObject.png"; // NOI18N
     
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverPNG",
+        mimeType="image/png",
+        extension={"png", "PNG"},
+        position=112
+    )
     /** Open support for this image data object. */
     private transient ImageOpenSupport openSupport;
+    @MIMEResolver.ExtensionRegistration(
+        displayName="#ImageMimeResolverBMP",
+        mimeType="image/bmp",
+        extension={"bmp", "BMP"},
+        position=113
+    )
     /** Print support for this image data object **/
     private transient ImagePrintSupport printSupport;
  

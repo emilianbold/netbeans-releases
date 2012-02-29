@@ -170,7 +170,7 @@ public class TestUtil implements TestConstants {
     }
 
     public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
-        return new BugzillaRepository(name, name, url, user, psswd, null, null);
+        return new BugzillaRepository(name, name, url, user, psswd.toCharArray(), null, null);
     }
 
     public static void validate(BugzillaRepositoryConnector brc, TaskRepository repository) throws Throwable {

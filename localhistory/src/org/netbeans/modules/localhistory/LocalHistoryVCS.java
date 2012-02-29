@@ -45,6 +45,7 @@ package org.netbeans.modules.localhistory;
 
 import java.io.File;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
@@ -63,11 +64,12 @@ import org.openide.util.lookup.ServiceProviders;
 public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {
-        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_DisplayName"));
-        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem"));
+        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_DisplayName")); // NOI18N
+        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem")); // NOI18N
         putProperty(PROP_LOCALHISTORY_VCS, Boolean.TRUE);
         
         LocalHistory.getInstance().addVersioningListener(new VersioningListener() {
+            @Override
             public void versioningEvent(VersioningEvent event) {
                 if(event.getId().equals(LocalHistory.EVENT_PROJECTS_CHANGED)) {
                     fireVersionedFilesChanged();   
@@ -76,6 +78,7 @@ public class LocalHistoryVCS extends VersioningSystem {
         });
     }
     
+    @Override
     public File getTopmostManagedAncestor(File file) {    
         if(file == null) {
             return null;
@@ -94,14 +97,21 @@ public class LocalHistoryVCS extends VersioningSystem {
         return null;
     }
 
+    @Override
     public VCSAnnotator getVCSAnnotator() {
         return LocalHistory.getInstance().getVCSAnnotator();
     }
     
+    @Override
     public VCSInterceptor getVCSInterceptor() {
         return LocalHistory.getInstance().getVCSInterceptor();
     }
 
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return LocalHistory.getInstance().getVCSHistoryProvider();
+    }
+    
     void managedFilesChanged() {
         fireVersionedFilesChanged();
     }

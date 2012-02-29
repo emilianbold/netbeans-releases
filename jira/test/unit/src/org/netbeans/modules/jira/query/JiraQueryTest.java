@@ -53,7 +53,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
@@ -119,7 +119,7 @@ public class JiraQueryTest extends NbTestCase {
     private void executeFilter(JiraFilter fd, int issuesCount) {
         JiraQuery q = new JiraQuery("testfilter", JiraTestUtil.getRepository(), fd);
         q.refresh();        
-        Issue[] issues = q.getIssues();
+        IssueProvider[] issues = q.getIssues();
         assertNotNull(issues);
         assertEquals(issuesCount, issues.length);
     }

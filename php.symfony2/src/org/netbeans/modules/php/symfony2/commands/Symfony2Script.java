@@ -93,14 +93,10 @@ public final class Symfony2Script extends PhpProgram {
         return new Symfony2Script(command).validate();
     }
 
-    @Messages("LBL_Symfony2ScriptPrefix=Symfony2 console: {0}")
+    @Messages("Symfony2Script.script.label=Symfony2 console")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.LBL_Symfony2ScriptPrefix(error);
+        return FileUtils.validateFile(Bundle.Symfony2Script_script_label(), getProgram(), false);
     }
 
 }

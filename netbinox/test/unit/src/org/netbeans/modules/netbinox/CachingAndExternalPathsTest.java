@@ -44,6 +44,7 @@ package org.netbeans.modules.netbinox;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -54,6 +55,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -105,6 +107,10 @@ public class CachingAndExternalPathsTest extends NbTestCase {
             NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartAgain");
             suite.addTest(NbModuleSuite.create(conf));
         }
+        {
+            NbModuleSuite.Configuration conf = common.reuseUserDir(true).addTest(CachingAndExternalPathsTest.class, "testStartOnceMore");
+            suite.addTest(NbModuleSuite.create(conf));
+        }
 
         suite.addTest(new CachingAndExternalPathsTest("testInMiddle"));
 
@@ -116,6 +122,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         return suite;
     }
 
+    @RandomlyFails
     public void testInitUserDir() throws Exception {
         File simpleModule = new File(System.getProperty("external.jar"));
 
@@ -171,6 +178,11 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         doNecessarySetup();
         // will be reset next time the system starts
         System.getProperties().remove("netbeans.dirs");
+    }
+    public void testStartOnceMore() throws Exception {
+        doNecessarySetup();
+        // will be reset next time the system starts
+        System.getProperties().remove("netbeans.dirs");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         LOG.info("testStartAgain - enabling initCheckReadAccess");
@@ -178,7 +190,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         LOG.info("testStartAgain - finished");
     }
 
-    static void doNecessarySetup() throws ClassNotFoundException, IOException {
+    static void doNecessarySetup() throws Exception {
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);
         try {
             Class<?> c = Class.forName("javax.help.HelpSet", true, l);
@@ -192,6 +204,15 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         if (fo != null) {
             fo.delete();
         }
+        waitWarmUpFinished();
+    }
+    private static void waitWarmUpFinished() throws Exception {
+        ClassLoader global = Thread.currentThread().getContextClassLoader();
+        Class<?> warmTask = global.loadClass("org.netbeans.core.startup.MainLookup"); // NOI18N
+        Method warmUp = warmTask.getMethod("warmUp", long.class); // NOI18N
+        Object wait = warmUp.invoke(null, 0L);
+        Method waitUp = wait.getClass().getDeclaredMethod("waitFinished"); // NOI18N
+        waitUp.invoke(wait);
     }
 
     public void testInMiddle() {
@@ -219,6 +240,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails
     public void testVerifyActivatorExecuted() {
         assertEquals("1", System.getProperty("activated.count"));
     }

@@ -69,16 +69,14 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.netbeans.modules.subversion.SubversionVCS;
-import org.netbeans.modules.subversion.SvnFileNode;
-import org.netbeans.modules.subversion.SvnModuleConfig;
-import org.netbeans.modules.subversion.WorkingCopyAttributesCache;
+import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.options.AnnotationExpression;
 import org.netbeans.modules.subversion.ui.commit.CommitOptions;
 import org.netbeans.modules.subversion.ui.diff.Setup;
+import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.FileSelector;
@@ -895,6 +893,54 @@ public class SvnUtils {
         return info;
     }
 
+    public static void rollback (File file, SVNUrl repoUrl, SVNUrl fileUrl, SVNRevision.Number revision, boolean wasDeleted, OutputLogger logger) {
+        if (wasDeleted) {
+            // it was deleted, lets delete it again
+            if (file.exists()) {
+                try {
+                    SvnClient client = Subversion.getInstance().getClient(false);
+                    client.remove(new File[]{file}, true);
+                } catch (SVNClientException ex) {
+                    Subversion.LOG.log(Level.SEVERE, null, ex);
+                }
+                Subversion.getInstance().getStatusCache().refresh(file, FileStatusCache.REPOSITORY_STATUS_UNKNOWN);
+            }
+            return;
+        }
+        File parent = file.getParentFile();
+        parent.mkdirs();
+
+        try {
+            File oldFile = VersionsCache.getInstance().getFileRevision(repoUrl, fileUrl, Long.toString(revision.getNumber()), file.getName());
+            for (int i = 1; i < 7; i++) {
+                if (file.delete()) {
+                    break;
+                }
+                try {
+                    Thread.sleep(i * 34);
+                } catch (InterruptedException e) {
+                }
+            }
+            FileUtil.copyFile(FileUtil.toFileObject(oldFile), FileUtil.toFileObject(parent), file.getName(), "");
+        } catch (IOException e) {
+            if (refersToDirectory(e)) {
+                Subversion.LOG.log(Level.FINE, null, e);
+                logger.logError(NbBundle.getMessage(SearchHistoryAction.class, "MSG_SummaryView.refersToDirectory", fileUrl)); //NOI18N
+            } else {
+                Subversion.LOG.log(Level.SEVERE, null, e);
+            }
+        }
+    }  
+    
+    private static boolean refersToDirectory (Exception ex) {
+        Throwable t = ex;
+        boolean dir = false;
+        while (t != null && !(dir = t.getMessage().contains("refers to a directory"))) { //NOI18N
+            t = t.getCause();
+        }
+        return dir;
+    }
+    
     /**
      * Compares two {@link FileInformation} objects by importance of statuses they represent.
      */

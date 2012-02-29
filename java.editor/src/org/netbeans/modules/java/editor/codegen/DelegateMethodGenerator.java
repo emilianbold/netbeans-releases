@@ -76,6 +76,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.swing.text.JTextComponent;
+
+import com.sun.source.tree.Tree;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -83,7 +85,9 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ScanUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
@@ -170,13 +174,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 String message = NbBundle.getMessage(DelegateMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                                 ElementHandle<? extends Element> handle = panel.getDelegateField();
                                 VariableElement delegate = handle != null ? (VariableElement)handle.resolve(copy) : null;
                                 ArrayList<ExecutableElement> methods = new ArrayList<ExecutableElement>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getDelegateMethods())
                                     methods.add((ExecutableElement)elementHandle.resolve(copy));
-                                generateDelegatingMethods(copy, path, delegate, methods, idx);
+                                generateDelegatingMethods(copy, path, delegate, methods);
                             }
                         }
                     });
@@ -200,12 +203,12 @@ public class DelegateMethodGenerator implements CodeGenerator {
 
                     public void run() {
                         try {
-                        js.runUserActionTask(new Task<CompilationController>() {
+                            ScanUtils.waitUserActionTask(js, new Task<CompilationController>() {
 
                             public void run(CompilationController controller) throws IOException {
-                                if (controller.getPhase().compareTo(JavaSource.Phase.RESOLVED) < 0) {
-                                    JavaSource.Phase phase = controller.toPhase(JavaSource.Phase.RESOLVED);
-                                    if (phase.compareTo(JavaSource.Phase.RESOLVED) < 0) {
+                                if (controller.getPhase().compareTo(Phase.RESOLVED) < 0) {
+                                        Phase phase = controller.toPhase(Phase.RESOLVED);
+                                    if (phase.compareTo(Phase.RESOLVED) < 0) {
                                         if (log.isLoggable(Level.SEVERE)) {
                                             log.log(Level.SEVERE, "Cannot reach required phase. Leaving without action.");
                                         }
@@ -217,12 +220,13 @@ public class DelegateMethodGenerator implements CodeGenerator {
                                 }
                                 description[0] = getAvailableMethods(controller, caretOffset, typeElementHandle, fieldHandle);
                             }
-                        }, true);
+                            });
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
                     }
                 }, NbBundle.getMessage(DelegateMethodGenerator.class, "LBL_Get_Available_Methods"), cancel, false);
+                cancel.set(true);
                 return description[0];
             }
         }
@@ -262,7 +266,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
         
     static ElementNode.Description getAvailableMethods(CompilationInfo controller, int caretOffset, final ElementHandle<? extends TypeElement> typeElementHandle, final ElementHandle<? extends VariableElement> fieldHandle) {
         TypeElement origin = typeElementHandle.resolve(controller);
-        VariableElement field = fieldHandle.resolve(controller);
+        VariableElement field = ScanUtils.checkElement(controller, fieldHandle.resolve(controller));
         assert origin != null && field != null;
         if (field.asType().getKind() == TypeKind.DECLARED) {
             DeclaredType type = (DeclaredType) field.asType();
@@ -297,14 +301,15 @@ public class DelegateMethodGenerator implements CodeGenerator {
         return null;
     }
     
-    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods, int index) {
+    static void generateDelegatingMethods(WorkingCopy wc, TreePath path, VariableElement delegate, Iterable<? extends ExecutableElement> methods) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
+            List<Tree> members = new ArrayList<Tree>();
             for (ExecutableElement executableElement : methods)
-                nue = make.insertClassMember(nue, index, createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
+                members.add(createDelegatingMethod(wc, delegate, executableElement, (DeclaredType)te.asType()));
+            nue = GeneratorUtilities.get(wc).insertClassMembers(nue, members);
             wc.rewrite(path.getLeaf(), nue);
         }        
     }

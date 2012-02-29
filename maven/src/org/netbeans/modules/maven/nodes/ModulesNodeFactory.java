@@ -41,14 +41,14 @@
  */
 
 package org.netbeans.modules.maven.nodes;
-import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.spi.nodes.AbstractMavenNodeList;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
@@ -66,6 +66,7 @@ public class ModulesNodeFactory implements NodeFactory {
     public ModulesNodeFactory() {
     }
     
+    @Override
     public NodeList createNodes(Project project) {
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         return new NList(prj);
@@ -77,12 +78,14 @@ public class ModulesNodeFactory implements NodeFactory {
             project = prj;
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 fireChange();
             }
         }
         
+        @Override
         public List<String> keys() {
             if ("pom".equals(project.getOriginalMavenProject().getPackaging())) { //NOI18N
                 return Collections.singletonList(KEY_MODULES);
@@ -90,6 +93,7 @@ public class ModulesNodeFactory implements NodeFactory {
             return Collections.emptyList();
         }
         
+        @Override
         public Node node(String key) {
             return  new ModulesNode(project);
         }

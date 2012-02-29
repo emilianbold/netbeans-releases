@@ -111,16 +111,6 @@
         </folder>
     </folder>
 
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="org-netbeans-modules-j2ee-sun-share-mime-resolver.xml" url="sun-dd-mime-resolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.share.Bundle"/>
-                <!---attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/j2ee/sun/ide/resources/..." /-->
-                <attr name="position" intvalue="350"/>
-            </file>
-        </folder>
-    </folder>
-
     <folder name="Navigator">
         <folder name="Panels">
             <folder name="text">

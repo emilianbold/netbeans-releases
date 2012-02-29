@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -77,30 +77,41 @@ public class SQLHistoryPersistenceManagerTest extends NbTestCase {
 
     /** Test testExecuteStatements passes if no exceptions occur. */
     public void testExecuteStatements() throws Exception {
-        List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-        sqlHistoryList.add(new SQLHistory("jdbc:// mysql", "select * from TRAVEL.PERSON", Calendar.getInstance().getTime()));
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
-        sqlHistoryList.add(new SQLHistory("jdbc:// oracle", "select * from PERSON", Calendar.getInstance().getTime()));
-        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
-    }
+        SQLHistoryManager testableManager = new SQLHistoryManager() {
 
-    /** Test testMultipleExecutions passes if no exceptions occur. */
-    public void testMultipleExecutions() throws Exception {
-        List<SQLHistory> sqlHistoryList = new ArrayList<SQLHistory>();
-        sqlHistoryList.add(new SQLHistory("jdbc:// derby", "select * from TRAVEL.TRIP", Calendar.getInstance().getTime()));
-        FileObject fo = FileUtil.toFileObject(getWorkDir());
-        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
-        sqlHistoryList.add(new SQLHistory("jdbc:// postgres", "select * from TRAVEL.TRIP", Calendar.getInstance().getTime()));
-        fo = FileUtil.toFileObject(getWorkDir());
-        SQLHistoryPersistenceManager.getInstance().create(fo, sqlHistoryList);
+            @Override
+            protected FileObject getConfigRoot() {
+                try {
+                    return FileUtil.toFileObject(getWorkDir());
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+
+            @Override
+            protected String getRelativeHistoryPath() {
+                return "";
+            }
+            
+        };
+        testableManager.getSQLHistory().add(new SQLHistoryEntry("jdbc:// mysql", "select * from TRAVEL.PERSON", Calendar.getInstance().getTime()));
+        testableManager.getSQLHistory().add(new SQLHistoryEntry("jdbc:// oracle", "select * from PERSON", Calendar.getInstance().getTime()));
+        testableManager.save();
     }
 
     /** Tests parsing of date format. */
     public void testDateParsing() throws Exception {
-        URL u = this.getClass().getResource("sql_history.xml");
-        FileObject fo = FileUtil.toFileObject(new File(u.toURI()));
-        List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(fo.getParent());
-        for (SQLHistory sqlHistory : sqlHistoryList) {
+        final URL u = this.getClass().getResource("sql_history.xml");
+        final FileObject fo = FileUtil.toFileObject(new File(u.toURI()));
+        SQLHistoryManager testableManager = new SQLHistoryManager() {
+            @Override
+            protected FileObject getHistoryRoot(boolean create) throws IOException {
+                return fo;
+            }
+        };
+        
+        List<SQLHistoryEntry> sqlHistoryList = new ArrayList<SQLHistoryEntry>(testableManager.getSQLHistory());
+        for (SQLHistoryEntry sqlHistory : sqlHistoryList) {
             assertNotNull(sqlHistory.getDate());
         }
     }

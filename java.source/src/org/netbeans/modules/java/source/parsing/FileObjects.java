@@ -203,7 +203,7 @@ public class FileObjects {
      * @param encoding - the file's encoding
      * @return {@link JavaFileObject}, never returns null
      */
-    public static @NonNull InferableJavaFileObject fileFileObject( final @NonNull File file, final @NonNull File root,
+    public static @NonNull PrefetchableJavaFileObject fileFileObject( final @NonNull File file, final @NonNull File root,
             final @NullAllowed JavaFileFilterImplementation filter, final @NullAllowed Charset encoding) {
         assert file != null;
         assert root != null;
@@ -386,7 +386,7 @@ public class FileObjects {
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
      */
-    public static JavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name, CharSequence content) {
+    public static PrefetchableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name, CharSequence content) {
         return memoryFileObject(pkg, name, null, System.currentTimeMillis(), content);
     }
     /**
@@ -401,7 +401,7 @@ public class FileObjects {
      * @param content the content of the {@link JavaFileObject}
      * @return {@link JavaFileObject}, never returns null
      */
-    public static InferableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
+    public static PrefetchableJavaFileObject memoryFileObject(final CharSequence pkg, final CharSequence name,
         final URI uri, final long lastModified, final CharSequence content) {
         Parameters.notNull("pkg", pkg);
         Parameters.notNull("name", name);
@@ -777,8 +777,8 @@ public class FileObjects {
 
     }
     //</editor-fold>
-
-    //<editor-fold defaultstate="collapsed" desc="JavaFileObject implementation">
+    
+    //<editor-fold defaultstate="collapsed" desc="JavaFileObject implementation">    
     public static abstract class Base implements InferableJavaFileObject {
 
         protected final JavaFileObject.Kind kind;
@@ -878,13 +878,14 @@ public class FileObjects {
     }
 
     @Trusted
-    public static class FileBase extends Base {
+    public static class FileBase extends Base implements PrefetchableJavaFileObject {
 
         private static final boolean isWindows = Utilities.isWindows();
         protected final File f;
-        private final JavaFileFilterImplementation filter;
-        private final Charset encoding;
-        private URI uriCache;
+        protected final JavaFileFilterImplementation filter;
+        protected final Charset encoding;
+        URI uriCache;
+        private volatile CharSequence data;
 
         protected FileBase (final File file,
                 final String pkgName,
@@ -959,8 +960,12 @@ public class FileObjects {
 
         @Override
 	public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
-            return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
-        }
+            CharSequence res = data;
+            if (res == null) {
+                res = getCharContentImpl(ignoreEncodingErrors);
+            }
+            return res;
+        }        
 
 	@Override
 	public boolean equals(final Object other) {
@@ -974,6 +979,28 @@ public class FileObjects {
 	public int hashCode() {
 	    return f.hashCode();
 	}
+        
+        @Override
+        public int prefetch() throws IOException {
+            final CharSequence chc = getCharContentImpl(true);
+            data = chc;
+            return chc.length();
+        }
+        
+        @Override
+        public int dispose() {
+            final CharSequence _data = data;
+            if (_data != null) {
+                data = null;
+                return _data.length();
+            } else {
+                return 0;
+            }
+        }
+        
+        private CharSequence getCharContentImpl(boolean ignoreEncodingErrors) throws IOException {
+            return FileObjects.getCharContent(new FileInputStream(f), encoding, filter, f.length(), ignoreEncodingErrors);
+        }
     }
         
     @Trusted
@@ -1334,12 +1361,12 @@ public class FileObjects {
     /** Temporary FileObject for parsing input stream.
      */
     @Trusted
-    private static class MemoryFileObject extends Base {
+    private static class MemoryFileObject extends Base implements PrefetchableJavaFileObject {
         
-        private final long lastModified;
-        private final CharBuffer cb;
-        private final URI uri;
-        private final boolean isVirtual;
+        final long lastModified;
+        final CharBuffer cb;
+        final URI uri;
+        final boolean isVirtual;
         
         public MemoryFileObject(final String packageName, final String fileName,
                 final URI uri, final long lastModified, final CharBuffer cb ) {            
@@ -1431,6 +1458,31 @@ public class FileObjects {
         public java.io.Writer openWriter() throws java.io.IOException {
             throw new UnsupportedOperationException();
         }
+
+        /**
+         * Nothing to prefetch it's already in RAM.
+         * Is the {@link PrefetchableJavaFileObject} just to
+         * prevent down casts.
+         * @return zero
+         * @throws IOException 
+         */
+        @Override
+        public int prefetch() throws IOException {
+            return 0;
+        }
+
+        /**
+         * Nothing to prefetch it's already in RAM.
+         * Is the {@link PrefetchableJavaFileObject} just to
+         * prevent down casts.
+         * @return zero
+         */
+        @Override
+        public int dispose() {
+            return 0;
+        }
+        
+        
         
     }
     //</editor-fold>

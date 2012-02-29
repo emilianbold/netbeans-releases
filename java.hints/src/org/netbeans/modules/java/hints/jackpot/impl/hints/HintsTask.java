@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.util.WeakListeners;
@@ -138,7 +139,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     public static final class FactoryImpl extends EditorAwareJavaSourceTaskFactory implements ChangeListener {
 
         public FactoryImpl() {
-            super(Phase.RESOLVED, Priority.LOW);
+            super(Phase.RESOLVED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
 	    HintsSettings.addChangeListener(WeakListeners.change(this, HintsSettings.class));
         }
 

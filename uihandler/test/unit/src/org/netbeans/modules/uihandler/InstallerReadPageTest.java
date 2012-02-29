@@ -62,6 +62,7 @@ import java.util.logging.Logger;
 import javax.swing.JScrollPane;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -112,6 +113,7 @@ public class InstallerReadPageTest extends NbTestCase {
         doEncodingTest("UTF-8", "<meta http-equiv='Content-Type' content='text/html; charset=utf-8'></meta>");
     }
 
+    @RandomlyFails // NB-Core-Build #7964
     public void testSendLogWithException() throws Exception {
         Logger uiLogger = Logger.getLogger("org.netbeans.ui");
         LogRecord log1 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
@@ -166,7 +168,7 @@ public class InstallerReadPageTest extends NbTestCase {
         
         assertEquals("It has the right localized text", kun, b.getText());
 
-        EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
                 JScrollPane pane = (JScrollPane)DD.d.getMessage();

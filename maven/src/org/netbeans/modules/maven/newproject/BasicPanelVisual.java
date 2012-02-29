@@ -82,6 +82,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
 import org.netbeans.modules.maven.options.MavenSettings;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.validation.api.AbstractValidator;
 import org.netbeans.validation.api.Problems;
@@ -138,7 +139,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         "ERR_Project_Folder_cannot_be_created=Project Folder cannot be created.",
         "ERR_Project_Folder_is_not_valid_path=Project Folder is not a valid path.",
         "ERR_Project_Folder_is_UNC=Project Folder cannot be located on UNC path.",
-        "ERR_old_maven=Maven {0} is too old, version 2.0.7 or newer is needed.",
+        "# {0} - version", "ERR_old_maven=Maven {0} is too old, version 2.0.7 or newer is needed.",
         "ERR_Project_Folder_exists=Project Folder already exists and is not empty."
     })
     BasicPanelVisual(BasicWizardPanel panel, Archetype arch) {
@@ -444,7 +445,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }//GEN-LAST:event_browseButtonActionPerformed
 
     private void btnSetupNewerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSetupNewerActionPerformed
-        OptionsDisplayer.getDefault().open(OptionsDisplayer.ADVANCED + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
+        OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + MavenOptionController.OPTIONS_SUBPATH); //NOI18N
         panel.getValidationGroup().performValidation();
     }//GEN-LAST:event_btnSetupNewerActionPerformed
     
@@ -541,7 +542,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
     }
     
     @Messages({
-        "TXT_MavenProjectName=mavenproject{0}",
+        "# {0} - project count", "TXT_MavenProjectName=mavenproject{0}",
         "TXT_Checking1=Checking additional creation properties..."
     })
     void read(WizardDescriptor settings) {

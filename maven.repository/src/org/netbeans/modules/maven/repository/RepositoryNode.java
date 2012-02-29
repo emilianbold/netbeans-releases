@@ -228,15 +228,14 @@ public class RepositoryNode extends AbstractNode {
         }
 
         @Override public boolean isEnabled() {
-            return RepositoryPreferences.getInstance().isPersistent(info.getId());
+            return RepositoryPreferences.getInstance().isPersistent(info.getId()) && info.isRemoteDownloadable();
         }
 
-        @Messages("LBL_Add_Repo=Add Repository")
+        @Messages("LBL_Edit_Repo=Edit Repository")
         @Override public void actionPerformed(ActionEvent e) {
-            final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-            rrui.getAccessibleContext().setAccessibleDescription(LBL_Add_Repo());
-            rrui.modify(RepositoryNode.this.info);
-            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Add_Repo());
+            final RepositoryRegisterUI rrui = new RepositoryRegisterUI(RepositoryNode.this.info);
+            rrui.getAccessibleContext().setAccessibleDescription(LBL_Edit_Repo());
+            DialogDescriptor dd = new DialogDescriptor(rrui, LBL_Edit_Repo());
             dd.setClosingOptions(new Object[]{
                         rrui.getButton(),
                         DialogDescriptor.CANCEL_OPTION

@@ -62,6 +62,8 @@ public final class RemoteValidator {
     public static String validateHost(String host) {
         if (!StringUtils.hasText(host)) {
             return NbBundle.getMessage(RemoteValidator.class, "MSG_NoHostName");
+        } else if (host.contains(" ")) { // NOI18N
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_HostNameSpaces");
         }
         return null;
     }
