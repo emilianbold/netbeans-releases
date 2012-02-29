@@ -62,7 +62,9 @@ import org.openide.util.Parameters;
 
 /**
  * Default implementations of template UI. 
- * @author Jesse Glick et al.
+ * <p>For methods which take a {@link WizardDescriptor} parameter,
+ * use the wizard as passed to {@link org.openide.WizardDescriptor.InstantiatingIterator#initialize}
+ * or {@link org.openide.loaders.TemplateWizard.Iterator#initialize}.
  */
 public class Templates {
     
@@ -77,8 +79,7 @@ public class Templates {
      * If the user selects New from {@link org.netbeans.spi.project.ui.support.CommonProjectActions#newFileAction}, this will
      * be the project on which the context menu was invoked.
      * </p>
-     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
-     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @param wizardDescriptor a file wizard
      * @return the project into which the user has requested this iterator create a file (or null if not set)
      */
     public static Project getProject(WizardDescriptor wizardDescriptor) {
@@ -102,8 +103,7 @@ public class Templates {
      * If the user selects New from {@link org.netbeans.spi.project.ui.support.CommonProjectActions#newFileAction}, this will
      * be the template selected from the context submenu.
      * </p>
-     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
-     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @param wizardDescriptor a file or project wizard
      * @return the corresponding template marker file (or null if not set)
      */
     public static FileObject getTemplate( WizardDescriptor wizardDescriptor ) {
@@ -128,8 +128,7 @@ public class Templates {
      * It may however have a preselected folder, e.g. if the user invoked New from
      * the context menu of a folder.
      * </p>
-     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
-     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @param wizardDescriptor a file wizard
      * @return the folder into which the user has requested this iterator create a file (or null if not set)
      */
     public static FileObject getTargetFolder( WizardDescriptor wizardDescriptor ) {
@@ -150,12 +149,11 @@ public class Templates {
     /**
      * Find the existing sources folder selected for a custom template wizard iterator.
      * <p class="nonnormative">
-     * This may not be set, unless you have CommonProjectActions.newProjectAction
-     * with CommonProjectActions.EXISTING_SOURCES_FOLDER value.
+     * This may not be set, unless you have {@link CommonProjectActions#newProjectAction}
+     * with {@link CommonProjectActions#EXISTING_SOURCES_FOLDER} value.
      * <p>
      *
-     * @param wizardDescriptor the wizard as passed to {@link WizardDescriptor.InstantiatingIterator#initialize}
-     *                         or {@link TemplateWizard.Iterator#initialize}
+     * @param wizardDescriptor a project wizard
      * @return the existing sources folder from which the user has requested this iterator to create a project
      *
      * @since 1.3 (17th May 2005)
@@ -165,7 +163,7 @@ public class Templates {
     }    
     /**
      * Stores a target folder so that it can be remembered later using {@link #getTargetFolder}.
-     * @param wizardDescriptor a template wizard
+     * @param wizardDescriptor a file wizard
      * @param folder a target folder to remember
      */    
     public static void setTargetFolder( WizardDescriptor wizardDescriptor, FileObject folder ) {
@@ -185,11 +183,10 @@ public class Templates {
     }
 
     /** Method to communicate current choice of target name to a custom 
-     * {@link WizardDescriptor.InstantiatingIterator} associated with particular template.
-     * <p>XXX why is this public? only used from NewFileIterator in projectui?
+     * {@link org.openide.WizardDescriptor.InstantiatingIterator} associated with particular template.
      * @param wizardDescriptor a file wizard
      * @return the selected target name (could be null?)
-     * @see TemplateWizard#getTargetName
+     * @see org.openide.loaders.TemplateWizard#getTargetName
      * @see ProjectChooserFactory#WIZARD_KEY_TARGET_NAME
      */
     public static String getTargetName( WizardDescriptor wizardDescriptor ) {
@@ -203,7 +200,6 @@ public class Templates {
     
     /** Sets the target name for given WizardDescriptor to be used from
      * custom target choosers
-     * <p>XXX why is this public? only used from SimpleTargetChooserPanel in projectui?
      * @param wizardDescriptor a file wizard
      * @param targetName a desired target name
      * @see TemplateWizard#setTargetName
@@ -221,7 +217,7 @@ public class Templates {
     /**
      * Checks whether a project wizard will set the main project.
      * (The default is true.)
-     * @param wizardDescriptor a New Project wizard
+     * @param wizardDescriptor a project wizard
      * @return true if it will set a main project
      * @since org.netbeans.modules.projectuiapi/1 1.47
      */
@@ -235,7 +231,7 @@ public class Templates {
      * at least one {@linkplain Project#getProjectDirectory project directory} to signal
      * that a project will be created, the first such project will be
      * {@linkplain OpenProjects#setMainProject set as the main project}.
-     * @param wizardDescriptor a New Project wizard
+     * @param wizardDescriptor a project wizard
      * @param definesMainProject true if it will set a main project
      * @since org.netbeans.modules.projectuiapi/1 1.47
      */
