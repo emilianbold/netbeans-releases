@@ -148,7 +148,6 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                     RunUtils.executeMaven(config);
                 }
                 public @Override void rerun(Set<Testcase> tests) {
-                    //not implemented yet
                     RunConfig brc = RunUtils.cloneRunconfig(config);
                     StringBuilder tst = new StringBuilder();    
                     for (Testcase tc : tests) {
