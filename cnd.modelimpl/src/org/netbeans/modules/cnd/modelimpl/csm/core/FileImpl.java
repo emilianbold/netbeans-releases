@@ -944,7 +944,7 @@ public final class FileImpl implements CsmFile,
             return null;
         }
         final APTFile fullAPT = getFileAPT(true);
-        ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false);
+        ParseDescriptor params = new ParseDescriptor(this, fullAPT, null, false, false);
         params.setCurrentPreprocHandler(handlers.iterator().next());
         synchronized (stateLock) {
             CsmParserResult parsing = _parse(params);
