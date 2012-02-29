@@ -118,15 +118,20 @@ import org.openide.util.Exceptions;
 public final class FileImpl implements CsmFile,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
-    private static final ThreadLocal<AtomicBoolean> inParse = new ThreadLocal<AtomicBoolean>() {
+    private static final ThreadLocal<AtomicReference<FileContent>> inParse = new ThreadLocal<AtomicReference<FileContent>>() {
 
         @Override
-        protected AtomicBoolean initialValue() {
-            return new AtomicBoolean(false);
+        protected AtomicReference<FileContent> initialValue() {
+            return new AtomicReference<FileContent>(null);
         }
     };
 
-    public static boolean isParsing() {
+    private boolean isInParsingThread() {
+        if (true) return false;
+        return getParsingFileContent() != null;
+    }
+
+    public static FileContent getParsingFileContent() {
         return inParse.get().get();
     }
     
@@ -774,6 +779,7 @@ public final class FileImpl implements CsmFile,
     }
 
     public final int getErrorCount() {
+        assert !isInParsingThread();
         return currentFileContent.getErrorCount();
     }
     
@@ -947,7 +953,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
-        inParse.get().set(true);
+        inParse.get().set(parseParams.content);
         try {
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
@@ -968,7 +974,7 @@ public final class FileImpl implements CsmFile,
             }
             return parsing;
         } finally {
-            inParse.get().set(false);
+            inParse.get().set(null);
         }
     }
 
@@ -1433,11 +1439,13 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public Collection<CsmInclude> getIncludes() {
+        assert !isInParsingThread();
         return getFileIncludes().getIncludes();
     }
 
     @Override
     public Collection<CsmErrorDirective> getErrors() {
+        assert !isInParsingThread();
         return new ArrayList<CsmErrorDirective>(currentFileContent.getErrors());
 //        Collection<CsmErrorDirective> out = new ArrayList<CsmErrorDirective>(0);
 //        try {
@@ -1450,27 +1458,33 @@ public final class FileImpl implements CsmFile,
     }
 
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
+        assert !isInParsingThread();
         return getFileIncludes().getIncludes(filter);
     }
 
     public Collection<CsmInclude> getBrokenIncludes() {
+        assert !isInParsingThread();
         return getFileIncludes().getBrokenIncludes();
     }
 
     public boolean hasBrokenIncludes() {
+        assert !isInParsingThread();
         return hasBrokenIncludes.get();
     }
 
     public boolean hasDeclarations() {
+        assert !isInParsingThread();
         return getFileDeclarations().hasDeclarations();
     }
 
     @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
+        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations();
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(filter);
     }
 
@@ -1481,26 +1495,32 @@ public final class FileImpl implements CsmFile,
      * @return number of declarations
      */
     public int getDeclarationsSize(){
+        assert !isInParsingThread();
         return getFileDeclarations().getDeclarationsSize();
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
+        assert !isInParsingThread();
         return getFileDeclarations().findDeclarations(kinds, prefix);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
+        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(startOffset, endOffset);
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
+        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(offset);
     }
 
     public Collection<CsmReference> getReferences() {
+        assert !isInParsingThread();
         return getFileReferences().getReferences();
     }
 
     public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
+        assert !isInParsingThread();
         return getFileReferences().getReferences(objects);
     }
 
@@ -1521,12 +1541,14 @@ public final class FileImpl implements CsmFile,
     }
 
     public CsmReference getResolvedReference(CsmReference ref) {
+        assert !isInParsingThread();
         return getFileReferences().getResolvedReference(ref);
     }
 
-    void addMacro(CsmMacro macro) {
-        getFileMacros().addMacro(macro);
-    }
+//    void addMacro(CsmMacro macro) {
+//        assert getParsingFileContent() == null;
+//        getFileMacros().addMacro(macro);
+//    }
 //
 //    void addError(ErrorDirectiveImpl error) {
 //        try {
@@ -1539,17 +1561,17 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public Collection<CsmMacro> getMacros() {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileMacros().getMacros();
     }
 
     public Iterator<CsmMacro> getMacros(CsmFilter filter) {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileMacros().getMacros(filter);
     }
 
     public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileMacros().findMacroUids(name);
     }
 
@@ -1582,22 +1604,22 @@ public final class FileImpl implements CsmFile,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileDeclarations().getStaticFunctionDeclarations();
     }
 
     public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileDeclarations().getStaticFunctionDeclarations(filter);
     }
 
     public Collection<CsmVariable> getStaticVariableDeclarations() {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileDeclarations().getStaticVariableDeclarations();
     }
 
     public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return getFileDeclarations().getStaticVariableDeclarations(filter);
     }
 
@@ -1613,7 +1635,7 @@ public final class FileImpl implements CsmFile,
         
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        assert !inParse.get().get();
+        assert !isInParsingThread();
         return currentFileContent.getScopeElements();
     }
 
@@ -1703,6 +1725,7 @@ public final class FileImpl implements CsmFile,
     }
 
     public final void onFakeRegisration(FunctionImplEx<?> decl, AST fakeRegistrationAst) {
+        assert !isInParsingThread();
 //        synchronized (fakeFunctionRegistrations) {
 //            fakeFunctionRegistrations.add(uidDecl);
 //        }
@@ -1713,6 +1736,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private void clearFakeRegistrations() {
+        assert !isInParsingThread();
         getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
 //        synchronized (fakeFunctionRegistrations) {
 //            fakeFunctionRegistrations.clear();
@@ -1730,6 +1754,7 @@ public final class FileImpl implements CsmFile,
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
     private boolean fixFakeRegistrations(boolean projectParsedMode) {
+        assert !isInParsingThread();
         boolean result = false;
         result |= fixFakeFunctionRegistrations(projectParsedMode);
         result |= fixFakeIncludeRegistrations(projectParsedMode);
@@ -1737,6 +1762,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private boolean fixFakeFunctionRegistrations(boolean projectParsedMode) {
+        assert !isInParsingThread();
         boolean wereFakes = false;
         FileContent curContent = currentFileContent;
         List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = curContent.getFakeFunctionRegistrations();
@@ -1773,6 +1799,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private boolean fixFakeIncludeRegistrations(boolean projectParsedMode) {
+        assert !isInParsingThread();
         boolean wereFakes = false;
         FileContent fileContent = currentFileContent;
         for (FakeIncludePair fakeIncludePair : fileContent.getFakeIncludeRegistrations()) {
@@ -1984,6 +2011,7 @@ public final class FileImpl implements CsmFile,
 //    private final FileDeclarationsKey fileDeclarationsKey;
 //    private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
     private FileComponentDeclarations getFileDeclarations() {
+        assert !isInParsingThread();
         FileComponentDeclarations fd = currentFileContent.getFileDeclarations();
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
@@ -1991,6 +2019,7 @@ public final class FileImpl implements CsmFile,
 //    private final FileMacrosKey fileMacrosKey;
 //    private final WeakContainer<FileComponentMacros> weakFileMacros;
     private FileComponentMacros getFileMacros() {
+        assert !isInParsingThread();
         FileComponentMacros fd = currentFileContent.getFileMacros();
         return fd != null ? fd : FileComponentMacros.empty();
     }
@@ -1999,6 +2028,7 @@ public final class FileImpl implements CsmFile,
 //    private final FileIncludesKey fileIncludesKey;
 //    private final WeakContainer<FileComponentIncludes> weakFileIncludes;
     private FileComponentIncludes getFileIncludes() {
+        assert !isInParsingThread();
         FileComponentIncludes fd = currentFileContent.getFileIncludes();
         return fd != null ? fd : FileComponentIncludes.empty();
     }
@@ -2013,6 +2043,7 @@ public final class FileImpl implements CsmFile,
 //    private final FileInstantiationsKey fileInstantiationsKey;
 //    private final WeakContainer<FileComponentInstantiations> weakFileInstantiationReferences;
     private FileComponentInstantiations getFileInstantiations() {
+        assert !isInParsingThread();
         FileComponentInstantiations fd = currentFileContent.getFileInstantiations();
         return fd != null ? fd : FileComponentInstantiations.empty();
     }
