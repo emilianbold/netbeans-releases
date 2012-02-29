@@ -171,7 +171,7 @@ public class TestUtil implements TestConstants {
     }
 
     public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
-        RepositoryInfo info = new RepositoryInfo(name, BugzillaConnector.ID, url, name, name, user, user, null, null);
+        RepositoryInfo info = new RepositoryInfo(name, BugzillaConnector.ID, url, name, name, user, null, psswd.toCharArray(), null);
         return new BugzillaRepository(info);
     }
 
