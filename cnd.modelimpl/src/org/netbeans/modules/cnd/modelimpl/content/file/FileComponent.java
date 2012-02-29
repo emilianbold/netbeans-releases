@@ -61,7 +61,7 @@ public abstract class FileComponent implements Persistent, SelfPersistent {
      * 
      * @param key if key is not null then it's persistent instance, otherwise in-memory
      */
-    protected FileComponent(Key key, boolean persistent) {
+    protected FileComponent(Key key) {
         this.key = key;
     }
 

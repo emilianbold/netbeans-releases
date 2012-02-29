@@ -98,8 +98,8 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         }
     }
     
-    public FileComponentIncludes(FileImpl file, boolean persistent) {
-        super(new FileIncludesKey(file), persistent);
+    public FileComponentIncludes(FileImpl file) {
+        super(new FileIncludesKey(file));
     }
 
     public FileComponentIncludes(RepositoryDataInput input) throws IOException {
@@ -111,7 +111,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
 
     // only for EMPTY static field
     private FileComponentIncludes() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
     }
 
     void clean() {

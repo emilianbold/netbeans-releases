@@ -112,12 +112,12 @@ public final class FileContent implements MutableDeclarationsContainer {
 
     public static FileContent createFileContent(FileImpl fileImpl, ProjectBase project) {
         return new FileContent(fileImpl, project, true,
-                new FileComponentDeclarations(fileImpl, true),
-                new FileComponentMacros(fileImpl, true),
-                new FileComponentIncludes(fileImpl, true),
+                new FileComponentDeclarations(fileImpl),
+                new FileComponentMacros(fileImpl),
+                new FileComponentIncludes(fileImpl),
                 false,
-                new FileComponentInstantiations(fileImpl, true),
-                new FileComponentReferences(fileImpl, true),
+                new FileComponentInstantiations(fileImpl),
+                new FileComponentReferences(fileImpl),
                 createFakeIncludes(Collections.<FakeIncludePair>emptyList()),
                 createFakeFunctions(Collections.<CsmUID<FunctionImplEx<?>>>emptyList()),
                 createErrors(Collections.<ErrorDirectiveImpl>emptySet()), 0);

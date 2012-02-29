@@ -118,8 +118,8 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
                 empty ? Collections.<CsmUID<CsmVariable>>emptyList() : other.staticVariableUIDs);
     }
     
-    public FileComponentDeclarations(FileImpl file, boolean persistent) {
-        super(new FileDeclarationsKey(file), persistent);
+    public FileComponentDeclarations(FileImpl file) {
+        super(new FileDeclarationsKey(file));
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
@@ -147,7 +147,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
     // only for EMPTY static field
     private FileComponentDeclarations() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
         declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
         staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(0);
         staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(0);
