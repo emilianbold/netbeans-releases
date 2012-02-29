@@ -143,6 +143,7 @@ public enum GroovyTokenId implements TokenId {
     DOT(".", "operator"),
     DYNAMIC_MEMBER(null, "default"),
     ELIST(null, "default"),
+    ELVIS_OPERATOR(null, "operator"),
     EMPTY_STAT(null, "default"),
     ENUM_CONSTANT_DEF(null, "default"),
     ENUM_DEF(null, "default"),

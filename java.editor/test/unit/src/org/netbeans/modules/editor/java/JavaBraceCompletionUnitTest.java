@@ -1198,6 +1198,27 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals("|");
     }
     
+    public void testInsertBracketInString() throws Exception {
+        Context ctx = new Context(new JavaKit(), "\"|\"");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("\"(|\"");
+        ctx = new Context(new JavaKit(), "\" |\"");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("\" (|\"");
+    }
+    
+    public void testInsertBracketInComment() throws Exception {
+        Context ctx = new Context(new JavaKit(), "//|");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("//(|");
+    }
+    
+    public void testSkipBracketInComment() throws Exception {
+        Context ctx = new Context(new JavaKit(), "//(|)");
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals("//()|)");
+    }
+     
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));
         assertTrue(isInsideString("foo\n\"bar\\\"|\""));

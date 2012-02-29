@@ -43,12 +43,15 @@ package org.netbeans.modules.masterfs;
 
 import org.netbeans.modules.masterfs.watcher.Watcher;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Lookup;
 
 /** Shutdown the watcher system.
  */
 public final class Installer extends ModuleInstall {
-
+    @Override
+    public void restored() {
+        Watcher.isEnabled();
+    }
+    
     @Override
     public void uninstalled() {
         close();
@@ -56,7 +59,6 @@ public final class Installer extends ModuleInstall {
 
     @Override
     public void close() {
-        Watcher w = Lookup.getDefault().lookup(Watcher.class);
-        w.shutdown();
+        Watcher.shutdown();
     }
 }
