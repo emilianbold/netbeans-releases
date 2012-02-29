@@ -43,6 +43,8 @@ package org.netbeans.spi.search.provider;
 
 import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.search.ui.DefaultSearchResultsPanel;
 import org.openide.nodes.Node;
 
 /**
@@ -58,9 +60,10 @@ public abstract class SearchResultsDisplayer<T> {
     protected SearchResultsDisplayer() {}
 
     /**
-     * Create component that will be shown in the Search Results window.
+     * Get component that will be shown in the Search Results window. Is should
+     * be created lazily.
      */
-    public abstract @NonNull JComponent createVisualComponent();
+    public abstract @NonNull JComponent getVisualComponent();
 
     /**
      * This method is called when a new matching object is
@@ -70,15 +73,72 @@ public abstract class SearchResultsDisplayer<T> {
     public abstract void addMatchingObject(@NonNull T object);
 
     /**
+     * Called right after the search was started. Default implementation does
+     * nothing.
+     */
+    public void searchStarted() {
+    }
+
+    /**
+     * Called righg after the search was finished. Default implementation does
+     * nothing.
+     */
+    public void searchFinished() {
+    }
+
+    /**
      * Get default displayer that shows results as a tree of nodes.
      *
      * @param helper Helper that returns nodes for matching objects.
+     * @param searchComposition Search composition of the displayer is created
+     * for.
+     * @param providerClass Class of search provider. Can be null, but is needed
+     * for modification of search criteria.
+     * @param presenter Presenter that can be shown to modify search criteria.
+     * @param title Title that will be shown in the tab of search results
+     * window.
      */
     public static <U> SearchResultsDisplayer<U> createDefault(
-            @NonNull NodeDisplayer<U> helper,
-            @NonNull SearchComposition<U> searchComposition) {
+            @NonNull final NodeDisplayer<U> helper,
+            @NonNull final SearchComposition<U> searchComposition,
+            @NullAllowed final Class<? extends SearchProvider> providerClass,
+            @NullAllowed final SearchProvider.Presenter presenter,
+            @NonNull final String title) {
 
-        return null; //TODO
+        return new SearchResultsDisplayer<U>() {
+            private DefaultSearchResultsPanel panel = null;
+
+            @Override
+            public synchronized JComponent getVisualComponent() {
+                if (panel == null) {
+                    panel = new DefaultSearchResultsPanel(helper,
+                            searchComposition, providerClass, presenter);
+                }
+                return panel;
+            }
+
+            @Override
+            public void addMatchingObject(U object) {
+                panel.addMathingObject(object);
+            }
+
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            @Override
+            public void searchStarted() {
+                super.searchStarted();
+                panel.searchStarted();
+            }
+
+            @Override
+            public void searchFinished() {
+                super.searchFinished();
+                panel.searchFinished();
+            }
+        };
     }
 
     /**

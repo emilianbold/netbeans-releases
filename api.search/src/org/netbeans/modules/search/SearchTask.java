@@ -69,9 +69,9 @@ final class SearchTask implements Runnable, Cancellable {
     private SearchComposition<?> searchComposition;
     /** Replace mode */
     private boolean replacing;
-    /** Search Listener */
-    SearchListener searchListener;
-    
+    /** */
+    private ResultViewPanel resultViewPanel = null;    
+
     /**
      * Creates a new <code>SearchTask</code>.
      *
@@ -98,13 +98,19 @@ final class SearchTask implements Runnable, Cancellable {
         if (isSearchAndReplace()) {
             LifecycleManager.getDefault().saveAll();
         }
-        this.searchListener = new GraphicalSearchListener(searchComposition);
+        if (this.resultViewPanel == null) {
+            this.resultViewPanel = ResultView.getInstance().addTab(
+                    searchComposition);
+        }
+        SearchListener searchListener = this.resultViewPanel.createListener();
         try {
+            searchListener.searchStarted();
             searchComposition.start(searchListener);
         } catch (RuntimeException e) {
             searchListener.generalError(e);
         } finally {
             finished = true;
+            searchListener.searchFinished();
         }
     }
 
@@ -141,7 +147,7 @@ final class SearchTask implements Runnable, Cancellable {
             interrupted = true;
         }
         if (searchComposition != null) {
-            searchComposition.terminate(searchListener);
+            searchComposition.terminate();
         }
     }
    
@@ -184,5 +190,9 @@ final class SearchTask implements Runnable, Cancellable {
 
     SearchComposition<?> getComposition() {
         return this.searchComposition;
+    }
+
+    void setResultViewPanel(ResultViewPanel resultViewPanel) {
+        this.resultViewPanel = resultViewPanel;
     }
 }

@@ -62,7 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
-import org.netbeans.spi.search.provider.SearchResultsDisplayer;
+import org.netbeans.spi.search.provider.SearchComposition;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -445,7 +445,7 @@ public final class ResultView extends TopComponent {
         ResultViewPanel panel = searchToViewMap.get(task);
         if (panel == null){
             panel = new ResultViewPanel(
-                    task.getComposition().getSearchResultsDisplayer());
+                    task.getComposition());
             if( isMacLaf ) {
                 panel.setBackground(macBackground);
             }
@@ -585,10 +585,10 @@ public final class ResultView extends TopComponent {
     /**
      * Add a tab for a new displayer.
      */
-    public void addTab(SearchResultsDisplayer<?> resultDisplayer) {
+    ResultViewPanel addTab(SearchComposition<?> searchComposition) {
 
-        ResultViewPanel panel = new ResultViewPanel(resultDisplayer);
-        String title = resultDisplayer.getTitle();
+        ResultViewPanel panel = new ResultViewPanel(searchComposition);
+        String title = searchComposition.getSearchResultsDisplayer().getTitle();
 
         Component comp = getComponent(0);
         if (comp instanceof JTabbedPane) {
@@ -615,5 +615,6 @@ public final class ResultView extends TopComponent {
         }
         validate();
         requestActive();
+        return panel;
     }
 }

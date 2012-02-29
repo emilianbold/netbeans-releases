@@ -50,6 +50,8 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.SearchProvider;
+import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
@@ -58,26 +60,26 @@ import org.openide.filesystems.FileObject;
  *
  * @author jhavlin
  */
-class BasicComposition extends SearchComposition<MatchingObject.Def> {
+public class BasicComposition extends SearchComposition<MatchingObject.Def> {
 
     private SearchInfo searchInfo;
     private AbstractMatcher matcher;
     private SearchResultsDisplayer<MatchingObject.Def> displayer = null;
     private BasicSearchCriteria basicSearchCriteria;
+    private Presenter presenter;
     private volatile boolean terminated = false;
 
-    public BasicComposition(SearchInfo searchInfo,
-            AbstractMatcher matcher,
-            BasicSearchCriteria basicSearchCriteria) {
+    public BasicComposition(SearchInfo searchInfo, AbstractMatcher matcher,
+            BasicSearchCriteria basicSearchCriteria, Presenter presenter) {
 
         this.searchInfo = searchInfo;
         this.matcher = matcher;
         this.basicSearchCriteria = basicSearchCriteria;
+        this.presenter = presenter;
     }
 
     @Override
     public void start(SearchListener listener) {
-        listener.searchStarted();
 
         TerminationFlag terminationFlag = new TerminationFlag() {
 
@@ -101,13 +103,17 @@ class BasicComposition extends SearchComposition<MatchingObject.Def> {
                 break;
             }
         }
-        listener.searchFinished();
     }
 
     @Override
-    public void terminate(SearchListener listener) {
+    public void terminate() {
         terminated = true;
         matcher.terminate();
+    }
+
+    @Override
+    public boolean isTerminated() {
+        return terminated;
     }
 
     @Override
@@ -133,5 +139,9 @@ class BasicComposition extends SearchComposition<MatchingObject.Def> {
             list.add(sr.getFileObject());
         }
         return list;
+    }
+
+    public SearchProvider.Presenter getSearchProviderPresenter() {
+        return presenter;
     }
 }

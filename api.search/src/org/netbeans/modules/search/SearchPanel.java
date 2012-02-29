@@ -59,6 +59,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
+import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -77,7 +78,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     private static SearchPanel currentlyShown = null;
     private boolean replacing;
     private boolean projectWide = false; // TODO
-    private List<SearchProvider.Presenter> presenters;
+    private List<Presenter> presenters;
     /**
      * OK button.
      */
@@ -97,7 +98,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Selected Search presenter
      */
-    private SearchProvider.Presenter selectedPresenter;
+    private Presenter selectedPresenter;
 
     /**
      * Panel that can show form with settings for several search providers.
@@ -110,14 +111,13 @@ public class SearchPanel extends JPanel implements FocusListener,
      * Create search panel, using an explicit presenter for one of providers.
      */
     public SearchPanel(boolean replacing,
-            Class<? extends SearchProvider> cls,
-            SearchProvider.Presenter presenter) {
+            Class<? extends SearchProvider> cls, Presenter presenter) {
         this.replacing = replacing;
         init(cls, presenter);
     }
 
     private void init(Class<? extends SearchProvider> cls,
-            BasicSearchProvider.Presenter explicitPresenter) {
+            Presenter explicitPresenter) {
 
         presenters = makePresenters(cls, explicitPresenter);
         setLayout(new GridLayout(1, 1));
@@ -125,11 +125,11 @@ public class SearchPanel extends JPanel implements FocusListener,
         if (presenters.isEmpty()) {
             throw new IllegalStateException("No presenter found");      //NOI18N
         } else if (presenters.size() == 1) {
-            add(presenters.get(0).createForm());
+            add(presenters.get(0).getForm());
         } else {
             tabbedPane = new JTabbedPane();
-            for (SearchProvider.Presenter presenter : presenters) {
-                tabbedPane.add(presenter.createForm());
+            for (Presenter presenter : presenters) {
+                tabbedPane.add(presenter.getForm());
             }
             tabbedPane.addChangeListener(new ChangeListener() {
                 @Override
@@ -143,7 +143,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
         selectedPresenter = presenters.get(0);
 
-        for (final SearchProvider.Presenter p : presenters) {
+        for (final Presenter p : presenters) {
             p.addChangeListener(new ChangeListener() {
 
                 @Override
@@ -185,9 +185,8 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Make list of presenters created for all available search providers.
      */
-    private List<SearchProvider.Presenter> makePresenters(
-            Class<? extends SearchProvider> cls,
-            SearchProvider.Presenter explicitPresenter) {
+    private List<Presenter> makePresenters(
+            Class<? extends SearchProvider> cls, Presenter explicitPresenter) {
 
         List<SearchProvider.Presenter> presenterList =
                 new LinkedList<SearchProvider.Presenter>();

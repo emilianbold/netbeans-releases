@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
  *
  * @author jhavlin
  */
-public class GraphicalSearchListener<R> extends SearchListener {
+class GraphicalSearchListener<R> extends SearchListener {
 
     private static final Logger LOG = Logger.getLogger(
             GraphicalSearchListener.class.getName());
@@ -76,8 +76,12 @@ public class GraphicalSearchListener<R> extends SearchListener {
      */
     private String longTextMiddle = null;
     
-    public GraphicalSearchListener(SearchComposition<R> searchTask) {
-        this.searchComposition = searchTask;
+    private ResultViewPanel resultViewPanel;
+
+    public GraphicalSearchListener(SearchComposition<R> searchComposition,
+            ResultViewPanel resultViewPanel) {
+        this.searchComposition = searchComposition;
+        this.resultViewPanel = resultViewPanel;
     }
 
     @Override
@@ -89,11 +93,12 @@ public class GraphicalSearchListener<R> extends SearchListener {
 
             @Override
             public boolean cancel() {
-                searchComposition.terminate(GraphicalSearchListener.this);
+                searchComposition.terminate();
                 return true;
             }
         });
         progressHandle.start();
+        searchComposition.getSearchResultsDisplayer().searchStarted();
     }
 
     @Override
@@ -102,6 +107,7 @@ public class GraphicalSearchListener<R> extends SearchListener {
             progressHandle.finish();
             progressHandle = null;
         }
+        searchComposition.getSearchResultsDisplayer().searchFinished();
     }
 
     @Override

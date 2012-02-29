@@ -134,7 +134,7 @@ public abstract class SearchProvider {
      *       this.replacing = replacing;
      *   }
 
-     *   public JComponent createForm() {
+     *   public JComponent getForm() {
      *       if (form == null) {
      *           form = new Form(); // create a new with UI for specifying search settings
      *           form.setName("Example Provider");
@@ -173,18 +173,19 @@ public abstract class SearchProvider {
          * Returns a new JComponent that contains controls for setting search
          * options. It will be shown as a tab in search dialog.
          *
-         * This method will be called only once for each presenter.
+         * The component should be created lazily and all invocations of this
+         * method on this object should return the same object.
          *
          * You should update inner state of this presenter from the component,
          * or store reference to created component in this presenter, so that
          * the current settings can be obtained from the form when a new search
          * is started, i.e. when {@link #composeSearch()} is called.
          */
-        public abstract @NonNull JComponent createForm();
+        public abstract @NonNull JComponent getForm();
 
         /**
          * Performs search considering current settings in the panel that was
-         * returned by {@link #createForm()}
+         * returned by {@link #getForm()}
          *
          * @return A new search composition.
          */

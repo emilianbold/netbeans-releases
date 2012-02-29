@@ -62,10 +62,16 @@ public abstract class SearchComposition<R> {
 
     /**
      * Terminate searching.
-     *
-     * @param listener Search listener, can be null.
      */
-    public abstract void terminate(@NonNull SearchListener listener);
+    public abstract void terminate();
+
+    /**
+     * Tells whether the search has been terminated.
+     *
+     * @return False if search has not been started yet, is still in progress,
+     * or has finished normally. True if the search has been terminated.
+     */
+    public abstract boolean isTerminated();
 
     /**
      * Get results displayer. All invocations of this method on a this object

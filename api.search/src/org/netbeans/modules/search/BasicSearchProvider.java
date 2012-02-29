@@ -139,7 +139,7 @@ public class BasicSearchProvider extends SearchProvider {
         }
 
         @Override
-        public JComponent createForm() {
+        public JComponent getForm() {
             if (form == null) {
                 String scopeToUse = scopeId == null
                         ? FindDialogMemory.getDefault().getScopeTypeId()
@@ -188,7 +188,7 @@ public class BasicSearchProvider extends SearchProvider {
             return new BasicComposition(
                     ssi,
                     new DefaultMatcher(basicSearchCriteria.getSearchPattern()),
-                    basicSearchCriteria);
+                    basicSearchCriteria, this);
         }
 
         @Override
@@ -274,24 +274,11 @@ public class BasicSearchProvider extends SearchProvider {
             throw new IllegalArgumentException(
                     "Search cannot be started - No restrictions set."); //NOI18N
         }
-        SearchScopeList ssl = new SearchScopeList();
-        SearchScopeDefinition bestScope = null;
-        for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
-            if (ssd.isApplicable()) {
-                if (scopeId != null && ssd.getTypeId().equals(scopeId)) {
-                    bestScope = ssd;
-                    break;
-                } else if (bestScope == null) {
-                    bestScope = ssd;
-                }
-            }
-        }
-        if (bestScope == null) {
-            throw new IllegalStateException("No default search scope"); //NOI18N
-        }
+        SearchScopeDefinition bestScope = findBestSearchScope(scopeId);
         BasicComposition composition = new BasicComposition(
                 bestScope.getSearchInfo(), new DefaultMatcher(searchPattern),
-                criteria);
+                criteria, BasicSearchProvider.createBasicPresenter(true,
+                searchPattern, null, false, searchScopeOptions, false, scopeId));
         Manager.getInstance().scheduleSearchTask(
                 new SearchTask(composition, false));
     }
@@ -323,5 +310,28 @@ public class BasicSearchProvider extends SearchProvider {
             bsc.setSearchInGenerated(searchScopeOptions.isSearchInGenerated());
         }
         return bsc;
+    }
+
+    /**
+     * Find best available search scope.
+     */
+    private static SearchScopeDefinition findBestSearchScope(
+            String preferredscopeId) throws IllegalStateException {
+        SearchScopeList ssl = new SearchScopeList();
+        SearchScopeDefinition bestScope = null;
+        for (SearchScopeDefinition ssd : ssl.getSeachScopeDefinitions()) {
+            if (ssd.isApplicable()) {
+                if (preferredscopeId != null && ssd.getTypeId().equals(preferredscopeId)) {
+                    bestScope = ssd;
+                    break;
+                } else if (bestScope == null) {
+                    bestScope = ssd;
+                }
+            }
+        }
+        if (bestScope == null) {
+            throw new IllegalStateException("No default search scope"); //NOI18N
+        }
+        return bestScope;
     }
 }

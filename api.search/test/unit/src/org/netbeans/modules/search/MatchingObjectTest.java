@@ -163,17 +163,17 @@ public class MatchingObjectTest extends NbTestCase {
         final SearchComposition<Def> sc =
                 new BasicComposition(si,
                 new DefaultMatcher(bsc.getSearchPattern()),
-                bsc);
+                bsc, null);
         EventQueue.invokeAndWait(new Runnable() {
 
             @Override
             public void run() {
-                sc.getSearchResultsDisplayer().createVisualComponent(); // initialize model
+                sc.getSearchResultsDisplayer().getVisualComponent(); // initialize model
+                final SearchTask st = new SearchTask(sc, true);
+                st.run();
             }
         });
-        final SearchTask st = new SearchTask(sc, true);
 
-        st.run();
         ReplaceTask rt = new ReplaceTask(
                 ((ResultDisplayer) sc.getSearchResultsDisplayer()).getResultModel().getMatchingObjects());
         rt.run();

@@ -74,9 +74,9 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     }
 
     @Override
-    public JComponent createVisualComponent() {
+    public JComponent getVisualComponent() {
 
-        resultPanel = new BasicSearchResultsPanel(resultModel);
+        resultPanel = new BasicSearchResultsPanel(resultModel, composition);
         return resultPanel;
     }
 
@@ -87,7 +87,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
             resultPanel.update();
         }
         if (resultModel.wasLimitReached()) {
-            composition.terminate(null);
+            composition.terminate();
         }
     }
 
@@ -107,6 +107,16 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
         } else {
             return criteria.getTextPatternExpr();
         }
+    }
+
+    @Override
+    public void searchStarted() {
+        resultPanel.searchStarted();
+    }
+
+    @Override
+    public void searchFinished() {
+        resultPanel.searchFinished();
     }
 
     /**

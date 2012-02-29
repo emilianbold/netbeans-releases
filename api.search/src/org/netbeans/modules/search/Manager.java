@@ -143,7 +143,7 @@ final class Manager {
         ResultView resultView = ResultView.getInstance();
         resultView.open();
         resultView.requestActive();
-        resultView.addTab(task.getDisplayer());
+        task.setResultViewPanel(resultView.addTab(task.getComposition()));
         pendingTasks.add(task);
         processNextPendingTask();
     }

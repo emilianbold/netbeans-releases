@@ -183,9 +183,9 @@ class ResultViewPanel extends JPanel{
     /** */
     private int objectsCount = 0;           //accessed only from the EventQueue
 
-    private SearchComposition<MatchingObject.Def> searchComposition;
+    private SearchComposition<?> searchComposition;
 
-    public ResultViewPanel(final SearchResultsDisplayer<?> resultDisplayer) {
+    public ResultViewPanel(final SearchComposition<?> searchComposition) {
 
         setLayout(new GridBagLayout());
         tree = null;
@@ -194,13 +194,16 @@ class ResultViewPanel extends JPanel{
         resultsPanel = new JPanel(resultViewCards = new CardLayout());
         toolBar = null;
         arrowUpdater = null;
-        setName(resultDisplayer.getTitle());
+        this.searchComposition = searchComposition;
+        SearchResultsDisplayer<?> displayer =
+                searchComposition.getSearchResultsDisplayer();
+        setName(displayer.getTitle());
         add(resultsPanel, getMainPanelConstraints());
-        resultsPanel.add(resultDisplayer.createVisualComponent(), "outline");
+        resultsPanel.add(displayer.getVisualComponent(), "outline");
     }
 
     public SearchListener createListener() {
-        return new GraphicalSearchListener(searchComposition);
+        return new GraphicalSearchListener(searchComposition, this);
     }
 
     public ResultViewPanel(final SearchComposition composition, boolean b) {
@@ -291,7 +294,7 @@ class ResultViewPanel extends JPanel{
         btnStop.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                composition.terminate(null);
+                composition.terminate();
             }
         });
         btnReplace.addActionListener(new ActionListener(){
