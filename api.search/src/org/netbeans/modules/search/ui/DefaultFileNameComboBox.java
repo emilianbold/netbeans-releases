@@ -47,13 +47,9 @@ import java.awt.event.FocusEvent;
 import java.awt.event.HierarchyEvent;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import java.awt.event.HierarchyListener;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -80,8 +76,6 @@ public class DefaultFileNameComboBox extends FileNameComboBox {
     private boolean ignoreFileNamePatternChanges;
     private boolean patternValid;
     private Color defaultColor;
-    private List<ChangeListener> patternChangeListeners =
-            new LinkedList<ChangeListener>();
 
     public DefaultFileNameComboBox() {
         init();
@@ -281,10 +275,7 @@ public class DefaultFileNameComboBox extends FileNameComboBox {
     private void patternChanged() {
         if (!ignoreFileNamePatternChanges) {
             updateFileNamePatternColor();
-            ChangeEvent e = new ChangeEvent(this);
-            for (ChangeListener cl : patternChangeListeners) {
-                cl.stateChanged(e);
-            }
+            fireChange();
         }
     }
 
@@ -315,15 +306,5 @@ public class DefaultFileNameComboBox extends FileNameComboBox {
             fileNamePatternEditor.setForeground(
                     patternValid ? defaultColor : UiUtils.getErrorTextColor());
         }
-    }
-
-    @Override
-    public void addPatternChangeListener(ChangeListener l) {
-        patternChangeListeners.add(l);
-    }
-
-    @Override
-    public void removePatternChangeListener(ChangeListener l) {
-        patternChangeListeners.remove(l);
     }
 }

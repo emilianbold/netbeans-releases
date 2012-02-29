@@ -350,7 +350,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         searchCriteria.setUsabilityChangeListener(this);
 
-        scopeSettingsPanel.addSettingsChangeListener(new ChangeListener() {
+        scopeSettingsPanel.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -363,7 +363,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             }
         });
 
-        cboxFileNamePattern.addPatternChangeListener(new ChangeListener() {
+        cboxFileNamePattern.addChangeListener(new ChangeListener() {
 
             @Override
             public void stateChanged(ChangeEvent e) {

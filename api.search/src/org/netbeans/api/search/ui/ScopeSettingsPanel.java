@@ -44,6 +44,7 @@ package org.netbeans.api.search.ui;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.ChangeSupport;
 
 /**
  * Panel for setting search scope options.
@@ -51,6 +52,8 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author jhavlin
  */
 public abstract class ScopeSettingsPanel extends JPanel {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     public abstract boolean isSearchInArchives();
 
@@ -68,9 +71,46 @@ public abstract class ScopeSettingsPanel extends JPanel {
 
     public abstract void setFileNameRegexp(boolean fileNameRegexp);
 
-    public abstract void addSettingsChangeListener(
-            @NonNull ChangeListener cl);
+    /**
+     * Adds a <code>ChangeListener</code> that is notified about chagnes in the
+     * scope settings to the listener list. The same listener object may be
+     * added more than once, and will be called as many times as it is added. If
+     * <code>listener</code> is null, no exception is thrown and no action is
+     * taken.
+     *
+     * @param listener the <code>ChangeListener</code> to be added.
+     */
+    public final void addChangeListener(@NonNull ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
 
-    public abstract void removeSettingsChangeListener(
-            @NonNull ChangeListener l);
+    /**
+     * Removes a <code>ChangeListener</code> from the listener list. If
+     * <code>listener</code> was added more than once, it will be notified one
+     * less time after being removed. If <code>listener</code> is null, or was
+     * never added, no exception is thrown and no action is taken.
+     *
+     * @param listener the <code>ChangeListener</code> to be removed.
+     */
+    public final void removeChangeListener(@NonNull ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    /**
+     * Fires a change event to all registered listeners.
+     */
+    protected final void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    /**
+     * Checks if there are any listeners registered to this
+     * <code>ChangeSupport</code>.
+     *
+     * @return true if there are one or more listeners for the given property,
+     * false otherwise.
+     */
+    public final boolean hasListeners() {
+        return changeSupport.hasListeners();
+    }
 }

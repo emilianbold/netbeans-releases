@@ -44,6 +44,7 @@ package org.netbeans.api.search.ui;
 import javax.swing.JComboBox;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.ChangeSupport;
 
 /**
  * Component for specifying file name pattern.
@@ -51,6 +52,8 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author jhavlin
  */
 public abstract class FileNameComboBox extends JComboBox {
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * Get pattern for matching file names.
@@ -91,12 +94,45 @@ public abstract class FileNameComboBox extends JComboBox {
     public abstract void hideAllFilesInfo();
 
     /**
-     * Add listener that is notified about chagnes in the file name pattern.
+     * Adds a <code>ChangeListener</code> that is notified about chagnes in the
+     * file name pattern to the listener list. The same listener object may be
+     * added more than once, and will be called as many times as it is added. If
+     * <code>listener</code> is null, no exception is thrown and no action is
+     * taken.
+     *
+     * @param listener the <code>ChangeListener</code> to be added.
      */
-    public abstract void addPatternChangeListener(@NonNull ChangeListener l);
+    public final void addChangeListener(@NonNull ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
 
     /**
-     * Remove pattern change listener.
+    * Removes a <code>ChangeListener</code> from the listener list. If
+     * <code>listener</code> was added more than once, it will be notified one
+     * less time after being removed. If <code>listener</code> is null, or was
+     * never added, no exception is thrown and no action is taken.
+     *
+     * @param listener the <code>ChangeListener</code> to be removed.
      */
-    public abstract void removePatternChangeListener(@NonNull ChangeListener l);
+    public final void removeChangeListener(@NonNull ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    /**
+     * Fires a change event to all registered listeners.
+     */
+    protected final void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    /**
+     * Checks if there are any listeners registered to this
+     * <code>ChangeSupport</code>.
+     *
+     * @return true if there are one or more listeners for the given property,
+     * false otherwise.
+     */
+    public final boolean hasListeners() {
+        return changeSupport.hasListeners();
+    }
 }

@@ -46,13 +46,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.LinkedList;
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.search.ui.FileNameComboBox;
 import org.netbeans.api.search.ui.ScopeSettingsPanel;
 import org.netbeans.modules.search.IgnoreListPanel;
@@ -74,8 +70,6 @@ public class DefaultScopeSettingsPanel extends ScopeSettingsPanel {
     private JButton btnTestFileNamePattern;
     private JCheckBox chkArchives;
     private JCheckBox chkGenerated;
-    private List<ChangeListener> settingsChangeListeners =
-            new LinkedList<ChangeListener>();
     private ItemListener checkBoxListener;
 
     /**
@@ -281,24 +275,11 @@ public class DefaultScopeSettingsPanel extends ScopeSettingsPanel {
         chkFileNameRegex.setSelected(fileNameRegexp);
     }
 
-    @Override
-    public void addSettingsChangeListener(ChangeListener cl) {
-        settingsChangeListeners.add(cl);
-    }
-
-    @Override
-    public void removeSettingsChangeListener(ChangeListener cl) {
-        settingsChangeListeners.remove(cl);
-    }
-
     private final class CheckBoxListener implements ItemListener {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
-            ChangeEvent ce = new ChangeEvent(DefaultScopeSettingsPanel.this);
-            for (ChangeListener l : settingsChangeListeners) {
-                l.stateChanged(ce);
-            }
+            fireChange();
         }
     }
 }
