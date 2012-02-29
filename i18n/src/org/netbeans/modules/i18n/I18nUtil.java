@@ -48,12 +48,10 @@ package org.netbeans.modules.i18n;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
-
-
+import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
-import org.netbeans.api.queries.VisibilityQuery;
 
 /**
  * Utilities class for I18N module.
@@ -184,10 +182,10 @@ public final class I18nUtil {
         if(regExpItems == null) {
             regExpItems = new ArrayList<String>(4);
             //XXX Only first array item taken into account when checking, rest are not used
-            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|// *NOI18|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}|//[:space:]*NOI18|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}"); // NOI18N
             regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*{hardString}"); // NOI18N
-            regExpItems.add("// *NOI18N"); // NOI18N
-            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|// *NOI18N"); // NOI18N
+            regExpItems.add("//[:space:]*NOI18N"); // NOI18N
+            regExpItems.add("(getString|getBundle)[:space:]*\\([:space:]*|getMessage[:space:]*\\(([:alnum:]|[:punct:]|[:space:])*,[:space:]*{hardString}|//[:space:]*NOI18N"); // NOI18N
         }
             
         return regExpItems;
