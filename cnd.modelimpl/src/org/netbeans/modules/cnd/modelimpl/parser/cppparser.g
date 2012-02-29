@@ -2777,7 +2777,10 @@ abstract_declarator
     :	
         ptr_operator (literal_restrict!)? abstract_declarator 
     |
-        (abstract_declarator_suffix)*
+        (abstract_declarator_suffix)+
+    |
+        (ELLIPSIS) => ELLIPSIS
+    |
     ;
 
 abstract_declarator_suffix
@@ -2951,9 +2954,9 @@ template_parameter_list
 template_parameter
 	:
 	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (IDENT (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
-		(LITERAL_class|LITERAL_typename) 
+                (LITERAL_class|LITERAL_typename) 
                 (ELLIPSIS)? // support for variadic template params
-		(id:IDENT (ELLIPSIS)? (ASSIGNEQUAL assigned_type_name)? )?
+		(id:IDENT (ELLIPSIS)? )? (ASSIGNEQUAL assigned_type_name)?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
 		template_template_parameter
@@ -2966,7 +2969,7 @@ template_parameter
 protected template_template_parameter
     :
     template_head
-	LITERAL_class IDENT (ASSIGNEQUAL assigned_type_name)?
+	LITERAL_class (ELLIPSIS)? IDENT (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;
