@@ -97,7 +97,11 @@ public class PhpUnitOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.phpUnit.hint=Full path of PHPUnit script (typically {0} or {1}).",
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.skelGen.hint=Full path of Skeleton Generator script (typically {0} or {1})."
     })
     private void init() {
