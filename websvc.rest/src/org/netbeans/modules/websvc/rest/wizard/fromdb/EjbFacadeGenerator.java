@@ -61,6 +61,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -89,6 +91,7 @@ import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.Containe
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.websvc.rest.codegen.RestGenerationOptions;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -266,10 +269,10 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             addMethodToInterface(intfOptions, remote);
             createdFiles.add(remote);
         }
-
+        
         // add the @stateless annotation
         // add implements and extends clauses to the facade
-        Task<WorkingCopy> modificationTask = new Task<WorkingCopy>(){
+        final Task<WorkingCopy> modificationTask = new Task<WorkingCopy>(){
             @Override
             public void run(WorkingCopy wc) throws Exception {
                 wc.toPhase(Phase.RESOLVED);
@@ -449,7 +452,26 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             }
         };
 
-        JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
+        try {
+        JavaSource.forFileObject(facade).runWhenScanFinished( new Task<CompilationController>(){
+
+            @Override
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(Phase.ELEMENTS_RESOLVED);
+                JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
+            }
+            
+            }, true).get();
+        }
+        catch( InterruptedException e ){
+            Logger.getLogger(EjbFacadeGenerator.class.getCanonicalName()).
+                log(Level.INFO, null ,e );
+        }
+        catch( ExecutionException e ){
+            Logger.getLogger(EjbFacadeGenerator.class.getCanonicalName()).
+                log(Level.INFO, null ,e );
+        }
+        
         
         // generate methods for the facade
         EntityManagerGenerator generator = new EntityManagerGenerator(facade, entityFQN);
