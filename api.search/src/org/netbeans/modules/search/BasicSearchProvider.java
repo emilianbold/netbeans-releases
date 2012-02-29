@@ -334,4 +334,11 @@ public class BasicSearchProvider extends SearchProvider {
         }
         return bestScope;
     }
+
+    /**
+     * Create filter for actual ignore list.
+     */
+    public static SearchFilterDefinition getIgnoreListFilter() {
+        return new IgnoreListFilter();
+    }
 }

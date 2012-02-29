@@ -49,8 +49,10 @@ import java.awt.event.ItemListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.ui.FileNameComboBox;
 import org.netbeans.api.search.ui.ScopeSettingsPanel;
+import org.netbeans.modules.search.BasicSearchProvider;
 import org.netbeans.modules.search.IgnoreListPanel;
 import org.netbeans.modules.search.PatternSandbox;
 
@@ -281,5 +283,20 @@ public class DefaultScopeSettingsPanel extends ScopeSettingsPanel {
         public void itemStateChanged(ItemEvent e) {
             fireChange();
         }
+    }
+
+    @Override
+    public SearchScopeOptions getSearchScopeOptions() {
+        SearchScopeOptions sso = SearchScopeOptions.create();
+        if (fileNameComboBox != null) {
+            sso.setPattern(fileNameComboBox.getFileNamePattern());
+        }
+        sso.setRegexp(isFileNameRegExp());
+        sso.setSearchInArchives(isSearchInArchives());
+        sso.setSearchInGenerated(isSearchInGenerated());
+        if (isUseIgnoreList()) {
+            sso.addFilter(BasicSearchProvider.getIgnoreListFilter());
+        }
+        return sso;
     }
 }

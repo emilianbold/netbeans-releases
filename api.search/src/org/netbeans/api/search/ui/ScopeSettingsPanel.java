@@ -44,6 +44,7 @@ package org.netbeans.api.search.ui;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.search.SearchScopeOptions;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -54,6 +55,13 @@ import org.openide.util.ChangeSupport;
 public abstract class ScopeSettingsPanel extends JPanel {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+
+    /**
+     * Return search scope options reflecting the actual state of the panel.
+     *
+     * Modifying returned object will not affect this panel.
+     */
+    public abstract SearchScopeOptions getSearchScopeOptions();
 
     public abstract boolean isSearchInArchives();
 
