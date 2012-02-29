@@ -92,7 +92,6 @@ public final class Resolver3 implements Resolver {
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
-    private FileContent parsingFileContent;
 
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequences.empty();
@@ -424,12 +423,7 @@ public final class Resolver3 implements Resolver {
                 filter = NAMESPACE_FILTER;
             }
         }
-        Iterator<CsmOffsetableDeclaration> declarations;
-        if (parsingFileContent == null) {
-            declarations = CsmSelect.getDeclarations(file, filter);
-        } else {
-            declarations = parsingFileContent.getFileDeclarations().getDeclarations(filter);
-        }
+        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
         gatherMaps(declarations, false, offset);
         if (!visitIncludedFiles) {
             visitedFiles.remove(file);
@@ -646,7 +640,6 @@ public final class Resolver3 implements Resolver {
         names = nameTokens;
         currNamIdx = 0;
         this.interestedKind = interestedKind;
-        parsingFileContent = FileImpl.getParsingFileContent();
         if( nameTokens.length == 1 ) {
             result = resolveSimpleName(result, nameTokens[0], interestedKind);
         } else if( nameTokens.length > 1 ) {
@@ -692,7 +685,7 @@ public final class Resolver3 implements Resolver {
             result = null;
         }
         if (result == null) {
-            gatherMaps(file, parsingFileContent == null, origOffset);
+            gatherMaps(file, !FileImpl.isFileBeingParsed(file), origOffset);
             if (currLocalClassifier != null && needClassifiers()) {
                 result = currLocalClassifier;
             }
@@ -806,7 +799,7 @@ public final class Resolver3 implements Resolver {
             result = findNamespace(containingNS, fullName);
         }
         if (result == null && needClassifiers()) {
-            gatherMaps(file, parsingFileContent == null, origOffset);
+            gatherMaps(file, !FileImpl.isFileBeingParsed(file), origOffset);
             if (currTypedef != null) {
                 CsmType type = currTypedef.getType();
                 if (type != null) {

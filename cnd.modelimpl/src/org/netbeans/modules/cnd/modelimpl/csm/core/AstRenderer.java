@@ -585,12 +585,7 @@ public class AstRenderer {
             return true;
         }
         CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.VARIABLE, CsmDeclaration.Kind.VARIABLE_DEFINITION);
-        Iterator<CsmOffsetableDeclaration> declarations; 
-        if (fileContent != null) {
-            declarations = fileContent.getFileDeclarations().getDeclarations(filter);
-        } else {
-            declarations = CsmSelect.getDeclarations(file, filter);
-        }        
+        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
         return findVariable(name, declarations, offset, filter);
     }
 
@@ -610,12 +605,7 @@ public class AstRenderer {
         }
         CsmFilter filter = CsmSelect.getFilterBuilder().createKindFilter(CsmDeclaration.Kind.NAMESPACE_DEFINITION, CsmDeclaration.Kind.FUNCTION, CsmDeclaration.Kind.FUNCTION_DEFINITION,
                 CsmDeclaration.Kind.FUNCTION_FRIEND, CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION);
-        Iterator<CsmOffsetableDeclaration> declarations;
-        if (fileContent != null) {
-            declarations = fileContent.getFileDeclarations().getDeclarations(filter);
-        } else {
-            declarations = CsmSelect.getDeclarations(file, filter);
-        }
+        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(file, filter);
         return findFunction(name, declarations, offset, filter);
     }
 

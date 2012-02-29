@@ -118,7 +118,7 @@ import org.openide.util.Exceptions;
 public final class FileImpl implements CsmFile,
         Disposable, Persistent, SelfPersistent, CsmIdentifiable {
 
-    private static final ThreadLocal<AtomicReference<FileContent>> inParse = new ThreadLocal<AtomicReference<FileContent>>() {
+    private final ThreadLocal<AtomicReference<FileContent>> parsingFileContentRef = new ThreadLocal<AtomicReference<FileContent>>() {
 
         @Override
         protected AtomicReference<FileContent> initialValue() {
@@ -126,13 +126,20 @@ public final class FileImpl implements CsmFile,
         }
     };
 
+    public static boolean isFileBeingParsed(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).getParsingFileContent() != null;
+        }
+        return false;
+    }
+
     private boolean isInParsingThread() {
         if (true) return false;
         return getParsingFileContent() != null;
     }
 
-    public static FileContent getParsingFileContent() {
-        return inParse.get().get();
+    public FileContent getParsingFileContent() {
+        return parsingFileContentRef.get().get();
     }
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
@@ -818,7 +825,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private void _reparse(ParseDescriptor parseParams) {
-        inParse.get().set(parseParams.content);
+        parsingFileContentRef.get().set(parseParams.content);
         try {
             if (TraceFlags.DEBUG) {
                 Diagnostic.trace("------ reparsing " + fileBuffer.getUrl()); // NOI18N
@@ -840,7 +847,7 @@ public final class FileImpl implements CsmFile,
             }
             fileSnapshot = null;
         } finally {
-            inParse.get().set(null);
+            parsingFileContentRef.get().set(null);
         }
     }
 
@@ -965,7 +972,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
-        inParse.get().set(parseParams.content);
+        parsingFileContentRef.get().set(parseParams.content);
         try {
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;
             if (reportParse || logState || TraceFlags.DEBUG) {
@@ -986,7 +993,7 @@ public final class FileImpl implements CsmFile,
             }
             return parsing;
         } finally {
-            inParse.get().set(null);
+            parsingFileContentRef.get().set(null);
         }
     }
 
@@ -1485,13 +1492,11 @@ public final class FileImpl implements CsmFile,
     }
 
     public boolean hasDeclarations() {
-        assert !isInParsingThread();
         return getFileDeclarations().hasDeclarations();
     }
 
     @Override
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations();
     }
 
@@ -1502,27 +1507,22 @@ public final class FileImpl implements CsmFile,
      * @return number of declarations
      */
     public int getDeclarationsSize(){
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarationsSize();
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(filter);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(kinds, prefix);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(startOffset, endOffset);
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
-        assert !isInParsingThread();
         return getFileDeclarations().getDeclarations(offset);
     }
 
@@ -1620,22 +1620,18 @@ public final class FileImpl implements CsmFile,
      * since file-level static functions (i.e. c-style static functions) aren't registered in project
      */
     public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        assert !isInParsingThread();
         return getFileDeclarations().getStaticFunctionDeclarations();
     }
 
     public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
-        assert !isInParsingThread();
         return getFileDeclarations().getStaticFunctionDeclarations(filter);
     }
 
     public Collection<CsmVariable> getStaticVariableDeclarations() {
-        assert !isInParsingThread();
         return getFileDeclarations().getStaticVariableDeclarations();
     }
 
     public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
-        assert !isInParsingThread();
         return getFileDeclarations().getStaticVariableDeclarations(filter);
     }
 
@@ -2027,8 +2023,11 @@ public final class FileImpl implements CsmFile,
 //    private final FileDeclarationsKey fileDeclarationsKey;
 //    private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
     private FileComponentDeclarations getFileDeclarations() {
-        assert !isInParsingThread();
-        FileComponentDeclarations fd = currentFileContent.getFileDeclarations();
+        FileContent contentImpl = getParsingFileContent();
+        if (contentImpl == null) {
+            contentImpl = currentFileContent;
+        }
+        FileComponentDeclarations fd = contentImpl.getFileDeclarations();
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
 

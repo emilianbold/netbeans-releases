@@ -191,6 +191,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
     }
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
+        // can be called only from FileImpl.getDeclarations(fileter)
         Iterator<CsmOffsetableDeclaration> out;
         try {
             declarationsLock.readLock().lock();
