@@ -259,19 +259,19 @@ public final class SyncItem {
     }
 
     public boolean hasError() {
-        // XXX optimize?
+        // optimize?
         validate();
         return !valid;
     }
 
     public boolean hasWarning() {
-        // XXX optimize?
+        // optimize?
         validate();
         return valid && message != null;
     }
 
     public String getMessage() {
-        // XXX optimize?
+        // optimize?
         validate();
         return message;
     }

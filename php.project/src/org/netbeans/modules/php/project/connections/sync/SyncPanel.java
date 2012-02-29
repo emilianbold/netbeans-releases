@@ -215,7 +215,6 @@ public final class SyncPanel extends JPanel {
         });
     }
 
-    @NbBundle.Messages("SyncPanel.resetButton.title=Reset to the original state")
     private void initOperationButtons() {
         // operations
         initOperationButton(noopButton, SyncItem.Operation.NOOP);
@@ -235,6 +234,7 @@ public final class SyncPanel extends JPanel {
         button.addActionListener(new OperationButtonListener(operation));
     }
 
+    @NbBundle.Messages("SyncPanel.resetButton.title=Reset the file to the original state (any changes will be discarded)")
     private void initResetButton() {
         // XXX
         //resetButton.setText(null);
@@ -610,8 +610,6 @@ public final class SyncPanel extends JPanel {
             for (Integer index : selectedRows) {
                 SyncItem syncItem = items.get(index);
                 if (operation == null) {
-                    // XXX add warning about reseting tmp local file
-                    // XXX or perhaps add yes/no dialog
                     syncItem.resetOperation();
                 } else {
                     syncItem.setOperation(operation);
