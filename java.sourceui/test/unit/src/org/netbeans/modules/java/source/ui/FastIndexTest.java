@@ -54,9 +54,7 @@ import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider.Context;
 import org.netbeans.spi.jumpto.type.TypeProvider.Result;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
-import org.openide.filesystems.Repository;
 import org.openide.util.Utilities;
 
 /**
@@ -75,7 +73,7 @@ public class FastIndexTest extends NbTestCase {
      * @throws Exception 
      */
     public void testDirectoryScanner() throws Exception {
-        File rtfile = TestUtil.getJdkFile("src.zip");
+        File rtfile = TestUtil.getJdkSources();
         JarFileSystem jfs = new JarFileSystem(rtfile);
         
         FileObject root = jfs.getRoot();
@@ -152,10 +150,16 @@ public class FastIndexTest extends NbTestCase {
     
     
     public void testFastIndexProvider() throws Exception {
-        File rtfile = TestUtil.getJdkFile("src.zip");
+        File rtfile = TestUtil.getJdkSources();
         JarFileSystem jfs = new JarFileSystem(rtfile);
         
         FileObject root = jfs.getRoot();
+        assertNotNull(root);
+        if (root.getFileObject("java") == null) {   //NOI18N
+            root = root.getFileObject("src");       //NOI18N
+            assertNotNull(root);
+            assertNotNull(root.getFileObject("java"));  //NOI18N
+        }
         
         OpenProjectFastIndex.IndexBuilder builder = new OpenProjectFastIndex.IndexBuilder(null,
                 Collections.<FileObject>singleton(root), Collections.<FileObject>emptyList());

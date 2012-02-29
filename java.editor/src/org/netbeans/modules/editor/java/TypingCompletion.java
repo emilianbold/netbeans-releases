@@ -158,7 +158,8 @@ class TypingCompletion {
     static void completeOpeningBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
         char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
         if (chr == ')' || chr == ',' || chr == '\"' || chr == '\'' || chr == ' ' || chr == ']' || chr == '}' || chr == '\n' || chr == '\t' || chr == ';') {
-            context.setText("()", 1);  // NOI18N
+            char insChr = context.getText().charAt(0);
+            context.setText("" + insChr + matching(insChr) , 1);  // NOI18N
         }
     }
 
@@ -467,6 +468,25 @@ class TypingCompletion {
 
     }
 
+    /**
+     * Returns for an opening bracket or quote the appropriate closing
+     * character.
+     */
+    private static char matching(char bracket) {
+        switch (bracket) {
+            case '(':
+                return ')';
+            case '[':
+                return ']';
+            case '\"':
+                return '\"'; // NOI18N
+            case '\'':
+                return '\'';
+            default:
+                return ' ';
+        }
+    }
+    
     private static JavaTokenId matching(JavaTokenId id) {
         switch (id) {
             case LPAREN:

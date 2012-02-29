@@ -68,6 +68,10 @@ import org.openide.util.Exceptions;
  *
  * @author Anton Chechel <anton.chechel@oracle.com>
  */
+// TODO <ImageView image="@my_image.png"/> support
+// TODO <Button text="Click Me!" onAction="java.lang.System.out.println('You clicked me!');"/> support
+// TODO <Button text="Click Me!" onAction="#handleButtonAction"/> support
+ 
 @MimeRegistration(mimeType=JavaFXEditorUtils.MIME_TYPE, service=HyperlinkProviderExt.class)
 public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
 
@@ -156,19 +160,24 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
         }
         
         FileObject fo;
+        String rootPath = FileUtil.normalizePath(rootFolder.getPath());
+        String docPath = FileUtil.normalizePath(docFO.getParent().getPath());
+
         // Java Controller
         String javaPath = path.trim().replace("\"", "").replace('.', '/') + ".java"; // NOI18N
         fo = cp.findResource(javaPath);
+        if (fo == null) {
+            javaPath = docPath.substring(rootPath.length()) + '\\' + javaPath; // NOI18N
+            fo = cp.findResource(javaPath);
+        }
         
-        // CSS
+        // CSS file
         if (fo == null) {
             // try short path
             String cssPath = path.trim().replace("\"", "").replace("@", ""); // NOI18N
             fo = cp.findResource(cssPath);
             // try full path
             if (fo == null) {
-                String rootPath = FileUtil.normalizePath(rootFolder.getPath());
-                String docPath = FileUtil.normalizePath(docFO.getParent().getPath());
                 cssPath = docPath.substring(rootPath.length()) + '\\' + cssPath; // NOI18N
                 fo = cp.findResource(cssPath);
             }
