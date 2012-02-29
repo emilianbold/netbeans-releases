@@ -210,7 +210,7 @@ public class IndexedElement extends JsElementImpl {
                     Collection<String> types = new ArrayList<String>();
                     String paramName;
                     if (index > 0) {
-                        paramName = param.substring(0, index - 1);
+                        paramName = param.substring(0, index);
                         String typesText = param.substring(index + 1);
                         for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
                             types.add(stParamType.nextToken());

@@ -3,19 +3,19 @@ MyObj.create().|getInfo().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
-METHOD     eval(strin): undefined          [PUBLIC]   stub_core_Object.js
+METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
 METHOD     factory(): MyObj                [PUBLIC]   methodChainSimple.js
 METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
 METHOD     getVersion(): Number            [PUBLIC]   methodChainSimple.js
-METHOD     hasOwnProperty(pro): undefined  [PUBLIC]   stub_core_Object.js
-METHOD     isPrototypeOf(objec): undefine  [PUBLIC]   stub_core_Object.js
-METHOD     propertyIsEnumerable(pro): und  [PUBLIC]   stub_core_Object.js
+METHOD     hasOwnProperty(prop): undefine  [PUBLIC]   stub_core_Object.js
+METHOD     isPrototypeOf(object): undefin  [PUBLIC]   stub_core_Object.js
+METHOD     propertyIsEnumerable(prop): un  [PUBLIC]   stub_core_Object.js
 METHOD     toLocaleString(): undefined     [PUBLIC]   stub_core_Object.js
 METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
 METHOD     toString(): undefined           [PUBLIC]   stub_core_Object.js
-METHOD     unwatch(pro): undefined         [PUBLIC]   stub_core_Object.js
+METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
 METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
-METHOD     watch(pro, handle): undefined   [PUBLIC]   stub_core_Object.js
+METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
 FIELD      constructor                     [PUBLIC]   stub_core_Object.js
 FIELD      prototype                       [PUBLIC]   stub_core_Object.js
 FIELD      version                         [PUBLIC]   methodChainSimple.js
