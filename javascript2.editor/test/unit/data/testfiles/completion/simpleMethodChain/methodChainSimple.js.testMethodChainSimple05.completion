@@ -2,37 +2,44 @@ Code completion result for source line:
 MyObj.create().getInfo().|big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     anchor(nameAttribute)           [PUBLIC]   stub_core_String.js
-METHOD     big()                           [PUBLIC]   stub_core_String.js
-METHOD     blink()                         [PUBLIC]   stub_core_String.js
-METHOD     bold()                          [PUBLIC]   stub_core_String.js
-METHOD     charAt(index)                   [PUBLIC]   stub_core_String.js
-METHOD     charCodeAt(index)               [PUBLIC]   stub_core_String.js
-METHOD     concat(string2, string3, strin  [PUBLIC]   stub_core_String.js
-METHOD     fixed()                         [PUBLIC]   stub_core_String.js
-METHOD     fontcolor(color)                [PUBLIC]   stub_core_String.js
-METHOD     fontsize(size)                  [PUBLIC]   stub_core_String.js
-METHOD     fromCharCode(num1, numN)        [PUBLIC]   stub_core_String.js
-METHOD     indexOf(searchValue, fromIndex  [PUBLIC]   stub_core_String.js
-METHOD     italics()                       [PUBLIC]   stub_core_String.js
-METHOD     lastIndexOf(searchValue, fromI  [PUBLIC]   stub_core_String.js
-METHOD     link(hrefAttribute)             [PUBLIC]   stub_core_String.js
-METHOD     match(regexp)                   [PUBLIC]   stub_core_String.js
-METHOD     replace(regexp_or_substr, newS  [PUBLIC]   stub_core_String.js
-METHOD     search(regexp)                  [PUBLIC]   stub_core_String.js
-METHOD     slice(beginslice, endSlice)     [PUBLIC]   stub_core_String.js
-METHOD     small()                         [PUBLIC]   stub_core_String.js
-METHOD     split(separator, limit)         [PUBLIC]   stub_core_String.js
-METHOD     strike()                        [PUBLIC]   stub_core_String.js
-METHOD     sub()                           [PUBLIC]   stub_core_String.js
-METHOD     substr(start, length)           [PUBLIC]   stub_core_String.js
-METHOD     substring(indexA, indexB)       [PUBLIC]   stub_core_String.js
-METHOD     sup()                           [PUBLIC]   stub_core_String.js
-METHOD     toLowerCase()                   [PUBLIC]   stub_core_String.js
-METHOD     toSource()                      [PUBLIC]   stub_core_String.js
-METHOD     toString()                      [PUBLIC]   stub_core_String.js
-METHOD     toUpperCase()                   [PUBLIC]   stub_core_String.js
-METHOD     valueOf()                       [PUBLIC]   stub_core_String.js
-FIELD      constructor                     [PUBLIC]   stub_core_String.js
+METHOD     anchor(nameAttribut): undefine  [PUBLIC]   stub_core_String.js
+METHOD     big(): undefined                [PUBLIC]   stub_core_String.js
+METHOD     blink(): undefined              [PUBLIC]   stub_core_String.js
+METHOD     bold(): undefined               [PUBLIC]   stub_core_String.js
+METHOD     charAt(inde): undefined         [PUBLIC]   stub_core_String.js
+METHOD     charCodeAt(inde): undefined     [PUBLIC]   stub_core_String.js
+METHOD     concat(string): undefined       [PUBLIC]   stub_core_String.js
+METHOD     eval(strin): undefined          [PUBLIC]   stub_core_Object.js
+METHOD     fixed(): undefined              [PUBLIC]   stub_core_String.js
+METHOD     fontcolor(colo): undefined      [PUBLIC]   stub_core_String.js
+METHOD     fontsize(siz): undefined        [PUBLIC]   stub_core_String.js
+METHOD     fromCharCode(num): undefined    [PUBLIC]   stub_core_String.js
+METHOD     hasOwnProperty(pro): undefined  [PUBLIC]   stub_core_Object.js
+METHOD     indexOf(searchValu, fromInde):  [PUBLIC]   stub_core_String.js
+METHOD     isPrototypeOf(objec): undefine  [PUBLIC]   stub_core_Object.js
+METHOD     italics(): undefined            [PUBLIC]   stub_core_String.js
+METHOD     lastIndexOf(searchValu, fromIn  [PUBLIC]   stub_core_String.js
+METHOD     link(hrefAttribut): undefined   [PUBLIC]   stub_core_String.js
+METHOD     match(regex): undefined         [PUBLIC]   stub_core_String.js
+METHOD     propertyIsEnumerable(pro): und  [PUBLIC]   stub_core_Object.js
+METHOD     replace(regexp_or_subst, newSu  [PUBLIC]   stub_core_String.js
+METHOD     search(regex): undefined        [PUBLIC]   stub_core_String.js
+METHOD     slice(beginslic, endSlic): und  [PUBLIC]   stub_core_String.js
+METHOD     small(): undefined              [PUBLIC]   stub_core_String.js
+METHOD     split(separato, limi): undefin  [PUBLIC]   stub_core_String.js
+METHOD     strike(): undefined             [PUBLIC]   stub_core_String.js
+METHOD     sub(): undefined                [PUBLIC]   stub_core_String.js
+METHOD     substr(star, lengt): undefined  [PUBLIC]   stub_core_String.js
+METHOD     substring(index): undefined     [PUBLIC]   stub_core_String.js
+METHOD     sup(): undefined                [PUBLIC]   stub_core_String.js
+METHOD     toLocaleString(): undefined     [PUBLIC]   stub_core_Object.js
+METHOD     toLowerCase(): undefined        [PUBLIC]   stub_core_String.js
+METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
+METHOD     toString(): undefined           [PUBLIC]   stub_core_Object.js
+METHOD     toUpperCase(): undefined        [PUBLIC]   stub_core_String.js
+METHOD     unwatch(pro): undefined         [PUBLIC]   stub_core_Object.js
+METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
+METHOD     watch(pro, handle): undefined   [PUBLIC]   stub_core_Object.js
+FIELD      constructor                     [PUBLIC]   stub_core_Object.js
 FIELD      length                          [PUBLIC]   stub_core_String.js
-FIELD      prototype                       [PUBLIC]   stub_core_String.js
+FIELD      prototype                       [PUBLIC]   stub_core_Object.js
