@@ -127,13 +127,20 @@ public final class BrowserSupport {
                 listener = new PropertyChangeListener() {
                     @Override
                     public void propertyChange(PropertyChangeEvent evt) {
-                        if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt.getPropertyName())) {
-                            if (!WebBrowsers.getInstance().getPreferred().getId().equals(browser.getId())) {
-                                assert pane != null;
-                                // update browser pane
-                                browser = WebBrowsers.getInstance().getPreferred();
-                                pane.removeListener(paneListener);
-                                pane = null;
+                        synchronized ( BrowserSupport.this ) {
+                            if (WebBrowsers.PROP_DEFAULT_BROWSER.equals(evt
+                                    .getPropertyName()))
+                            {
+                                if (!WebBrowsers.getInstance().getPreferred()
+                                        .getId().equals(browser.getId()))
+                                {
+                                    assert pane != null;
+                                    // update browser pane
+                                    browser = WebBrowsers.getInstance()
+                                            .getPreferred();
+                                    pane.removeListener(paneListener);
+                                    pane = null;
+                                }
                             }
                         }
                     }
