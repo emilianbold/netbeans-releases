@@ -253,43 +253,52 @@ public class FileObjectCrawlerTest extends NbTestCase {
         final FileObject folder1 = rootWithCycle.createFolder("folder1");
         final FileObject folder2 = rootWithCycle.createFolder("folder2");
         final FileObject inFolder1 = folder1.createFolder("infolder1");
-        final FileObject inFolder2 = folder2.createFolder("infolder2");
+        final FileObject inFolder2 = folder2.createFolder("folder2");
         folder1.createData("data1.txt");
         inFolder1.createData("data2.txt");
         folder2.createData("data3.txt");
         inFolder2.createData("data4.txt");
-        final Map<FileObject,FileObjectCrawler.LinkType> linkMap = new HashMap<FileObject, FileObjectCrawler.LinkType>();
-        linkMap.put(folder2, FileObjectCrawler.LinkType.IN);
-        FileObjectCrawler.mockLinkTypes = linkMap;
-        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR, SuspendSupport.NOP);
-        final Collection<IndexableImpl> indexables = c.getAllResources();
-        assertCollectedFiles("Wring collected files", indexables,
-                "folder1/data1.txt",
-                "folder1/infolder1/data2.txt");
-    }
-
-    public void testSymLinksFromRoot() throws Exception {
-        final File workDir = getWorkDir();
-        final FileObject wd = FileUtil.toFileObject(workDir);
-        final FileObject rootWithCycle = wd.createFolder("rootWithExtLink");
-        final FileObject folder1 = rootWithCycle.createFolder("folder1");
-        final FileObject folder2 = rootWithCycle.createFolder("folder2");
-        final FileObject inFolder1 = folder1.createFolder("infolder1");
-        final FileObject inFolder2 = folder2.createFolder("infolder2");
-        folder1.createData("data1.txt");
-        inFolder1.createData("data2.txt");
-        folder2.createData("data3.txt");
-        inFolder2.createData("data4.txt");
-        final Map<FileObject,FileObjectCrawler.LinkType> linkMap = new HashMap<FileObject, FileObjectCrawler.LinkType>();
-        linkMap.put(folder2, FileObjectCrawler.LinkType.OUT);
+        final Map<Pair<File,File>,Boolean> linkMap = new HashMap<Pair<File,File>, Boolean>();
+        linkMap.put(
+            Pair.<File,File>of(
+                FileUtil.toFile(folder2),
+                FileUtil.toFile(inFolder2)),
+            Boolean.TRUE);
         FileObjectCrawler.mockLinkTypes = linkMap;
         final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR, SuspendSupport.NOP);
         final Collection<IndexableImpl> indexables = c.getAllResources();
         assertCollectedFiles("Wring collected files", indexables,
                 "folder1/data1.txt",
                 "folder1/infolder1/data2.txt",
-                "folder2/data3.txt",
-                "folder2/infolder2/data4.txt");
+                "folder2/data3.txt");
+    }
+
+    public void testSymLinksFromRoot() throws Exception {
+        final File workDir = getWorkDir();
+        final FileObject wd = FileUtil.toFileObject(workDir);
+        final FileObject cycleTarget= wd.createFolder("cycleTarget");
+        final FileObject rootWithCycle = cycleTarget.createFolder("rootWithExtLink");
+        final FileObject folder1 = rootWithCycle.createFolder("folder1");
+        final FileObject folder2 = rootWithCycle.createFolder("folder2");
+        final FileObject inFolder1 = folder1.createFolder("infolder1");
+        final FileObject inFolder2 = folder2.createFolder("cycleTarget");
+        folder1.createData("data1.txt");
+        inFolder1.createData("data2.txt");
+        folder2.createData("data3.txt");
+        inFolder2.createData("data4.txt");
+        final Map<Pair<File,File>,Boolean> linkMap = new HashMap<Pair<File,File>, Boolean>();
+        linkMap.put(
+            Pair.<File,File>of(
+                FileUtil.toFile(cycleTarget),
+                FileUtil.toFile(inFolder2)),
+            Boolean.TRUE);
+        FileObjectCrawler.mockLinkTypes = linkMap;
+        final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, false, null, CR, SuspendSupport.NOP);
+        final Collection<IndexableImpl> indexables = c.getAllResources();
+        assertCollectedFiles("Wring collected files", indexables,
+                "folder1/data1.txt",
+                "folder1/infolder1/data2.txt",
+                "folder2/data3.txt");
     }
 
     protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {

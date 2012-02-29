@@ -137,7 +137,7 @@ class TypingCompletion {
      */
     static int skipClosingBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
         TokenSequence<JavaTokenId> javaTS = javaTokenSequence(context, false);
-        if (javaTS == null || (javaTS.token().id() != JavaTokenId.RPAREN && javaTS.token().id() != JavaTokenId.RBRACKET)) {
+        if (javaTS == null || (javaTS.token().id() != JavaTokenId.RPAREN && javaTS.token().id() != JavaTokenId.RBRACKET) || isStringOrComment(javaTS.token().id())) {
             return -1;
         }
 
@@ -148,7 +148,7 @@ class TypingCompletion {
         }
         return -1;
     }
-
+ 
     /**
      * Check for various conditions and possibly add a pairing bracket.
      *
@@ -156,6 +156,8 @@ class TypingCompletion {
      * @throws BadLocationException
      */
     static void completeOpeningBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
+        if (isStringOrComment(javaTokenSequence(context, false).token().id()))
+            return;
         char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
         if (chr == ')' || chr == ',' || chr == '\"' || chr == '\'' || chr == ' ' || chr == ']' || chr == '}' || chr == '\n' || chr == '\t' || chr == ';') {
             char insChr = context.getText().charAt(0);
@@ -172,7 +174,7 @@ class TypingCompletion {
      */
     static int moveSemicolon(TypedTextInterceptor.MutableContext context) throws BadLocationException {
         TokenSequence<JavaTokenId> javaTS = javaTokenSequence(context, false);
-        if (javaTS == null) {
+        if (javaTS == null || isStringOrComment(javaTS.token().id())) {
             return -1;
         }
         int lastParenPos = context.getOffset();
@@ -564,5 +566,11 @@ class TypingCompletion {
             }
         }
         return null;
+    }
+    
+    private static Set<JavaTokenId> STRING_AND_COMMENT_TOKENS = EnumSet.of(JavaTokenId.STRING_LITERAL, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.BLOCK_COMMENT);
+
+    private static boolean isStringOrComment(JavaTokenId javaTokenId) {
+        return STRING_AND_COMMENT_TOKENS.contains(javaTokenId);
     }
 }

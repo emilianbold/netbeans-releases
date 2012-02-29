@@ -447,12 +447,10 @@ public final class EditorFindSupport {
         incSearchReset();
         props = getValidFindProperties(props);
         boolean back = isBackSearch(props, oppositeDir);
-        Object findWhat = props.get(FIND_WHAT);
-        if (findWhat == null) { // nothing to search for
+        if (props.get(FIND_WHAT) == null || !(props.get(FIND_WHAT) instanceof String)) {
             return null;
         }
-
-        String exp = "'" + findWhat + "' "; // NOI18N
+        String findWhat = (String) props.get(FIND_WHAT);
         if (c != null) {
             ComponentUtils.clearStatusText(c);
             Caret caret = c.getCaret();
@@ -488,8 +486,9 @@ public final class EditorFindSupport {
                 }
                 if (blk != null) {
                     selectText(c, blk[0], blk[1], back);
-                    String msg = exp + NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE)
-                                 + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
+                    String msg = NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE, findWhat, DocUtils.debugPosition(c.getDocument(), Integer.valueOf(blk[0])));
+//                    String msg = exp + NbBundle.getMessage(EditorFindSupport.class, FOUND_LOCALE)
+//                                 + ' ' + DocUtils.debugPosition(c.getDocument(), blk[0]);
                     if (blk[2] == 1) { // wrap was done
                         msg += "; "; // NOI18N
                         if (blockSearch && blockSearchEnd>0 && blockSearchStart >-1){
@@ -506,8 +505,8 @@ public final class EditorFindSupport {
                     }
                     return result;
                 } else { // not found
-                    ComponentUtils.setStatusText(c, exp + NbBundle.getMessage(
-                                                    EditorFindSupport.class, NOT_FOUND_LOCALE), IMPORTANCE_FIND_OR_REPLACE);
+                    ComponentUtils.setStatusText(c, NbBundle.getMessage(
+                                                    EditorFindSupport.class, NOT_FOUND_LOCALE, findWhat), IMPORTANCE_FIND_OR_REPLACE);
                     // issue 14189 - selection was not removed
                     c.getCaret().setDot(c.getCaret().getDot());
                 }
