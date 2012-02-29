@@ -116,6 +116,18 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     }
 
     public void testIsNotFoundHandler() throws Throwable {
+        ProxySelector ps = new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(Proxy.NO_PROXY);
+            }
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        ProxySelector.setDefault(ps); 
+        
         RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "http://crap", "bgzll", "bgzll", null, null, null , null);
         BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "NotFoundHandler");
