@@ -3,7 +3,7 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO Address(street, town, country)  [PUBLIC]   typeInferenceNew.js
-CONSTRUCTO Car(color, maker)               [PUBLIC]   typeInferenceNew.js
+CONSTRUCTO Car(color, maker): Car          [PUBLIC]   typeInferenceNew.js
 CLASS      Context                         [PUBLIC]   typeInferenceNew.js
 CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
 VARIABLE   object                          [PUBLIC]   typeInferenceNew.js

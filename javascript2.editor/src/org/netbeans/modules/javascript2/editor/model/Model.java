@@ -106,9 +106,11 @@ public final class Model {
     public Collection<? extends JsObject> getVariables(int offset) {
         List<JsObject> result = new ArrayList<JsObject>();
         DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
-        System.out.println("scope: " + ((JsObject)scope).getName());
         while (scope != null) {
             for (JsObject object : ((JsObject)scope).getProperties().values()) {
+                result.add(object);
+            }
+            for (JsObject object : ((JsFunction)scope).getParameters()) {
                 result.add(object);
             }
             scope = scope.getInScope();

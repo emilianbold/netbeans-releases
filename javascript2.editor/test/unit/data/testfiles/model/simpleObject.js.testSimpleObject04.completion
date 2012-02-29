@@ -1,5 +1,5 @@
 Code completion result for source line:
-MyObj.cr|eate().getInfo().big();
+formatter.println(Carrot.isVegi|table());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
+METHOD     isVegitable(): Boolean          [PUBLIC,   simpleObject.js

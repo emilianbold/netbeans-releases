@@ -51,6 +51,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
+import org.netbeans.modules.javascript2.editor.model.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -426,6 +427,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (fncScope.areReturnTypesEmpty()) {
                     // the function doesn't have return statement -> returns undefined
                     fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+                }
+                
+                List<DocParameter> docParams = docProvider.getParameters(functionNode);
+                for (DocParameter docParameter : docParams) {
+                    JsObjectImpl param = (JsObjectImpl)fncScope.getParameter(docParameter.getParamName());
+                    if(param != null) {
+                        for(Type type : docParameter.getParamTypes()) {
+                            param.addAssignment(new TypeUsageImpl(type.getType(), param.getOffset(), false), param.getOffset());
+                        }
+                    }
                 }
             }
                 

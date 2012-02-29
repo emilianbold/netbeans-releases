@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.*;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -65,6 +66,7 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
@@ -115,7 +117,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
         switch (context) {
             case GLOBAL:
                 for(JsObject object : request.result.getModel().getVariables(caretOffset)) {
-                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous()))
+                    if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
+                            && startsWith(object.getName(), request.prefix))
                         resultList.add(JsCompletionItem.Factory.create(object, request));
                 }
                 completeKeywords(request, resultList);
@@ -294,7 +297,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<String> exp = new ArrayList();
             
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
-                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY) {
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
+                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
                 
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {
@@ -357,11 +361,16 @@ class JsCodeCompletion implements CodeCompletionHandler {
                                 lastResolvedObjects.add(type);
                             } else {
                                 for (Type typeName : lastTypeAssignment) {
+                                    boolean wasFound = false;
                                     for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
                                         if (object.getName().equals(typeName.getType())) {
                                             lastResolvedObjects.add(object);
+                                            wasFound = true;
                                             break;
                                         }
+                                    }
+                                    if (!wasFound) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
                                     }
                                 }
                                 break;
@@ -398,21 +407,27 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
+            HashSet<String> added = new HashSet<String>();
             for (JsObject resolved : lastResolvedObjects) {
-                addObjectPropertiesToCC(resolved, request, resultList);
+                addObjectPropertiesToCC(resolved, request, resultList, added);
             }
+            // TODO there should be added objects from prototype chain
+            // add as last type Object
+            lastResolvedTypes.add(0, new TypeUsageImpl("Object", -1, true));
             for (TypeUsage typeUsage : lastResolvedTypes) {
                 // at first try to find the type in the model
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                 if (jsObject != null) {
-                    addObjectPropertiesToCC(jsObject, request, resultList);
+                    addObjectPropertiesToCC(jsObject, request, resultList, added);
                 } else {
                     // look at the index
                     FileObject fo = request.info.getSnapshot().getSource().getFileObject();
                     Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(typeUsage.getType());
                     for (IndexedElement indexedElement : properties) {
-                        if (startsWith(indexedElement.getName(), request.prefix)) {
-                            resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                        if (!added.contains(indexedElement.getName())
+                            && startsWith(indexedElement.getName(), request.prefix)) {
+                                resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
+                                added.add(indexedElement.getName());
                         }
                     }
                 }
@@ -479,7 +494,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
-    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, List<CompletionProposal> resultList) {
+    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, List<CompletionProposal> resultList, Set<String> addedProperties) {
         boolean filter = true;
         if (request.prefix == null || request.prefix.isEmpty()) {
             filter = false;
@@ -487,8 +502,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
         for (JsObject property : jsObject.getProperties().values()) {
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
                     && (!filter || startsWith(property.getName(), request.prefix))
-                    && !property.getJSKind().isPropertyGetterSetter()) {
+                    && !property.getJSKind().isPropertyGetterSetter()
+                    && !addedProperties.contains(property.getName())) {
                 resultList.add(JsCompletionItem.Factory.create(property, request));
+                addedProperties.add(property.getName());
             }
         }
     }

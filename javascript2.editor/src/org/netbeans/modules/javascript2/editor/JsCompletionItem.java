@@ -41,22 +41,22 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.lang.CharSequence;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import javax.swing.ImageIcon;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.util.ImageUtilities;
 
@@ -173,27 +173,66 @@ public class JsCompletionItem implements CompletionProposal {
             formatter.appendText("(");
             appendParamsStr(formatter);
             formatter.appendText(")");
+            appendReturnTypes(formatter);
             return formatter.getText();
         }
-        
+
         private void appendParamsStr(HtmlFormatter formatter){
-            Collection<String> allParameters = new ArrayList<String>();
+            LinkedHashMap<String, Collection<String>> allParameters = new LinkedHashMap<String, Collection<String>>();
             
             if(getElement() instanceof JsFunction) {
                 for (JsObject jsObject: ((JsFunction)getElement()).getParameters()) {
-                    allParameters.add(jsObject.getName());
+                    Collection<String> types = new ArrayList();
+                    for (TypeUsage type : jsObject.getAssignmentForOffset(jsObject.getOffset() + 1)) {
+                        types.add(type.getType());
+                    }
+                    allParameters.put(jsObject.getName(), types);
                 }
             } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
                 allParameters = ((IndexedElement.FunctionIndexedElement)getElement()).getParameters();
             }
-            for (Iterator<String> it = allParameters.iterator(); it.hasNext();) {
+            for (Iterator<String> it = allParameters.keySet().iterator(); it.hasNext();) {
                 String name = it.next();
                 formatter.parameters(true);
                 formatter.appendText(name);
                 formatter.parameters(false);
+                Collection<String> types = allParameters.get(name);
+                if (!types.isEmpty()) {
+                    formatter.type(true);
+                    formatter.appendText(": ");  //NOI18N
+                    for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
+                        formatter.appendText(itTypes.next());
+                        if(itTypes.hasNext()) {
+                            formatter.appendText("|");   //NOI18N
+                        }
+                    }
+                    formatter.type(false);
+                }
                 if (it.hasNext()) {
                     formatter.appendText(", ");  //NOI18N
                 }    
+            }
+        }
+
+        private void appendReturnTypes(HtmlFormatter formatter) {
+            Collection<String> returnTypes = new ArrayList<String>();
+            if(getElement() instanceof JsFunction) {
+                for(TypeUsage type: ((JsFunction)getElement()).getReturnTypes()) {
+                    returnTypes.add((type.getType()));
+                }
+            } else if (getElement() instanceof IndexedElement.FunctionIndexedElement) {
+                returnTypes.addAll(((IndexedElement.FunctionIndexedElement)getElement()).getReturnTypes());
+            }
+            if (!returnTypes.isEmpty()) {
+                formatter.appendText(": "); //NOI18N
+                formatter.type(true);
+                for (Iterator<String> it = returnTypes.iterator(); it.hasNext();) {
+                    formatter.appendText(it.next());
+                    if (it.hasNext()) {
+                        formatter.appendText("|"); //NOI18N
+                    }
+                }
+                formatter.type(false);
             }
         }
     }

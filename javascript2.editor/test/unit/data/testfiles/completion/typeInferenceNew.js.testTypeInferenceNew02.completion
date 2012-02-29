@@ -2,7 +2,7 @@ Code completion result for source line:
 formatter.println("color: " + object.|getColor());
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     getColor()                      [PUBLIC]   typeInferenceNew.js
-METHOD     getMaker()                      [PUBLIC]   typeInferenceNew.js
+METHOD     getColor(): unresolved          [PUBLIC]   typeInferenceNew.js
+METHOD     getMaker(): unresolved          [PUBLIC]   typeInferenceNew.js
 FIELD      color                           [PUBLIC]   typeInferenceNew.js
 FIELD      maker                           [PUBLIC]   typeInferenceNew.js

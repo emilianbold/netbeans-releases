@@ -88,6 +88,7 @@ public class JsCodeCompletionSimpleMethodChainTest extends JsTestBase {
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/runtime/")),
                 FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/simpleMethodChain/"))
             })
         );

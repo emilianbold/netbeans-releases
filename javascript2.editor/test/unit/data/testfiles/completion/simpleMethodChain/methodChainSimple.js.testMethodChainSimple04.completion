@@ -2,5 +2,5 @@ Code completion result for source line:
 MyObj.create().get|Info().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     getInfo()                       [PUBLIC]   methodChainSimple.js
-METHOD     getVersion()                    [PUBLIC]   methodChainSimple.js
+METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
+METHOD     getVersion(): Number            [PUBLIC]   methodChainSimple.js

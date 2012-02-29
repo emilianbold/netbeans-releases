@@ -2,8 +2,20 @@ Code completion result for source line:
 MyObj.|create().getInfo().big();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-METHOD     create()                        [PUBLIC]   methodChainSimple.js
-METHOD     factory()                       [PUBLIC]   methodChainSimple.js
-METHOD     getInfo()                       [PUBLIC]   methodChainSimple.js
-METHOD     getVersion()                    [PUBLIC]   methodChainSimple.js
+METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
+METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
+METHOD     factory(): MyObj                [PUBLIC]   methodChainSimple.js
+METHOD     getInfo(): String               [PUBLIC]   methodChainSimple.js
+METHOD     getVersion(): unresolved        [PUBLIC]   methodChainSimple.js
+METHOD     hasOwnProperty(prop): undefine  [PUBLIC]   stub_core_Object.js
+METHOD     isPrototypeOf(object): undefin  [PUBLIC]   stub_core_Object.js
+METHOD     propertyIsEnumerable(prop): un  [PUBLIC]   stub_core_Object.js
+METHOD     toLocaleString(): undefined     [PUBLIC]   stub_core_Object.js
+METHOD     toSource(): undefined           [PUBLIC]   stub_core_Object.js
+METHOD     toString(): undefined           [PUBLIC]   stub_core_Object.js
+METHOD     unwatch(prop): undefined        [PUBLIC]   stub_core_Object.js
+METHOD     valueOf(): undefined            [PUBLIC]   stub_core_Object.js
+METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
+FIELD      constructor                     [PUBLIC]   stub_core_Object.js
+FIELD      prototype                       [PUBLIC]   stub_core_Object.js
 FIELD      version                         [PUBLIC]   methodChainSimple.js
