@@ -872,12 +872,19 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
         { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
     |
 			// Destructor DEFINITION (templated)
-			( dtor_head[true] LCURLY)=>
+			(   dtor_head[true] 
+                            (   LCURLY
+                            |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                            )
+                        )=>
 			{if (statementTrace>=1) 
 				printf("external_declaration_4[%d]: Destructor definition\n",
 					LT(1).getLine());
 			}
-			dtor_head[true] dtor_body
+			dtor_head[true] 
+                        (   dtor_body
+                        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                        )
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
@@ -1000,12 +1007,21 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
     |
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
-		((template_head)? dtor_head[true] LCURLY)=>
+		(   (template_head)? 
+                    dtor_head[true] 
+                    (   LCURLY
+                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                    )
+                )=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_4[%d]: Destructor definition\n",
 				LT(1).getLine());
 		}
-		(template_head)? dtor_head[true] dtor_body
+		(template_head)? 
+                dtor_head[true]
+                (   dtor_body
+                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                )
 		{ #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
 	|
 		// Constructor DEFINITION (non-templated)
