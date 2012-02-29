@@ -199,11 +199,11 @@ public class JsCompletionItem implements CompletionProposal {
                 Collection<String> types = allParameters.get(name);
                 if (!types.isEmpty()) {
                     formatter.type(true);
-                    formatter.appendText(": ");
+                    formatter.appendText(": ");  //NOI18N
                     for (Iterator<String> itTypes = types.iterator(); itTypes.hasNext();) {
                         formatter.appendText(itTypes.next());
                         if(itTypes.hasNext()) {
-                            formatter.appendText("|");
+                            formatter.appendText("|");   //NOI18N
                         }
                     }
                     formatter.type(false);
