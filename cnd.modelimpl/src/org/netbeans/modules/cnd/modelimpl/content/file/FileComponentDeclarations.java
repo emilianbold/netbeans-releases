@@ -210,7 +210,7 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         }
     }
 
-    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
         Collection<CsmUID<CsmOffsetableDeclaration>> out = null;
         try {
             declarationsLock.readLock().lock();

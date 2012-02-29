@@ -1495,11 +1495,6 @@ public final class FileImpl implements CsmFile,
         return getFileDeclarations().getDeclarations();
     }
 
-    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
-        assert !isInParsingThread();
-        return getFileDeclarations().getDeclarations(filter);
-    }
-
     /**
      * Returns number of declarations.
      * Does not fixFakeRegistrations, so this size could be inaccurate
@@ -1511,9 +1506,14 @@ public final class FileImpl implements CsmFile,
         return getFileDeclarations().getDeclarationsSize();
     }
 
-    public Collection<CsmUID<CsmOffsetableDeclaration>> findDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         assert !isInParsingThread();
-        return getFileDeclarations().findDeclarations(kinds, prefix);
+        return getFileDeclarations().getDeclarations(filter);
+    }
+
+    public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(CsmDeclaration.Kind[] kinds, CharSequence prefix) {
+        assert !isInParsingThread();
+        return getFileDeclarations().getDeclarations(kinds, prefix);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getDeclarations(int startOffset, int endOffset) {
