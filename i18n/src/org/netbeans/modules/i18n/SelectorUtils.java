@@ -46,11 +46,13 @@
 package org.netbeans.modules.i18n;
 
 import java.awt.BorderLayout;
+import java.awt.Image;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -76,6 +78,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ImageUtilities;
 
 
 
@@ -292,7 +295,19 @@ public class SelectorUtils {
         nodes.toArray( nodesArray );
         ch.add( nodesArray );
 
-        AbstractNode ret = new AbstractNode(ch);
+        final Icon icon = ProjectUtils.getInformation(prj).getIcon();
+        AbstractNode ret = new AbstractNode(ch) {
+
+            @Override
+            public Image getIcon(int type) {
+                return ImageUtilities.icon2Image(icon);
+            }
+
+            @Override
+            public Image getOpenedIcon(int type) {
+                return getIcon(type);
+            }
+        };
         ret.setDisplayName(ProjectUtils.getInformation(prj).getDisplayName());
         return ret;
     }
