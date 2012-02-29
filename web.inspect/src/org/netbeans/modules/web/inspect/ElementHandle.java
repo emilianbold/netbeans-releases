@@ -141,10 +141,10 @@ public class ElementHandle {
         try {
             ElementHandle handle = new ElementHandle();
             if (json.has(JSON_ID)) {
-                handle.id = json.getUnsafeString(JSON_ID);
+                handle.id = json.getString(JSON_ID);
             }
             if (json.has(JSON_CLASS)) {
-                handle.className = json.getUnsafeString(JSON_CLASS);
+                handle.className = json.getString(JSON_CLASS);
             }
             if (!json.isNull(JSON_PARENT)) {
                 JSONObject parent = json.getJSONObject(JSON_PARENT);

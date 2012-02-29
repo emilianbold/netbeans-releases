@@ -220,7 +220,7 @@ public class PageModelImpl extends PageModel {
         while (iter.hasNext()) {
             String key = iter.next().toString();
             try {
-                String value = json.getUnsafeString(key);
+                String value = json.getString(key);
                 map.put(key, value);
             } catch (JSONException ex) {
                 LOG.log(Level.INFO, "Unexpected value of key {0} in {1}.", new Object[]{key, json}); // NOI18N
@@ -239,8 +239,8 @@ public class PageModelImpl extends PageModel {
             for (int i=0; i<array.length(); i++) {
                 try {
                     JSONObject resource = array.getJSONObject(i);
-                    String url = resource.getUnsafeString(RESOURCE_URL);
-                    String typeCode = resource.getUnsafeString(RESOURCE_TYPE);
+                    String url = resource.getString(RESOURCE_URL);
+                    String typeCode = resource.getString(RESOURCE_TYPE);
                     ResourceInfo.Type type = ResourceInfo.Type.fromCode(typeCode);
                     if (type == null) {
                         LOG.log(Level.INFO, "Unexpected resource type: {0}", typeCode); // NOI18N
@@ -282,10 +282,10 @@ public class PageModelImpl extends PageModel {
             for (int i=0; i<array.length(); i++) {
                 try {
                     JSONObject resource = array.getJSONObject(i);
-                    String selector = resource.getUnsafeString(RULE_SELECTOR);
+                    String selector = resource.getString(RULE_SELECTOR);
                     String sourceURL = null;
                     if (!resource.isNull(RULE_SOURCE_URL)) {
-                        sourceURL = resource.getUnsafeString(RULE_SOURCE_URL);
+                        sourceURL = resource.getString(RULE_SOURCE_URL);
                     }
                     JSONObject style = resource.getJSONObject(RULE_STYLE);
                     rules.add(new RuleInfo(sourceURL, selector, toMap(style)));
