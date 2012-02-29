@@ -2051,7 +2051,7 @@ init_declarator[int kind]
 			ASSIGNEQUAL 
                         (cast_array_initializer_head) => initializer
                 |	
-			LPAREN expression_list RPAREN
+			LPAREN (expression_list | array_initializer) RPAREN
                 |
                         array_initializer
 		)?
@@ -2269,7 +2269,7 @@ direct_declarator[int kind, int level]
         function_like_var_declarator
         {if(kind != declFunctionParam && (kind == declStatement || kind == declNotFirst || LA(1) == COMMA)) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
     |   
-        ((ELLIPSIS)? qualified_id LPAREN) => // Must be class instantiation
+        ((ELLIPSIS)? qualified_id LPAREN ~LCURLY) => // Must be class instantiation
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         LPAREN
@@ -2569,7 +2569,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN! (expression_list)? RPAREN!
+            LPAREN! (expression_list | array_initializer)? RPAREN!
         |
             array_initializer
         )
