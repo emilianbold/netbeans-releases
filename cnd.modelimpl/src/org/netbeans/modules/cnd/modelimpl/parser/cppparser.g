@@ -3552,6 +3552,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   balanceSquaresInExpression 
                 (options {greedy = true;}:  
                     (balanceParensInExpression)? 
+                    (LITERAL_mutable)?
                     (trailing_type)? 
                     compound_statement
                 )?
