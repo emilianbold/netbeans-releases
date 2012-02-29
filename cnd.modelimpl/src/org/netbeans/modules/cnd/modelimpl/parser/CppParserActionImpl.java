@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.symtab.*;
 import org.openide.util.CharSequences;
 
@@ -91,9 +92,9 @@ public class CppParserActionImpl implements CppParserActionEx {
         
     }
 
-    public CppParserActionImpl(FileImpl startFile) {
+    public CppParserActionImpl(CsmParserProvider.CsmParserParameters params) {
         this.contexts = new ArrayDeque<Pair>();
-        currentContext = new Pair(startFile);
+        currentContext = new Pair(params.getMainFile());
         this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
@@ -103,7 +104,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void enum_declaration(Token token) {        
         //System.out.println("enum_declaration " + ((APTToken)token).getOffset());
         
-        EnumBuilder enumBuilder = new EnumBuilder();
+        EnumBuilder enumBuilder = new EnumBuilder(currentContext.file.getParsingFileContent());
         enumBuilder.setFile(currentContext.file);
         if(token instanceof APTToken) {
             enumBuilder.setStartOffset(((APTToken)token).getOffset());
@@ -146,7 +147,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             // ERROR redifinition
         }
         if(enumBuilder != null) {
-            EnumeratorBuilder builder2 = new EnumeratorBuilder();
+            EnumeratorBuilder builder2 = new EnumeratorBuilder(currentContext.file.getParsingFileContent());
             builder2.setName(name);
             builder2.setFile(currentContext.file);
             builder2.setStartOffset(aToken.getOffset());
@@ -187,7 +188,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void class_declaration(Token token) {
-        ClassBuilder classBuilder = new ClassBuilder();
+        ClassBuilder classBuilder = new ClassBuilder(currentContext.file.getParsingFileContent());
         classBuilder.setParent(builderContext.top());
         classBuilder.setFile(currentContext.file);
         if(token instanceof APTToken) {
