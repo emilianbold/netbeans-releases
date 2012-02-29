@@ -61,6 +61,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -74,7 +75,7 @@ import javax.swing.SwingUtilities;
     "PreferredInstrFilterPanel_PreferredPackagesCaption=Only methods from these classes/packages will be profiled:",
     "PreferredInstrFilterPanel_ComputingFilterString=Computing filter..."
 })
-public class PreferredInstrFilterPanel extends JPanel {
+public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provider {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 
     public abstract static class FilterResolver {
@@ -105,6 +106,13 @@ public class PreferredInstrFilterPanel extends JPanel {
     public JButton OPEN_IN_QUICKFILTER_BUTTON;
     private HTMLTextArea packagesArea;
     private JLabel label;
+    
+    private static final String HELP_CTX_KEY = "PreferredInstrFilterPanel.HelpCtx"; // NOI18N
+    private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
+
+    public HelpCtx getHelpCtx() {
+        return HELP_CTX;
+    }
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
