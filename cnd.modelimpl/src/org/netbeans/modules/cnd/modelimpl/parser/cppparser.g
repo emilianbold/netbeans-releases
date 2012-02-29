@@ -2389,10 +2389,13 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 	;
         
 trailing_type
-{int ts = tsInvalid;}
+{int ts = tsInvalid; TypeQualifier tq;}
     :
         POINTERTO 
+        (tq=cv_qualifier)*
         ts=type_specifier[dsInvalid, false]
+        (options {greedy=true;} : ptr_operator)*
+        (LSQUARE (constant_expression)? RSQUARE)*
     ;
 
 protected
