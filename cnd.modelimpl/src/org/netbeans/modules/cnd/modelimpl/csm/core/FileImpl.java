@@ -133,11 +133,6 @@ public final class FileImpl implements CsmFile,
         return false;
     }
 
-    private boolean isInParsingThread() {
-        if (true) return false;
-        return getParsingFileContent() != null;
-    }
-
     public FileContent getParsingFileContent() {
         return parsingFileContentRef.get().get();
     }
@@ -242,8 +237,6 @@ public final class FileImpl implements CsmFile,
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
     private FileContent currentFileContent;
-//    private final List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = new CopyOnWriteArrayList<CsmUID<FunctionImplEx<?>>>();
-//    private final List<FakeIncludePair> fakeIncludeRegistrations = new CopyOnWriteArrayList<FakeIncludePair>();
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
@@ -430,10 +423,6 @@ public final class FileImpl implements CsmFile,
         return null;
     }
 
-//    private Collection<APTPreprocHandler.State> getPreprocStates() {
-//        ProjectBase project = getProjectImpl(true);
-//        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
-//    }
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {
             this.fileBuffer = fileBuffer;
@@ -786,7 +775,7 @@ public final class FileImpl implements CsmFile,
     }
 
     public final int getErrorCount() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return currentFileContent.getErrorCount();
     }
     
@@ -900,10 +889,6 @@ public final class FileImpl implements CsmFile,
         Collection<CsmOffsetableDeclaration> arr = UIDCsmConverter.UIDsToDeclarations(uids);
         Utils.disposeAll(arr);
         RepositoryUtils.remove(uids);
-    }
-
-    private Set<ErrorDirectiveImpl> createErrors() {
-        return new TreeSet<ErrorDirectiveImpl>(START_OFFSET_COMPARATOR);
     }
 
     /**enapsulates all parameters which should be used during parse or reparse of the file */
@@ -1244,9 +1229,6 @@ public final class FileImpl implements CsmFile,
             System.err.printf("\n\n>>> Start parsing (getting errors) %s \n", getName());
         }
         long time = TraceFlags.TRACE_ERROR_PROVIDER ? System.currentTimeMillis() : 0;
-//        APTPreprocHandler preprocHandler = getPreprocHandler();
-//        APTPreprocHandler.State ppState = preprocHandler.getState();
-//        ProjectBase startProject = ProjectBase.getStartProject(ppState);
         int flags = CPPParserEx.CPP_CPLUSPLUS;
         if (!TraceFlags.TRACE_ERROR_PROVIDER) {
             flags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
@@ -1458,37 +1440,50 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public Collection<CsmInclude> getIncludes() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileIncludes().getIncludes();
     }
 
     @Override
     public Collection<CsmErrorDirective> getErrors() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return new ArrayList<CsmErrorDirective>(currentFileContent.getErrors());
-//        Collection<CsmErrorDirective> out = new ArrayList<CsmErrorDirective>(0);
-//        try {
-//            errorsLock.readLock().lock();
-//            out.addAll(errors);
-//        } finally {
-//            errorsLock.readLock().unlock();
-//        }
-//        return out;
     }
 
     public Iterator<CsmInclude> getIncludes(CsmFilter filter) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileIncludes().getIncludes(filter);
     }
 
     public Collection<CsmInclude> getBrokenIncludes() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileIncludes().getBrokenIncludes();
     }
 
     public boolean hasBrokenIncludes() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return hasBrokenIncludes.get();
+    }
+
+    /**
+     * Gets the list of the static functions declarations (not definitions) This
+     * is necessary for finding definitions/declarations since file-level static
+     * functions (i.e. c-style static functions) aren't registered in project
+     */
+    public Collection<CsmFunction> getStaticFunctionDeclarations() {
+        return getFileDeclarations().getStaticFunctionDeclarations();
+    }
+
+    public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
+        return getFileDeclarations().getStaticFunctionDeclarations(filter);
+    }
+
+    public Collection<CsmVariable> getStaticVariableDeclarations() {
+        return getFileDeclarations().getStaticVariableDeclarations();
+    }
+
+    public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
+        return getFileDeclarations().getStaticVariableDeclarations(filter);
     }
 
     public boolean hasDeclarations() {
@@ -1527,112 +1522,54 @@ public final class FileImpl implements CsmFile,
     }
 
     public Collection<CsmReference> getReferences() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().getReferences();
     }
 
     public Collection<CsmReference> getReferences(Collection<CsmObject> objects) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().getReferences(objects);
     }
 
     public boolean addReference(CsmReference ref, CsmObject referencedObject) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().addReference(ref, referencedObject);
     }
 
     public CsmReference getReference(int offset) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().getReference(offset);
     }
 
     public boolean addResolvedReference(CsmReference ref, CsmObject referencedObject) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().addResolvedReference(ref, referencedObject);
     }
 
     public void removeResolvedReference(CsmReference ref) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         getFileReferences().removeResolvedReference(ref);
     }
 
     public CsmReference getResolvedReference(CsmReference ref) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileReferences().getResolvedReference(ref);
     }
 
-//    void addMacro(CsmMacro macro) {
-//        assert getParsingFileContent() == null;
-//        getFileMacros().addMacro(macro);
-//    }
-//
-//    void addError(ErrorDirectiveImpl error) {
-//        try {
-//            errorsLock.writeLock().lock();
-//            errors.add(error);
-//        } finally {
-//            errorsLock.writeLock().unlock();
-//        }
-//    }
-
     @Override
     public Collection<CsmMacro> getMacros() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileMacros().getMacros();
     }
 
     public Iterator<CsmMacro> getMacros(CsmFilter filter) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileMacros().getMacros(filter);
     }
 
     public Collection<CsmUID<CsmMacro>> findMacroUids(CharSequence name) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return getFileMacros().findMacroUids(name);
-    }
-
-
-//    @Override
-//    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-//        return getFileDeclarations().findExistingDeclaration(startOffset, endOffset, name);
-//    }
-//
-//    @Override
-//    public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
-//        return getFileDeclarations().findExistingDeclaration(startOffset, name, kind);
-//    }
-//    
-//    @Override
-//    public void addDeclaration(CsmOffsetableDeclaration decl) {
-//        assert !inParse.get().get();
-//        getFileDeclarations().addDeclaration(decl);
-//    }
-//
-//    //    @Override
-//    public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-//        assert !inParse.get().get();
-//        getFileDeclarations().removeDeclaration(declaration);
-//    }
-
-    /**
-     * Gets the list of the static functions declarations (not definitions)
-     * This is necessary for finding definitions/declarations
-     * since file-level static functions (i.e. c-style static functions) aren't registered in project
-     */
-    public Collection<CsmFunction> getStaticFunctionDeclarations() {
-        return getFileDeclarations().getStaticFunctionDeclarations();
-    }
-
-    public Iterator<CsmFunction> getStaticFunctionDeclarations(CsmFilter filter) {
-        return getFileDeclarations().getStaticFunctionDeclarations(filter);
-    }
-
-    public Collection<CsmVariable> getStaticVariableDeclarations() {
-        return getFileDeclarations().getStaticVariableDeclarations();
-    }
-
-    public Iterator<CsmVariable> getStaticVariableDeclarations(CsmFilter filter) {
-        return getFileDeclarations().getStaticVariableDeclarations(filter);
     }
 
     @Override
@@ -1647,7 +1584,7 @@ public final class FileImpl implements CsmFile,
         
     @Override
     public Collection<CsmScopeElement> getScopeElements() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         return currentFileContent.getScopeElements();
     }
 
@@ -1736,26 +1673,8 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public final void onFakeRegisration(FunctionImplEx<?> decl, AST fakeRegistrationAst) {
-        assert !isInParsingThread();
-//        synchronized (fakeFunctionRegistrations) {
-//            fakeFunctionRegistrations.add(uidDecl);
-//        }
-        CsmUID<?> aUid = UIDCsmConverter.declarationToUID(decl);
-        @SuppressWarnings("unchecked")
-        CsmUID<FunctionImplEx<?>> uidDecl = (CsmUID<FunctionImplEx<?>>) aUid;
-        getProjectImpl(true).trackFakeFunctionAST(getUID(), uidDecl, fakeRegistrationAst);
-    }
-
     private void clearFakeRegistrations() {
-        assert !isInParsingThread();
         getProjectImpl(true).cleanAllFakeFunctionAST(getUID());
-//        synchronized (fakeFunctionRegistrations) {
-//            fakeFunctionRegistrations.clear();
-//        }
-//        synchronized (fakeIncludeRegistrations) {
-//            fakeIncludeRegistrations.clear();
-//        }
     }
 
     private volatile boolean alreadyInFixFakeRegistrations = false;
@@ -1766,7 +1685,7 @@ public final class FileImpl implements CsmFile,
      * @param clearFakes - indicates that we should clear list of fake registrations (all have been parsed and we have no chance to fix them in future)
      */
     private boolean fixFakeRegistrations(boolean projectParsedMode) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         boolean result = false;
         result |= fixFakeFunctionRegistrations(projectParsedMode);
         result |= fixFakeIncludeRegistrations(projectParsedMode);
@@ -1774,7 +1693,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private boolean fixFakeFunctionRegistrations(boolean projectParsedMode) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         boolean wereFakes = false;
         FileContent curContent = currentFileContent;
         List<CsmUID<FunctionImplEx<?>>> fakeFunctionRegistrations = curContent.getFakeFunctionRegistrations();
@@ -1811,7 +1730,7 @@ public final class FileImpl implements CsmFile,
     }
 
     private boolean fixFakeIncludeRegistrations(boolean projectParsedMode) {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         boolean wereFakes = false;
         FileContent fileContent = currentFileContent;
         for (FakeIncludePair fakeIncludePair : fileContent.getFakeIncludeRegistrations()) {
@@ -2020,8 +1939,6 @@ public final class FileImpl implements CsmFile,
         
     }
 
-//    private final FileDeclarationsKey fileDeclarationsKey;
-//    private final WeakContainer<FileComponentDeclarations> weakFileDeclarations;
     private FileComponentDeclarations getFileDeclarations() {
         FileContent contentImpl = getParsingFileContent();
         if (contentImpl == null) {
@@ -2031,38 +1948,37 @@ public final class FileImpl implements CsmFile,
         return fd != null ? fd : FileComponentDeclarations.empty();
     }
 
-//    private final FileMacrosKey fileMacrosKey;
-//    private final WeakContainer<FileComponentMacros> weakFileMacros;
     private FileComponentMacros getFileMacros() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         FileComponentMacros fd = currentFileContent.getFileMacros();
         return fd != null ? fd : FileComponentMacros.empty();
     }
 
     private final AtomicBoolean hasBrokenIncludes;
-//    private final FileIncludesKey fileIncludesKey;
-//    private final WeakContainer<FileComponentIncludes> weakFileIncludes;
     private FileComponentIncludes getFileIncludes() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         FileComponentIncludes fd = currentFileContent.getFileIncludes();
         return fd != null ? fd : FileComponentIncludes.empty();
     }
 
-//    private final FileReferencesKey fileReferencesKey;
-//    private final WeakContainer<FileComponentReferences> weakFileReferences;
     private FileComponentReferences getFileReferences() {
         FileComponentReferences fd = currentFileContent.getFileReferences();
         return fd != null ? fd : FileComponentReferences.empty();
     }
 
-//    private final FileInstantiationsKey fileInstantiationsKey;
-//    private final WeakContainer<FileComponentInstantiations> weakFileInstantiationReferences;
     private FileComponentInstantiations getFileInstantiations() {
-        assert !isInParsingThread();
+        checkNotInParsingThreadImpl();
         FileComponentInstantiations fd = currentFileContent.getFileInstantiations();
         return fd != null ? fd : FileComponentInstantiations.empty();
     }
-    
+
+    private void checkNotInParsingThreadImpl() {
+        if (true) {
+            return;
+        }
+        assert getParsingFileContent() == null;
+    }
+
     private static class EmptyCollection<T> extends AbstractCollection<T> {
 
         @Override
