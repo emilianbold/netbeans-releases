@@ -128,7 +128,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         constructorDDImpl.setCompoundStatement(body);
         constructorDDImpl.initializers = AstRenderer.renderConstructorInitializersList(ast, constructorDDImpl, constructorDDImpl.getContainingFile());
         postObjectCreateRegistration(global, constructorDDImpl);
-        nameHolder.addReference(file, constructorDDImpl);
+        nameHolder.addReference(fileContent, constructorDDImpl);
         return constructorDDImpl;
     }
 

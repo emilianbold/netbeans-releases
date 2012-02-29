@@ -124,7 +124,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         methodDDImpl.setCompoundStatement(body);
 
         postObjectCreateRegistration(global, methodDDImpl);
-        nameHolder.addReference(file, methodDDImpl);
+        nameHolder.addReference(fileContent, methodDDImpl);
         return methodDDImpl;
     }
 

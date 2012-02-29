@@ -188,7 +188,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                     }
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
                     {
-                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), !isRenderingLocalContext());
+                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), fileContent, !isRenderingLocalContext());
                         declarators.add(csmEnum);
                         renderVariableInClassifier(token, csmEnum, currentNamespace, container);
                         break;

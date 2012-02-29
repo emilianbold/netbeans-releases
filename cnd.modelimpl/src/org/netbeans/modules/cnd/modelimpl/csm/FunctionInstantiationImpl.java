@@ -86,7 +86,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
         FunctionParameterListImpl params = FunctionParameterListImpl.create(file, fileContent, ast, null, !register);
         FunctionInstantiationImpl res =  new FunctionInstantiationImpl(ast, file, null, nameHolder, params);
         postObjectCreateRegistration(register, res);
-        nameHolder.addReference(file, res);
+        nameHolder.addReference(fileContent, res);
         return res;
     }
 

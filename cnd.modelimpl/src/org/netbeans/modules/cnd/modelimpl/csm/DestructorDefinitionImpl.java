@@ -111,7 +111,7 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl<CsmFu
         
         postObjectCreateRegistration(global, res);
         postFunctionImpExCreateRegistration(fileContent, global, res);
-        nameHolder.addReference(file, res);
+        nameHolder.addReference(fileContent, res);
         return res;
     }
 

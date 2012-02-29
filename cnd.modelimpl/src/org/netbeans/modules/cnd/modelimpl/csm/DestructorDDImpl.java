@@ -118,7 +118,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         }        
         destructorDDImpl.setCompoundStatement(body);
         postObjectCreateRegistration(global, destructorDDImpl);
-        nameHolder.addReference(file, destructorDDImpl);
+        nameHolder.addReference(fileContent, destructorDDImpl);
         return destructorDDImpl;
     }
 

@@ -123,7 +123,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         
         postObjectCreateRegistration(global, friendFunctionDefinitionImpl);
         postFunctionImpExCreateRegistration(fileContent, global, friendFunctionDefinitionImpl);
-        nameHolder.addReference(file, friendFunctionDefinitionImpl);
+        nameHolder.addReference(fileContent, friendFunctionDefinitionImpl);
         return friendFunctionDefinitionImpl;
     }
     

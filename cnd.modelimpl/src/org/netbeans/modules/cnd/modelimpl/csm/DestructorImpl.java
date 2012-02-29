@@ -112,7 +112,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, destructorImpl);
-        nameHolder.addReference(file, destructorImpl);
+        nameHolder.addReference(fileContent, destructorImpl);
         return destructorImpl;
     }
 

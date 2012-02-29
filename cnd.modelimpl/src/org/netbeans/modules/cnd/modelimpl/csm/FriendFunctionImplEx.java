@@ -115,7 +115,7 @@ public final class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction
         
         postObjectCreateRegistration(global, friendFunctionImplEx);
         postFunctionImpExCreateRegistration(fileContent, global, friendFunctionImplEx);
-        nameHolder.addReference(file, friendFunctionImplEx);
+        nameHolder.addReference(fileContent, friendFunctionImplEx);
         return friendFunctionImplEx;
     }
     

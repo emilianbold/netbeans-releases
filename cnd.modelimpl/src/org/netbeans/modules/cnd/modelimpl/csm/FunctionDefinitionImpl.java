@@ -119,7 +119,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         
         postObjectCreateRegistration(global, functionDefinitionImpl);
         postFunctionImpExCreateRegistration(fileContent, global, functionDefinitionImpl);
-        nameHolder.addReference(file, functionDefinitionImpl);
+        nameHolder.addReference(fileContent, functionDefinitionImpl);
         return functionDefinitionImpl;
     }
 

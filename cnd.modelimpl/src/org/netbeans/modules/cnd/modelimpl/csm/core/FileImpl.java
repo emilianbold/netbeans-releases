@@ -1525,18 +1525,22 @@ public final class FileImpl implements CsmFile,
     }
 
     public boolean addReference(CsmReference ref, CsmObject referencedObject) {
+        assert !isInParsingThread();
         return getFileReferences().addReference(ref, referencedObject);
     }
 
     public CsmReference getReference(int offset) {
+        assert !isInParsingThread();
         return getFileReferences().getReference(offset);
     }
 
     public boolean addResolvedReference(CsmReference ref, CsmObject referencedObject) {
+        assert !isInParsingThread();
         return getFileReferences().addResolvedReference(ref, referencedObject);
     }
 
     public void removeResolvedReference(CsmReference ref) {
+        assert !isInParsingThread();
         getFileReferences().removeResolvedReference(ref);
     }
 

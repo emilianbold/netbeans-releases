@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -77,11 +78,11 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         this.enumerationRef = null;
     }
 
-    public static EnumeratorImpl create(AST ast, final CsmFile file, EnumImpl enumeration, boolean global) {
+    public static EnumeratorImpl create(AST ast, final CsmFile file, FileContent fileContent, EnumImpl enumeration, boolean global) {
         NameHolder holder = NameHolder.createSimpleName(ast);
         EnumeratorImpl ei = new EnumeratorImpl(ast, holder, enumeration);
         postObjectCreateRegistration(global, ei);
-        holder.addReference(file, ei);
+        holder.addReference(fileContent, ei);
         return ei;
     }
 
@@ -159,6 +160,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
         private int startOffset;
         private int endOffset;
         private EnumImpl enumeration;
+        private final FileContent fileContent = null;
 
         public void setName(CharSequence name) {
             this.name = name;
@@ -185,7 +187,7 @@ public final class EnumeratorImpl extends OffsetableDeclarationBase<CsmEnumerato
                 NameHolder nameHolder = NameHolder.createName(name, startOffset, endOffset);
                 EnumeratorImpl impl = new EnumeratorImpl(enumeration, name, file, startOffset, endOffset);
                 postObjectCreateRegistration(register, impl);
-                nameHolder.addReference(file, impl);
+                nameHolder.addReference(fileContent, impl);
                 return impl;
             }
             return null;

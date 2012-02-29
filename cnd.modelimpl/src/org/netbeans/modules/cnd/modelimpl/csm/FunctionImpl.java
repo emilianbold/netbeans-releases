@@ -147,7 +147,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, functionImpl);
-        nameHolder.addReference(file, functionImpl);
+        nameHolder.addReference(fileContent, functionImpl);
         return functionImpl;
     }
 

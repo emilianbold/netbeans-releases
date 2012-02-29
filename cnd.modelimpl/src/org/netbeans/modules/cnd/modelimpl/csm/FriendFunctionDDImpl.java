@@ -113,7 +113,7 @@ public final class FriendFunctionDDImpl  extends FunctionDDImpl<CsmFriendFunctio
         friendFunctionDDImpl.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, friendFunctionDDImpl);
-        nameHolder.addReference(file, friendFunctionDDImpl);
+        nameHolder.addReference(fileContent, friendFunctionDDImpl);
         return friendFunctionDDImpl;
     }
 

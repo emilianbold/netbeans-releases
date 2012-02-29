@@ -114,7 +114,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, friendFunctionImpl);
-        nameHolder.addReference(file, friendFunctionImpl);
+        nameHolder.addReference(fileContent, friendFunctionImpl);
         return friendFunctionImpl;
     }
     

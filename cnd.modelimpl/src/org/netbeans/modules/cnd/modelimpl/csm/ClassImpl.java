@@ -211,7 +211,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         }
         impl.init(scope, ast, file, fileContent, register);
         if (nameHolder != null) {
-            nameHolder.addReference(file, impl);
+            nameHolder.addReference(fileContent, impl);
         }
         return impl;
     }
@@ -428,7 +428,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         private int nameEndOffset;
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private CsmFile file;
-        private FileContent fileContent;
+        private final FileContent fileContent = null;
         private int startOffset;
         private int endOffset;
         private CsmObjectBuilder parent;
@@ -513,7 +513,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 cls.init3(getScope(), true);
 //                temporaryRepositoryRegistration(true, cls);
                 if (nameHolder != null) {
-                    nameHolder.addReference(file, cls);
+                    nameHolder.addReference(fileContent, cls);
                 }
                 if(parent != null) {
                     ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(cls);
@@ -624,7 +624,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         protected VariableImpl<CsmField> createVariable(AST offsetAst, CsmFile file, CsmType type, NameHolder name, boolean _static, boolean _extern,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            FieldImpl field = FieldImpl.create(offsetAst, file, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
+            FieldImpl field = FieldImpl.create(offsetAst, file, fileContent, type, name, ClassImpl.this, curentVisibility, _static, _extern, !isRenderingLocalContext());
             ClassImpl.this.addMember(field,!isRenderingLocalContext());
             return field;
         }
@@ -694,7 +694,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         renderVariableInClassifier(token, innerClass, null, null);
                         break;
                     case CPPTokenTypes.CSM_ENUM_DECLARATION:
-                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
+                        EnumImpl innerEnum = EnumImpl.create(token, ClassImpl.this, getContainingFile(), fileContent, !isRenderingLocalContext());
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum,!isRenderingLocalContext());
                         renderVariableInClassifier(token, innerEnum, null, null);
@@ -1063,7 +1063,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 }
                 if(!unnamed) {
                     NameHolder nameHolder = NameHolder.createSimpleName(idAST);
-                    FieldImpl field = FieldImpl.create(start, getContainingFile(), type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
+                    FieldImpl field = FieldImpl.create(start, getContainingFile(), fileContent, type, nameHolder, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
                     ClassImpl.this.addMember(field,!isRenderingLocalContext());
                     if (classifier != null) {
                         classifier.addEnclosingVariable(field);

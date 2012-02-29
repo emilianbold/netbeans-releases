@@ -121,7 +121,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
 
         postObjectCreateRegistration(global, functionDDImpl);
-        nameHolder.addReference(file, functionDDImpl);
+        nameHolder.addReference(fileContent, functionDDImpl);
         return functionDDImpl;
     }
 

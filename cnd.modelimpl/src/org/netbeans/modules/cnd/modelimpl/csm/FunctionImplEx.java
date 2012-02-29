@@ -124,7 +124,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
             RepositoryUtils.put(functionImplEx);
         }
         postFunctionImpExCreateRegistration(fileContent, register, functionImplEx);
-        nameHolder.addReference(file, functionImplEx);
+        nameHolder.addReference(fileContent, functionImplEx);
         return functionImplEx;
     }
 
@@ -271,7 +271,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
 
     protected static <T> void postFunctionImpExCreateRegistration(FileContent fileContent, boolean global, FunctionImplEx<T> obj) {
         if (global) {
-            if (obj.isFakeFQN()) {
+            if (obj.isFakeQualifiedName()) {
                 fileContent.onFakeRegisration(obj, null);
             }
         }
@@ -356,9 +356,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                 this.cleanUID();
                 qualifiedName = newQname;
                 registerInProject();
-                if (FunctionImplEx.isFakeFunction(this)) {
-                    fileContent.onFakeRegisration(this, null);
-                }
+                postFunctionImpExCreateRegistration(fileContent, true, this);
                 fixed = true;
             }
         }
@@ -387,7 +385,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         return null;
     }    
     
-    private boolean isFakeFQN() {
+    private boolean isFakeQualifiedName() {
         return hasFlags(FAKE_QUALIFIED_NAME);
     }
     

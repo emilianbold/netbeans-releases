@@ -119,7 +119,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);
-        nameHolder.addReference(file, methodImpl);
+        nameHolder.addReference(fileContent, methodImpl);
         return methodImpl;
     }
 

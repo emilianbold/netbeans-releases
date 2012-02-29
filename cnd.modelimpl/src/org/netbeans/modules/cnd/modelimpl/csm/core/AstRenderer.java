@@ -169,7 +169,7 @@ public class AstRenderer {
                         planB = true;
                     }                    
                     if(planB) {
-                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
+                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
                         container.addDeclaration(csmEnum);
                         renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
                     }
@@ -1076,7 +1076,7 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
-                                    results.enclosing = EnumImpl.create(curr, scope, file, !isRenderingLocalContext());
+                                    results.enclosing = EnumImpl.create(curr, scope, file, fileContent, !isRenderingLocalContext());
                                     if (results.getEnclosingClassifier() != null && scope instanceof MutableDeclarationsContainer) {
                                         ((MutableDeclarationsContainer) scope).addDeclaration(results.getEnclosingClassifier());
                                     }

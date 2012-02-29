@@ -124,7 +124,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);
-        nameHolder.addReference(file, methodImpl);
+        nameHolder.addReference(fileContent, methodImpl);
         return methodImpl;
     }
 

@@ -114,7 +114,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         postObjectCreateRegistration(global, constructorImpl);
-        nameHolder.addReference(file, constructorImpl);
+        nameHolder.addReference(fileContent, constructorImpl);
         return constructorImpl;
     }
 
