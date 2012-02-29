@@ -60,6 +60,8 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Assert;
+import org.netbeans.core.startup.InstalledFileLocatorImpl;
+import org.openide.modules.Places;
 
 /**
  *
@@ -443,7 +445,22 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         if (acceptAll) {
             return true;
         }
-
+        
+        for (Class c : this.getClassContext()) {
+            if (c.getName().equals(InstalledFileLocatorImpl.class.getName())) {
+                if (file.startsWith(Places.getCacheDirectory().getPath())) {
+                    return false;
+                }
+                if (file.equals(System.getProperty("netbeans.home"))) {
+                    return false;
+                }
+                if (file.equals(System.getProperty("netbeans.user"))) {
+                    return false;
+                }
+                return true;
+            }
+        }
+        
         if (!file.endsWith(".jar")) {
             return false;
         }

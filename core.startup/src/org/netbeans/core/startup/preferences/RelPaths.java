@@ -110,7 +110,9 @@ public final class RelPaths {
         return dirs()[cluster];
     }
 
-    static String readRelativePath(DataInputStream dis) throws IOException {
+    /** Reads relative path from stream.
+     */
+    public static String readRelativePath(DataInputStream dis) throws IOException {
         String index = dis.readUTF();
         if (index.isEmpty()) {
             return index;
@@ -122,7 +124,12 @@ public final class RelPaths {
         if ("home".equals(index)) { // NOI18N
             return System.getProperty("netbeans.home").concat(relative); // NOI18N
         }
-        int indx = Integer.parseInt(index);
+        int indx = 0;
+        try {
+            indx = Integer.parseInt(index);
+        } catch (NumberFormatException nfe) {
+            throw new IOException(nfe);
+        }
         return dirs()[indx].concat(relative); // NOI18N
     }
     
