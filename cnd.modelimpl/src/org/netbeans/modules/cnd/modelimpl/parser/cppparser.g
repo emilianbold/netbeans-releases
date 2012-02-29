@@ -1904,6 +1904,12 @@ fix_fake_class_members
         { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
     ;
 
+fix_fake_enum_members
+    :
+        enumerator_list
+        { #fix_fake_enum_members = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #fix_fake_enum_members); }
+    ;
+
 enum_specifier
 {int ts = 0;}
 :   LITERAL_enum

@@ -1740,8 +1740,14 @@ public final class FileImpl implements CsmFile,
                                 if (ts != null) {
                                     CsmParser parser = CsmParserProvider.createParser(includedFile);
                                     assert parser != null : "no parser for " + this;
-                                    parser.init(this, ts, null);                                    
-                                    if (container instanceof ClassImpl) {
+                                    parser.init(this, ts, null);       
+                                    if (container instanceof EnumImpl) {
+                                        EnumImpl enumImpl = (EnumImpl) container;
+                                        CsmParserResult result = parser.parse(CsmParser.ConstructionKind.ENUM_BODY);
+                                        result.render(includedFileContent, enumImpl, Boolean.FALSE);
+                                        fakeIncludePair.markFixed();
+                                        wereFakes = true;
+                                    } else if (container instanceof ClassImpl) {
                                         ClassImpl cls = (ClassImpl) container;
                                         CsmParserResult result = parser.parse(CsmParser.ConstructionKind.CLASS_BODY);
                                         CsmDeclaration.Kind kind = cls.getKind();

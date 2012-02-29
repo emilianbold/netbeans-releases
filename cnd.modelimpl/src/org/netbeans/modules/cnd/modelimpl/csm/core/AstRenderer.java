@@ -155,10 +155,11 @@ public class AstRenderer {
                 }
                 case CPPTokenTypes.CSM_ENUM_DECLARATION: {
                     boolean planB = false;
+                    EnumImpl csmEnum = null;
                     if(objects != null) {
                         CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
                         if(o instanceof EnumImpl) {
-                            EnumImpl csmEnum = (EnumImpl)o;
+                            csmEnum = (EnumImpl)o;
                             csmEnum.init(currentNamespace, token, file, !isRenderingLocalContext());
                             container.addDeclaration(csmEnum);
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);
@@ -169,9 +170,12 @@ public class AstRenderer {
                         planB = true;
                     }                    
                     if(planB) {
-                        EnumImpl csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
+                        csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
                         container.addDeclaration(csmEnum);
                         renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
+                    }
+                    if (csmEnum != null) {
+                        checkInnerIncludes(csmEnum, Collections.<CsmObject>emptyList());
                     }
                     break;
                 }

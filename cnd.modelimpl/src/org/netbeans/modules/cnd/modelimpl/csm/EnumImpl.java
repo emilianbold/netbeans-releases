@@ -112,6 +112,10 @@ public final class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
         enumerators.add(uid);
     }
     
+    public final void fixFakeRender(FileContent fileContent, AST ast, boolean localClass) {
+        initEnumeratorList(ast, fileContent.getFile(), fileContent, !localClass);
+    }
+    
     private void initEnumeratorList(AST ast, final CsmFile file, FileContent fileContent, boolean global){
         //enum A { a, b, c };
         for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {

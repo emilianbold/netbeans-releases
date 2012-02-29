@@ -702,6 +702,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                         innerEnum.setVisibility(curentVisibility);
                         addMember(innerEnum,!isRenderingLocalContext());
                         renderVariableInClassifier(token, innerEnum, null, null);
+                        checkInnerIncludes(innerEnum, Collections.<CsmObject>emptyList());
                         break;
 
                     // other members

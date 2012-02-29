@@ -81,6 +81,7 @@ public abstract class CsmParserProvider {
             TRANSLATION_UNIT, 
             TRANSLATION_UNIT_WITH_COMPOUND, // do not skip compound statements
             CLASS_BODY,
+            ENUM_BODY,
             TRY_BLOCK,
             COMPOUND_STATEMENT,
             NAMESPACE_DEFINITION_BODY

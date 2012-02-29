@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -157,6 +158,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case NAMESPACE_DEFINITION_BODY:
                         parser.translation_unit();
                         break;
+                    case ENUM_BODY:
+                        parser.fix_fake_enum_members();
+                        break;
                     case CLASS_BODY:
                         parser.fix_fake_class_members();
                         break;
@@ -210,6 +214,14 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
                     cls.fixFakeRender(fileContent, visibility, ast, localClass);
+                    break;
+                }
+                case ENUM_BODY:
+                    {
+                    FileContent fileContent = (FileContent) context[0];
+                    EnumImpl enumImpl = (EnumImpl) context[1];
+                    boolean localEnum = (Boolean) context[2];
+                    enumImpl.fixFakeRender(fileContent, ast, localEnum);
                     break;
                 }
                 default:
