@@ -3,6 +3,6 @@ if (this.|color === "red") {
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getColor(): unresolved          [PUBLIC]   simpleObject.js
-METHOD     isVegitable(): Boolean|Boolean  [PUBLIC,   simpleObject.js
+METHOD     isVegitable(): Boolean          [PUBLIC,   simpleObject.js
 FIELD      called                          [PUBLIC]   simpleObject.js
 FIELD      color                           [PUBLIC]   simpleObject.js

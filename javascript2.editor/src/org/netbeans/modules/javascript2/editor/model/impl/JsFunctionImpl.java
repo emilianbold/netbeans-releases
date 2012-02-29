@@ -161,13 +161,23 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public void resolveTypes() {
         super.resolveTypes();
+        HashSet<String> nameReturnTypes = new HashSet<String>();
         Collection<TypeUsage> resolved = new ArrayList();
         for (TypeUsage type : returnTypes) {
             if (!(type.getType().equals(Type.UNRESOLVED) && returnTypes.size() > 1)) {
                 if (!((TypeUsageImpl) type).isResolved()) {
+                    for(TypeUsage rType : ModelUtils.resolveTypeFromSemiType(this, type)) {
+                        if(!nameReturnTypes.contains(type.getType())) {
+                            resolved.add(rType);
+                            nameReturnTypes.add(rType.getType());
+                        } 
+                    }
                     resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
-                    resolved.add(type);
+                    if (!nameReturnTypes.contains(type.getType())) {
+                        resolved.add(type);
+                        nameReturnTypes.add(type.getType());
+                    }
                 }
             }
         }

@@ -297,7 +297,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             List<String> exp = new ArrayList();
             
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
-                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY) {
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
+                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN) {
                 
                 if (token.id() != JsTokenId.EOL) {
                     if (token.id() != JsTokenId.OPERATOR_DOT) {

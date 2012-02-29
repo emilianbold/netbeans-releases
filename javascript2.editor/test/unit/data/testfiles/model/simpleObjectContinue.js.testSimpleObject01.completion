@@ -3,7 +3,7 @@ return "This is a carrot that has " + this.|color + " color";
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     getColor(): unresolved          [PUBLIC]   simpleObject.js
-METHOD     getDescription(): String|Strin  [PUBLIC,   simpleObjectContinue.js
-METHOD     isVegitable(): Boolean|Boolean  [PUBLIC]   simpleObject.js
+METHOD     getDescription(): String        [PUBLIC,   simpleObjectContinue.js
+METHOD     isVegitable(): Boolean          [PUBLIC]   simpleObject.js
 FIELD      called                          [PUBLIC]   simpleObject.js
 FIELD      color                           [PUBLIC]   simpleObject.js

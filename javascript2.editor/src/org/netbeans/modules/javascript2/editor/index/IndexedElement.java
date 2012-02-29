@@ -207,11 +207,16 @@ public class IndexedElement extends JsElementImpl {
                 for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
                     String param = stringTokenizer.nextToken();
                     int index = param.indexOf(':');
-                    String paramName = param.substring(0, index - 1);
-                    String typesText = param.substring(index + 1);
                     Collection<String> types = new ArrayList<String>();
-                    for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
-                        types.add(stParamType.nextToken());
+                    String paramName;
+                    if (index > 0) {
+                        paramName = param.substring(0, index - 1);
+                        String typesText = param.substring(index + 1);
+                        for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
+                            types.add(stParamType.nextToken());
+                        }
+                    } else {
+                        paramName = param;
                     }
                     parameters.put(paramName, types);
                 }
