@@ -97,6 +97,15 @@ expanded in the project or files tab.<br>
 helps to filter the templates according to type of project.
 You may specify multiple categories separated by commas, e.g.: <samp>some-type,some-other-type</samp>
 <p>
+There is currently no annotation to define template <em>folders</em>;
+they should be defined in the XML layer as subfolders of <code>Templates</code>
+with <code>displayName</code> and <code>position</code> attributes.
+Note that it is possible to set the attribute <code>simple</code> to (boolean) <code>false</code>
+in order to hide templates from the list shown in the standard wizards, while still
+making it possible to use <code>TemplateRegistration</code> and apply templates programmatically.
+To hide templates from the "new" wizards but show them in Template Manager,
+just set a category which is never used (such as <code>invisible</code>).
+<p>
 There are two important interfaces affecting the behavior of the templates. Implementation of these interfaces should
 reside in the project's lookup.
 <p>
