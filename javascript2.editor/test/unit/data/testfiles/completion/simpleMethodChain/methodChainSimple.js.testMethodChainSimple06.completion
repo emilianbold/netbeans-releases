@@ -1,0 +1,7 @@
+Code completion result for source line:
+MyObj.create().getInfo().b|ig();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     big(): undefined                [PUBLIC]   stub_core_String.js
+METHOD     blink(): undefined              [PUBLIC]   stub_core_String.js
+METHOD     bold(): undefined               [PUBLIC]   stub_core_String.js
