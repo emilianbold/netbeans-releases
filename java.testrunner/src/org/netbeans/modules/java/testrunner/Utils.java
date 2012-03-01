@@ -42,10 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.testrunner;
+package org.netbeans.modules.java.testrunner;
 
-import org.netbeans.modules.gsf.testrunner.EmptyTestCaseWizard;
-import org.netbeans.modules.gsf.testrunner.api.CommonTestUtil;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,7 +59,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-//import org.netbeans.modules.junit.CommonTestUtil;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -104,7 +101,7 @@ public final class Utils {
                 = new Utils(project).getJavaSourceGroups();
         for (int i = 0; i < sourceGroups.length; i++) {
             FileObject root = sourceGroups[i].getRootFolder();
-            if (root.getName().equals(EmptyTestCaseWizard.TESTS_ROOT_NAME)) {
+            if (root.getName().equals(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 return root;
             }
         }
@@ -539,8 +536,7 @@ public final class Utils {
      * @see  #getSourceFoldersRaw
      */
     public FileObject[] getTestFoldersRaw(FileObject srcFolder) {
-        return getFileObjects(UnitTestForSourceQuery.findUnitTests(srcFolder),
-                              true);
+        return getFileObjects(UnitTestForSourceQuery.findUnitTests(srcFolder), true);
     }
     
     /**
@@ -554,8 +550,7 @@ public final class Utils {
      * @see  #getTestFoldersRaw
      */
     public FileObject[] getSourceFoldersRaw(FileObject testFolder) {
-        return getFileObjects(UnitTestForSourceQuery.findSources(testFolder),
-                              false);
+        return getFileObjects(UnitTestForSourceQuery.findSources(testFolder), true);
     }
     
     /**
@@ -677,8 +672,13 @@ public final class Utils {
      */
     public SourceGroup[] getJavaSourceGroups() {
         if (javaSourceGroups == null) {
-            javaSourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                                        JavaProjectConstants.SOURCES_TYPE_JAVA);
+//            String type = "";
+//            Collection<? extends RootsProvider> providers = Lookup.getDefault().lookupAll(RootsProvider.class);
+//            for (RootsProvider provider : providers) {
+//                type = provider.getSourceRootType();
+//                break;
+//            }
+            javaSourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         }
         return javaSourceGroups;
     }

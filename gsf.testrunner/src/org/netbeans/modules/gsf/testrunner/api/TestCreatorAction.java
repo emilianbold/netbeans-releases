@@ -97,18 +97,11 @@ public class TestCreatorAction extends NodeAction {
         if (activatedNodes.length == 0) {
             return false;
         }
-        boolean enable = false;
         Collection<? extends TestCreatorProvider> providers = Lookup.getDefault().lookupAll(TestCreatorProvider.class);
         for (TestCreatorProvider provider : providers) {
-            String tf = provider.getDisplayName();
-//            enable =  provider.enable(activatedNodes);
-            if(tf.equals(GuiUtils.JUNIT_TEST_FRAMEWORK)) {
-                return provider.enable(activatedNodes);
-            } else if(tf.equals(GuiUtils.TESTNG_TEST_FRAMEWORK)) {
-                enable = provider.enable(activatedNodes);
-            }
+            return provider.enable(activatedNodes);
         }
-        return enable;
+        return false;
     }
 
     @Override

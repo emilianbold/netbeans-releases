@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.testrunner.providers;
 
-package org.netbeans.modules.gsf.testrunner;
-
-//import org.netbeans.modules.junit.GuiUtils;
-//import org.netbeans.modules.junit.CommonSettings;
-import org.netbeans.modules.gsf.testrunner.api.GuiUtils;
-import org.netbeans.modules.gsf.testrunner.api.CommonSettings;
-import org.openide.loaders.TemplateWizard;
+import java.net.URL;
+import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
+import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Wizard for an empty test case.
  *
- * @author  Marian Petras
+ * @author theofanis
  */
-public class EmptyTestCaseWizard extends TemplateWizard {
+@ServiceProvider(service=RootsProvider.class, position=10)
+public class JavaRootsProvider extends RootsProvider {
 
-    /** name of property &quot;package&quot; */
-    static final String PROP_PACKAGE = "package";                       //NOI18N
-    /** name of property &quot;class name&quot; */
-    static final String PROP_CLASS_NAME = "className";                  //NOI18N
-    
-    // PENDING - should not be hard-coded:
-    static final String TESTS_ROOT_NAME = "test";               //NOI18N
-    
-    /**
-     * initializes the settings for the settings panel
-     */
     @Override
-    public void initialize() {
-        CommonSettings settings = CommonSettings.getDefault();
-        
-        putProperty(GuiUtils.CHK_SETUP,
-                    Boolean.valueOf(settings.isGenerateSetUp()));
-        putProperty(GuiUtils.CHK_TEARDOWN,
-                    Boolean.valueOf(settings.isGenerateTearDown()));
-        putProperty(GuiUtils.CHK_HINTS,
-                    Boolean.valueOf(settings.isBodyComments()));
+    public URL[] findTestRoots(FileObject sourceRoot) {
+        return UnitTestForSourceQuery.findUnitTests(sourceRoot);
+    }
+
+    @Override
+    public URL[] findSourceRoots(FileObject testRoot) {
+        return UnitTestForSourceQuery.findSources(testRoot);
+    }
+
+    @Override
+    public String getProjectTestsHint() {
+        return JavaProjectConstants.SOURCES_HINT_TEST;
+    }
+
+    @Override
+    public String getSourceRootType() {
+        return JavaProjectConstants.SOURCES_TYPE_JAVA;
+    }
+
+    @Override
+    public String getTestsRootName() {
+        return JavaProjectConstants.SOURCES_HINT_TEST;
     }
     
 }

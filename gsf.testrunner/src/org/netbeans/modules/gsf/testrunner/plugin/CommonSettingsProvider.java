@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 2004-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,42 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.junit.wizards;
-
-import org.netbeans.modules.java.testrunner.GuiUtils;
-import org.netbeans.modules.junit.JUnitSettings;
-import org.openide.loaders.TemplateWizard;
+package org.netbeans.modules.gsf.testrunner.plugin;
 
 /**
- * Wizard for an empty test case.
  *
- * @author  Marian Petras
+ * @author theofanis
  */
-public class EmptyTestCaseWizard extends TemplateWizard {
-
-    /** name of property &quot;package&quot; */
-    static final String PROP_PACKAGE = "package";                       //NOI18N
-    /** name of property &quot;class name&quot; */
-    static final String PROP_CLASS_NAME = "className";                  //NOI18N
+public abstract class CommonSettingsProvider {
     
-    // PENDING - should not be hard-coded:
-    static final String TESTS_ROOT_NAME = "test";               //NOI18N
-    
-    /**
-     * initializes the settings for the settings panel
-     */
-    @Override
-    public void initialize() {
-        JUnitSettings settings = JUnitSettings.getDefault();
-        
-        putProperty(GuiUtils.CHK_SETUP,
-                    Boolean.valueOf(settings.isGenerateSetUp()));
-        putProperty(GuiUtils.CHK_TEARDOWN,
-                    Boolean.valueOf(settings.isGenerateTearDown()));
-        putProperty(GuiUtils.CHK_HINTS,
-                    Boolean.valueOf(settings.isBodyComments()));
-    }
+    public abstract boolean isMembersPublic();
+    public abstract void setMembersPublic(boolean newVal);
+    public abstract boolean isMembersProtected();
+    public abstract void setMembersProtected(boolean newVal);
+    public abstract boolean isMembersPackage();
+    public abstract void setMembersPackage(boolean newVal);
+    public abstract boolean isBodyComments();
+    public abstract void setBodyComments(boolean newVal);
+    public abstract boolean isBodyContent();
+    public abstract void setBodyContent(boolean newVal);
+    public abstract boolean isJavaDoc();
+    public abstract void setJavaDoc(boolean newVal);    
+    public abstract boolean isGenerateExceptionClasses();
+    public abstract void setGenerateExceptionClasses(boolean newVal);
+    public abstract boolean isGenerateAbstractImpl();
+    public abstract void setGenerateAbstractImpl(boolean newVal);
+    public abstract boolean isGenerateSuiteClasses();
+    public abstract void setGenerateSuiteClasses(boolean newVal);
+    public abstract boolean isIncludePackagePrivateClasses();
+    public abstract void setIncludePackagePrivateClasses(boolean newVal);    
+    public abstract boolean isGenerateSetUp();
+    public abstract void setGenerateSetUp(boolean newVal);
+    public abstract boolean isGenerateTearDown();
+    public abstract void setGenerateTearDown(boolean newVal);
     
 }

@@ -50,9 +50,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.testrunner.api.GuiUtils;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDisplayer;
@@ -83,7 +83,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
     public boolean canHandleMultipleClasses(Node[] activatedNodes) {
         return true;
     }
-
+    
     @Override
     public boolean enable(Node[] activatedNodes) {
         if (activatedNodes.length == 0) {

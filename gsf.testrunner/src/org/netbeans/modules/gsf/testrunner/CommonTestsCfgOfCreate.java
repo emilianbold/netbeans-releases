@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.gsf.testrunner;
 
-//import org.netbeans.modules.gsf.testrunner.CommonSettings;
-//import org.netbeans.modules.gsf.testrunner.ClassNameTextField;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -61,19 +59,15 @@ import javax.swing.event.ChangeListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
-import org.netbeans.modules.gsf.testrunner.ClassNameTextField;
-//import org.netbeans.modules.gsf.testrunner.CommonSettings;
-//import org.netbeans.modules.gsf.testrunner.GuiUtils;
-import org.netbeans.modules.gsf.testrunner.MessageStack;
-import org.netbeans.modules.gsf.testrunner.api.CommonSettings;
-import org.netbeans.modules.gsf.testrunner.api.CommonTestUtil;
-import org.netbeans.modules.gsf.testrunner.api.GuiUtils;
-import org.netbeans.modules.gsf.testrunner.api.SelfResizingPanel;
+import org.netbeans.modules.gsf.testrunner.api.*;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonSettingsProvider;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonTestUtilProvider;
+import org.netbeans.modules.gsf.testrunner.plugin.GuiUtilsProvider;
+import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
@@ -303,14 +297,25 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      */
     public boolean configure() {
         
+        String title = "";
+        String btnTxt = "";
+        String btnAN = "";
+        String btnAD = "";
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            title = provider.getMessageFor("CommonTestsCfgOfCreate.Title");   //NOI18N
+            btnTxt = provider.getMessageFor("LBL_OK");   //NOI18N
+            btnAN = provider.getMessageFor("AN_OK");   //NOI18N
+            btnAD = provider.getMessageFor("AD_OK");   //NOI18N
+            break;
+        }
+        
+        
         // create and display the dialog:
-        String title = NbBundle.getMessage(GuiUtils.class,
-                                           "CommonTestsCfgOfCreate.Title");   //NOI18N
         ChangeListener changeListener;
-        final JButton btnOK = new JButton(
-                NbBundle.getMessage(GuiUtils.class, "LBL_OK")); //NOI18N
-        btnOK.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GuiUtils.class, "AN_OK"));
-        btnOK.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GuiUtils.class, "AD_OK"));
+        final JButton btnOK = new JButton(btnTxt);
+        btnOK.getAccessibleContext().setAccessibleName(btnAN);//NbBundle.getMessage(GuiUtils.class, "AN_OK"));
+        btnOK.getAccessibleContext().setAccessibleDescription(btnAD);//NbBundle.getMessage(GuiUtils.class, "AD_OK"));
         btnOK.setEnabled(isAcceptable());
         addChangeListener(changeListener = new ChangeListener() {
             @Override
@@ -375,23 +380,49 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      * @see  #rememberCheckBoxStates
      */
     private void initializeCheckBoxStates() {
-        final CommonSettings settings = CommonSettings.getDefault();
-        
-        chkPublic.setSelected(settings.isMembersPublic());
-        chkProtected.setSelected(settings.isMembersProtected());
-        chkPackage.setSelected(settings.isMembersPackage());
-        chkComments.setSelected(settings.isBodyComments());
-        chkContent.setSelected(settings.isBodyContent());
-        chkJavaDoc.setSelected(settings.isJavaDoc());        
-        if (multipleClasses) {
-            chkGenerateSuites.setSelected(settings.isGenerateSuiteClasses());        
-            chkPackagePrivateClasses.setSelected(
-                    settings.isIncludePackagePrivateClasses());
-            chkAbstractImpl.setSelected(settings.isGenerateAbstractImpl());
-            chkExceptions.setSelected(settings.isGenerateExceptionClasses());
+        boolean chkPublicB = true;
+        boolean chkProtectedB = true;
+        boolean chkPackageB = true;
+        boolean chkCommentsB = true;
+        boolean chkContentB = true;
+        boolean chkJavaDocB = true;
+        boolean chkGenerateSuitesB = true;
+        boolean chkPackagePrivateClassesB = true;
+        boolean chkAbstractImplB = true;
+        boolean chkExceptionsB = true;
+        boolean chkSetUpB = true;
+        boolean chkTearDownB = true;
+        Collection<? extends CommonSettingsProvider> providers = Lookup.getDefault().lookupAll(CommonSettingsProvider.class);
+        for (CommonSettingsProvider provider : providers) {
+            chkPublicB = provider.isMembersPublic();
+            chkProtectedB = provider.isMembersProtected();
+            chkPackageB = provider.isMembersPackage();
+            chkCommentsB = provider.isBodyComments();
+            chkContentB = provider.isBodyContent();
+            chkJavaDocB = provider.isJavaDoc();
+            chkGenerateSuitesB = provider.isGenerateSuiteClasses();
+            chkPackagePrivateClassesB = provider.isIncludePackagePrivateClasses();
+            chkAbstractImplB = provider.isGenerateAbstractImpl();
+            chkExceptionsB = provider.isGenerateExceptionClasses();
+            chkSetUpB = provider.isGenerateSetUp();
+            chkTearDownB = provider.isGenerateTearDown();
+            break;
         }
-        chkSetUp.setSelected(settings.isGenerateSetUp());
-        chkTearDown.setSelected(settings.isGenerateTearDown());
+        
+        chkPublic.setSelected(chkPublicB);
+        chkProtected.setSelected(chkProtectedB);
+        chkPackage.setSelected(chkPackageB);
+        chkComments.setSelected(chkCommentsB);
+        chkContent.setSelected(chkContentB);
+        chkJavaDoc.setSelected(chkJavaDocB);
+        if (multipleClasses) {
+            chkGenerateSuites.setSelected(chkGenerateSuitesB);
+            chkPackagePrivateClasses.setSelected(chkPackagePrivateClassesB);
+            chkAbstractImpl.setSelected(chkAbstractImplB);
+            chkExceptions.setSelected(chkExceptionsB);
+        }
+        chkSetUp.setSelected(chkSetUpB);
+        chkTearDown.setSelected(chkTearDownB);
     }
     
     /**
@@ -400,23 +431,25 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      * @see  #initializeCheckBoxStatesf
      */
     private void rememberCheckBoxStates() {
-        final CommonSettings settings = CommonSettings.getDefault();
-        
-        settings.setMembersPublic(chkPublic.isSelected());
-        settings.setMembersProtected(chkProtected.isSelected());
-        settings.setMembersPackage(chkPackage.isSelected());
-        settings.setBodyComments(chkComments.isSelected());
-        settings.setBodyContent(chkContent.isSelected());
-        settings.setJavaDoc(chkJavaDoc.isSelected());
-        if (multipleClasses) {
-            settings.setGenerateSuiteClasses(chkGenerateSuites.isSelected());
-            settings.setIncludePackagePrivateClasses(
-                    chkPackagePrivateClasses.isSelected());
-            settings.setGenerateAbstractImpl(chkAbstractImpl.isSelected());
-            settings.setGenerateExceptionClasses(chkExceptions.isSelected());
+        Collection<? extends CommonSettingsProvider> providers = Lookup.getDefault().lookupAll(CommonSettingsProvider.class);
+        for (CommonSettingsProvider provider : providers) {
+            provider.setMembersPublic(chkPublic.isSelected());
+            provider.setMembersProtected(chkProtected.isSelected());
+            provider.setMembersPackage(chkPackage.isSelected());
+            provider.setBodyComments(chkComments.isSelected());
+            provider.setBodyContent(chkContent.isSelected());
+            provider.setJavaDoc(chkJavaDoc.isSelected());
+            if (multipleClasses) {
+                provider.setGenerateSuiteClasses(chkGenerateSuites.isSelected());
+                provider.setIncludePackagePrivateClasses(
+                        chkPackagePrivateClasses.isSelected());
+                provider.setGenerateAbstractImpl(chkAbstractImpl.isSelected());
+                provider.setGenerateExceptionClasses(chkExceptions.isSelected());
+            }
+            provider.setGenerateSetUp(chkSetUp.isSelected());
+            provider.setGenerateTearDown(chkTearDown.isSelected());
+            break;
         }
-        settings.setGenerateSetUp(chkSetUp.isSelected());
-        settings.setGenerateTearDown(chkTearDown.isSelected());
     }
     
     /**
@@ -426,7 +459,11 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
      * @see  #unlinkBundle
      */
     private void initBundle() {
-        bundle = NbBundle.getBundle(GuiUtils.class);
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            bundle = provider.getBundle();
+            break;
+        }
     }
     
     /**
@@ -491,7 +528,13 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         if(tf == null) {
             return "";
         }
-        return tf.toString().equals(GuiUtils.TESTNG_TEST_FRAMEWORK) ? "testng." : ""; //NOI18N
+        String testngFramework = "";
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            testngFramework = provider.getTestngFramework();
+            break;
+        }
+        return tf.toString().equals(testngFramework) ? "testng." : ""; //NOI18N
     }
     
     private void fireFrameworkChanged() {
@@ -546,21 +589,32 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
                                 : singleClass
                                   ? "LBL_ClassToTest"                   //NOI18N
                                   : "LBL_MultipleClassesSelected";      //NOI18N
-                                    
+        String classToTest = "";
+        String classname = "";
+        String location = "";
+        String framework = "";
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            classToTest = provider.getMessageFor(classToTestKey);
+            classname = provider.getMessageFor("LBL_ClassName");   //NOI18N
+            location = provider.getMessageFor("LBL_Location");   //NOI18N
+            framework = provider.getMessageFor("LBL_Framework");   //NOI18N
+            break;
+        }
         Mnemonics.setLocalizedText(
                 lblClassToTest,
-                NbBundle.getMessage(GuiUtils.class, classToTestKey));
+                classToTest);
         if (askForClassName) {
             Mnemonics.setLocalizedText(
                     lblClassName,
-                    NbBundle.getMessage(GuiUtils.class, "LBL_ClassName"));  //NOI18N
+                    classname);
         }
         Mnemonics.setLocalizedText(
                 lblLocation,
-                NbBundle.getMessage(GuiUtils.class, "LBL_Location"));       //NOI18N
+                location);
         Mnemonics.setLocalizedText(
                 lblFramework,
-                NbBundle.getMessage(GuiUtils.class, "LBL_Framework"));       //NOI18N
+                framework);
         
         if (singlePackage || singleClass) {
             lblClassToTestValue = new JLabel();
@@ -655,8 +709,16 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         if (state != ClassNameTextField.STATUS_VALID_NOT_DEFAULT) {
             setMessage(null, MSG_TYPE_CLASSNAME_NOT_DEFAULT);
         }
+        String message = "";
+        if (key != null) {
+            Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+            for (GuiUtilsProvider provider : providers) {
+                message = provider.getMessageFor(key);
+                break;
+            }
+        }
         setMessage((key != null)
-                           ? NbBundle.getMessage(GuiUtils.class, key)
+                           ? message
                            : null,
                    MSG_TYPE_CLASSNAME_INVALID);
         
@@ -761,7 +823,11 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         if (color == null) {
             color = new Color(89, 79, 191);   //RGB suggested by Bruce in #28466
         }
-        txtAreaMessage = GuiUtils.createMultilineLabel("", color);      //NOI18N
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        for (GuiUtilsProvider provider : providers) {
+            txtAreaMessage = provider.createMultilineLabel("", color);      //NOI18N
+            break;
+        }
         return txtAreaMessage;
     }
     
@@ -773,40 +839,51 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     private Component createCodeGenPanel() {
         
         /* create the components: */
-        String[] chkBoxIDs;
+        String[] chkBoxIDs = new String[12];
         JCheckBox[] chkBoxes;
-        if (multipleClasses) {
-            chkBoxIDs = new String[] {
-                GuiUtils.CHK_PUBLIC,
-                GuiUtils.CHK_PROTECTED,
-                GuiUtils.CHK_PACKAGE,
-                GuiUtils.CHK_PACKAGE_PRIVATE_CLASSES,
-                GuiUtils.CHK_ABSTRACT_CLASSES,
-                GuiUtils.CHK_EXCEPTION_CLASSES,
-                GuiUtils.CHK_SUITES,
-                GuiUtils.CHK_SETUP,
-                GuiUtils.CHK_TEARDOWN,
-                GuiUtils.CHK_METHOD_BODIES,
-                GuiUtils.CHK_JAVADOC,
-                GuiUtils.CHK_HINTS
-            };
+        Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+        if (multipleClasses) {            
+            for (GuiUtilsProvider provider : providers) {
+                chkBoxIDs = new String[]{
+                    provider.getCheckboxText("CHK_PUBLIC"),
+                    provider.getCheckboxText("CHK_PROTECTED"),
+                    provider.getCheckboxText("CHK_PACKAGE"),
+                    provider.getCheckboxText("CHK_PACKAGE_PRIVATE_CLASSES"),
+                    provider.getCheckboxText("CHK_ABSTRACT_CLASSES"),
+                    provider.getCheckboxText("CHK_EXCEPTION_CLASSES"),
+                    provider.getCheckboxText("CHK_SUITES"),
+                    provider.getCheckboxText("CHK_SETUP"),
+                    provider.getCheckboxText("CHK_TEARDOWN"),
+                    provider.getCheckboxText("CHK_METHOD_BODIES"),
+                    provider.getCheckboxText("CHK_JAVADOC"),
+                    provider.getCheckboxText("CHK_HINTS")
+                };
+                break;
+            }
         } else {
-            chkBoxIDs = new String[] {
-                GuiUtils.CHK_PUBLIC,
-                GuiUtils.CHK_PROTECTED,
-                GuiUtils.CHK_PACKAGE,
-                null, // CHK_PACKAGE_PRIVATE_CLASSES,
-                null, // CHK_ABSTRACT_CLASSES,
-                null, // CHK_EXCEPTION_CLASSES,
-                null, // CHK_SUITES,
-                GuiUtils.CHK_SETUP,
-                GuiUtils.CHK_TEARDOWN,
-                GuiUtils.CHK_METHOD_BODIES,
-                GuiUtils.CHK_JAVADOC,
-                GuiUtils.CHK_HINTS
-            };
+            for (GuiUtilsProvider provider : providers) {
+                chkBoxIDs = new String[]{
+                    provider.getCheckboxText("CHK_PUBLIC"),
+                    provider.getCheckboxText("CHK_PROTECTED"),
+                    provider.getCheckboxText("CHK_PACKAGE"),
+                    null, // CHK_PACKAGE_PRIVATE_CLASSES,
+                    null, // CHK_ABSTRACT_CLASSES,
+                    null, // CHK_EXCEPTION_CLASSES,
+                    null, // CHK_SUITES,
+                    provider.getCheckboxText("CHK_SETUP"),
+                    provider.getCheckboxText("CHK_TEARDOWN"),
+                    provider.getCheckboxText("CHK_METHOD_BODIES"),
+                    provider.getCheckboxText("CHK_JAVADOC"),
+                    provider.getCheckboxText("CHK_HINTS")
+                };
+                break;
+            }
         }
-        chkBoxes = GuiUtils.createCheckBoxes(chkBoxIDs);
+        chkBoxes = new JCheckBox[chkBoxIDs.length];
+        for (GuiUtilsProvider provider : providers) {
+            chkBoxes = provider.createCheckBoxes(chkBoxIDs);
+            break;
+        }
         int i = 0;
         chkPublic           = chkBoxes[i++];
         chkProtected        = chkBoxes[i++];
@@ -822,26 +899,38 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
         chkComments         = chkBoxes[i++];
         
         /* create groups of checkboxes: */
-        JComponent methodAccessLevels = GuiUtils.createChkBoxGroup(
+        JComponent methodAccessLevels = null;
+        for (GuiUtilsProvider provider : providers) {
+            methodAccessLevels = provider.createChkBoxGroup(
                 bundle.getString("CommonTestsCfgOfCreate.groupAccessLevels"), //NOI18N
                 new JCheckBox[] {chkPublic, chkProtected, chkPackage});
+            break;
+        }
         JComponent classTypes = null;
         JComponent optionalClasses = null;
         if (multipleClasses) {
-            classTypes = GuiUtils.createChkBoxGroup(
-                bundle.getString("CommonTestsCfgOfCreate.groupClassTypes"),   //NOI18N
-                new JCheckBox[] {chkPackagePrivateClasses,
-                                 chkAbstractImpl, chkExceptions});
-            optionalClasses = GuiUtils.createChkBoxGroup(
-                bundle.getString("CommonTestsCfgOfCreate.groupOptClasses"),   //NOI18N
-                new JCheckBox[] {chkGenerateSuites});
+            for (GuiUtilsProvider provider : providers) {
+                classTypes = provider.createChkBoxGroup(
+                        bundle.getString("CommonTestsCfgOfCreate.groupClassTypes"), //NOI18N
+                        new JCheckBox[]{chkPackagePrivateClasses,
+                            chkAbstractImpl, chkExceptions});
+                optionalClasses = provider.createChkBoxGroup(
+                        bundle.getString("CommonTestsCfgOfCreate.groupOptClasses"), //NOI18N
+                        new JCheckBox[]{chkGenerateSuites});
+                break;
+            }
         }
-        JComponent optionalCode = GuiUtils.createChkBoxGroup(
-                bundle.getString("CommonTestsCfgOfCreate.groupOptCode"),      //NOI18N
-                new JCheckBox[] {chkSetUp, chkTearDown, chkContent});
-        JComponent optionalComments = GuiUtils.createChkBoxGroup(
-                bundle.getString("CommonTestsCfgOfCreate.groupOptComments"),  //NOI18N
-                new JCheckBox[] {chkJavaDoc, chkComments});
+        JComponent optionalCode = null;
+        JComponent optionalComments = null;
+        for (GuiUtilsProvider provider : providers) {
+            optionalCode = provider.createChkBoxGroup(
+                    bundle.getString("CommonTestsCfgOfCreate.groupOptCode"), //NOI18N
+                    new JCheckBox[]{chkSetUp, chkTearDown, chkContent});
+            optionalComments = provider.createChkBoxGroup(
+                    bundle.getString("CommonTestsCfgOfCreate.groupOptComments"), //NOI18N
+                    new JCheckBox[]{chkJavaDoc, chkComments});
+            break;
+        }
         
         /* create the left column of options: */
         Box leftColumn = Box.createVerticalBox();
@@ -955,9 +1044,11 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
             ClassPath cp = ClassPath.getClassPath(fileObj, ClassPath.SOURCE);
             String packageName = cp.getResourceName(fileObj, '.', true);
             if (packageName.length() == 0) {
-                packageName = NbBundle.getMessage(
-                        GuiUtils.class,
-                        "DefaultPackageName");                          //NOI18N
+                Collection<? extends GuiUtilsProvider> providers = Lookup.getDefault().lookupAll(GuiUtilsProvider.class);
+                for (GuiUtilsProvider provider : providers) {
+                    packageName = provider.getMessageFor("DefaultPackageName");    //NOI18N
+                    break;
+                }
             }
             lblClassToTestValue.setText(packageName);
         } else {
@@ -972,12 +1063,29 @@ public class CommonTestsCfgOfCreate extends SelfResizingPanel implements ChangeL
     /**
      */
     private void setupLocationChooser(FileObject refFileObject) {
-        Object[] targetFolders = CommonTestUtil.getTestTargets(refFileObject);
+        Collection<? extends CommonTestUtilProvider> providers = Lookup.getDefault().lookupAll(CommonTestUtilProvider.class);
+        Object[] targetFolders = null;
+        for (CommonTestUtilProvider provider : providers) {
+            targetFolders = provider.getTestTargets(refFileObject);
+            break;
+        }
         if (targetFolders.length == 0) {
             Project owner = FileOwnerQuery.getOwner(refFileObject);
             if (owner != null) {
-                if (SourceGroupModifier.createSourceGroup(owner, JavaProjectConstants.SOURCES_TYPE_JAVA, JavaProjectConstants.SOURCES_HINT_TEST) != null) {
-                    targetFolders = CommonTestUtil.getTestTargets(refFileObject);
+                String type = "";
+                String hint = "";
+                Collection<? extends RootsProvider> rootProviders = Lookup.getDefault().lookupAll(RootsProvider.class);
+                for (RootsProvider rootProvider : rootProviders) {
+                    type = rootProvider.getSourceRootType();
+                    hint = rootProvider.getProjectTestsHint();
+                    break;
+                }
+                if (SourceGroupModifier.createSourceGroup(owner, type, hint) != null) {
+                    providers = Lookup.getDefault().lookupAll(CommonTestUtilProvider.class);
+                    for (CommonTestUtilProvider provider : providers) {
+                        targetFolders = provider.getTestTargets(refFileObject);
+                        break;
+                    }
                 }
             }
         }

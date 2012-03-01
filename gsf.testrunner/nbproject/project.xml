@@ -6,15 +6,6 @@
             <code-name-base>org.netbeans.modules.gsf.testrunner</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.api.java</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.37</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -55,15 +46,6 @@
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.13</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.java.project</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.43</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -204,6 +186,7 @@
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.testrunner</friend>
                 <friend>org.netbeans.modules.hudson</friend>
+                <friend>org.netbeans.modules.java.testrunner</friend>
                 <friend>org.netbeans.modules.junit</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.mobility.j2meunit</friend>

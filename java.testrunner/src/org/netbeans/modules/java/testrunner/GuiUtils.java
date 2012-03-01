@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.java.testrunner;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -60,6 +60,8 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.border.Border;
 import javax.swing.text.JTextComponent;
+import org.netbeans.modules.gsf.testrunner.api.NamedObject;
+import org.netbeans.modules.gsf.testrunner.api.SizeRestrictedPanel;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
