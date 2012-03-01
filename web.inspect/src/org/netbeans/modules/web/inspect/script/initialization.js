@@ -449,7 +449,9 @@ NetBeans.getMatchedRules = function(handle) {
     var matchedStyle = [];
     var element = this.getElement(handle);
     if (document.defaultView.getMatchedCSSRules) {
+        var changes = this.preGetMatchedCSSRulesUpdates();
         var rules = document.defaultView.getMatchedCSSRules(element);
+        this.postGetMatchedCSSRulesUpdates(changes);
         if (rules) {
             // getMatchedCSSRules returns the least specific rule first
             // => process them in the opposite order to have the most specific first
@@ -481,56 +483,112 @@ NetBeans.getMatchedRules = function(handle) {
     return matchedStyle;
 };
 
-// Replaces cross-origin stylesheets by embedded ones with the same content.
-// This is a workaround for a limitation of getMatchedCSSRules(). It doesn't
-// return any information about rules from cross-origin stylesheets.
-NetBeans.replaceCrossOriginStylesheets = function() {
-    // Returns string representing the origin of the given URL. The returned
-    // values are compared to identify cross-origin requests.
-    var getOrigin = function(url) {
-        var origin;
-        if (url) {
-            origin = url;
-            url = url.toLowerCase();
-            var idx1 = url.indexOf('://');
-            var scheme = url.substring(0,idx1);
-            var http = scheme === 'http';
-            var https = scheme === 'https';
-            idx1 += 3;
-            if ((http || https) && (idx1 !== -1)) {
-                var idx2 = url.indexOf('/', idx1);
-                if (idx2 !== -1) {
-                    origin = url.substring(0, idx2);
-                    var idx3 = url.indexOf(':', idx1);
-                    if (idx3 === -1) {
-                        // port not present => add the default port
-                        if (http) {
-                            origin += ':80';
-                        } else {
-                            origin += ':443';
-                        }
-                    }
-                    origin += '/';
+// getMatchedCSSRules refuses to return requested information in various cases.
+// This method attempts to work around these cases, i.e., it modifies
+// the document temporarily such that getMatchedCSSRules() doesn't refuse to work
+NetBeans.preGetMatchedCSSRulesUpdates = function() {
+    var changes = new Object();
+    // getMatchedCSSRules refuses to return any data when <base>
+    // element is present in a document with file:// scheme
+    var fileScheme = (document.URL.indexOf('file://') == 0);
+    var bases = document.getElementsByTagName('base');
+    if (fileScheme && (bases.length > 0)) {
+        var base = bases[0];
+        var parent = base.parentNode;
+        var placeholder = document.createElement('meta');
+        parent.replaceChild(placeholder, base);
+        changes.baseOriginal = base;
+        changes.baseReplacement = placeholder;
+    }
+    // Use replacements of cross-origin stylesheets
+    changes.enabledSheets = [];
+    changes.disabledSheets = [];
+    var i;
+    var documentOrigin = this.getOrigin(document.URL);
+    for (i=0; i<document.styleSheets.length; i++) {
+        var sheet = document.styleSheets[i];
+        var sheetOrigin = this.getOrigin(sheet.href);
+        var crossOrigin = (sheetOrigin !== documentOrigin);
+        if (crossOrigin) {
+            if (!sheet.disabled) {
+                sheet.disabled = true;
+                changes.disabledSheets.push(sheet);
+                // The previous sheet is the replacement
+                // (unless the replace failed)
+                var replacement = document.styleSheets[i-1];
+                if (replacement.ownerNode.getAttribute(this.ATTR_ARTIFICIAL)) {
+                    replacement.disabled = false;
+                    changes.enabledSheets.push(replacement);
                 }
             }
-        } else {
-            origin = getOrigin(document.URL);
         }
-        return origin;
     }
+    return changes;
+}
 
-    // Addition of a new stylesheet modifies document.styleSheets immediatelly
-    // => remember original stylesheets before we start to modify them
-    var i;
-    var originalSheets = [];
-    for (i=0; i<document.styleSheets.length; i++) {
-        originalSheets.push(document.styleSheets[i]);
+// Reverts the changes performed by preGetMatchedCSSRulesUpdates()
+NetBeans.postGetMatchedCSSRulesUpdates = function(changes) {
+    // Restore <base> tag (if it was removed)
+    if (changes.baseOriginal) {
+        var base = changes.baseOriginal;
+        var placeholder = changes.baseReplacement;
+        placeholder.parentElement.replaceChild(base, placeholder);
     }
-    var documentOrigin = getOrigin(document.URL);
-    for (i=0; i<originalSheets.length; i++) {
-        var sheet = originalSheets[i];
+    // Restore state of stylesheets
+    var i;
+    for (i=0; i<changes.enabledSheets.length; i++) {
+        changes.enabledSheets[i].disabled = true;
+    }
+    for (i=0; i<changes.disabledSheets.length; i++) {
+        changes.disabledSheets[i].disabled = false;
+    }
+}
+
+// Returns string representing the origin of the given URL. The returned
+// values are compared to identify cross-origin resources.
+NetBeans.getOrigin = function(url) {
+    var origin;
+    if (url) {
+        origin = url;
+        url = url.toLowerCase();
+        var idx1 = url.indexOf('://');
+        var scheme = url.substring(0,idx1);
+        var http = scheme === 'http';
+        var https = scheme === 'https';
+        idx1 += 3;
+        if ((http || https) && (idx1 !== -1)) {
+            var idx2 = url.indexOf('/', idx1);
+            if (idx2 !== -1) {
+                origin = url.substring(0, idx2);
+                var idx3 = url.indexOf(':', idx1);
+                if (idx3 === -1) {
+                    // port not present => add the default port
+                    if (http) {
+                        origin += ':80';
+                    } else {
+                        origin += ':443';
+                    }
+                }
+                origin += '/';
+            }
+        }
+    } else {
+        origin = this.getOrigin(document.URL);
+    }
+    return origin;
+}
+
+// Inserts embedded copies of cross-origin stylesheets. This is a preparation
+// for a workaround for the limitation of getMatchedCSSRules(). It doesn't
+// return any information about rules from cross-origin stylesheets.
+// We use the copies instead of the originals whenever we invoke getMatchedCSSRules().
+NetBeans.insertCopiesOfCrossOriginStylesheets = function() {
+    var i;
+    var documentOrigin = this.getOrigin(document.URL);
+    for (i=0; i<document.styleSheets.length; i++) {
+        var sheet = document.styleSheets[i];
         var url = sheet.href;
-        var sheetOrigin = getOrigin(url);
+        var sheetOrigin = this.getOrigin(url);
         if (sheetOrigin !== documentOrigin) {
             // Cross-origin stylesheet => replace it with embedded stylesheet
             var request = new XMLHttpRequest();
@@ -543,10 +601,13 @@ NetBeans.replaceCrossOriginStylesheets = function() {
                 fake.setAttribute(this.ATTR_URL, url);
                 fake.setAttribute(this.ATTR_ARTIFICIAL, true);
                 fake.innerText = request.responseText;
-                sheet.disabled = true;
                 var original = sheet.ownerNode;
                 var parent = original.parentNode;
                 parent.insertBefore(fake, original);
+                // Inserted stylesheet is available in document.styleSheets immediately.
+                // We disable the copy until it is needed.
+                sheet = document.styleSheets[i].disabled = true;
+                i++;
             } else {
                 console.log('Unable to download stylesheet: '+url);
                 console.log(request.statusText);
@@ -642,8 +703,8 @@ NetBeans.repaintGlassPane = function() {
     }
 }
 
-// Replace cross-origin stylesheets by embedded stylesheets
-NetBeans.replaceCrossOriginStylesheets();
+// Insert copies of cross-origin stylesheets
+NetBeans.insertCopiesOfCrossOriginStylesheets();
 
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
