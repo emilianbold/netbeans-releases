@@ -62,6 +62,7 @@ import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /** Basic Search provider
@@ -71,14 +72,12 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=SearchProvider.class, position=0)
 public class BasicSearchProvider extends SearchProvider {
 
-    private static final BasicSearchProvider INSTANCE = new BasicSearchProvider();
-
     /**
      * Presenter is {@link BasicSearchPresenter}.
      */
     @Override
     public Presenter createPresenter(boolean replaceMode) {
-        return new BasicSearchPresenter(replaceMode);
+        return new BasicSearchPresenter(replaceMode, null, null, this);
     }
 
     /**
@@ -98,7 +97,7 @@ public class BasicSearchProvider extends SearchProvider {
     }
 
     public static Presenter createBasicPresenter(boolean replacing) {
-        return new BasicSearchPresenter(replacing);
+        return new BasicSearchPresenter(replacing, null, null);
     }
 
     public static Presenter createBasicPresenter(
@@ -127,13 +126,16 @@ public class BasicSearchProvider extends SearchProvider {
         private String scopeId;
         private BasicSearchCriteria explicitCriteria;
 
-        public BasicSearchPresenter(boolean replacing) {
-            this(replacing, null, null);
+        public BasicSearchPresenter(boolean replacing, String scopeId,
+                BasicSearchCriteria explicitCriteria) {
+            this(replacing, scopeId, explicitCriteria,
+                    Lookup.getDefault().lookup(BasicSearchProvider.class));
         }
 
         public BasicSearchPresenter(boolean replacing, String scopeId,
-                BasicSearchCriteria explicitCriteria) {
-            this.replacing = replacing;
+                BasicSearchCriteria explicitCriteria,
+                BasicSearchProvider provider) {
+            super(provider, replacing);
             this.scopeId = scopeId;
             this.explicitCriteria = explicitCriteria;
         }
@@ -201,13 +203,6 @@ public class BasicSearchProvider extends SearchProvider {
             super.clean();
             form.clean();
         }
-    }
-
-    /**
-     * Get singleton instance.
-     */
-    public static BasicSearchProvider getInstance() {
-        return INSTANCE;
     }
 
     private static class IgnoreListFilter extends SearchFilterDefinition {

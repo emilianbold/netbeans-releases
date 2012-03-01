@@ -45,7 +45,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.search.Constants;
 import org.netbeans.spi.search.provider.SearchComposition;
-import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer.NodeDisplayer;
@@ -67,10 +66,9 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
     public DefaultSearchResultsPanel(
             SearchResultsDisplayer.NodeDisplayer<T> nodeDisplayer,
             SearchComposition searchComposition,
-            Class<? extends SearchProvider> searchProviderClass,
             Presenter searchProviderPresenter) {
 
-        super(searchComposition, searchProviderClass, searchProviderPresenter);
+        super(searchComposition, searchProviderPresenter);
         this.resultsNode = new ResultsNode();
         getExplorerManager().setRootContext(resultsNode);
         this.nodeDisplayer = nodeDisplayer;

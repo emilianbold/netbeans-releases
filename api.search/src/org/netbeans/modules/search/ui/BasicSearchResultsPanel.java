@@ -46,11 +46,9 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.search.BasicComposition;
-import org.netbeans.modules.search.BasicSearchProvider;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.TextDetail;
-import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.swing.outline.Outline;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -69,10 +67,9 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     private ResultsNode resultsNode;
 
     public BasicSearchResultsPanel(ResultModel resultModel,
-            BasicComposition searchComposition) {
+            BasicComposition composition) {
 
-        super(searchComposition, BasicSearchProvider.class,
-                searchComposition.getSearchProviderPresenter());
+        super(composition, composition.getSearchProviderPresenter());
         this.resultsNode = new ResultsNode();
         getExplorerManager().setRootContext(resultsNode);
         this.resultModel = resultModel;

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search;
 
+import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -98,28 +99,26 @@ public class SearchPanel extends JPanel implements FocusListener,
     /**
      * Selected Search presenter
      */
-    private Presenter selectedPresenter;
+    private Presenter selectedPresenter = null;
 
     /**
      * Panel that can show form with settings for several search providers.
      */
     public SearchPanel(boolean replacing) {
-        this(replacing, null, null);
+        this(replacing, null);
     }
 
     /**
      * Create search panel, using an explicit presenter for one of providers.
      */
-    public SearchPanel(boolean replacing,
-            Class<? extends SearchProvider> cls, Presenter presenter) {
+    public SearchPanel(boolean replacing, Presenter presenter) {
         this.replacing = replacing;
-        init(cls, presenter);
+        init(presenter);
     }
 
-    private void init(Class<? extends SearchProvider> cls,
-            Presenter explicitPresenter) {
+    private void init(Presenter explicitPresenter) {
 
-        presenters = makePresenters(cls, explicitPresenter);
+        presenters = makePresenters(explicitPresenter);
         setLayout(new GridLayout(1, 1));
 
         if (presenters.isEmpty()) {
@@ -129,7 +128,11 @@ public class SearchPanel extends JPanel implements FocusListener,
         } else {
             tabbedPane = new JTabbedPane();
             for (Presenter presenter : presenters) {
-                tabbedPane.add(presenter.getForm());
+                Component tab = tabbedPane.add(presenter.getForm());
+                if (presenter == explicitPresenter) {
+                    tabbedPane.setSelectedComponent(tab);
+                    selectedPresenter = explicitPresenter;
+                }
             }
             tabbedPane.addChangeListener(new ChangeListener() {
                 @Override
@@ -138,20 +141,12 @@ public class SearchPanel extends JPanel implements FocusListener,
                 }
             });
             add(tabbedPane);
+        }
+        if (selectedPresenter == null) {
             // TODO select last opened tab.
+            selectedPresenter = presenters.get(0);
         }
-
-        selectedPresenter = presenters.get(0);
-
-        for (final Presenter p : presenters) {
-            p.addChangeListener(new ChangeListener() {
-
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    okButton.setEnabled(p.isUsable());
-                }
-            });
-        }
+        initChangeListener();
         initLocalStrings();
         initAccessibility();
         okButton.setEnabled(selectedPresenter.isUsable());
@@ -184,16 +179,22 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     /**
      * Make list of presenters created for all available search providers.
+     *
+     * @param explicitPresenter One of providers can be assigned an explicit
+     * presenter, that will be used instead of creating a new one.
+     *
      */
-    private List<Presenter> makePresenters(
-            Class<? extends SearchProvider> cls, Presenter explicitPresenter) {
+    private List<Presenter> makePresenters(Presenter explicitPresenter) {
 
         List<SearchProvider.Presenter> presenterList =
                 new LinkedList<SearchProvider.Presenter>();
+        SearchProvider explicitProvider = explicitPresenter == null
+                ? null
+                : explicitPresenter.getSearchProvider();
         for (SearchProvider p :
                 Lookup.getDefault().lookupAll(SearchProvider.class)) {
             if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
-                if (p.getClass() == cls) {
+                if (explicitProvider == p) {
                     presenterList.add(explicitPresenter);
                 } else {
                     presenterList.add(p.createPresenter(replacing));
@@ -328,6 +329,20 @@ public class SearchPanel extends JPanel implements FocusListener,
     static void setCurrentlyShown(SearchPanel searchPanel) {
         synchronized (SearchPanel.class) {
             SearchPanel.currentlyShown = searchPanel;
+        }
+    }
+
+    /**
+     * Add change listener to all presenters.
+     */
+    private void initChangeListener() {
+        for (final Presenter p : presenters) {
+            p.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    okButton.setEnabled(p.isUsable());
+                }
+            });
         }
     }
 

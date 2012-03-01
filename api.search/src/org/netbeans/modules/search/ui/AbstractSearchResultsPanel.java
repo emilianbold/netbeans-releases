@@ -69,17 +69,14 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     private SearchComposition searchComposition;
     private JButton btnModifySearch = new JButton();
     private JButton btnStop = new JButton();
-    private final Class<? extends SearchProvider> searchProviderClass;
     private final Presenter searchProviderPresenter;
 
     /**
      * Creates new form AbstractSearchResultsPanel
      */
     public AbstractSearchResultsPanel(SearchComposition searchComposition,
-            Class<? extends SearchProvider> searchProviderClass,
             SearchProvider.Presenter searchProviderPresenter) {
         this.searchComposition = searchComposition;
-        this.searchProviderClass = searchProviderClass;
         this.searchProviderPresenter = searchProviderPresenter;
         initComponents();
         explorerManager = new ExplorerManager();
@@ -191,9 +188,12 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
     }
 
     protected void modifyCriteria() {
-        if (searchProviderClass != null && searchProviderPresenter != null) {
-            SearchControl.openFindDialog(searchProviderClass,
-                    searchProviderPresenter);
+        if (searchProviderPresenter != null) {
+            if (searchProviderPresenter.isReplacing()) {
+                SearchControl.openReplaceDialog(searchProviderPresenter);
+            } else {
+                SearchControl.openFindDialog(searchProviderPresenter);
+            }
         }
     }
 }

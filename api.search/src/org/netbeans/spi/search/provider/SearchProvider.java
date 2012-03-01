@@ -164,10 +164,21 @@ public abstract class SearchProvider {
      */
     public static abstract class Presenter {
 
+        private SearchProvider searchProvider;
+        private boolean replacing;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-        /** Constructor for subclasses. */
-        protected Presenter() {}
+        /**
+         * Constructor for subclasses.
+         *
+         * @param searchProvider Provider this instance is created for.
+         * @param replacing True if the presenter should be shown in replace
+         * dialog, false if it should be shown in find dialog.
+         */
+        protected Presenter(SearchProvider searchProvider, boolean replacing) {
+            this.searchProvider = searchProvider;
+            this.replacing = replacing;
+        }
 
         /**
          * Returns a new JComponent that contains controls for setting search
@@ -249,6 +260,25 @@ public abstract class SearchProvider {
          * resources. The default implementation does nothing.
          */
         public void clean() {
+        }
+
+        /**
+         * Get associated search provider.
+         *
+         * @return Provider this presenter was created for.
+         */
+        public final SearchProvider getSearchProvider() {
+            return searchProvider;
+        }
+
+        /**
+         * Get replace mode.
+         *
+         * @return True if the presenter should be shown in replace dialog,
+         * false if it should be shown if find dialog.
+         */
+        public final boolean isReplacing() {
+            return replacing;
         }
     }
 }

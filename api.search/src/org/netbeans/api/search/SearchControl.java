@@ -71,9 +71,9 @@ public final class SearchControl {
             @NullAllowed Boolean useIgnoreList,
             @NullAllowed String scopeId) {
 
-        SearchControl.openFindDialog(BasicSearchProvider.class,
-                BasicSearchProvider.createBasicPresenter(false, searchPattern,
-                null, false, searchScopeOptions, useIgnoreList, scopeId));
+        SearchControl.openFindDialog(BasicSearchProvider.createBasicPresenter(
+                false, searchPattern, null, false, searchScopeOptions,
+                useIgnoreList, scopeId));
     }
 
     /**
@@ -90,52 +90,42 @@ public final class SearchControl {
             @NullAllowed Boolean useIgnoreList,
             @NullAllowed String scopeId) {
 
-        SearchControl.openReplaceDialog(BasicSearchProvider.class,
+        SearchControl.openReplaceDialog(
                 BasicSearchProvider.createBasicPresenter(true, searchPattern,
                 replaceString, preserveCase, searchScopeOptions, useIgnoreList,
                 scopeId));
     }
 
     /**
-     * Show find dialog with a concrete presenter for one of provider classes.
+     * Show find dialog with a concrete presenter for one of providers.
      *
-     * @param providerClass SearchProvider class for which default presenter
-     * will not be created, but concrete {@code presenter} will be used instead.
      * @param presenter Presenter to use, possibly initialized with proper
      * values.
      */
-    public static void openFindDialog(
-            Class<? extends SearchProvider> providerClass,
-            SearchProvider.Presenter presenter) {
-        SearchControl.openDialog(false, providerClass, presenter);
+    public static void openFindDialog(SearchProvider.Presenter presenter) {
+        SearchControl.openDialog(false, presenter);
     }
 
     /**
-     * Show replace dialog with a concrete presenter for one of provider
-     * classes.
+     * Show replace dialog with a concrete presenter for one of providers.
      *
-     * @param providerClass SearchProvider class for which default presenter
-     * will not be created, but concrete {@code presenter} will be used instead.
      * @param presenter Presenter to use, possibly initialized with proper
      * values.
      */
-    public static void openReplaceDialog(
-            Class<? extends SearchProvider> providerClass,
-            SearchProvider.Presenter presenter) {
-        SearchControl.openDialog(true, providerClass, presenter);
+    public static void openReplaceDialog(SearchProvider.Presenter presenter) {
+        SearchControl.openDialog(true, presenter);
     }
 
     /**
      * Open dialog with one explicit presenter.
      */
     private static void openDialog(boolean replaceMode,
-            Class<? extends SearchProvider> cls,
             SearchProvider.Presenter presenter) {
         SearchPanel current = SearchPanel.getCurrentlyShown();
         if (current != null) {
             current.close();
         }
-        new SearchPanel(replaceMode, cls, presenter).showDialog();
+        new SearchPanel(replaceMode, presenter).showDialog();
     }
 
     /**

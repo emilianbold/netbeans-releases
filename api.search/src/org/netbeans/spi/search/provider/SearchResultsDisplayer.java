@@ -101,7 +101,6 @@ public abstract class SearchResultsDisplayer<T> {
     public static <U> SearchResultsDisplayer<U> createDefault(
             @NonNull final NodeDisplayer<U> helper,
             @NonNull final SearchComposition<U> searchComposition,
-            @NullAllowed final Class<? extends SearchProvider> providerClass,
             @NullAllowed final SearchProvider.Presenter presenter,
             @NonNull final String title) {
 
@@ -112,7 +111,7 @@ public abstract class SearchResultsDisplayer<T> {
             public synchronized JComponent getVisualComponent() {
                 if (panel == null) {
                     panel = new DefaultSearchResultsPanel(helper,
-                            searchComposition, providerClass, presenter);
+                            searchComposition, presenter);
                 }
                 return panel;
             }
