@@ -9,7 +9,7 @@ function Car (color, maker) {
     this.getMaker = function () {
         //test
         return 2
-            + 3
+                + 3
     }
 }
 

@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -68,12 +69,12 @@ public class JsFormatter implements Formatter {
 
     @Override
     public int hangingIndentSize() {
-        return -1; // Use IDE defaults
+        return CodeStyle.get((Document) null).getContinuationIndentSize();
     }
 
     @Override
     public int indentSize() {
-        return -1; // Use IDE defaults
+        return CodeStyle.get((Document) null).getIndentSize();
     }
 
     @Override
@@ -107,6 +108,10 @@ public class JsFormatter implements Formatter {
 
                 startTime = System.nanoTime();
                 int offsetDiff = 0;
+                
+                int initialIndent = CodeStyle.get(doc).getInitialIndent();
+                int continuationIndent = CodeStyle.get(doc).getContinuationIndentSize();
+
                 int indentationLevel = 0;
 
                 List<FormatToken> tokens = tokenStream.getTokens();
@@ -189,9 +194,9 @@ public class JsFormatter implements Formatter {
                                 i++;
                             }
                             if (indentationEnd != null && indentationEnd.getKind() != FormatToken.Kind.EOL) {
-                                int indentationSize = indentationLevel * IndentUtils.indentLevelSize(doc);
+                                int indentationSize = initialIndent + indentationLevel * IndentUtils.indentLevelSize(doc);
                                 if (isContinuation(tokens, index)) {
-                                    indentationSize += 4; // FIXME
+                                    indentationSize += continuationIndent;
                                 }
                                 offsetDiff = replace(doc, indentationStart.getOffset(),
                                         current.toString(), IndentUtils.createIndentString(doc, indentationSize),
