@@ -291,15 +291,18 @@ public class FixUsesAction extends BaseAction {
 
         private final boolean preferFullyQualifiedNames;
         private final boolean preferMultipleUseStatementsCombined;
+        private final boolean startUseWithNamespaceSeparator;
 
-        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined) {
+        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator) {
             this.preferFullyQualifiedNames = preferFullyQualifiedNames;
             this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
+            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
         }
 
         public Options(CodeStyle codeStyle) {
             this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
             this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
+            this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
         }
 
         public boolean preferFullyQualifiedNames() {
@@ -308,6 +311,10 @@ public class FixUsesAction extends BaseAction {
 
         public boolean preferMultipleUseStatementsCombined() {
             return preferMultipleUseStatementsCombined;
+        }
+
+        public boolean startUseWithNamespaceSeparator() {
+            return startUseWithNamespaceSeparator;
         }
 
 

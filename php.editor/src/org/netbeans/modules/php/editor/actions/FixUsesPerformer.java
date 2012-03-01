@@ -121,7 +121,7 @@ public class FixUsesPerformer {
         for (int i = 0; i < selections.length; i++) {
             String use = selections[i];
             if (canBeUsed(use)) {
-                SanitizedUse sanitizedUse = new SanitizedUse(use, i, selections, useParts);
+                SanitizedUse sanitizedUse = new SanitizedUse(use, i, selections, useParts, options);
                 useParts.add(sanitizedUse.getSanitizedUsePart());
                 List<UsedNamespaceName> namesToModify = importData.usedNamespaceNames.get(i);
                 for (UsedNamespaceName usedNamespaceName : namesToModify) {
@@ -136,11 +136,21 @@ public class FixUsesPerformer {
         if (isUsed(useElement) || !removeUnusedUses) {
             AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
-                useParts.add(aliasedName.getRealName().toString() + AS_CONCAT + aliasedName.getAliasName());
+                useParts.add(modifyUseName(aliasedName.getRealName().toString()) + AS_CONCAT + aliasedName.getAliasName());
             } else {
-                useParts.add(useElement.getName());
+                useParts.add(modifyUseName(useElement.getName()));
             }
         }
+    }
+
+    private String modifyUseName(final String useName) {
+        String result = useName;
+        if (options.startUseWithNamespaceSeparator()) {
+            result = result.startsWith(ImportDataCreator.NS_SEPARATOR) ? result : ImportDataCreator.NS_SEPARATOR + result;
+        } else {
+            result = result.startsWith(ImportDataCreator.NS_SEPARATOR) ? result.substring(ImportDataCreator.NS_SEPARATOR.length()) : result;
+        }
+        return result;
     }
 
     private boolean isUsed(final UseElement useElement) {
@@ -232,10 +242,12 @@ public class FixUsesPerformer {
         private final String use;
         private String alias;
         private final List<String> existingUseParts;
+        private final Options options;
 
-        public SanitizedUse(final String use, final int selectionIndex, final String selections[], final List<String> existingUseParts) {
+        public SanitizedUse(final String use, final int selectionIndex, final String selections[], final List<String> existingUseParts, final Options options) {
             this.use = use;
             this.existingUseParts = existingUseParts;
+            this.options = options;
             QualifiedName qualifiedName = QualifiedName.create(use);
             String name = qualifiedName.getName();
             String aliasedName = name;
@@ -277,7 +289,7 @@ public class FixUsesPerformer {
 
         public String getSanitizedUsePart() {
             String sanitizedUsePart = hasAlias() ? use + AS_CONCAT + alias : use;
-            return sanitizedUsePart.substring(ImportDataCreator.NS_SEPARATOR.length());
+            return options.startUseWithNamespaceSeparator() ? sanitizedUsePart : sanitizedUsePart.substring(ImportDataCreator.NS_SEPARATOR.length());
         }
 
         private boolean hasAlias() {

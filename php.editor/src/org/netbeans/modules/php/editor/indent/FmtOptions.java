@@ -229,6 +229,7 @@ public class FmtOptions {
 
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
     public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
 
     public static CodeStyleProducer codeStyleProducer;
 
@@ -401,7 +402,8 @@ public class FmtOptions {
             { wrapStatementsOnTheLine, TRUE},
 
             { preferFullyQualifiedNames, FALSE},
-            { preferMultipleUseStatementsCombined, FALSE}
+            { preferMultipleUseStatementsCombined, FALSE},
+            { startUseWithNamespaceSeparator, FALSE}
         };
 
         defaults = new HashMap<String,String>();
