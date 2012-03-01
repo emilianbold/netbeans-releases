@@ -703,6 +703,7 @@ public translation_unit:
 //
 protected
 template_explicit_specialization
+{TypeQualifier tq; StorageClass sc;int ts = 0;}
     :
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
@@ -761,6 +762,22 @@ template_explicit_specialization
 		declaration_specifiers[false, false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
+            (   (LITERAL___extension__!)?
+                (   storage_class_specifier
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )*
+                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+            ) =>
+            (LITERAL___extension__!)?
+                (   sc = storage_class_specifier
+                |   tq = cv_qualifier
+                |   LITERAL_typedef
+            )*
+            enum_specifier (init_declarator_list[declOther])? 
+            SEMICOLON!
+            { #template_explicit_specialization = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #template_explicit_specialization); }
+        |  
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
 			printf("template_explicit_specialization_0e[%d]: template " +
@@ -775,7 +792,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
 	:      
 		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -889,6 +906,22 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
                     { #external_declaration_template = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration_template); }
+                |
+                    (   (LITERAL___extension__!)?
+                        (   storage_class_specifier
+                        |   cv_qualifier
+                        |   LITERAL_typedef
+                        )*
+                        LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+                    ) =>
+                    (LITERAL___extension__!)?
+                        (   sc = storage_class_specifier
+                        |   tq = cv_qualifier
+                        |   LITERAL_typedef
+                    )*
+                    enum_specifier (init_declarator_list[declOther])? 
+                    SEMICOLON!
+                    { #external_declaration_template = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1962,7 +1995,7 @@ enum_specifier
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     |   
-        ( (IDENT SCOPE) =>
+        ( (IDENT (SCOPE | LESSTHAN) ) =>
             qid = qualified_id
         |
             id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
