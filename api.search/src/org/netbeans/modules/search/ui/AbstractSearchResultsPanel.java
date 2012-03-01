@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -107,26 +108,17 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
             .addGap(0, 100, Short.MAX_VALUE)
         );
 
+        setLayout(new java.awt.BorderLayout());
+
         toolBar.setFloatable(false);
         toolBar.setOrientation(JToolBar.VERTICAL);
         toolBar.setRollover(true);
+        toolBar.setPreferredSize(null);
+        toolBar.setRequestFocusEnabled(false);
+        add(toolBar, java.awt.BorderLayout.WEST);
 
         outline.setBorder(null);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(toolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(outline, javax.swing.GroupLayout.DEFAULT_SIZE, 455, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(outline, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 278, Short.MAX_VALUE)
-            .addComponent(toolBar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
+        add(outline, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
@@ -144,12 +136,14 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.setRollover(true);
         toolBar.setFloatable(false);
 
+        sizeButton(btnModifySearch);
         btnModifySearch.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 modifyCriteria();
             }
         });
+        sizeButton(btnStop);
         btnStop.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -167,6 +161,13 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
 
         toolBar.add(btnModifySearch);
         toolBar.add(btnStop);
+    }
+
+    protected void sizeButton(JButton button) {
+        Dimension dim = new Dimension(24, 24);
+        button.setMinimumSize(dim);
+        button.setMaximumSize(dim);
+        button.setPreferredSize(dim);
     }
 
     protected OutlineView getOutlineView() {
