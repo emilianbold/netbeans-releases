@@ -65,7 +65,8 @@ public interface ExtensionManagerAccessor {
             String currentVersion = getCurrentPluginVersion();
             if (extVersion == null) {
                 return true;
-            }else if (currentVersion == null) {
+            }
+            else if (currentVersion == null) {
                 return false;
             }
 

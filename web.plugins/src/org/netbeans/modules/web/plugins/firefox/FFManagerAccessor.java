@@ -49,6 +49,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -63,6 +65,7 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
 import org.netbeans.modules.web.plugins.PluginLoader;
@@ -77,6 +80,7 @@ import org.openide.util.Utilities;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 
 
@@ -125,10 +129,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String CURRENT_VERSION = "0.1.3";                      // NOI18N
         
-        /* TODO : do we need MD5 checksum ?
-        private static final String CHECKSUM_FILENAME = "netbeans-ros-firefox-extension.jar.MD5"; // NOI18N
-        */
-
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
          */
@@ -139,13 +139,25 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                     File.separator + EXTENSION_ID);                  
             String extensionVersion = getVersion(extensionDir);
             
-            boolean isInstalling = checkExtensionCache(extensionDir, 
-                    INSTALL_KEYWORD);
-            
-            // if the user did not restart before the check was made (user presses 'Continue'
-            // without waiting for Firefox to restart)
-            if (isInstalling) {
-                return false;
+            if ( extensionVersion != null ){
+                boolean isInstalling = checkExtensionCache(extensionDir,
+                        INSTALL_KEYWORD);
+
+                // if the user did not restart before the check was made (user
+                // presses 'Continue'
+                // without waiting for Firefox to restart)
+                if (isInstalling) {
+                    return false;
+                }
+            }
+            else {
+                /*
+                 *  Previous check is old plugin storage approach : extracted files in dir.
+                 *  This check for packaged plugin stored as xpi file
+                 */
+                File xpi = new File(defaultProfile, "extensions" +             // NOI18N 
+                        File.separator + EXTENSION_ID+".xpi");                 // NOI18N 
+                extensionVersion =getVersion(xpi);
             }
             
             if ( isUpdateRequired(extensionVersion)) 
@@ -167,6 +179,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             File defaultProfile = getDefaultProfile();
             File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
                     File.separator + EXTENSION_ID);
+            
             File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
             
@@ -176,6 +189,42 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             
+            if ( extensionDir.exists() && extensionDir.isDirectory() ){
+                // use old style install 
+                return oldStyleInstall(extensionFile);
+            }
+            // New installation approach : install add-on via opening URL in FF
+            
+            // Ask the user if they want to install the extensions
+            NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(FFExtensionManager.class, 
+                            "LBL_InstallMsgWithoutRestart"),                    // NOI18N
+                    NbBundle.getMessage(FFExtensionManager.class, 
+                            "TTL_InstallExtension"),                            // NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(installDesc);
+            if (result != NotifyDescriptor.OK_OPTION) {
+                return false;
+            }
+            try {
+                loader.requestPluginLoad( new URL("file:///"+extensionFile.getCanonicalPath()));
+            }
+            catch( IOException e ){
+                Logger.getLogger( FFExtensionManager.class.getCanonicalName()).
+                    log(Level.INFO , null ,e );
+                return false;
+            }
+            return true;
+        }
+        
+        /*
+         * Previous version installation: explicit unpack xpi into extensions dir.  
+         */
+        private boolean oldStyleInstall(File extensionFile){
+            File defaultProfile = getDefaultProfile();
+            File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
+                    File.separator + EXTENSION_ID);
             // plugin is not initialized
             if ( !checkExtensionInstall( defaultProfile ) ){
                 NotifyDescriptor descriptor = new NotifyDescriptor.Message(
@@ -307,93 +356,109 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             }
         }
         
-        /*private boolean checkExtensionChecksum( File profileDir ) {
-            File extensionDir = new File(new File(profileDir, "extensions"),    // NOI18N 
-                    EXTENSION_ID); 
-            File extensionFile = InstalledFileLocator.getDefault().locate(
-                    EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
-            if ( extensionFile == null || extensionDir == null ){
-                return false;
-            }
-            File checksumFile = new File(extensionDir, CHECKSUM_FILENAME);
-            return Utils.compareChecksum( extensionFile , checksumFile);
-        }*/
-        
-        private String getVersion(File extensionDir) {
-            File rdfFile = new File(extensionDir, "install.rdf"); // NOI18N
+        private String getVersion(File file) {
+            Node descriptionNode = null;
             
-            if (rdfFile.isFile()) {
-                DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                DocumentBuilder builder = null;
-                Document doc = null;
-                
-                try {
-                    builder = factory.newDocumentBuilder();
-                    doc = builder.parse(rdfFile);
-                }
-                catch (Exception ex) {
-                    Logger.getLogger( FFExtensionManager.class.getCanonicalName()).
-                        log(Level.WARNING, null, ex);               // NOI18N     
-                    return null;
-                }
-                
-                Node descriptionNode = null;
-                
-                for (Node node = doc.getDocumentElement().getFirstChild(); 
-                    descriptionNode == null && node != null; 
-                        node = node.getNextSibling()) 
+            Document doc = getInstallRdfDocument(file);
+            if ( doc == null ){
+                return null;
+            }
+
+            for (Node node = doc.getDocumentElement().getFirstChild(); descriptionNode == null
+                    && node != null; node = node.getNextSibling())
+            {
+                String nodeName = node.getNodeName();
+                nodeName = (nodeName == null) ? "" : nodeName.toLowerCase();
+
+                if (nodeName.equalsIgnoreCase("description")
+                        || nodeName.equalsIgnoreCase("rdf:description")) // NOI18N
                 {
-                    String nodeName = node.getNodeName();
-                    nodeName = (nodeName == null) ? "" : nodeName.toLowerCase();
-                    
-                    
-                    if (nodeName.equalsIgnoreCase("description") || 
-                            nodeName.equalsIgnoreCase("rdf:description"))  // NOI18N
-                    {
-                        Node aboutNode = node.getAttributes().
-                            getNamedItem("about"); // NOI18N
-                        if (aboutNode == null) {
-                            aboutNode = node.getAttributes().
-                                getNamedItem("RDF:about"); // NOI18N
-                        }
-                        
-                        if (aboutNode != null) {
-                            String aboutText = aboutNode.getNodeValue();
-                            aboutText = (aboutText == null) ? "" : 
-                                    aboutText.toLowerCase(Locale.US);
-                            
-                            if (aboutText.equals("urn:mozilla:install-manifest"))  // NOI18N
-                            {
-                                descriptionNode = node;
-                            }
-                        }
+                    Node aboutNode = node.getAttributes().getNamedItem("about"); // NOI18N
+                    if (aboutNode == null) {
+                        aboutNode = node.getAttributes().getNamedItem(
+                                "RDF:about"); // NOI18N
                     }
-                }
-                
-                if (descriptionNode == null) {
-                    return null;
-                }
-                
-                // check node attributes for version info
-                Node versionNode = descriptionNode.getAttributes().
-                    getNamedItem("em:version"); // NOI18N
-                if (versionNode != null) {
-                    return versionNode.getNodeValue();
-                }
-                
-                // check children nodes
-                NodeList children = descriptionNode.getChildNodes();
-                for (int i = 0; i < children.getLength(); i++) {
-                    Node child = children.item(i);
-                    String name = child.getNodeName();
-                    name = (name == null) ? "" : name.toLowerCase();
-                    
-                    if (name.equals("em:version")) { // NOI18N
-                        return child.getTextContent();
+
+                    if (aboutNode != null) {
+                        String aboutText = aboutNode.getNodeValue();
+                        aboutText = (aboutText == null) ? "" : aboutText
+                                .toLowerCase(Locale.US);
+
+                        if (aboutText.equals("urn:mozilla:install-manifest")) // NOI18N
+                        {
+                            descriptionNode = node;
+                        }
                     }
                 }
             }
-            
+
+            if (descriptionNode == null) {
+                return null;
+            }
+
+            // check node attributes for version info
+            Node versionNode = descriptionNode.getAttributes().getNamedItem(
+                    "em:version"); // NOI18N
+            if (versionNode != null) {
+                return versionNode.getNodeValue();
+            }
+
+            // check children nodes
+            NodeList children = descriptionNode.getChildNodes();
+            for (int i = 0; i < children.getLength(); i++) {
+                Node child = children.item(i);
+                String name = child.getNodeName();
+                name = (name == null) ? "" : name.toLowerCase();
+
+                if (name.equals("em:version")) { // NOI18N
+                    return child.getTextContent();
+                }
+            }
+
+            return null;
+        }
+        
+        private Document getInstallRdfDocument(File file  ){
+            if ( !file.exists()){
+                return null;
+            }
+            File rdfFile = null;
+            InputStream iStream = null;
+            if ( file.isDirectory() ){
+                rdfFile = new File(file, "install.rdf"); // NOI18N
+            }
+            else {
+                iStream = Utils.getInputStream(file, "install.rdf"); // NOI18N
+            }
+            if ( rdfFile == null && iStream == null ){
+                return null;
+            }
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder builder = null;
+            Document doc = null;
+            try {
+                builder = factory.newDocumentBuilder();
+           
+                if ( rdfFile!= null && rdfFile.isFile() ){
+                    doc = builder.parse( rdfFile);
+                }
+                else if ( iStream != null ){
+                    doc = builder.parse( iStream );
+                }
+                return doc;
+            }
+            catch (ParserConfigurationException ex) {
+                Logger.getLogger( FFExtensionManager.class.getCanonicalName()).
+                    log(Level.WARNING, null, ex);               // NOI18N     
+            }
+            catch (IOException ex) {
+                Logger.getLogger( FFExtensionManager.class.getCanonicalName()).
+                    log(Level.WARNING, null, ex);               // NOI18N     
+            }
+            catch (SAXException ex) {
+                Logger.getLogger( FFExtensionManager.class.getCanonicalName()).
+                    log(Level.WARNING, null, ex);               // NOI18N     
+            }
             return null;
         }
 

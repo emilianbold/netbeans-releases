@@ -207,6 +207,37 @@ public final class Utils {
         }
         folder.delete();
     }
+    
+    public static InputStream getInputStream( File zipFile , String requiredName ){
+        ZipFile zip = null;
+        try {
+            zip = new ZipFile(zipFile);
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String fileName = entry.getName();
+                if ( fileName.equals(requiredName)){
+                    return zip.getInputStream(entry);
+                }
+            }
+        }
+        catch( IOException ex ){
+            Logger.getLogger(Utils.class.getCanonicalName()).
+                log(Level.INFO, null , ex);
+        }
+        finally {
+            try {
+                if ( zip!= null ){
+                    zip.close();
+                }
+            }
+            catch( IOException ex ){
+                Logger.getLogger(Utils.class.getCanonicalName()).
+                    log(Level.INFO, null , ex);
+            }
+        }      
+        return null;
+    }
 
     public static void extractFiles(File zipFile, File destDir) throws IOException {
         ZipFile zip = new ZipFile(zipFile);
