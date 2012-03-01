@@ -115,6 +115,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.clientproject</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.core</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
@@ -156,6 +162,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.inspect</code-name-base>
+                    <run-dependency>
+                        <specification-version>0.1</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.jstl11</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
@@ -173,12 +185,6 @@
                     <code-name-base>org.netbeans.modules.web.project</code-name-base>
                     <run-dependency>
                         <specification-version>1.6</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.web.clientproject</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

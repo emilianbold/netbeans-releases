@@ -5,4 +5,4 @@ OpenIDE-Module-Layer: org/netbeans/modules/web/inspect/layer.xml
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
 OpenIDE-Module-Specification-Version: 0.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/web/inspect/Bundle.properties
-AutoUpdate-Show-In-Client: true
+AutoUpdate-Show-In-Client: false
