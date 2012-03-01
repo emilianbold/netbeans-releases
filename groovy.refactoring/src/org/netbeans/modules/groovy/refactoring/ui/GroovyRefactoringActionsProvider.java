@@ -55,7 +55,7 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.Utils;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -135,7 +135,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
     }
 
     private static boolean isOutsideGroovy(Lookup lookup, FileObject fo) {
-        if (Utils.isGspFile(fo)) {
+        if (GroovyProjectUtil.isGspFile(fo)) {
             // We're attempting to refactor in an RHTML file... If it's in
             // the editor, make sure we're trying to refactoring in a Ruby section;
             // if not, we shouldn't grab it. (JavaScript refactoring won't get
@@ -205,7 +205,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
                 return;
             }
 
-            BaseDocument doc = Utils.getDocument(cc, fileObject);
+            BaseDocument doc = GroovyProjectUtil.getDocument(cc, fileObject);
             AstPath path = new AstPath(root, caret, doc);
 
             GroovyRefactoringElement ctx = new GroovyRefactoringElement(cc, (ModuleNode) root, path.leaf(), fileObject);

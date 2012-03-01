@@ -43,7 +43,7 @@
  */
 
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.utils;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
@@ -190,10 +190,10 @@ public class RefactoringUtil {
      */
     public static String constructNewName(FileObject javaFile, RenameRefactoring rename){
         
-        String fqn = JavaIdentifiers.getQualifiedName(javaFile);
+        String fqn = JavaIdentifiersUtil.getQualifiedName(javaFile);
         
         if (isPackage(rename)){
-            return rename.getNewName() + "." + JavaIdentifiers.unqualify(fqn);
+            return rename.getNewName() + "." + JavaIdentifiersUtil.unqualify(fqn);
         }
         
         FileObject folder = rename.getRefactoringSource().lookup(FileObject.class);

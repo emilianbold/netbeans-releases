@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.utils;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
@@ -55,9 +55,9 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
-public final class JavaIdentifiers {
+public final class JavaIdentifiersUtil {
 
-    private JavaIdentifiers(){
+    private JavaIdentifiersUtil(){
     }
 
     /**
