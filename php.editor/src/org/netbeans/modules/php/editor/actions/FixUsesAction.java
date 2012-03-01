@@ -65,7 +65,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.php.editor.actions.ImportDataCreator.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -175,17 +174,20 @@ public class FixUsesAction extends BaseAction {
     private static ImportData computeUses(final PHPParseResult parserResult, final int caretPosition) {
         Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesComputer(parserResult, caretPosition).computeNames();
         Index index = parserResult.getModel().getIndexScope().getIndex();
-        Document document = parserResult.getSnapshot().getSource().getDocument(false);
-        CodeStyle codeStyle = CodeStyle.get(document);
-        Options options = new Options(codeStyle.preferFullyQualifiedNames());
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
-        ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), options).create();
+        ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), createOptions(parserResult)).create();
         importData.caretPosition = caretPosition;
         return importData;
     }
 
     private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
-        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses).perform();
+        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, createOptions(parserResult)).perform();
+    }
+
+    private static Options createOptions(final PHPParseResult parserResult) {
+        Document document = parserResult.getSnapshot().getSource().getDocument(false);
+        CodeStyle codeStyle = CodeStyle.get(document);
+        return new Options(codeStyle);
     }
 
     private static final RequestProcessor WORKER = new RequestProcessor(FixUsesAction.class.getName(), 1);
@@ -283,5 +285,38 @@ public class FixUsesAction extends BaseAction {
         protected String getActionName() {
             return ACTION_NAME;
         }
+    }
+
+    public static class Options {
+
+        private final boolean preferFullyQualifiedNames;
+        private final boolean preferMultipleUseStatementsCombined;
+        private final boolean startUseWithNamespaceSeparator;
+
+        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator) {
+            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
+            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
+            this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;
+        }
+
+        public Options(CodeStyle codeStyle) {
+            this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
+            this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
+            this.startUseWithNamespaceSeparator = codeStyle.startUseWithNamespaceSeparator();
+        }
+
+        public boolean preferFullyQualifiedNames() {
+            return preferFullyQualifiedNames;
+        }
+
+        public boolean preferMultipleUseStatementsCombined() {
+            return preferMultipleUseStatementsCombined;
+        }
+
+        public boolean startUseWithNamespaceSeparator() {
+            return startUseWithNamespaceSeparator;
+        }
+
+
     }
 }

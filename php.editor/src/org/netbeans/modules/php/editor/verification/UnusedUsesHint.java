@@ -44,9 +44,12 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
@@ -122,8 +125,23 @@ public class UnusedUsesHint extends AbstractRule {
         public void implement() throws Exception {
             final EditList editList = new EditList(baseDocument);
             OffsetRange offsetRange = unusedOffsetRanges.getRangeToReplace();
-            editList.replace(offsetRange.getStart(), offsetRange.getLength(), "", true, 0); //NOI18N
+            int startOffset = getOffsetWithoutLeadingWhitespaces(offsetRange.getStart());
+            editList.replace(startOffset, offsetRange.getEnd() - startOffset, "", true, 0); //NOI18N
             editList.apply();
+        }
+
+        private int getOffsetWithoutLeadingWhitespaces(final int startOffset) {
+            int result = startOffset;
+            TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(baseDocument, startOffset);
+            ts.move(startOffset);
+            while (ts.movePrevious() && ts.token().id().equals(PHPTokenId.WHITESPACE)) {
+                result = ts.offset();
+            }
+            // don't skip WS after "use" and before first NamespaceName in multiple use statement
+            if (ts.token().id().equals(PHPTokenId.PHP_USE)) {
+                result = startOffset;
+            }
+            return result;
         }
 
         @Override

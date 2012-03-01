@@ -46,6 +46,8 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.preferFullyQualifiedNames;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.preferMultipleUseStatementsCombined;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.startUseWithNamespaceSeparator;
 
 /**
  *
@@ -59,6 +61,8 @@ public class FmtUses extends javax.swing.JPanel {
     public FmtUses() {
         initComponents();
         preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, preferFullyQualifiedNames);
+        preferMultipleUseStatementsCombinedCheckBox.putClientProperty(OPTION_ID, preferMultipleUseStatementsCombined);
+        startUseWithNamespaceSeparatorCheckBox.putClientProperty(OPTION_ID, startUseWithNamespaceSeparator);
     }
 
     public static PreferencesCustomizer.Factory getController() {
@@ -81,6 +85,8 @@ public class FmtUses extends javax.swing.JPanel {
     private void initComponents() {
 
         preferFullyQualifiedNamesCheckBox = new javax.swing.JCheckBox();
+        preferMultipleUseStatementsCombinedCheckBox = new javax.swing.JCheckBox();
+        startUseWithNamespaceSeparatorCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtUses.class, "LBL_Uses")); // NOI18N
         setOpaque(false);
@@ -88,13 +94,22 @@ public class FmtUses extends javax.swing.JPanel {
         preferFullyQualifiedNamesCheckBox.setMnemonic('F');
         preferFullyQualifiedNamesCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferFullyQualifiedNamesCheckBox.text")); // NOI18N
 
+        preferMultipleUseStatementsCombinedCheckBox.setMnemonic('M');
+        preferMultipleUseStatementsCombinedCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.preferMultipleUseStatementsCombinedCheckBox.text")); // NOI18N
+
+        startUseWithNamespaceSeparatorCheckBox.setMnemonic('S');
+        startUseWithNamespaceSeparatorCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtUses.class, "FmtUses.startUseWithNamespaceSeparatorCheckBox.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(preferFullyQualifiedNamesCheckBox)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(preferFullyQualifiedNamesCheckBox)
+                    .addComponent(preferMultipleUseStatementsCombinedCheckBox)
+                    .addComponent(startUseWithNamespaceSeparatorCheckBox))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -102,10 +117,16 @@ public class FmtUses extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(preferFullyQualifiedNamesCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(preferMultipleUseStatementsCombinedCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(startUseWithNamespaceSeparatorCheckBox)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox preferFullyQualifiedNamesCheckBox;
+    private javax.swing.JCheckBox preferMultipleUseStatementsCombinedCheckBox;
+    private javax.swing.JCheckBox startUseWithNamespaceSeparatorCheckBox;
     // End of variables declaration//GEN-END:variables
 }

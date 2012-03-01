@@ -565,6 +565,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(InstanceOfExpression node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "InstanceOfExpression");
         printNode.addChild(node.getExpression());
+        printNode.addChild(node.getClassName());
         printNode.print(this);
     }
 
