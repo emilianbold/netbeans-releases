@@ -63,6 +63,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.uihandler.LogRecords;
 import org.openide.DialogDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /**
@@ -308,7 +309,13 @@ public class InstallerTest extends NbTestCase {
         JButton b = (JButton)buttons[0];
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
-        assertEquals("Mnemonics", 'S', b.getMnemonic());
+        if (Utilities.isMac()) {
+            assertEquals("Mnemonics", 0, b.getMnemonic());
+            assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals("Mnemonics", 'S', b.getMnemonic());
+            assertEquals("Mnemonic index", 0, b.getDisplayedMnemonicIndex());
+        }
     }
 
     public void testCanDefineExitButton() throws Exception {
@@ -334,13 +341,25 @@ public class InstallerTest extends NbTestCase {
         JButton b = (JButton)buttons[0];
         assertEquals("It is named", "Send Feedback", b.getText());
         assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
-        assertEquals("Mnemonics", 'S', b.getMnemonic());
+        if (Utilities.isMac()) {
+            assertEquals("Mnemonics", 0, b.getMnemonic());
+            assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals("Mnemonics", 'S', b.getMnemonic());
+            assertEquals("Mnemonic index", 0, b.getDisplayedMnemonicIndex());
+        }
 
         assertEquals("It is a button", JButton.class, buttons[1].getClass());
         b = (JButton)buttons[1];
         assertEquals("It is named", "Cancel", b.getText());
         assertNull("No url", b.getClientProperty("url"));
-        assertEquals("Mnemonics", 'C', b.getMnemonic());
+        if (Utilities.isMac()) {
+            assertEquals("Mnemonics", 0, b.getMnemonic());
+            assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals("Mnemonics", 'C', b.getMnemonic());
+            assertEquals("Mnemonic index", 0, b.getDisplayedMnemonicIndex());
+        }
     }
 
     public void testReadAllButtons() throws Exception {
@@ -349,7 +368,7 @@ public class InstallerTest extends NbTestCase {
             "  <input type='hidden' name='submit' value=\"&amp;Send Feedback\"/>" +
             "  <input type='hidden' name='never-again' value=\"&amp;No and do not Bother Again\"/>" +
             "\n" +
-            "  <input type='hidden' name='view-data' value=\"&amp;View Data\"/>" +
+            "  <input type='hidden' name='view-data' value=\"View &amp;Data\"/>" +
             "\n" +
             "</form></body></html>";
         
@@ -367,7 +386,13 @@ public class InstallerTest extends NbTestCase {
             JButton b = (JButton)buttons[0];
             assertEquals("It is named", "Send Feedback", b.getText());
             assertEquals("It url attribute is set", "http://xyz.cz", b.getClientProperty("url"));
-            assertEquals("Mnemonics", 'S', b.getMnemonic());
+            if (Utilities.isMac()) {
+                assertEquals("Mnemonics", 0, b.getMnemonic());
+                assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+            } else {
+                assertEquals("Mnemonics", 'S', b.getMnemonic());
+                assertEquals("Mnemonic index", 0, b.getDisplayedMnemonicIndex());
+            }
             assertEquals("submit", b.getActionCommand());
             URL[] url = new URL[1];
             String r = Installer.decodeButtons(b, url);
@@ -378,14 +403,26 @@ public class InstallerTest extends NbTestCase {
             JButton b = (JButton)buttons[1];
             assertEquals("It is named", "No and do not Bother Again", b.getText());
             assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
-            assertEquals("Mnemonics", 'N', b.getMnemonic());
+            if (Utilities.isMac()) {
+                assertEquals("Mnemonics", 0, b.getMnemonic());
+                assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+            } else {
+                assertEquals("Mnemonics", 'N', b.getMnemonic());
+                assertEquals("Mnemonic index", 0, b.getDisplayedMnemonicIndex());
+            }
             assertEquals("never-again", b.getActionCommand());
         }
         {
             JButton b = (JButton)buttons[2];
             assertEquals("It is named", "View Data", b.getText());
             assertEquals("It url attribute is not set", null, b.getClientProperty("url"));
-            assertEquals("Mnemonics", 'V', b.getMnemonic());
+            if (Utilities.isMac()) {
+                assertEquals("Mnemonics", 0, b.getMnemonic());
+                assertEquals("Mnemonic index", -1, b.getDisplayedMnemonicIndex());
+            } else {
+                assertEquals("Mnemonics", 'D', b.getMnemonic());
+                assertEquals("Mnemonic index", 5, b.getDisplayedMnemonicIndex());
+            }
             assertEquals("view-data", b.getActionCommand());
             
             URL[] url = new URL[1];
