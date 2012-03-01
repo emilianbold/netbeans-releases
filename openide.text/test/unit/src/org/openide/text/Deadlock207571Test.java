@@ -55,8 +55,12 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.text.Position;
+import javax.swing.text.StyledDocument;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
@@ -66,18 +70,16 @@ import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 
 /**
- * Test that UndoRedo methods whcih return string implemented in CloneableEditorSupport.CESUndoRedoManager
- * are not blocked by loading document. If document is not ready these methods just return empty string.
+ * Deadlock of a thread simulating reloading of document and another thread trying to close the file.
  * 
- * Issue #143143
- * 
- * @author Marek Slama
+ * @author Miloslav Metelka
  */
-public class CloneableEditorSupport207571Test extends NbTestCase
+public class Deadlock207571Test extends NbTestCase
 implements CloneableEditorSupport.Env {
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
@@ -95,9 +97,12 @@ implements CloneableEditorSupport.Env {
     private transient final PropertyChangeSupport pcl;
     private transient VetoableChangeListener vetoL;
     
-    private static CloneableEditorSupport207571Test RUNNING;
+    private transient volatile boolean inReloadBeforeSupportLock;
+    private transient volatile boolean closing;
     
-    public CloneableEditorSupport207571Test(String s) {
+    private static Deadlock207571Test RUNNING;
+    
+    public Deadlock207571Test(String s) {
         super(s);
         pcl = new PropertyChangeSupport(this);
     }
@@ -120,25 +125,53 @@ implements CloneableEditorSupport.Env {
         return new Replace ();
     }
     
-    public void testAccessDocumentWhenCheckReload() throws Exception {
-        Document doc = support.openDocument();
-        class CheckReloadRun implements Runnable {
+    public void testCloseDocumentWhenCheckReload() throws Exception {
+        final StyledDocument doc = support.openDocument();
+        // Create position ref so that it gets processed by support.close()
+        PositionRef posRef = support.createPositionRef(0, Position.Bias.Forward);
+        // Reload first does runAtomic() and inside it it syncs on support.getLock()
+        Runnable reloadSimulationRunnable = new Runnable() {
+            private boolean inRunAtomic;
+
             @Override
             public void run() {
-                pcl.firePropertyChange(Env.PROP_TIME, null, null);
-            }
-        }
-
-        synchronized (support.getLock()) { // Access support.getLock() then document
-            CheckReloadRun running = new CheckReloadRun();
-            org.openide.util.RequestProcessor.Task checkReloadTask = RequestProcessor.getDefault().post(running);
-            Thread.sleep(100); // Wait for checkReloadTask to start => should wait on support.getLock() monitor
-            doc.render(new Runnable() {
-                @Override
-                public void run() {
+                if (!inRunAtomic) {
+                    inRunAtomic = true;
+                    NbDocument.runAtomic(doc, this);
+                    return;
                 }
-            }); // Would deadlock if checkReload() is wrapped by runAtomic()
+                inReloadBeforeSupportLock = true;
+                while (!closing) {
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                synchronized (support.getLock()) {
+                    try {
+                        Thread.sleep(5);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                inReloadBeforeSupportLock = true;
+                try {
+                    pcl.firePropertyChange(Env.PROP_TIME, null, null);
+                } finally {
+                    inReloadBeforeSupportLock = false;
+                }
+            }
+        };
+        Task reloadSimulationTask = RequestProcessor.getDefault().post(reloadSimulationRunnable);
+
+        while (!inReloadBeforeSupportLock) {
+            Thread.sleep(1);
         }
+        closing = true;
+        support.close();
+        
+        reloadSimulationTask.waitFinished(1000);        
     }
     
     public void testUndoThrowsException() throws Exception {
@@ -255,7 +288,7 @@ implements CloneableEditorSupport.Env {
         protected EditorKit createEditorKit () {
             // Important to use NbLikeEditorKit since otherwise FilterDocument
             // would be created with improper runAtomic()
-            return new NbLikeEditorKit ();
+            return new MyKit ();
         }
         public CloneableTopComponent.Ref getRef () {
             return allEditors;
@@ -318,4 +351,20 @@ implements CloneableEditorSupport.Env {
 
     } // end of UndoableEdit
     
+    private static final class MyKit extends NbLikeEditorKit {
+
+        @Override
+        public Document createDefaultDocument() {
+            return new Doc() {
+
+                @Override
+                public void insertString(int offs, String str, AttributeSet a) throws BadLocationException {
+                    super.insertString(offs, str, a);
+                }
+                
+            };
+        }
+        
+        
+    }
 }
