@@ -104,7 +104,7 @@ public class CompatibilityUtilsTest extends NbTestCase {
 
         @Override
         public String getDisplayName() {
-            return fileObject.getPath();
+            return fileObject.getName() + " (" + fileObject.getPath() + ")";
         }
     }
 
@@ -185,8 +185,10 @@ public class CompatibilityUtilsTest extends NbTestCase {
                 SearchScopeOptions.create("*", false),
                 new SearchListener() {
                 }, new AtomicBoolean(false))) {
-            if (fo.getName().startsWith("filtered")) {
-                fail(fo.getPath() + " should be filtered");
+            if (fo.getName().startsWith("filtered")
+                    && !n.getDisplayName().startsWith("filtered")) {
+                fail(fo.getPath() + " should be filtered when searching under "
+                        + n.getDisplayName());
             }
         }
     }
