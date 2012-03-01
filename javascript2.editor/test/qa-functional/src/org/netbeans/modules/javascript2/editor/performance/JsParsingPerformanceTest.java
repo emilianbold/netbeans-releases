@@ -107,10 +107,13 @@ public class JsParsingPerformanceTest extends JellyTestCase {
     public void summariseParsingTimeResults() {
         System.err.println("**************************************************************************");
         System.err.println("Parsing - real2k: all=" + parsingReal2k + "ms");
-        System.err.println("Parsing - real500: all=" + parsingReal500 + "ms");
-        System.err.println("Parsing - syntheticDoc10k: all=" + parsingSyntheticDoc10k + "ms");
+        System.err.println("Parsing - real2k: code=" + (parsingReal2k - parsingReal2kComment) + "ms");
         System.err.println("Parsing - real2k: comments=" + parsingReal2kComment + "ms");
-        System.err.println("Parsing - real500: comments=" + parsingReal500Comment + "ms");
+        System.err.println("Parsing - realDoc500: all=" + parsingReal500 + "ms");
+        System.err.println("Parsing - realDoc500: code=" + (parsingReal500 - parsingReal500Comment) + "ms");
+        System.err.println("Parsing - realDoc500: comments=" + parsingReal500Comment + "ms");
+        System.err.println("Parsing - syntheticDoc10k: all=" + parsingSyntheticDoc10k + "ms");
+        System.err.println("Parsing - syntheticDoc10k: code=" + (parsingSyntheticDoc10k - parsingSyntheticDoc10kComment) + "ms");
         System.err.println("Parsing - syntheticDoc10k: comments=" + parsingSyntheticDoc10kComment + "ms");
         System.err.println("**************************************************************************");
     }
