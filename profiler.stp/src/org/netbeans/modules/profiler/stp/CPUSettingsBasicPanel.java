@@ -102,7 +102,9 @@ import org.openide.util.RequestProcessor;
  */
 @NbBundle.Messages({
     "CPUSettingsBasicPanel_DefaultRootsString=<font color=\"{0}\">default profiling roots, </font><a href=\"#\" {1}>customize...</a>",
+    "CPUSettingsBasicPanel_DefaultRootsToolTip=Click the link to define custom profiling roots.",
     "CPUSettingsBasicPanel_CustomRootsString=<font color=\"{0}\">custom profiling roots, </font><a href=\"#\" {1}>edit...</a>",
+    "CPUSettingsBasicPanel_CustomRootsToolTip=Click the link to customize defined profiling roots.",
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
     "CPUSettingsBasicPanel_FilterSetsDialogCaption=Customize Filter Sets",
     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption=Edit Global Filters",
@@ -357,6 +359,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                     performRootMethodsAction();
                 }
             });
+        partOfAppHintLink.setToolTipText(Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip());
 //        partOfAppHintLink.setVisible(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -869,12 +872,14 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             
             String labelText;
             String labelFocusedText;
+            String labelToolTip;
 
             if (rootMethods.length == 0) {
                 labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
                                    + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip();
                 rootMethodsSubmitOK = true;
             } else {
                 labelText = "<nobr>" //NOI18N
@@ -882,10 +887,12 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                             + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_CustomRootsToolTip();
                 rootMethodsSubmitOK = true;
             }
 
             partOfAppHintLink.setText(labelText, labelFocusedText);
+            partOfAppHintLink.setToolTipText(labelToolTip);
         }
 
         if (quickFilter != null && quickFilter.equals(filterCombo.getSelectedItem())
