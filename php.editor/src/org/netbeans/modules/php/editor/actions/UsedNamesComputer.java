@@ -123,9 +123,17 @@ public class UsedNamesComputer {
 
         @Override
         public void scan(ASTNode node) {
-            if (node != null && isInNamespace(node) && !(node instanceof UseStatement)) {
+            if (isNodeForScan(node)) {
                 super.scan(node);
             }
+        }
+
+        private boolean isNodeForScan(final ASTNode node) {
+            return node != null && isInNamespace(node) && !(node instanceof UseStatement);
+        }
+
+        private boolean isInNamespace(ASTNode node) {
+            return offsetRange.containsInclusive(node.getStartOffset()) && offsetRange.containsInclusive(node.getEndOffset());
         }
 
         @Override
@@ -157,10 +165,6 @@ public class UsedNamesComputer {
 
         public Map<String, List<UsedNamespaceName>> getExistingNames() {
             return Collections.unmodifiableMap(existingNames);
-        }
-
-        private boolean isInNamespace(ASTNode node) {
-            return offsetRange.containsInclusive(node.getStartOffset()) && offsetRange.containsInclusive(node.getEndOffset());
         }
 
     }
