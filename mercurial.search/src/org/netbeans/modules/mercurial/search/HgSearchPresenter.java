@@ -39,55 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.api.search.ui;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.search.FindDialogMemory;
-import org.netbeans.modules.search.ui.DefaultFileNameComboBox;
-import org.netbeans.modules.search.ui.DefaultScopeSettingsPanel;
+package org.netbeans.modules.mercurial.search;
 
-/**
- * Factory class containing methods for creating GUI components that can be used
- * by search providers.
- *
- * @author jhavlin
- */
-public class ComponentFactory {
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.spi.search.provider.SearchComposition;
+import org.netbeans.spi.search.provider.SearchProvider;
 
-    private ComponentFactory() {
-        // hiding default constructor
+class HgSearchPresenter extends SearchProvider.Presenter implements PropertyChangeListener {
+
+    private HgSearchForm form;
+
+    HgSearchPresenter(HgSearchProvider provider) {
+        super(provider, false);
     }
 
-    /**
-     * Creates combo box for specifying file name pattern.
-     */
-    public static @NonNull FileNameComboBox createFileNameComboBox() {
-        return new DefaultFileNameComboBox();
+    @Override public HgSearchForm getForm() {
+        if (form == null) {
+            form = new HgSearchForm();
+            form.addPropertyChangeListener(this);
+        }
+        return form;
     }
 
-    /**
-     * Creates combo box for specifying search scope.
-     */
-    public static @NonNull ScopeComboBox createScopeComboBox() {
-        return new org.netbeans.modules.search.ScopeComboBox(
-                FindDialogMemory.getDefault().getScopeTypeId());
+    @Override public boolean isUsable() {
+        return getForm().isUsable();
     }
 
-    /**
-     * Creates panel for specifying search scope options.
-     *
-     * @param searchAndReplace True if options for search-and-replace mode
-     * should be shown.
-     * @param fileNameComboBox File-name combo box that will be bound to this
-     * settings panel.
-     * @return Panel with controls for setting search options (search in
-     * archives, search in generated sources, use ignore list, treat file name
-     * pattern as regular expression matching file path)
-     */
-    public static @NonNull ScopeSettingsPanel createScopeSettingsPanel(
-            boolean searchAndReplace,
-            @NonNull FileNameComboBox fileNameComboBox) {
-         return new DefaultScopeSettingsPanel(fileNameComboBox,
-                searchAndReplace);
+    @Override public SearchComposition<?> composeSearch() {
+        return getForm().composeSearch(this);
     }
+
+    @Override public void propertyChange(PropertyChangeEvent evt) {
+        if (HgSearchForm.PROP_USABLE.equals(evt.getPropertyName())) {
+            fireChange();
+        }
+    }
+
 }

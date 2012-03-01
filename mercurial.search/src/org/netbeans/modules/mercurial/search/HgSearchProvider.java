@@ -39,55 +39,40 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.api.search.ui;
 
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.search.FindDialogMemory;
-import org.netbeans.modules.search.ui.DefaultFileNameComboBox;
-import org.netbeans.modules.search.ui.DefaultScopeSettingsPanel;
+package org.netbeans.modules.mercurial.search;
 
-/**
- * Factory class containing methods for creating GUI components that can be used
- * by search providers.
- *
- * @author jhavlin
- */
-public class ComponentFactory {
+import java.io.File;
+import org.netbeans.spi.search.provider.SearchProvider;
+import org.openide.util.lookup.ServiceProvider;
 
-    private ComponentFactory() {
-        // hiding default constructor
+@ServiceProvider(service=SearchProvider.class)
+public class HgSearchProvider extends SearchProvider {
+
+    @Override public Presenter createPresenter(boolean replaceMode) {
+        assert !replaceMode;
+        return new HgSearchPresenter(this);
     }
 
-    /**
-     * Creates combo box for specifying file name pattern.
-     */
-    public static @NonNull FileNameComboBox createFileNameComboBox() {
-        return new DefaultFileNameComboBox();
+    @Override public boolean isReplaceSupported() {
+        return false;
     }
 
-    /**
-     * Creates combo box for specifying search scope.
-     */
-    public static @NonNull ScopeComboBox createScopeComboBox() {
-        return new org.netbeans.modules.search.ScopeComboBox(
-                FindDialogMemory.getDefault().getScopeTypeId());
+    @Override public boolean isEnabled() {
+        return inPath("sh") && inPath("hg") && inPath("xargs") && inPath("egrep");
     }
 
-    /**
-     * Creates panel for specifying search scope options.
-     *
-     * @param searchAndReplace True if options for search-and-replace mode
-     * should be shown.
-     * @param fileNameComboBox File-name combo box that will be bound to this
-     * settings panel.
-     * @return Panel with controls for setting search options (search in
-     * archives, search in generated sources, use ignore list, treat file name
-     * pattern as regular expression matching file path)
-     */
-    public static @NonNull ScopeSettingsPanel createScopeSettingsPanel(
-            boolean searchAndReplace,
-            @NonNull FileNameComboBox fileNameComboBox) {
-         return new DefaultScopeSettingsPanel(fileNameComboBox,
-                searchAndReplace);
+    private static boolean inPath(String cmd) {
+        String path = System.getenv("PATH");
+        if (path == null) {
+            return false;
+        }
+        for (String dir : path.split(File.pathSeparator)) {
+            if (new File(dir, cmd).isFile() || new File(dir, cmd + ".exe").isFile()) {
+                return true;
+            }
+        }
+        return false;
     }
+
 }
