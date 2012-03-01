@@ -125,7 +125,7 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo>[] rslt = new Set[]{Collections.EMPTY_SET};
         if (handle != null) {
             try {
-                getSource(true).runUserActionTask(new Task<CompilationController>() {
+                getSource(true).runWhenScanFinished(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
                         rslt[0] = getSubclasses(cc);
@@ -276,7 +276,7 @@ public class JavacClassInfo extends SourceClassInfo {
         return rslt[0];
     }
     
-    final Set<SourceMethodInfo> getMethods(final CompilationController cc, final boolean all) {
+    private Set<SourceMethodInfo> getMethods(final CompilationController cc, final boolean all) {
         final Set<SourceMethodInfo> mis = new HashSet<SourceMethodInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
@@ -297,7 +297,7 @@ public class JavacClassInfo extends SourceClassInfo {
         return mis;
     }
     
-    final Set<SourceClassInfo> getSubclasses(final CompilationController cc) {
+    private Set<SourceClassInfo> getSubclasses(final CompilationController cc) {
         final Set<SourceClassInfo> subs = new HashSet<SourceClassInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
@@ -306,23 +306,6 @@ public class JavacClassInfo extends SourceClassInfo {
             }
         }
         return subs;
-    }
-    
-    final Set<SourceClassInfo> getSuperclasses(final CompilationController cc) {
-        final Set<SourceClassInfo> sups = new HashSet<SourceClassInfo>();
-        TypeElement te = handle.resolve(cc);
-        if (te != null) {
-            collectSuperclass(cc, te, sups);
-        }
-        return sups;
-    }
-    
-    private void collectSuperclass(final CompilationController cc, final TypeElement te, Set<SourceClassInfo> superClasses) {
-        TypeElement sType = (TypeElement)cc.getTypes().asElement(te.getSuperclass());
-        if (sType != null) {//
-            superClasses.add(new JavacClassInfo(ElementHandle.create(sType), cc));
-            collectSuperclass(cc, sType, superClasses);
-        }
     }
     
     private static String getSimpleName(String qualName) {
