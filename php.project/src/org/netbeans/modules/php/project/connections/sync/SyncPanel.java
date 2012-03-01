@@ -302,7 +302,7 @@ public final class SyncPanel extends JPanel {
     }
 
     void setWarning(String warning) {
-        notificationLineSupport.setErrorMessage(warning);
+        notificationLineSupport.setWarningMessage(warning);
         descriptor.setValid(true);
     }
 
