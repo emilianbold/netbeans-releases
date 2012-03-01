@@ -52,7 +52,7 @@ import org.netbeans.modules.search.ui.DefaultScopeSettingsPanel;
  *
  * @author jhavlin
  */
-public abstract class ComponentFactory {
+public class ComponentFactory {
 
     private ComponentFactory() {
         // hiding default constructor
