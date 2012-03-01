@@ -445,9 +445,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
      * @throws IOException in case of problems
      */
     static void createManifest(final FileObject dir, final boolean skeepIfExists) throws IOException {
-        if (skeepIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
-            return;
-        } else {
+        if (!skeepIfExists || dir.getFileObject(MANIFEST_FILE) == null) {
             FileObject manifest = dir.createData(MANIFEST_FILE);
             FileLock lock = manifest.lock();
             try {

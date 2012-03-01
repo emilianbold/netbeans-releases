@@ -707,7 +707,7 @@ public class JFXProjectGenerator {
             }
         }
         if (type == WizardType.FXML) {
-            FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
+            FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/NewProjectFXML.fxml"); // NOI18N
             if (xmlTemplate == null) {
                 return; // Don't know the template
             }

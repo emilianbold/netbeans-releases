@@ -144,6 +144,11 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
+            <file name="NewProjectFXML.fxml" url="templates/NewProjectFXML.template">
+                <attr name="position" intvalue="800"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+            
         </folder>
         
     </folder>  
