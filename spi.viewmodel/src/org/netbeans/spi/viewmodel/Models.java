@@ -659,7 +659,9 @@ public final class Models {
             }
             //System.err.println("  k = "+k);
             if (k == 0) {
-                performer.perform(new Object[]{});
+                if (multiselectionType != MULTISELECTION_TYPE_EXACTLY_ONE) {
+                    performer.perform(new Object[]{});
+                }
             } else {
                 //System.err.println("  h = "+h);
                 Iterator<Action> it = h.keySet ().iterator ();

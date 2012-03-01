@@ -66,7 +66,7 @@ import org.w3c.dom.Text;
  */
 public final class PUCompletionManager {
     
-    private static Map<String, Completor> completors = new HashMap<String, Completor>();
+    private static Map<String, PUCompletor> completors = new HashMap<String, PUCompletor>();
 
     private PUCompletionManager() {
         setupCompletors();
@@ -76,25 +76,25 @@ public final class PUCompletionManager {
 
 
         // Items for property names 
-        Completor.PersistencePropertyNameCompletor propertyNamesCompletor = new Completor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
+        PUCompletor.PersistencePropertyNameCompletor propertyNamesCompletor = new PUCompletor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.NAME_ATTRIB, propertyNamesCompletor);
-        Completor.PersistencePropertyValueCompletor propertyValuesCompletor = new Completor.PersistencePropertyValueCompletor(PersistenceCfgProperties.getAllKeyAndValues());
+        PUCompletor.PersistencePropertyValueCompletor propertyValuesCompletor = new PUCompletor.PersistencePropertyValueCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.VALUE_ATTRIB, propertyValuesCompletor);
 
         // Items for mapping xml files
-        Completor.PersistenceMappingFileCompletor mappingFilesCompletor = new Completor.PersistenceMappingFileCompletor();
+        PUCompletor.PersistenceMappingFileCompletor mappingFilesCompletor = new PUCompletor.PersistenceMappingFileCompletor();
         registerCompletor(PersistenceCfgXmlConstants.MAPPING_FILE, null, mappingFilesCompletor);
         
-        Completor.EntityClassCompletor javaClassCompletor = new Completor.EntityClassCompletor();
+        PUCompletor.EntityClassCompletor javaClassCompletor = new PUCompletor.EntityClassCompletor();
         registerCompletor(PersistenceCfgXmlConstants.CLASS, null, javaClassCompletor);
         
-        Completor.ProviderCompletor providerCompletor = new Completor.ProviderCompletor();
+        PUCompletor.ProviderCompletor providerCompletor = new PUCompletor.ProviderCompletor();
         registerCompletor(PersistenceCfgXmlConstants.PROVIDER, null, providerCompletor);
         
-        Completor.ExUnlistedClassesCompletor exClassesCompletor = new Completor.ExUnlistedClassesCompletor();
+        PUCompletor.ExUnlistedClassesCompletor exClassesCompletor = new PUCompletor.ExUnlistedClassesCompletor();
         registerCompletor(PersistenceCfgXmlConstants.EXCLUDE_UNLISTED_CLASSES, null, exClassesCompletor);
 
-        Completor.JtaDatasourceCompletor jtaDatasourceCompletor = new Completor.JtaDatasourceCompletor();
+        PUCompletor.JtaDatasourceCompletor jtaDatasourceCompletor = new PUCompletor.JtaDatasourceCompletor();
         registerCompletor(PersistenceCfgXmlConstants.JTA_DATA_SOURCE, null, jtaDatasourceCompletor);
     }
     
@@ -114,7 +114,7 @@ public final class PUCompletionManager {
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
 
-        Completor completor = locateCompletor(tagName, attribName);
+        PUCompletor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
             valueItems.addAll(completor.doCompletion(context));
              if (completor.getAnchorOffset() != -1) {
@@ -133,7 +133,7 @@ public final class PUCompletionManager {
         Tag propTag = null;
 
         String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
-        Completor completor = locateCompletor(tagName, null);
+        PUCompletor completor = locateCompletor(tagName, null);
         if (completor != null) {
             valueItems.addAll(completor.doCompletion(context));
              if (completor.getAnchorOffset() != -1) {
@@ -190,7 +190,7 @@ public final class PUCompletionManager {
     
 
     private void registerCompletor(String tagName, String attribName,
-            Completor completor) {
+            PUCompletor completor) {
         completors.put(createRegisteredName(tagName, attribName), completor);
     }
 
@@ -212,7 +212,7 @@ public final class PUCompletionManager {
         return builder.toString();
     }
 
-    private Completor locateCompletor(String nodeName, String attributeName) {
+    private PUCompletor locateCompletor(String nodeName, String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
         if (completors.containsKey(key)) {
             return completors.get(key);

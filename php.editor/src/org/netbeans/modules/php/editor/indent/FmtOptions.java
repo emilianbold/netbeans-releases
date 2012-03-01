@@ -228,6 +228,8 @@ public class FmtOptions {
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
 
     public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
+    public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
 
     public static CodeStyleProducer codeStyleProducer;
 
@@ -399,7 +401,9 @@ public class FmtOptions {
             { wrapBlockBraces, TRUE},
             { wrapStatementsOnTheLine, TRUE},
 
-            { preferFullyQualifiedNames, FALSE}
+            { preferFullyQualifiedNames, FALSE},
+            { preferMultipleUseStatementsCombined, FALSE},
+            { startUseWithNamespaceSeparator, FALSE}
         };
 
         defaults = new HashMap<String,String>();

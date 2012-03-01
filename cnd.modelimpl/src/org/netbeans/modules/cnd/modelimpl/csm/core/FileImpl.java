@@ -91,6 +91,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
@@ -209,6 +210,10 @@ public final class FileImpl implements CsmFile,
      */
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
     private int lastParseTime;
+
+    FileContentSignature getSignature() {
+        return FileContentSignature.create(this);
+    }
 
     public static enum State {
 
