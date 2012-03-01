@@ -89,6 +89,7 @@ public final class Git {
     private RootsToFile rootsToFile;
     private GitVCS gitVCS;
     private Result<? extends VCSHyperlinkProvider> hpResult;
+    private HistoryProvider historyProvider;
     
     private Git () {}
 
@@ -357,5 +358,12 @@ public final class Git {
 
     public Collection<File> getCreatedFolders () {
         return getVCSInterceptor().getCreatedFolders();
+    }
+
+    public HistoryProvider getHistoryProvider () {
+        if (historyProvider == null) {
+            historyProvider = new HistoryProvider();
+        }
+        return historyProvider;
     }
 }
