@@ -809,6 +809,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
      */
     @NbBundle.Messages({
         "RemoteClient.error.notFile=Given remote file is not a file.",
+        "# {0} - file name",
         "RemoteClient.error.cannotOpenTmpLocalFile=Cannot open a local temporary file {0}."
     })
     public boolean downloadTemporary(TmpLocalFile tmpFile, TransferFile file) throws RemoteException {
