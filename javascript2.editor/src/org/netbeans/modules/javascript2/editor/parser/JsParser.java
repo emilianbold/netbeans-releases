@@ -77,7 +77,7 @@ public class JsParser extends Parser {
             lastResult = parseSource(snapshot, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
-            LOGGER.log (Level.FINE, "Exception during parsing: {0}", ex);
+            LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
             // TODO create empty result
             lastResult = new JsParserResult(snapshot, null, Collections.<JsComment>emptyList());
         }
@@ -86,8 +86,14 @@ public class JsParser extends Parser {
     }
 
     private JsParserResult parseSource(Snapshot snapshot, final Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
-        long startTime = System.currentTimeMillis();
-        String scriptName = snapshot.getSource().getFileObject().getNameExt();
+        long startTime = System.nanoTime();
+        String scriptName;
+        if (snapshot.getSource().getFileObject() != null) {
+            scriptName = snapshot.getSource().getFileObject().getNameExt();
+        } else {
+            scriptName = "javascript.js"; // NOI18N
+        }
+
         String text = snapshot.getText().toString();
 
         com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(scriptName, text);
@@ -120,8 +126,10 @@ public class JsParser extends Parser {
         }
 
         JsParserResult result = new JsParserResult(snapshot, node, comments);
-        long endTime = System.currentTimeMillis();
-    //        LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, scriptname}); //NOI18N
+        if (LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "Parsing took: {0} ms; source: {1}",
+                    new Object[]{(System.nanoTime() - startTime) / 1000000, scriptName});
+        }
         return result;
     }
 
