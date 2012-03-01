@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -98,8 +99,11 @@ public final class DeepReparsingUtils {
             LOG.log(Level.INFO, "OPTIMISTIC partialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
             fileImpl.markReparseNeeded(false);
+            FileContentSignature prevSig = fileImpl.getSignature();
             ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                    ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                    ParserQueue.Position.IMMEDIATE, false, ParserQueue.FileAction.NOTHING);
+            FileContentSignature newSig = fileImpl.getSignature();
+            LOG.log(Level.INFO, "check signatures for {0} : {1}", new Object[]{fileImpl.getAbsolutePath(), newSig.equals(prevSig)});
             return true;
         }
         return false;
