@@ -46,7 +46,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.lang.model.element.ElementKind;
-import javax.swing.text.*;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -96,37 +97,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;//will not appear automatically
-    }
-
-    static int getRowFirstNonWhite(StyledDocument doc, int offset)
-            throws BadLocationException {
-        Element lineElement = doc.getParagraphElement(offset);
-        int start = lineElement.getStartOffset();
-        while (start + 1 < lineElement.getEndOffset()) {
-            try {
-                if (doc.getText(start, 1).charAt(0) != ' ') {
-                    break;
-                }
-            } catch (BadLocationException ex) {
-                throw (BadLocationException) new BadLocationException(
-                        "calling getText(" + start + ", " + (start + 1)
-                        + ") on doc of length: " + doc.getLength(), start).initCause(ex);
-            }
-            start++;
-        }
-        return start;
-    }
-
-    static int indexOfWhite(char[] line) {
-        int i = line.length;
-        while (--i > -1) {
-            final char c = line[i];
-            if (Character.isWhitespace(c)) {
-                return i;
-            }
-        }
-        org.netbeans.editor.ext.ExtSyntaxSupport f = new org.netbeans.editor.ext.ExtSyntaxSupport(null);
-        return -1;
     }
 
     class JPACodeCompletionQuery extends AsyncCompletionQuery {
@@ -358,22 +328,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         TreePath path = controller.getTreeUtilities().pathFor(offset);
         return path;
     }
-    private static boolean isJavaIdentifierPart(String text) {
-        for (int i = 0; i < text.length(); i++) {
-            if (!(Character.isJavaIdentifierPart(text.charAt(i))))
-                return false;
-        }
-        return true;
-    }
-    private static boolean isCamelCasePrefix(String prefix) {
-        if (prefix == null || prefix.length() < 2 || prefix.charAt(0) == '"')
-            return false;
-        for (int i = 1; i < prefix.length(); i++) {
-            if (Character.isUpperCase(prefix.charAt(i)))
-                    return true;                
-        }
-        return false;
-    }
+
     public final class Context {
 
         /** Text component */
