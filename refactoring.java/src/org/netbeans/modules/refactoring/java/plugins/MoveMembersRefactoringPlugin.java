@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
     "ERR_MoveToSubClass=Cannot move to a subclass, maybe you need the Push Down Refactoring?",
     "ERR_MoveGenericField=Cannot move a generic field",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
+    "# {0} - File displayname : line number",
     "WRN_NoAccessor=No accessor found to invoke the method from: {0}"})
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
