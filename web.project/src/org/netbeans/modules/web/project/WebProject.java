@@ -1777,6 +1777,9 @@ public final class WebProject implements Project {
         private FileObject getReloadFileObject( Artifact artifact ) {
             File file = artifact.getFile();
             FileObject fileObject = FileUtil.toFileObject( FileUtil.normalizeFile(file));
+            if (fileObject == null) {
+                return null;
+            }
             if ( fileObject.getExt().equals("class")){               //  NOI18N
                 return getJavaSourceFileObject(fileObject);
             }
