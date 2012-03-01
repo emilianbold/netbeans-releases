@@ -40,8 +40,9 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.persistence.editor.completion.db;
+package org.netbeans.modules.j2ee.persistence.editor.completion;
 
+import org.netbeans.modules.j2ee.persistence.editor.completion.db.*;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -96,9 +97,9 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Marek Fukala, Sergey Petrov
+ * @author Sergey Petrov
  */
-public class DBCompletionContextResolver implements CompletionContextResolver {
+public class ETCompletionContextResolver implements CompletionContextResolver {
     
     private DatabaseConnection dbconn;
     private DBMetaDataProvider provider;
@@ -125,86 +126,10 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         List<JPACompletionItem> result = new ResultItemsFilterList(ctx);
         
         //parse the annotation
-        CCParser.CC parsedNN = ctx.getParsedAnnotation();
-        if (parsedNN == null) return result;
+        String methodName = ctx.getMethod();
+        if (methodName == null || !methodName.equals("createNamedQuery")) return result;
         
-        CCParser.NNAttr nnattr = parsedNN.getAttributeForOffset(ctx.getCompletionOffset());
-        if(nnattr == null) return result;
         
-        String annotationName = parsedNN.getName();
-        if(annotationName == null) return result;
-        
-        try {
-            //get nn index from the nn list
-            int index = getAnnotationIndex(annotationName);
-            if(index == 6 || index == 7) {
-                //we do not need database connection for PU completion
-                completePersistenceUnitContext(ctx, parsedNN, nnattr, result);
-            } else if(index == 9) {
-                //do not need to connect for jpql
-                completeJPQLContext(ctx, parsedNN, nnattr, result);
-            } else if(index != -1) {
-                //the completion has been invoked in supported annotation and there is no db connection initialized yet
-                //try to init the database connection
-                dbconn = findDatabaseConnection(ctx);
-                if(dbconn != null) {
-                    // DatabaseConnection.getJDBCConnection() unfortunately acquires Children.MUTEX read access;
-                    // it should not be called in a MDR transaction, as this is deadlock-prone
-                    //assert Thread.currentThread() != JMManager.getTransactionMutex().getThread();
-                    
-                    Connection conn = dbconn.getJDBCConnection();
-                    if(conn != null) {
-                        this.provider = getDBMetadataProvider(dbconn, conn);
-                    } else {
-                        //Database connection not established ->
-                        //put 'connect' CC item
-                        result = new ArrayList();
-                        result.add(new JPACompletionItem.NoConnectionElementItem(dbconn));
-                        return result;
-                    }
-                } else {
-                    //no database connection -> give up
-                    ErrorManager.getDefault().log("No Database Connection.");
-                    return result;
-                }
-            }
-            
-            //test if the initialization of DB and DBMetadataProvider has succeeded
-            if(this.provider != null) {
-                //and retrieve the CC items under MDR transs
-                //JMIUtils utils = JMIUtils.get(ctx.getBaseDocument());
-                //utils.beginTrans(false);
-                //TODO, should it be done in source modification task?
-                try {
-                    //((JMManager) JMManager.getManager()).setSafeTrans(true);
-                    switch(index) {
-                        case 0:
-                            completeTable(parsedNN, nnattr, result, false);//Table
-                            break;
-                        case 5: //JoinTable
-                        case 1:
-                            completeTable(parsedNN, nnattr, result, true);//SecondaryTable
-                            break;
-                        case 2:
-                            completeColumn(ctx, parsedNN, nnattr, result);//Column
-                            break;
-                        case 3:
-                            completePrimaryKeyJoinColumn(ctx, parsedNN, nnattr, result);
-                            break;
-                        case 4:
-                            completeJoinColumn(ctx, parsedNN, nnattr, result); //JoinColumn
-                            break;
-                        case 8:
-                            completeManyToMany(ctx, parsedNN, nnattr, result);
-                    }
-                } finally {
-                    //utils.endTrans(false);
-                }
-            }
-            
-        } catch(SQLException ex){
-            
-        }
         
         return result;
     }
@@ -792,5 +717,5 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         }
     }
     
-    private static final boolean DEBUG = Boolean.getBoolean("debug." + DBCompletionContextResolver.class.getName());
+    private static final boolean DEBUG = Boolean.getBoolean("debug." + ETCompletionContextResolver.class.getName());
 }

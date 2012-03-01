@@ -81,10 +81,10 @@ import org.w3c.dom.Node;
  *
  * @author Dongmei Cao
  */
-public abstract class Completor {
+public abstract class PUCompletor {
 
 
-    static class JtaDatasourceCompletor extends Completor {
+    static class JtaDatasourceCompletor extends PUCompletor {
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
@@ -108,7 +108,7 @@ public abstract class Completor {
         }
     }
 
-    static class ProviderCompletor extends Completor {
+    static class ProviderCompletor extends PUCompletor {
 
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
@@ -137,7 +137,7 @@ public abstract class Completor {
     }
     
 
-    static class ExUnlistedClassesCompletor  extends Completor {
+    static class ExUnlistedClassesCompletor  extends PUCompletor {
         
         @Override
         public List<JPACompletionItem> doCompletion(CompletionContext context) {
@@ -177,7 +177,7 @@ public abstract class Completor {
      * items
      *
      */
-    public static class AttributeValueCompletor extends Completor {
+    public static class AttributeValueCompletor extends PUCompletor {
 
         private String[] itemTexts;
 
@@ -207,7 +207,7 @@ public abstract class Completor {
     /**
      * A completor for completing class tag
      */
-    public static class EntityClassCompletor extends Completor {
+    public static class EntityClassCompletor extends PUCompletor {
 
         @Override
         public List<JPACompletionItem> doCompletion(final CompletionContext context) {
@@ -270,7 +270,7 @@ public abstract class Completor {
     /**
      * A completor for completing Java properties/fields attributes
      */
-    public static class PropertyCompletor extends Completor {
+    public static class PropertyCompletor extends PUCompletor {
 
         public PropertyCompletor() {
         }
@@ -328,7 +328,7 @@ public abstract class Completor {
      * persistence.xml file
      *
      */
-    public static class PersistencePropertyNameCompletor extends Completor {
+    public static class PersistencePropertyNameCompletor extends PUCompletor {
 
         private Map<Provider, Map<String, String[]>> allKeyAndValues;
 
@@ -372,7 +372,7 @@ public abstract class Completor {
      * persistence.xml file
      *
      */
-    public static class PersistencePropertyValueCompletor extends Completor {
+    public static class PersistencePropertyValueCompletor extends PUCompletor {
 
         private Map<Provider, Map<String, String[]>> allKeyAndValues;
 
@@ -427,7 +427,7 @@ public abstract class Completor {
     /**
      * A completor for completing orm mapping files
      */
-    public static class PersistenceMappingFileCompletor extends Completor {
+    public static class PersistenceMappingFileCompletor extends PUCompletor {
 
         public PersistenceMappingFileCompletor() {
         }

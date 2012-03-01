@@ -76,7 +76,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class RemotePlainFile extends RemoteFileObjectBase {
 
-    private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4);
+    private static final int LOCK_TIMEOUT = Integer.getInteger("remote.rwlock.timeout", 4); // NOI18N
     
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
