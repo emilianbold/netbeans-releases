@@ -140,7 +140,6 @@ public final class SyncItem {
         this.remoteTransferFile = remoteTransferFile;
         this.localTransferFile = localTransferFile;
         defaultOperation = calculateDefaultOperation(lastTimestamp);
-        validate();
     }
 
     public String getName() {
