@@ -230,8 +230,9 @@ public class JsFormatter implements Formatter {
         if (next.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || next.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || next.getKind() == FormatToken.Kind.AFTER_CASE
-                // do not suppose continuation when indentation is increased
-                || next.getKind() == FormatToken.Kind.INDENTATION_INC) {
+                // do not suppose continuation when indentation is changed
+                || next.getKind() == FormatToken.Kind.INDENTATION_INC
+                || next.getKind() == FormatToken.Kind.INDENTATION_DEC) {
             return false;
         }
 
@@ -254,8 +255,9 @@ public class JsFormatter implements Formatter {
                     || kind == FormatToken.Kind.AFTER_STATEMENT
                     || kind == FormatToken.Kind.AFTER_PROPERTY
                     || kind == FormatToken.Kind.AFTER_CASE
-                    // do not suppose continuation when indentation is increased
-                    || kind == FormatToken.Kind.INDENTATION_INC) {
+                    // do not suppose continuation when indentation is changed
+                    || kind == FormatToken.Kind.INDENTATION_INC
+                    || kind == FormatToken.Kind.INDENTATION_DEC) {
                 result = previous;
                 break;
             }
@@ -265,8 +267,9 @@ public class JsFormatter implements Formatter {
                 || result.getKind() == FormatToken.Kind.AFTER_STATEMENT
                 || result.getKind() == FormatToken.Kind.AFTER_PROPERTY
                 || result.getKind() == FormatToken.Kind.AFTER_CASE
-                // do not suppose continuation when indentation is increased
-                || result.getKind() == FormatToken.Kind.INDENTATION_INC) {
+                // do not suppose continuation when indentation is changed
+                || result.getKind() == FormatToken.Kind.INDENTATION_INC
+                || result.getKind() == FormatToken.Kind.INDENTATION_DEC) {
             return false;
         }
 
