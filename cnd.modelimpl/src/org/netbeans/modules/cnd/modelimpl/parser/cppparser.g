@@ -3002,7 +3002,7 @@ template_parameter
 protected template_template_parameter
     :
     template_head
-	LITERAL_class (ELLIPSIS)? IDENT (ASSIGNEQUAL assigned_type_name)?
+	LITERAL_class (ELLIPSIS)? (IDENT)? (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;
