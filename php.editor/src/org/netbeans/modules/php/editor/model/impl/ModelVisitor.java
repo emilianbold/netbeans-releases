@@ -503,8 +503,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ClassName node) {
-        Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        if (!(node.getName() instanceof Variable)) {
+            Scope scope = modelBuilder.getCurrentScope();
+            occurencesBuilder.prepare(node, scope);
+        }
     }
 
     @Override
