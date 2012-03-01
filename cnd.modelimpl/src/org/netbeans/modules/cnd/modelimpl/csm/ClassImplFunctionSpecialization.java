@@ -93,7 +93,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         } else {
             impl.init(scope, ast, file, fileContent, register);
         }
-        nameHolder.addReference(file, impl);
+        nameHolder.addReference(fileContent, impl);
         return impl;
     }
 

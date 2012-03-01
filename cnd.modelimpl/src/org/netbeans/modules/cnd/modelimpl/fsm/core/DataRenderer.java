@@ -45,6 +45,8 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.MutableDeclarationsContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParameterImpl;
@@ -61,32 +63,34 @@ import org.netbeans.modules.cnd.modelimpl.parser.FortranParserEx;
 public class DataRenderer {
 
     private final FileImpl file;
+    private final FileContent fileContent;
 
-    public DataRenderer(FileImpl fileImpl) {
-        this.file = fileImpl;
+    public DataRenderer(FileImpl.ParseDescriptor params) {
+        this.fileContent = params.getFileContent();
+        this.file = fileContent.getFile();
     }
 
     public void render(List<Object> objs) {
-        render(objs, (NamespaceImpl) file.getProject().getGlobalNamespace(), file);
+        render(objs, (NamespaceImpl) file.getProject().getGlobalNamespace(), fileContent);
     }
 
-    public void render(List<Object> objs, NamespaceImpl currentNamespace, FileImpl container) {
+    public void render(List<Object> objs, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (objs == null) {
             return;
         }
         for (Object object : objs) {
-            CsmOffsetableDeclaration decl = render(object, currentNamespace, file);
+            CsmOffsetableDeclaration decl = render(object, currentNamespace, container);
             container.addDeclaration(decl);
             currentNamespace.addDeclaration(decl);
         }
     }
 
-    public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, FileImpl container) {
+    public CsmOffsetableDeclaration render(Object object, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
         if (object instanceof FortranParserEx.ProgramData) {
             FortranParserEx.ProgramData data = (FortranParserEx.ProgramData) object;
             final ProgramImpl<Object> program = ProgramImpl.create(data.name, file, data.startOffset, data.endOffset, null, currentNamespace);
             for (Object obj : data.members) {
-                CsmOffsetableDeclaration decl = render(obj, currentNamespace, file);
+                CsmOffsetableDeclaration decl = render(obj, currentNamespace, container);
                 program.addDeclaration(decl);
             }
             return program;
@@ -100,7 +104,7 @@ public class DataRenderer {
             FortranParserEx.ModuleData data = (FortranParserEx.ModuleData) object;
             final ModuleImpl module = ModuleImpl.create(file, data.startOffset, data.endOffset, data.name);
             for (Object obj : data.members) {
-                CsmOffsetableDeclaration decl = render(obj, currentNamespace, file);
+                CsmOffsetableDeclaration decl = render(obj, currentNamespace, container);
                 module.addDeclaration(decl);
             }
             return module;

@@ -95,7 +95,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
     private static final FileComponentReferences EMPTY = new FileComponentReferences() {
 
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -103,15 +103,17 @@ public class FileComponentReferences extends FileComponent implements Persistent
         return EMPTY;
     }
 
-    FileComponentReferences(FileComponentReferences other) {
+    FileComponentReferences(FileComponentReferences other, boolean empty) {
         super(other);
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.references);
-        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(other.type2classifier);
+        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.references);
+        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.type2classifier);
         this.fileUID = other.fileUID;
     }
     
-    public FileComponentReferences(FileImpl file, boolean persistent) {
-        super(new FileReferencesKey(file), persistent);
+    public FileComponentReferences(FileImpl file) {
+        super(new FileReferencesKey(file));
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         this.fileUID = file.getUID();
@@ -139,7 +141,7 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     // only for EMPTY static field
     private FileComponentReferences() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
         references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>();
         fileUID = null;

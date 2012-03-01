@@ -57,26 +57,21 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  */
 public abstract class FileComponent implements Persistent, SelfPersistent {
     private final Key key;
-    private boolean persistent;
     /**
      * 
      * @param key if key is not null then it's persistent instance, otherwise in-memory
      */
-    protected FileComponent(Key key, boolean persistent) {
+    protected FileComponent(Key key) {
         this.key = key;
-        assert key != null || !persistent : "persistent instanc must have non null key";
-        this.persistent = persistent;
     }
 
     protected FileComponent(FileComponent other) {
         this.key = other.key;
         assert key != null;
-        this.persistent = false;
     }
     
     public FileComponent(RepositoryDataInput in) throws IOException {
         key = KeyFactory.getDefaultFactory().readKey(in);
-        this.persistent = true;
         assert key != null;
     }
 
@@ -85,17 +80,14 @@ public abstract class FileComponent implements Persistent, SelfPersistent {
         return key;
     }
 
-    public void put() {
-        if (persistent) {
-            assert key != null;
-            RepositoryUtils.put(key, this);
-        }
+    void put() {
+        assert key != null;
+        RepositoryUtils.put(key, this);
     }
 
     @Override
     public void write(RepositoryDataOutput out) throws IOException {
         assert key != null;
-        assert persistent;
         KeyFactory.getDefaultFactory().writeKey(key, out);
     }
 }

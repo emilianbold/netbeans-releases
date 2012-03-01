@@ -74,7 +74,7 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     private static final FileComponentInstantiations EMPTY = new FileComponentInstantiations() {
 
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -82,13 +82,15 @@ public class FileComponentInstantiations extends FileComponent implements Persis
         return EMPTY;
     }
 
-    FileComponentInstantiations(FileComponentInstantiations other) {
+    FileComponentInstantiations(FileComponentInstantiations other, boolean empty) {
         super(other);
-        instantiations.addAll(other.instantiations);
+        if (!empty) {
+            instantiations.addAll(other.instantiations);
+        }
     }
     
-    public FileComponentInstantiations(FileImpl file, boolean persistent) {
-        super(new FileInstantiationsKey(file), persistent);
+    public FileComponentInstantiations(FileImpl file) {
+        super(new FileInstantiationsKey(file));
     }
 
     public FileComponentInstantiations(RepositoryDataInput input) throws IOException {
@@ -99,10 +101,10 @@ public class FileComponentInstantiations extends FileComponent implements Persis
 
     // only for EMPTY static field
     private FileComponentInstantiations() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
     }
 
-    public void clean() {
+    void clean() {
         _clearInstantiations();
         put();
     }

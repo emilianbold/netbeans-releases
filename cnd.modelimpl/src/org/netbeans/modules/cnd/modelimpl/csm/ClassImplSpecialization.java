@@ -117,7 +117,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         }
         impl.init(scope, ast, file, fileContent, register);
         if (nameHolder != null) {
-            nameHolder.addReference(file, impl);
+            nameHolder.addReference(fileContent, impl);
         }
         return impl;
     }

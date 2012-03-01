@@ -82,7 +82,7 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         }
         
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -90,14 +90,16 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
         return EMPTY;
     }
 
-    FileComponentIncludes(FileComponentIncludes other) {
+    FileComponentIncludes(FileComponentIncludes other, boolean empty) {
         super(other);
-        includes.addAll(other.includes);
-        brokenIncludes.addAll(other.brokenIncludes);
+        if (!empty) {
+            includes.addAll(other.includes);
+            brokenIncludes.addAll(other.brokenIncludes);
+        }
     }
     
-    public FileComponentIncludes(FileImpl file, boolean persistent) {
-        super(new FileIncludesKey(file), persistent);
+    public FileComponentIncludes(FileImpl file) {
+        super(new FileIncludesKey(file));
     }
 
     public FileComponentIncludes(RepositoryDataInput input) throws IOException {
@@ -109,10 +111,10 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
 
     // only for EMPTY static field
     private FileComponentIncludes() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
     }
 
-    public void clean() {
+    void clean() {
         _clearIncludes();
         put();
     }
