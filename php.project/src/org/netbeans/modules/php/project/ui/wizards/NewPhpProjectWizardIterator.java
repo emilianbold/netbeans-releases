@@ -166,7 +166,9 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         // #207493
         final PhpVersion phpVersion = (PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION);
-        PhpOptions.getInstance().setDefaultPhpVersion(phpVersion);
+        if (wizardType == WizardType.NEW) {
+            PhpOptions.getInstance().setDefaultPhpVersion(phpVersion);
+        }
 
         final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties()
                 .setProjectDirectory(getProjectDirectory())
