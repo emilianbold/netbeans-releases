@@ -174,20 +174,20 @@ public class FixUsesAction extends BaseAction {
     private static ImportData computeUses(final PHPParseResult parserResult, final int caretPosition) {
         Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesComputer(parserResult, caretPosition).computeNames();
         Index index = parserResult.getModel().getIndexScope().getIndex();
-        Document document = parserResult.getSnapshot().getSource().getDocument(false);
-        CodeStyle codeStyle = CodeStyle.get(document);
-        Options options = new Options(codeStyle);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
-        ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), options).create();
+        ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), createOptions(parserResult)).create();
         importData.caretPosition = caretPosition;
         return importData;
     }
 
     private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
+        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, createOptions(parserResult)).perform();
+    }
+
+    private static Options createOptions(final PHPParseResult parserResult) {
         Document document = parserResult.getSnapshot().getSource().getDocument(false);
         CodeStyle codeStyle = CodeStyle.get(document);
-        Options options = new Options(codeStyle);
-        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, options).perform();
+        return new Options(codeStyle);
     }
 
     private static final RequestProcessor WORKER = new RequestProcessor(FixUsesAction.class.getName(), 1);
