@@ -66,7 +66,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
-import org.openide.filesystems.*;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
@@ -94,7 +93,6 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.MessageDestinationDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInstanceDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerLibraryManager;
-import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerServerSettings;
 import org.netbeans.modules.j2ee.deployment.profiler.api.ProfilerSupport;
 import org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler;
 import org.openide.nodes.Node;
@@ -180,7 +178,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
     private final ChangeSupport managerChangeSupport = new ChangeSupport(this);
     
     private volatile static ServerInstance profiledServerInstance;
-    private ProfilerServerSettings  profilerSettings;
     
     private final DebuggerStateListener debuggerStateListener;
     
@@ -1113,11 +1110,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     /** Start the admin server in the profile mode. Show UI feedback. 
-     * @param settings settings that will be used to start the server
      *
      * @throws ServerException if the server cannot be started.
      */
-    public void startProfile(ProfilerServerSettings settings, boolean forceRestart, ProgressUI ui) 
+    public void startProfile(boolean forceRestart, ProgressUI ui) 
     throws ServerException {
         // check whether another server not already running in profile mode
         // and ask whether it is ok to stop it
@@ -1137,7 +1133,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
         try {
             setServerState(STATE_WAITING);
             // target == null - admin server
-            _startProfile(null, settings, forceRestart, ui);
+            _startProfile(null, forceRestart, ui);
         } finally {
             refresh();
         }
@@ -1161,7 +1157,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             if (stopped) {
                 // restart in the mode the server was running in before
                 if (inProfile) {
-                    _startProfile(null, profilerSettings, true, ui);
+                    _startProfile(null, true, ui);
                 } else if (inDebug) {
                     startDebugTarget(null, ui);
                 } else {
@@ -1267,12 +1263,12 @@ public class ServerInstance implements Node.Cookie, Comparable {
      *
      * @throws ServerException if the server cannot be started.
      */
-    public boolean startProfile(final ProfilerServerSettings settings, boolean forceRestart, Deployment.Logger logger) {
+    public boolean startProfile(boolean forceRestart, Deployment.Logger logger) {
         String title = NbBundle.getMessage(ServerInstance.class, "LBL_StartServerInProfileMode", getDisplayName());
         ProgressUI ui = new ProgressUI(title, false, logger);
         try {
             ui.start();
-            startProfile(settings, forceRestart, ui);
+            startProfile(forceRestart, ui);
             return true;
         } catch (ServerException ex) {
             return false;
@@ -1500,15 +1496,10 @@ public class ServerInstance implements Node.Cookie, Comparable {
     /** start server in the profile mode */
     private void _startProfile(
                                     Target target, 
-                                    ProfilerServerSettings settings,
                                     boolean forceRestart,
                                     ProgressUI ui) throws ServerException {
-        ProfilerServerSettings  tmpProfilerSettings;
-        synchronized (this) {
-            tmpProfilerSettings = profilerSettings;
-        }
         ServerInstance tmpProfiledServerInstance = profiledServerInstance;
-        if (tmpProfiledServerInstance == this && !forceRestart && settings.equals(tmpProfilerSettings)) {
+        if (tmpProfiledServerInstance == this && !forceRestart) {
             return; // server is already runnning in profile mode, no need to restart the server
         }
         if (tmpProfiledServerInstance != null && tmpProfiledServerInstance != this) {
@@ -1528,7 +1519,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
             throw new ServerException(NbBundle.getMessage(ServerInstance.class, "MSG_ProfilerNotRegistered"));
         }
         profiler.notifyStarting();
-        ProgressObject po = getStartServer().startProfiling(target, settings);
+        ProgressObject po = getStartServer().startProfiling(target);
         try {
             boolean completedSuccessfully = ProgressObjectUtil.trackProgressObject(ui, po, DEFAULT_TIMEOUT);
             if (!completedSuccessfully) {
@@ -1540,7 +1531,6 @@ public class ServerInstance implements Node.Cookie, Comparable {
         }
         profiledServerInstance = this;
         synchronized (this) {
-            profilerSettings = settings;
             managerStartedByIde = true;
 //            coTarget = null;
 //            targets = null;

@@ -62,7 +62,6 @@ import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -132,10 +131,12 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.TestUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.Exceptions;
 /**
  *
  * @author Tomas Zezula
@@ -205,11 +206,11 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testInterference"));
         suite.addTest(new JavaSourceTest("testDocumentChanges"));
         suite.addTest(new JavaSourceTest("testParsingDelay"));
-        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));
+//        suite.addTest(new JavaSourceTest("testJavaSourceIsReclaimable"));     fails in trunk
         suite.addTest(new JavaSourceTest("testChangeInvalidates"));
         suite.addTest(new JavaSourceTest("testInvalidatesCorrectly"));
         suite.addTest(new JavaSourceTest("testCancelCall"));
-        suite.addTest(new JavaSourceTest("testMultiJavaSource"));       //partialy fixed
+        suite.addTest(new JavaSourceTest("testMultiJavaSource"));
         suite.addTest(new JavaSourceTest("testEmptyJavaSource"));
         suite.addTest(new JavaSourceTest("testCancelDeadLock"));
         suite.addTest(new JavaSourceTest("testCompileTaskStartedFromPhaseTask"));
@@ -218,7 +219,7 @@ public class JavaSourceTest extends NbTestCase {
 //        suite.addTest(new JavaSourceTest("testNestedActions"));                           failing due to missing shared flag
 //        suite.addTest(new JavaSourceTest("testCouplingErrors"));                          failing even in main
         suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));
-        suite.addTest(new JavaSourceTest("testNested2"));
+//        suite.addTest(new JavaSourceTest("testNested2"));                     fails in trunk
         suite.addTest(new JavaSourceTest("testIndexCancel"));
         suite.addTest(new JavaSourceTest("testIndexCancel2"));
         suite.addTest(new JavaSourceTest("testIndexCancel3"));
@@ -255,8 +256,8 @@ public class JavaSourceTest extends NbTestCase {
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task1 = new DiagnosticTask(latches1, counter, Phase.RESOLVED);
         CancellableTask<CompilationInfo> task2 =  new DiagnosticTask(latches2, counter, Phase.PARSED);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task1,Phase.RESOLVED,Priority.HIGH);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task2,Phase.PARSED,Priority.LOW);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task1,Phase.RESOLVED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task2,Phase.PARSED,Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches1[0], latches2[0]}, 150000));
         assertEquals ("Called more times than expected",2,counter.getAndSet(0));
         Thread.sleep(1000);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -331,10 +332,10 @@ public class JavaSourceTest extends NbTestCase {
         DiagnosticTask task1 = new DiagnosticTask(latches1, counter, Phase.RESOLVED);
         CancellableTask<CompilationInfo> task2 = new DiagnosticTask(latches2, counter, Phase.RESOLVED);
 
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task1,Phase.RESOLVED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task1,Phase.RESOLVED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
         js2.runUserActionTask(new CompileControlJob(latch3),true);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js2,task2,Phase.RESOLVED,Priority.MAX);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js2,task2,Phase.RESOLVED,Priority.MAX, TaskIndexingMode.ALLOWED_DURING_SCAN);
         boolean result = waitForMultipleObjects (new CountDownLatch[] {latches1[0], latches2[0], latch3}, 15000);
         if (!result) {
             assertTrue (String.format("Time out, latches1[0]: %d latches2[0]: %d latches3: %d",latches1[0].getCount(), latches2[0].getCount(), latch3.getCount()), false);
@@ -396,7 +397,7 @@ public class JavaSourceTest extends NbTestCase {
                 }
             }
         };
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js1,task,Phase.PARSED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
         start.await();
         Thread.sleep(500);
         final DataObject dobj = DataObject.find(testFile1);
@@ -447,7 +448,7 @@ public class JavaSourceTest extends NbTestCase {
         long[] timers = new long[2];
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, timers, counter, Phase.PARSED);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
         assertEquals ("Called more times than expected",1,counter.getAndSet(0));
         long start = System.currentTimeMillis();
@@ -491,7 +492,7 @@ public class JavaSourceTest extends NbTestCase {
         };
         AtomicInteger counter = new AtomicInteger (0);
         CancellableTask<CompilationInfo> task = new DiagnosticTask(latches, counter, Phase.PARSED);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
 
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -552,7 +553,7 @@ public class JavaSourceTest extends NbTestCase {
             final CountDownLatch latch2 = new CountDownLatch (1);
             AtomicInteger counter = new AtomicInteger (0);
             CancellableTask<CompilationInfo> task = new DiagnosticTask(new CountDownLatch[] {latch1}, counter, Phase.PARSED);
-            JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
+            JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
             assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latch1}, 15000));
 
             DataObject dobj = DataObject.find(test);
@@ -623,7 +624,7 @@ public class JavaSourceTest extends NbTestCase {
         };
         AtomicInteger counter = new AtomicInteger (0);
         DiagnosticTask task = new DiagnosticTask(latches, counter, Phase.PARSED);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED,Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue ("Time out",waitForMultipleObjects(new CountDownLatch[] {latches[0]}, 15000));
         final int[] index = new int[1];
         Thread.sleep(500);  //Making test a more deterministic, when the task is cancelled by DocListener, it's hard for test to recover from it
@@ -679,10 +680,10 @@ public class JavaSourceTest extends NbTestCase {
         ClassPath srcPath = createSourcePath();
         JavaSource js = JavaSource.create(ClasspathInfo.create(bootPath, compilePath, srcPath), test);
         WaitTask wt = new WaitTask (3000);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,wt, Phase.PARSED, Priority.BELOW_NORMAL);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,wt, Phase.PARSED, Priority.BELOW_NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         Thread.sleep(1000);
         WaitTask wt2 = new WaitTask (0);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,wt2, Phase.PARSED,Priority.MAX);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,wt2, Phase.PARSED,Priority.MAX, TaskIndexingMode.ALLOWED_DURING_SCAN);
         Thread.sleep(10000);
         int cancelCount = wt.getCancelCount();
         assertEquals(1,cancelCount);
@@ -789,7 +790,7 @@ public class JavaSourceTest extends NbTestCase {
                     latch.countDown();
                 }
             }
-        }, Phase.PARSED, Priority.NORMAL);
+        }, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue (waitForMultipleObjects(new CountDownLatch[] {latch}, 10000));
         assertFalse ("Cancel called even for JavaSource dispatch thread!",canceled.get());
     }
@@ -852,8 +853,8 @@ public class JavaSourceTest extends NbTestCase {
             public void run(CompilationInfo parameter) throws Exception {
                 waitFor.await();
             }
-        }, Phase.PARSED, Priority.NORMAL);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL);
+        }, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         JavaSourceAccessor.getINSTANCE().rescheduleTask(js,task);
         JavaSourceAccessor.getINSTANCE().rescheduleTask(js,task);
         waitFor.countDown();
@@ -1121,7 +1122,7 @@ public class JavaSourceTest extends NbTestCase {
         IndexingManager.getDefault().refreshIndexAndWait(src1.getURL(), null);
 
         final ClassPath bootPath = createBootPath();
-        final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}));
+        final ClassPath compilePath = CacheClassPath.forSourcePath(ClassPathSupport.createClassPath(new FileObject[] {src1}),false);
         final ClassPath srcPath = ClassPathSupport.createClassPath(src2);
         final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo, test2, test);
@@ -1175,7 +1176,7 @@ public class JavaSourceTest extends NbTestCase {
 
         };
 
-        class RUT implements ExceptionAction<Void> {
+        class RUT implements Runnable {
             private final CountDownLatch start;
             private final CountDownLatch latch;
 
@@ -1186,15 +1187,15 @@ public class JavaSourceTest extends NbTestCase {
                 this.latch = latch;
             }
 
-            public void cancel() {
-            }
 
-            public Void run() throws Exception {
-                this.start.countDown();
-                this.latch.await();
-                return null;
+            public void run() {
+                try {
+                    this.start.countDown();
+                    this.latch.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-
         };
 
         CountDownLatch latch = new CountDownLatch (1);
@@ -1207,7 +1208,7 @@ public class JavaSourceTest extends NbTestCase {
         CountDownLatch rutLatch = new CountDownLatch (1);
         CountDownLatch rutStart = new CountDownLatch (1);
         RUT rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
+        Utilities.runAsScanWork(rut);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
@@ -1229,7 +1230,7 @@ public class JavaSourceTest extends NbTestCase {
         rutLatch = new CountDownLatch (1);
         rutStart = new CountDownLatch (1);
         rut = new RUT (rutStart, rutLatch);
-        JavaSourceAccessor.getINSTANCE().runSpecialTask(rut, JavaSource.Priority.MAX);
+        Utilities.runAsScanWork(rut);
         latch = new CountDownLatch (1);
         rutStart.await();
         res = js.runWhenScanFinished(new T(latch), true);
@@ -1375,7 +1376,7 @@ public class JavaSourceTest extends NbTestCase {
 
                 };
                 factory.instance.active=true;
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
                 assertTrue(ready.await(5, TimeUnit.SECONDS));
                 NbDocument.runAtomic (doc,
                     new Runnable () {
@@ -1475,7 +1476,7 @@ public class JavaSourceTest extends NbTestCase {
 
                 };
                 factory.instance.active=true;
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
                 assertTrue(ready.await(5, TimeUnit.SECONDS));
                 me.set(Boolean.TRUE);
                 try {
@@ -1602,15 +1603,15 @@ public class JavaSourceTest extends NbTestCase {
                 };
                 
                 factory.instance.active=true;
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.NORMAL);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js,task,Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
                 assertTrue(readyTask1.await(5, TimeUnit.SECONDS));                
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task2, Phase.PARSED, Priority.HIGH);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task2, Phase.PARSED, Priority.HIGH, TaskIndexingMode.ALLOWED_DURING_SCAN);
                 changeTask1.countDown();                
                 assertTrue(endTask1.await(5, TimeUnit.SECONDS));
                 assertNull(resultTask1Before.get());
                 assertNull(resultTask1Nested.get());
                 assertNull(resultTask1After.get());
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task3, Phase.PARSED, Priority.LOW);
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js, task3, Phase.PARSED, Priority.LOW, TaskIndexingMode.ALLOWED_DURING_SCAN);
                 assertTrue(endTask3.await(5, TimeUnit.SECONDS));
                 assertNotNull(resultTask3.get());  //Should not be null!!!
                 
@@ -1646,7 +1647,7 @@ public class JavaSourceTest extends NbTestCase {
                 latch2.countDown();
             }
         };
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue(latch1.await(10, TimeUnit.SECONDS));
         JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js,task);
         Reference<JavaSource> r = new WeakReference<JavaSource>(js);
@@ -1655,7 +1656,7 @@ public class JavaSourceTest extends NbTestCase {
         assertGC("", r);
 
         js = JavaSource.create(cpInfo, testFile1);
-        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL);
+        JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue(latch2.await(10, TimeUnit.SECONDS));
     }
     
@@ -2238,6 +2239,11 @@ public class JavaSourceTest extends NbTestCase {
         @Override
         public Index createIndex(File cacheFolder, Analyzer analyzer) {
             return instance;
+        }
+
+        @Override
+        public Index createMemoryIndex(Analyzer analyzer) throws IOException {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
 
     }

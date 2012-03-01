@@ -62,6 +62,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.metadata.Metadata;
 import org.apache.maven.artifact.repository.metadata.Versioning;
@@ -99,6 +101,7 @@ import org.w3c.dom.NodeList;
  */
 public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
+    private static final Logger LOG = Logger.getLogger(MavenProjectGrammar.class.getName());
     private static final String[] SCOPES = new String[] {
         "compile", //NOI18N
         "test", //NOI18N
@@ -127,6 +130,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         
     }
     
+    @Override
     protected InputStream getSchemaStream() {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/maven-4.0.0.xsd"); //NOI18N
     }
@@ -217,11 +221,11 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                         }
                     }
                 } catch (FileNotFoundException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINER, "", ex);
                 } catch (XmlPullParserException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINER, "", ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINER, "", ex);
                 }
             }
         }
@@ -234,6 +238,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     private List<GrammarResult> collectPluginParams(Document pluginDoc, HintContext hintCtx) {
         Iterator it = pluginDoc.getRootElement().getDescendants(new Filter() {
+            @Override
             public boolean matches(Object object) {
                 if (object instanceof Element) {
                     Element el = (Element)object;
@@ -520,7 +525,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     private Set<String> getArtifactIds(String groupId) {
         Set<String> elems = null;
-        RequestProcessor.Task tsk = null;
+        RequestProcessor.Task tsk;
         synchronized (ARTIFACT_LOCK) {
             tsk = artifactTasks.get(groupId);
             if (tsk == null) {
@@ -548,7 +553,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     private Set<String> getVersions(String groupId, String artifactId) {
         Set<String> elems = null;
-        RequestProcessor.Task tsk = null;
+        RequestProcessor.Task tsk;
         String id = groupId + ":" + artifactId; //NOI18N
         synchronized (VERSION_LOCK) {
             tsk = versionTasks.get(id);
@@ -577,7 +582,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
 
     private Set<String> getClassifiers(String groupId, String artifactId, String version) {
         Set<String> elems = null;
-        RequestProcessor.Task tsk = null;
+        RequestProcessor.Task tsk;
         String id = groupId + ':' + artifactId + ':' + version;
         synchronized (CLASSIFIER_LOCK) {
             tsk = classifierTasks.get(id);
@@ -633,9 +638,9 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
                         return builder.build(str);
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINER, "", ex);
                 } catch (JDOMException ex) {
-                    ex.printStackTrace();
+                    LOG.log(Level.FINER, "", ex);
                 }
             }
             
@@ -646,6 +651,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     private Enumeration<GrammarResult> collectGoals(Document pluginDoc, HintContext virtualTextCtx) {
         @SuppressWarnings("unchecked")
         Iterator<Element> it = pluginDoc.getRootElement().getDescendants(new Filter() {
+            @Override
             public boolean matches(Object object) {
                 if (object instanceof Element) {
                     Element el = (Element)object;
@@ -730,6 +736,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
     
     private class GroupTask implements Runnable {
 
+        @Override
         public void run() {
             Set<String> elems = RepositoryQueries.getGroups(RepositoryPreferences.getInstance().getRepositoryInfos());
             synchronized (GROUP_LOCK) {
@@ -745,6 +752,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             this.groupId = groupId;
         }
         
+        @Override
         public void run() {
             Set<String> elems = RepositoryQueries.getArtifacts(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
             synchronized (ARTIFACT_LOCK) {
@@ -762,6 +770,7 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
             artifactId = art;
         }
         
+        @Override
         public void run() {
             List<NBVersionInfo> infos = RepositoryQueries.getVersions(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
             Set<String> elems = new LinkedHashSet<String>();

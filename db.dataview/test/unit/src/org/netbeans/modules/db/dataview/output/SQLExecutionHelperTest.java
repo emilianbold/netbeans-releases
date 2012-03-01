@@ -94,7 +94,7 @@ public class SQLExecutionHelperTest extends NbTestCase {
         int pageSize = 5;
         DataView dv = DataView.create(dbconn, sqlString, pageSize);
         SQLExecutionHelper execHelper = new SQLExecutionHelper(dv);
-        SQLExecutionHelper.initialDataLoad(dv, dbconn, execHelper);
+        execHelper.initialDataLoad();
         assertNotNull(execHelper);
         assertEquals(sqlString, dv.getSQLString());
         assertEquals(true, dv.hasResultSet());
@@ -105,7 +105,7 @@ public class SQLExecutionHelperTest extends NbTestCase {
         ResultSet rs = conn.createStatement().executeQuery(context.getSqlSelect());
         DataView dv = DataView.create(dbconn, context.getSqlSelect(), pageSize);
         SQLExecutionHelper instance = dv.getSQLExecutionHelper();
-        instance.loadDataFrom(rs);
+        instance.initialDataLoad();
         assertNotNull(instance);
     }
 }

@@ -97,7 +97,11 @@ public class PhpUnitOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.phpUnit.hint=Full path of PHPUnit script (typically {0} or {1}).",
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.skelGen.hint=Full path of Skeleton Generator script (typically {0} or {1})."
     })
     private void init() {
@@ -237,32 +241,6 @@ public class PhpUnitOptionsPanel extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(phpUnitLabel)
-                    .addComponent(skelGenLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpUnitHintLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(skelGenTextField, Alignment.TRAILING)
-                            .addComponent(phpUnitTextField, Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(skelGenHintLabel)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(ComponentPlacement.RELATED)))
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpUnitBrowseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(phpUnitSearchButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(skelGenBrowseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(skelGenSearchButton))))
             .addComponent(errorLabel)
             .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
             .addGroup(layout.createSequentialGroup()
@@ -273,6 +251,34 @@ public class PhpUnitOptionsPanel extends JPanel {
                     .addComponent(installationInfoLabel)
                     .addComponent(phpUnitLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(skelGenLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(phpUnitLabel)
+                    .addComponent(skelGenLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(skelGenHintLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(phpUnitHintLabel)
+                                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                                    .addComponent(skelGenTextField, Alignment.TRAILING)
+                                    .addComponent(phpUnitTextField, Alignment.TRAILING))
+                                .addPreferredGap(ComponentPlacement.RELATED)))
+                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(phpUnitBrowseButton)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(phpUnitSearchButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(skelGenBrowseButton)
+                                .addPreferredGap(ComponentPlacement.RELATED)
+                                .addComponent(skelGenSearchButton))))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpUnitBrowseButton, phpUnitSearchButton, skelGenBrowseButton, skelGenSearchButton});

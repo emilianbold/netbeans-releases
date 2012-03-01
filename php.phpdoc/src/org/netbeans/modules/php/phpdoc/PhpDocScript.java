@@ -110,7 +110,7 @@ public class PhpDocScript extends PhpProgram {
 
     @Override
     public String validate() {
-        return FileUtils.validateScript(getProgram(), NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"));
+        return FileUtils.validateFile(NbBundle.getMessage(PhpDocScript.class, "LBL_PhpDocScript"), getProgram(), false);
     }
 
     public void generateDocumentation(final PhpModule phpModule) {

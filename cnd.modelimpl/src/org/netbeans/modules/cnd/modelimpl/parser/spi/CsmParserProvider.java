@@ -55,22 +55,38 @@ import org.openide.util.Lookup;
 public abstract class CsmParserProvider {
     public static final CsmParserProvider DEFAULT = new Default();
     
-    public static CsmParser createParser(CsmFile file) {
-        return DEFAULT.create(file);
+    public static CsmParser createParser(final CsmFile file) {
+        return createParser(new CsmParserParameters() {
+            @Override
+            public CsmFile getMainFile() { return file; }
+        });
+    }
+
+    public static CsmParser createParser(CsmParserParameters params) {
+        return DEFAULT.create(params);
     }
     
-    protected abstract CsmParser create(CsmFile file);
+    protected abstract CsmParser create(CsmParserParameters params);
 
+    public interface CsmParseCallback {
+        
+    }
+
+    public interface CsmParserParameters {
+        CsmFile getMainFile();
+    }
+    
     public interface CsmParser {
         enum ConstructionKind {
             TRANSLATION_UNIT, 
             TRANSLATION_UNIT_WITH_COMPOUND, // do not skip compound statements
             CLASS_BODY,
+            ENUM_BODY,
             TRY_BLOCK,
             COMPOUND_STATEMENT,
             NAMESPACE_DEFINITION_BODY
         }
-        void init(CsmObject object, TokenStream ts);
+        void init(CsmObject object, TokenStream ts, CsmParseCallback callback);
         CsmParserResult parse(ConstructionKind kind);
     }
     
@@ -91,9 +107,9 @@ public abstract class CsmParserProvider {
                 
 
         @Override
-        protected CsmParser create(CsmFile file) {
+        protected CsmParser create(CsmParserParameters params) {
             for (CsmParserProvider provider : parserProviders) {
-                CsmParser out = provider.create(file);
+                CsmParser out = provider.create(params);
                 if (out != null) {
                     return out;
                 }

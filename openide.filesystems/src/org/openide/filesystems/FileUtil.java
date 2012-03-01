@@ -1160,6 +1160,7 @@ public final class FileUtil extends Object {
     * @param is input stream of jar file
     * @exception IOException if the extraction fails
     * @deprecated Use of XML filesystem layers generally obsoletes this method.
+    *             For tests, use {@link org.openide.util.test.TestFileUtils#unpackZipFile}.
     */
     @Deprecated
     public static void extractJar(final FileObject fo, final InputStream is)

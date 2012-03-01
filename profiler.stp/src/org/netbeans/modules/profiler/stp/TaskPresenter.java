@@ -177,7 +177,7 @@ public class TaskPresenter implements TaskChooser.Item {
         public void setProfilingSettings(ArrayList<ProfilingSettings> profilingSettings) {
             resetProfilingSettings();
             this.profilingSettings.addAll(profilingSettings);
-            selectedSettingsIndex = 0;
+            selectedSettingsIndex = this.profilingSettings.isEmpty() ? -1 : 0;
             updateItems();
         }
 

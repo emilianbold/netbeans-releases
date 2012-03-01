@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.java.hints.jackpot.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -53,6 +55,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchUtilities;
 import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -86,7 +89,7 @@ public final class JavaFixImpl implements Fix {
                     return;
                 }
 
-                Accessor.INSTANCE.process(jf, wc, true);
+                Accessor.INSTANCE.process(jf, wc, true, /*Ignored in editor:*/new ArrayList<RefactoringElementImplementation>());
             }
         }).commit();
 
@@ -98,7 +101,7 @@ public final class JavaFixImpl implements Fix {
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);
-        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI) throws Exception;
+        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Collection<? super RefactoringElementImplementation> fileChanges) throws Exception;
         public abstract FileObject getFile(JavaFix jf);
         public abstract Map<String, String> getOptions(JavaFix jf);
         

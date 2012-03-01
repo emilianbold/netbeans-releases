@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.test;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
+import org.netbeans.modules.remote.impl.fs.AdeMockupTestCase;
 import org.netbeans.modules.remote.impl.fs.CanonicalTestCase;
 import org.netbeans.modules.remote.impl.fs.CaseSensivityTestCase;
 import org.netbeans.modules.remote.impl.fs.CreateDataAndFolderTestCase;
@@ -76,8 +77,10 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         this("Remote API", getTestClasses());
     }
 
+    @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
+           AdeMockupTestCase.class,
            RemoteFileSystemTestCase.class,
            RemoteLinksTestCase.class,
            RemotePathTestCase.class,
@@ -96,7 +99,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            ReadOnlyDirTestCase.class,
            ScheduleRefreshParityTestCase.class,
            WritingQueueTestCase.class,
-           RemoteFileSystemOffilneTestCase.class
+           RemoteFileSystemOffilneTestCase.class,
         };
     }
     
@@ -105,6 +108,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
         return new RemoteApiTest(testClass.getName(), testClass);
     }
 
+    @SuppressWarnings("unchecked")
     public static RemoteApiTest createSuite(Class<? extends NativeExecutionBaseTestCase> testClass, int timesToRepeat) {
         Class[] classes = new Class[timesToRepeat];
         for (int i = 0; i < classes.length; i++) {

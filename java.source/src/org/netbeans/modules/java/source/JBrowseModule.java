@@ -44,11 +44,8 @@
 
 package org.netbeans.modules.java.source;
 
-import java.io.IOException;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
-import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -64,19 +61,6 @@ public class JBrowseModule extends ModuleInstall {
     
     public @Override void close () {
         super.close();
-        try {
-            IndexManager.writeAccess(new IndexManager.Action<Void>() {
-                @Override
-                 public Void run() throws IOException {
-                     ClassIndexManager.getDefault().close();
-                     return null;
-                 }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }  
-        catch (InterruptedException e) {
-            Exceptions.printStackTrace(e);
-        }
+        ClassIndexManager.getDefault().close();
     }        
 }

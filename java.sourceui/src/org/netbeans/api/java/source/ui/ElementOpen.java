@@ -55,6 +55,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -158,6 +159,11 @@ public final class ElementOpen {
 
     @SuppressWarnings("deprecation")
     private static boolean doOpen(FileObject fo, int offset) {
+        if (offset == -1) {
+            StatusDisplayer.getDefault().setStatusText(
+                    NbBundle.getMessage(ElementOpen.class, "WARN_ElementNotFound"), 
+                    StatusDisplayer.IMPORTANCE_ANNOTATION);
+        }
         return UiUtils.open(fo, offset);
     }
 
@@ -182,7 +188,9 @@ public final class ElementOpen {
                     }
                     Element el = handle.resolve(info);
                     if (el == null) {
-                        log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        if (!SourceUtils.isScanInProgress()) {
+                            log.severe("Cannot resolve " + handle + ". " + info.getClasspathInfo());
+                        }
                         return;
                     }
                     
@@ -205,33 +213,10 @@ public final class ElementOpen {
 
                     if (elTree != null)
                         result[0] = (int)info.getTrees().getSourcePositions().getStartPosition(cu, elTree);
-                }
+                    }
             };
 
-            if (IndexingManager.getDefault().isIndexing()) {
-                int timeout = SwingUtilities.isEventDispatchThread() ? AWT_TIMEOUT : NON_AWT_TIMEOUT;
-                Future<Void> f = js.runWhenScanFinished(t, true);
-
-                try {
-                    f.get(timeout, TimeUnit.MILLISECONDS);
-                } catch (InterruptedException ex) {
-                    log.log(Level.INFO, null, ex);
-                    return 0;
-                } catch (ExecutionException ex) {
-                    log.log(Level.INFO, null, ex);
-                    return 0;
-                } catch (TimeoutException ex) {
-                    f.cancel(true);
-                    log.info("Skipping location of element offset within file, Scannig in progress");
-                    return 0; //we are opening @ 0 position. Fix #160478
-                }
-
-                if (!f.isDone()) {
-                    f.cancel(true);
-                    log.info("Skipping location of element offset within file, Scannig in progress");
-                    return 0; //we are opening @ 0 position. Fix #160478
-                }
-            } else if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
+            if (SwingUtilities.isEventDispatchThread() && !JavaSourceAccessor.holdsParserLock()) {
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                         public void run() {
                             try {

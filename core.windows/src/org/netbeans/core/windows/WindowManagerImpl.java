@@ -1919,6 +1919,31 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     public void userStartedKeyboardDragAndDrop( TopComponentDraggable draggable ) {
         central.userStartedKeyboardDragAndDrop( draggable );
     }
+
+    private static final Object BUSY_FLAG = new Object();
+    private static final String BUSY_PROP_NAME = "nbwinsys.tc.isbusy"; //NOI18N
+
+    @Override
+    protected void topComponentMakeBusy( TopComponent tc, boolean busy ) {
+        boolean wasBusy = isTopComponentBusy( tc );
+        tc.putClientProperty( BUSY_PROP_NAME, busy ? BUSY_FLAG : null );
+        if( busy != wasBusy ) {
+            //update winsys
+            ModeImpl mode = (ModeImpl) findMode(tc);
+            if( null != mode )
+                central.topComponentMakeBusy(mode, tc, busy);
+        }
+    }
+
+    /**
+     * Check if the given TopComponent is 'busy'
+     * @param tc
+     * @return
+     * @since 2.45
+     */
+    public boolean isTopComponentBusy( TopComponent tc ) {
+        return tc.getClientProperty( BUSY_PROP_NAME ) == BUSY_FLAG;
+    }
     
     void fireEvent( WindowSystemEventType type ) {
         assertEventDispatchThread();

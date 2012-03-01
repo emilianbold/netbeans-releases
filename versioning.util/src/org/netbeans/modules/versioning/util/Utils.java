@@ -79,6 +79,7 @@ import java.awt.Point;
 import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -1554,4 +1555,34 @@ public final class Utils {
         return a;
     }
 
+    /**
+     * Determines if the given DataObject has an opened editor
+     * @param dataObject
+     * @return true if the given DataObject has an opened editor. Otherwise false.
+     * @throws InterruptedException
+     * @throws InvocationTargetException 
+     */
+    public static boolean hasOpenedEditorPanes(final DataObject dataObject) throws InterruptedException, InvocationTargetException {
+        final boolean[] hasEditorPanes = new boolean[] {false};
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+                if(cookie != null) {
+                    // hack - care only about dataObjects with opened editors.
+                    // otherwise we won't assume it's file were opened to be edited
+                    JEditorPane[] panes = cookie.getOpenedPanes();
+                    if(panes != null && panes.length > 0) {
+                        hasEditorPanes[0] = true;
+                    }
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) { 
+            r.run();
+        } else {
+            SwingUtilities.invokeAndWait(r);
+        }
+        return hasEditorPanes[0];
+    }      
 }

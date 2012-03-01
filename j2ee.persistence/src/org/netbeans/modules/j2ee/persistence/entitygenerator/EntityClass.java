@@ -74,9 +74,10 @@ public class EntityClass {
     private CMPMappingModel mappingModel;
     
     private boolean forTable = true;  // false means forView
+    private final boolean useDefaults;
     
     public EntityClass( String catalogName, String schemaName, String tableName, 
-            FileObject rootFolder, String packageName, String className, UpdateType updateType, Set<List<String>> uniqueConstraints) {
+            FileObject rootFolder, String packageName, String className, UpdateType updateType, boolean useDefaults, Set<List<String>> uniqueConstraints) {
         this.catalogName = catalogName;
         this.schemaName = schemaName;
         this.tableName = tableName;
@@ -85,6 +86,7 @@ public class EntityClass {
         this.className = className;
         this.updateType = updateType;
         this.uniqueConstraints = uniqueConstraints;
+        this.useDefaults = useDefaults;
         
         roles = Collections.<RelationshipRole>emptyList();
         fields = new ArrayList<EntityMember>();
@@ -116,6 +118,10 @@ public class EntityClass {
     
     public List<EntityMember> getFields() {
         return fields;
+    }
+    
+    public boolean getUseDefaults(){
+        return useDefaults;
     }
     
     public void setFields(List<EntityMember> fields) {

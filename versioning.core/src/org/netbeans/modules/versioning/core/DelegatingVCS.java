@@ -60,6 +60,7 @@ import org.netbeans.modules.versioning.core.spi.VCSVisibilityQuery;
 import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
+import org.netbeans.modules.versioning.core.spi.*;
 import org.netbeans.spi.queries.CollocationQueryImplementation2;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Utilities;
@@ -116,21 +117,6 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         }
     }
     
-    @Override
-    public VCSVisibilityQuery getVisibilityQuery() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public VCSInterceptor getVCSInterceptor() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public VCSAnnotator getVCSAnnotator() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
     @Override
     public void getOriginalFile(VCSFileProxy workingCopy, VCSFileProxy originalFile) {
         getDelegate().getOriginalFile(workingCopy, originalFile);
@@ -210,20 +196,25 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     }
 
     @Override
-    public VCSAnnotator getAnnotator() {
+    public VCSAnnotator getVCSAnnotator() {
         return getDelegate().getVCSAnnotator();
     }
     
     @Override
-    public VCSVisibilityQuery getVisibility() { 
+    public VCSVisibilityQuery getVisibilityQuery() { 
         return getDelegate().getVisibilityQuery();
     }
     
     @Override
-    public VCSInterceptor getInterceptor() {
+    public VCSInterceptor getVCSInterceptor() {
         return getDelegate().getVCSInterceptor();
     }
 
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return getDelegate().getVCSHistoryProvider();
+    }
+    
     @Override
     public boolean accept(VCSContext ctx) {
         return true;
@@ -254,7 +245,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     
     Action[] getActions(VCSContext ctx, VCSAnnotator.ActionDestination actionDestination) {
         if(map == null || isAlive()) {
-            VCSAnnotator annotator = getAnnotator();
+            VCSAnnotator annotator = getVCSAnnotator();
             return annotator != null ? annotator.getActions(ctx, actionDestination) : new Action[0];
         } else {
             Action[] ia = getInitActions(ctx);

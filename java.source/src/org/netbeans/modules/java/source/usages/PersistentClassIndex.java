@@ -46,14 +46,9 @@ package org.netbeans.modules.java.source.usages;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.AbstractCollection;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
@@ -61,13 +56,17 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -83,60 +82,57 @@ import org.openide.util.Parameters;
  *
  * @author Petr Hrebejk, Tomas Zezula
  */
-public class PersistentClassIndex extends ClassIndexImpl {
-    
+public final class PersistentClassIndex extends ClassIndexImpl {
+
     private final Index index;
     private final URL root;
     private final File cacheRoot;
-    private final boolean isSource;
-    private volatile URL dirty;
+    private final Type beforeInitType;
+    private final Type finalType;
+    private final IndexPatch indexPath;
     //@GuardedBy("this")
     private Set<String> rootPkgCache;
     private static final Logger LOGGER = Logger.getLogger(PersistentClassIndex.class.getName());
     private static final String REFERENCES = "refs";    // NOI18N
     
     /** Creates a new instance of ClassesAndMembersUQ */
-    private PersistentClassIndex(final URL root, final File cacheRoot, final boolean source) 
+    private PersistentClassIndex(
+            final URL root,
+            final File cacheRoot,
+            final Type beforeInitType,
+            final Type finalType)
 	    throws IOException, IllegalArgumentException {
         assert root != null;
         this.root = root;
         this.cacheRoot = cacheRoot;
+        this.beforeInitType = beforeInitType;
+        this.finalType = finalType;
         this.index = IndexManager.createIndex(getReferencesCacheFolder(cacheRoot), DocumentUtil.createAnalyzer());
-        this.isSource = source;
+        this.indexPath = new IndexPatch(root,index);
     }
     
     @Override
     public BinaryAnalyser getBinaryAnalyser () {
+        // TODO - run in tx ?
         return new BinaryAnalyser (new PIWriter(), this.cacheRoot);
     }
     
     @Override
-    public SourceAnalyser getSourceAnalyser () {        
-        return new SourceAnalyser (new PIWriter());        
+    public SourceAnalyzerFactory.StorableAnalyzer getSourceAnalyser () {        
+        Writer writer = new PIWriter();
+        final TransactionContext txCtx = TransactionContext.get();
+        assert  txCtx != null;
+        
+        PersistentIndexTransaction pit = txCtx.get(PersistentIndexTransaction.class);
+        pit.addIndexWriter(writer);
+        return SourceAnalyzerFactory.createStorableAnalyzer(writer);        
     }
 
     @Override
-    public boolean isSource () {
-        return this.isSource;
+    public Type getType () {
+        return getState() == State.INITIALIZED ? finalType : beforeInitType;
     }
 
-    @Override
-    public boolean isEmpty () {
-        try {
-            return IndexManager.readAccess(new IndexManager.Action<Boolean>() {
-                @Override
-                public Boolean run() throws IOException, InterruptedException {
-                    return index.getStatus(false) == Index.Status.EMPTY;
-                }
-            }).booleanValue();
-        } catch (InterruptedException ie) {
-            //Not thrown but declared
-            return false;
-        } catch (IOException ioe) {
-            //Not thrown but declared
-            return false;
-        }
-    }
     
     @Override
     public boolean isValid() {
@@ -150,7 +146,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public FileObject[] getSourceRoots () {
         FileObject[] rootFos;
-        if (isSource) {
+        if (getType() == Type.SOURCE) {
             FileObject rootFo = URLMapper.findFileObject (this.root);
             rootFos = rootFo == null ? new FileObject[0]  : new FileObject[] {rootFo};
         }
@@ -175,9 +171,13 @@ public class PersistentClassIndex extends ClassIndexImpl {
 
     // Factory method
     
-    public static ClassIndexImpl create(URL root, final File cacheRoot, final boolean indexNow) 
+    public static ClassIndexImpl create(
+            final URL root,
+            final File cacheRoot,
+            final Type beforeInitType,
+            final Type finalType)
 	    throws IOException, IllegalArgumentException {        
-        return new PersistentClassIndex(root, cacheRoot, indexNow);
+        return new PersistentClassIndex(root, cacheRoot, beforeInitType, finalType);
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
@@ -193,36 +193,48 @@ public class PersistentClassIndex extends ClassIndexImpl {
         Parameters.notNull("scope", scope); //NOI18N
         Parameters.notNull("convertor", convertor); //NOI18N
         Parameters.notNull("result", result);   //NOI18N
-        updateDirty();
+        final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
             final String binaryName = SourceUtils.getJVMSignature(element)[0];
             final ElementKind kind = element.getKind();
             if (kind == ElementKind.PACKAGE) {
-                    final Query q = QueryUtil.scopeFilter(
-                            QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
-                            scope);
-                    if (q!=null) {
-                        index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                IndexManager.priorityAccess(new IndexManager.Action<Void> () {
+                    @Override
+                    public Void run () throws IOException, InterruptedException {
+                        final Query q = QueryUtil.scopeFilter(
+                                QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
+                                scope);
+                        if (q!=null) {
+                            index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                            if (ctu.second != null) {
+                                ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                            }
+                        }
+                        return null;
                     }
+                });
             } else if (kind.isClass() ||
                        kind.isInterface() ||
                        kind == ElementKind.OTHER) {
                 if (BinaryAnalyser.OBJECT.equals(binaryName)) {
-                    this.getDeclaredTypes(
+                    getDeclaredTypes(
                         "", //NOI18N
                         ClassIndex.NameKind.PREFIX,
                         scope,
                         convertor,
                         result);
                 } else {
-                    IndexManager.readAccess(new IndexManager.Action<Void> () {
+                    IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                         @Override
                         public Void run () throws IOException, InterruptedException {
                             final Query usagesQuery = QueryUtil.scopeFilter(
                                     QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
                                     scope);
                             if (usagesQuery != null) {
-                                index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                if (ctu.second != null) {
+                                    ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                }
                             }
                             return null;
                         }
@@ -244,9 +256,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
             @NonNull final Set<? extends ClassIndex.SearchScopeType> scope,
             @NonNull final Convertor<? super Document, T> convertor,
             @NonNull final Set<? super T> result) throws InterruptedException, IOException {
-        updateDirty();
+        final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void> () {
+            IndexManager.priorityAccess(new IndexManager.Action<Void> () {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query =  QueryUtil.scopeFilter(
@@ -257,7 +269,10 @@ public class PersistentClassIndex extends ClassIndexImpl {
                             DocumentUtil.translateQueryKind(kind)),
                         scope);
                     if (query != null) {
-                        index.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        if (ctu.second != null) {
+                            ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        }
                     }
                     return null;
                 }
@@ -268,10 +283,14 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     @Override
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final Convertor<? super Document, T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
-        updateDirty();
+    public <T> void getDeclaredElements (
+            final String ident,
+            final ClassIndex.NameKind kind,
+            final Convertor<? super Document, T> convertor,
+            final Map<T,Set<String>> result) throws InterruptedException, IOException {
+        final Pair<Convertor<? super Document, T>,Index> ctu = indexPath.getPatch(convertor);
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final Query query = Queries.createTermCollectingQuery(
@@ -279,18 +298,29 @@ public class PersistentClassIndex extends ClassIndexImpl {
                             DocumentUtil.FIELD_CASE_INSENSITIVE_FEATURE_IDENTS,
                             ident,
                             DocumentUtil.translateQueryKind(kind));
+                    final Convertor<Term, String> t2s =
+                        new Convertor<Term, String>(){
+                            @Override
+                            public String convert(Term p) {
+                                return p.text();
+                            }
+                        };
                     index.queryDocTerms(
                             result,
-                            convertor,
-                            new Convertor<Term, String>(){
-                                @Override
-                                public String convert(Term p) {
-                                    return p.text();
-                                }
-                            },
+                            ctu.first,
+                            t2s,
                             DocumentUtil.declaredTypesFieldSelector(),
                             cancel.get(),
                             query);
+                    if (ctu.second != null) {
+                        ctu.second.queryDocTerms(
+                            result,
+                            convertor,
+                            t2s,
+                            DocumentUtil.declaredTypesFieldSelector(),
+                            cancel.get(),
+                            query);
+                    }
                     return null;
                 }
             });
@@ -303,7 +333,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
     @Override
     public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
         try {
-            IndexManager.readAccess(new IndexManager.Action<Void>() {
+            IndexManager.priorityAccess(new IndexManager.Action<Void>() {
                 @Override
                 public Void run () throws IOException, InterruptedException {
                     final boolean cacheOp = directOnly && prefix.length() == 0;
@@ -341,7 +371,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
         
     @Override
     public void setDirty (final URL url) {
-        this.dirty = url;
+        try {
+            indexPath.setDirtyFile(url);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     public @Override String toString () {
@@ -353,8 +387,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
     protected final void close () throws IOException {
         this.index.close();
     }
-    
-        
+
+
     // Private methods ---------------------------------------------------------                          
     
     private static File getReferencesCacheFolder (final File cacheRoot) throws IOException {
@@ -365,76 +399,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         return refRoot;
     }
     
-    private void updateDirty () {
-        final URL url = this.dirty;
-        if (url != null) {
-            final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
-            final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
-            if (js != null) {
-                final long startTime = System.currentTimeMillis();
-                final ClassPath scp = js.getClasspathInfo().getClassPath(PathKind.SOURCE);
-                if (scp != null && scp.contains(file)) {                    
-                    try {
-                        js.runUserActionTask(new Task<CompilationController>() {
-                            @Override
-                            public void run (final CompilationController controller) {
-                                try {                            
-                                    IndexManager.writeAccess(
-                                        new IndexManager.Action<Void>() {
-                                        @Override
-                                            public Void run () throws IOException {
-                                                if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
-                                                    return null;
-                                                }
-                                                try {
-                                                    final SourceAnalyser sa = getSourceAnalyser();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                } catch (IllegalArgumentException ia) {
-                                                    //Debug info for issue #187344
-                                                    //seems that invalid dirty class index is used
-                                                    final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
-                                                    throw new IllegalArgumentException(
-                                                            String.format("Provided source path: %s root: %s cache root: %",    //NOI18N
-                                                                scp == null ? "<null>" : scp.toString(),    //NOI18N
-                                                                root.toExternalForm(),
-                                                                cacheRoot.toURI().toURL())
-                                                                ,ia);
-                                                }
-                                                return null;
-                                            }
-                                    });
-                                } catch (Index.IndexClosedException e) {
-                                    //A try to  store to closed index, safe to ignore.
-                                    //Data will be scanned when project is reopened.
-                                   LOGGER.info("Ignoring store into closed index");
-                                } catch (IOException ioe) {
-                                   Exceptions.printStackTrace(ioe);
-                                }
-                                catch (InterruptedException e) {
-                                   //Should never happen
-                                   Exceptions.printStackTrace(e);
-                                }
-                            }
-                        }, true);
-                    } catch (IOException ioe) {
-                        Exceptions.printStackTrace(ioe);
-                    }
-                } else {
-                    LOGGER.log(
-                            Level.INFO,
-                            "Not updating cache for file {0}, does not belong to classpath {1}",    //NOI18N
-                            new Object[] {
-                                FileUtil.getFileDisplayName(file),
-                                scp
-                            });
-                }
-                this.dirty = null;
-                final long endTime = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "PersistentClassIndex.updateDirty took: {0} ms", (endTime-startTime));     //NOI18N
-            }
-        }
-    }
+    
 
     private synchronized void resetPkgCache() {        
         rootPkgCache = null;
@@ -451,6 +416,33 @@ public class PersistentClassIndex extends ClassIndexImpl {
             resetPkgCache();
             index.store(refs, topLevels, DocumentUtil.documentConvertor(), DocumentUtil.queryClassWithEncConvertor(true), false);
         }
+
+        @Override
+        public void deleteAndFlush(List<Pair<Pair<String, String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
+            resetPkgCache();
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).txStore(refs, toDelete, DocumentUtil.documentConvertor(), DocumentUtil.queryClassConvertor());
+            } else {
+                // fallback to the old behaviour
+                deleteAndStore(refs, toDelete);
+            }
+        }
+
+        @Override
+        public void commit() throws IOException {
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).commit();
+            }
+        }
+        
+        @Override
+        public void rollback() throws IOException {
+            if (index instanceof Index.Transactional) {
+                ((Index.Transactional)index).rollback();
+            }
+        }
+        
+        
         @Override
         public void deleteAndStore(List<Pair<Pair<String,String>, Object[]>> refs, Set<Pair<String, String>> toDelete) throws IOException {
             resetPkgCache();
@@ -458,7 +450,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private class TeeCollection<T> extends AbstractCollection<T> {
+    private static class TeeCollection<T> extends AbstractCollection<T> {
         
         private Collection<T> primary;
         private Collection<T> secondary;
@@ -484,6 +476,185 @@ public class PersistentClassIndex extends ClassIndexImpl {
             final boolean result = primary.add(e);
             secondary.add(e);
             return result;
+        }
+    }
+    
+    private static final class IndexPatch {
+        
+        private final URL root;
+        private final Index baseIndex;
+        //@GuardedBy("this")
+        private Index indexPatch;
+        //@GuardedBy("this")
+        private URL dirty;
+        //@GuardedBy("this")
+        private Set<String> typeFilter;
+        
+        IndexPatch(
+            @NonNull final URL root,
+            @NonNull final Index baseIndex) {
+            this.root = root;
+            this.baseIndex = baseIndex;
+        }
+        
+        <T> Pair<Convertor<? super Document, T>,Index> getPatch (
+                @NonNull final Convertor<? super Document, T> delegate) {
+            assert delegate != null;
+            try {
+                final Pair<Index,Set<String>> data = updateDirty();
+                if (data != null) {
+                    return Pair.<Convertor<? super Document, T>,Index>of(
+                            new FilterConvertor<T>(data.second, delegate),
+                            data.first);
+                }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+            return Pair.<Convertor<? super Document, T>,Index>of(delegate,null);
+        }
+        
+        synchronized void setDirtyFile(@NullAllowed final URL url) throws IOException {
+            this.dirty = url;
+            this.indexPatch = null;
+            if (url == null) {
+                typeFilter = null;
+            }
+        }
+        
+        @CheckForNull
+        private Pair<Index,Set<String>> updateDirty () throws IOException {
+            final URL url;
+            Set<String> filter;
+            Index result;
+            synchronized (this) {
+                url = this.dirty;
+                filter = typeFilter;
+                result = indexPatch;
+            }
+            if (url != null) {
+                final FileObject file = url != null ? URLMapper.findFileObject(url) : null;
+                final JavaSource js = file != null ? JavaSource.forFileObject(file) : null;
+                final long startTime = System.currentTimeMillis();
+                final List[] dataHolder = new List[1];
+                if (js != null) {
+                    final ClassPath scp = js.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                    if (scp != null && scp.contains(file)) {                    
+                        js.runUserActionTask(new Task<CompilationController>() {
+                            @Override
+                            public void run (final CompilationController controller) {
+                                try {                            
+                                    if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED)<0) {
+                                        return;
+                                    }
+                                    try {
+                                        final SourceAnalyzerFactory.SimpleAnalyzer sa = SourceAnalyzerFactory.createSimpleAnalyzer();
+                                        dataHolder[0] = sa.analyseUnit(
+                                            controller.getCompilationUnit(),
+                                            JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                            ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                    } catch (IllegalArgumentException ia) {
+                                        //Debug info for issue #187344
+                                        //seems that invalid dirty class index is used
+                                        final ClassPath scp = controller.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                                        throw new IllegalArgumentException(
+                                                String.format("Provided source path: %s root: %s",    //NOI18N
+                                                    scp == null ? "<null>" : scp.toString(),    //NOI18N
+                                                    root.toExternalForm()),
+                                                ia);
+                                    }
+                                } catch (IOException ioe) {
+                                    Exceptions.printStackTrace(ioe);
+                                }
+                            }
+                        }, true);
+                    } else {
+                        LOGGER.log(
+                                Level.INFO,
+                                "Not updating cache for file {0}, does not belong to classpath {1}",    //NOI18N
+                                new Object[] {
+                                    FileUtil.getFileDisplayName(file),
+                                    scp
+                                });
+                    }
+                }
+                final List<Pair<Pair<String, String>, Object[]>> data =
+                        (List<Pair<Pair<String, String>, Object[]>>) dataHolder[0];
+                if (data != null) {
+                    if (filter == null) {
+                        try {
+                            filter = new HashSet<String>();
+                            final String relPath = FileObjects.getRelativePath(root, url);
+                            final String clsName = FileObjects.convertFolder2Package(
+                                    FileObjects.stripExtension(relPath));
+                            baseIndex.query(
+                                    filter,
+                                    DocumentUtil.binaryNameConvertor(),
+                                    DocumentUtil.declaredTypesFieldSelector(),
+                                    null,
+                                    DocumentUtil.queryClassWithEncConvertor(true).convert(Pair.<String,String>of(clsName,relPath)));
+                        } catch (URISyntaxException se) {
+                            throw new IOException(se);
+                        } catch (InterruptedException ie) {
+                            //Never thrown, but throw as IOE for sure
+                            throw new IOException(ie);
+                        }
+                    }
+                    result = IndexManager.createMemoryIndex(DocumentUtil.createAnalyzer());
+                    result.store(
+                            data,
+                            Collections.<Object>emptySet(),
+                            DocumentUtil.documentConvertor(),
+                            new NoCallConvertor(),
+                            false);
+                } else {
+                    filter = null;
+                    result = null;
+                }
+                synchronized (this) {
+                    this.dirty = null;
+                    this.typeFilter = filter;
+                    this.indexPatch = result;
+                }
+                final long endTime = System.currentTimeMillis();
+                LOGGER.log(Level.FINE, "PersistentClassIndex.updateDirty took: {0} ms", (endTime-startTime));     //NOI18N
+            }
+            if (result != null) {
+                assert filter != null;
+                return Pair.<Index,Set<String>>of(result,filter);
+            } else {
+                assert filter == null;
+                return null;
+            }
+        }
+        
+    
+        private static class FilterConvertor<T> implements Convertor<Document, T> {
+
+            private final Set<String> toExclude;
+            private final Convertor<? super Document, T> delegate;
+
+            private FilterConvertor(
+                    @NonNull final Set<String> toExclude,
+                    @NonNull final Convertor<? super Document,T> delegate) {
+                assert toExclude != null;
+                assert delegate != null;
+                this.toExclude = toExclude;
+                this.delegate = delegate;
+            }
+
+            @Override
+            @CheckForNull
+            public T convert(@NonNull final Document doc) {
+                final String rawName = DocumentUtil.getBinaryName(doc);
+                return toExclude.contains(rawName) ? null : delegate.convert(doc);
+            }
+        }
+        
+        private static class NoCallConvertor<F,T> implements Convertor<F,T> {
+            @Override
+            public T convert(F p) {
+                throw new IllegalStateException();
+            }
         }
     }
 }

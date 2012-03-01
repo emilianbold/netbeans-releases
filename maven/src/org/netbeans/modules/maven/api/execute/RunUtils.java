@@ -141,6 +141,16 @@ public final class RunUtils {
         exec.setTask(task);
         return task;
     }
+    
+    /**
+     * return a new instance of runconfig by the template passed as parameter
+     * @param original
+     * @return 
+     * @since 2.40
+     */
+    public static RunConfig cloneRunConfig(RunConfig original) {
+        return new BeanRunConfig(original);
+    }
 
     /**
      *

@@ -69,14 +69,6 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="GspResolver.xml" url="GspResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
-                <attr name="position" intvalue="255"/>
-            </file>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="Groovy">
             <file name="_view.gsp" url="GspTemplate.gsp">

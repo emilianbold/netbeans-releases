@@ -77,24 +77,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JPopupMenu;
-import javax.swing.JSeparator;
-import javax.swing.JToolBar;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
+import org.netbeans.lib.profiler.ui.components.ProfilerToolbar;
 import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -169,7 +157,6 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private JMenuItem showReportItem;
     private JMenuItem showStartInSourceItem;
     private JPopupMenu profilingPointsPopup;
-    private JToolBar toolbar;
     private ProfilingPoint[] profilingPoints = new ProfilingPoint[0];
     private boolean profilingInProgress = false;
     private int initialSortingColumn;
@@ -632,18 +619,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
     private void initComponents() {
         setLayout(new BorderLayout());
 
-        toolbar = new JToolBar() {
-                public Component add(Component comp) {
-                    if (comp instanceof JButton) {
-                        UIUtils.fixButtonUI((JButton) comp);
-                    }
-
-                    return super.add(comp);
-                }
-            };
-        toolbar.setFloatable(false);
-        toolbar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); //NOI18N
-        toolbar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
+        ProfilerToolbar toolbar = ProfilerToolbar.create(true);
 
         projectLabel = new JLabel();
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, Bundle.ProfilingPointsWindowUI_ProjectLabelText());
@@ -671,6 +647,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         if (ProfilingPointsUIHelper.get().displaySubprojectsOption()) {
             dependenciesCheckbox = new JCheckBox();
+            dependenciesCheckbox.setOpaque(false);
+            UIUtils.addBorder(dependenciesCheckbox, BorderFactory.createEmptyBorder(0, 4, 0, 3));
             org.openide.awt.Mnemonics.setLocalizedText(dependenciesCheckbox, Bundle.ProfilingPointsWindowUI_InclSubprojCheckboxText());
             dependenciesCheckbox.setSelected(ProfilerIDESettings.getInstance().getIncludeProfilingPointsDependencies());
             toolbar.add(dependenciesCheckbox);
@@ -682,7 +660,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
                 });
         }
 
-        toolbar.add(new JToolBar.Separator());
+        toolbar.addSeparator();
 
         addButton = new JButton(PPOINT_ADD_ICON);
         addButton.setToolTipText(Bundle.ProfilingPointsWindowUI_AddButtonToolTip());
@@ -694,7 +672,7 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         removeButton.addActionListener(this);
         toolbar.add(removeButton);
 
-        toolbar.add(new JToolBar.Separator());
+        toolbar.addSeparator();
 
         editButton = new JButton(PPOINT_EDIT_ICON);
         editButton.setToolTipText(Bundle.ProfilingPointsWindowUI_EditButtonToolTip());
@@ -708,23 +686,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
 
         createProfilingPointsTable();
 
-        JPanel panel = new JPanel(new BorderLayout());
-        JSeparator separator = new JSeparator() {
-            public Dimension getMaximumSize() {
-                return new Dimension(super.getMaximumSize().width, 1);
-            }
-
-            public Dimension getPreferredSize() {
-                return new Dimension(super.getPreferredSize().width, 1);
-            }
-        };
-
-        separator.setBackground(toolbar.getBackground());
-
         JExtendedTablePanel tablePanel = new JExtendedTablePanel(profilingPointsTable);
-        tablePanel.setBorder(BorderFactory.createEmptyBorder());
-        panel.add(separator, BorderLayout.NORTH);
-        panel.add(tablePanel, BorderLayout.CENTER);
+        tablePanel.clearBorders();
 
         showInSourceItem = new JMenuItem(Bundle.ProfilingPointsWindowUI_ShowSourceItemText());
         showInSourceItem.setFont(showInSourceItem.getFont().deriveFont(Font.BOLD));
@@ -760,8 +723,8 @@ public class ProfilingPointsWindowUI extends JPanel implements ActionListener, L
         profilingPointsPopup.addSeparator();
         profilingPointsPopup.add(removeItem);
 
-        add(toolbar, BorderLayout.NORTH);
-        add(panel, BorderLayout.CENTER);
+        add(toolbar.getComponent(), BorderLayout.NORTH);
+        add(tablePanel, BorderLayout.CENTER);
     }
 
     private void refreshProfilingPoints() {

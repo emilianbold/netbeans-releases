@@ -112,8 +112,8 @@ is the proper place.
         <change>
             <api name="gitlibrary_api"/>
             <summary>Initial version of the API</summary>
-            <version major="0" minor="6"/>
-            <date day="3" month="1" year="2012"/>
+            <version major="0" minor="10"/>
+            <date day="24" month="2" year="2012"/>
             <author login="ovrabec"/>
             <compatibility addition="yes"/>
             <description>

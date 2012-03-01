@@ -52,6 +52,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
 import org.openide.awt.Actions;
@@ -61,6 +62,7 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.ViewCookie;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.windows.WindowManager;
 
 /** Adapter class which intercepts action events and passes them to the
  * correct action instance as defined in the system filesystem.
@@ -90,6 +92,17 @@ class NbApplicationAdapter implements ApplicationListener {
         } finally {
             Beans.setDesignTime(wasDesignTime);
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    FullScreenUtilities.setWindowCanFullScreen(WindowManager.getDefault().getMainWindow(), true);
+                } catch( Exception e ) {
+                    Logger.getLogger(NbApplicationAdapter.class.getName()).log(Level.FINE, 
+                            "Error while setting up full screen support.", e );//NOI18N
+                }
+            }
+        });
     }
 
     static void uninstall() {

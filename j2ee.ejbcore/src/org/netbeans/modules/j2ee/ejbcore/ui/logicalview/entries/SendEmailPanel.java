@@ -47,50 +47,58 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle;
 
 
 /**
  *
  * @author  blaha
  */
-public class SendEmailPanel extends javax.swing.JPanel {
+public class SendEmailPanel extends javax.swing.JPanel implements ChangeListener {
 
     public static final String IS_VALID = "SendEmailPanel_isValid"; //NOI18N
 
     private final ServiceLocatorStrategyPanel slcPanel;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private String errorMsg = null;
 
     /** Creates new form SendEmailPanel */
     public SendEmailPanel(String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
+
+        changeSupport.addChangeListener(this);
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
+
         slcPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
         serviceLocatorPanel.add(slcPanel,BorderLayout.CENTER);
         slcPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
-                    Object newvalue = evt.getNewValue();
-                    if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
-                        if (isServiceLocatorOk) {
-                            checkJndiName();
-                        } else {
-                            firePropertyChange(IS_VALID, true, false);
-                        }
-                    }
-                }
+                changeSupport.fireChange();
             }
         });
-        jndiName.getDocument().addDocumentListener(new DocumentListener() {
+        jndiNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent documentEvent) {
-                checkJndiName();
+                fireChange();
             }
+            @Override
             public void insertUpdate(DocumentEvent documentEvent) {
-                checkJndiName();
+                fireChange();
             }
+            @Override
             public void removeUpdate(DocumentEvent documentEvent) {
-                checkJndiName();
+                fireChange();
+            }
+            private void fireChange() {
+                changeSupport.fireChange();
             }
         });
     }
@@ -100,7 +108,7 @@ public class SendEmailPanel extends javax.swing.JPanel {
     }
     
     public String getJndiName(){
-        return jndiName.getText();
+        return jndiNameTextField.getText();
     }
     
     /** This method is called from within the constructor to
@@ -110,45 +118,50 @@ public class SendEmailPanel extends javax.swing.JPanel {
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        jndiName = new javax.swing.JTextField();
+        jndiNameLabel = new javax.swing.JLabel();
+        jndiNameTextField = new javax.swing.JTextField();
         serviceLocatorPanel = new javax.swing.JPanel();
+        scanningLabel = new javax.swing.JLabel();
 
-        setLayout(new java.awt.GridBagLayout());
+        org.openide.awt.Mnemonics.setLocalizedText(jndiNameLabel, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_jndiName")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getBundle(SendEmailPanel.class).getString("LBL_jndiName")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(12, 12, 11, 11);
-        add(jLabel1, gridBagConstraints);
-
-        jndiName.setColumns(30);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 11, 11);
-        add(jndiName, gridBagConstraints);
+        jndiNameTextField.setColumns(30);
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 11);
-        add(serviceLocatorPanel, gridBagConstraints);
+
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(scanningLabel, org.openide.util.NbBundle.getMessage(SendEmailPanel.class, "LBL_ScanningInProgress")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jndiNameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jndiNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scanningLabel)
+                        .addGap(0, 73, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(6, 6, 6)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jndiNameLabel)
+                    .addComponent(jndiNameTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(scanningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SendEmailPanel.class, "ACSD_SpecifyMailResource")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SendEmailPanel.class, "ACSD_SpecifyMailResource")); // NOI18N
@@ -156,16 +169,50 @@ public class SendEmailPanel extends javax.swing.JPanel {
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JTextField jndiName;
+    private javax.swing.JLabel jndiNameLabel;
+    private javax.swing.JTextField jndiNameTextField;
+    private javax.swing.JLabel scanningLabel;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
-    protected void checkJndiName() {
-        if (jndiName.getText().trim().equals("")) {
-            firePropertyChange(IS_VALID, true, false);
+    protected boolean isEmptyJndiName() {
+        return jndiNameTextField.getText().trim().equals("");
+    }
+
+    @NbBundle.Messages("sendEmailPanel.error.empty.jndi.name=JNDI name cannot be empty")
+    String getErrorMessage() {
+        if (!verifyComponents()) {
+            return errorMsg;
+        } else if (!slcPanel.verifyComponents()) {
+            return slcPanel.getErrorMessage();
         } else {
+            return null;
+        }
+    }
+
+    private boolean verifyComponents() {
+        if (isEmptyJndiName()) {
+            errorMsg = Bundle.sendEmailPanel_error_empty_jndi_name();
+            return false;
+        } else {
+            errorMsg = null;
+            return true;
+        }
+    }
+
+    public boolean valid() {
+        return verifyComponents() && slcPanel.verifyComponents();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        // update scanning label visibility
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
+
+        if (valid()) {
             firePropertyChange(IS_VALID, false, true);
+        } else {
+            firePropertyChange(IS_VALID, true, false);
         }
     }
     

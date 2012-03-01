@@ -53,7 +53,6 @@ import org.xml.sax.helpers.*;
 import org.openide.filesystems.*;
 import org.openide.util.*;
 import org.openide.xml.*;
-import org.openide.*;
 
 
 /**
@@ -73,6 +72,7 @@ abstract class DefaultParser  extends DefaultHandler {
     protected static final short PARSED = 1000;
     protected static final short ERROR = -1;
     protected static final short INIT = 0;
+    protected static final short LOAD = 1;
 
     protected DefaultParser() {        
     }
@@ -111,7 +111,7 @@ abstract class DefaultParser  extends DefaultHandler {
      * Parser content workarounding known parser implementation
      * problems.
      */
-    protected void parse(FileObject fo) {
+    protected final void parse(FileObject fo) {
         state = INIT; // #15672
         InputStream is = null;
         this.fo = fo;

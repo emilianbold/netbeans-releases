@@ -79,7 +79,7 @@ public class RestrictThreadCreation {
                 "java.util.logging.LogManager$Cleaner.<init>",
                 "org.netbeans.Stamps$Worker.<init>",
                 "org.netbeans.core.startup.Splash$SplashComponent.setText",
-                "org.netbeans.core.startup.preferences.NbPreferences.<clinit>",
+                "org.netbeans.core.startup.preferences.NbPreferences.asyncInvocationOfFlushSpi",
                 "org.openide.loaders.FolderInstance.waitFinished",
                 "org.openide.loaders.FolderInstance.postCreationTask",
                 "org.netbeans.modules.masterfs.filebasedfs.fileobjects.LockForFile.<clinit>",

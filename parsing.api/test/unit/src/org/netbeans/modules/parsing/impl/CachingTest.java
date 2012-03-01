@@ -59,9 +59,9 @@ import javax.swing.text.EditorKit;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -89,7 +89,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class CachingTest extends NbTestCase {
+public class CachingTest extends IndexingAwareTestCase {
     
     public CachingTest (String testName) {
         super (testName);

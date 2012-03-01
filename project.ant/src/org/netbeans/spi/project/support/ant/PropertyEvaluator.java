@@ -46,6 +46,8 @@ package org.netbeans.spi.project.support.ant;
 
 import java.beans.PropertyChangeListener;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * A way of mapping property names to values.
@@ -65,7 +67,7 @@ public interface PropertyEvaluator {
      * @return its value, or null if it is not defined or its value could not be
      *         retrieved for some reason (e.g. a circular definition)
      */
-    String getProperty(String prop);
+    @CheckForNull String getProperty(@NonNull String prop);
     
     /**
      * Evaluate a block of text possibly containing property references.
@@ -76,7 +78,7 @@ public interface PropertyEvaluator {
      * @return its value, or null if some problem (such a circular definition) made
      *         it impossible to retrieve the values of some properties
      */
-    String evaluate(String text);
+    @CheckForNull String evaluate(@NonNull String text);
     
     /**
      * Get a set of all current property definitions at once.
@@ -85,7 +87,7 @@ public interface PropertyEvaluator {
      * @return an immutable map from property names to values, or null if the
      *         mapping could not be computed (e.g. due to a circular definition)
      */
-    Map<String,String> getProperties();
+    @CheckForNull Map<String,String> getProperties();
     
     /**
      * Add a listener to changes in particular property values.

@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.modules.glassfish.spi.RegisteredDerbyServer;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
@@ -82,6 +83,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 
 /**
@@ -696,7 +698,24 @@ public class StartTask extends BasicTask<OperationState> {
             throw new ProcessCreationException(ioe,
                     "MSG_START_SERVER_FAILED_INVALIDPORT", instanceName, debugPortString); //NOI18N
         }
+
+        for (StartupExtender args : StartupExtender.getExtenders(
+                Lookups.singleton(support.getInstanceProvider().getInstance(ip.get("url"))), getMode(ip.get(GlassfishModule.JVM_MODE)))) {
+            for (String singleArg : args.getArguments()) {
+                argumentBuf.append(' ').append(singleArg);
+            }
+        }
         return argumentBuf;
+    }
+
+    private static StartupExtender.StartMode getMode(String gfMode) {
+        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.PROFILE;
+        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.DEBUG;
+        } else {
+            return StartupExtender.StartMode.NORMAL;
+        }
     }
 
     private String selectDebugPort() throws IOException {

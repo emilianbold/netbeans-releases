@@ -298,7 +298,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
 
-        doc.runAtomic(new Runnable() {
+        doc.render(new Runnable() {
             public void run() {
                 StyledDocument sd = (StyledDocument) doc;
                 Iterator it = lines.iterator();
@@ -900,7 +900,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private Color selectedColor() {
-        if (backgroundColor == backgroundColor()) {
+        if (backgroundColor.equals(backgroundColor())) {
             return selectedColor;
         }
         if (textComponent != null) {

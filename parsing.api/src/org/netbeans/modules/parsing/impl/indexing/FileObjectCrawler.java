@@ -42,12 +42,16 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -59,34 +63,41 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Zezula
  */
-public final class FileObjectCrawler extends Crawler {
+final class FileObjectCrawler extends Crawler {
 
     private static final Logger LOG = Logger.getLogger(FileObjectCrawler.class.getName());
-    private static final boolean isUnix = Utilities.isUnix();
-    private static final boolean isMac = Utilities.isMac();
-    /*test*/ static Map<FileObject,LinkType> mockLinkTypes;
-    
+    /*test*/ static Map<Pair<File,File>,Boolean> mockLinkTypes;
+
     private final FileObject root;
     private final ClassPath.Entry entry;
     private final FileObject[] files;
 
-    public FileObjectCrawler(FileObject root, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, true, true, cancelRequest);
+    FileObjectCrawler(
+            @NonNull final FileObject root,
+            final boolean checkTimeStamps,
+            @NullAllowed final ClassPath.Entry entry,
+            @NonNull final CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendStatus) throws IOException {
+        super (root.toURL(), checkTimeStamps, true, true, cancelRequest, suspendStatus);
         this.root = root;
         this.entry = entry;
         this.files = null;
     }
 
-    public FileObjectCrawler(FileObject root, FileObject[] files, boolean checkTimeStamps, ClassPath.Entry entry, CancelRequest cancelRequest) throws IOException {
-        super (root.getURL(), checkTimeStamps, false, supportsAllFiles(root, files), cancelRequest);
+    FileObjectCrawler(
+            @NonNull final FileObject root,
+            @NullAllowed final FileObject[] files,
+            final boolean checkTimeStamps,
+            @NullAllowed final ClassPath.Entry entry,
+            @NonNull final CancelRequest cancelRequest,
+            @NonNull final SuspendStatus suspendStatus) throws IOException {
+        super (root.toURL(), checkTimeStamps, false, supportsAllFiles(root, files), cancelRequest, suspendStatus);
         this.root = root;
         this.entry = entry;
         this.files = files;
@@ -121,7 +132,7 @@ public final class FileObjectCrawler extends Crawler {
                                 allResources,
                                 stats,
                                 entry,
-                                null,
+                                createPathForRoot(root),
                                 relativePath);
                         if (!finished) {
                             break;
@@ -131,22 +142,32 @@ public final class FileObjectCrawler extends Crawler {
             } else if (files.length == 1) {
                 StringBuilder relativePath = getRelativePath(root, files[0].getParent());
                 if (relativePath != null) {
-                    finished = collect(files, root, resources, allResources, stats, entry, null, relativePath);
+                    finished = collect(
+                        files,
+                        root,
+                        resources,
+                        allResources,
+                        stats,
+                        entry,
+                        createPathForRoot(root),
+                        relativePath);
                 } // else invalid (eg. deleted) FileObject encountered
             }
         } else {
-            finished = collect(root.getChildren(), root, resources, allResources, stats, entry, null, new StringBuilder());
+            finished = collect(
+                root.getChildren(),
+                root,
+                resources,
+                allResources,
+                stats,
+                entry,
+                createPathForRoot(root),
+                new StringBuilder());
         }
 
         final long tm2 = System.currentTimeMillis();
         if (LOG.isLoggable(Level.FINE)) {
-            String rootUrl;
-            try {
-                rootUrl = root.getURL().toString();
-            } catch (FileStateInvalidException ex) {
-                // ignore
-                rootUrl = root.toString();
-            }
+            final String rootUrl = root.toURL().toString();
 
             LOG.log(Level.FINE, String.format("Up-to-date check of %d files under %s took %d ms", stats.filesCount, rootUrl, tm2 - tm1 )); //NOI18N
 
@@ -178,9 +199,10 @@ public final class FileObjectCrawler extends Crawler {
             final @NonNull Collection<IndexableImpl> allResources,
             final @NullAllowed Stats stats,
             final @NullAllowed ClassPath.Entry entry,
-            final @NullAllowed LinkType parentLinkType,
+            final @NonNull Deque<File> path,
             final @NonNull StringBuilder relativePathBuilder)
     {
+        parkWhileSuspended();
         int parentPathEnd = relativePathBuilder.length();
 
         for (FileObject fo : fos) {
@@ -201,10 +223,21 @@ public final class FileObjectCrawler extends Crawler {
                     continue;
                 }
                 if (folder) {
-                    final LinkType linkType = getLinkType(fo, root, parentLinkType, stats);
-                    if (linkType != LinkType.IN) {
-                        if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, linkType, relativePathBuilder)) {
-                            return false;
+                    File dir = null;
+                    if (path.isEmpty() ||
+                        (dir=FileUtil.toFile(fo)) == null ||
+                        !isLink(dir,path, stats)) {
+                        if (dir != null) {
+                            path.addLast(dir);
+                        }
+                        try {
+                            if (!collect(fo.getChildren(), root, resources, allResources, stats, entry, path, relativePathBuilder)) {
+                                return false;
+                            }
+                        } finally {
+                            if (dir != null) {
+                                path.removeLast();
+                            }
                         }
                     }
                 } else {
@@ -259,66 +292,61 @@ public final class FileObjectCrawler extends Crawler {
         }
         return false;
     }
-
-    private static @NonNull LinkType getLinkType(
-            final @NonNull FileObject folder,
-            final @NonNull FileObject root,
-            final @NullAllowed LinkType parentLinkType,
-            final @NullAllowed Stats stats) {
+    
+    private static boolean isLink(
+        @NonNull final File file,
+        @NonNull final Deque<? extends File> path,
+        @NullAllowed final Stats stats) {
         final long st = System.currentTimeMillis();
-        boolean inLink = false;
+        boolean hasLink = false;
         try {
-            if (parentLinkType == LinkType.OUT) {
-                return parentLinkType;
+            final Iterator<? extends File> it = path.descendingIterator();
+            while (it.hasNext()) {
+                final File pathElement = it.next();
+                if (file.getName().equals(pathElement.getName())) {
+                    try {
+                        if (mockLinkTypes != null ?
+                            mockLinkTypes.get(Pair.<File,File>of(pathElement, file)) :
+                            file.getCanonicalFile().equals(pathElement.getCanonicalFile())) {
+                            hasLink = true;
+                            break;
+                        }
+                    } catch (IOException ioe) {
+                        LOG.log(
+                            Level.INFO,
+                            "Cannot convert to cannonical files {0} and {1}",   //NOI18N
+                            new Object[]{
+                                file,
+                                pathElement
+                            });
+                        LOG.log(
+                            Level.FINE,
+                            null,
+                            ioe);
+                        break;
+                    }
+                }
             }
-            if (mockLinkTypes != null) {
-                return mockLinkTypes.get(folder) != null ?
-                        mockLinkTypes.get(folder) : LinkType.NO;
-            }
-            if (!isUnix && !isMac) {
-                return LinkType.NO;
-            }            
-            final File directory = FileUtil.toFile(folder);
-            if (directory == null) {
-                return LinkType.NO;
-            }
-            final File canDirectory;
-            try {
-                canDirectory = directory.getCanonicalFile();
-            } catch (IOException ioe) {
-                return LinkType.NO;
-            }
-            final String dirPath = directory.getAbsolutePath();
-            final String canDirPath = canDirectory.getAbsolutePath();
-            final boolean notLink = isMac ? dirPath.equalsIgnoreCase(canDirPath) :
-                    dirPath.equals(canDirPath);
-            if (notLink) {
-                return LinkType.NO;
-            }
-            final File rootFile = FileUtil.toFile(root);
-            if (rootFile == null) {
-                return LinkType.OUT;
-            }
-            if (Util.isParentOf(rootFile, canDirectory)) {
-                inLink = true;
-                return LinkType.IN;
-            } else {
-                return LinkType.OUT;
-            }
+            return hasLink;
         } finally {
+            long et = System.currentTimeMillis();
             if (stats != null) {
-                if (inLink) {
+                stats.linkCheckTime+= (et-st);
+                if (hasLink) {
                     stats.linkCount++;
                 }
-                stats.linkCheckTime+=(System.currentTimeMillis()-st);
             }
         }
     }
-
-    /*test*/ static enum LinkType {
-        NO,
-        IN,
-        OUT
+    
+    private static Deque<File> createPathForRoot(@NonNull final FileObject root) {
+        final Deque<File> result = new ArrayDeque<File>();
+        File file = FileUtil.toFile(root);
+        while (file != null) {
+            result.addFirst(file);
+            file = file.getParentFile();
+        }
+        return result;
     }
     
     private static final class Stats {

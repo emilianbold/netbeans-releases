@@ -95,15 +95,7 @@ import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
-import org.openide.util.ContextAwareAction;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
-import org.openide.util.WeakListeners;
-import org.openide.util.WeakSet;
+import org.openide.util.*;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
 
@@ -919,6 +911,25 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
                 }
             }
         );
+    }
+
+    /**
+     * Notify the user that some (possibly lengthy) process is being run in this
+     * window.
+     * It is safe to call this method outside EDT.
+     *
+     * @param True to start 'busy' notification, 'false' to stop it.
+     *
+     * @see WindowManager#topComponentMakeBusy(org.openide.windows.TopComponent, boolean)
+     * @since 6.51
+     */
+    public final void makeBusy( final boolean busy ) {
+        Mutex.EVENT.readAccess( new Runnable() {
+            @Override
+            public void run() {
+                WindowManager.getDefault().topComponentMakeBusy( TopComponent.this, busy );
+            }
+        });
     }
 
     /**

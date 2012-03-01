@@ -106,8 +106,6 @@ import org.netbeans.modules.websvc.api.jaxws.bindings.BindingsModelFactory;
 import org.netbeans.modules.websvc.api.jaxws.bindings.GlobalBindings;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.DialogDescriptor;
@@ -133,6 +131,8 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.javaee.specs.support.api.JaxWsStackSupport;
 import org.netbeans.modules.xml.schema.model.GlobalElement;
 import org.netbeans.modules.xml.schema.model.GlobalType;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -238,6 +238,27 @@ public class JaxWsUtils {
         }
         jaxWsSupport.addService(targetName, serviceImplPath + "." + 
                 targetName, wsdlURL.toExternalForm(), service, port, artifactsPckg, jsr109, false);
+    }
+    
+    public static boolean hasAnnotation( Element element , String fqn ){
+        return  getAnnotation(element, fqn)!= null;
+    }
+    
+    public static AnnotationMirror getAnnotation( Element element , String fqn ){
+        for( AnnotationMirror mirror : element.getAnnotationMirrors() ){
+            if ( hasFqn(mirror, fqn)){
+                return mirror;
+            }
+        }
+        return null;
+    }
+    
+    public  static boolean hasFqn( AnnotationMirror mirror , String fqn){
+        Element anElement = mirror.getAnnotationType().asElement();
+        if ( anElement instanceof TypeElement ){
+            return fqn.contentEquals( ((TypeElement)anElement).getQualifiedName());
+        }
+        return false;
     }
 
     private static void generateProviderImplClass(Project project, 
@@ -719,7 +740,7 @@ public class JaxWsUtils {
                 try {
                     J2eePlatform j2eePlatform = Deployment.getDefault().
                     getServerInstance(serverInstance).getJ2eePlatform();
-                    WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(
+                    WSStack<JaxWs> wsStack = JaxWsStackSupport.getJaxWsStack(
                             j2eePlatform);
                     if (wsStack != null) {
                         jsr109Supported = 

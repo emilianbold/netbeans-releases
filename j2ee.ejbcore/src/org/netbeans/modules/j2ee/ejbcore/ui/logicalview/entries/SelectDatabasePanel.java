@@ -57,13 +57,17 @@ import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -71,7 +75,7 @@ import org.openide.util.NbBundle;
  * Provide an interface to support datasource reference selection.
  * @author  Chris Webster
  */
-public class SelectDatabasePanel extends javax.swing.JPanel {
+public class SelectDatabasePanel extends javax.swing.JPanel implements ChangeListener {
     
     public static final String IS_VALID = "SelectDatabasePanel_isValid"; //NOI18N
     
@@ -82,6 +86,9 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
     private final Set<Datasource> moduleDatasources;
     private final Set<Datasource> serverDatasources;
     private boolean copyDataSourceToProject = false;
+
+    private String errorMsg = null;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public SelectDatabasePanel(J2eeModuleProvider provider, String lastLocator, Map<String, Datasource> references,
             Set<Datasource> moduleDatasources, Set<Datasource> serverDatasources, ClasspathInfo cpInfo) {
@@ -91,6 +98,9 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         this.references = references;
         this.moduleDatasources = moduleDatasources;
         this.serverDatasources = serverDatasources;
+
+        changeSupport.addChangeListener(this);
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
         
         dsRefCombo.setRenderer(new ReferenceListCellRenderer());
         dsRefCombo.setPrototypeDisplayValue(PROTOTYPE_VALUE);
@@ -98,34 +108,18 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         
         dsRefCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent actionEvent) {
-                checkDatasourceReference();
+                changeSupport.fireChange();
             }
         });
 
         slPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
-        serviceLocatorPanel.add(slPanel, BorderLayout.CENTER);
+        serviceLocatorPanel.add(slPanel, BorderLayout.WEST);
         slPanel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(ServiceLocatorStrategyPanel.IS_VALID)) {
-                    Object newvalue = evt.getNewValue();
-                    if (newvalue instanceof Boolean) {
-                        boolean isServiceLocatorOk = ((Boolean)newvalue).booleanValue();
-                        if (isServiceLocatorOk) {
-                            checkDatasourceReference();
-                        } else {
-                            firePropertyChange(IS_VALID, true, false);
-                        }
-                    }
-                }
+                changeSupport.fireChange();
             }
         });
-        
-        if(org.netbeans.modules.j2ee.common.Util.isValidServerInstance(provider)){
-            errorLabel.setVisible(false);
-        } else {
-            errorLabel.setVisible(true);
-            errorLabel.setText(NbBundle.getMessage(SelectDatabasePanel.class, "ERR_MissingServer"));
-        }
     }
     
     public String getDatasourceReference() {
@@ -155,8 +149,8 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
         dsRefLabel = new javax.swing.JLabel();
         serviceLocatorPanel = new javax.swing.JPanel();
         dsRefCombo = new javax.swing.JComboBox();
-        buttonAdd = new javax.swing.JButton();
-        errorLabel = new javax.swing.JLabel();
+        addReferenceButton = new javax.swing.JButton();
+        scanningLabel = new javax.swing.JLabel();
 
         dsRefLabel.setDisplayedMnemonic(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_ConnectionMnemonic").charAt(0));
         dsRefLabel.setLabelFor(dsRefCombo);
@@ -165,34 +159,33 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
 
         serviceLocatorPanel.setLayout(new java.awt.BorderLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(buttonAdd, org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_Add")); // NOI18N
-        buttonAdd.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(addReferenceButton, org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_Add")); // NOI18N
+        addReferenceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonAddActionPerformed(evt);
+                addReferenceButtonActionPerformed(evt);
             }
         });
 
-        errorLabel.setForeground(new java.awt.Color(255, 0, 0));
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(scanningLabel, org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_ScanningInProgress")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(dsRefLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dsRefCombo, 0, 393, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonAdd))
+                        .addComponent(dsRefLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 63, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(6, 6, 6)
+                        .addComponent(dsRefCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(addReferenceButton))
                     .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 522, Short.MAX_VALUE)))
+                        .addComponent(scanningLabel)
+                        .addGap(0, 74, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -202,22 +195,21 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(dsRefLabel)
                     .addComponent(dsRefCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(buttonAdd))
-                .addGap(26, 26, 26)
-                .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 24, Short.MAX_VALUE)
-                .addContainerGap())
+                    .addComponent(addReferenceButton))
+                .addGap(18, 18, 18)
+                .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addComponent(scanningLabel))
         );
 
         dsRefLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_DsReference")); // NOI18N
         dsRefLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_DsReference")); // NOI18N
         dsRefCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "LBL_DsReference")); // NOI18N
         dsRefCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_DsRefCombo")); // NOI18N
-        buttonAdd.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_AddDataSourceRef")); // NOI18N
+        addReferenceButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SelectDatabasePanel.class, "ACSD_AddDataSourceRef")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    private void buttonAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonAddActionPerformed
+    private void addReferenceButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addReferenceButtonActionPerformed
         DataSourceReferencePanel referencePanel = new DataSourceReferencePanel(provider, references.keySet(), moduleDatasources, serverDatasources);
         final DialogDescriptor dialogDescriptor = new DialogDescriptor(
                 referencePanel,
@@ -275,23 +267,23 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             }
             
         }
-    }//GEN-LAST:event_buttonAddActionPerformed
+    }//GEN-LAST:event_addReferenceButtonActionPerformed
             
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buttonAdd;
+    private javax.swing.JButton addReferenceButton;
     private javax.swing.JComboBox dsRefCombo;
     private javax.swing.JLabel dsRefLabel;
-    private javax.swing.JLabel errorLabel;
+    private javax.swing.JLabel scanningLabel;
     private javax.swing.JPanel serviceLocatorPanel;
     // End of variables declaration//GEN-END:variables
     
-    protected void checkDatasourceReference() {
-        if (dsRefCombo.getSelectedItem() instanceof String) {
-            firePropertyChange(IS_VALID, false, true);
-        } else {
-            firePropertyChange(IS_VALID, true, false);
-        }
+    protected boolean isValidDatasourceReference() {
+        return dsRefCombo.getSelectedItem() instanceof String;
+    }
+
+    protected boolean isValidServer() {
+        return org.netbeans.modules.j2ee.common.Util.isValidServerInstance(provider);
     }
 
     private void populateReferences() {
@@ -302,7 +294,49 @@ public class SelectDatabasePanel extends javax.swing.JPanel {
             dsRefCombo.addItem(s);
         }
     }
-    
+
+    @NbBundle.Messages("selectDatabasePanel.error.reference.not.valid=Empty or not valid reference choosen")
+    public String getErrorMessage() {
+        if (!verifyComponents()) {
+            return errorMsg;
+        } else if (!slPanel.verifyComponents()) {
+            return slPanel.getErrorMessage();
+        } else {
+            return null;
+        }
+    }
+
+    public boolean verifyComponents() {
+        if (!isValidServer()) {
+            errorMsg = errorMsg = NbBundle.getMessage(SelectDatabasePanel.class, "ERR_MissingServer"); //NOI18N
+            // setEnable(true) should not be needed since the new panel is always created
+            addReferenceButton.setEnabled(false);
+            return false;
+        } else if (!isValidDatasourceReference()) {
+            errorMsg = Bundle.selectDatabasePanel_error_reference_not_valid();
+            return false;
+        } else {
+            errorMsg = null;
+            return true;
+        }
+    }
+
+    public boolean valid() {
+        return verifyComponents() && slPanel.verifyComponents();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        // update scanning label visibility
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
+
+        if (valid()) {
+            firePropertyChange(IS_VALID, false, true);
+        } else {
+            firePropertyChange(IS_VALID, true, false);
+        }
+    }
+
     private class ReferenceListCellRenderer extends DefaultListCellRenderer {
 
         @Override

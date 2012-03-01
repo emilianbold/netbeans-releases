@@ -730,7 +730,6 @@ made subject to such option by the copyright holder.
                 <project>../../websvc.websvcapi</project>
                 <project>../../websvc.wsitconf</project>
                 <project>../../websvc.wsitmodelext</project>
-                <project>../../websvc.wsstack.jaxws</project>
                 <project>../../websvc.wsstackapi</project>
                 <project>../../welcome</project>
                 <project>../../whitelist</project>

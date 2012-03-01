@@ -63,12 +63,4 @@
             </folder>
         </folder>
     </folder>
-    <folder name="Services">
-        <folder name="MIMEResolver">
-            <file name="LResolver.xml" url="LResolver.xml">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.palette.resources.Bundle"/>
-                <attr name="position" intvalue="850"/>
-            </file>
-        </folder>
-    </folder>
 </filesystem>

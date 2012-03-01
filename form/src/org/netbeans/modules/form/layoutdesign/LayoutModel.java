@@ -426,8 +426,11 @@ public class LayoutModel implements LayoutConstants {
     void setLayoutContainer(LayoutComponent component, boolean container) {
         boolean oldContainer = component.isLayoutContainer();
         if (oldContainer != container) {
-            List<LayoutInterval[]> roots = component.getLayoutRoots();
+            List<LayoutInterval[]> roots = oldContainer ? component.getLayoutRoots() : null;
             component.setLayoutContainer(container, null);
+            if (container) {
+                roots = component.getLayoutRoots();
+            }
 
             // record undo/redo (don't fire event)
             LayoutEvent.Component ev = new LayoutEvent.Component(this, LayoutEvent.CONTAINER_ATTR_CHANGED);
@@ -626,7 +629,7 @@ public class LayoutModel implements LayoutConstants {
         addChange(ev);
     }
 
-    static LayoutInterval[] createIntervalsFromBounds(Map<LayoutComponent, Rectangle> compToBounds) {
+    LayoutInterval[] createIntervalsFromBounds(Map<LayoutComponent, Rectangle> compToBounds) {
         RegionInfo region = new RegionInfo(compToBounds);
         region.calculateIntervals();
         LayoutInterval[] result = new LayoutInterval[DIM_COUNT];
@@ -636,7 +639,7 @@ public class LayoutModel implements LayoutConstants {
         return result;
     }
 
-    private static class RegionInfo {
+    private class RegionInfo {
         private LayoutInterval horizontal = null;
         private LayoutInterval vertical = null;
         private Map<LayoutComponent, Rectangle> compToBounds;
@@ -727,7 +730,7 @@ public class LayoutModel implements LayoutConstants {
                     LayoutInterval parent = (dim == HORIZONTAL) ? horizontal : vertical;
                     if (!parent.isParallel()) {
                         LayoutInterval parGroup = new LayoutInterval(PARALLEL);
-                        parGroup.add(parent, -1);
+                        add(parent, parGroup);
                         if (dim == HORIZONTAL) {
                             horizontal = parGroup;
                         } else {
@@ -741,7 +744,7 @@ public class LayoutModel implements LayoutConstants {
                         LayoutInterval interval = comp.getLayoutInterval(dim);
                         int gap = (dim == HORIZONTAL) ? bounds.x - minx : bounds.y - miny;
                         interval = prefixByGap(interval, gap);
-                        parent.add(interval, -1);
+                        add(interval, parent);
                     }
                 }
             }
@@ -827,9 +830,9 @@ public class LayoutModel implements LayoutConstants {
                     gap.setSize(seqGap);
                     seqGroup.add(gap, -1);
                 }
-                seqGroup.add(seqInterval, -1);
+                add(seqInterval, seqGroup);
                 parInterval = prefixByGap(parInterval, parGap);
-                parGroup.add(parInterval, -1);
+                add(parInterval, parGroup);
             }
             if (dimension == HORIZONTAL) {
                 horizontal = seqGroup;
@@ -849,13 +852,21 @@ public class LayoutModel implements LayoutConstants {
                 } else {
                     LayoutInterval group = new LayoutInterval(SEQUENTIAL);
                     group.add(gap, -1);
-                    group.add(interval, -1);
+                    add(interval, group);
                     interval = group;
                 }
             }
             return interval;
         }
-        
+
+        private void add(LayoutInterval interval, LayoutInterval parent) {
+            if (interval.isComponent()) { // needs to be undoable
+                addInterval(interval, parent, -1);
+            } else {
+                parent.add(interval, -1);
+            }
+        }
+
         public LayoutInterval getInterval(int dimension) {
             return (dimension == HORIZONTAL) ? horizontal : vertical;
         }

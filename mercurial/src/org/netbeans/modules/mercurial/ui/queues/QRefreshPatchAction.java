@@ -109,7 +109,7 @@ public class QRefreshPatchAction extends CreateRefreshAction {
                 return Mutex.EVENT.readAccess(new Action<QCommitPanel>() {
                     @Override
                     public QCommitPanel run () {
-                        return QCommitPanel.createRefreshPanel(roots, root, message, patch, parent);
+                        return QCommitPanel.createRefreshPanel(roots, root, message, patch, parent, QRefreshPatchAction.class.getName());
                     }
                 });
             }

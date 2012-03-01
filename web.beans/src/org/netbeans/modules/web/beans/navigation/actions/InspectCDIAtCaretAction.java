@@ -187,7 +187,7 @@ public class InspectCDIAtCaretAction extends AbstractWebBeansAction {
             return;
         }
         try {
-            metaModel.runReadAction( new MetadataModelAction<WebBeansModel, Void>() {
+            metaModel.runReadActionWhenReady( new MetadataModelAction<WebBeansModel, Void>() {
 
                 @Override
                 public Void run( WebBeansModel model ) throws Exception {

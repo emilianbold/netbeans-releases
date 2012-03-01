@@ -65,4 +65,14 @@ public final class ClassIndexManagerEvent extends EventObject {
     public Set<? extends URL> getRoots () {
         return this.roots;
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+            "%s[source: %s, roots: %s]",    //NOI18N
+            ClassIndexManagerEvent.class.getName(),
+            getSource(),
+            getRoots());
+    }
+    
 }
