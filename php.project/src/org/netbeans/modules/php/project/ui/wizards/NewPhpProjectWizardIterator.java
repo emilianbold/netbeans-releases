@@ -77,6 +77,7 @@ import org.netbeans.modules.php.project.ui.actions.RemoteCommand;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator;
 import org.netbeans.modules.php.project.util.PhpProjectGenerator.ProjectProperties;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -163,12 +164,16 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
+        // #207493
+        final PhpVersion phpVersion = (PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION);
+        PhpOptions.getInstance().setDefaultPhpVersion(phpVersion);
+
         final PhpProjectGenerator.ProjectProperties createProperties = new PhpProjectGenerator.ProjectProperties()
                 .setProjectDirectory(getProjectDirectory())
                 .setSourcesDirectory(getSources(descriptor))
                 .setName((String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME))
                 .setRunAsType(wizardType == WizardType.REMOTE ? RunAsType.REMOTE : getRunAsType())
-                .setPhpVersion((PhpVersion) descriptor.getProperty(ConfigureProjectPanel.PHP_VERSION))
+                .setPhpVersion(phpVersion)
                 .setCharset((Charset) descriptor.getProperty(ConfigureProjectPanel.ENCODING))
                 .setUrl(getUrl())
                 .setIndexFile(wizardType == WizardType.REMOTE ? null : getIndexFile(frameworkExtenders))

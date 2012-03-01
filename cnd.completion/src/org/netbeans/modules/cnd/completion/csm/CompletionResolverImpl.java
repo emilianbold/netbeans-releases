@@ -476,7 +476,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             }
         }
         if (needTemplateParameters(context, offset)) {
-            resImpl.templateParameters = getTemplateParameters(context, strPrefix, match);
+            resImpl.templateParameters = getTemplateParameters(context, strPrefix, match, offset);
             if (isEnough(strPrefix, match, resImpl.templateParameters)) {
                 return true;
             }
@@ -834,7 +834,7 @@ public class CompletionResolverImpl implements CompletionResolver {
         return CsmUtilities.merge(orig, newList);
     }
 
-    private Collection<CsmTemplateParameter> getTemplateParameters(CsmContext context, String strPrefix, boolean match) {
+    private Collection<CsmTemplateParameter> getTemplateParameters(CsmContext context, String strPrefix, boolean match, int offset) {
         Collection<CsmTemplateParameter> templateParameters = null;
         CsmFunction fun = CsmContextUtilities.getFunction(context, false);
         Collection<CsmTemplate> analyzeTemplates = new ArrayList<CsmTemplate>();
@@ -846,7 +846,6 @@ public class CompletionResolverImpl implements CompletionResolver {
             if (CsmKindUtilities.isFunction(obj)) {
                 fun = (CsmFunction) obj;
             } else {
-                int offset = ((CsmOffsetable) context.getLastObject()).getEndOffset();
                 obj = CsmDeclarationResolver.findInnerFileObject(file, offset, context, fileReferncesContext);
                 if (CsmKindUtilities.isFunction(obj)) {
                     fun = (CsmFunction) obj;

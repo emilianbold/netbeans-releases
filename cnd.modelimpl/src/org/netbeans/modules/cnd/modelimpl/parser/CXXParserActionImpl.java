@@ -45,7 +45,7 @@ import java.util.Map;
 import org.antlr.runtime.Token;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
@@ -54,8 +54,8 @@ public class CXXParserActionImpl implements CXXParserActionEx {
 
     private final CppParserActionImpl orig;
 
-    public CXXParserActionImpl(CsmFile file) {
-        orig = new CppParserActionImpl((FileImpl) file);
+    public CXXParserActionImpl(CsmParserProvider.CsmParserParameters params) {
+        orig = new CppParserActionImpl(params);
     }
 
     @Override

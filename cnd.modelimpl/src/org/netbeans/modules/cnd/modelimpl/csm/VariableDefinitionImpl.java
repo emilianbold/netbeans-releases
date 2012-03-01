@@ -78,6 +78,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -137,7 +138,30 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
 	}
 	return qualifiedName;
     }
-    
+
+    @Override
+    protected boolean registerInProject() {
+        CharSequence prevFQN = qualifiedName;
+        boolean out = super.registerInProject();
+        if (false && CndUtils.isDebugMode()) {
+            if (prevFQN != null && !prevFQN.equals(findQualifiedName())) {
+                assert prevFQN.equals(findQualifiedName());
+            }
+        }
+        return out;
+    }
+
+    @Override
+    protected boolean unregisterInProject() {
+        if (false && CndUtils.isDebugMode()) {
+            assert qualifiedName != null;
+            if (!qualifiedName.equals(findQualifiedName())) {
+                assert qualifiedName.equals(findQualifiedName());
+            }
+        }
+        return super.unregisterInProject();
+    }
+
     private String findQualifiedName() {
         CsmVariable declaration = _getDeclaration();
 	if( declaration != null ) {

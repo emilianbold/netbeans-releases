@@ -57,11 +57,12 @@ public final class WeakContainer<T> {
     private WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
     private int preventMultiplyDiagnosticExceptionsSorage = 0;
     private final CsmValidable stateOwner;
-    private final Key sorageKey;
+    private final Key storageKey;
 
-    public WeakContainer(CsmValidable stateOwner, Key sorageKey) {
+    public WeakContainer(CsmValidable stateOwner, Key storageKey) {
+        assert storageKey != null;
         this.stateOwner = stateOwner;
-        this.sorageKey = sorageKey;
+        this.storageKey = storageKey;
     }
 
     public synchronized void clear() {
@@ -81,9 +82,9 @@ public final class WeakContainer<T> {
             if (container != null) {
                 return container;
             }
-            container = (T) RepositoryUtils.get(sorageKey);
+            container = (T) RepositoryUtils.get(storageKey);
             if (container == null && stateOwner.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
+                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + storageKey)); // NOI18N
                 preventMultiplyDiagnosticExceptionsSorage++;
             }
             if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {

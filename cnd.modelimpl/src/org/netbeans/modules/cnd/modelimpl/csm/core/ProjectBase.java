@@ -3105,13 +3105,23 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 @SuppressWarnings("unchecked") // checked //NOI18N
                 CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
                 for (CsmUID<CsmDeclaration> uidt : uids) {
-                    set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                    final CsmDeclaration object = uidt.getObject();
+                    if (object != null) {
+                        set.put(((CsmOffsetableDeclaration) object).getContainingFile().getAbsolutePath(), object);
+                    } else {
+                        printStream.println("\tNO OBJECT FOR " + entry.getKey().toString() + "\n\t"+uidt);//NOI18N
+                    }
                 }
             } else if (o instanceof CsmUID<?>) {
                 // we know the template type to be CsmDeclaration
                 @SuppressWarnings("unchecked") // checked //NOI18N
                 CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
-                set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                final CsmDeclaration object = uidt.getObject();
+                if (object != null) {
+                    set.put(((CsmOffsetableDeclaration) object).getContainingFile().getAbsolutePath(), object);
+                } else {
+                    printStream.println("\tNO OBJECT FOR " + entry.getKey().toString() + "\n\t" + uidt);//NOI18N
+                }
             }
             for (Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()) {
                 printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N

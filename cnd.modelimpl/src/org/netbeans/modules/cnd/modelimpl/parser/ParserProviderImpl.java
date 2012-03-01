@@ -55,7 +55,9 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
@@ -76,15 +78,16 @@ import org.openide.util.lookup.ServiceProvider;
 public final class ParserProviderImpl extends CsmParserProvider {
 
     @Override
-    protected CsmParser create(CsmFile file) {
+    protected CsmParser create(CsmParserParameters params) {
+        CsmFile file = params.getMainFile();
         if (file instanceof FileImpl) {
             if (file.getFileType() == CsmFile.FileType.SOURCE_FORTRAN_FILE) {
-                return new Antrl3FortranParser((FileImpl)file);
+                return new Antrl3FortranParser(params);
             }
             if(!TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
-                return new Antlr2CppParser((FileImpl)file);
+                return new Antlr2CppParser(params);
             } else {
-                return new Antlr3CXXParser((FileImpl)file);
+                return new Antlr3CXXParser(params);
             }
         } else {
             return null;
@@ -100,9 +103,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private ConstructionKind kind;
         
         private Map<Integer, CsmObject> objects = null;
+        private final CsmParserProvider.CsmParserParameters params;
         
-        Antlr2CppParser(FileImpl file) {
-            this.file = file;
+        Antlr2CppParser(CsmParserProvider.CsmParserParameters params) {
+            this.params = params;
+            this.file = (FileImpl) params.getMainFile();
             int aFlags = CPPParserEx.CPP_CPLUSPLUS;
             if (!TraceFlags.REPORT_PARSING_ERRORS) {
                 aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
@@ -119,7 +124,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CppParserActionEx cppCallback = (CppParserActionEx)callback;
             if (cppCallback == null) {
                 if(TraceFlags.CPP_PARSER_ACTION) {
-                    cppCallback = new CppParserActionImpl(file);
+                    cppCallback = new CppParserActionImpl(params);
                 } else {
                     cppCallback = new CppParserEmptyActionImpl(file);
                 }
@@ -153,6 +158,9 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     case NAMESPACE_DEFINITION_BODY:
                         parser.translation_unit();
                         break;
+                    case ENUM_BODY:
+                        parser.fix_fake_enum_members();
+                        break;
                     case CLASS_BODY:
                         parser.fix_fake_class_members();
                         break;
@@ -179,26 +187,43 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
                     if (ast != null) {
-                        FileImpl.ParseDescriptor descr = (FileImpl.ParseDescriptor) context[0];
-                        new AstRenderer(file, descr.getFileContent(), objects).render(ast);
+                        CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
+                        FileContent parseFileContent = null;
+                        if (descr instanceof FileImpl.ParseDescriptor) {
+                            parseFileContent = ((FileImpl.ParseDescriptor)descr).getFileContent();
+                        }
+                        new AstRenderer(file, parseFileContent, objects).render(ast);
                         file.incParseCount();
                     }            
                     break;
                 case NAMESPACE_DEFINITION_BODY:
-                    FileImpl nsBodyFile = (FileImpl) context[0];
+                {
+                    FileContent fileContent = (FileContent) context[0];
+                    FileImpl nsBodyFile = fileContent.getFile();
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, null, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, fileContent, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }                    
                     break;
+                }
                 case CLASS_BODY:
-                    FileImpl clsBodyFile = (FileImpl) context[0];
+                {
+                    FileContent fileContent = (FileContent) context[0];
                     ClassImpl cls = (ClassImpl) context[1];
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
-                    cls.fixFakeRender(clsBodyFile, visibility, ast, localClass);
+                    cls.fixFakeRender(fileContent, visibility, ast, localClass);
                     break;
+                }
+                case ENUM_BODY:
+                    {
+                    FileContent fileContent = (FileContent) context[0];
+                    EnumImpl enumImpl = (EnumImpl) context[1];
+                    boolean localEnum = (Boolean) context[2];
+                    enumImpl.fixFakeRender(fileContent, ast, localEnum);
+                    break;
+                }
                 default:
                     assert false : "unexpected parse kind " + kind;
             }
@@ -235,9 +260,11 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private CsmObject parserContainer;
         private FortranParser.program_return ret;
         private ConstructionKind kind;
+        private final CsmParserProvider.CsmParserParameters params;
 
-        Antrl3FortranParser(FileImpl file) {
-            this.file = file;
+        Antrl3FortranParser(CsmParserProvider.CsmParserParameters params) {
+            this.file = (FileImpl) params.getMainFile();
+            this.params = params;
         }
         
         @Override
@@ -268,7 +295,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             switch (kind) {
                 case TRANSLATION_UNIT_WITH_COMPOUND:
                 case TRANSLATION_UNIT:
-                    new DataRenderer(file).render(parser.parsedObjects);
+                    new DataRenderer((FileImpl.ParseDescriptor)context[0]).render(parser.parsedObjects);
                     file.incParseCount();
                     break;
                 default:
@@ -306,14 +333,16 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
     private final static class Antlr3CXXParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
         private final FileImpl file;
+        private final CsmParserProvider.CsmParserParameters params;
         private CXXParserEx parser;
 
         private ConstructionKind kind;
         
         private Map<Integer, CsmObject> objects = null;
         
-        Antlr3CXXParser(FileImpl file) {
-            this.file = file;
+        Antlr3CXXParser(CsmParserProvider.CsmParserParameters params) {
+            this.params = params;
+            this.file = (FileImpl) params.getMainFile();
         }
 
         @Override
@@ -323,7 +352,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CXXParserActionEx cppCallback = (CXXParserActionEx)callback;
             if (cppCallback == null) {
                 if (TraceFlags.CPP_PARSER_ACTION) {
-                    cppCallback = new CXXParserActionImpl(file);
+                    cppCallback = new CXXParserActionImpl(params);
                 } else {
                     cppCallback = new CXXParserEmptyActionImpl(file);
                 }
