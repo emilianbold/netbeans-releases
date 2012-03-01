@@ -77,7 +77,7 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
         resultsNode.update();
     }
 
-    public void addMathingObject(T object) {
+    public void addMatchingObject(T object) {
         matchingObjects.add(object);
         resultsNode.update();
     }

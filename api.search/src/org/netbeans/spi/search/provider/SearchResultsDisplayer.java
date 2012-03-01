@@ -80,7 +80,7 @@ public abstract class SearchResultsDisplayer<T> {
     }
 
     /**
-     * Called righg after the search was finished. Default implementation does
+     * Called right after the search was finished. Default implementation does
      * nothing.
      */
     public void searchFinished() {
@@ -119,7 +119,7 @@ public abstract class SearchResultsDisplayer<T> {
 
             @Override
             public void addMatchingObject(U object) {
-                panel.addMathingObject(object);
+                panel.addMatchingObject(object);
             }
 
             @Override
