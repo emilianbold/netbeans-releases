@@ -65,6 +65,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.web.plugins.PluginLoader;
 import org.netbeans.modules.web.plugins.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -101,8 +102,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         private static final String PROFILE_LOCK_WINDOWS = "parent.lock";// NOI18N
         private static final String PROFILE_LOCK = "lock";               // NOI18N
         
-        private static final String PLUGIN_MODULE_NAME = 
-            "org.netbeans.modules.web.plugins";             // NOI18N
         private static final String[] WIN32_PROFILES_LOCATIONS = {
             "\\Mozilla\\Firefox\\"                          // NOI18N
         };
@@ -161,10 +160,10 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install()
+         * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
          */
         @Override
-        public boolean install() {
+        public boolean install( PluginLoader loader) {
             File defaultProfile = getDefaultProfile();
             File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
                     File.separator + EXTENSION_ID);
@@ -174,6 +173,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             if ( extensionFile == null ){
                 Logger.getLogger(FFExtensionManager.class.getCanonicalName()).
                     severe("Could not find firefox extension in installation directory");   // NOI18N
+                return false;
             }
             
             // plugin is not initialized

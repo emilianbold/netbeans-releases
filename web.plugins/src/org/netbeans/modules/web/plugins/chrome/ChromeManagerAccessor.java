@@ -44,10 +44,19 @@ package org.netbeans.modules.web.plugins.chrome;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.web.plugins.PluginLoader;
 import org.netbeans.modules.web.plugins.Utils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 
@@ -68,7 +77,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
     
     private static class ChromeExtensionManager extends AbstractBrowserExtensionManager {
-
+        
         private static final String LAST_USED = "\"last_used\":";               // NOI18N
         
         private static final String VERSION = "\"version\":";                   // NOI18N
@@ -77,7 +86,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
         
-        private static final String CURRENT_VERSION = "0.3.2";                      // NOI18N
+        private static final String CURRENT_VERSION = "0.3.2";                  // NOI18N
+        
+        private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-chrome-plugin.crx"; // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
@@ -117,7 +128,20 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
             String state = getValue(preferences, start, end, STATE);
             try {
-                return Byte.valueOf((byte)1).equals(Byte.parseByte(state ));
+                boolean isEnabled =  Byte.valueOf((byte)1).equals(Byte.parseByte(state ));
+                
+                if ( !isEnabled ){
+                    NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                            NbBundle.getMessage(ChromeExtensionManager.class, 
+                                    "LBL_ChromePluginIsDisabled"),                   // NOI18N
+                                        NotifyDescriptor.ERROR_MESSAGE);
+                    
+                    descriptor.setTitle(NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "TTL_ChromePluginIsDisabled"));                             // NOI18N
+                    DialogDisplayer.getDefault().notify(descriptor);
+                }
+                
+                return true;
             }
             catch ( NumberFormatException e ){
                 return false;
@@ -125,12 +149,40 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         }
 
         /* (non-Javadoc)
-         * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install()
+         * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
          */
         @Override
-        public boolean install() {
-            // TODO Auto-generated method stub
-            return false;
+        public boolean install( PluginLoader loader) {
+            File extensionFile = InstalledFileLocator.getDefault().locate(
+                    EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            
+            if ( extensionFile == null ){
+                Logger.getLogger(ChromeExtensionManager.class.getCanonicalName()).
+                    severe("Could not find chrome extension in installation directory");   // NOI18N
+                return false;
+            }
+            
+            NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "LBL_InstallMsg"),                                  // NOI18N
+                    NbBundle.getMessage(ChromeExtensionManager.class, 
+                            "TTL_InstallExtension"),                            // NOI18N
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(installDesc);
+            if (result != NotifyDescriptor.OK_OPTION) {
+                return false;
+            }
+            
+            try {
+                loader.requestPluginLoad( new URL("file:///"+extensionFile.getCanonicalPath()));
+            }
+            catch( IOException e ){
+                Logger.getLogger( ChromeExtensionManager.class.getCanonicalName()).
+                    log(Level.INFO , null ,e );
+                return false;
+            }
+            return true;
         }
         
         /*

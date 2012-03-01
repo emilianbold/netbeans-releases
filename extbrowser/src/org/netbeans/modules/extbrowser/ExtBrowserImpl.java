@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
@@ -54,7 +55,9 @@ import org.netbeans.modules.extbrowser.plugins.MessageDispatcherImpl;
 import org.netbeans.modules.extbrowser.plugins.RemoteScriptExecutor;
 import org.netbeans.modules.web.plugins.BrowserId;
 import org.netbeans.modules.web.plugins.ExtensionManager;
+import org.netbeans.modules.web.plugins.PluginLoader;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -157,7 +160,17 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (tab == null) {
             BrowserId pluginId = getPluginId();
-            if ( ExtensionManager.checkExtension(pluginId) ) {
+            boolean pluginAvailable = ExtensionManager.isInstalled(pluginId);
+            if ( !pluginAvailable ){
+                ExtensionManager.installExtension( pluginId, new PluginLoader() {
+                    
+                    @Override
+                    public void requestPluginLoad( URL url ) {
+                        loadURLInBrowser(url);
+                    }
+                });
+            }
+            if ( pluginAvailable ) {
                 ExternalBrowserPlugin.getInstance().register(url, this);
             }
             loadURLInBrowser(url);
@@ -173,9 +186,9 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         if ( extBrowserFactory instanceof FirefoxBrowser ){
             return BrowserId.FIREFOX;
         }
-        /*else if ( extBrowserFactory instanceof ChromeBrowser ){
+        else if ( extBrowserFactory instanceof ChromeBrowser ){
             return BrowserId.CHROME;
-        }*/
+        }
         return null;
     }
     
@@ -224,5 +237,4 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     public void urlHasChanged() {
         pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
     }
-    
 }

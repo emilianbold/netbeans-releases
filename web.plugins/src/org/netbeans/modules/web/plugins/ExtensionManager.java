@@ -59,10 +59,7 @@ public final class ExtensionManager {
     private ExtensionManager(){
     }
     
-    /**
-     * @return true if extension is available
-     */
-    public static boolean checkExtension(  BrowserId id ){
+    public static boolean isInstalled( BrowserId id ){
         if ( id == null ){
             // TODO : show browser chooser
         }
@@ -72,12 +69,25 @@ public final class ExtensionManager {
                 return false;
             }
             BrowserExtensionManager manager = accessor.getManager();
-            if ( manager.isInstalled() ){
-                return true;
+            return manager.isInstalled();
+        }
+        return false;
+    }
+    
+    /**
+     * @return true if extension is available
+     */
+    public static boolean installExtension(  BrowserId id , PluginLoader loader ){
+        if ( id == null ){
+            // TODO : show browser chooser
+        }
+        else {
+            ExtensionManagerAccessor accessor = ACCESSORS.get(id);
+            if ( accessor == null ){
+                return false ;
             }
-            else {
-                return manager.install();
-            }
+            BrowserExtensionManager manager = accessor.getManager();
+            return manager.install( loader );
         }
         return false;
     }
