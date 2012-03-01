@@ -82,6 +82,7 @@ public class FixUsesPerformer {
     private static final String AS_KEYWORD = "as"; //NOI18N
     private static final String AS_CONCAT = SPACE + AS_KEYWORD + SPACE;
     private static final String EMPTY_STRING = ""; //NOI18N
+    private static final String COLON = ","; //NOI18N
     private final PHPParseResult parserResult;
     private final ImportData importData;
     private final String[] selections;
@@ -169,7 +170,7 @@ public class FixUsesPerformer {
                     insertString.append(indentString);
                 }
                 insertString.append(usePart);
-                insertString.append(i + 1 == useParts.size() ? SEMICOLON : "," + NEW_LINE);
+                insertString.append(i + 1 == useParts.size() ? SEMICOLON : COLON + NEW_LINE);
             }
         } else {
             for (String usePart : useParts) {
