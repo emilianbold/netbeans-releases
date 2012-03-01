@@ -1,11 +1,6 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
-  <Properties>
-    <Property name="focusTraversalPolicy" type="java.awt.FocusTraversalPolicy" editor="org.netbeans.modules.a11ychecker.traverse.FocusTraversalPolicyEditor">
-      <SerializedValue value="-84,-19,0,5,115,114,0,59,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,84,114,97,118,101,114,115,97,108,80,111,108,105,99,121,-117,45,-95,-30,56,-106,56,86,2,0,3,76,0,3,101,110,100,116,0,18,76,106,97,118,97,47,108,97,110,103,47,83,116,114,105,110,103,59,76,0,12,115,97,118,101,100,66,117,116,116,111,110,115,116,0,18,76,106,97,118,97,47,117,116,105,108,47,86,101,99,116,111,114,59,76,0,5,115,116,97,114,116,113,0,126,0,1,120,112,112,115,114,0,16,106,97,118,97,46,117,116,105,108,46,86,101,99,116,111,114,-39,-105,125,91,-128,59,-81,1,3,0,3,73,0,17,99,97,112,97,99,105,116,121,73,110,99,114,101,109,101,110,116,73,0,12,101,108,101,109,101,110,116,67,111,117,110,116,91,0,11,101,108,101,109,101,110,116,68,97,116,97,116,0,19,91,76,106,97,118,97,47,108,97,110,103,47,79,98,106,101,99,116,59,120,112,0,0,0,0,0,0,0,14,117,114,0,19,91,76,106,97,118,97,46,108,97,110,103,46,79,98,106,101,99,116,59,-112,-50,88,-97,16,115,41,108,2,0,0,120,112,0,0,0,20,115,114,0,56,111,114,103,46,110,101,116,98,101,97,110,115,46,109,111,100,117,108,101,115,46,97,49,49,121,99,104,101,99,107,101,114,46,116,114,97,118,101,114,115,101,46,77,121,83,97,118,105,110,103,66,117,116,116,111,110,-19,-86,-80,71,10,30,-18,-64,2,0,2,76,0,4,110,97,109,101,113,0,126,0,1,76,0,8,110,101,120,116,78,97,109,101,113,0,126,0,1,120,112,116,0,14,109,111,118,101,68,111,119,110,66,117,116,116,111,110,112,115,113,0,126,0,9,116,0,12,109,111,118,101,85,112,66,117,116,116,111,110,113,0,126,0,11,115,113,0,126,0,9,116,0,12,114,101,109,111,118,101,66,117,116,116,111,110,113,0,126,0,13,115,113,0,126,0,9,116,0,15,97,100,100,70,111,108,100,101,114,66,117,116,116,111,110,113,0,126,0,15,115,113,0,126,0,9,116,0,15,105,110,99,108,117,100,101,80,97,116,104,76,105,115,116,113,0,126,0,17,115,113,0,126,0,9,116,0,26,100,101,98,117,103,103,101,114,83,101,115,115,105,111,110,73,100,84,101,120,116,70,105,101,108,100,116,0,26,115,116,111,112,65,116,84,104,101,70,105,114,115,116,76,105,110,101,67,104,101,99,107,66,111,120,115,113,0,126,0,9,116,0,23,112,104,112,73,110,116,101,114,112,114,101,116,101,114,84,101,120,116,70,105,101,108,100,116,0,26,112,104,112,73,110,116,101,114,112,114,101,116,101,114,66,114,111,119,115,101,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,22,113,0,126,0,19,115,113,0,126,0,9,116,0,21,100,101,98,117,103,103,101,114,80,111,114,116,84,101,120,116,70,105,101,108,100,113,0,126,0,21,115,113,0,126,0,9,116,0,14,101,100,105,116,111,114,67,104,101,99,107,66,111,120,113,0,126,0,28,115,113,0,126,0,9,116,0,18,119,101,98,66,114,111,119,115,101,114,67,104,101,99,107,66,111,120,113,0,126,0,30,115,113,0,126,0,9,116,0,20,111,117,116,112,117,116,87,105,110,100,111,119,67,104,101,99,107,66,111,120,113,0,126,0,32,115,113,0,126,0,9,113,0,126,0,25,116,0,26,112,104,112,73,110,116,101,114,112,114,101,116,101,114,83,101,97,114,99,104,66,117,116,116,111,110,115,113,0,126,0,9,113,0,126,0,36,113,0,126,0,34,112,112,112,112,112,112,120,112"/>
-    </Property>
-  </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -29,40 +24,44 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="1" attributes="0">
-              <EmptySpace min="12" pref="12" max="12" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="phpInterpreterLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="openResultInLabel" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="phpInterpreterTextField" pref="107" max="32767" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="phpInterpreterBrowseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="phpInterpreterSearchButton" linkSize="3" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="outputWindowCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="webBrowserCheckBox" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="editorCheckBox" min="-2" max="-2" attributes="0"/>
-                  </Group>
-              </Group>
-          </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="commandLineLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="commandLineSeparator" pref="360" max="32767" attributes="0"/>
+              <Component id="commandLineSeparator" max="32767" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
+              <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="globalIncludePathSeparator" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="includePathScrollPane" pref="332" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="phpInterpreterLabel" min="-2" max="-2" attributes="0"/>
+                          <Component id="openResultInLabel" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="phpInterpreterTextField" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="phpInterpreterBrowseButton" linkSize="3" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" max="-2" attributes="0"/>
+                              <Component id="phpInterpreterSearchButton" linkSize="3" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="outputWindowCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="webBrowserCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="editorCheckBox" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                      </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="includePathScrollPane" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
                           <Component id="addFolderButton" linkSize="2" min="-2" max="-2" attributes="0"/>
@@ -74,11 +73,15 @@
                   <Component id="useTheFollowingPathByDefaultLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
-          <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-          <Group type="102" alignment="0" attributes="0">
-              <Component id="globalIncludePathLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="globalIncludePathSeparator" pref="326" max="32767" attributes="0"/>
+          <Group type="102" attributes="0">
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="0" attributes="0">
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="globalIncludePathInfoLabel" min="-2" max="-2" attributes="0"/>
+                  </Group>
+              </Group>
+              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -112,8 +115,7 @@
               <Component id="useTheFollowingPathByDefaultLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="includePathScrollPane" alignment="0" pref="128" max="32767" attributes="2"/>
-                  <Group type="102" alignment="0" attributes="0">
+                  <Group type="102" attributes="0">
                       <Component id="addFolderButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
@@ -122,7 +124,10 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="moveDownButton" min="-2" max="-2" attributes="0"/>
                   </Group>
+                  <Component id="includePathScrollPane" max="32767" attributes="2"/>
               </Group>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <Component id="globalIncludePathInfoLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -416,6 +421,13 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.moveDownButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="globalIncludePathInfoLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/options/Bundle.properties" key="PhpOptionsPanel.globalIncludePathInfoLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="errorLabel">
       <Properties>
