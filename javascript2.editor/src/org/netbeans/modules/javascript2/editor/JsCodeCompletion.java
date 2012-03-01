@@ -348,6 +348,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     if (type == null) {
                         // try to find through index
+                        lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
                     } else {
                         if ("@mtd".equals(kind)) {  //NOI18N
                             if (type.getJSKind().isFunction()) {
