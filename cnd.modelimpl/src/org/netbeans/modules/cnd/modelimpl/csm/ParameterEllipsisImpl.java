@@ -71,7 +71,12 @@ public final class ParameterEllipsisImpl extends ParameterImpl {
     protected boolean registerInProject() {
         return false;
     }
-    
+
+    @Override
+    protected boolean unregisterInProject() {
+        return false;
+    }
+
     @Override
     public boolean isVarArgs() {
         return true;

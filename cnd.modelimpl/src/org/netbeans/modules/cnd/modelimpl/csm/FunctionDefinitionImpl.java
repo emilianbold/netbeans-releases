@@ -51,6 +51,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -73,12 +74,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     protected FunctionDefinitionImpl(CharSequence name, CharSequence rawName, CsmScope scope, boolean _static, boolean _const, CsmFile file, int startOffset, int endOffset, boolean global) {
         super(name, rawName, scope, _static, _const, file, startOffset, endOffset, global);
     }
-    
-    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global) throws AstRendererException {
-        return create(ast, file, scope, global, null);
-    }
-        
-    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
+     
+    public static<T> FunctionDefinitionImpl<T> create(AST ast, CsmFile file, FileContent fileContent, CsmScope scope, boolean global, Map<Integer, CsmObject> objects) throws AstRendererException {
         int startOffset = getStartOffset(ast);
         int endOffset = getEndOffset(ast);
         
@@ -90,7 +87,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
 
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, true);
@@ -105,7 +102,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         
         functionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDefinitionImpl, file, objects));
-        functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, global), 
+        functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?
@@ -121,7 +118,8 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         functionDefinitionImpl.setCompoundStatement(body);
         
         postObjectCreateRegistration(global, functionDefinitionImpl);
-        nameHolder.addReference(file, functionDefinitionImpl);
+        postFunctionImpExCreateRegistration(fileContent, global, functionDefinitionImpl);
+        nameHolder.addReference(fileContent, functionDefinitionImpl);
         return functionDefinitionImpl;
     }
 

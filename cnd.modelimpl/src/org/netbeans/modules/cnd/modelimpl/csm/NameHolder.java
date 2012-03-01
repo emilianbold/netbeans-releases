@@ -49,8 +49,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -155,10 +155,9 @@ public class NameHolder {
         return "name=" + name + ", start=" + start + ", end=" + end + ", isMacroExpanded=" + isMacroExpanded; // NOI18N
     }
 
-    public void addReference(CsmFile file, final CsmObject decl) {
-        if (file instanceof FileImpl) {
+    public void addReference(final FileContent fileContent, final CsmObject decl) {        
+        if (fileContent != null) {
             if (start > 0 && !isMacroExpanded) {
-                final FileImpl fileImpl = (FileImpl) file;
                 final CsmReferenceKind kind;
                 if (CsmKindUtilities.isFunctionDefinition(decl) ||
                         CsmKindUtilities.isVariableDefinition(decl)) {
@@ -185,7 +184,7 @@ public class NameHolder {
 
                     @Override
                     public CsmFile getContainingFile() {
-                        return fileImpl;
+                        return fileContent.getFile();
                     }
 
                     @Override
@@ -218,7 +217,7 @@ public class NameHolder {
                         return decl;
                     }
                 };
-                fileImpl.addReference(ref, decl);
+                fileContent.addReference(ref, decl);
             }
         }
     }

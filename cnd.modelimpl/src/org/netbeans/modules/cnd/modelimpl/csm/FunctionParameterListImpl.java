@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -75,11 +76,11 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return new FunctionParameterListImpl(file, start, end, parameters);
     }
 
-    private static FunctionParameterListImpl create(CsmFile file, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
+    private static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST lParen, AST rParen, AST firstList, AST krList, CsmScope scope, boolean isLocal) {
         if (lParen == null || lParen.getType() != CPPTokenTypes.LPAREN || rParen == null || rParen.getType() != CPPTokenTypes.RPAREN) {
             return null;
         }
-        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, scope, isLocal);
+        List<CsmParameter> parameters = AstRenderer.renderParameters(krList == null ? firstList : krList, file, fileContent, scope, isLocal);
         Collection<CsmUID<CsmParameter>> paramUIDs = UIDCsmConverter.objectsToUIDs(parameters);
         return FunctionParameterListImpl.create(file, getStartOffset(lParen), getEndOffset(rParen), paramUIDs);
     }
@@ -100,7 +101,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         return "Fun " + super.toString(); // NOI18N
     }
 
-    public static FunctionParameterListImpl create(CsmFile file, AST funAST, CsmScope scope, boolean isLocal) {
+    public static FunctionParameterListImpl create(CsmFile file, FileContent fileContent, AST funAST, CsmScope scope, boolean isLocal) {
         AST lParen = null;
         AST rParen = null;
         AST paramList = null;
@@ -138,7 +139,7 @@ public class FunctionParameterListImpl extends ParameterListImpl<CsmFunctionPara
         } else {
             return null;
         }
-        return create(file, lParen, rParen, paramList, krList, scope, isLocal);
+        return create(file, fileContent, lParen, rParen, paramList, krList, scope, isLocal);
     }
 
     ////////////////////////////////////////////////////////////////////////////

@@ -881,6 +881,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
+                    { #external_declaration_template = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1282,6 +1283,7 @@ member_declaration_template
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
         (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+        { #member_declaration_template = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration_template); }
     |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
@@ -1521,6 +1523,7 @@ member_declaration
 		}
 		SEMICOLON! //{end_of_stmt();}
         |       (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+                { #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|	using_declaration
         |       static_assert_declaration
 	)
@@ -1901,6 +1904,12 @@ fix_fake_class_members
         { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
     ;
 
+fix_fake_enum_members
+    :
+        enumerator_list
+        { #fix_fake_enum_members = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #fix_fake_enum_members); }
+    ;
+
 enum_specifier
 {int ts = 0;}
 :   LITERAL_enum
@@ -2018,6 +2027,7 @@ init_declarator[int kind]
                 |
                         array_initializer
 		)?
+                (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
 
 initializer
@@ -2351,7 +2361,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition, symTabCheck]
+        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
@@ -3538,8 +3548,13 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   TILDE
             |   ELLIPSIS
 
-            |   balanceParensInExpression
-            |   balanceSquaresInExpression
+            |   balanceParensInExpression 
+            |   balanceSquaresInExpression 
+                (options {greedy = true;}:  
+                    (balanceParensInExpression)? 
+                    (trailing_type)? 
+                    compound_statement
+                )?
 
             |   constant
 
@@ -3572,6 +3587,15 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   LITERAL_alignof
             |   LITERAL___alignof__
+
+            |   LITERAL_auto
+            |   LITERAL_final
+            |   LITERAL_override
+            |   LITERAL_constexpr
+            |   LITERAL_thread_local
+            |   LITERAL_static_assert
+            |   LITERAL_alignas
+            |   LITERAL_noexcept
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3739,6 +3763,15 @@ lazy_expression_predicate
 
     |   LITERAL_alignof
     |   LITERAL___alignof__
+
+    |   LITERAL_auto
+    |   LITERAL_final
+    |   LITERAL_override
+    |   LITERAL_constexpr
+    |   LITERAL_thread_local
+    |   LITERAL_static_assert
+    |   LITERAL_alignas
+    |   LITERAL_noexcept
 
     |   GREATERTHAN lazy_expression_predicate
     ;

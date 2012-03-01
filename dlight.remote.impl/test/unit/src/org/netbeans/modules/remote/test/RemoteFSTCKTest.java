@@ -82,18 +82,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
-        public void testWriteReadExclusion() throws Exception {
-            super.testWriteReadExclusion();
-        }
-
-        @RandomlyFails
-        @Override
-        public void testWriteReadExclusionDeadlock() throws Exception {
-            super.testWriteReadExclusionDeadlock();
-        }
-
-        @RandomlyFails
-        @Override
         public void testFireFileDeletedEvent2() throws IOException {
             super.testFireFileDeletedEvent2();
         }
