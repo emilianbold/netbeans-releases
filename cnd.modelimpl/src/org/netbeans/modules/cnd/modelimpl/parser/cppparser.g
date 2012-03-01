@@ -3672,7 +3672,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   literal_pascal 
             |   literal_stdcall
 
-            |   ts=builtin_type[0] (balanceCurlies)?
+            |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
             |   LITERAL_struct
             |   LITERAL_union
