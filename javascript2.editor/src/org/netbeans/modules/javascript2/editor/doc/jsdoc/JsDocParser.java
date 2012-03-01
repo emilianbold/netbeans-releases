@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
@@ -179,7 +180,12 @@ public class JsDocParser {
     private static List<CommentBlock> getCommentBlocks(Snapshot snapshot) {
         List<CommentBlock> blocks = new LinkedList<CommentBlock>();
 
-        TokenSequence tokenSequence = LexUtilities.getJsTokenSequence(snapshot);
+        TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
+        if (tokenHierarchy == null) {
+            return blocks;
+        }
+
+        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
         if (tokenSequence == null) {
             return blocks;
         }

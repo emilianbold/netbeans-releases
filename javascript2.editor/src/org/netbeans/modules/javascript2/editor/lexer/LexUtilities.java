@@ -85,23 +85,6 @@ public final class LexUtilities {
         return getJsTokenSequence(th, offset);
     }
 
-    /**
-     * Gets {@code TokenSequence} for given snapshot.
-     * <p>
-     * <i>Can return null when the language was not initialized yet.</i>
-     * @param snapshot for getting {@code TokenSequence}
-     * @return {@code TokenSequence} if {@code TokenHierarchy} for that snapshot is not null, {@code} null otherwise
-     */
-    public static TokenSequence<?extends JsTokenId> getJsTokenSequence(Snapshot snapshot) {
-        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
-        if (th == null) {
-            //the token hierarchy may be null if the language is not initialized yet
-            //for example if ergonomics is used and j2ee cluster not activated
-            return null;
-        }
-        return th.tokenSequence(JsTokenId.language());
-    }
-
     /** Find the JavaScript token sequence (in case it's embedded in something else at the top level */
     public static TokenSequence<?extends JsTokenId> getJsTokenSequence(TokenHierarchy<?> th, int offset) {
         TokenSequence<?extends JsTokenId> ts = th.tokenSequence(JsTokenId.language());

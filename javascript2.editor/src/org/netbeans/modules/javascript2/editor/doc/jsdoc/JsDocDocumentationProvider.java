@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
@@ -144,8 +145,11 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
 //    }
 
     private int getEndOffsetOfAssociatedComment(int offset) {
-        Snapshot snapshot = parserResult.getSnapshot();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot());
+        TokenHierarchy<?> tokenHierarchy = parserResult.getSnapshot().getTokenHierarchy();
+        if (tokenHierarchy == null) {
+            return -1;
+        }
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
         if (ts != null) {
             ts.move(offset);
             boolean activated = false;
@@ -157,7 +161,7 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
                     }
                 } else {
                     if (ts.token().id() == JsTokenId.DOC_COMMENT) {
-                        return ts.token().offset(snapshot.getTokenHierarchy()) + ts.token().length();
+                        return ts.token().offset(tokenHierarchy) + ts.token().length();
                     } else if (isWhitespaceToken(ts.token())) {
                         continue;
                     } else {
