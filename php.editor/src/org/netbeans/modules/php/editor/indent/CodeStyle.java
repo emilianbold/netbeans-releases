@@ -621,6 +621,14 @@ public final class CodeStyle {
         return preferences.getBoolean(preferFullyQualifiedNames, getDefaultAsBoolean(preferFullyQualifiedNames));
     }
 
+    public boolean preferMultipleUseStatementsCombined() {
+        return preferences.getBoolean(preferMultipleUseStatementsCombined, getDefaultAsBoolean(preferMultipleUseStatementsCombined));
+    }
+
+    public boolean startUseWithNamespaceSeparator() {
+        return preferences.getBoolean(startUseWithNamespaceSeparator, getDefaultAsBoolean(startUseWithNamespaceSeparator));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         @Override

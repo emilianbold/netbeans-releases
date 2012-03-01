@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.Icon;
+import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -209,20 +210,6 @@ public class ImportDataCreator {
             }
         }
         return result;
-    }
-
-    static class Options {
-
-        private final boolean preferFullyQualifiedNames;
-
-        public Options(boolean preferFullyQualifiedNames) {
-            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
-        }
-
-        public boolean preferFullyQualifiedNames() {
-            return preferFullyQualifiedNames;
-        }
-
     }
 
 }
