@@ -104,6 +104,8 @@ public class JsFormatter implements Formatter {
                 FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
                 if (root != null) {
                     root.accept(visitor);
+                } else {
+                    LOGGER.log(Level.INFO, "Format visitor not executed; no root node");
                 }
                 LOGGER.log(Level.INFO, "Format visitor: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
