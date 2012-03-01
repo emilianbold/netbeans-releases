@@ -102,6 +102,7 @@ public class CloneableEditorSupportPaneAsyncTest extends NbTestCase implements C
         assertEquals(1, panes.length);
     }
     
+    @RandomlyFails
     public void testGetOpenedPanesAndClose () throws Exception {
         content = "Ahoj\nMyDoc";
         //javax.swing.text.Document doc = support.openDocument ();
