@@ -64,12 +64,15 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /** Basic Search provider
  *
  * @author jhavlin
  */
-@ServiceProvider(service=SearchProvider.class, position=0)
+@ServiceProviders(value = {
+    @ServiceProvider(service = SearchProvider.class, position = 0),
+    @ServiceProvider(service = BasicSearchProvider.class, position = 0)})
 public class BasicSearchProvider extends SearchProvider {
 
     /**
