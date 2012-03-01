@@ -43,12 +43,12 @@ package org.netbeans.api.search.provider.impl;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchInfoDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -70,8 +70,8 @@ public class DelegatingSearchInfo extends SearchInfo {
 
     @Override
     public Iterator<FileObject> getFilesToSearch(SearchScopeOptions options,
-        SearchListener listener, TerminationFlag terminationFlag) {
-        return delegate.filesToSearch(options, listener, terminationFlag);
+        SearchListener listener, AtomicBoolean terminated) {
+        return delegate.filesToSearch(options, listener, terminated);
     }
 
     @Override

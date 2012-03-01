@@ -43,6 +43,7 @@ package org.netbeans.modules.search.project;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -50,7 +51,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SubTreeSearchOptions;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -184,13 +184,7 @@ public class CompatibilityUtilsTest extends NbTestCase {
         for (FileObject fo : si.iterateFilesToSearch(
                 SearchScopeOptions.create("*", false),
                 new SearchListener() {
-                }, new TerminationFlag() {
-
-            @Override
-            public boolean isTerminated() {
-                return false;
-            }
-        })) {
+                }, new AtomicBoolean(false))) {
             if (fo.getName().startsWith("filtered")) {
                 fail(fo.getPath() + " should be filtered");
             }

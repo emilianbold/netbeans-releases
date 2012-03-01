@@ -781,12 +781,10 @@
 -->
     <answer id="exec-threading">
         <p>
-            The API is not threadsafe. There is no special relation to AWT.
-        </p>
-        <p>
-            There is class TerminationFlag that is used to stop searching from
-            other threads. This is the only permitted way to communicate with
-            searching iterator.
+            Searches are performed in non-EDT threads. Interaction with EDT is
+            provided by AtomicBoolean objects for termination, SearchListener
+            for showing search progress and events, and SearchResultsDisplayer
+            for displaying search results.
         </p>
     </answer>
 

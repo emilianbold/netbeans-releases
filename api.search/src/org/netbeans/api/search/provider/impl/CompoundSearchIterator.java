@@ -45,10 +45,10 @@ package org.netbeans.api.search.provider.impl;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,7 +79,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
     private boolean upToDate;
     private SearchScopeOptions options;
     private SearchListener listener;
-    private TerminationFlag terminationFlag;
+    private AtomicBoolean terminated;
 
     /**
      * Creates a new instance of
@@ -91,7 +91,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
      */
     public CompoundSearchIterator(SearchInfo[] elements,
             SearchScopeOptions options, SearchListener listener,
-            TerminationFlag terminationFlag) {
+            AtomicBoolean terminated) {
 
         if (elements == null) {
             throw new IllegalArgumentException("Elements are null");    //NOI18N
@@ -110,7 +110,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
             upToDate = false;
         }
         this.listener = listener;
-        this.terminationFlag = terminationFlag;
+        this.terminated = terminated;
     }
 
     /**
@@ -142,7 +142,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
 
         if (elementIterator == null) {
             elementIterator = elements[elementIndex = 0].getFilesToSearch(options,
-                    listener, terminationFlag);
+                    listener, terminated);
         }
 
         while (!elementIterator.hasNext()) {
@@ -152,7 +152,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
                 break;
             }
             elementIterator = elements[elementIndex].getFilesToSearch(options,
-                    listener, terminationFlag);
+                    listener, terminated);
         }
 
         if (elementIndex < elements.length) {

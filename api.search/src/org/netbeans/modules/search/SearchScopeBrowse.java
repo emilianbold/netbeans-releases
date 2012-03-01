@@ -44,6 +44,7 @@ package org.netbeans.modules.search;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -52,7 +53,6 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -115,10 +115,10 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
 
         @Override
         public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
-                SearchListener listener, TerminationFlag terminationFlag) {
+                SearchListener listener, AtomicBoolean terminated) {
 
             return getDelegate().getFilesToSearch(options, listener,
-                    terminationFlag);
+                    terminated);
         }
 
         @Override

@@ -46,6 +46,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -56,7 +57,6 @@ import org.netbeans.modules.search.matcher.AbstractMatcher;
 import org.netbeans.modules.search.matcher.DefaultMatcher;
 import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.provider.SearchComposition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -224,7 +224,7 @@ public class MatchingObjectTest extends NbTestCase {
                 @Override
                 public Iterator<FileObject> getFilesToSearch(
                         SearchScopeOptions options, SearchListener listener,
-                        TerminationFlag terminationFlag) {
+                        AtomicBoolean terminated) {
 
                     List<FileObject> l =
                             Collections.singletonList(fo);

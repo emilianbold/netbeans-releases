@@ -48,11 +48,11 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -101,7 +101,7 @@ public class CompoundSearchInfo extends SearchInfo {
      */
     @Override
     public Iterator<FileObject> getFilesToSearch(SearchScopeOptions options,
-            SearchListener listener, TerminationFlag terminationFlag) {
+            SearchListener listener, AtomicBoolean terminated) {
         if (elements == null) {
             return Collections.<FileObject>emptyList().iterator();
         }
@@ -116,7 +116,7 @@ public class CompoundSearchInfo extends SearchInfo {
         return new CompoundSearchIterator(
                 searchableElements.toArray(
                 new SearchInfo[searchableElements.size()]),
-                options, listener, terminationFlag);
+                options, listener, terminated);
     }
 
     @Override

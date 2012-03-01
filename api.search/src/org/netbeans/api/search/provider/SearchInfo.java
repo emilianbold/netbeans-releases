@@ -43,11 +43,11 @@ package org.netbeans.api.search.provider;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.spi.search.provider.SearchComposition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,7 +83,7 @@ public abstract class SearchInfo {
      * @param listener Listener that is notified when some important event
      * occurs during searching. Listener passed to {@link SearchComposition}
      * should be used here.
-     * @param terminationFlag Object that can be asked by the iterator whether
+     * @param terminated Object that can be asked by the iterator whether
      * the search has been terminated.
      *
      * @return Iterator over all files that comply with specified options (in
@@ -92,7 +92,7 @@ public abstract class SearchInfo {
     public abstract @NonNull Iterator<FileObject> getFilesToSearch(
             @NonNull SearchScopeOptions options,
             @NonNull SearchListener listener,
-            @NonNull TerminationFlag terminationFlag);
+            @NonNull AtomicBoolean terminated);
 
     /**
      * Get {@link Iterable} that iterates over all files in the search scope
@@ -100,7 +100,7 @@ public abstract class SearchInfo {
      *
      * This is only convenience method. The iterated files are the same that
      * would be retrieved with 
-     * {@link #getFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}.
+     * {@link #getFilesToSearch(SearchScopeOptions, SearchListener, AtomicBoolean)}.
      * 
      * <div class="nonnormative">
      * <p>
@@ -120,13 +120,13 @@ public abstract class SearchInfo {
     public final @NonNull Iterable<FileObject> iterateFilesToSearch(
             @NonNull final SearchScopeOptions options,
             @NonNull final SearchListener listener,
-            @NonNull final TerminationFlag terminationFlag) {
+            @NonNull final AtomicBoolean terminated) {
 
         return new Iterable<FileObject>() {
 
             @Override
             public Iterator<FileObject> iterator() {
-                return getFilesToSearch(options, listener, terminationFlag);
+                return getFilesToSearch(options, listener, terminated);
             }
         };
     }

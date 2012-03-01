@@ -42,6 +42,7 @@
 package org.netbeans.modules.search.matcher;
 
 import java.io.File;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JFileChooser;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -50,7 +51,6 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -277,20 +277,14 @@ public class SearchPerformanceComparator extends javax.swing.JFrame {
             final AbstractMatcher fm = matcher;
             final CustomSearchListener listener =
                     new CustomSearchListener(matcher);
-            final TerminationFlag tf = new TerminationFlag() {
-
-                @Override
-                public boolean isTerminated() {
-                    return false;
-                }
-            };
+            final AtomicBoolean terminated = new AtomicBoolean(false);
             new Thread(new Runnable() {
 
                 @Override
                 public void run() {
                     listener.searchStarted();
                     for (FileObject fo : si.iterateFilesToSearch(
-                            so, listener, tf)) {
+                            so, listener, terminated)) {
 
                         Def result = fm.check(fo, listener);
                         if (result != null) {

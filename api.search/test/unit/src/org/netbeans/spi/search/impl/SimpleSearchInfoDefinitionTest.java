@@ -43,12 +43,11 @@ package org.netbeans.spi.search.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
-import org.junit.AfterClass;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -80,12 +79,7 @@ public class SimpleSearchInfoDefinitionTest extends NbTestCase {
         Iterator<FileObject> files = searchInfo.filesToSearch(
                 SearchScopeOptions.create(), new SearchListener() {
         },
-                new TerminationFlag() {
-                    @Override
-                    public boolean isTerminated() {
-                        return false;
-                    }
-                });
+                new AtomicBoolean(false));
         assertEquals("The first line should be found", f1, files.next());
         assertFalse("The second file should be filtered", files.hasNext());
     }

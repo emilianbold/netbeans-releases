@@ -50,11 +50,11 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Stack;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Enumerations;
@@ -96,7 +96,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
 
     private boolean searchInArchives;
 
-    private TerminationFlag terminationFlag;
+    private AtomicBoolean terminated;
 
     /**
      */
@@ -104,7 +104,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
             SearchScopeOptions options,
             List<SearchFilterDefinition> filters,
             SearchListener listener,
-            TerminationFlag terminationFlag) {
+            AtomicBoolean terminated) {
         this.rootFile = root;
         if (rootFile.isFolder()) {
             this.childrenEnum = sortEnum(rootFile.getChildren(false));
@@ -115,7 +115,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
         this.fileNameMatcher = FileNameMatcher.create(options);
         this.searchInArchives = options.isSearchInArchives();
         this.filterHelper = new FilterHelper(filters, options);
-        this.terminationFlag = terminationFlag;
+        this.terminated = terminated;
     }
 
     /**
@@ -188,7 +188,7 @@ public class SimpleSearchIterator extends AbstractFileObjectIterator {
 
     private void processFolder(FileObject folder) {
 
-        if (!terminationFlag.isTerminated() && checkFolderFilters(folder)) {
+        if (!terminated.get() && checkFolderFilters(folder)) {
             listener.directoryEntered(folder.getPath());
             enums.push(childrenEnum);
             childrenEnum = sortEnum(folder.getChildren(false));

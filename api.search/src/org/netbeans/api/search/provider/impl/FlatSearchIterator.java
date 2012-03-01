@@ -47,11 +47,11 @@ import java.awt.EventQueue;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.SearchFilterDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Enumerations;
 
@@ -82,7 +82,7 @@ public class FlatSearchIterator extends AbstractFileObjectIterator {
 
     private FilterHelper filterHelper;
 
-    private TerminationFlag terminationFlag;
+    private AtomicBoolean terminated;
 
     /**
      */
@@ -90,7 +90,7 @@ public class FlatSearchIterator extends AbstractFileObjectIterator {
             SearchScopeOptions options,
             List<SearchFilterDefinition> filters,
             SearchListener listener,
-            TerminationFlag terminationFlag) {
+            AtomicBoolean terminated) {
         this.rootFile = root;
         if (rootFile.isFolder()) {
             this.childrenEnum = SimpleSearchIterator.sortEnum(
@@ -101,7 +101,7 @@ public class FlatSearchIterator extends AbstractFileObjectIterator {
         this.listener = listener;
         this.fileNameMatcher = FileNameMatcher.create(options);
         this.filterHelper = new FilterHelper(filters, options);
-        this.terminationFlag = terminationFlag;
+        this.terminated = terminated;
     }
 
     /**
@@ -109,7 +109,7 @@ public class FlatSearchIterator extends AbstractFileObjectIterator {
     @Override
     public boolean hasNext() {
         assert !EventQueue.isDispatchThread();
-        if (terminationFlag.isTerminated()) {
+        if (terminated.get()) {
             return false;
         } else {
             if (!upToDate) {

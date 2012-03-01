@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -55,7 +56,6 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -149,11 +149,11 @@ class CompatibilityUtils {
 
         @Override
         public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
-                SearchListener listener, TerminationFlag terminationFlag) {
+                SearchListener listener, AtomicBoolean terminated) {
 
             return new WrappingIterator(options,
                     Utils.getFileObjectsIterator(searchInfo),
-                    listener, terminationFlag);
+                    listener, terminated);
         }
 
         @Override
@@ -174,18 +174,18 @@ class CompatibilityUtils {
         private SearchListener listener;
         private boolean upToDate = false;
         private FileObject next = null;
-        private TerminationFlag terminationFlag;
+        private AtomicBoolean terminated;
         private List<SearchFilterDefinition> filters;
 
         public WrappingIterator(SearchScopeOptions searchScopeOptions,
                 Iterator<FileObject> originalIterator,
-                SearchListener listener, TerminationFlag terminationFlag) {
+                SearchListener listener, AtomicBoolean terminated) {
 
             this.fileNameMatcher = FileNameMatcher.create(searchScopeOptions);
 
             this.originalIterator = originalIterator;
             this.listener = listener;
-            this.terminationFlag = terminationFlag;
+            this.terminated = terminated;
             this.filters = searchScopeOptions.getFilters();
         }
 
@@ -217,7 +217,7 @@ class CompatibilityUtils {
             if (!upToDate) {
                 update();
             }
-            return next != null && !terminationFlag.isTerminated();
+            return next != null && !terminated.get();
         }
 
         @Override

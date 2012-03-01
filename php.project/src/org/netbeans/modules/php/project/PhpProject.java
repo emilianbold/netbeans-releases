@@ -60,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -112,7 +113,6 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SubTreeSearchOptions;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
@@ -1096,9 +1096,9 @@ public final class PhpProject implements Project {
         public Iterator<FileObject> filesToSearch(
                 SearchScopeOptions searchScopeOptions, 
                 SearchListener listener, 
-                TerminationFlag terminationFlag) {
+                AtomicBoolean terminated) {
             return getDelegate().getFilesToSearch(searchScopeOptions, 
-                    listener, terminationFlag);
+                    listener, terminated);
         }
 
         @Override

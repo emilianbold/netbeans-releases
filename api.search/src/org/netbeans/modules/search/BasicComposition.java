@@ -44,6 +44,7 @@ package org.netbeans.modules.search;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
@@ -53,7 +54,6 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,7 +67,7 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
     private SearchResultsDisplayer<MatchingObject.Def> displayer = null;
     private BasicSearchCriteria basicSearchCriteria;
     private Presenter presenter;
-    private volatile boolean terminated = false;
+    AtomicBoolean terminated = new AtomicBoolean(false);
 
     public BasicComposition(SearchInfo searchInfo, AbstractMatcher matcher,
             BasicSearchCriteria basicSearchCriteria, Presenter presenter) {
@@ -81,17 +81,9 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
     @Override
     public void start(SearchListener listener) {
 
-        TerminationFlag terminationFlag = new TerminationFlag() {
-
-            @Override
-            public boolean isTerminated() {
-                return terminated;
-            }
-        };
-
         Iterable<FileObject> iterable = searchInfo.iterateFilesToSearch(
                 basicSearchCriteria.getSearcherOptions(),
-                listener, terminationFlag);
+                listener, terminated);
 
         for (FileObject fo : iterable) {
 
@@ -99,7 +91,7 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
             if (result != null) {
                 getSearchResultsDisplayer().addMatchingObject(result);
             }
-            if (terminated) {
+            if (terminated.get()) {
                 break;
             }
         }
@@ -107,13 +99,13 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
 
     @Override
     public void terminate() {
-        terminated = true;
+        terminated.set(true);
         matcher.terminate();
     }
 
     @Override
     public boolean isTerminated() {
-        return terminated;
+        return terminated.get();
     }
 
     @Override

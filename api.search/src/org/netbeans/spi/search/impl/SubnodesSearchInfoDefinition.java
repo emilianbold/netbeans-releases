@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -55,7 +56,6 @@ import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.api.search.provider.impl.CompoundSearchIterator;
 import org.netbeans.spi.search.SearchInfoDefinition;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -86,11 +86,11 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
      */
     @Override
     public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
-            SearchListener listener, TerminationFlag terminationFlag) {
+            SearchListener listener, AtomicBoolean terminated) {
         final Node[] nodes = children.getNodes(true);
         if (nodes.length == 0) {
             return SimpleSearchInfoDefinition.EMPTY_SEARCH_INFO.filesToSearch(
-                    options, listener, terminationFlag);
+                    options, listener, terminated);
         }
 
         List<SearchInfo> searchInfoElements =
@@ -110,12 +110,12 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
                 return Collections.<FileObject>emptyList().iterator();
             case 1:
                 return searchInfoElements.get(0).getFilesToSearch(
-                        options, listener, terminationFlag);
+                        options, listener, terminated);
             default:
                 return new CompoundSearchIterator(
                         searchInfoElements.toArray(
                         new SearchInfo[size]),
-                        options, listener, terminationFlag);
+                        options, listener, terminated);
         }
     }
 

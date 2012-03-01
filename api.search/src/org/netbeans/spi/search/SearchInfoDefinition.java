@@ -45,11 +45,11 @@ package org.netbeans.spi.search;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -135,7 +135,7 @@ public abstract class SearchInfoDefinition {
      * @param options File name pattern, traversing options and custom filters.
      * @param listener Listener that should be notified about important events
      * and progress.
-     * @param terminationFlag Object that can be asked whether the search has
+     * @param terminated Object that can be asked whether the search has
      * been terminated by the user.
      * @return iterator which iterates over
      * <code>FileObject</code>s to be searched
@@ -143,7 +143,7 @@ public abstract class SearchInfoDefinition {
     public abstract @NonNull Iterator<FileObject> filesToSearch(
             @NonNull SearchScopeOptions options,
             @NonNull SearchListener listener,
-            @NonNull TerminationFlag terminationFlag);
+            @NonNull AtomicBoolean terminated);
 
     /**
      * Returns list of files or folders where the search starts. It can be used

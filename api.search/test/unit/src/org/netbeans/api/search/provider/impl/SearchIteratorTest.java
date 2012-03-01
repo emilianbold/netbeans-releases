@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import junit.textui.TestRunner;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -58,7 +59,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -190,14 +190,9 @@ public final class SearchIteratorTest extends NbTestCase {
         List<String> foundFilesPaths = new ArrayList<String>(16);
         SearchScopeOptions sso = SearchScopeOptions.create("*", false);
         SearchListener lstnr = new SearchListener() {};
-        TerminationFlag tf = new TerminationFlag() {
-
-            @Override
-            public boolean isTerminated() {
-                return false;
-            }
-        };
-        for (Iterator<FileObject> i = searchInfo.getFilesToSearch(sso, lstnr, tf); i.hasNext(); ) {
+        AtomicBoolean terminated = new AtomicBoolean(false);
+        for (Iterator<FileObject> i = searchInfo.getFilesToSearch(
+                sso, lstnr, terminated); i.hasNext();) {
             FileObject primaryFile = i.next();
             String relativePath = FileUtil.getRelativePath(projectRoot,
                                                            primaryFile);

@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchListener;
@@ -56,7 +57,6 @@ import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchFilterDefinition.FolderResult;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -80,7 +80,7 @@ public final class SimpleSearchInfoDefinition extends SearchInfoDefinition {
 
         @Override
         public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
-                SearchListener listener, TerminationFlag terminationFlag) {
+                SearchListener listener, AtomicBoolean terminated) {
             return Collections.<FileObject>emptyList().iterator();
         }
 
@@ -175,11 +175,11 @@ public final class SimpleSearchInfoDefinition extends SearchInfoDefinition {
      */
     @Override
     public Iterator<FileObject> filesToSearch(SearchScopeOptions options,
-        SearchListener listener, TerminationFlag terminationFlag) {
+        SearchListener listener, AtomicBoolean terminated) {
         return new SimpleSearchIterator(rootFile,
                 options,
                 filters != null ? Arrays.asList(filters)
-                : null, listener, terminationFlag);
+                : null, listener, terminated);
     }
 
     /**

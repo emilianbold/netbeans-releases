@@ -44,6 +44,7 @@ package org.netbeans.api.search.provider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.search.SearchScopeOptions;
@@ -56,7 +57,6 @@ import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.netbeans.spi.search.impl.SearchInfoDefinitionUtils;
-import org.netbeans.spi.search.provider.TerminationFlag;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -175,7 +175,7 @@ public final class SearchInfoUtils {
      * <code>true</code> if and only if at least one of the delegate's
      * <code>canSearch()</code> returns
      * <code>true</code></li> <li>its method
-     * {@link SearchInfo#getFilesToSearch(SearchScopeOptions, SearchListener, TerminationFlag)}
+     * {@link SearchInfo#getFilesToSearch(SearchScopeOptions, SearchListener, AtomicBoolean)}
      * chains iterators of the delegates, skipping those delegates whose
      * <code>canSearch()</code> method returns
      * <code>false</code></li> </ul>
