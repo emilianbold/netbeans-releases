@@ -621,6 +621,10 @@ public final class CodeStyle {
         return preferences.getBoolean(preferFullyQualifiedNames, getDefaultAsBoolean(preferFullyQualifiedNames));
     }
 
+    public boolean preferMultipleUseStatementsCombined() {
+        return preferences.getBoolean(preferMultipleUseStatementsCombined, getDefaultAsBoolean(preferMultipleUseStatementsCombined));
+    }
+
     private static class Producer implements FmtOptions.CodeStyleProducer {
 
         @Override

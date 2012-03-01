@@ -65,7 +65,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.php.editor.actions.ImportDataCreator.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -177,7 +176,7 @@ public class FixUsesAction extends BaseAction {
         Index index = parserResult.getModel().getIndexScope().getIndex();
         Document document = parserResult.getSnapshot().getSource().getDocument(false);
         CodeStyle codeStyle = CodeStyle.get(document);
-        Options options = new Options(codeStyle.preferFullyQualifiedNames());
+        Options options = new Options(codeStyle);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
         ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), options).create();
         importData.caretPosition = caretPosition;
@@ -185,7 +184,10 @@ public class FixUsesAction extends BaseAction {
     }
 
     private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
-        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses).perform();
+        Document document = parserResult.getSnapshot().getSource().getDocument(false);
+        CodeStyle codeStyle = CodeStyle.get(document);
+        Options options = new Options(codeStyle);
+        new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, options).perform();
     }
 
     private static final RequestProcessor WORKER = new RequestProcessor(FixUsesAction.class.getName(), 1);
@@ -283,5 +285,31 @@ public class FixUsesAction extends BaseAction {
         protected String getActionName() {
             return ACTION_NAME;
         }
+    }
+
+    public static class Options {
+
+        private final boolean preferFullyQualifiedNames;
+        private final boolean preferMultipleUseStatementsCombined;
+
+        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined) {
+            this.preferFullyQualifiedNames = preferFullyQualifiedNames;
+            this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
+        }
+
+        public Options(CodeStyle codeStyle) {
+            this.preferFullyQualifiedNames = codeStyle.preferFullyQualifiedNames();
+            this.preferMultipleUseStatementsCombined = codeStyle.preferMultipleUseStatementsCombined();
+        }
+
+        public boolean preferFullyQualifiedNames() {
+            return preferFullyQualifiedNames;
+        }
+
+        public boolean preferMultipleUseStatementsCombined() {
+            return preferMultipleUseStatementsCombined;
+        }
+
+
     }
 }

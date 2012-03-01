@@ -56,7 +56,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.PHPTestBase;
-import org.netbeans.modules.php.editor.actions.ImportDataCreator.Options;
+import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
@@ -104,11 +104,11 @@ public class ImportDataCreatorTest extends PHPTestBase {
     }
 
     public void testImportData_05() throws Exception {
-        performTest("Homepage^Presenter", new Options(true));
+        performTest("Homepage^Presenter", new Options(true, false));
     }
 
     public void testImportData_06() throws Exception {
-        performTest("Homepage^Presenter", new Options(false));
+        performTest("Homepage^Presenter", new Options(false, false));
     }
 
     private void performTest(String caretLine) throws Exception {
@@ -148,7 +148,7 @@ public class ImportDataCreatorTest extends PHPTestBase {
                     if (currentOptions == null) {
                         Document document = phpResult.getSnapshot().getSource().getDocument(false);
                         CodeStyle codeStyle = CodeStyle.get(document);
-                        currentOptions = new Options(codeStyle.preferFullyQualifiedNames());
+                        currentOptions = new Options(codeStyle);
                     }
                     ImportData importData = new ImportDataCreator(usedNames, index, namespaceScope.getNamespaceName(), currentOptions).create();
                     importData.caretPosition = caretOffset;

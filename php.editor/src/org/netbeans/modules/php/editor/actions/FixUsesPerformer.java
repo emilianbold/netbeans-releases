@@ -49,8 +49,11 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.EditList;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ModelElement;
@@ -83,14 +86,16 @@ public class FixUsesPerformer {
     private final ImportData importData;
     private final String[] selections;
     private final boolean removeUnusedUses;
+    private final Options options;
     private EditList editList;
     private BaseDocument baseDocument;
 
-    public FixUsesPerformer(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
+    public FixUsesPerformer(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses, final Options options) {
         this.parserResult = parserResult;
         this.importData = importData;
         this.selections = selections;
         this.removeUnusedUses = removeUnusedUses;
+        this.options = options;
     }
 
     public void perform() {
@@ -154,8 +159,22 @@ public class FixUsesPerformer {
         if (useParts.size() > 0) {
             insertString.append(NEW_LINE);
         }
-        for (String usePart : useParts) {
-            insertString.append(USE_PREFIX).append(usePart).append(SEMICOLON);
+        if (options.preferMultipleUseStatementsCombined()) {
+            CodeStyle codeStyle = CodeStyle.get(baseDocument);
+            String indentString = IndentUtils.createIndentString(codeStyle.getIndentSize(), codeStyle.expandTabToSpaces(), codeStyle.getTabSize());
+            insertString.append(USE_PREFIX);
+            for (int i = 0; i < useParts.size(); i++) {
+                String usePart = useParts.get(i);
+                if (i != 0) {
+                    insertString.append(indentString);
+                }
+                insertString.append(usePart);
+                insertString.append(i + 1 == useParts.size() ? SEMICOLON : "," + NEW_LINE);
+            }
+        } else {
+            for (String usePart : useParts) {
+                insertString.append(USE_PREFIX).append(usePart).append(SEMICOLON);
+            }
         }
         return insertString.toString();
     }
