@@ -206,3 +206,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-versioning@" value="${javadoc.docs.org-netbeans-modules-versioning}"/>
 <replacefilter token="@org-netbeans-modules-versioning-core@" value="${javadoc.docs.org-netbeans-modules-versioning-core}"/>
 <replacefilter token="@org-netbeans-libs-git@" value="${javadoc.docs.org-netbeans-libs-git}"/>
+<replacefilter token="@org-netbeans-api-search@" value="${javadoc.docs.org-netbeans-api-search}"/>
