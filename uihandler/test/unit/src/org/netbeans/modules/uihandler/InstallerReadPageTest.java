@@ -166,7 +166,8 @@ public class InstallerReadPageTest extends NbTestCase {
         
         assertEquals("It has the right localized text", kun, b.getText());
 
-        EventQueue.invokeLater(new Runnable() {
+        assertFalse(EventQueue.isDispatchThread());
+        EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {
                 JScrollPane pane = (JScrollPane)DD.d.getMessage();
