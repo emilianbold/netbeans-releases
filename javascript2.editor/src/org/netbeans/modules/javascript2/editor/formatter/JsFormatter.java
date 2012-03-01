@@ -91,13 +91,14 @@ public class JsFormatter implements Formatter {
             public void run() {
                 long startTime = System.nanoTime();
 
-                FormatTokenStream tokenStream = FormatTokenStream.create(LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()),
+                FormatTokenStream tokenStream = FormatTokenStream.create(
+                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()),
                         context.startOffset(), context.endOffset());
                 LOGGER.log(Level.INFO, "Format token stream creation: {0} ms", (System.nanoTime() - startTime) / 1000000);
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
-                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot()));
+                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()));
 
                 FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
                 if (root != null) {
