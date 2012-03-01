@@ -126,6 +126,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             //XXX temporary - should be registered somehow better
             resolvers = new ArrayList<CompletionContextResolver>();
             resolvers.add(new DBCompletionContextResolver());
+            resolvers.add(new ETCompletionContextResolver());
         }
 
         @Override
@@ -230,7 +231,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
                     }
                     if(entityMappingsModel != null){
-                        entityMappingsModel.runReadAction(new TaskUserAction(controller, resolver, startOffset));
+                        entityMappingsModel.runReadAction(task);
                     }
                 } catch (IOException ex) {
                    
@@ -341,6 +342,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         private String completedMemberName, completedMemberJavaClassName;
         private CCParser CCParser;
         private CCParser.CC parsednn = null;
+        private String methodName = null;
 
         public Context(JTextComponent component, CompilationController controller, int endOffset, boolean autoPopup) {
             this.component = component;
@@ -516,6 +518,13 @@ public class JPACodeCompletionProvider implements CompletionProvider {
          */
         public CompilationController getController() {
             return controller;
+        }
+
+        String getMethod() {
+            if(methodName == null){
+                //getCompletedMemberClassName();
+            }
+            return methodName;
         }
     }
     
