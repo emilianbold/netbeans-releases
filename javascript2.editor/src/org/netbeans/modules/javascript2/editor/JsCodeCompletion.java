@@ -69,6 +69,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -346,38 +347,39 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             break;
                         }
                     }
-                    if (type == null) {
-                        // try to find through index
+                    if(type == null || type.getAssignmentForOffset(request.anchor).isEmpty()) {
+                        // also check, whether the same type is not in the index
                         lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                    } else {
-                        if ("@mtd".equals(kind)) {  //NOI18N
-                            if (type.getJSKind().isFunction()) {
-                                lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
-                            }
-                        } else {
-                            // just property
-                            Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
+                    }
 
-                            if (lastTypeAssignment.isEmpty()) {
-                                lastResolvedObjects.add(type);
-                            } else {
-                                for (Type typeName : lastTypeAssignment) {
-                                    boolean wasFound = false;
-                                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                                        if (object.getName().equals(typeName.getType())) {
-                                            lastResolvedObjects.add(object);
-                                            wasFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!wasFound) {
-                                        lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
+                    if ("@mtd".equals(kind)) {  //NOI18N
+                        if (type.getJSKind().isFunction()) {
+                            lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
+                        }
+                    } else {
+                        // just property
+                        Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
+
+                        if (lastTypeAssignment.isEmpty()) {
+                            lastResolvedObjects.add(type);
+                        } else {
+                            for (Type typeName : lastTypeAssignment) {
+                                boolean wasFound = false;
+                                for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                                    if (object.getName().equals(typeName.getType())) {
+                                        lastResolvedObjects.add(object);
+                                        wasFound = true;
+                                        break;
                                     }
                                 }
-                                break;
+                                if (!wasFound) {
+                                    lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
+                                }
                             }
+                            break;
                         }
                     }
+
                 } else {
                     List<JsObject> newResolvedObjects = new ArrayList<JsObject>();
                     List<TypeUsage> newResolvedTypes = new ArrayList<TypeUsage>();
@@ -408,9 +410,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
-            HashSet<String> added = new HashSet<String>();
+            HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
             for (JsObject resolved : lastResolvedObjects) {
-                addObjectPropertiesToCC(resolved, request, resultList, added);
+                addObjectPropertiesToCC(resolved, request, addedProperties);
             }
             // TODO there should be added objects from prototype chain
             // add as last type Object
@@ -419,21 +421,43 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 // at first try to find the type in the model
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                 if (jsObject != null) {
-                    addObjectPropertiesToCC(jsObject, request, resultList, added);
+                    addObjectPropertiesToCC(jsObject, request, addedProperties);
                 } else {
                     // look at the index
                     FileObject fo = request.info.getSnapshot().getSource().getFileObject();
                     Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(typeUsage.getType());
                     for (IndexedElement indexedElement : properties) {
-                        if (!added.contains(indexedElement.getName())
-                            && startsWith(indexedElement.getName(), request.prefix)) {
-                                resultList.add(JsCompletionItem.Factory.create(indexedElement, request));
-                                added.add(indexedElement.getName());
+                        JsElement element = addedProperties.get(indexedElement.getName());
+                        if (startsWith(indexedElement.getName(), request.prefix) 
+                                && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                            addedProperties.put(indexedElement.getName(), indexedElement);
                         }
                     }
                 }
             }
-
+            // now look to the index again for declared item outside
+            StringBuilder fqn = new StringBuilder();
+            for (int i = exp.size() - 1; i > -1; i--) {
+                fqn.append(exp.get(--i));
+                fqn.append('.');
+            }
+            fqn.append(request.prefix);
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            Collection<? extends IndexResult> indexResults = JsIndex.get(fo).query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+            for (IndexResult indexResult : indexResults) {
+                IndexedElement indexedElement = IndexedElement.create(indexResult);
+                JsElement element = addedProperties.get(indexedElement.getName());
+                if (startsWith(indexedElement.getName(), request.prefix) 
+                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                    addedProperties.put(indexedElement.getName(), indexedElement);
+                }
+            }
+            
+            // create code completion results
+            for(String name : addedProperties.keySet()) {
+                JsElement element = addedProperties.get(name);
+                resultList.add(JsCompletionItem.Factory.create(element, request));
+            }
         }
     }
     
@@ -495,18 +519,20 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
     
-    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, List<CompletionProposal> resultList, Set<String> addedProperties) {
+    private void addObjectPropertiesToCC(JsObject jsObject, CompletionRequest request, Map<String, JsElement> addedProperties) {
         boolean filter = true;
         if (request.prefix == null || request.prefix.isEmpty()) {
             filter = false;
         }
         for (JsObject property : jsObject.getProperties().values()) {
+            String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
-                    && (!filter || startsWith(property.getName(), request.prefix))
-                    && !property.getJSKind().isPropertyGetterSetter()
-                    && !addedProperties.contains(property.getName())) {
-                resultList.add(JsCompletionItem.Factory.create(property, request));
-                addedProperties.add(property.getName());
+                    && (!filter || startsWith(propertyName, request.prefix))
+                    && !property.getJSKind().isPropertyGetterSetter()) {
+                JsElement element = addedProperties.get(propertyName);
+                if (element == null || (!element.isDeclared() && jsObject.isDeclared())) {
+                    addedProperties.put(propertyName, property);
+                }
             }
         }
     }
