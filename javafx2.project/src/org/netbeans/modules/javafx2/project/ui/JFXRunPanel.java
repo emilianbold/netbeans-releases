@@ -312,13 +312,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         configPanel.setLayout(new java.awt.GridBagLayout());
 
-        labelConfig.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.text")); // NOI18N
+        labelConfig.setLabelFor(comboConfig);
+        org.openide.awt.Mnemonics.setLocalizedText(labelConfig, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(labelConfig, gridBagConstraints);
+        labelConfig.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleName")); // NOI18N
+        labelConfig.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleDescription")); // NOI18N
 
         comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default config>" }));
         comboConfig.addActionListener(new java.awt.event.ActionListener() {
@@ -334,8 +337,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(comboConfig, gridBagConstraints);
+        comboConfig.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboConfig.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonNew.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonNew, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.text")); // NOI18N
         buttonNew.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonNewActionPerformed(evt);
@@ -347,8 +351,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 5);
         configPanel.add(buttonNew, gridBagConstraints);
+        buttonNew.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.AccessibleContext.accessibleName")); // NOI18N
+        buttonNew.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonNew.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonDelete.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonDelete, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.text")); // NOI18N
         buttonDelete.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonDeleteActionPerformed(evt);
@@ -359,6 +365,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         configPanel.add(buttonDelete, gridBagConstraints);
+        buttonDelete.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.AccessibleContext.accessibleName")); // NOI18N
+        buttonDelete.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonDelete.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -377,13 +385,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
 
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
-        labelAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.text")); // NOI18N
+        labelAppClass.setLabelFor(textFieldAppClass);
+        org.openide.awt.Mnemonics.setLocalizedText(labelAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 20, 0);
         mainPanel.add(labelAppClass, gridBagConstraints);
+        labelAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.AccessibleContext.accessibleName")); // NOI18N
+        labelAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelAppClass.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldAppClass.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -400,7 +411,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
         mainPanel.add(textFieldAppClass, gridBagConstraints);
 
-        buttonAppClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonAppClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
@@ -408,14 +419,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
         mainPanel.add(buttonAppClass, gridBagConstraints);
+        buttonAppClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.AccessibleContext.accessibleName")); // NOI18N
+        buttonAppClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonAppClass.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
+        labelParams.setLabelFor(textFieldParams);
+        org.openide.awt.Mnemonics.setLocalizedText(labelParams, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelParams, gridBagConstraints);
+        labelParams.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.AccessibleContext.accessibleName")); // NOI18N
+        labelParams.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelParams.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldParams.setEditable(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -428,7 +444,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldParams, gridBagConstraints);
 
-        buttonParams.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonParams, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.text")); // NOI18N
         buttonParams.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonParamsActionPerformed(evt);
@@ -441,13 +457,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(buttonParams, gridBagConstraints);
+        buttonParams.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.AccessibleContext.accessibleName")); // NOI18N
+        buttonParams.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonParams.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelVMOptions.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
+        labelVMOptions.setLabelFor(textFieldVMOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(labelVMOptions, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         mainPanel.add(labelVMOptions, gridBagConstraints);
+        labelVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.AccessibleContext.accessibleName")); // NOI18N
+        labelVMOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptions.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -457,6 +479,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(textFieldVMOptions, gridBagConstraints);
+        textFieldVMOptions.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.textFieldVMOptions.AccessibleContext.accessibleName")); // NOI18N
+        textFieldVMOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.textFieldVMOptions.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelVMOptionsRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelVMOptionsRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -467,7 +491,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
         mainPanel.add(labelVMOptionsRemark, gridBagConstraints);
 
-        checkBoxPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(checkBoxPreloader, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.text")); // NOI18N
         checkBoxPreloader.setEnabled(false);
         checkBoxPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -480,6 +504,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(checkBoxPreloader, gridBagConstraints);
+        checkBoxPreloader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.AccessibleContext.accessibleName")); // NOI18N
+        checkBoxPreloader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.checkBoxPreloader.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldPreloader.setEditable(false);
         textFieldPreloader.setEnabled(false);
@@ -493,7 +519,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldPreloader, gridBagConstraints);
 
-        buttonPreloader.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonPreloader, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.text")); // NOI18N
         buttonPreloader.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonPreloaderActionPerformed(evt);
@@ -506,14 +532,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(buttonPreloader, gridBagConstraints);
+        buttonPreloader.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.AccessibleContext.accessibleName")); // NOI18N
+        buttonPreloader.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloader.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelPreloaderClass.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.text")); // NOI18N
+        labelPreloaderClass.setLabelFor(comboBoxPreloaderClass);
+        org.openide.awt.Mnemonics.setLocalizedText(labelPreloaderClass, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.text")); // NOI18N
         labelPreloaderClass.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_TRAILING;
         mainPanel.add(labelPreloaderClass, gridBagConstraints);
+        labelPreloaderClass.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.AccessibleContext.accessibleName")); // NOI18N
+        labelPreloaderClass.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelPreloaderClass.AccessibleContext.accessibleDescription")); // NOI18N
 
         comboBoxPreloaderClass.setEnabled(false);
         comboBoxPreloaderClass.addActionListener(new java.awt.event.ActionListener() {
@@ -538,6 +569,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         mainPanel.add(jSeparator2, gridBagConstraints);
 
+        labelRunAs.setLabelFor(radioButtonSA);
         labelRunAs.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -545,13 +577,15 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
         mainPanel.add(labelRunAs, gridBagConstraints);
+        labelRunAs.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.AccessibleContext.accessibleName")); // NOI18N
+        labelRunAs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelRunAs.AccessibleContext.accessibleDescription")); // NOI18N
 
         panelRunAsChoices.setLayout(new java.awt.GridBagLayout());
 
         buttonGroupRunAs.add(radioButtonSA);
         radioButtonSA.setFont(radioButtonSA.getFont().deriveFont(radioButtonSA.getFont().getStyle() | java.awt.Font.BOLD));
         radioButtonSA.setSelected(true);
-        radioButtonSA.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonSA, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.text")); // NOI18N
         radioButtonSA.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonSAActionPerformed(evt);
@@ -564,13 +598,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonSA, gridBagConstraints);
+        radioButtonSA.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonSA.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonSA.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         panelRunAsChoices.add(filler2, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonWS);
-        radioButtonWS.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonWS, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.text")); // NOI18N
         radioButtonWS.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonWSActionPerformed(evt);
@@ -583,13 +620,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 10);
         panelRunAsChoices.add(radioButtonWS, gridBagConstraints);
+        radioButtonWS.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonWS.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonWS.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         panelRunAsChoices.add(filler3, gridBagConstraints);
 
         buttonGroupRunAs.add(radioButtonBE);
-        radioButtonBE.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(radioButtonBE, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.text")); // NOI18N
         radioButtonBE.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioButtonBEActionPerformed(evt);
@@ -601,6 +641,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         panelRunAsChoices.add(radioButtonBE, gridBagConstraints);
+        radioButtonBE.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.AccessibleContext.accessibleName")); // NOI18N
+        radioButtonBE.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.radioButtonBE.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
@@ -623,14 +666,20 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelSAProps, gridBagConstraints);
+        labelSAProps.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelSAProps.AccessibleContext.accessibleName")); // NOI18N
+        labelSAProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelSAProps.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.text")); // NOI18N
+        labelWorkDir.setLabelFor(textFieldWorkDir);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWorkDir, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 20, 0);
         mainPanel.add(labelWorkDir, gridBagConstraints);
+        labelWorkDir.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.AccessibleContext.accessibleName")); // NOI18N
+        labelWorkDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWorkDir.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
@@ -641,7 +690,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
         mainPanel.add(textFieldWorkDir, gridBagConstraints);
 
-        buttonWorkDir.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWorkDir, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.text")); // NOI18N
         buttonWorkDir.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWorkDirActionPerformed(evt);
@@ -654,6 +703,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 20, 0);
         mainPanel.add(buttonWorkDir, gridBagConstraints);
+        buttonWorkDir.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.AccessibleContext.accessibleName")); // NOI18N
+        buttonWorkDir.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWorkDir.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelWSBAProps.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -663,14 +714,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 5, 0);
         mainPanel.add(labelWSBAProps, gridBagConstraints);
+        labelWSBAProps.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.AccessibleContext.accessibleName")); // NOI18N
+        labelWSBAProps.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWSBAProps.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWidth.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.text")); // NOI18N
+        labelWidth.setLabelFor(textFieldWidth);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWidth, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWidth, gridBagConstraints);
+        labelWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleName")); // NOI18N
+        labelWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldWidth.setMinimumSize(new java.awt.Dimension(70, 20));
         textFieldWidth.setPreferredSize(new java.awt.Dimension(70, 20));
@@ -681,13 +737,16 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldWidth, gridBagConstraints);
 
-        labelHeight.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.text")); // NOI18N
+        labelHeight.setLabelFor(textFieldHeight);
+        org.openide.awt.Mnemonics.setLocalizedText(labelHeight, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 20, 5, 0);
         mainPanel.add(labelHeight, gridBagConstraints);
+        labelHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleName")); // NOI18N
+        labelHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleDescription")); // NOI18N
 
         textFieldHeight.setMinimumSize(new java.awt.Dimension(70, 20));
         textFieldHeight.setPreferredSize(new java.awt.Dimension(70, 20));
@@ -699,13 +758,17 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(textFieldHeight, gridBagConstraints);
 
-        labelWebPage.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.text")); // NOI18N
+        labelWebPage.setLabelFor(textFieldWebPage);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWebPage, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 0, 0);
         mainPanel.add(labelWebPage, gridBagConstraints);
+        labelWebPage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.AccessibleContext.accessibleName")); // NOI18N
+        labelWebPage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPage.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
@@ -716,7 +779,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(textFieldWebPage, gridBagConstraints);
 
-        buttonWebPage.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWebPage, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.text")); // NOI18N
         buttonWebPage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWebPageActionPerformed(evt);
@@ -729,6 +792,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonWebPage, gridBagConstraints);
+        buttonWebPage.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.AccessibleContext.accessibleName")); // NOI18N
+        buttonWebPage.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebPage.AccessibleContext.accessibleDescription")); // NOI18N
 
         labelWebPageRemark.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -738,14 +803,19 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 10, 0);
         mainPanel.add(labelWebPageRemark, gridBagConstraints);
+        labelWebPageRemark.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.AccessibleContext.accessibleName")); // NOI18N
+        labelWebPageRemark.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebPageRemark.AccessibleContext.accessibleDescription")); // NOI18N
 
-        labelWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
+        labelWebBrowser.setLabelFor(comboBoxWebBrowser);
+        org.openide.awt.Mnemonics.setLocalizedText(labelWebBrowser, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 14;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 15, 5, 0);
         mainPanel.add(labelWebBrowser, gridBagConstraints);
+        labelWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        labelWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
 
         comboBoxWebBrowser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -761,8 +831,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(comboBoxWebBrowser, gridBagConstraints);
+        comboBoxWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboBoxWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        comboBoxWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.comboBoxWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonWebBrowser.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonWebBrowser, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.text")); // NOI18N
         buttonWebBrowser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 buttonWebBrowserActionPerformed(evt);
@@ -775,8 +847,10 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 5, 0);
         mainPanel.add(buttonWebBrowser, gridBagConstraints);
+        buttonWebBrowser.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.AccessibleContext.accessibleName")); // NOI18N
+        buttonWebBrowser.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonWebBrowser.AccessibleContext.accessibleDescription")); // NOI18N
 
-        buttonPreloaderDefault.setText(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(buttonPreloaderDefault, org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.text")); // NOI18N
         buttonPreloaderDefault.setEnabled(false);
         buttonPreloaderDefault.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -790,6 +864,8 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         mainPanel.add(buttonPreloaderDefault, gridBagConstraints);
+        buttonPreloaderDefault.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleName")); // NOI18N
+        buttonPreloaderDefault.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.buttonPreloaderDefault.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -798,6 +874,9 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.PAGE_START;
         add(mainPanel, gridBagConstraints);
+        mainPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.mainPanel.AccessibleContext.accessibleName")); // NOI18N
+        mainPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.mainPanel.AccessibleContext.accessibleDescription")); // NOI18N
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
