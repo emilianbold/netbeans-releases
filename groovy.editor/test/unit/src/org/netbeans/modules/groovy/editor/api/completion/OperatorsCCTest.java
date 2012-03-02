@@ -89,7 +89,29 @@ public class OperatorsCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "MethodClosure2.groovy", "        \"\".&^", true);
     }*/
 
-    // Not implemented yet - only for TDD purpose
+
+    /*
+     *  Not implemented yet - only for TDD purpose
+     */
+    
+    /*
+    public void testJavaFieldOperator() throws Exception {
+        checkCompletion(BASE + "JavaFieldOperator.groovy", "        def something = x.@^", true);
+    }
+
+    public void testElvisOperator1_1() throws Exception {
+        checkCompletion(BASE + "ElvisOperator1.groovy", "        def something = x?:^", true);
+    }
+
+    public void testElvisOperator2_1() throws Exception {
+        checkCompletion(BASE + "ElvisOperator2.groovy", "        def something = x ?:^", true);
+    }
+
+    public void testElvisOperator3_1() throws Exception {
+        checkCompletion(BASE + "ElvisOperator3.groovy", "        def something = x ?: ^", true);
+    }
+    */
+
     public void testSpreadOperator1_stringArray_all() throws Exception {
         checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
     }

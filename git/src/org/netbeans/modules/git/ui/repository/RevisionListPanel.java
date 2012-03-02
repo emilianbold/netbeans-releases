@@ -147,6 +147,11 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
         updateHistory(repo, roots, revision, limit, add);
     }
 
+    GitRevisionInfo getSelectedRevision () {
+        GitRevisionInfoDelegate delegate = (GitRevisionInfoDelegate) lstRevisions.getSelectedValue();
+        return delegate == null ? null : delegate.info;
+    }
+
     private static class RevisionRenderer extends JTextPane implements ListCellRenderer {
 
         private Style selectedStyle;

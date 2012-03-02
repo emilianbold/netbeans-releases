@@ -61,7 +61,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -80,16 +81,52 @@ public final class DeepReparsingUtils {
     }
 
     /**
-     * Reparse one file when fileImpl content changed.
+     * Reparse one file when fileImpl content changed. It could be
+     * File->Document, Document->Document, Document->File, File->File
      */
-    static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
+    private static void reparseOnlyOneFile(ProjectBase project, FileImpl fileImpl) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+            LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
                 ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+    }
+
+    private static boolean partialReparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
+        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+            LOG.log(Level.INFO, "OPTIMISTIC partialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+            fileImpl.markReparseNeeded(false);
+            FileContentSignature prevSig = fileImpl.getSignature();
+            ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
+                    ParserQueue.Position.IMMEDIATE, false, ParserQueue.FileAction.NOTHING);
+            FileContentSignature newSig = fileImpl.getSignature();
+            LOG.log(Level.INFO, "check signatures for {0} : {1}", new Object[]{fileImpl.getAbsolutePath(), newSig.equals(prevSig)});
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of Undo operation.
+     */
+    static void reparseOnUndoEditedFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnUndoEditedFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of typing in editor.
+     */
+    static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
     }
 
     /**
@@ -99,9 +136,8 @@ public final class DeepReparsingUtils {
         if (TRACE) {
             LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
-        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-            LOG.log(Level.INFO, "OPTIMISTIC reparseOnChangedFile as reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
-            reparseOnEditingFile(project, fileImpl);
+        if (partialReparseOnChangedFile(fileImpl, project)) {
+            LOG.log(Level.INFO, "PARTIAL reparse was enough for change file {0}", fileImpl.getAbsolutePath());
             return;
         }
         // content of file was changed => invalidate cache

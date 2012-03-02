@@ -63,11 +63,13 @@ public class MavenArchetypeGrammar extends AbstractSchemaBasedGrammar {
         super(env);
     }
     
+    @Override
     protected InputStream getSchemaStream() {
         return getClass().getResourceAsStream("/org/netbeans/modules/maven/grammar/archetype-1.0.0.xsd"); //NOI18N
     }
     
 
+    @Override
     protected List<GrammarResult> getDynamicCompletion(String path, HintContext hintCtx, Element lowestParent) {
         return Collections.<GrammarResult>emptyList();
     }

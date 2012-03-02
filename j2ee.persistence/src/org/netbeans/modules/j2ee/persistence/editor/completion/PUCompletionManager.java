@@ -66,7 +66,7 @@ import org.w3c.dom.Text;
  */
 public final class PUCompletionManager {
     
-    private static Map<String, Completor> completors = new HashMap<String, Completor>();
+    private static Map<String, PUCompletor> completors = new HashMap<String, PUCompletor>();
 
     private PUCompletionManager() {
         setupCompletors();
@@ -76,22 +76,25 @@ public final class PUCompletionManager {
 
 
         // Items for property names 
-        Completor.PersistencePropertyNameCompletor propertyNamesCompletor = new Completor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
+        PUCompletor.PersistencePropertyNameCompletor propertyNamesCompletor = new PUCompletor.PersistencePropertyNameCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.NAME_ATTRIB, propertyNamesCompletor);
-        Completor.PersistencePropertyValueCompletor propertyValuesCompletor = new Completor.PersistencePropertyValueCompletor(PersistenceCfgProperties.getAllKeyAndValues());
+        PUCompletor.PersistencePropertyValueCompletor propertyValuesCompletor = new PUCompletor.PersistencePropertyValueCompletor(PersistenceCfgProperties.getAllKeyAndValues());
         registerCompletor(PersistenceCfgXmlConstants.PROPERTY_TAG, PersistenceCfgXmlConstants.VALUE_ATTRIB, propertyValuesCompletor);
 
         // Items for mapping xml files
-        Completor.PersistenceMappingFileCompletor mappingFilesCompletor = new Completor.PersistenceMappingFileCompletor();
+        PUCompletor.PersistenceMappingFileCompletor mappingFilesCompletor = new PUCompletor.PersistenceMappingFileCompletor();
         registerCompletor(PersistenceCfgXmlConstants.MAPPING_FILE, null, mappingFilesCompletor);
         
-        Completor.JavaClassCompletor javaClassCompletor = new Completor.JavaClassCompletor(false);
+        PUCompletor.EntityClassCompletor javaClassCompletor = new PUCompletor.EntityClassCompletor();
         registerCompletor(PersistenceCfgXmlConstants.CLASS, null, javaClassCompletor);
         
-        Completor.ProviderCompletor providerCompletor = new Completor.ProviderCompletor();
+        PUCompletor.ProviderCompletor providerCompletor = new PUCompletor.ProviderCompletor();
         registerCompletor(PersistenceCfgXmlConstants.PROVIDER, null, providerCompletor);
+        
+        PUCompletor.ExUnlistedClassesCompletor exClassesCompletor = new PUCompletor.ExUnlistedClassesCompletor();
+        registerCompletor(PersistenceCfgXmlConstants.EXCLUDE_UNLISTED_CLASSES, null, exClassesCompletor);
 
-        Completor.JtaDatasourceCompletor jtaDatasourceCompletor = new Completor.JtaDatasourceCompletor();
+        PUCompletor.JtaDatasourceCompletor jtaDatasourceCompletor = new PUCompletor.JtaDatasourceCompletor();
         registerCompletor(PersistenceCfgXmlConstants.JTA_DATA_SOURCE, null, jtaDatasourceCompletor);
     }
     
@@ -111,7 +114,7 @@ public final class PUCompletionManager {
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
 
-        Completor completor = locateCompletor(tagName, attribName);
+        PUCompletor completor = locateCompletor(tagName, attribName);
         if (completor != null) {
             valueItems.addAll(completor.doCompletion(context));
              if (completor.getAnchorOffset() != -1) {
@@ -129,41 +132,50 @@ public final class PUCompletionManager {
         SyntaxElement prevElem = docContext.getCurrentElement().getPrevious();
         Tag propTag = null;
 
-        // If current element is a start tag and its tag is <property>
-        // or the current element is text and its prev is a start <property> tag,
-        // then do the code completion
-        if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
-            propTag = (StartTag) curElem;
-        } else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
-                ((StartTag) prevElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
-            propTag = (StartTag) prevElem;
+        String tagName = (curElem instanceof StartTag) ? ((StartTag) curElem).getTagName() : ((prevElem instanceof StartTag) ? ((StartTag) prevElem).getTagName() : null);
+        PUCompletor completor = locateCompletor(tagName, null);
+        if (completor != null) {
+            valueItems.addAll(completor.doCompletion(context));
+             if (completor.getAnchorOffset() != -1) {
+                anchorOffset = completor.getAnchorOffset();
+            }
         } else {
-            return anchorOffset;
-        }
-        
-        String propName = JPAEditorUtil.getPersistencePropertyName(propTag);
-        int caretOffset = context.getCaretOffset();
-        String typedChars = context.getTypedPrefix();
-        
-        Object possibleValue = PersistenceCfgProperties.getPossiblePropertyValue(null, propName);
-        
-        if (possibleValue instanceof String[]) {
-            
-            // Add the values in the String[] as completion items
-            String[] values = (String[])possibleValue;
-            
-            for (int i = 0; i < values.length; i++) {
-                if (values[i].startsWith(typedChars.trim())
-                        || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
-                    JPACompletionItem item = 
-                            JPACompletionItem.createHbPropertyValueItem(caretOffset-typedChars.length(), values[i]);
-                    valueItems.add(item);
-                }
+
+            // If current element is a start tag and its tag is <property>
+            // or the current element is text and its prev is a start <property> tag,
+            // then do the code completion
+            if ((curElem instanceof StartTag) && ((StartTag) curElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
+                propTag = (StartTag) curElem;
+            } else if ((curElem instanceof Text) && (prevElem instanceof StartTag) &&
+                    ((StartTag) prevElem).getTagName().equalsIgnoreCase(PersistenceCfgXmlConstants.PROPERTY_TAG)) {
+                propTag = (StartTag) prevElem;
+            } else {
+                return anchorOffset;
             }
 
-            anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
+            String propName = JPAEditorUtil.getPersistencePropertyName(propTag);
+            int caretOffset = context.getCaretOffset();
+            String typedChars = context.getTypedPrefix();
+
+            Object possibleValue = PersistenceCfgProperties.getPossiblePropertyValue(null, propName);
+
+            if (possibleValue instanceof String[]) {
+
+                // Add the values in the String[] as completion items
+                String[] values = (String[])possibleValue;
+
+                for (int i = 0; i < values.length; i++) {
+                    if (values[i].startsWith(typedChars.trim())
+                            || values[i].startsWith( "org.hibernate.dialect." + typedChars.trim()) ) { // NOI18N
+                        JPACompletionItem item = 
+                                JPACompletionItem.createHbPropertyValueItem(caretOffset-typedChars.length(), values[i]);
+                        valueItems.add(item);
+                    }
+                }
+
+                anchorOffset = context.getCurrentToken().getPrevious().getOffset() + 1;
+            }
         }
-        
         return anchorOffset;
     }
 
@@ -178,7 +190,7 @@ public final class PUCompletionManager {
     
 
     private void registerCompletor(String tagName, String attribName,
-            Completor completor) {
+            PUCompletor completor) {
         completors.put(createRegisteredName(tagName, attribName), completor);
     }
 
@@ -200,7 +212,7 @@ public final class PUCompletionManager {
         return builder.toString();
     }
 
-    private Completor locateCompletor(String nodeName, String attributeName) {
+    private PUCompletor locateCompletor(String nodeName, String attributeName) {
         String key = createRegisteredName(nodeName, attributeName);
         if (completors.containsKey(key)) {
             return completors.get(key);

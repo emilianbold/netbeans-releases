@@ -1185,7 +1185,7 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
          * {@link MIMEResolver.ExtensionRegistration} and co. to assign
          * a mime types to {@link FileObject files} in the system.
          */
-        String[] mimeType();
+        String mimeType();
 
         /**
          * Display name for the file type created by this registration.
@@ -1205,6 +1205,18 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
          */
         int position() default Integer.MAX_VALUE;
     }
+    
+     /**
+     * May be uses to allow multiple {@link DataObject.Registration DataObject.Registration} at one place.
+     * @since 7.36
+     */
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE})
+    public static @interface Registrations {
+        
+        Registration[] value();
+    }
+    
     
     /** Registry of modified data objects.
      * The registry permits attaching of a change listener

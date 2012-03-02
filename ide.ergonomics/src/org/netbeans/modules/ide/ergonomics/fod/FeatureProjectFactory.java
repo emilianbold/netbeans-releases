@@ -489,25 +489,28 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
         }
 
 
+        @Override
         public String getName() {
             ProjectInformation info = delegate.lookup(ProjectInformation.class);
-            if (info != this) {
+            if (info != null && info != this) {
                 return info.getName();
             }
             return dir.getNameExt();
         }
 
+        @Override
         public String getDisplayName() {
             ProjectInformation info = delegate.lookup(ProjectInformation.class);
-            if (info != this) {
+            if (info != null && info != this) {
                 return info.getDisplayName();
             }
             return getName();
         }
 
+        @Override
         public Icon getIcon() {
             ProjectInformation info = delegate.lookup(ProjectInformation.class);
-            if (info != this) {
+            if (info != null && info != this) {
                 return info.getIcon();
             }
             return ImageUtilities.loadImageIcon(
@@ -515,6 +518,7 @@ implements ProjectFactory, PropertyChangeListener, Runnable {
             , false);
         }
 
+        @Override
         public Project getProject() {
             return delegate.lookup(Project.class);
         }

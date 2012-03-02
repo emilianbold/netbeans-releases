@@ -244,11 +244,6 @@ made subject to such option by the copyright holder.
 </folder>
 
   <folder name="Actions">
-    <folder name="Build">
-      <file name="Set Request Parameters.instance">
-        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.core.EditQueryStringAction"/>
-      </file>
-    </folder>
     <folder name="Edit">
         <file name="org-netbeans-modules-web-core-jsploader-EditServletAction.instance"/>
     </folder>
@@ -315,11 +310,7 @@ made subject to such option by the copyright holder.
         </folder>
   </folder>
     
-  <folder name="Shortcuts">
-    <file name="C-Q.shadow">
-        <attr name="originalFile" stringvalue="Actions/Build/Set Request Parameters.instance"/>
-    </file>
-  </folder>      
+        
 
     <folder name="Plugins">
       <!-- Register XML module catalog plugin -->

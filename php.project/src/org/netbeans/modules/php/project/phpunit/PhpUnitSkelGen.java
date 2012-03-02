@@ -93,7 +93,10 @@ public final class PhpUnitSkelGen extends PhpProgram {
         return FileUtils.validateFile(Bundle.PhpUnitSkelGen_script_label(), getProgram(), false);
     }
 
-    @NbBundle.Messages("PhpUnitSkelGen.test.generating=Creating test file for {0}")
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "PhpUnitSkelGen.test.generating=Creating test file for {0}"
+    })
     public File generateTest(String sourceClassName, File sourceClassFile, String testClassName, File testClassFile) {
         if (testClassFile.isFile()) {
             // file already exists

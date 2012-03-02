@@ -817,7 +817,7 @@ public final class RequestHelper {
 
         int position = request.lexOffset;
 
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
 
         int difference = ts.move(position);
 
@@ -835,14 +835,16 @@ public final class RequestHelper {
 
         // this should move us to dot or whitespace or NLS or prefix
         if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
-
-            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT && t.id() != GroovyTokenId.MEMBER_POINTER
-                    && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
+            if (ts.token().id() != GroovyTokenId.DOT &&
+                ts.token().id() != GroovyTokenId.NLS &&
+                ts.token().id() != GroovyTokenId.WHITESPACE &&
+                ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
+                ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+                
                 // is it prefix
                 // keyword check is here because of issue #150862
-                if (t.id() != GroovyTokenId.IDENTIFIER && !t.id().primaryCategory().equals("keyword")) {
+                if (ts.token().id() != GroovyTokenId.IDENTIFIER && !ts.token().id().primaryCategory().equals("keyword")) {
                     return null;
                 } else {
                     ts.movePrevious();
@@ -852,7 +854,9 @@ public final class RequestHelper {
 
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
+        if (ts.token().id() != GroovyTokenId.DOT && 
+            ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
+            ts.token().id() != GroovyTokenId.MEMBER_POINTER) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -863,11 +867,13 @@ public final class RequestHelper {
                 }
             }
         }
-
-        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT && ts.token().id() != GroovyTokenId.MEMBER_POINTER)
-                || !remainingTokens) {
-            // no astpath
-            return null;
+        
+        if ((ts.token().id() != GroovyTokenId.DOT &&
+             ts.token().id() != GroovyTokenId.OPTIONAL_DOT &&
+             ts.token().id() != GroovyTokenId.MEMBER_POINTER)
+            || !remainingTokens) {
+            
+            return null; // no astpath
         }
 
         boolean methodsOnly = false;

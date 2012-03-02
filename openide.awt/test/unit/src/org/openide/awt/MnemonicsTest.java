@@ -125,12 +125,22 @@ public class MnemonicsTest extends NbTestCase {
         JButton b = new JButton();
         Mnemonics.setLocalizedText(b, "Hello &There");
         assertEquals("Hello There", b.getText());
-        assertEquals('T', b.getMnemonic());
-        assertEquals(6, b.getDisplayedMnemonicIndex());
+        if( Utilities.isMac() ) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals('T', b.getMnemonic());
+            assertEquals(6, b.getDisplayedMnemonicIndex());
+        }
         b.setModel(m);
         assertEquals("Hello There", b.getText());
-        assertEquals('T', b.getMnemonic());
-        assertEquals(6, b.getDisplayedMnemonicIndex());
+        if( Utilities.isMac() ) {
+            assertEquals(0, b.getMnemonic());
+            assertEquals(-1, b.getDisplayedMnemonicIndex());
+        } else {
+            assertEquals('T', b.getMnemonic());
+            assertEquals(6, b.getDisplayedMnemonicIndex());
+        }
     }
 
     public void testBug174191_1() {
@@ -151,7 +161,11 @@ public class MnemonicsTest extends NbTestCase {
         JMenuItem item = new JMenuItem();
         Actions.connect(item, mnem, true);
         assertEquals("Plain text", "Mnem", item.getText());
-        assertEquals("Mnenonic is on n", 'N', item.getMnemonic());
+        if( Utilities.isMac() ) {
+            assertEquals("No mnenonic on Mac", 0, item.getMnemonic());
+        } else {
+            assertEquals("Mnenonic is on n", 'N', item.getMnemonic());
+        }
     }
     public void testNeverMnemonics() {
         Locale.setDefault(new Locale("te", "NO"));

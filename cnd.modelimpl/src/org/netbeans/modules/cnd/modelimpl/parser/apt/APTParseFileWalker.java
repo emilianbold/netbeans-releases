@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.IncludeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.MacroImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileImplContent;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.SimpleOffsetableImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -93,7 +93,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
 
         void onStoppedDirective(APT apt);
     }
-    private FileImplContent fileContent;
+    private FileContent fileContent;
     private final boolean triggerParsingActivity;
     private final EvalCallback evalCallback;
     private static final EvalCallback EMPTY_EVAL_CALLBACK = new EvalCallback() {
@@ -109,7 +109,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         this.triggerParsingActivity = triggerParsingActivity;
     }
 
-    public void setFileContent(FileImplContent content) {
+    public void setFileContent(FileContent content) {
         this.fileContent = content;
     }
 

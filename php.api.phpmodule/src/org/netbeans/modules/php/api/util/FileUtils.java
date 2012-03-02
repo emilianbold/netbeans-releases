@@ -286,11 +286,15 @@ public final class FileUtils {
      * @since 1.64
      */
     @NbBundle.Messages({
-        "# 0 - source",
+        "# {0} - source",
         "FileUtils.validateFile.missing={0} must be selected.",
+        "# {0} - source",
         "FileUtils.validateFile.notAbsolute={0} must be an absolute path.",
+        "# {0} - source",
         "FileUtils.validateFile.notFile={0} must be a valid file.",
+        "# {0} - source",
         "FileUtils.validateFile.notReadable={0} is not readable.",
+        "# {0} - source",
         "FileUtils.validateFile.notWritable={0} is not writable."
     })
     public static String validateFile(String source, String filePath, boolean writable) {
@@ -362,9 +366,13 @@ public final class FileUtils {
     @NbBundle.Messages({
         "# {0} - source",
         "FileUtils.validateDirectory.missing={0} must be selected.",
+        "# {0} - source",
         "FileUtils.validateDirectory.notAbsolute={0} must be an absolute path.",
+        "# {0} - source",
         "FileUtils.validateDirectory.notDir={0} must be a valid directory.",
+        "# {0} - source",
         "FileUtils.validateDirectory.notReadable={0} is not readable.",
+        "# {0} - source",
         "FileUtils.validateDirectory.notWritable={0} is not writable."
     })
     public static String validateDirectory(String source, String dirPath, boolean writable) {

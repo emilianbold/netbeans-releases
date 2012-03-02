@@ -167,12 +167,22 @@ public class EnablingAutoloadLeavesFeatureDisabledTest extends NbTestCase {
         assertFalse("Feature reports itself disabled", info.isEnabled());
 
         ModuleManager man = org.netbeans.core.startup.Main.getModuleSystem().getManager();
-        man.enable((Module)services);
+        try {
+            man.mutexPrivileged().enterWriteAccess();
+            man.enable((Module)services);
+        } finally {
+            man.mutexPrivileged().exitWriteAccess();
+        }
 
         assertTrue("AU services is active too", services.isEnabled());
         assertFalse("Feature still reports itself disabled", info.isEnabled());
 
-        man.enable((Module)subversion);
+        try {
+            man.mutexPrivileged().enterWriteAccess();
+            man.enable((Module)subversion);
+        } finally {
+            man.mutexPrivileged().exitWriteAccess();
+        }
         assertTrue("Subversion is active", subversion.isEnabled());
 
         assertTrue("Feature is enabled now", info.isEnabled());

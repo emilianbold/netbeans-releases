@@ -88,7 +88,7 @@ public final class ClassIndexManager {
     public void removeClassIndexManagerListener (final ClassIndexManagerListener listener) {
         assert listener != null;
         this.listeners.remove(listener);
-    }
+    }    
 
     @CheckForNull
     public ClassIndexImpl getUsagesQuery (@NonNull final URL root, final boolean beforeCreateAllowed) {

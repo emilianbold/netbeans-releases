@@ -42,6 +42,9 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
 import java.io.PrintStream;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +56,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 
 /**
  *
@@ -71,7 +75,7 @@ public final class Tracer {
 
     private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream){
         printStream.println("\n========== Dumping Dump Project Classifiers");
-        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getClassifiers().entrySet()){
+        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()){
             printStream.print("\t"+entry.getKey().toString()+" ");
             if (entry.getValue() == null){
                 printStream.println("null");
@@ -80,7 +84,7 @@ public final class Tracer {
             }
         }
         printStream.println("\n========== Dumping Dump Project Typedefs");
-        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getTypedefs().entrySet()){
+        for(Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()){
             printStream.print("\t"+entry.getKey().toString()+" ");
             if (entry.getValue() == null){
                 printStream.println("null");
@@ -123,7 +127,7 @@ public final class Tracer {
 
     private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream){
         printStream.println("\n========== Dumping Project declarations");
-        for(Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()){
+        for(Map.Entry<CharSequence, Object> entry : container.getTestDeclarations().entrySet()){
             printStream.println("\t"+entry.getKey().toString());
             TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
             Object o = entry.getValue();
@@ -145,7 +149,7 @@ public final class Tracer {
             }
         }
         printStream.println("\n========== Dumping Project friends");
-        for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()){
+        for(Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.getTestFriends().entrySet()){
             printStream.println("\t"+entry.getKey().toString());
             TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
             for(CsmUID<? extends CsmFriend> uid : entry.getValue()) {
@@ -175,7 +179,7 @@ public final class Tracer {
                 printStream.println("\t\tAlias "+name.toString());
             }
             FileEntry file = entry.getValue();
-            CsmFile csmFile = file.getFileUID().getObject();
+            CsmFile csmFile = file.getTestFileUID().getObject();
             printStream.println("\t\tModel File "+csmFile.getAbsolutePath());
             printStream.println("\t\tNumber of states "+file.getPrerocStates().size());
             for (PreprocessorStatePair statePair : file.getStatePairs()) {

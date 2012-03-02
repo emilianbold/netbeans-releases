@@ -55,6 +55,7 @@ import javax.swing.JToggleButton;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -76,7 +77,7 @@ public class VariablesViewButtons {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.setProperty(SHOW_FORMATTERS_PROP_NAME, "true"); // NOI18N
-                OptionsDisplayer.getDefault().open("Advanced/JavaDebugger"); // NOI18N
+                OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/JavaDebugger"); // NOI18N
             }
         });
         return button;

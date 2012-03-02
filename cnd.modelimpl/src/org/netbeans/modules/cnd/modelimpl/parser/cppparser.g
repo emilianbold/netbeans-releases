@@ -881,6 +881,7 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
+                    { #external_declaration_template = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1282,6 +1283,7 @@ member_declaration_template
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
     |
         (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+        { #member_declaration_template = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration_template); }
     |
                         // this rule must be after handling functions 
 			// templated forward class decl, init/decl of static member in template
@@ -1521,6 +1523,7 @@ member_declaration
 		}
 		SEMICOLON! //{end_of_stmt();}
         |       (LITERAL_using IDENT ASSIGNEQUAL) => alias_declaration
+                { #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|	using_declaration
         |       static_assert_declaration
 	)
@@ -1638,6 +1641,7 @@ declaration[int kind]
         {kind == declSimpleFunction}? (IDENT LPAREN) =>
         {beginDeclaration();}
         init_declarator_list[kind]
+        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         {endDeclaration();}
@@ -1646,6 +1650,7 @@ declaration[int kind]
         // LL 31/1/97: added (COMMA) ? below. This allows variables to
         // typedef'ed more than once. DW 18/08/03 ?
         declaration_specifiers[true, false] ((COMMA!)? init_declarator_list[kind])?
+        (trailing_type)?
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | SEMICOLON )
         //{end_of_stmt();}
@@ -1784,7 +1789,7 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
 {TypeQualifier tq;}
     :
-        (ts = builtin_type[ts])+
+        (options{greedy = true;}: ts = builtin_type[ts])+
         ((cv_qualifier builtin_type[ts]) => 
         tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
     ;
@@ -1897,6 +1902,12 @@ fix_fake_class_members
     :
         class_members
         { #fix_fake_class_members = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #fix_fake_class_members); }
+    ;
+
+fix_fake_enum_members
+    :
+        enumerator_list
+        { #fix_fake_enum_members = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #fix_fake_enum_members); }
     ;
 
 enum_specifier
@@ -2016,6 +2027,7 @@ init_declarator[int kind]
                 |
                         array_initializer
 		)?
+                (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
 	;
 
 initializer
@@ -2349,7 +2361,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition, symTabCheck]
+        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
@@ -2365,6 +2377,9 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
+        
+        (trailing_type)?
+
 		//{functionEndParameterList(definition);}
 		(exception_specification)?
 		(( ASSIGNEQUAL ~(LITERAL_default | LITERAL_delete)) => ASSIGNEQUAL OCTALINT)?	// The value of the octal must be 0
@@ -2373,6 +2388,13 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
                 (options {greedy=true;} :function_attribute_specification)?
 	;
         
+trailing_type
+{int ts = tsInvalid;}
+    :
+        POINTERTO 
+        ts=type_specifier[dsInvalid, false]
+    ;
+
 protected
 function_direct_declarator_2 [boolean definition, boolean symTabCheck] 
     {String q; CPPParser.TypeQualifier tq;}
@@ -3526,8 +3548,13 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   TILDE
             |   ELLIPSIS
 
-            |   balanceParensInExpression
-            |   balanceSquaresInExpression
+            |   balanceParensInExpression 
+            |   balanceSquaresInExpression 
+                (options {greedy = true;}:  
+                    (balanceParensInExpression)? 
+                    (trailing_type)? 
+                    compound_statement
+                )?
 
             |   constant
 
@@ -3560,6 +3587,15 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   LITERAL_alignof
             |   LITERAL___alignof__
+
+            |   LITERAL_auto
+            |   LITERAL_final
+            |   LITERAL_override
+            |   LITERAL_constexpr
+            |   LITERAL_thread_local
+            |   LITERAL_static_assert
+            |   LITERAL_alignas
+            |   LITERAL_noexcept
 
             |   LITERAL_OPERATOR 
                 (options {warnWhenFollowAmbig = false;}: 
@@ -3727,6 +3763,15 @@ lazy_expression_predicate
 
     |   LITERAL_alignof
     |   LITERAL___alignof__
+
+    |   LITERAL_auto
+    |   LITERAL_final
+    |   LITERAL_override
+    |   LITERAL_constexpr
+    |   LITERAL_thread_local
+    |   LITERAL_static_assert
+    |   LITERAL_alignas
+    |   LITERAL_noexcept
 
     |   GREATERTHAN lazy_expression_predicate
     ;

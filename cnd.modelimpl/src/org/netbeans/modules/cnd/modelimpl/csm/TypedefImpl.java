@@ -45,17 +45,10 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmFile;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
-import org.netbeans.modules.cnd.api.model.CsmNamespace;
-import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmScope;
-import org.netbeans.modules.cnd.api.model.CsmScopeElement;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
@@ -75,7 +68,7 @@ import org.openide.util.CharSequences;
  * Implements CsmTypedef
  * @author vk155633
  */
-public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implements CsmTypedef, Disposable, CsmScopeElement {
+public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implements CsmTypedef, CsmTemplate, Disposable, CsmScopeElement {
 
     private final CharSequence name;
     private final CsmType type;
@@ -83,6 +76,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     // only one of containerRef/containerUID must be used (based on USE_REPOSITORY)
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
+    private TemplateDescriptor templateDescriptor = null;
 
     protected TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, CharSequence aName) {
         super(file, getStartOffset(ast), getEndOffset(ast));
@@ -237,6 +231,35 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         return CsmDeclaration.Kind.TYPEDEF;
     }
 
+    @Override
+    public boolean isTemplate() {
+        return templateDescriptor != null;
+    }
+
+    @Override
+    public boolean isSpecialization() {
+        return false;
+    }
+
+    @Override
+    public boolean isExplicitSpecialization() {
+        return false;
+    }
+
+    @Override
+    public List<CsmTemplateParameter> getTemplateParameters() {
+        return (templateDescriptor != null) ? templateDescriptor.getTemplateParameters() : Collections.<CsmTemplateParameter>emptyList();
+    }
+
+    @Override
+    public CharSequence getDisplayName() {
+        return (templateDescriptor != null) ? CharSequences.create((getName().toString() + templateDescriptor.getTemplateSuffix())) : getName();
+    }    
+    
+    public void setTemplateDescriptor(TemplateDescriptor templateDescriptor) {
+        this.templateDescriptor = templateDescriptor;
+    }
+    
     private CsmType createType(AST node) {
         //
         // TODO: replace this horrible code with correct one
@@ -322,6 +345,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         } else {
             UIDObjectFactory.getDefaultFactory().writeUID(this.containerUID, output);
         }
+        PersistentUtils.writeTemplateDescriptor(templateDescriptor, output);
     }
 
     public TypedefImpl(RepositoryDataInput input) throws IOException {
@@ -349,5 +373,6 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
             System.err.println("non-writable object was read:" + this.getContainingFile() + toString()); // NOI18N
         }
         this.containerRef = null;
+        this.templateDescriptor = PersistentUtils.readTemplateDescriptor(input);
     }
 }

@@ -71,6 +71,8 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
     
+    private List<CsmStatement> lambdas;
+    
     private ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         //this.parent = parent;
@@ -104,13 +106,27 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     public CsmScope getScope() {
         return _getScope();
     }
+
+    public List<CsmStatement> getLambdas() {
+        if(lambdas == null) {
+            return Collections.<CsmStatement>emptyList();
+        }
+        return lambdas;        
+    }
+    
+    public void setLambdas(List<CsmStatement> lambdas) {
+        this.lambdas = lambdas;
+    }
     
     @Override
     public void dispose() {
         super.dispose();
         onDispose();
+        if (lambdas != null) {
+            Utils.disposeAll(lambdas);
+        }        
     }
-    
+
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized

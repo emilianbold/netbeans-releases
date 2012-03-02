@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.modelimpl.trace;
 
-import com.sun.imageio.plugins.common.I18N;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
