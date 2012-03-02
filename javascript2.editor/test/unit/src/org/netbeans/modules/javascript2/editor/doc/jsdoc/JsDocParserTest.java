@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocParser;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocBlock;
+import java.util.Iterator;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Map;
+import java.util.Map.Entry;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
@@ -212,40 +212,35 @@ public class JsDocParserTest extends JsTestBase {
 
     public void testParsedContextSensitiveContentNoAsterisk() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesNoAsterisk.js"));
-        Snapshot snapshot = source.createSnapshot();
-        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
-        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
         assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesAsterisks.js"));
-        Snapshot snapshot = source.createSnapshot();
-        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
-        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
         assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsingLongComments() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/windowStub.js"));
-        Snapshot snapshot = source.createSnapshot();
-        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
-        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
     }
 
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
-        Snapshot snapshot = source.createSnapshot();
-        List<JsDocBlock> jsDocBlocks = JsDocParser.parse(snapshot);
-
-        // checking tags of the first comment block
-        List<JsDocElement> tags = jsDocBlocks.get(0).getTags();
+        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         for (int i = 0; i < expectedTypes.length; i++) {
             assertEquals(expectedTypes[i], tags.get(i).getType());
         }
+    }
+
+    private JsDocBlock getFirstJsDocBlock(Snapshot snapshot) {
+        Iterator<Entry<Integer, JsDocBlock>> iterator = JsDocParser.parse(snapshot).entrySet().iterator();
+        return iterator.next().getValue();
     }
 
     private String getFirstPatternMatch(String text) {

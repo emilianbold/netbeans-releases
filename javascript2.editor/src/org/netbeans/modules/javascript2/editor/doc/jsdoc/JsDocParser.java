@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
@@ -72,8 +69,8 @@ public class JsDocParser {
      * @param scriptText text to parse
      * @return list of blocks
      */
-    public static List<JsDocBlock> parse(Snapshot snapshot) {
-        List<JsDocBlock> blocks = new LinkedList<JsDocBlock>();
+    public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
+        Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
 
         List<CommentBlock> commentBlocks = getCommentBlocks(snapshot);
 
@@ -85,14 +82,12 @@ public class JsDocParser {
             if (commentType == JsDocCommentType.DOC_NO_CODE_START
                     || commentType == JsDocCommentType.DOC_NO_CODE_END
                     || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
-                blocks.add(new JsDocBlock(
-                        commentBlock.getBeginOffset(),
-                        commentBlock.getEndOffset(),
-                        commentType,
-                        null));
+                blocks.put(commentBlock.getEndOffset(), new JsDocBlock(commentBlock.getBeginOffset(),
+                        commentBlock.getEndOffset(), commentType, null));
                 continue;
             } else {
-                blocks.add(parseCommentBlock(commentBlock, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
+                blocks.put(commentBlock.getEndOffset(),
+                        parseCommentBlock(commentBlock, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
                 continue;
             }
         }

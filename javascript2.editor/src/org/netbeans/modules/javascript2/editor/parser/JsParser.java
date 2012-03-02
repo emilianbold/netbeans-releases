@@ -38,10 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
@@ -79,7 +76,7 @@ public class JsParser extends Parser {
         } catch (Exception ex) {
             LOGGER.log (Level.INFO, "Exception during parsing: {0}", ex);
             // TODO create empty result
-            lastResult = new JsParserResult(snapshot, null, Collections.<JsComment>emptyList());
+            lastResult = new JsParserResult(snapshot, null, Collections.<Integer, JsComment>emptyMap());
         }
         long endTime = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Parsing took: {0}ms source: {1}", new Object[]{endTime - startTime, snapshot.getSource().getFileObject()}); //NOI18N
@@ -112,7 +109,7 @@ public class JsParser extends Parser {
         com.oracle.nashorn.ir.FunctionNode node = parser.parse(com.oracle.nashorn.codegen.CompilerConstants.runScriptName);
 
         // process comment elements
-        List<? extends JsComment> comments;
+        Map<Integer, ? extends JsComment> comments;
         try {
             long startTimeForDoc = System.currentTimeMillis();
             comments = JsDocParser.parse(snapshot);
@@ -122,7 +119,7 @@ public class JsParser extends Parser {
         } catch (Exception ex) {
             // if anything wrong happen during parsing comments
             LOGGER.log(Level.WARNING, null, ex);
-            comments = new LinkedList<JsComment>();
+            comments = Collections.<Integer, JsComment>emptyMap();
         }
 
         JsParserResult result = new JsParserResult(snapshot, node, comments);

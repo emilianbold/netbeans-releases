@@ -40,6 +40,7 @@ package org.netbeans.modules.javascript2.editor.parser;
 import com.oracle.nashorn.ir.FunctionNode;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
@@ -56,9 +57,9 @@ public class JsParserResult extends ParserResult {
     private FunctionNode root;
     private List<Error> errors;
     private Model model;
-    private List<? extends JsComment> comments;
+    private Map<Integer, ? extends JsComment> comments;
     
-    public JsParserResult(Snapshot snapshot, FunctionNode root, List<? extends JsComment> comments) {
+    public JsParserResult(Snapshot snapshot, FunctionNode root, Map<Integer, ? extends JsComment> comments) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<Error>emptyList();
@@ -93,10 +94,10 @@ public class JsParserResult extends ParserResult {
     }
 
     /**
-     * Gets list of comments binded with {@code ParserResult}s {@code Snapshot}.
-     * @return {@code List} of {@code JsComment}s
+     * Gets map of comments binded with {@code ParserResult}s {@code Snapshot}.
+     * @return {@code Map} of {@code JsComment}s on its end positions
      */
-    public List<? extends JsComment> getComments() {
+    public Map<Integer, ? extends JsComment> getComments() {
         return comments;
     }
 }
