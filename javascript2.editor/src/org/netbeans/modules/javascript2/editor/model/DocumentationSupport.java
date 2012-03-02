@@ -51,6 +51,13 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 public class DocumentationSupport {
 
+    /**
+     * Gets {@code DocumentationProvider} for given {@code JsParserResult}.
+     * <p>
+     * <b>Obtained {@code DocumentationProvider} should be cached in callers place.</b>
+     * @param result {@code JsParserResult}
+     * @return {@code DocumentationProvider} for given {@code JsParserResult}
+     */
     public static DocumentationProvider getDocumentationProvider(JsParserResult result) {
         return new JsDocDocumentationProvider(result);
     }
