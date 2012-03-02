@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
+import com.sun.corba.se.spi.ior.Identifiable;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.*;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
@@ -80,7 +82,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
+ * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this
+ * class
+ *
  * @author sp153251
  */
 @MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
@@ -176,7 +180,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         protected boolean canFilter(JTextComponent component) {
             return false;//TODO: implement filter
         }
-        
+
         @Override
         protected void filter(CompletionResultSet resultSet) {
             try {
@@ -190,24 +194,28 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                             Completion.get().hideCompletion();
                         }
                     }
-                } 
+                }
                 resultSet.setAnchorOffset(anchorOffset);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
             resultSet.finish();
         }
+
         private Collection getFilteredData(Collection<JPACompletionItem> data, String prefix) {
-            if (prefix.length() == 0)
+            if (prefix.length() == 0) {
                 return data;
+            }
             List ret = new ArrayList();
             for (Iterator<JPACompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
-                if (itm.getInsertPrefix().toString().startsWith(prefix))
+                if (itm.getInsertPrefix().toString().startsWith(prefix)) {
                     ret.add(itm);
+                }
             }
             return ret;
         }
+
         private void run(CompilationController controller) {
             int startOffset = caretOffset;
             Iterator resolversItr = resolvers.iterator();
@@ -230,18 +238,20 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     if (scope != null) {
                         entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
                     }
-                    if(entityMappingsModel != null){
+                    if (entityMappingsModel != null) {
                         entityMappingsModel.runReadAction(task);
                     }
                 } catch (IOException ex) {
-                   
                 }
 
-                if(!task.isValid())break;
+                if (!task.isValid()) {
+                    break;
+                }
             }
         }
-        
+
         private class TaskUserAction implements MetadataModelAction<EntityMappingsMetadata, Boolean> {
+
             private final CompilationController controller;
             private final CompletionContextResolver resolver;
             private final int startOffset;
@@ -253,24 +263,23 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                 this.startOffset = startOffset;
                 valid = false;
             }
-            
-            public boolean isValid(){
+
+            public boolean isValid() {
                 return valid;
             }
 
             @Override
             public Boolean run(EntityMappingsMetadata metadata) throws Exception {
-                    Context ctx = new Context(component, controller, startOffset, false);
-                    if (ctx.getEntityMappings() == null) {
-                        ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No EnitityMappings defined.");
-                    } else {
-                        results.addAll(resolver.resolve(ctx));
-                        valid = true;
-                    }
-                    return valid;
+                Context ctx = new Context(component, controller, startOffset, false);
+                if (ctx.getEntityMappings() == null) {
+                    ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "No EnitityMappings defined.");
+                } else {
+                    results.addAll(resolver.resolve(ctx));
+                    valid = true;
+                }
+                return valid;
             }
-            
-        } 
+        }
 
         private class Task extends UserTask {
 
@@ -332,17 +341,21 @@ public class JPACodeCompletionProvider implements CompletionProvider {
 
     public final class Context {
 
-        /** Text component */
+        /**
+         * Text component
+         */
         private JTextComponent component;
         CompilationController controller;
-        /** End position of the scanning - usually the caret position */
+        /**
+         * End position of the scanning - usually the caret position
+         */
         private int endOffset;
         private PersistenceUnit[] pus;
         private EntityMappings emaps;
         private String completedMemberName, completedMemberJavaClassName;
         private CCParser CCParser;
         private CCParser.CC parsednn = null;
-        private String methodName = null;
+        private CCParser.MD methodName = null;
 
         public Context(JTextComponent component, CompilationController controller, int endOffset, boolean autoPopup) {
             this.component = component;
@@ -361,7 +374,9 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             this.CCParser = new CCParser(controller);
         }
 
-        /** Must be run under MDR transaction! */
+        /**
+         * Must be run under MDR transaction!
+         */
         public javax.lang.model.element.Element getJavaClass() {
             TreePath path = null;
             try {
@@ -397,13 +412,15 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return null;
         }
 
-        /** @return an arrat of PUs which this sourcefile belongs to. */
+        /**
+         * @return an arrat of PUs which this sourcefile belongs to.
+         */
         public PersistenceUnit[] getPersistenceUnits() {
             return this.pus;
         }
 
         public EntityMappings getEntityMappings() {
-            if(emaps == null){
+            if (emaps == null) {
                 FileObject documentFO = getFileObject();
                 this.emaps = PersistenceUtils.getEntityMappings(documentFO);
             }
@@ -498,6 +515,86 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             completedMemberJavaClassName = genericType == null ? type : genericType;
         }
 
+        private void initMethodContext() {
+            TokenSequence<JavaTokenId> ts = getController().getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            ts.move(getCompletionOffset());
+            previousNonWhitespaceToken(ts);
+            Token<JavaTokenId> ti = ts.token();
+            int lparpassed = 0;
+            String mname = null;
+            while (ti != null) {
+                javax.lang.model.element.Element el = null;
+                if (ti.id() == JavaTokenId.LPAREN) {
+                    lparpassed++;
+                } else if (ti.id() == JavaTokenId.IDENTIFIER) {
+                    break;//so far we have only simple model for method parameters without identifier checks
+                } else if (ti.id() == JavaTokenId.RPAREN) {
+                    lparpassed--;
+                }
+                try {
+                    el = getController().getTrees().getElement(getCompletionTreePath(getController(), ts.offset(), CompletionProvider.COMPLETION_QUERY_TYPE));
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                //
+                if (lparpassed > 0) {
+                    if (el != null && el.getKind() == ElementKind.METHOD) {//we insde parameters section
+                        //parse to find NN end
+                        mname = el.getSimpleName().toString();
+                        break;
+                    } else if (el != null && el.getKind() == ElementKind.CLASS && el.asType().getKind() == TypeKind.ERROR && (el.asType().toString().indexOf('.') > 0 && el.asType().toString().indexOf('.') < (el.asType().toString().length() - 1))) {//NOI18N
+                        mname = el.getSimpleName().toString();//supposed method name in case of error
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+
+                //
+
+                if (!ts.movePrevious()) {
+                    break;
+                }
+                ti = ts.token();
+            }
+            if (mname != null) {
+                Token<JavaTokenId> literalToComplete = null;
+                Token<JavaTokenId> titk = ts.token();
+                JavaTokenId id = titk.id();
+                do {
+                    id = titk.id();
+                    //ignore whitespaces
+                    if (id == JavaTokenId.WHITESPACE || id == JavaTokenId.LINE_COMMENT || id == JavaTokenId.BLOCK_COMMENT || id == JavaTokenId.JAVADOC_COMMENT) {
+                        if (!ts.moveNext()) {
+                            break;
+                        }
+                        titk = ts.token();
+                        continue;
+                    }
+                    int tokenOffset = titk.offset(getController().getTokenHierarchy());
+                    if(tokenOffset>getCompletionOffset()){
+                        
+                        break;
+                    }
+                    
+                    if(id == JavaTokenId.STRING_LITERAL){
+                        if((tokenOffset + titk.length())>getCompletionOffset()){
+                            //we complete this literal
+                            literalToComplete = titk;
+                            break;
+                        }
+                    }
+                    
+                    if (!ts.moveNext()) {
+                        break;
+                    }
+                    titk = ts.token();//get next token
+
+                } while (titk != null);
+                methodName = this.CCParser.new MD(mname, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
+            }
+        }
+
         private TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
             while (ts.moveNext()) {
                 switch (ts.token().id()) {
@@ -513,6 +610,23 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return null;
         }
 
+        private TokenSequence<JavaTokenId> previousNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
+            do {
+                if (ts.token() != null) {
+                    switch (ts.token().id()) {
+                        case WHITESPACE:
+                        case LINE_COMMENT:
+                        case BLOCK_COMMENT:
+                        case JAVADOC_COMMENT:
+                            break;
+                        default:
+                            return ts;
+                    }
+                }
+            } while (ts.movePrevious());
+            return null;
+        }
+
         /**
          * @return the controller
          */
@@ -520,13 +634,12 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return controller;
         }
 
-        String getMethod() {
-            if(methodName == null){
-                //getCompletedMemberClassName();
+        CCParser.MD getMethod() {
+            if (methodName == null) {
+                initMethodContext();
             }
             return methodName;
         }
     }
-    
     private static final String EMPTY = ""; //NOI18N
 }
