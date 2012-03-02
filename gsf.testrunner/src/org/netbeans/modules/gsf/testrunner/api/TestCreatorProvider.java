@@ -58,17 +58,13 @@ import org.openide.util.Lookup;
  */
 public abstract class TestCreatorProvider {
     
-    private boolean singleClass;
-    private String testClassName;
-    private FileObject targetFolder;
-    
     public abstract String getDisplayName();
     
     public abstract boolean canHandleMultipleClasses(Node[] activatedNodes);
     
     public abstract boolean enable(Node[] activatedNodes);
     
-    public abstract void createTests(Node[] activatedNodes);
+    public abstract void createTests(Context context);
 
     public static SourceGroup getSourceGroup(FileObject file, Project prj) {
         Sources src = ProjectUtils.getSources(prj);
@@ -89,28 +85,44 @@ public abstract class TestCreatorProvider {
         return null;
     }
 
-    public boolean isSingleClass() {
-        return singleClass;
-    }
+    public static final class Context {
 
-    public void setSingleClass(boolean singleClass) {
-        this.singleClass = singleClass;
-    }
+        private boolean singleClass;
+        private String testClassName;
+        private FileObject targetFolder;
+        private Node[] activatedNodes;
+        
+        public Context(Node[] activatedNodes) {
+            this.activatedNodes = activatedNodes;
+        }
 
-    public FileObject getTargetFolder() {
-        return targetFolder;
-    }
+        public Node[] getActivatedNodes() {
+            return activatedNodes;
+        }
 
-    public void setTargetFolder(FileObject targetFolder) {
-        this.targetFolder = targetFolder;
-    }
+        public boolean isSingleClass() {
+            return singleClass;
+        }
 
-    public String getTestClassName() {
-        return testClassName;
-    }
+        public void setSingleClass(boolean singleClass) {
+            this.singleClass = singleClass;
+        }
 
-    public void setTestClassName(String testClassName) {
-        this.testClassName = testClassName;
+        public FileObject getTargetFolder() {
+            return targetFolder;
+        }
+
+        public void setTargetFolder(FileObject targetFolder) {
+            this.targetFolder = targetFolder;
+        }
+
+        public String getTestClassName() {
+            return testClassName;
+        }
+
+        public void setTestClassName(String testClassName) {
+            this.testClassName = testClassName;
+        }
     }
     
 }

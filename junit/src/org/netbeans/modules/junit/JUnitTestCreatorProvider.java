@@ -72,6 +72,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author theofanis
  */
 @ServiceProvider(service=TestCreatorProvider.class, position=10)
+@org.netbeans.modules.gsf.testrunner.api.TestCreator.Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
 
     @Override
@@ -159,9 +160,9 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
     }
 
     @Override
-    public void createTests(Node[] activatedNodes) {
+    public void createTests(Context context) {
         String problem;
-        if ((problem = checkNodesValidity(activatedNodes)) != null) {
+        if ((problem = checkNodesValidity(context.getActivatedNodes())) != null) {
             // TODO report problem
             NotifyDescriptor msg = new NotifyDescriptor.Message(
                     problem, NotifyDescriptor.WARNING_MESSAGE);
@@ -169,7 +170,7 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
             return;
         }
 
-        final FileObject[] filesToTest = getFileObjectsFromNodes(activatedNodes);
+        final FileObject[] filesToTest = getFileObjectsFromNodes(context.getActivatedNodes());
         if (filesToTest == null) {
             return;     //XXX: display some message
         }
@@ -188,12 +189,12 @@ public class JUnitTestCreatorProvider extends TestCreatorProvider {
         /*
          * Store the configuration data:
          */
-        final boolean singleClass = isSingleClass();
+        final boolean singleClass = context.isSingleClass();
         final Map<CommonPlugin.CreateTestParam, Object> params = TestUtil.getSettingsMap(!singleClass);
         if (singleClass) {
-            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, getTestClassName());
+            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, context.getTestClassName());
         }
-        final FileObject targetFolder = getTargetFolder();
+        final FileObject targetFolder = context.getTargetFolder();
 
         RequestProcessor.getDefault().post(new Runnable() {
 

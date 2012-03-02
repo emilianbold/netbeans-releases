@@ -60,7 +60,6 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
-import org.openide.windows.TopComponent;
 
 /**
  * 
@@ -126,10 +125,11 @@ public class TestCreatorAction extends NodeAction {
         
         for (TestCreatorProvider provider : providers) {
             if(provider.getDisplayName().equals(selected)) {
-                provider.setSingleClass(cfg.isSingleClass());
-                provider.setTargetFolder(cfg.getTargetFolder());
-                provider.setTestClassName(cfg.getTestClassName());
-                provider.createTests(activatedNodes);
+                TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
+                context.setSingleClass(cfg.isSingleClass());
+                context.setTargetFolder(cfg.getTargetFolder());
+                context.setTestClassName(cfg.getTestClassName());
+                provider.createTests(context);
                 cfg = null;
                 break;
             }
