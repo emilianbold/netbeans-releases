@@ -304,7 +304,7 @@ class FilesystemInterceptor extends ProvidedExtensions implements FileChangeList
      * @param fo a FileObject
      */
     @Override
-    public void fileLocked(FileObject fo) {
+    public void fileLocked(FileObject fo) throws IOException {
         VCSFilesystemInterceptor.fileLocked(VCSFileProxy.createFileProxy(fo));
     }
     
