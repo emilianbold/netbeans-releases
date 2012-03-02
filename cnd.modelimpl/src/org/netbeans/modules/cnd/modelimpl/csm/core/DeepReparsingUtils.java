@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -66,17 +67,22 @@ import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentF
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Reparse dependant files.
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false;
+    private static final boolean TRACE = CndUtils.isDebugMode();
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
-
+    private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
+    private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
+    
     private DeepReparsingUtils() {
     }
 
@@ -92,21 +98,6 @@ public final class DeepReparsingUtils {
         fileImpl.markReparseNeeded(false);
         ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
                 ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
-    }
-
-    private static boolean partialReparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
-        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-            LOG.log(Level.INFO, "OPTIMISTIC partialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
-            fileImpl.markReparseNeeded(false);
-            FileContentSignature prevSig = fileImpl.getSignature();
-            ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                    ParserQueue.Position.IMMEDIATE, false, ParserQueue.FileAction.NOTHING);
-            FileContentSignature newSig = fileImpl.getSignature();
-            LOG.log(Level.INFO, "check signatures for {0} : {1}", new Object[]{fileImpl.getAbsolutePath(), newSig.equals(prevSig)});
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -132,16 +123,59 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
-        if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-        }
-        if (partialReparseOnChangedFile(fileImpl, project)) {
-            LOG.log(Level.INFO, "PARTIAL reparse was enough for change file {0}", fileImpl.getAbsolutePath());
+    public static void reparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
+        if (true) {
+            reparseOnChangedFileImpl(fileImpl, project);
             return;
         }
+        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+            LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            reparseOnlyOneFile(project, fileImpl);
+        } else {
+            RequestProcessor.Task task = PARTIAL_RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        int val = nrPartialTasks.incrementAndGet();
+                        if (val > 10) {
+                            LOG.log(Level.INFO, "there are {0} pending partial check task", val);
+                        }
+                        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+                        fileImpl.markReparseNeeded(false);
+                        FileContentSignature prevSig = fileImpl.getSignature();
+                        try {
+                            // wait file parse
+                            fileImpl.scheduleParsing(true);
+                            // compare signatures
+                            FileContentSignature newSig = fileImpl.getSignature();
+                            boolean sigCheckResult = newSig.equals(prevSig);
+                            if (!sigCheckResult) {
+                                if (TRACE) {
+                                    CharSequence diff = FileContentSignature.testDifference(prevSig, newSig);
+                                    LOG.log(Level.INFO, "check signatures for {0} : \n{1}", new Object[]{fileImpl.getAbsolutePath(), diff});
+                                }
+                                reparseOnChangedFileImpl(fileImpl, project);
+                            } else {
+                                LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
+                            }
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    } finally {
+                        nrPartialTasks.decrementAndGet();
+                    }
+                }
+            });
+            task.waitFinished();
+        }
+    }
+
+    private static void reparseOnChangedFileImpl(final FileImpl fileImpl, final ProjectBase project) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "full reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+        }
         // content of file was changed => invalidate cache
-        APTDriver.invalidateAPT(fileImpl.getBuffer());        
+        APTDriver.invalidateAPT(fileImpl.getBuffer());
         boolean scheduleParsing = true;
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();
