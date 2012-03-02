@@ -130,6 +130,9 @@ public class RemoteAWTService {
                 continue;
             }
             Dimension d = w.getSize();
+            if (d.width == 0 || d.height == 0) {
+                continue;
+            }
             BufferedImage bi = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
             Graphics g = bi.createGraphics();
             w.paint(g);
