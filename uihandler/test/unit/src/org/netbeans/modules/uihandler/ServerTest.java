@@ -68,6 +68,9 @@ import org.openide.util.RequestProcessor;
  * @author Jaroslav Tulach
  */
 public class ServerTest extends NbTestCase {
+    
+    private static final String HTTP_HEADER = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
+    
     public ServerTest(String s) {
         super(s);
     }
@@ -119,7 +122,7 @@ public class ServerTest extends NbTestCase {
             }
         }
         Run r = new Run();
-        RequestProcessor.getDefault().post(r);
+        new RequestProcessor(ServerTest.class.getName()).post(r);
         
         
         return ss.getLocalPort();
@@ -127,7 +130,7 @@ public class ServerTest extends NbTestCase {
     
     public void testRedirectsLogs() throws Exception {
         LinkedList<String> query = new LinkedList<String>();
-        query.add("<meta http-equiv=\"Refresh\" conteNT='URL=http://www.netbeans.org'>");
+        query.add(HTTP_HEADER + "<meta http-equiv=\"Refresh\" conteNT='URL=http://www.netbeans.org'>");
         LinkedList<String> reply = new LinkedList<String>();
         int port = startServer(query, reply);
         
@@ -145,7 +148,7 @@ public class ServerTest extends NbTestCase {
 
     public void testRedirectsLogsWithTime() throws Exception {
         LinkedList<String> query = new LinkedList<String>();
-        query.add("<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
+        query.add(HTTP_HEADER + "<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
         LinkedList<String> reply = new LinkedList<String>();
         int port = startServer(query, reply);
         
@@ -170,7 +173,7 @@ public class ServerTest extends NbTestCase {
         os.close();
 
         LinkedList<String> query = new LinkedList<String>();
-        query.add("<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
+        query.add(HTTP_HEADER + "<meta http-equiv='Refresh' content='3; URL=http://logger.netbeans.org/welcome/use.html'>");
         LinkedList<String> reply = new LinkedList<String>();
         int port = startServer(query, reply);
         List<LogRecord> recs = new ArrayList<LogRecord>();

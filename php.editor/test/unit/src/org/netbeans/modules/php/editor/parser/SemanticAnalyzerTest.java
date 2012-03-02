@@ -161,4 +161,32 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testTraits06() throws Exception {
         checkSemantic("testfiles/traits_06.php");
     }
+
+    public void testUnusedUses01() throws Exception {
+        checkSemantic("testfiles/unusedUses_01.php");
+    }
+
+    public void testUnusedUses02() throws Exception {
+        checkSemantic("testfiles/unusedUses_02.php");
+    }
+
+    public void testUnusedUses03() throws Exception {
+        checkSemantic("testfiles/unusedUses_03.php");
+    }
+
+    public void testUnusedUses04() throws Exception {
+        checkSemantic("testfiles/unusedUses_04.php");
+    }
+
+    public void testUnusedUses05() throws Exception {
+        checkSemantic("testfiles/unusedUses_05.php");
+    }
+
+    public void testUnusedUses06() throws Exception {
+        checkSemantic("testfiles/unusedUses_06.php");
+    }
+
+    public void testConstantsColoring() throws Exception {
+        checkSemantic("testfiles/constantsColoring.php");
+    }
 }

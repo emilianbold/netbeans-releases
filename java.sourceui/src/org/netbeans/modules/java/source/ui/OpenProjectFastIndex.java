@@ -63,6 +63,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
@@ -278,10 +279,6 @@ class OpenProjectFastIndex implements ClassIndexManagerListener {
         }
         sourcePathIds = ids;
     }
-    
-    private static boolean isIndexed(FileObject sroot) {
-        return ClassIndexManager.getDefault().isIndexed(sroot.toURL());
-    }
 
     /**
      * Returns the current watcher, if still accepting source roots.
@@ -436,7 +433,7 @@ class OpenProjectFastIndex implements ClassIndexManagerListener {
             for (Iterator<FileObject> it = rootsToIndex.iterator(); it.hasNext(); ) {
                 FileObject f = it.next();
                 // check whether the root has not been indexed yet:
-                if (ClassIndexManager.getDefault().isIndexed(f.toURL())) {
+                if (JavaIndex.isIndexed(f.toURL())) {
                     it.remove();
                     continue;
                 }

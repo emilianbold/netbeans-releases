@@ -1,0 +1,22 @@
+<?php
+
+namespace Foo;
+
+use Nette\Utils as NU;
+|>UNUSED:use My\Unused as MU;<|
+
+/**
+ * Homepage presenter.
+ *
+ * @author     John Doe
+ * @package    MyApplication
+ */
+class |>CLASS:HomepagePresenter<| extends BasePresenter {
+
+    public function |>METHOD:renderDefault<|() {
+        NU\Strings::|>STATIC:capitalize<|();
+    }
+
+}
+
+?>

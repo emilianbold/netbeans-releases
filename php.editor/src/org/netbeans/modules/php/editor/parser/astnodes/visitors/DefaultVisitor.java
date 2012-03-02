@@ -281,6 +281,7 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(InstanceOfExpression node) {
         scan(node.getExpression());
+        scan(node.getClassName());
     }
 
     @Override

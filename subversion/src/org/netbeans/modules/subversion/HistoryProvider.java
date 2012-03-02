@@ -91,21 +91,43 @@ public class HistoryProvider implements VCSHistoryProvider {
             List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
             Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
             Map<String, ISVNLogMessage> rev2LMMap = new HashMap<String, ISVNLogMessage>();
-
+            Map<File, SVNUrl> file2Copy = new HashMap<File, SVNUrl>();
+            SVNUrl repoUrl = null;
             for (File file : files) {
-                FileInformation info = Subversion.getInstance().getStatusCache().getStatus(file);
-                if ((info.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
+                FileInformation fi = Subversion.getInstance().getStatusCache().getStatus(file);
+                if ((fi.getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
                     continue;
                 }
                 
-                ISVNLogMessage[] messages = 
-                    client.getLogMessages(
-                                file, 
+                ISVNLogMessage[] messages;
+                if ((fi.getStatus() == FileInformation.STATUS_VERSIONED_ADDEDLOCALLY) &&
+                     fi.getEntry(file).isCopied()) 
+                {
+                    ISVNInfo info = client.getInfoFromWorkingCopy(file);
+                    SVNUrl copyUrl = info.getCopyUrl();
+                    repoUrl = info.getRepository();
+                    
+                    messages = 
+                        client.getLogMessages(
+                                copyUrl, 
                                 fromDate == null ? 
                                     new SVNRevision.Number(1) : 
                                     new SVNRevision.DateSpec(fromDate),
                                     SVNRevision.HEAD
                                 );
+                    file2Copy.put(file, copyUrl);
+                    
+                } else {
+                    messages = 
+                        client.getLogMessages(
+                                    file, 
+                                    fromDate == null ? 
+                                        new SVNRevision.Number(1) : 
+                                        new SVNRevision.DateSpec(fromDate),
+                                        SVNRevision.HEAD
+                                    );
+                }
+                
                 for (ISVNLogMessage m : messages) {
                     String r = m.getRevision().toString();
                     rev2LMMap.put(r, m);
@@ -130,7 +152,7 @@ public class HistoryProvider implements VCSHistoryProvider {
                     m.getRevision().toString(), 
                     m.getRevision().toString(), 
                     createActions(m.getRevision(), files), 
-                    new RevisionProviderImpl(m.getRevision()));
+                    new RevisionProviderImpl(m.getRevision(), repoUrl, file2Copy));
                 ret.add(e);
                 
             }
@@ -163,16 +185,26 @@ public class HistoryProvider implements VCSHistoryProvider {
     }
     
     private static class RevisionProviderImpl implements RevisionProvider {
-        private SVNRevision revision;
+        private final SVNRevision revision;
+        private final Map<File, SVNUrl> file2Copy;
+        private final SVNUrl repoUrl;
 
-        public RevisionProviderImpl(SVNRevision svnRevision) {
+        public RevisionProviderImpl(SVNRevision svnRevision, SVNUrl repoUrl, Map<File, SVNUrl> file2Copy) {
             this.revision = svnRevision;
+            this.file2Copy = file2Copy;
+            this.repoUrl = repoUrl;
         }
         
         @Override
         public void getRevisionFile(File originalFile, File revisionFile) {
             try {
-                File file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                File file;
+                SVNUrl copyUrl = repoUrl != null ? file2Copy.get(originalFile) : null;
+                if(copyUrl != null) {
+                    file = VersionsCache.getInstance().getFileRevision(repoUrl, copyUrl, revision.toString(), originalFile.getName());
+                } else {
+                    file = VersionsCache.getInstance().getFileRevision(originalFile, revision.toString());
+                }
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
                 Subversion.LOG.log(Level.WARNING, null, e);

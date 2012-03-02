@@ -54,9 +54,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.Date;
+import javax.swing.event.UndoableEditEvent;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
+import javax.swing.undo.AbstractUndoableEdit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
 import org.netbeans.junit.NbTestCase;
+import org.openide.awt.UndoRedo;
 import org.openide.text.CloneableEditorSupport.Env;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -134,6 +139,37 @@ implements CloneableEditorSupport.Env {
                 }
             }); // Would deadlock if checkReload() is wrapped by runAtomic()
         }
+    }
+    
+    public void testUndoThrowsException() throws Exception {
+        Document doc = support.openDocument();
+        doc.insertString(0, "a", null);
+        UndoRedo.Manager ur = support.getUndoRedo();
+        MyEdit edit = new MyEdit();
+        ur.undoableEditHappened(new UndoableEditEvent(this, edit));
+        ur.canUndo();
+        assertFalse("Expecting not undone", edit.undone);
+        ur.undo();
+        assertTrue("Expecting undone", edit.undone);
+        ur.redo();
+        assertFalse("Expecting redone", edit.undone);
+
+        edit.undoFail = true;
+        assertEquals(0, edit.undoFailedCount);
+        try {
+            ur.undo();
+            fail("Exception expected");
+        } catch (CannotUndoException ex) {
+            // Expected
+        }
+        assertEquals(1, edit.undoFailedCount);
+        try {
+            ur.undo();
+            fail("Exception expected");
+        } catch (CannotUndoException ex) {
+            // Expected
+        }
+        assertEquals(2, edit.undoFailedCount);
     }
     
     //
@@ -252,4 +288,34 @@ implements CloneableEditorSupport.Env {
             return RUNNING;
         }
     }
+
+    private static final class MyEdit extends AbstractUndoableEdit {
+        
+        boolean undone;
+        
+        boolean undoFail;
+        
+        boolean redoFail;
+        
+        int undoFailedCount;
+        
+        public void undo() throws CannotUndoException {
+            assert (!undone) : "Already undone";
+            if (undoFail) {
+                undoFailedCount++;
+                throw new CannotUndoException();
+            }
+            undone = true;
+        }
+        
+        public void redo() throws CannotRedoException {
+            assert (undone) : "Already redone";
+            if (redoFail) {
+                throw new CannotRedoException();
+            }
+            undone = false;
+        }
+
+    } // end of UndoableEdit
+    
 }

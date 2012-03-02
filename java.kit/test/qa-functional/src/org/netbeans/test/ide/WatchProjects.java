@@ -164,8 +164,6 @@ public final class WatchProjects {
     
 
     public static void assertTextDocuments() throws Exception {
-        ProjectsTabOperator pto = new JavaProjectsTabOperator();
-        pto.closeAllDocuments();
         for (TopComponent tc : new ArrayList<TopComponent>(TopComponent.getRegistry().getOpened())) {
             final EditorCookie ec = tc.getLookup().lookup(EditorCookie.class);
             if (ec != null) {
@@ -207,8 +205,18 @@ public final class WatchProjects {
             }
 
         };
-        OpenProjects.getDefault().open(new Project[] { p }, false);
-        OpenProjects.getDefault().setMainProject(p);
+        try {
+            OpenProjects.getDefault().open(new Project[] { p }, false);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during creation of fake project:");
+            ae.printStackTrace();
+        }
+        try {
+            OpenProjects.getDefault().setMainProject(p);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during setting of fake project as main:");
+            ae.printStackTrace();
+        }
         
         for (int i = 0; i < 10; i++) {
             EventQueue.invokeAndWait(new Runnable() {

@@ -13,7 +13,7 @@
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml" fx:controller="${controller}">
 <#if css?? && css != "">
     <stylesheets>
-        <URL value="@${css}" />
+        <URL value="@${css}.css" />
     </stylesheets>
 </#if>
 </AnchorPane>
@@ -21,7 +21,7 @@
 <AnchorPane id="AnchorPane" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml">
 <#if css?? && css != "">
     <stylesheets>
-        <URL value="@${css}" />
+        <URL value="@${css}.css" />
     </stylesheets>
 </#if>
 </AnchorPane>

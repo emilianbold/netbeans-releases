@@ -168,6 +168,7 @@ public class InstallerReadPageTest extends NbTestCase {
         
         assertEquals("It has the right localized text", kun, b.getText());
 
+        assertFalse(EventQueue.isDispatchThread());
         EventQueue.invokeAndWait(new Runnable() {
             @Override
             public void run() {

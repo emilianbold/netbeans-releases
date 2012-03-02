@@ -81,6 +81,7 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
@@ -175,8 +176,8 @@ public class CommitAction extends ContextAction {
         panel.setCommitTable(data);
         data.setCommitPanel(panel);
         panel.cbAllFiles.setVisible(closingBranch);
-        final boolean afterMerge = WorkingCopyInfo.getInstance(repository).getWorkingCopyParents().length > 1;
-        if (closingBranch && !afterMerge) {
+        final AtomicBoolean afterMerge = new AtomicBoolean(false);
+        if (closingBranch) {
             panel.cbAllFiles.setSelected(false);
             panel.cbAllFiles.doClick();
             panel.cbAllFiles.setEnabled(false);
@@ -232,7 +233,7 @@ public class CommitAction extends ContextAction {
                 }
             }
         });
-        computeNodes(data, panel, ctx, repository, cancelButton);
+        computeNodes(data, panel, ctx, repository, cancelButton, afterMerge);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
             @Override
@@ -265,7 +266,7 @@ public class CommitAction extends ContextAction {
         } else if (dd.getValue() == commitButton) {
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
-            final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge;
+            final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();
             HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
             org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
@@ -284,12 +285,13 @@ public class CommitAction extends ContextAction {
         commit(contentTitle, ctx, branchName);
     }
 
-    private static void computeNodes(final CommitTable table, final CommitPanel panel, final VCSContext ctx, final File repository, JButton cancel) {
+    private static void computeNodes(final CommitTable table, final CommitPanel panel, final VCSContext ctx, final File repository, JButton cancel, final AtomicBoolean afterMerge) {
         RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
         final HgProgressSupport support = new HgProgressSupport(NbBundle.getMessage(CommitAction.class, "Progress_Preparing_Commit"), cancel) {
             @Override
             public void perform() {
                 try {
+                    afterMerge.set(WorkingCopyInfo.getInstance(repository).getWorkingCopyParents().length > 1);
                     panel.progressPanel.setVisible(true);
                     // Ensure that cache is uptodate
                     StatusAction.executeStatus(ctx, this);
@@ -324,9 +326,6 @@ public class CommitAction extends ContextAction {
                                 }
                             }
                         }
-                    }
-                    if(fileList.isEmpty()) {
-                        return;
                     }
 
                     ArrayList<HgFileNode> nodesList = new ArrayList<HgFileNode>(fileList.size());
@@ -372,7 +371,7 @@ public class CommitAction extends ContextAction {
      * @param panel
      * @param commit
      */
-    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose, boolean afterMerge) {
+    private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose, AtomicBoolean afterMerge) {
         assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<HgFileNode, CommitOptions> files = table.getCommitFiles();
@@ -407,7 +406,7 @@ public class CommitAction extends ContextAction {
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
         if (!conflicts) {
-            if (afterMerge) {
+            if (afterMerge.get()) {
                 panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.merge.allFiles")); //NOI18N
             } else if (panel.cbAllFiles.isSelected()) {
                 panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.closingBranch.allFiles", branchToClose)); //NOI18N
@@ -416,7 +415,7 @@ public class CommitAction extends ContextAction {
             }
             enabled = true;
         }
-        commit.setEnabled(enabled && (afterMerge || panel.cbAllFiles.isSelected() || containsCommitable(table)));
+        commit.setEnabled(enabled && (afterMerge.get() || panel.cbAllFiles.isSelected() || containsCommitable(table)));
     }
 
     public static void performCommit (String message, Map<HgFileNode, CommitOptions> commitFiles,

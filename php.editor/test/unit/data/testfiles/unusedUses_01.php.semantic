@@ -1,0 +1,25 @@
+<?php
+
+namespace Foo;
+
+|>UNUSED:use Baz\Bat;<|
+
+/**
+ * Homepage presenter.
+ *
+ * @author     John Doe
+ * @package    MyApplication
+ */
+class |>CLASS:HomepagePresenter<| extends BasePresenter {
+
+    public function |>METHOD:renderDefault<|() {
+        $this->|>FIELD:template<|->|>FIELD:anyVariable<| = 'any value';
+        Strings::|>STATIC:capitalize<|();
+        //Arrays::get($arr, $key);
+        Html::|>STATIC:el<|();
+        new Request();
+    }
+
+}
+
+?>

@@ -1555,8 +1555,8 @@ abstract public class CsmCompletionQuery {
                                     } else { // last and searching for completion output
                                         scopeAccessedClassifier = (kind == ExprKind.SCOPE);
 //                                    CsmClass curCls = sup.getClass(varPos);
-                                        CsmClassifier cls = extractLastTypeClassifier(kind);
-                                        if (cls == null) {
+                                        CsmClassifier classifier = extractLastTypeClassifier(kind);
+                                        if (classifier == null) {
                                             lastType = null;
                                             cont = false;
                                         } else {
@@ -1564,20 +1564,28 @@ abstract public class CsmCompletionQuery {
                                             // There is no need for searching in parents for global declarations/definitions
                                             // in case of csope access
                                             boolean inspectParentClasses = (this.contextElement != null || !scopeAccessedClassifier);
-                                            List res = findFieldsAndMethods(finder, contextElement, cls, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
-                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, cls, var, openingSource, true, sort);
+                                            List res = findFieldsAndMethods(finder, contextElement, classifier, var, openingSource, staticOnly && !memberPointer, false, inspectParentClasses, this.scopeAccessedClassifier, skipConstructors, sort);
+                                            List nestedClassifiers = findNestedClassifiers(finder, contextElement, classifier, var, openingSource, true, sort);
                                             res.addAll(nestedClassifiers);
                                             // add base classes as well
                                             if (kind == ExprKind.ARROW || kind == ExprKind.DOT || kind == ExprKind.SCOPE) {
                                                 // try base classes names like in this->Base::foo()
                                                 // or like in a.Base::foo()
-                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, cls, var, openingSource, sort);
+                                                List<CsmClass> baseClasses = finder.findBaseClasses(contextElement, classifier, var, openingSource, sort);
                                                 res.addAll(baseClasses);
                                                 if(res.isEmpty()) {                                                    
                                                     CsmNamespace ns = finder.getExactNamespace(var);
                                                     if(ns != null && lastNamespace == null) {
                                                         res.add(ns);
                                                     }
+                                                }
+                                            }
+                                            if (res.isEmpty() && scopeAccessedClassifier) {
+                                                //  C++11 - allow sizeof to work on members of classes without an explicit object
+                                                if (CsmKindUtilities.isClass(classifier)) {
+                                                    CsmClass cls = (CsmClass) classifier;
+                                                    List<CsmField> fields = finder.findFields(contextElement, cls, var, openingSource, false, false, inspectParentClasses, scopeAccessedClassifier, sort);
+                                                    res.addAll(fields);
                                                 }
                                             }
                                             if (res.isEmpty() && scopeAccessedClassifier && lastNamespace != null) {

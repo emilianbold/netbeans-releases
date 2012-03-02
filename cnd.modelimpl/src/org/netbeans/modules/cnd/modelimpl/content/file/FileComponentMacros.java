@@ -84,7 +84,7 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         }
         
         @Override
-        public void put() {
+        void put() {
         }
     };
 
@@ -92,13 +92,13 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
         return EMPTY;
     }
 
-    FileComponentMacros(FileComponentMacros other) {
+    FileComponentMacros(FileComponentMacros other, boolean empty) {
         super(other);
-        macros = createMacros(other.macros);
+        macros = createMacros(empty ? null : other.macros);
     }
     
-    public FileComponentMacros(FileImpl file, boolean persistent) {
-        super(new FileMacrosKey(file), persistent);
+    public FileComponentMacros(FileImpl file) {
+        super(new FileMacrosKey(file));
         macros = createMacros(null);
     }
 
@@ -110,11 +110,11 @@ public class FileComponentMacros extends FileComponent implements Persistent, Se
 
     // only for EMPTY static field
     private FileComponentMacros() {
-        super(null, false);
+        super((org.netbeans.modules.cnd.repository.spi.Key)null);
         macros = createMacros(null);
     }
 
-    public void clean() {
+    void clean() {
         _clearMacros();
         put();
     }

@@ -45,9 +45,9 @@ import java.awt.GraphicsEnvironment;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.openide.loaders.data.DoFPDataObject;
+import org.netbeans.modules.openide.loaders.data.DoFPDataObjectMultiple;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,7 +78,6 @@ public class DataObjectFactoryProcessorTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        createMIMEs();
     }
 
 // Several test for javac
@@ -209,8 +208,7 @@ public class DataObjectFactoryProcessorTest extends NbTestCase {
             assertEquals("Icon found", "org/openide/loaders/unknown.gif", icon);
             assertEquals("DataObjectClass found", DoFPDataObject.class.getName(), fo.getAttribute("dataObjectClass"));
 
-        }
-
+        }        
     }
 
 // use external DoFP* class and their registration to test if dataobject return is good
@@ -223,35 +221,19 @@ public class DataObjectFactoryProcessorTest extends NbTestCase {
             assertEquals("DataLoader type", DoFPDataObject.class, find.getClass());
         }
         {
-            FileObject fo = createXmlFile("sdfsdf", ".tt2");
-            assertEquals("text/test2", fo.getMIMEType());
-            DataObject find = DataObject.find(fo);
-            assertEquals("DataLoader type", DoFPDataObject.class, find.getClass());
-        }
-        {
             FileObject fo = createXmlFile("sdfsdf", ".tt3");
             assertEquals("text/test3", fo.getMIMEType());
             // XXX DoFPCustomLoader not loaded cannot assert for loader
         }
+        {
+            FileObject fo = createXmlFile("sdfsdf", ".ttm2");
+            assertEquals("text/testm2", fo.getMIMEType());
+            DataObject find = DataObject.find(fo);
+            assertEquals("DataLoader type", DoFPDataObjectMultiple.class, find.getClass());
+        }
     }
 
-    // utility method inspired by FsMimeResolverTest
-    private void createMIMEs() throws Exception {
-// create  resolver to get tt1 extension resolve as test/test1 and do so for 3 different
-        FileObject resolver = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MIMEResolver/resolver.xml");
-        OutputStream os = resolver.getOutputStream();
-        PrintStream ps = new PrintStream(os);
-        ps.println("<!DOCTYPE MIME-resolver PUBLIC '-//NetBeans//DTD MIME Resolver 1.0//EN' 'http://www.netbeans.org/dtds/mime-resolver-1_0.dtd'>");
-        ps.println("<MIME-resolver>");
-        for (int i = 1; i < 4; i++) {
-            ps.println(" <file>");
-            ps.println("  <ext name=\"tt" + i + "\"/>");
-            ps.println("    <resolver mime=\"text/test" + i + "\"/>");
-            ps.println(" </file>");
-        }
-        ps.println("</MIME-resolver>");
-        os.close();
-    }
+   
 
     private FileObject createXmlFile(String content, String ext) throws Exception {
         FileObject file = FileUtil.createMemoryFileSystem().getRoot().createData("file" + ext);

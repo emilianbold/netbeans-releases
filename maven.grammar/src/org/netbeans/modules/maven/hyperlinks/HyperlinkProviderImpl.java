@@ -119,10 +119,10 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                 if (ff > -1 && ff < text.length()) {
                     String before = text.substring(0, ff);
                     String after = text.substring(ff, text.length());
-                    int bo = before.lastIndexOf("${");
-                    int bc = before.lastIndexOf("}");
-                    int ao = after.indexOf("${");
-                    int ac = after.indexOf("}");
+                    int bo = before.lastIndexOf("${");//NOI18N
+                    int bc = before.lastIndexOf("}");//NOI18N
+                    int ao = after.indexOf("${");//NOI18N
+                    int ac = after.indexOf("}");//NOI18N
                     if (bo > bc && ac > -1 && (ac < ao || ao == -1)) {
                         return true;
                     }
@@ -186,10 +186,10 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (getPath(fo, text) != null) {
                 xml.movePrevious();
                 token = xml.token();
-                if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {
+                if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {//NOI18N
                     xml.movePrevious();
                     token = xml.token();
-                    if (token != null && token.id() == XMLTokenId.TAG && token.text().equals("<module")) {
+                    if (token != null && token.id() == XMLTokenId.TAG && token.text().equals("<module")) {//NOI18N
                         text = text + "/pom.xml"; //NOI18N
                     }
                 }
@@ -213,7 +213,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                     (text.startsWith("https://")))) { //NOI18N
                 try {
                     String urlText = text;
-                    if (urlText.contains("${")) {
+                    if (urlText.contains("${")) {//NOI18N
                         //special case, need to evaluate expression
                         Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
                          if (prj != null) {
@@ -240,13 +240,13 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             else if (text != null) {
                 Tuple tup = findProperty(text, tokenOff, offset);
                 if (tup != null) {
-                    String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets
+                    String prop = tup.value.substring("${".length(), tup.value.length() - 1); //remove the brackets//NOI18N
                     Project prj = FileOwnerQuery.getOwner(NbEditorUtilities.getDataObject(doc).getPrimaryFile());
                     if (prj != null) {
                         NbMavenProject nbprj = prj.getLookup().lookup(NbMavenProject.class);
                         if (nbprj != null) {
-                            if (prop != null && (prop.startsWith("project.") || prop.startsWith("pom."))) {
-                                String val = prop.substring(prop.indexOf('.') + 1, prop.length());
+                            if (prop != null && (prop.startsWith("project.") || prop.startsWith("pom."))) {//NOI18N
+                                String val = prop.substring(prop.indexOf('.') + 1, prop.length());//NOI18N
                                 //TODO eventually we want to process everything through an evaluation engine..
                                 InputLocation iloc = nbprj.getMavenProject().getModel().getLocation(val);
                                 if (iloc != null) {
@@ -254,7 +254,7 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
                                     return;
                                 }
                             }
-                            InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);
+                            InputLocation location = nbprj.getMavenProject().getModel().getLocation("properties").getLocation(prop);//NOI18N
                             if (location != null) {
                                 openAtSource(location);
                             }

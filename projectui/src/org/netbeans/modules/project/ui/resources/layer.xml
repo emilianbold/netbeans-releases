@@ -192,7 +192,7 @@ made subject to such option by the copyright holder.
         <!-- Licenses folder -->
         <folder name="Licenses">
             <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses"/>
-            <attr name="templateCategory" stringvalue="invisible"/>
+            <attr name="templateCategory" stringvalue="invisible"/> <!-- simple=false would hide from New File but also from Template Manager -->
             <attr name="position" intvalue="0"/>
             <file name="license-default.txt" url="license-default.txt">
                 <attr name="displayName" bundlevalue="org.netbeans.modules.project.ui.Bundle#Templates/Licenses/license-default.txt"/>

@@ -48,7 +48,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
-import org.netbeans.modules.javafx2.scenebuilder.SBHomeFactory;
+import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
