@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,76 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.project.ui.actions;
 
-package org.netbeans.modules.cnd.modelutil;
-
-import java.util.HashSet;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
-import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
- * Analog of Set<CsmClass> used for anti loop checks
- * @author Vladimir Kvashin
+ * Run all tests in the selected folder.
  */
-public class AntiLoop {
-    
-    private Set<Object> set;
-    private boolean recursion = false;
+public class RunTestsCommand extends Command implements Displayable {
 
-    private static final int MAX_INHERITANCE_DEPTH = 25;
+    public static final String ID = "runTestsInFolder"; // NOI18N
+    @NbBundle.Messages("RunTestsCommand.label=Run Tests")
+    public static final String DISPLAY_NAME = Bundle.RunTestsCommand_label();
 
-    public AntiLoop() {
-        set = new HashSet<Object>();
-    }
-    
-    public AntiLoop(int capacity) {
-        set = new HashSet<Object>(capacity);
-    }
-    
-    
-    public boolean add(CsmClassifier cls) {
-        if(recursion) {
-            return false;
-        }
-        if (isRecursion(cls)) {
-            recursion = true;
-            return false;
-        }
-        return set.add(cls);
-    }
 
-    public boolean contains(CsmClassifier cls) {
-        if(recursion) {
-            return true;
-        }
-        if (isRecursion(cls)) {
-            recursion = true;
-            return true;
-        }
-        return set.contains(cls);
-    }
-
-    private static boolean isRecursion(CsmClassifier cls) {
-        if(CsmKindUtilities.isInstantiation(cls)) {
-            int instLevel = MAX_INHERITANCE_DEPTH;
-            CsmInstantiation inst = (CsmInstantiation) cls;
-            while(instLevel > 0 && CsmKindUtilities.isInstantiation(inst.getTemplateDeclaration())) {
-                inst = (CsmInstantiation) inst.getTemplateDeclaration();
-                instLevel--;
-            }
-            if(instLevel <= 0) {
-                return true;
-            }
-        }
-        return false;
+    public RunTestsCommand(PhpProject project) {
+        super(project);
     }
 
     @Override
-    public String toString() {
-        return set.toString();
+    public String getCommandId() {
+        return ID;
     }
+
+    @Override
+    public void invokeAction(Lookup context) {
+        FileObject folder = findFolderWithTest(context);
+        assert folder != null : "Folder should be found for running tests";
+        if (folder == null) {
+            return;
+        }
+        ConfigAction.get(ConfigAction.Type.TEST, getProject()).runFile(Lookups.fixed(folder));
+    }
+
+    @Override
+    public boolean isActionEnabled(Lookup context) {
+        return findFolderWithTest(context) != null;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return DISPLAY_NAME;
+    }
+
+    private FileObject findFolderWithTest(Lookup context) {
+        FileObject[] files = CommandUtils.filesForContextOrSelectedNodes(context);
+        if (files.length != 1) {
+            return null;
+        }
+        FileObject file = files[0];
+        if (!file.isFolder()) {
+            return null;
+        }
+        for (FileObject child : file.getChildren()) {
+            if (isTestFile(child)) {
+                return file;
+            }
+        }
+        return null;
+    }
+
 }
