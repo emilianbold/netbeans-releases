@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
 
@@ -162,18 +163,18 @@ public abstract class CsmFileReferences {
            CsmReference ref = context.getReference(context.size() - 2);
            if (ref != null) {
                if (getDefault().isThis(ref)) {
-                   return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH);
+                   return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH, new AntiLoop());
                }
                CsmObject refObj = ref.getReferencedObject();
                if (isTemplateParameterInvolved(refObj)) {
                    return true;
                } else {
-                   return hasTemplateBasedAncestors(getType(refObj), MAX_INHERITANCE_DEPTH);
+                   return hasTemplateBasedAncestors(getType(refObj), MAX_INHERITANCE_DEPTH, new AntiLoop());
                }
            }
        } else {
            // it isn't a dereference - check current context
-           return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH);
+           return hasTemplateBasedAncestors(findContextClass(context), MAX_INHERITANCE_DEPTH, new AntiLoop());
        }
        return false;
    }
@@ -213,10 +214,10 @@ public abstract class CsmFileReferences {
    }
 
    public static boolean hasTemplateBasedAncestors(CsmType type) {
-       return hasTemplateBasedAncestors(type, MAX_INHERITANCE_DEPTH);
+       return hasTemplateBasedAncestors(type, MAX_INHERITANCE_DEPTH, new AntiLoop());
    }
 
-   private static boolean hasTemplateBasedAncestors(CsmType type, int level) {
+   private static boolean hasTemplateBasedAncestors(CsmType type, int level, AntiLoop handledClasses) {
        if( type != null) {
            if (level == 0) {
                CndUtils.assertTrueInConsole(false, "Infinite recursion in file " + type.getContainingFile() + " class " + type); //NOI18N
@@ -224,14 +225,17 @@ public abstract class CsmFileReferences {
            }
            CsmClassifier cls = type.getClassifier();
            if (CsmKindUtilities.isClass(cls)) {
-               return hasTemplateBasedAncestors((CsmClass) cls, level - 1);
+               return hasTemplateBasedAncestors((CsmClass) cls, level - 1, handledClasses);
            }
        }
        return false;
    }
       
-   private static boolean hasTemplateBasedAncestors(CsmClass cls, int level) {
+   private static boolean hasTemplateBasedAncestors(CsmClass cls, int level, AntiLoop handledClasses) {
        if (cls != null) {
+            if (handledClasses.contains(cls)) {
+                return false;
+            }
            if (level == 0) {
                // No need for assertion it's ok to have infinite recursion in template constructions like 
                // template <int t> class A : public A<t-1> {};
@@ -247,7 +251,8 @@ public abstract class CsmFileReferences {
                }
                CsmClassifier classifier = inh.getClassifier();
                if (classifier instanceof CsmClass) { // paranoia
-                   if (hasTemplateBasedAncestors((CsmClass) classifier, level - 1)) {
+                   handledClasses.add((CsmClass) classifier);
+                   if (hasTemplateBasedAncestors((CsmClass) classifier, level - 1, handledClasses)) {
                        return true;
                    }
                }

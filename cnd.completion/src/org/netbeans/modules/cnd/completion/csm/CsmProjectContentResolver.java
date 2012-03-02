@@ -1281,6 +1281,7 @@ public final class CsmProjectContentResolver {
             CsmInheritance inherit = it2.next();
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
             if (baseClass != null) {
+                handledClasses.add(baseClass);
                 if (!baseClass.equals(csmClass) && (level != 0)) {
                     VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                     CsmVisibility nextMinVisibility = nextInfo.visibility;
