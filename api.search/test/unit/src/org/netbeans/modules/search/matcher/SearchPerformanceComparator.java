@@ -283,7 +283,7 @@ public class SearchPerformanceComparator extends javax.swing.JFrame {
                 @Override
                 public void run() {
                     listener.searchStarted();
-                    for (FileObject fo : si.iterateFilesToSearch(
+                    for (FileObject fo : si.getFilesToSearch(
                             so, listener, terminated)) {
 
                         Def result = fm.check(fo, listener);

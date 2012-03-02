@@ -69,7 +69,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -111,6 +110,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1096,8 +1096,8 @@ public final class PhpProject implements Project {
                 SearchScopeOptions searchScopeOptions, 
                 SearchListener listener, 
                 AtomicBoolean terminated) {
-            return getDelegate().getFilesToSearch(searchScopeOptions, 
-                    listener, terminated);
+            return getDelegate().getFilesToSearch(searchScopeOptions,
+                    listener, terminated).iterator();
         }
 
         @Override

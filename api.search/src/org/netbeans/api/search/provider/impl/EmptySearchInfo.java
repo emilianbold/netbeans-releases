@@ -69,8 +69,9 @@ public class EmptySearchInfo extends SearchInfo {
     }
 
     @Override
-    public Iterator<FileObject> getFilesToSearch(SearchScopeOptions options,
-            SearchListener listener, AtomicBoolean terminated) {
+    public Iterator<FileObject> createFilesToSearchIterator(
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated) {
 
         return Collections.<FileObject>emptyList().iterator();
     }

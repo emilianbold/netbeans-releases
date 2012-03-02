@@ -81,7 +81,7 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
     @Override
     public void start(SearchListener listener) {
 
-        Iterable<FileObject> iterable = searchInfo.iterateFilesToSearch(
+        Iterable<FileObject> iterable = searchInfo.getFilesToSearch(
                 basicSearchCriteria.getSearcherOptions(),
                 listener, terminated);
 

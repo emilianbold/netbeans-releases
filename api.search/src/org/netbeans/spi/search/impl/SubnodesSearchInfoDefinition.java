@@ -110,7 +110,7 @@ public final class SubnodesSearchInfoDefinition extends SearchInfoDefinition {
                 return Collections.<FileObject>emptyList().iterator();
             case 1:
                 return searchInfoElements.get(0).getFilesToSearch(
-                        options, listener, terminated);
+                        options, listener, terminated).iterator();
             default:
                 return new CompoundSearchIterator(
                         searchInfoElements.toArray(

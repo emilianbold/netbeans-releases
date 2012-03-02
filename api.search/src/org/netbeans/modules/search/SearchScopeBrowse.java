@@ -118,7 +118,7 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
                 SearchListener listener, AtomicBoolean terminated) {
 
             return getDelegate().getFilesToSearch(options, listener,
-                    terminated);
+                    terminated).iterator();
         }
 
         @Override

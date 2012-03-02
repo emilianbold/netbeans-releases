@@ -175,7 +175,7 @@ public final class SearchInfoUtils {
      * <code>true</code> if and only if at least one of the delegate's
      * <code>canSearch()</code> returns
      * <code>true</code></li> <li>its method
-     * {@link SearchInfo#getFilesToSearch(SearchScopeOptions, SearchListener, AtomicBoolean)}
+     * {@link SearchInfo#createFilesToSearchIterator(SearchScopeOptions, SearchListener, AtomicBoolean)}
      * chains iterators of the delegates, skipping those delegates whose
      * <code>canSearch()</code> method returns
      * <code>false</code></li> </ul>

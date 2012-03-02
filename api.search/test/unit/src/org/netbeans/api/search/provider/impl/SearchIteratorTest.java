@@ -47,7 +47,6 @@ package org.netbeans.api.search.provider.impl;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import junit.textui.TestRunner;
@@ -191,9 +190,8 @@ public final class SearchIteratorTest extends NbTestCase {
         SearchScopeOptions sso = SearchScopeOptions.create("*", false);
         SearchListener lstnr = new SearchListener() {};
         AtomicBoolean terminated = new AtomicBoolean(false);
-        for (Iterator<FileObject> i = searchInfo.getFilesToSearch(
-                sso, lstnr, terminated); i.hasNext();) {
-            FileObject primaryFile = i.next();
+        for (FileObject primaryFile : searchInfo.getFilesToSearch(
+                sso, lstnr, terminated)) {
             String relativePath = FileUtil.getRelativePath(projectRoot,
                                                            primaryFile);
             foundFilesPaths.add(relativePath);

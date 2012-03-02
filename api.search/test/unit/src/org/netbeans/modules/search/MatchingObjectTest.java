@@ -222,7 +222,7 @@ public class MatchingObjectTest extends NbTestCase {
                 }
 
                 @Override
-                public Iterator<FileObject> getFilesToSearch(
+                public Iterator<FileObject> createFilesToSearchIterator(
                         SearchScopeOptions options, SearchListener listener,
                         AtomicBoolean terminated) {
 

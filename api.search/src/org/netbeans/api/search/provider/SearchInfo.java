@@ -75,7 +75,7 @@ public abstract class SearchInfo {
     public abstract @NonNull List<SearchRoot> getSearchRoots();
 
     /**
-     * Get {@link Iterator} that iterates over all files in the search scope
+     * Create {@link Iterator} that iterates over all files in the search scope
      * that comply with search options and search filters.
      *
      * @param options Custom options. This object encapsulates custom search
@@ -89,7 +89,7 @@ public abstract class SearchInfo {
      * @return Iterator over all files that comply with specified options (in
      * the scope of this search info).
      */
-    public abstract @NonNull Iterator<FileObject> getFilesToSearch(
+    protected abstract @NonNull Iterator<FileObject> createFilesToSearchIterator(
             @NonNull SearchScopeOptions options,
             @NonNull SearchListener listener,
             @NonNull AtomicBoolean terminated);
@@ -98,9 +98,13 @@ public abstract class SearchInfo {
      * Get {@link Iterable} that iterates over all files in the search scope
      * that comply with search options and search filters.
      *
-     * This is only convenience method. The iterated files are the same that
-     * would be retrieved with 
-     * {@link #getFilesToSearch(SearchScopeOptions, SearchListener, AtomicBoolean)}.
+     * @param options Custom options. This object encapsulates custom search
+     * filters, file name pattern and general search settings.
+     * @param listener Listener that is notified when some important event
+     * occurs during searching. Listener passed to {@link SearchComposition}
+     * should be used here.
+     * @param terminated Object that can be asked by the iterator whether
+     * the search has been terminated.
      * 
      * <div class="nonnormative">
      * <p>
@@ -108,7 +112,7 @@ public abstract class SearchInfo {
      * </p>
      * <pre>
      * {@code
-     * for (FileObject fo: searchInfo.iterateFilesToSearch(opts,listnr,term) {
+     * for (FileObject fo: searchInfo.getFilesToSearch(opts,listnr,term) {
      *   ResultType result = somehowCheckFileContentMatches(fo);
      *   if (result != null) {
      *     searchResultsDisplayer.addMatchingObject(result);
@@ -117,7 +121,7 @@ public abstract class SearchInfo {
      * </pre>
      * </div>
      */
-    public final @NonNull Iterable<FileObject> iterateFilesToSearch(
+    public final @NonNull Iterable<FileObject> getFilesToSearch(
             @NonNull final SearchScopeOptions options,
             @NonNull final SearchListener listener,
             @NonNull final AtomicBoolean terminated) {
@@ -126,7 +130,8 @@ public abstract class SearchInfo {
 
             @Override
             public Iterator<FileObject> iterator() {
-                return getFilesToSearch(options, listener, terminated);
+                return createFilesToSearchIterator(options, listener,
+                        terminated);
             }
         };
     }

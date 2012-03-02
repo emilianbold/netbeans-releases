@@ -100,8 +100,9 @@ public class CompoundSearchInfo extends SearchInfo {
     /**
      */
     @Override
-    public Iterator<FileObject> getFilesToSearch(SearchScopeOptions options,
-            SearchListener listener, AtomicBoolean terminated) {
+    public Iterator<FileObject> createFilesToSearchIterator(
+            SearchScopeOptions options, SearchListener listener,
+            AtomicBoolean terminated) {
         if (elements == null) {
             return Collections.<FileObject>emptyList().iterator();
         }

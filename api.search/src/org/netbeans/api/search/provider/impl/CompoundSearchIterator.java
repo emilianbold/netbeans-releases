@@ -142,7 +142,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
 
         if (elementIterator == null) {
             elementIterator = elements[elementIndex = 0].getFilesToSearch(options,
-                    listener, terminated);
+                    listener, terminated).iterator();
         }
 
         while (!elementIterator.hasNext()) {
@@ -152,7 +152,7 @@ public class CompoundSearchIterator extends AbstractFileObjectIterator {
                 break;
             }
             elementIterator = elements[elementIndex].getFilesToSearch(options,
-                    listener, terminated);
+                    listener, terminated).iterator();
         }
 
         if (elementIndex < elements.length) {

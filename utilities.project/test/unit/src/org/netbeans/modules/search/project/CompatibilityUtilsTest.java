@@ -181,7 +181,7 @@ public class CompatibilityUtilsTest extends NbTestCase {
 
     private void testFilters(Node n) {
         SearchInfo si = CompatibilityUtils.getSearchInfoForNode(n);
-        for (FileObject fo : si.iterateFilesToSearch(
+        for (FileObject fo : si.getFilesToSearch(
                 SearchScopeOptions.create("*", false),
                 new SearchListener() {
                 }, new AtomicBoolean(false))) {
