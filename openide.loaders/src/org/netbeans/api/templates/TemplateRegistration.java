@@ -54,6 +54,7 @@ import org.openide.loaders.TemplateWizard;
  * @since 7.29
  * @see TemplateWizard
  * @see TemplateRegistrations
+ * @see <a href="@org-netbeans-modules-projectuiapi@/org/netbeans/spi/project/ui/templates/support/package-summary.html"><code>org.netbeans.spi.project.ui.templates.support</code></a>
  */
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PACKAGE})
 @Retention(RetentionPolicy.SOURCE)

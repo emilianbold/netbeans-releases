@@ -54,7 +54,7 @@ import org.netbeans.libs.git.jgit.JGitSshSessionFactory;
  * <p>Instances are bound to a local folder with actual Git repository. If the repository does not exist yet, you 
  * still have to provide a local file which indicates where the repository would be created when 
  * {@link GitClient#init(org.netbeans.libs.git.progress.ProgressMonitor) } was called.</p>
- * <p>To get an instance of <code>GitClient</code> to run git commands with, use {@link #getClient() } method. It <strong>always</strong> returns
+ * <p>To get an instance of <code>GitClient</code> to run git commands with, use {@link #createClient() } method. It <strong>always</strong> returns
  * a new instance of the <code>GitClient</code>, it is not shared among the callers.</p>
  * <p>Internally the class keeps a map of its instances that are cached under
  * a weak reference to the instance of the local file passed in the {@link #getInstance(java.io.File) } method.
@@ -96,13 +96,13 @@ public final class GitRepository {
     }
 
     /**
-     * Returns always a new instance of git client bound to the local git repository.
+     * Creates and returns always a new instance of git client bound to the local git repository.
      * The repository may or may not exist yet, however most
      * git commands work only on an existing repository.
      * @return an instance of a git client
      * @throws GitException when an error occurs while loading repository data from disk.
      */
-    public synchronized GitClient getClient () throws GitException {
+    public synchronized GitClient createClient () throws GitException {
         if (gitRepository == null) {
             gitRepository = new JGitRepository(repositoryLocation);
             SshSessionFactory.setInstance(JGitSshSessionFactory.getDefault());

@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.sampler;
+package org.netbeans.modules.sampler;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -64,14 +64,14 @@ import javax.management.openmbean.CompositeData;
  *
  * @author Tomas Hurka
  */
-public class SamplesOutputStream {
+class SamplesOutputStream {
 
     private static final String[][] methods = new String[][]{
         {"sun.management.ThreadInfoCompositeData", "toCompositeData"}, // NOI18N Sun JVM
         {"com.ibm.lang.management.ManagementUtils", "toThreadInfoCompositeData"} // NOI18N IBM J9
     };
     static final String ID = "NPSS"; // NetBeans Profiler samples stream
-    static final String FILE_EXT = ".npss"; // NOI18N
+    public static final String FILE_EXT = ".npss"; // NOI18N
     static final int RESET_THRESHOLD = 5000;
     static final int STEPS = 1000;
     static byte version = 2;
@@ -101,11 +101,11 @@ public class SamplesOutputStream {
     int maxSamples;
     int offset;
 
-    static boolean isSupported() {
+    public static boolean isSupported() {
         return toCompositeDataMethod != null;
     }
 
-    public SamplesOutputStream(OutputStream os, Sampler progress, int max) throws IOException {
+    SamplesOutputStream(OutputStream os, Sampler progress, int max) throws IOException {
         maxSamples = max;
         this.progress = progress;
         outStream = os;
@@ -116,7 +116,7 @@ public class SamplesOutputStream {
         samples = new ArrayList(1024);
     }
 
-    public void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
+    void writeSample(ThreadInfo[] infos, long time, long selfThreadId) throws IOException {
         List<Long> sameT = new ArrayList();
         List<ThreadInfo> newT = new ArrayList();
         List<Long> tids = new ArrayList();
@@ -208,7 +208,7 @@ public class SamplesOutputStream {
         }
     }
 
-    public void close() throws IOException {
+    void close() throws IOException {
         steCache = null;
         GZIPOutputStream stream = new GZIPOutputStream(outStream, 64 * 1024);
         ObjectOutputStream out = new ObjectOutputStream(stream);
