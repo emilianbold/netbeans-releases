@@ -368,11 +368,6 @@ public class BugtrackingUtil {
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(Repository repo) {
-        String url = repo.getUrl();
-        return isNbRepository(url);
-    }
-
     public static boolean isNbRepository(String url) {
         boolean ret = netbeansUrlPattern.matcher(url).matches();
         if(ret) {

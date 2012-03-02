@@ -96,7 +96,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                 repos = Util.getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
                 for (Repository repo : repos) {
-                    if(BugtrackingUtil.isNbRepository(repo)) {
+                    if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
                         registered = true;
                         break;
                     }
@@ -109,7 +109,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         }
         repos = Util.getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
-            if(BugtrackingUtil.isNbRepository(repo)) {
+            if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
                 return repo;
             }
         }
