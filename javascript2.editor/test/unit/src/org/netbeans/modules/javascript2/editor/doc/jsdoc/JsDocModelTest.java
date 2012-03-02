@@ -87,7 +87,7 @@ public class JsDocModelTest extends JsDocTestBase {
         return elements;
     }
 
-    private static void checkJsDocElements(String expected, List<JsDocElement> elements) {
+    private static void checkJsDocElements(String expected, List<? extends JsDocElement> elements) {
         List<JsDocElement> expectedTags = parseExpected(expected);
         assertElementsEquality(expectedTags, elements);
 
@@ -101,11 +101,8 @@ public class JsDocModelTest extends JsDocTestBase {
                 JsParserResult parserResult = (JsParserResult) result;
 
                 JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
-                JsComment comment = documentationProvider.getCommentForOffset(offset);
-                assertTrue(comment instanceof JsDocBlock);
-
-                JsDocBlock jsDoc = (JsDocBlock) comment;
-                checkJsDocElements(expected, jsDoc.getTags());
+                JsDocBlock comment = documentationProvider.getCommentForOffset(offset);
+                checkJsDocElements(expected, comment.getTags());
             }
         });
     }
@@ -424,7 +421,7 @@ public class JsDocModelTest extends JsDocTestBase {
         }
     }
 
-    private static void assertElementsEquality(List<JsDocElement> expectedTags, List<JsDocElement> elements) {
+    private static void assertElementsEquality(List<JsDocElement> expectedTags, List<? extends JsDocElement> elements) {
         Collections.sort(expectedTags, new JsDocElementComparator());
         Collections.sort(elements, new JsDocElementComparator());
 

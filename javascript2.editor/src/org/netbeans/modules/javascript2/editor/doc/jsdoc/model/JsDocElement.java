@@ -136,7 +136,7 @@ public interface JsDocElement {
                     }
                 }
             }
-            return null;
+            return UNKNOWN;
         }
 
     }

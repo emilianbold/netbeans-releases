@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
 import com.oracle.nashorn.ir.Node;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
@@ -56,7 +57,6 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
 import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
-import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
@@ -73,50 +73,42 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     }
 
     // TODO - rewrite for getting all associated comments and call getter for all and merge results
-    // TODO - process shared tags and nocode comments
+    // TODO - try to move that directly into JsDocBlock
     @Override
     public List<Type> getReturnType(Node node) {
-        JsComment comment = getCommentForOffset(node.getStart());
-        if (comment != null) {
-            JsDocBlock jsDocBlock = (JsDocBlock) comment;
-            if (jsDocBlock.getType() == JsDocCommentType.DOC_COMMON) {
-                for (JsDocElement jsDocElement : jsDocBlock.getTags()) {
-                    if (jsDocElement.getType() == JsDocElement.Type.RETURN
-                            || jsDocElement.getType() == JsDocElement.Type.RETURNS) {
-                        return ((UnnamedParameterElement) jsDocElement).getParamTypes();
-                    } else if (jsDocElement.getType() == JsDocElement.Type.TYPE) {
-                        return Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType());
-                    }
-                }
+        JsDocBlock block = getCommentForOffset(node.getStart());
+        if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
+            for (JsDocElement jsDocElement : block.getTagsForTypes(
+                    new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS})) {
+                return ((UnnamedParameterElement) jsDocElement).getParamTypes();
+            }
+            for (JsDocElement jsDocElement : block.getTagsForType(JsDocElement.Type.TYPE)) {
+                return Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType());
             }
         }
         return null;
     }
 
     // TODO - rewrite for getting all associated comments and call getter for all and merge results
-    // TODO - process shared tags and nocode comments
+    // TODO - try to move that directly into JsDocBlock
     @Override
     public List<DocParameter> getParameters(Node node) {
-        List<DocParameter> params = new LinkedList<DocParameter>();
-        JsComment comment = getCommentForOffset(node.getStart());
-        if (comment != null) {
-            JsDocBlock jsDocBlock = (JsDocBlock) comment;
-            if (jsDocBlock.getType() == JsDocCommentType.DOC_COMMON) {
-                for (JsDocElement jsDocElement : jsDocBlock.getTags()) {
-                    if (jsDocElement.getType() == JsDocElement.Type.PARAM
-                            || jsDocElement.getType() == JsDocElement.Type.ARGUMENT) {
-                        params.add((NamedParameterElement) jsDocElement);
-                    }
-                }
+        JsDocBlock block = getCommentForOffset(node.getStart());
+        if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
+            List<DocParameter> params = new LinkedList<DocParameter>();
+            for (JsDocElement jsDocElement : block.getTagsForTypes(
+                    new JsDocElement.Type[]{JsDocElement.Type.PARAM, JsDocElement.Type.ARGUMENT})) {
+                params.add((NamedParameterElement) jsDocElement);
             }
+            return params;
         }
-        return params;
+        return Collections.<DocParameter>emptyList();
     }
 
-    protected JsComment getCommentForOffset(int offset) {
+    protected JsDocBlock getCommentForOffset(int offset) {
         int endOffset = getEndOffsetOfAssociatedComment(offset);
         if (endOffset > 0) {
-            return parserResult.getComments().get(endOffset);
+            return (JsDocBlock) parserResult.getComments().get(endOffset);
         }
         return null;
     }

@@ -56,8 +56,6 @@ public class DescriptionElement extends JsDocElementImpl {
 
     private DescriptionElement(Type type, String description) {
         super(type);
-        Parameters.notNull("type", type);
-        Parameters.notNull("description", description);
         this.description = description;
     }
 

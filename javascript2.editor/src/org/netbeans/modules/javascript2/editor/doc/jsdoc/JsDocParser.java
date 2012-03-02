@@ -83,7 +83,7 @@ public class JsDocParser {
                     || commentType == JsDocCommentType.DOC_NO_CODE_END
                     || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
                 blocks.put(commentBlock.getEndOffset(), new JsDocBlock(commentBlock.getBeginOffset(),
-                        commentBlock.getEndOffset(), commentType, null));
+                        commentBlock.getEndOffset(), commentType, Collections.<JsDocElement>emptyList()));
                 continue;
             } else {
                 blocks.put(commentBlock.getEndOffset(),
@@ -151,14 +151,12 @@ public class JsDocParser {
                 int firstSpace = stripeText.indexOf(" "); //NOI18N
                 if (firstSpace == -1) {
                     type = Type.fromString(stripeText);
-                    jsDocElements.add(JsDocElementUtils.createElementForType(
-                            type == null ? Type.UNKNOWN : type, "", -1));
+                    jsDocElements.add(JsDocElementUtils.createElementForType(type, "", -1));
                 } else {
                     type = Type.fromString(stripeText.substring(0, firstSpace));
                     String tagDescription = stripeText.substring(firstSpace).trim();
                     int offset = commentStrip.getOffset() + stripeText.length() - tagDescription.length();
-                    jsDocElements.add(JsDocElementUtils.createElementForType(
-                            type == null ? Type.UNKNOWN : type, tagDescription, offset));
+                    jsDocElements.add(JsDocElementUtils.createElementForType(type, tagDescription, offset));
                 }
             }
             // after description is after first sentence or after any keyword

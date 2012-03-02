@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
-import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 
 /**
@@ -52,7 +54,8 @@ import org.netbeans.modules.javascript2.editor.model.JsComment;
  */
 public class JsDocBlock extends JsComment {
 
-    private final List<JsDocElement> tags;
+    private final Map<JsDocElement.Type, List<JsDocElement>> tags =
+            new EnumMap<JsDocElement.Type, List<JsDocElement>>(JsDocElement.Type.class);
     private final JsDocCommentType type;
 
     /**
@@ -61,21 +64,62 @@ public class JsDocBlock extends JsComment {
      * @param startOffset start offset of the comment
      * @param endOffset end offset of the comment
      * @param type comment {@code JsDocCommentType}
-     * @param tags list of tags contained in this block or {@code null} if block is of special type
+     * @param elements list of tags contained in this block, never {@code null}
      */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> tags) {
+    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> elements) {
         super(startOffset, endOffset);
         this.type = type;
-        this.tags = tags;
+        initTags(elements);
+    }
+
+    private void initTags(List<JsDocElement> elements) {
+        for (JsDocElement jsDocElement : elements) {
+            List<JsDocElement> list = tags.get(jsDocElement.getType());
+            if (list == null) {
+                list = new LinkedList<JsDocElement>();
+                tags.put(jsDocElement.getType(), list);
+            }
+            tags.get(jsDocElement.getType()).add(jsDocElement);
+        }
     }
 
     /**
-     * Gets list of {@code JsDocTag}s of this block.
+     * Gets list of all {@code JsDocTag}s.
+     * <p>
+     * Should be used just in testing use cases.
      * @return list of {@code JsDocTag}s
      */
-    public List<JsDocElement> getTags() {
-        return tags;
+    protected List<? extends JsDocElement> getTags() {
+        List<JsDocElement> allTags = new LinkedList<JsDocElement>();
+        Iterator<Entry<Type, List<JsDocElement>>> iterator = tags.entrySet().iterator();
+        while (iterator.hasNext()) {
+            allTags.addAll(iterator.next().getValue());
+        }
+        return allTags;
     }
+
+    /**
+     * Gets list of {@code JsDocTag}s of given type.
+     * @return list of {@code JsDocTag}s
+     */
+    public List<? extends JsDocElement> getTagsForType(JsDocElement.Type type) {
+        List<JsDocElement> tagsForType = tags.get(type);
+        return tagsForType == null ? Collections.<JsDocElement>emptyList() : tagsForType;
+    }
+
+    /**
+     * Gets list of {@code JsDocTag}s of given types.
+     * @return list of {@code JsDocTag}s
+     */
+    public List<? extends JsDocElement> getTagsForTypes(JsDocElement.Type[] types) {
+        List<JsDocElement> list = new LinkedList<JsDocElement>();
+        for (JsDocElement.Type type : types) {
+            list.addAll(getTagsForType(type));
+        }
+        return list;
+    }
+
+
 
     /**
      * Gets type of the jsDoc block comment.

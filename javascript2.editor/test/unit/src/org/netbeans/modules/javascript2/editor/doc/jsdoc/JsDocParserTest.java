@@ -212,27 +212,27 @@ public class JsDocParserTest extends JsTestBase {
 
     public void testParsedContextSensitiveContentNoAsterisk() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesNoAsterisk.js"));
-        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
         assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsedContextSensitiveContentAsterisks() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/allTypesAsterisks.js"));
-        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
         assertEquals("This could be description", ((DescriptionElement) tags.get(0)).getDescription().toString());
     }
 
     public void testParsingLongComments() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/windowStub.js"));
-        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElement.Type.CONTEXT_SENSITIVE, tags.get(0).getType());
     }
 
     private void checkElementTypes(String filePath) {
         Source source = getTestSource(getTestFile(filePath));
-        List<JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         for (int i = 0; i < expectedTypes.length; i++) {
             assertEquals(expectedTypes[i], tags.get(i).getType());
         }
