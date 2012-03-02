@@ -123,9 +123,6 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
 
     private int getEndOffsetOfAssociatedComment(int offset) {
         TokenHierarchy<?> tokenHierarchy = parserResult.getSnapshot().getTokenHierarchy();
-        if (tokenHierarchy == null) {
-            return -1;
-        }
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
         if (ts != null) {
             ts.move(offset);

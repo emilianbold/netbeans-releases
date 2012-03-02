@@ -174,13 +174,7 @@ public class JsDocParser {
 
     private static List<CommentBlock> getCommentBlocks(Snapshot snapshot) {
         List<CommentBlock> blocks = new LinkedList<CommentBlock>();
-
-        TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
-        if (tokenHierarchy == null) {
-            return blocks;
-        }
-
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
         if (tokenSequence == null) {
             return blocks;
         }
