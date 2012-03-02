@@ -72,7 +72,10 @@ public final class Symfony2Script extends PhpProgram {
      * @return Symfony2 console script or {@code null} if the script is not valid
      */
     @CheckForNull
-    @Messages("MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})")
+    @Messages({
+        "# {0} - error message",
+        "MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})"
+    })
     public static Symfony2Script forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpProgramException {
         String console = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_PATH.replace('/', File.separatorChar)).getAbsolutePath(); // NOI18N
         String error = validate(console);
@@ -93,14 +96,10 @@ public final class Symfony2Script extends PhpProgram {
         return new Symfony2Script(command).validate();
     }
 
-    @Messages("LBL_Symfony2ScriptPrefix=Symfony2 console: {0}")
+    @Messages("Symfony2Script.script.label=Symfony2 console")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.LBL_Symfony2ScriptPrefix(error);
+        return FileUtils.validateFile(Bundle.Symfony2Script_script_label(), getProgram(), false);
     }
 
 }

@@ -115,6 +115,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     private String previousWhitelistFileName = null;
     private File whitelistStorageDir = null;
     private SamplesOutputStream samples;
+    private ThreadInfo lastThreadInfo;
     private ByteArrayOutputStream stream;
     private ThreadMXBean threadBean;
     private long start;
@@ -405,6 +406,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
                                         
                                         ti.getStackTrace()[0] = fakeEl;
                                         samples.writeSample(new ThreadInfo[] {ti}, start*1000000L + violation * 10000000L, -1);
+                                        lastThreadInfo = ti;
                                         break;
                             }
                         }
@@ -805,11 +807,17 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     public void writeViolationsSnapshot(File file) {
         try {
             FileOutputStream fos = new FileOutputStream(file);
+            if (lastThreadInfo != null) {
+                samples.writeSample(new ThreadInfo[] {lastThreadInfo}, start*1000000L + (whitelistViolators.size()+1) * 10000000L, -1);
+            }
             samples.close();
             fos.write(stream.toByteArray());
             fos.close();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            lastThreadInfo = null;
+            samples = null;
         }
     }
 }

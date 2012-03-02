@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.javaee.specs.support.api.JaxWsPoliciesSupport;
 import org.netbeans.modules.websvc.api.wseditor.InvalidDataException;
 import org.netbeans.modules.websvc.api.wseditor.WSEditor;
@@ -173,7 +174,7 @@ class OWSMPoliciesEditor implements WSEditor {
         if ( myPanel.getWsFqn() == null ){
             return;
         }
-        JavaSource javaSource = JavaSource.forFileObject(myFileObject );
+        final JavaSource javaSource = JavaSource.forFileObject(myFileObject );
         if ( javaSource == null ) {
             NotifyDescriptor descriptor = new NotifyDescriptor.Message( 
                     NbBundle.getMessage(OWSMPoliciesEditor.class, "ERR_NoJava"),    // NOI18N
@@ -189,50 +190,71 @@ class OWSMPoliciesEditor implements WSEditor {
         }
         Project project = FileOwnerQuery.getOwner(myFileObject);
         mySupport.extendsProjectClasspath(project, fqns);
-        try {
-            javaSource.runModificationTask(new Task<WorkingCopy>() {
+        final Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
-                @Override
-                public void run( WorkingCopy workingCopy ) throws Exception {
-                    workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                    String wsFqn = myPanel.getWsFqn();
-                    
-                    CompilationUnitTree cu = workingCopy.getCompilationUnit();
-                    ClassTree wsClassTree = null;
-                    if (cu != null) {
-                        List<? extends Tree> decls = cu.getTypeDecls();
-                        for (Tree decl : decls) {
-                            if (!TreeUtilities.CLASS_TREE_KINDS.contains(decl
-                                    .getKind()))
-                            {
-                                continue;
-                            }
+            @Override
+            public void run( WorkingCopy workingCopy ) throws Exception {
+                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                String wsFqn = myPanel.getWsFqn();
+                
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                ClassTree wsClassTree = null;
+                if (cu != null) {
+                    List<? extends Tree> decls = cu.getTypeDecls();
+                    for (Tree decl : decls) {
+                        if (!TreeUtilities.CLASS_TREE_KINDS.contains(decl
+                                .getKind()))
+                        {
+                            continue;
+                        }
 
-                            ClassTree classTree = (ClassTree) decl;
-                            Element element = workingCopy.getTrees()
-                                    .getElement(
-                                            workingCopy.getTrees().getPath(cu,
-                                                    classTree));
-                            if (element instanceof TypeElement) {
-                                Name className = ((TypeElement) element)
-                                        .getQualifiedName();
-                                if (className.contentEquals(wsFqn)) {
-                                    wsClassTree = classTree;
-                                }
+                        ClassTree classTree = (ClassTree) decl;
+                        Element element = workingCopy.getTrees()
+                                .getElement(
+                                        workingCopy.getTrees().getPath(cu,
+                                                classTree));
+                        if (element instanceof TypeElement) {
+                            Name className = ((TypeElement) element)
+                                    .getQualifiedName();
+                            if (className.contentEquals(wsFqn)) {
+                                wsClassTree = classTree;
                             }
                         }
                     }
-                    if (wsClassTree == null) {
-                        return;
-                    }
-                    rewriteAnnotations(policyIds, workingCopy, wsClassTree);
                 }
+                if (wsClassTree == null) {
+                    return;
+                }
+                rewriteAnnotations(policyIds, workingCopy, wsClassTree);
+            }
 
-            }).commit();
+        };
+        final Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                try {
+                    javaSource.runModificationTask(task).commit();
+                }
+                catch (IOException e) {
+                    Logger.getLogger( OWSMPoliciesEditor.class.getName() ).log( 
+                            Level.INFO, null, e );
+                }
+            }
+        };
+        final String title = NbBundle.getMessage(OWSMPoliciesEditor.class, 
+                "LBL_ModifyPolicies");                  // NOI18N
+        if ( SwingUtilities.isEventDispatchThread() ){
+            ScanDialog.runWhenScanFinished(runnable, title );
         }
-        catch (IOException e) {
-            Logger.getLogger( OWSMPoliciesEditor.class.getName() ).log( 
-                    Level.INFO, null, e );
+        else {
+            SwingUtilities.invokeLater( new Runnable() {
+                
+                @Override
+                public void run() {
+                    ScanDialog.runWhenScanFinished(runnable, title );                        
+                }
+            });
         }
     }
     

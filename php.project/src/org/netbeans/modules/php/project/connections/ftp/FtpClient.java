@@ -219,6 +219,10 @@ public class FtpClient implements RemoteClient {
 
             LOGGER.fine("Setting data timeout");
             ftpClient.setDataTimeout(timeout);
+
+            // always list hidden files as well
+            ftpClient.setListHiddenFiles(true);
+
             scheduleKeepAlive();
         } catch (IOException ex) {
             WindowsJdk7WarningPanel.warn();

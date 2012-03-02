@@ -61,6 +61,7 @@ import org.netbeans.modules.xml.cookies.*;
 
 import org.netbeans.modules.xml.util.Util;
 import org.netbeans.spi.xml.cookies.*;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
@@ -71,6 +72,12 @@ import org.xml.sax.InputSource;
  * @author Libor Kramolis
  * @version 0.1
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="org.netbeans.modules.xml.resources.Bundle#ENTResolver",
+    extension="ent",
+    mimeType="text/xml-external-parsed-entity",
+    position=60003
+)
 public final class EntityDataObject extends MultiDataObject implements XMLDataObjectLook {
     /** Serial Version UID */
     private static final long serialVersionUID = 2909112365229995364L;

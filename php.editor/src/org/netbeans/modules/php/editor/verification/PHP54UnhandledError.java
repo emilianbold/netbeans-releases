@@ -59,6 +59,7 @@ public class PHP54UnhandledError extends DefaultVisitor {
 
     private FileObject fileObject;
     private List<PHPVersionError> errors = new ArrayList<PHPVersionError>();
+    private static final String BINARY_PREFIX = "0b"; //NOI18N
 
     public PHP54UnhandledError(FileObject fobj) {
         this.fileObject = fobj;
@@ -95,6 +96,21 @@ public class PHP54UnhandledError extends DefaultVisitor {
     @Override
     public void visit(DereferencedArrayAccess node) {
         createError(node);
+    }
+
+    @Override
+    public void visit(Scalar node) {
+        if (node.getScalarType().equals(Scalar.Type.REAL) && node.getStringValue().startsWith(BINARY_PREFIX)) {
+            createError(node);
+        }
+    }
+
+    @Override
+    public void visit(StaticMethodInvocation node) {
+        Expression name = node.getMethod().getFunctionName().getName();
+        if (name instanceof ReflectionVariable) {
+            createError(name);
+        }
     }
 
     private  void createError(int startOffset, int endOffset){

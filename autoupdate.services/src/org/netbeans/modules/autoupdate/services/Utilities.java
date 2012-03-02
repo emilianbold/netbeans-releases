@@ -902,7 +902,7 @@ public class Utilities {
         if (mi instanceof Module) {
             Module m = (Module)mi;
             if (specificationVersion == null) {
-                err.log(Level.FINE, "no module {0} for {1}", new Object[] { m, specificationVersion });
+                err.log(Level.FINE, "no module {0} for null version", m);
                 return m;
             } else {
                 SpecificationVersion version = m.getSpecificationVersion();
@@ -911,7 +911,7 @@ public class Utilities {
                     return null;
                 }
                 final int res = version.compareTo(specificationVersion);
-                err.log(Level.FINE, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
+                err.log(Level.FINER, "Comparing versions: {0}.compareTo({1}) = {2}", new Object[]{version, specificationVersion, res});
                 return res >= 0 ? m : null;
             }
         }

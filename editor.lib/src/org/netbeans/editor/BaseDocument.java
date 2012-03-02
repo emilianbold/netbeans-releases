@@ -111,6 +111,7 @@ import org.netbeans.modules.editor.lib2.document.EditorDocumentContent;
 import org.netbeans.modules.editor.lib2.document.LineElementRoot;
 import org.netbeans.modules.editor.lib2.document.ReadWriteBuffer;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
+import org.netbeans.modules.editor.lib2.document.StableCompoundEdit;
 import org.netbeans.spi.lexer.MutableTextInput;
 import org.netbeans.spi.lexer.TokenHierarchyControl;
 import org.openide.filesystems.FileObject;
@@ -1997,7 +1998,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return new LazyPropertyMap(origDocumentProperties);
     }
 
-    CompoundEdit markAtomicEditsNonSignificant() {
+    UndoableEdit markAtomicEditsNonSignificant() {
         assert (atomicDepth > 0); // Should only be called under atomic lock
         ensureAtomicEditsInited();
         atomicEdits.setSignificant(false);
@@ -2035,7 +2036,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     /** Compound edit that write-locks the document for the whole processing
      * of its undo operation.
      */
-    class AtomicCompoundEdit extends CompoundEdit {
+    class AtomicCompoundEdit extends StableCompoundEdit {
 
         private UndoableEdit previousEdit;
 
@@ -2084,7 +2085,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
         private TokenHierarchyControl<?> thcInactive() {
             TokenHierarchyControl<?> thc = null;
-            if (edits.size() > DEACTIVATE_LEXER_THRESHOLD) {
+            if (getEdits().size() > DEACTIVATE_LEXER_THRESHOLD) {
                 MutableTextInput<?> input = (MutableTextInput<?>)
                         BaseDocument.this.getProperty(MutableTextInput.class);
                 if (input != null && (thc = input.tokenHierarchyControl()) != null && thc.isActive()) {
@@ -2110,7 +2111,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
 
         public int size() {
-            return edits.size();
+            return getEdits().size();
         }
 
         public @Override boolean replaceEdit(UndoableEdit anEdit) {
@@ -2144,10 +2145,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 }
             }
             return false;
-        }
-
-        java.util.Vector getEdits() {
-            return edits;
         }
 
         @Override
@@ -2279,7 +2276,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     private static final class Accessor extends EditorPackageAccessor {
 
         @Override
-        public CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
+        public UndoableEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc) {
             return doc.markAtomicEditsNonSignificant();
         }
 

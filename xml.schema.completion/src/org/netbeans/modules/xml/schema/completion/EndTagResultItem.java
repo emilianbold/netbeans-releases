@@ -44,11 +44,14 @@ package org.netbeans.modules.xml.schema.completion;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.openide.util.NbBundle;
 
@@ -102,6 +105,31 @@ public class EndTagResultItem extends CompletionResultItem {
         return endTagSortPriority;
     }
 
+    private void reindent(JTextComponent component) {
+        final BaseDocument doc = (BaseDocument) component.getDocument();
+        final int dotPos = component.getCaretPosition();
+        final Indent indent = Indent.get(doc);
+        indent.lock();
+        try {
+            doc.runAtomic(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        int startOffset = Utilities.getRowStart(doc, dotPos);
+                        int endOffset = Utilities.getRowEnd(doc, dotPos);
+                        indent.reindent(startOffset, endOffset);
+                    } catch (BadLocationException ex) {
+                        //ignore
+                        }
+                }
+            });
+        } finally {
+            indent.unlock();
+        }
+
+    }
+
     @Override
     protected void replaceText(final JTextComponent component, final String text,
         final int offset, final int len) {
@@ -134,5 +162,6 @@ public class EndTagResultItem extends CompletionResultItem {
                 }
             }
         });
+        reindent(component);
     }
 }

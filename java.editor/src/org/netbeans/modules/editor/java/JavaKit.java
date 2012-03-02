@@ -576,7 +576,7 @@ public class JavaKit extends NbEditorKit {
             }
         }
         
-        @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class)
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedBreakInterceptor.Factory.class) //NOI18N
         public static class JavaStringFactory implements TypedBreakInterceptor.Factory {
 
             @Override
@@ -596,11 +596,18 @@ public class JavaKit extends NbEditorKit {
 
         @Override
         public void remove(Context context) throws BadLocationException {            
-            if (context.getText().length() == 1) {
-                if (context.isBackwardDelete())
-                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset() - 1, context.getComponent().getCaret(), context.getText().charAt(0));
-                else
-                    BraceCompletion.charBackspaced((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), context.getText().charAt(0));
+            char removedChar = context.getText().charAt(0);
+            switch(removedChar) {
+                case '(':
+                case '[':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.removeBrackets(context);
+                    break;
+                case '\"':
+                case '\'':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.removeCompletedQuote(context);
+                    break;
             }
         }
 
@@ -620,11 +627,19 @@ public class JavaKit extends NbEditorKit {
                 return new JavaDeletedTextInterceptor();
             }
         }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = DeletedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new JavaDeletedTextInterceptor();
+            }
+        }
     }
     
     public static class JavaTypedTextInterceptor implements TypedTextInterceptor {
-
-        private boolean inserted = false;
+        private int caretPosition = -1;
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
@@ -634,20 +649,34 @@ public class JavaKit extends NbEditorKit {
         @Override
         public void insert(MutableContext context) throws BadLocationException {
             char insertedChar = context.getText().charAt(0);
-            if (insertedChar == '\"' || insertedChar == '\'') {
-                inserted = BraceCompletion.completeQuote((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+            switch(insertedChar) {
+                case '(':
+                case '[':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        TypingCompletion.completeOpeningBracket(context);
+                    break;
+                case ')':
+                case ']':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.skipClosingBracket(context);
+                    break;
+                case ';':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.moveSemicolon(context);
+                    break;
+                case '\"':
+                case '\'':
+                    if (TypingCompletion.isCompletionSettingEnabled())
+                        caretPosition = TypingCompletion.completeQuote(context);
+                    break;
             }
         }
 
         @Override
-        public void afterInsert(Context context) throws BadLocationException {
-            if (inserted) {
-                context.getDocument().remove(context.getOffset(), 1);
-                context.getComponent().getCaret().setDot(context.getOffset() + 1);
-                inserted = false;
-            } else {
-                char insertedChar = context.getText().charAt(0);
-                BraceCompletion.charInserted((BaseDocument) context.getDocument(), context.getOffset(), context.getComponent().getCaret(), insertedChar);
+        public void afterInsert(Context context) throws BadLocationException { 
+            if (caretPosition != -1) {
+                context.getComponent().setCaretPosition(caretPosition);
+                caretPosition = -1;
             }
         }
 
@@ -657,6 +686,15 @@ public class JavaKit extends NbEditorKit {
 
         @MimeRegistration(mimeType = JAVA_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
         public static class Factory implements TypedTextInterceptor.Factory {
+
+            @Override
+            public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                return new JavaTypedTextInterceptor();
+            }
+        }
+        
+        @MimeRegistration(mimeType = "text/x-java-string", service = TypedTextInterceptor.Factory.class) //NOI18N
+        public static class JavaStringFactory implements TypedTextInterceptor.Factory {
 
             @Override
             public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {

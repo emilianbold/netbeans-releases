@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
@@ -78,7 +78,7 @@ public class OpenIssueTest extends NbTestCase implements TestConstants {
     @RandomlyFails
     public void testOpenNewIssue() throws Throwable {
         BugzillaRepository repository = getRepository();
-        Issue issue = repository.createIssue();
+        IssueProvider issue = repository.createIssue();
 
         LogHandler handler = new LogHandler("open finish", LogHandler.Compare.ENDS_WITH);
         issue.open();

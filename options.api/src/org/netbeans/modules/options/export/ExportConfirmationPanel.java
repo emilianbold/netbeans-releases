@@ -55,7 +55,7 @@ import org.openide.util.NbPreferences;
 public class ExportConfirmationPanel extends javax.swing.JPanel {
 
     private static final String PROP_SKIP_PASSWORDS_WARNING = "SkipPasswordsWarning";  //NOI18N
-    private boolean confirmed = false;
+    private boolean confirmed = true;
 
     /** Creates new form ExportConfirmationPanel */
     public ExportConfirmationPanel() {

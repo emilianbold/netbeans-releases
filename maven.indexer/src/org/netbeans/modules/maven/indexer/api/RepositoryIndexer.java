@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.indexer.api;
 
 import java.util.Collection;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
@@ -64,7 +65,7 @@ public final class RepositoryIndexer {
     
     public static void updateIndexWithArtifacts(RepositoryInfo repo, Collection<Artifact> artifacts) {
         assert repo != null;
-        if (artifacts == null || artifacts.size() == 0) {
+        if (artifacts == null || artifacts.isEmpty()) {
             return;
         }
         RepositoryIndexerImplementation impl = findImplementation(repo);
@@ -93,7 +94,7 @@ public final class RepositoryIndexer {
                 return impl;
             }
         }
-        Logger.getLogger(RepositoryIndexer.class.getName()).info("Cannot find repository indexer type:" + repo.getType() + " for repository " + repo.getName());
+        Logger.getLogger(RepositoryIndexer.class.getName()).log(Level.INFO, "Cannot find repository indexer type:{0} for repository {1}", new Object[]{repo.getType(), repo.getName()});
         return null;
     }
     

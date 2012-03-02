@@ -315,26 +315,32 @@ public final class MIMEExtensions {
             private L() {
             }
 
+            @Override
             public void fileFolderCreated(FileEvent fe) {
                 initialize(configFolder);
             }
 
+            @Override
             public void fileDataCreated(FileEvent fe) {
                 initialize(configFolder);
             }
 
+            @Override
             public void fileChanged(FileEvent fe) {
                 initialize(configFolder);
             }
 
+            @Override
             public void fileDeleted(FileEvent fe) {
                 initialize(configFolder);
             }
 
+            @Override
             public void fileRenamed(FileRenameEvent fe) {
                 initialize(configFolder);
             }
 
+            @Override
             public void fileAttributeChanged(FileAttributeEvent fe) {
                 initialize(configFolder);
             }

@@ -96,13 +96,8 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
         changeSupport.removeChangeListener(listener);
     }
 
-    @NbBundle.Messages("MSG_Symfony2EditionPrefix=Symfony Edition: {0}")
     public String getErrorMessage() {
-        String error = Symfony2OptionsPanelController.validateSandbox(Symfony2Options.getInstance().getSandbox());
-        if (error == null) {
-            return null;
-        }
-        return Bundle.MSG_Symfony2EditionPrefix(error);
+        return Symfony2OptionsPanelController.validateSandbox(Symfony2Options.getInstance().getSandbox());
     }
 
     private void init() {
@@ -148,7 +143,7 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
             }
         });
 
-        infoLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text")); 
+        infoLabel.setText(NbBundle.getMessage(NewProjectConfigurationPanel.class, "NewProjectConfigurationPanel.infoLabel.text"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(

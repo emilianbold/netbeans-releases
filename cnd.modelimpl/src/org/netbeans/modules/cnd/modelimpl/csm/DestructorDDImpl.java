@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -65,7 +66,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         super(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
     }
     
-    public static DestructorDDImpl createDestructor(AST ast, final CsmFile file, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static DestructorDDImpl createDestructor(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
         
         int startOffset = getStartOffset(ast);
@@ -79,7 +80,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         }
         CharSequence rawName = initRawName(ast);
         
-        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, name);
+        boolean _static = AstRenderer.FunctionRenderer.isStatic(ast, file, fileContent, name);
         boolean _const = AstRenderer.FunctionRenderer.isConst(ast);
         boolean _virtual = false;
         boolean _explicit = false;
@@ -108,7 +109,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         
         destructorDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         destructorDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorDDImpl, file));
-        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, global), 
+        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, fileContent, global), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, destructorDDImpl);
         if (body == null) {
@@ -117,7 +118,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         }        
         destructorDDImpl.setCompoundStatement(body);
         postObjectCreateRegistration(global, destructorDDImpl);
-        nameHolder.addReference(file, destructorDDImpl);
+        nameHolder.addReference(fileContent, destructorDDImpl);
         return destructorDDImpl;
     }
 

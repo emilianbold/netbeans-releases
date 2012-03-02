@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,22 +43,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.lang.reflect.Method;
-import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import org.netbeans.installer.utils.exceptions.NativeException;
-import org.netbeans.installer.utils.helper.ApplicationDescriptor;
-import org.netbeans.installer.utils.helper.EnvironmentScope;
-import org.netbeans.installer.utils.helper.ErrorLevel;
-import org.netbeans.installer.utils.helper.ExecutionResults;
-import org.netbeans.installer.utils.helper.FilesList;
-import org.netbeans.installer.utils.helper.Platform;
-import org.netbeans.installer.utils.system.shortcut.FileShortcut;
-import org.netbeans.installer.utils.system.shortcut.Shortcut;
-import org.netbeans.installer.utils.helper.ShortcutLocationType;
+import org.netbeans.installer.utils.helper.*;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.utils.system.NativeUtils;
 import org.netbeans.installer.utils.system.NativeUtilsFactory;
@@ -66,7 +56,9 @@ import org.netbeans.installer.utils.system.launchers.Launcher;
 import org.netbeans.installer.utils.system.launchers.LauncherFactory;
 import org.netbeans.installer.utils.system.launchers.LauncherProperties;
 import org.netbeans.installer.utils.system.resolver.StringResolverUtil;
+import org.netbeans.installer.utils.system.shortcut.FileShortcut;
 import org.netbeans.installer.utils.system.shortcut.LocationType;
+import org.netbeans.installer.utils.system.shortcut.Shortcut;
 
 /**
  *
@@ -116,8 +108,17 @@ public final class SystemUtils {
     }
     
     // system info //////////////////////////////////////////////////////////////////
+    @Deprecated
     public static File getUserHomeDirectory() {
         return new File(USER_HOME);
+    }
+    
+    public static File getDefaultUserdirRoot() {
+        String root = System.getProperty("netbeans.default_userdir_root", null);
+        if (root != null && root.isEmpty()) {
+            return new File(root);
+        }
+        return null;
     }
     
     public static String getUserName() {
@@ -206,6 +207,7 @@ public final class SystemUtils {
         return executeCommand(null, command);
     }
     
+    @SuppressWarnings({"SleepWhileInLoop", "empty-statement"})
     public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
         // construct the initial log message
         String commandString = StringUtils.asString(command, StringUtils.SPACE);
@@ -502,8 +504,8 @@ public final class SystemUtils {
         return NetworkUtils.getHostName();        
     }
     
-    public static List<File> getFileSystemRoots() throws IOException {
-        return getNativeUtils().getFileSystemRoots();
+    public static List<File> getFileSystemRoots(String... files) throws IOException {
+        return getNativeUtils().getFileSystemRoots(files);
     }
     
     // platforms probes /////////////////////////////////////////////////////////////

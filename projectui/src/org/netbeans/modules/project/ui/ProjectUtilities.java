@@ -48,6 +48,7 @@ import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.GraphicsEnvironment;
 import java.awt.event.ActionEvent;
+import java.io.CharConversionException;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -321,7 +322,7 @@ public class ProjectUtilities {
      * @param extension extension of created file
      * @param allowFileSeparator if '/' (and possibly other file separator, see {@link FileUtil#createFolder FileUtil#createFolder})
      *                           is allowed in the newObjectName
-     * @return localized error message or null if all right
+     * @return localized error message (HTML-safe) or null if all right
      */    
     @Messages({
         "# {0} - name of the file", "# {1} - an integer representing the invalid characters:", "#       0: both '/' and '\\' are invalid", "#       1: '\\' is invalid", "MSG_not_valid_filename=The filename {0} is not permitted as it contains {1,choice,0#a slash (/) or a backslash (\\)|1#a backslash (\\)}.",
@@ -352,7 +353,7 @@ public class ProjectUtilities {
             //if errorVariant == 3, the test above should never be true:
             assert errorVariant == 0 || errorVariant == 1 : "Invalid error variant: " + errorVariant;
             
-            return MSG_not_valid_filename(newObjectName, errorVariant);
+            return MSG_not_valid_filename(safeEncode(newObjectName), errorVariant);
         }
         
         // test whether the selected folder on selected filesystem already exists
@@ -374,7 +375,7 @@ public class ProjectUtilities {
         StringBuilder relFileName = new StringBuilder();
         if (folderName != null) {
             if (!allowBackslash && folderName.indexOf('\\') != -1) {
-                return MSG_not_valid_folder(folderName, 1);
+                return MSG_not_valid_folder(safeEncode(folderName), 1);
             }
             relFileName.append(folderName);
             relFileName.append('/');
@@ -386,11 +387,21 @@ public class ProjectUtilities {
             relFileName.append(ext);
         }
         if (targetFolder.getFileObject(relFileName.toString()) != null) {
-            return MSG_file_already_exist(newObjectName + ext); // NOI18N
+            return MSG_file_already_exist(safeEncode(newObjectName + ext));
         }
         
         // all ok
         return null;
+    }
+    private static String safeEncode(String text) { // #208432
+        if (text.length() > 30) {
+            text = text.substring(0, 30) + '…';
+        }
+        try {
+            return XMLUtil.toElementContent(text.replaceAll("\\s+", " "));
+        } catch (CharConversionException ex) {
+            return text;
+        }
     }
     
     

@@ -49,8 +49,8 @@ import org.netbeans.libs.git.jgit.GitClassFactory;
  */
 public final class ApiUtils {
 
-    public static void clearRepositoryPool (GitClientFactory factory) {
-        factory.clearRepositoryPool();
+    public static void clearRepositoryPool () {
+        GitRepository.clearRepositoryPool();
     }
     
     private ApiUtils () {

@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -64,30 +65,27 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.core.startup.ManifestSection;
+import org.netbeans.core.startup.StartLog;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataLoader;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.RequestProcessor;
-import org.openide.util.TopologicalSortException;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.NbObjectInputStream;
 import org.openide.util.io.NbObjectOutputStream;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=DataLoaderPool.class)
-public final class NbLoaderPool extends DataLoaderPool implements PropertyChangeListener, Runnable, LookupListener {
+public final class NbLoaderPool extends DataLoaderPool implements PropertyChangeListener, Runnable, LookupListener, TaskListener {
     private static final Logger err = Logger.getLogger(NbLoaderPool.class.getName()); // NOI18N
 
     /**
@@ -679,10 +677,45 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
         private transient Lookup.Result mimeResolvers;
         // holds reference to not loose FileChangeListener
         private transient FileObject declarativeResolvers;
+        private transient boolean listenersRegistered;
         private static RequestProcessor rp = new RequestProcessor("Refresh Loader Pool"); // NOI18N
         
         public NbLoaderPool() {
             fireTask = rp.create(this, true);
+        }
+        
+        private final DataFolder findServicesFolder() throws Exception {
+            Method m = DataLoaderPool.class.getDeclaredMethod("getFolderLoader"); // NOI18N
+            m.setAccessible(true);
+            DataLoader dl = (DataLoader) m.invoke(null);
+            FileObject services = FileUtil.getConfigFile("Services"); // NOI18N
+            return (DataFolder)dl.findDataObject(services, new HashSet<FileObject>()); 
+        }
+
+        final Lookup findServicesLookup() {
+            StartLog.logProgress("Got Services folder"); // NOI18N
+            DataFolder servicesF;
+            try {
+                // mark as registered, they will be added in taskFinished
+                listenersRegistered = true;
+                servicesF = findServicesFolder();
+                org.openide.loaders.FolderLookup f = new org.openide.loaders.FolderLookup(servicesF, "SL[");
+                f.addTaskListener(this);
+                return f.getLookup();
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+                return Lookup.EMPTY;
+            } finally {
+                StartLog.logProgress("created FolderLookup"); // NOI18N
+            }
+        }
+
+        @Override
+        public void taskFinished(Task task) {
+            initListeners();
+        }
+        
+        private void initListeners() {
             mimeResolvers = Lookup.getDefault().lookupResult(MIMEResolver.class);
             mimeResolvers.addLookupListener(this);
             listenToDeclarativeResolvers();
@@ -704,8 +737,11 @@ public final class NbLoaderPool extends DataLoaderPool implements PropertyChange
 
         /** Enumerates all loaders. Loaders are taken from children
         * structure of NbLoaderPool. */
+        @Override
         protected Enumeration<DataLoader> loaders () {
-
+            if (!listenersRegistered) {
+                initListeners();
+            }
             //
             // prevents from extensive copying
             //

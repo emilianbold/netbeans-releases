@@ -43,12 +43,16 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
@@ -58,6 +62,7 @@ import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.api.PullUpRefactoring;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -65,11 +70,11 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula
  */
-public class PullUpRefactoringUI implements RefactoringUI {
+public class PullUpRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     // reference to pull up refactoring this UI object corresponds to
-    private final PullUpRefactoring refactoring;
+    private PullUpRefactoring refactoring;
     // initially selected members
-    private final Set initialMembers;
+    private Set initialMembers;
     // UI panel for collecting parameters
     private PullUpPanel panel;
 
@@ -102,6 +107,9 @@ public class PullUpRefactoringUI implements RefactoringUI {
             refactoring = new PullUpRefactoring(selectedElements);
         }
         
+    }
+
+    private PullUpRefactoringUI() {
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -293,4 +301,66 @@ public class PullUpRefactoringUI implements RefactoringUI {
 //        }
 //        value.add(member);
 //    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePathHandle selectedElement = findSelectedClassMemberDeclaration(handles[0], info);
+                    return selectedElement != null
+                            ? new PullUpRefactoringUI(selectedElement, info)
+                            : null;
+        
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new PullUpRefactoringUI();
+    }
+    
+    static TreePathHandle findSelectedClassMemberDeclaration(TreePathHandle path, final CompilationInfo info) {
+        TreePath resolved = path.resolve(info);
+        TreePath selected = findSelectedClassMemberDeclaration(resolved ,info);
+        if (selected == null) {
+            path = null;
+        } else if (selected != resolved) {
+            path = TreePathHandle.create(selected, info);
+        }
+        return path;
+    }
+
+    private static TreePath findSelectedClassMemberDeclaration(final TreePath path, final CompilationInfo javac) {
+        TreePath currentPath = path;
+        TreePath selection = null;
+        while (currentPath != null && selection == null) {
+            switch (currentPath.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                case NEW_CLASS:
+                case METHOD:
+                    selection = currentPath;
+                    break;
+                case VARIABLE:
+                    Element elm = javac.getTrees().getElement(currentPath);
+                    if (elm != null && elm.getKind().isField()) {
+                        selection = currentPath;
+                    }
+                    break;
+            }
+            if (selection != null && javac.getTreeUtilities().isSynthetic(selection)) {
+                selection = null;
+            }
+            if (selection == null) {
+                currentPath = currentPath.getParentPath();
+            }
+        }
+        
+        if (selection == null && path != null) {
+            List<? extends Tree> typeDecls = path.getCompilationUnit().getTypeDecls();
+            if (!typeDecls.isEmpty() && typeDecls.get(0).getKind().asInterface() == ClassTree.class) {
+                selection = TreePath.getPath(path.getCompilationUnit(), typeDecls.get(0));
+            }
+        }
+        return selection;
+    }    
 }

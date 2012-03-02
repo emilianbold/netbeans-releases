@@ -72,7 +72,7 @@ public class MoveBaseTest extends RefactoringTestBase {
         super(name);
     }
 
-    void performMove(FileObject source, final int[] position, FileObject target, final Visibility visibility, boolean delegate, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(FileObject source, final int[] position, FileObject target, final Visibility visibility, boolean delegate, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
         final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -120,7 +120,7 @@ public class MoveBaseTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    void performMove(FileObject source, final int[] position, final String target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(FileObject source, final int[] position, final String target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
         final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -158,7 +158,7 @@ public class MoveBaseTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    void performMove(final String source, final int[] position, FileObject target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    void performMove(final String source, final int[] position, FileObject target, final Visibility visibility, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final MoveRefactoring[] r = new MoveRefactoring[1];
         final JavaMoveMembersProperties[] properties = new JavaMoveMembersProperties[1];
         JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {

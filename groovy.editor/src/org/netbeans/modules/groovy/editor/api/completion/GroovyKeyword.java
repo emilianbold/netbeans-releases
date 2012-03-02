@@ -105,15 +105,15 @@ public enum GroovyKeyword {
     
     KEYWORD_undefined    ("undefined"    , false, false, false, false, false, KeywordCategory.NONE);
     
-    String name;
-    boolean isGroovy;
+    private String name;
+    private boolean isGroovy;
     
     // This flag               maps to in CaretLocation:
-    boolean aboveFistClass;     // ABOVE_FIRST_CLASS
-    boolean outsideClasses;     // OUTSIDE_CLASSES
-    boolean insideClass;        // INSIDE_CLASS
-    boolean insideCode;         // INSIDE_METHOD || INSIDE_CLOSURE
-    KeywordCategory category;   // Keyword Category: keyword, primitive, modifier
+    private boolean aboveFistClass;     // ABOVE_FIRST_CLASS
+    private boolean outsideClasses;     // OUTSIDE_CLASSES
+    private boolean insideClass;        // INSIDE_CLASS
+    private boolean insideCode;         // INSIDE_METHOD || INSIDE_CLOSURE
+    private KeywordCategory category;   // Keyword Category: keyword, primitive, modifier
     
 
     GroovyKeyword(String name,  boolean isGroovy, boolean aboveFistClass, 
@@ -125,5 +125,33 @@ public enum GroovyKeyword {
         this.insideClass = insideClass;
         this.insideCode = insideCode;
         this.category = category;
+    }
+
+    public boolean isAboveFistClass() {
+        return aboveFistClass;
+    }
+
+    public KeywordCategory getCategory() {
+        return category;
+    }
+
+    public boolean isInsideClass() {
+        return insideClass;
+    }
+
+    public boolean isInsideCode() {
+        return insideCode;
+    }
+
+    public boolean isGroovyKeyword() {
+        return isGroovy;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isOutsideClasses() {
+        return outsideClasses;
     }
 }

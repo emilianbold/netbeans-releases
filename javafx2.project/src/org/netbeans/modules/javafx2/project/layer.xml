@@ -134,6 +134,16 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
 
+            <file name="FXMLController.java" url="templates/FXML_controller.template">
+                <attr name="position" intvalue="600"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+
+            <file name="FXML.css" url="templates/CSS_empty.template">
+                <attr name="position" intvalue="700"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+            </file>
+
         </folder>
         
     </folder>  

@@ -86,25 +86,83 @@ final class ViewBuilder {
      * Replace of paragraph views in a document view.
      */
     private final ViewReplace<DocumentView,ParagraphView> docReplace;
+    
+    private final EditorViewFactory[] viewFactories;
 
     private FactoryState[] factoryStates;
 
     private boolean createLocalViews; // Whether children of paragraph views are created
+    
+    private boolean forceCreateLocalViews;
 
+    private int startCreationOffset;
+    
+    /**
+     * Offset where the views creation start.
+     * During views building it's offset of a next view that will be created.
+     */
     private int creationOffset;
 
+    /**
+     * Offset (in after-mod offset space) where the views creation can possibly match.
+     * This (unlike endCreationOffset) may be within local views of a paragraph view.
+     */
     private int matchOffset;
     
-    private int modLength;
+    /**
+     * Current end creation offset that was reported to factories.
+     * If rebuilding goes past this value then it will be reported to factories.
+     */
+    private int endCreationOffset;
     
-    private int docViewStartOffset;
+    /**
+     * Start offset of a before-modOffset local view that may be reused.
+     * <br/>
+     * If set to Integer.MAX_VALUE then no more before-modOffset reusing possible
+     * or bmReusePView has no children.
+     */
+    private int bmReuseOffset;
 
     /**
-     * Remember docView's end offset. View factories should generally
-     * not create views above this boundary although it can happen if e.g.
-     * there's a collapsed fold view around that offset.
+     * PView containing bmReuseOffset or null.
      */
-    private final int docViewEndBoundOffset;
+    private ParagraphView bmReusePView;
+
+    /**
+     * Local index inside bmReusePView that corresponds to bmReuseOffset.
+     */
+    private int bmReuseLocalIndex;
+
+    /**
+     * Start offset of an above-modOffset local view that may be reused
+     * (or if no local views exist inside 
+     * <br/>
+     * If set to Integer.MAX_VALUE then no more before-modOffset reusing possible
+     * or bmReusePView has no children.
+     */
+    private int amReuseOffset;
+    
+    private int amReusePIndex;
+    
+    private ParagraphView amReusePView;
+    
+    private int amReuseLocalIndex;
+    
+    /**
+     * Modification offset when updating after modification.
+     */
+    private int modOffset;
+
+    /**
+     * "modOffset+modLength" for insertion and "modOffset" for removal.
+     */
+    private int endModOffset;
+
+    /**
+     * Whether an insert was performed right at a pView begining and so pView's start position
+     * must be updated.
+     */
+    private boolean insertAtPViewStart;
     
     private Element lineRoot;
 
@@ -129,7 +187,7 @@ final class ViewBuilder {
     /**
      * Actual local views replace inside currently served paragraph view.
      * <br/>
-     * It may be equal to firstReplace when replacing inside first paragraph view.
+     * It may be equal to firstReplace when replacing inside firstly updated paragraph view.
      */
     private ViewReplace<ParagraphView,EditorView> localReplace;
 
@@ -141,13 +199,11 @@ final class ViewBuilder {
     
     private volatile boolean staleCreation;
     
-    private int startCreationOffset;
-    
-    private static enum RebuildCause {
+    static enum RebuildCause {
         FULL_REBUILD, // Full rebuild of all paragraphs
-        CHANGED_REGION, // Rebuild a document region that has changed (e.g. highlights changed or fold collapsed/expanded)
+        REBUILD_PARAGRAPHS, // Rebuild a paragraphs region that has changed
+        INIT_PARAGRAPHS, // Initialize children of one or more paragraphs (for painting etc.)
         MOD_UPDATE, // Update after modification in the document
-        INIT_PARAGRAPHS // Initialize children of one or more paragraphs
     }
     
     /** Cause of the rebuild for logging purposes. */
@@ -161,71 +217,114 @@ final class ViewBuilder {
     ViewBuilder(DocumentView docView, EditorViewFactory[] viewFactories) {
         // Always do document-replace since the built views can extend beyond firstReplace even for very local changes
         this.docReplace = new ViewReplace<DocumentView, ParagraphView>(docView);
-        this.factoryStates = new FactoryState[viewFactories.length];
-        for (int i = 0; i < viewFactories.length; i++) {
-            factoryStates[i] = new FactoryState(viewFactories[i]);
-        }
-        this.docViewStartOffset = docView.getStartOffset();
-        this.docViewEndBoundOffset = docView.getEndBoundOffset();
-        this.createLocalViews = docView.op.isAccurateSpan();
+        this.viewFactories = viewFactories;
+        this.forceCreateLocalViews = docView.op.isAccurateSpan();
+    }
+
+    int getStartCreationOffset() {
+        return startCreationOffset;
     }
     
+    int getMatchOffset() {
+        return matchOffset;
+    }
+
+    boolean isStaleCreation() {
+        return staleCreation;
+    }
+
     /**
      * Init for build/rebuild of all paragraph views in the document view.
      */
     void initFullRebuild() {
-        docReplace.removeTillEnd();
-        creationOffset = docViewStartOffset;
-        matchOffset = docViewEndBoundOffset;
         rebuildCause = RebuildCause.FULL_REBUILD;
+        DocumentView docView = docReplace.view;
+        modOffset = endModOffset = Integer.MIN_VALUE; // No mod
+        startCreationOffset = docView.getStartOffset();
+        matchOffset = docView.getEndOffset();
+        endCreationOffset = matchOffset;
+        int buildLen = (endCreationOffset - startCreationOffset);
+        createLocalViews = forceCreateLocalViews || (buildLen <= MAX_CHARS_FOR_CREATE_LOCAL_VIEWS);
+        docReplace.removeTillEnd();
+        amReuseOffset = Integer.MAX_VALUE; // No reusal (need fresh views)
         // No local rebuild => leave firstReplace == null
     }
 
     /**
-     * Init requested paragraphs views.
-     * @param paragraphViewIndex index of first paragraph where the rebuilding occurs.
-     * @param endOffset ending offset of the rebuild.
+     * Init requested paragraphs views. First and last paragraphs will children==null
+     * the rest is unknown.
+     *
+     * @param startRebuildIndex index of first paragraph where the rebuilding occurs.
+     * @param endRebuildIndex
+     * @param startOffset start offset of first paragraph to rebuild.
+     * @param endOffset ending offset of the last paragraph to be rebuilt.
      */
     void initParagraphs(int startRebuildIndex, int endRebuildIndex, int startOffset, int endOffset) {
-        this.createLocalViews = true; // Force local views creation
-        docReplace.index = startRebuildIndex;
-        docReplace.removeCount = endRebuildIndex - startRebuildIndex;
-        creationOffset = startOffset;
-        matchOffset = endOffset;
         rebuildCause = RebuildCause.INIT_PARAGRAPHS;
+        modOffset = endModOffset = Integer.MIN_VALUE; // No mod
+        forceCreateLocalViews = true;
+        createLocalViews = forceCreateLocalViews;
+        docReplace.index = startRebuildIndex;
+        docReplace.setRemoveCount(endRebuildIndex - startRebuildIndex);
+        startCreationOffset = startOffset;
+        matchOffset = endOffset;
+        endCreationOffset = endOffset;
+        amReuseOffset = startOffset;
+        amReusePIndex = startRebuildIndex;
+        amReusePView = docReplace.view.getParagraphView(amReusePIndex);
+        amReuseLocalIndex = 0;
     }
 
     /**
-     * Initialize rebuild of a given changed region.
+     * Initialize rebuild of a given changed region where structure of paragraph views changed.
      *
-     * @param rRegion non-null changed region
+     * @param pRegion non-null changed region
      * @return true if the change affects the view hierarchy and the createViews()
      *  method should be called. If false is returned createViews() should not be called
      *  and just finish() should be called.
      */
-    boolean initChangedRegionRebuild(OffsetRegion rRegion) {
+    boolean initRebuildParagraphs(OffsetRegion pRegion) {
+        rebuildCause = RebuildCause.REBUILD_PARAGRAPHS;
         DocumentView docView = docReplace.view;
-        int startAffectedOffset = rRegion.startOffset();
-        int endAffectedOffset = rRegion.endOffset();
-        int startRebuildIndex = -1; // Index of first paragraph view to be rebuilt
-        if (docView.hasExtraStartBound() && endAffectedOffset < docViewStartOffset) {
+        int startAffectedOffset = pRegion.startOffset();
+        int endAffectedOffset = pRegion.endOffset();
+        int startCreationIndex; // Index of first paragraph view to be rebuilt or -1
+        int startOffset = docView.getStartOffset();
+        if (endAffectedOffset < startOffset) {
             // Affected area completely below docView's start
-        } else if (docView.hasExtraEndBound() && startAffectedOffset >= docViewEndBoundOffset) {
+            startCreationIndex = -1;
+        } else if (startAffectedOffset >= docView.getEndOffset()) {
             // Affected area completely above docView's end
-        } else {
-            startRebuildIndex = docView.getViewIndex(startAffectedOffset);
-            // would be -1 for pViewCount == 0
+            startCreationIndex = -1;
+        } else { // Change affects docView
+            startCreationIndex = docView.getViewIndex(startAffectedOffset);
+            // would be -1 in case pViewCount == 0 - but there should be full rebuild performed first
+            // so this state is ok.
         }
-        if (startRebuildIndex == -1) {
-            // Signal that factories were not restarted
-            factoryStates = null;
-            return false;
+        if (startCreationIndex != -1) {
+            ParagraphView pView = docView.getParagraphView(startCreationIndex);
+            startCreationOffset = pView.getStartOffset();
+            int endCreationIndex = docView.getViewIndex(endAffectedOffset);
+            ParagraphView endPView = docView.getParagraphView(endCreationIndex);
+            // Either endAffectedOffset points to begining of paragraph or inside it
+            endCreationOffset = endPView.getStartOffset();
+            if (endCreationOffset < endAffectedOffset) { // Inside paragraph
+                endCreationOffset += endPView.getLength();
+                endCreationIndex++;
+            }
+            modOffset = endModOffset = Integer.MIN_VALUE; // No mod
+            matchOffset = endCreationOffset;
+            int buildLen = (endCreationOffset - startCreationOffset);
+            createLocalViews = forceCreateLocalViews || (buildLen <= MAX_CHARS_FOR_CREATE_LOCAL_VIEWS);
+            docReplace.index = startCreationIndex;
+            docReplace.setRemoveCount(endCreationIndex - startCreationIndex);
+            amReuseOffset = startCreationOffset;
+            amReusePIndex = startCreationIndex;
+            amReusePView = docReplace.view.getParagraphView(amReusePIndex);
+            amReuseLocalIndex = 0;
+            return true;
         }
-        updateRebuildIndexes(startRebuildIndex, endAffectedOffset);
-        checkCreateLocalViews(startAffectedOffset, endAffectedOffset);
-        checkLocalRebuild(startAffectedOffset, endAffectedOffset, 0);
-        rebuildCause = RebuildCause.CHANGED_REGION;
-        return true;
+        return false;
     }
 
     /**
@@ -234,88 +333,350 @@ final class ViewBuilder {
      * @param modOffset it must be endOffset for no-mod; insertOffset for inserts
      *  and removeOffset for removals.
      * @param modLength it's 0 for no-mod; +insertLength for inserts; -removeLength for removals.
-     * @param rRegion rebuild region in after-mod offset space or null if no extra
+     * @param cRegion character rebuild region in after-mod offset space or null if no extra
      *  affected area.
      * @return true if the change affects the view hierarchy and the createViews()
      *  method should be called. If false is returned createViews() should not be called
      *  and just finish() should be called.
      */
-    boolean initModUpdate(int modOffset, int modLength, OffsetRegion rRegion) {
-        this.modLength = modLength;
+    boolean initModUpdate(int modOffset, int modLength, OffsetRegion cRegion) {
+        rebuildCause = RebuildCause.MOD_UPDATE;
+        // 1.Since the modifications are typically local do not fully add modified region
+        //   to the rebuilt area since it could increase the rebuilt region dramatically
+        //   and from a modification that would normally be local-rebuild
+        //   (assuming non-null children in the corresponding pView) it could become
+        //   non-local rebuild which would drop valuable TextLayout instances
+        //   from local views.
+        // 2.Paragraph views affected by modification are computed first.
+        //   Then if currently maintained start offfset of damaged characters region
+        //   is lower than the modification offset then the lower offset is taken into accound
+        //   (but the starting paragraph view remains - due to item 1).
+        //   The same is done for ending bound.
+        // 3.Affected area must be pre-computed in order to give correct assumed ending offset
+        //   estimate to view factories.
+        // 4.First prepare before-mod part of rebuild. Once modOffset will be reached
+        //   during doing view rebuild then the modLength will be skipped and reuse* and other
+        //   variables will be updated.
+        this.modOffset = modOffset;
         DocumentView docView = docReplace.view;
-        int startAffectedOffset = modOffset;
-        // For removal use modOffset+1 so that for removal that shifted several paragraph's
-        // starting positions back to modOffset would find proper last paragraph view
-        int endAffectedOffset = modOffset + Math.max(modLength, 1);
-        if (rRegion != null) { // Possibly union with rebuild region
-            startAffectedOffset = Math.min(startAffectedOffset, rRegion.startOffset());
-            endAffectedOffset = Math.max(endAffectedOffset, rRegion.endOffset());
-        }
-        int startRebuildIndex = -1; // Index of first paragraph view to be rebuilt
-        boolean allowLocalRebuild = true;
-        // [TESTING] For ViewHierarchyTest.testRandom() to identify right TestRootView:
-        // Cond.breakpoint exp here: docReplace.view.getTextComponent().getClientProperty("id").equals(6)
-        if (docView.hasExtraStartBound() && endAffectedOffset < docViewStartOffset) {
-            // Affected area completely below docView's start
-        } else if (docView.hasExtraEndBound() && startAffectedOffset > docViewEndBoundOffset) {
-            // Affected area completely above docView's end
-        } else if (docView.hasExtraStartBound() && modLength > 0 && modOffset + modLength == docViewStartOffset) {
-            // Insert right at docView's start position but it moved forward with insertion
-            // Note that positions at offset == 0 do not move so this would not happen for docViewStartOffset==0
-            // Inserted right at the start-bound position => move bound back to insertion start
-            try {
-                docView.setStartPosition(docView.getDocument().createPosition(modOffset));
-                docViewStartOffset = modOffset;
-            } catch (BadLocationException ex) {
-                throw new IllegalStateException("Unexpected BadLocationException", ex);
-            }
-            startRebuildIndex = 0;
-            // Prohibit local rebuild since the docView has just updated its start pos
-            // but the first paragraph view still carries the original (moved) position
-            allowLocalRebuild = false;
-        } else {
-            startRebuildIndex = docView.getViewIndex(startAffectedOffset);
-            if (modLength > 0) { // Insert
+        int pViewCount = docView.getViewCount();
+        int startOffset = docView.getStartOffset(); // Start offset not yet updated by current modification
+        int endOffset = docView.getEndOffset(); // End offset not yet updated by current modification
+        int startCreationPIndex; // Index of first pView to be rebuilt
+        ParagraphView startCreationPView = null;
+        int startCreationPViewOffset = -1;
+        int startCreationLocalOffset = 0;
+        // Index of last pView (in original indexes) affected by modification
+        //  -1 remains if there are no pViews (pViewCount == 0)
+        int lastAffectedPIndex = -1;
+        ParagraphView lastAffectedPView = null;
+        int lastAffectedLocalOffset = -1;
+
+        if (modLength > 0) { // INSERTION
+            createLocalViews = forceCreateLocalViews || (modLength < MAX_CHARS_FOR_CREATE_LOCAL_VIEWS);
+            endModOffset = modOffset + modLength;
+            // When inserting right at view's begining a previous pView is found by bin-search
+            // since insertion shifted affected next pView's start position.
+            // But the change in fact belongs to the next view. However the next view's start position
+            // is incorrect (shifted by insert) so whole pView must be reconstructed
+            // (that will be checked later in common part code).
+            // This does not in fact apply for pView at offset==0 (such position does not shift)
+            // but let's treat it as an implementation detail of AbstractDocument-based doc impls.
+            if (modOffset < startOffset) {
+                docView.setStartOffset(startOffset + modLength);
+                docView.setEndOffset(endOffset + modLength);
+                // Ignore (mod below VH) => leave startRebuildIndex == -1
+                startCreationPIndex = -1;
+            } else if (modOffset == startOffset) { // Insert right at VH begining
+                // Include inserted text into docView => leave docView.startOffset unchanged
+                startCreationPIndex = 0;
+                startCreationPView = (pViewCount > 0) ? docView.getParagraphView(0) : null;
+                startCreationPViewOffset = startOffset;
+
+            } else if (modOffset <= endOffset) {
+                // docView.startOffset stays at current value
+                startCreationPIndex = docView.getViewIndex(modOffset);
+                startCreationPView = docView.getParagraphView(startCreationPIndex);
+                startCreationPViewOffset = startCreationPView.getStartOffset();
                 // Check for insert right at pView's begining => should rebuild next pView since
                 // it's affected by the insertion
-                if (endAffectedOffset == modOffset + modLength) {
-                    if (startRebuildIndex + 1 < docView.getViewCount() &&
-                            docView.getParagraphView(startRebuildIndex + 1).getStartOffset() == modOffset + modLength)
-                    { // Insert at begining of pView => force rebuild of next pView
-                        endAffectedOffset++;
-                        allowLocalRebuild = false;
+                if (startCreationPIndex + 1 < pViewCount &&
+                        startCreationPViewOffset + startCreationPView.getLength() == modOffset)
+                {
+                    startCreationPIndex++;
+                    startCreationPView = docView.getParagraphView(startCreationPIndex);
+                    startCreationPViewOffset = modOffset;
+                }
+            } else { // above VH's end no-need to update docView.startOffset or endOffset
+                // docView.startOffset stays at current value
+                startCreationPIndex = -1;
+            }
+
+            if (startCreationPIndex != -1) {
+                startCreationLocalOffset = modOffset - startCreationPViewOffset;
+                lastAffectedPIndex = startCreationPIndex;
+                lastAffectedPView = startCreationPView;
+                lastAffectedLocalOffset = startCreationLocalOffset;
+                docView.setEndOffset(endOffset + modLength);
+            }
+            
+        } else { // REMOVAL: modLength < 0
+            createLocalViews = true; // By default build local views (later may be corrected)
+            int removeLen = -modLength;
+            int endRemoveOffset = modOffset + removeLen;
+            endModOffset = modOffset;
+            int newEndOffset = (endOffset > modOffset)
+                    ? Math.max(modOffset, endOffset - removeLen)
+                    : endOffset;
+            if (pViewCount == 0) { // startOffset == endOffset
+                docView.setStartOffset(newEndOffset);
+                // docView.setEndOffset(newEndOffset) done later
+                startCreationPIndex = -1;
+
+            } else if (modOffset < startOffset) { // Removal that starts below start of docView
+                if (endRemoveOffset > startOffset) { // Removal hits start of VH (or includes whole VH)
+                    docView.setStartOffset(modOffset);
+                    startCreationPViewOffset = startOffset;
+                    startCreationPView = docView.getParagraphView(0);
+                    startCreationPIndex = 0;
+                    startCreationLocalOffset = 0;
+
+                } else { // Removal completely below VH
+                    docView.setStartOffset(startOffset - removeLen);
+                    startCreationPIndex = -1;
+                }
+                
+            } else { // modOffset >= startOffset
+                if (endOffset <= modOffset) { // Removal above docView's end
+                    // docView.startOffset and endOffset stays at current value
+                    startCreationPIndex = -1;
+                } else { // inside or past docView's end
+                    // docView.startOffset stays at current value
+                    if (modOffset == startOffset) {
+                        startCreationPIndex = 0;
+                    } else {
+                        // Search for modOffset - 1 since (multiple) positions might get moved to modOffset
+                        // due to removal and bin-search would find first one of them for modOffset
+                        startCreationPIndex = docView.getViewIndex(modOffset - 1);
+                        startCreationPView = docView.getParagraphView(startCreationPIndex);
+                        startCreationPViewOffset = startCreationPView.getStartOffset();
+                        startCreationLocalOffset = modOffset - startCreationPViewOffset;
+                        if (startCreationLocalOffset >= startCreationPView.getLength()) {
+                            startCreationPIndex++;
+                            startCreationPView = null;
+                        }
+                    }
+                    if (startCreationPView == null) {
+                        startCreationPView = docView.getParagraphView(startCreationPIndex);
+                        startCreationPViewOffset = startCreationPView.getStartOffset();
+                        startCreationLocalOffset = modOffset - startCreationPViewOffset;
                     }
                 }
-            } else { // Removal
-                // If pView starts right at modOffset it might get moved back due to removal
-                // in which case it's necessary to rebuild previous view
-                if (startAffectedOffset == modOffset) {
-                    if (startRebuildIndex < docView.getViewCount() &&
-                            docView.getParagraphView(startRebuildIndex).getStartOffset() == modOffset)
+            }
+            docView.setEndOffset(newEndOffset);
+
+            if (startCreationPIndex != -1) { // REMOVAL: compute lastAffected stuff
+                // Must go through pViews and examine their lengths (since position are moved to modOffset)
+                lastAffectedPIndex = startCreationPIndex;
+                lastAffectedPView = startCreationPView;
+                int lastAffectedPViewOffset = startCreationPViewOffset;
+                // If local offset not within view then goto next pView if it exists
+                int pViewLen;
+                while ((lastAffectedLocalOffset = Math.min(endRemoveOffset, endOffset) - lastAffectedPViewOffset) >
+                            (pViewLen = lastAffectedPView.getLength()) &&
+                        (lastAffectedPIndex + 1 < pViewCount))
+                {
+                    lastAffectedPViewOffset += pViewLen;
+                    lastAffectedPIndex++;
+                    lastAffectedPView = docView.getParagraphView(lastAffectedPIndex);
+                }
+            }
+        } // END-of-REMOVAL handling
+        
+        // Common for insert and remove - determine local offsets and indices in affected pViews
+        // And set boundaries for creation and views reuse.
+        if (startCreationPIndex != -1) { // Modification needs to be processed
+            docReplace.index = startCreationPIndex;
+            if (startCreationPView != null) {
+                // Check whether cRegion would affect rebuilding
+                int cRegionStartLocalOffset;
+                int cRegionEndLocalOffset;
+                if (cRegion != null) {
+                    cRegionStartLocalOffset = cRegion.startOffset() - startCreationPViewOffset;
+                    cRegionEndLocalOffset = cRegion.endOffset() - startCreationPViewOffset;
+                    if (cRegionEndLocalOffset == cRegionStartLocalOffset || // Empty
+                            cRegionEndLocalOffset <= 0 || // End before pView start
+                            cRegionStartLocalOffset >= startCreationPView.getLength()) // Start above pView's end
                     {
-                        if (startRebuildIndex > 0) {
-                            startRebuildIndex--; // Rebuild previous view
-                            // getViewIndexFirst() ensures that the startRebuildIndex pointed to first affected pView
+                        cRegion = null;
+                    }
+                } else {
+                    cRegionStartLocalOffset = cRegionEndLocalOffset = 0;
+                }
+
+                docReplace.setRemoveCount(lastAffectedPIndex + 1 - docReplace.index);
+                int lastAffectedPViewLength = lastAffectedPView.getLength();
+                int tillLastAffectedEnd = (lastAffectedPViewLength - lastAffectedLocalOffset);
+                // End creation is paragraph end (in after-mod offstes)
+                endCreationOffset = endModOffset + tillLastAffectedEnd;
+                // When removing till end of line (including newline) the next pView will be affected too
+                if (tillLastAffectedEnd == 0) {
+                    if (lastAffectedPIndex + 1 < pViewCount) {
+                        endCreationOffset += docView.getParagraphView(lastAffectedPIndex + 1).getLength();
+                    }
+                }
+                if (startCreationPView.isChildrenNull()) { // Must rebuild from pView start
+                    // For null children only build local views if forced - prevents building
+                    // of local views for e.g. reformatting (many small changes throughout document).
+                    createLocalViews = forceCreateLocalViews;
+                    bmReuseOffset = modOffset; // No before-mod reusal
+                    startCreationOffset = modOffset - startCreationLocalOffset;
+
+                } else { // Valid children
+                    int shiftBack = 0;
+                    bmReusePView = startCreationPView;
+                    if (startCreationLocalOffset > 0) {
+                        if (!createLocalViews) {
+                            shiftBack = startCreationLocalOffset;
                         } else {
-                            allowLocalRebuild = false; // Ensure real rebuild
+                            if (cRegion != null) {
+                                shiftBack = Math.min(Math.max(cRegionStartLocalOffset, 0), // Could be < 0
+                                        startCreationLocalOffset);
+                            }
+                            if (!startCreationPView.isChildrenValid()) {
+                                int startInvalidOffset = startCreationPView.children.getStartInvalidChildrenLocalOffset();
+                                shiftBack = Math.max(shiftBack, startCreationLocalOffset - startInvalidOffset);
+                            }
+                        }
+                        startCreationLocalOffset -= shiftBack;
+                        bmReuseLocalIndex = startCreationPView.getViewIndexLocalOffset(startCreationLocalOffset);
+                        int viewLocalStartOffset = startCreationPView.getLocalOffset(bmReuseLocalIndex);
+                        int viewStartShiftBack = startCreationLocalOffset - viewLocalStartOffset;
+                        if (viewStartShiftBack == 0 && bmReuseLocalIndex > 0) {
+                            // Insert/remove at local view's start => rebuild prev view too
+                            // since it may incorporate just inserted chars (or beyond-remove chars).
+                            bmReuseLocalIndex--;
+                            viewStartShiftBack += startCreationPView.getEditorView(bmReuseLocalIndex).getLength();
+                        }
+                        // startCreationLocalOffset -= viewStartShiftBack; but startCreationLocalOffset no longer used
+                        shiftBack += viewStartShiftBack;
+                        startCreationOffset = modOffset - shiftBack;
+                        bmReuseOffset = startCreationOffset;
+
+                    } else { // startCreationLocalOffset == 0
+                        if (modLength > 0) { // Insert at pView's begining
+                            insertAtPViewStart = true; // Marker value for insert-at-pView-begining
+                        }
+                        bmReuseLocalIndex = 0;
+                        bmReuseOffset = modOffset;
+                        startCreationOffset = modOffset;
+                    }
+
+                    if (createLocalViews) {
+                        firstReplace = new ViewReplace<ParagraphView, EditorView>(startCreationPView);
+                        firstReplace.index = bmReuseLocalIndex;
+                        localReplace = firstReplace;
+                        // pView at docReplace.index will be processed by firstReplace
+                        docReplace.index++;
+                        docReplace.setRemoveCount(docReplace.getRemoveCount() - 1);
+                    }
+                }
+
+                // Extra affected area above lastAffectedLocalOffset (which locally corresponds to endModOffset).
+                // StartOffset of local view at amReuseLocalIndex will correspond to (lastAffectedLocalOffset + shift)
+                // Note: lastAffectedLocalOffset locally corresponds to endModOffset.
+                int shift;
+                amReusePIndex = lastAffectedPIndex;
+                amReusePView = lastAffectedPView; // non-null
+                int endRemoveLocalIndex;
+                boolean reuseNextPView;
+                if (lastAffectedPView.isChildrenNull() || !createLocalViews) {
+                    shift = tillLastAffectedEnd;
+                    amReuseOffset = endModOffset + tillLastAffectedEnd;
+                    endRemoveLocalIndex = lastAffectedPView.getViewCount();
+                    reuseNextPView = true;
+
+                } else { // Valid children of lastAffectedPView (amReusePView)
+                    // Compute after-mod area reusal offset and local index
+                    endRemoveLocalIndex = lastAffectedPView.getViewIndexLocalOffset(lastAffectedLocalOffset);
+                    int startLocalOffset = lastAffectedPView.getLocalOffset(endRemoveLocalIndex);
+                    if (lastAffectedLocalOffset > startLocalOffset) { // Reuse at the next index
+                        int localViewLength = lastAffectedPView.getEditorView(endRemoveLocalIndex).getLength();
+                        shift = (startLocalOffset + localViewLength) - lastAffectedLocalOffset;
+                        endRemoveLocalIndex++;
+                        amReuseOffset = endModOffset + shift;
+                        reuseNextPView = (endRemoveLocalIndex == lastAffectedPView.getViewCount());
+                    } else { // Local view's start boundary right at endModOffset
+                        shift = 0;
+                        amReuseOffset = endModOffset;
+                        reuseNextPView = false;
+                    }
+                    amReuseLocalIndex = endRemoveLocalIndex;
+                }
+                if (reuseNextPView) {
+                    amReuseLocalIndex = 0; // means viewCount (children==null)
+                    amReusePIndex++;
+                    if (amReusePIndex < pViewCount) {
+                        amReusePView = docView.getParagraphView(amReusePIndex);
+                    } else {
+                        amReusePView = null;
+                        amReuseOffset = Integer.MAX_VALUE;
+                    }
+                }
+
+                // Possibly extend shift by cRegion and children that were marked as invalid
+                int origShift = shift;
+                if (shift < tillLastAffectedEnd) {
+                    if (startCreationPView != lastAffectedPView) { // Will create views till end of lastAffectedPView
+                        shift = tillLastAffectedEnd;
+                    } else {
+                        if (cRegion != null) {
+                            shift = Math.max(shift, Math.min(cRegion.endOffset() - endModOffset, tillLastAffectedEnd));
+                        }
+                        if (!lastAffectedPView.isChildrenValid()) { // Some children invalidated
+                            int endInvalidLocalOffset = lastAffectedPView.children.getEndInvalidChildrenLocalOffset();
+                            shift = Math.max(shift, endInvalidLocalOffset - lastAffectedLocalOffset);
                         }
                     }
                 }
-            }
-        }
 
-        if (startRebuildIndex == -1) {
-            // Signal that factories were not restarted
-            factoryStates = null;
-            return false;
+                if (shift != origShift) {
+                    if (shift < tillLastAffectedEnd) { // Within startCreationPView
+                        int endALocalOffset = lastAffectedLocalOffset + shift;
+                        endRemoveLocalIndex = lastAffectedPView.getViewIndexLocalOffset(endALocalOffset);
+                        int startLocalOffset = lastAffectedPView.getLocalOffset(endRemoveLocalIndex);
+                        if (endALocalOffset > startLocalOffset) { // Reuse at the next index
+                            int localViewLength = lastAffectedPView.getEditorView(endRemoveLocalIndex).getLength();
+                            shift = (startLocalOffset + localViewLength) - lastAffectedLocalOffset;
+                            endRemoveLocalIndex++;
+                        }
+                    } else { // shift == tillLastAffectedEnd
+                        endRemoveLocalIndex = lastAffectedPView.getViewCount();
+                    }
+                }
+                matchOffset = endModOffset + shift;
+
+                if (firstReplace != null) {
+                    int endIndex = (startCreationPView == lastAffectedPView)
+                            ? endRemoveLocalIndex
+                            : startCreationPView.getViewCount();
+                    firstReplace.setRemoveCount(endIndex - firstReplace.index);
+                }
+
+            } else { // Should only be insert when no pViews are present
+                docReplace.setRemoveCount(0);
+                startCreationOffset = startOffset;
+                endCreationOffset = docView.getEndOffset(); // Do not use endOffset (use updated end offset)
+                matchOffset = endCreationOffset;
+                bmReuseOffset = modOffset;
+                amReuseOffset = Integer.MAX_VALUE; // No reusal; amReusePView == null
+            }
+            assert (amReuseOffset >= endModOffset) :
+                    "amReuseOffset=" + amReuseOffset + " < endModOffset=" + endModOffset; // NOI18N
+            
+            return true;
         }
-        updateRebuildIndexes(startRebuildIndex, endAffectedOffset);
-        checkCreateLocalViews(startAffectedOffset, endAffectedOffset);
-        if (allowLocalRebuild) {
-            checkLocalRebuild(startAffectedOffset, endAffectedOffset, modLength);
-        }
-        rebuildCause = RebuildCause.MOD_UPDATE;
-        return true;
+        return false;
     }
     
     boolean createReplaceRepaintViews(boolean force) {
@@ -326,112 +687,42 @@ final class ViewBuilder {
         return true;
     }
     
-    private void updateRebuildIndexes(int startRebuildIndex, int endAffectedOffset) {
-        DocumentView docView = docReplace.view;
-        docReplace.index = startRebuildIndex;
-        creationOffset = (startRebuildIndex != 0)
-                ? docView.getParagraphView(startRebuildIndex).getStartOffset()
-                : docViewStartOffset;
-        int pViewCount = docView.getViewCount();
-        // Find ending paragraph index for rebuild; look to next paragraph start to possibly save one binary search
-        int endRebuildIndex = docReplace.index; // Start value (there cna possibly be no pViews at all)
-        matchOffset = docViewEndBoundOffset;
-        if (endRebuildIndex < pViewCount) {
-            endRebuildIndex++; // Check if change till next paragraph would suffice
-            if (endRebuildIndex < pViewCount) {
-                int nextParagraphViewOffset = docView.getView(endRebuildIndex).getStartOffset();
-                if (endAffectedOffset > nextParagraphViewOffset) {
-                    endRebuildIndex = docView.getViewIndex(endAffectedOffset) + 1;
-                    if (endRebuildIndex < pViewCount) {
-                        matchOffset = docView.getView(endRebuildIndex).getStartOffset();
-                    } // Leave matchOffset == docViewEndBoundOffset
-                } else { // nextParagraphViewOffset >= endAffectedOffset
-                    matchOffset = nextParagraphViewOffset;
-                }
-            } // endRebuildIndex == pViewCount => Leave matchOffset == docViewEndBoundOffset
-        } // Leave matchOffset == docViewEndBoundOffset
-        docReplace.removeCount = endRebuildIndex - docReplace.index;
-    }
-    
-    private void checkCreateLocalViews(int startAffectedOffset, int endAffectedOffset) {
-        // If not creating local views decide to do so for small rebuilds
-        if (!createLocalViews) {
-            createLocalViews = (endAffectedOffset - startAffectedOffset < MAX_CHARS_FOR_CREATE_LOCAL_VIEWS);
-        }
-    }
-        
-    private void checkLocalRebuild(int startAffectedOffset, int endAffectedOffset, int modLength) {
-        // Check whether local single-paragraph update should be attempted
-        if (docReplace.removeCount == 1) {
-            ParagraphView pView = (ParagraphView) docReplace.view.getParagraphView(docReplace.index);
-            if (pView.getViewCount() > 0) { // Also requires (pView.children != null)
-                // For local rebuild use (startAffectedOffset-1) since otherwise
-                // the rebuild could be done right at boundary of an existing local view
-                // so two adjacent views could be created instead of a single one
-                // that would naturally be created when rebuilding entire paragraph views.
-                int startLocalIndex = pView.getViewIndex(startAffectedOffset - 1);
-                EditorView startLocalView = pView.getEditorView(startLocalIndex);
-                int localViewCount = pView.getViewCount();
-                int endLocalIndex;
-                // The endAffectedOffset in case of removal is always at least modOffset
-                // or possibly >modOffset if there is a valid rRegion.
-                // Similarly for inserts it's (modOffset+modLength) or higher.
-                // Subtract inserted length or add removed length i.e. -modLength in both cases
-                int origEndAffectedOffset = endAffectedOffset - modLength;
-                // pView: startOffset by pos; endOffset = startOffset + getLength()
-                int pViewStartOffset = pView.getStartOffset();
-                // Local rebuild for intra-line mods only. Otherwise tests fail:
-                // For before-first-line removal which "touches" start of first pView there would be
-                // valid firstReplace created but the code counts that mod is in fact inside line (e.g.
-                // origEndAffectedOffset is computed that way etc.). Therefore that constraint is applied.
-                if (startAffectedOffset > pViewStartOffset && origEndAffectedOffset <= pView.getEndOffset()) {
-                    EditorView localView = pView.getEditorView(startLocalIndex);
-                    if (origEndAffectedOffset <= localView.getEndOffset()) {
-                        endLocalIndex = startLocalIndex + 1;
-                    } else {
-                        endLocalIndex = Math.min(pView.getViewIndex(origEndAffectedOffset) + 1, localViewCount);
-                    }
-                    if (startLocalIndex > 0 || endLocalIndex < localViewCount) { // Not all children removed
-                        firstReplace = new ViewReplace<ParagraphView, EditorView>(pView);
-                        firstReplace.index = startLocalIndex;
-                        firstReplace.removeCount = endLocalIndex - startLocalIndex;
-                        creationOffset = startLocalView.getStartOffset();
-                        if (endLocalIndex < localViewCount) {
-                            matchOffset = pView.getView(endLocalIndex).getStartOffset() + modLength;
-                        } else { // Removal includes last view (newline-view)
-                            // Leave matchOffset at its original value which was begining of next paragraph view
-                            // or docViewEndBoundOffset
-                        }
-                        localReplace = firstReplace;
-                        // Skip current paragraph view from removal
-                        docReplace.index++;
-                        docReplace.removeCount--;
-                    }
-                }
-            }
-        }
-    }
-    
     boolean createViews(boolean force) {
-        startCreationOffset = creationOffset; // Remember for logging and firing
-        if (creationOffset > matchOffset) {
+        if (startCreationOffset > matchOffset) {
             throw new IllegalStateException(
-                "creationOffset=" + creationOffset + " > matchOffset=" + matchOffset); // NOI18N
+                    "startCreationOffset=" + startCreationOffset + " > matchOffset=" + matchOffset); // NOI18N
+        }
+        if (firstReplace != null && !createLocalViews) {
+            throw new IllegalStateException("firstReplace != null && !createLocalViews"); // NOI18N
+        }
+        
+        DocumentView docView = docReplace.view;
+        if (docView.testRun != null) {
+            docView.testValues = new Object[] {
+                rebuildCause, createLocalViews,
+                startCreationOffset, matchOffset, endCreationOffset,
+                bmReuseOffset, bmReusePView, bmReuseLocalIndex,
+                amReuseOffset, amReusePIndex, amReusePView, amReuseLocalIndex
+            };
+            docView.testRun.run();
         }
 
-        Document doc = docReplace.view.getDocument();
+        Document doc = docView.getDocument();
         lineRoot = doc.getDefaultRootElement();
-        lineIndex = lineRoot.getElementIndex(creationOffset);
+        lineIndex = lineRoot.getElementIndex(startCreationOffset);
         Element line = lineRoot.getElement(lineIndex);
         lineEndOffset = line.getEndOffset();
         lineForParagraphView = line;
 
-        for (int i = 0; i < factoryStates.length; i++) {
-            FactoryState state = factoryStates[i];
-            state.init(this, creationOffset, matchOffset);
+        this.factoryStates = new FactoryState[viewFactories.length];
+        for (int i = 0; i < viewFactories.length; i++) {
+            FactoryState state = new FactoryState(viewFactories[i]);
+            state.init(this, startCreationOffset, endCreationOffset, createLocalViews);
+            factoryStates[i] = state;
         }
         allReplaces = new ArrayList<ViewReplace<ParagraphView, EditorView>>(2);
 
+        creationOffset = startCreationOffset;
         if (creationOffset < matchOffset) {
             // Create all new views
             while (createNextView()) {
@@ -446,14 +737,9 @@ final class ViewBuilder {
         }
 
         if (localReplace != null && localReplace != firstReplace) {
-            // Unfinished paragraph replace which is however not a replace inside a first paragraph
-            // This should only happen if the document view is created with explicit ending bound.
-            // It means that the last paragraph view will not have a NewlineView as its last view.
-            assert (docReplace.view.hasExtraEndBound()) :
-                    "No ending newline view for document view without explicit start bound.";
-            // The "unclosed" pReplace already added to pReplaceList.
-            // Set total length of the pReplace's paragraph view
+            // The "unclosed" localReplace already added to allReplaces.
             int length = creationOffset - localReplace.view.getStartOffset();
+            // Since localReplace != null when pView is not closed by NewlineView do setLength() here
             localReplace.view.setLength(length);
             localReplace = null;
         }
@@ -463,7 +749,7 @@ final class ViewBuilder {
         if (firstReplace != null && firstReplace.isMakingViewEmpty()) {
             // Remove whole pView
             docReplace.index--;
-            docReplace.removeCount++;
+            docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
             firstReplace = null;
         }
 
@@ -472,19 +758,19 @@ final class ViewBuilder {
                 // Log original docView state
                 // Use separate string builder to at least log original state if anything goes wrong.
                 ViewHierarchyImpl.BUILD_LOG.finer("ViewBuilder: DocView-Original-Content:\n" + // NOI18N
-                        docReplace.view.toStringDetailUnlocked() + '\n'); // NOI18N
+                        docView.toStringDetailNeedsLock() + '\n'); // NOI18N
             }
             StringBuilder sb = new StringBuilder(200);
             sb.append("ViewBuilder.createViews(): in <").append(startCreationOffset); // NOI18N
-            sb.append(",").append(creationOffset).append("> cause:").append(rebuildCause).append("\n"); // NOI18N
+            sb.append(",").append(creationOffset).append("> cause: ").append(rebuildCause).append("\n"); // NOI18N
             sb.append("Document:").append(doc).append('\n'); // NOI18N
             if (firstReplace != null) {
-                sb.append("FirstReplace:\n").append(firstReplace); // NOI18N
+                sb.append("FirstReplace[").append(docReplace.index - 1).append("]: ").append(firstReplace); // NOI18N
             } else {
                 sb.append("No-FirstReplace\n"); // NOI18N
             }
-            sb.append("DocReplace:\n").append(docReplace); // NOI18N
-            sb.append("pReplaceList:\n"); // NOI18N
+            sb.append("DocReplace: ").append(docReplace); // NOI18N
+            sb.append("allReplaces:\n"); // NOI18N
             int digitCount = ArrayUtilities.digitCount(allReplaces.size());
             for (int i = 0; i < allReplaces.size(); i++) {
                 ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
@@ -501,7 +787,20 @@ final class ViewBuilder {
      * @return true if the creation of views should continue or false if it should end.
      */
     boolean createNextView() {
-        int limitOffset = matchOffset;
+        // Check if creation continues past current endCreationOffset
+        if (creationOffset >= endCreationOffset) {
+            endCreationOffset = matchOffset;
+            for (int i = factoryStates.length - 1; i >= 0; i--) {
+                FactoryState state = factoryStates[i];
+                state.factory.continueCreation(creationOffset, endCreationOffset);
+                
+            }
+        }
+
+        // Go through factories from top one to first one and ask for view creation
+        DocumentView docView = docReplace.view;
+        int limitOffset = endCreationOffset;
+        boolean forcedLimit = false;
         for (int i = factoryStates.length - 1; i >= 0; i--) {
             FactoryState state = factoryStates[i];
             int cmp = state.nextViewStartOffset - creationOffset;
@@ -512,21 +811,109 @@ final class ViewBuilder {
             if (cmp == 0) { // Candidate for the next view
                 // Create new view. Note that the limitOffset is only a suggestion.
                 // Only the bottommost highlights-view-factory should always respect the the limitOffset.
-                EditorView view = null;
+                EditorView createdView = null;
                 int createdViewEndOffset;
+                boolean creationFailed = false;
                 if (createLocalViews) { // Regular views creation
-                    view = state.factory.createView(creationOffset, limitOffset);
-                    if (view == null) { // Refused => Use a next factory
-                        continue;
+                    // Prepare original view if possible
+                    EditorView origView; // null means no view to reuse
+                    int nextOrigViewOffset; // Integer.MAX_VALUE means next local view is not known
+                    if (creationOffset >= endModOffset) { // Possible reusal above modified area
+                        while (creationOffset > amReuseOffset) {
+                            boolean reuseNextPView = true;
+                            if (amReusePView.isChildrenNull()) { // Skip whole pView
+                                amReuseOffset += amReusePView.getLength();
+                            } else {
+                                int viewCount = amReusePView.getViewCount();
+                                while (amReuseLocalIndex < viewCount) {
+                                    EditorView view = amReusePView.getEditorView(amReuseLocalIndex);
+                                    amReuseOffset += view.getLength();
+                                    amReuseLocalIndex++;
+                                    if (amReuseOffset >= creationOffset) {
+                                        reuseNextPView = (amReuseLocalIndex == viewCount);
+                                        break;
+                                    }
+                                }
+                            }
+                            if (reuseNextPView) {
+                                amReuseLocalIndex = 0; // means viewCount (children==null)
+                                amReusePIndex++;
+                                if (amReusePIndex < docView.getViewCount()) {
+                                    amReusePView = docView.getParagraphView(amReusePIndex);
+                                } else {
+                                    amReusePView = null;
+                                    amReuseOffset = Integer.MAX_VALUE;
+                                }
+                            }
+                        }
+                        // Assign origView and nextOrigViewOffset
+                        if (creationOffset == amReuseOffset) { // Reuse if local views
+                            int viewCount = amReusePView.getViewCount();
+                            if (amReuseLocalIndex < viewCount) {
+                                origView = amReusePView.getEditorView(amReuseLocalIndex);
+                            } else { // 
+                                origView = null;
+                            }
+                        } else { // amReuseOffset > creationOffset
+                            origView = null;
+                        }
+                        nextOrigViewOffset = amReuseOffset;
+
+                    } else if (creationOffset < modOffset) { // Possible reusal below modified area
+                        while (creationOffset > bmReuseOffset) {
+                            EditorView view = bmReusePView.getEditorView(bmReuseLocalIndex);
+                            bmReuseOffset += view.getLength();
+                            bmReuseLocalIndex++;
+                        }
+                        // Assign origView and nextOrigViewOffset
+                        if (creationOffset == bmReuseOffset) {
+                            EditorView view = bmReusePView.getEditorView(bmReuseLocalIndex);
+                            bmReuseOffset += view.getLength();
+                            bmReuseLocalIndex++;
+                            if (bmReuseOffset <= modOffset) { // end of view below modOffset
+                                origView = view;
+                                nextOrigViewOffset = bmReuseOffset;
+                            } else { // Cannot reuse since modOffset inside the view
+                                origView = null;
+                                nextOrigViewOffset = amReuseOffset;
+                            }
+                        } else { // bmReuseOffset > creationOffset
+                            origView = null;
+                            nextOrigViewOffset = (bmReuseOffset <= modOffset) ? bmReuseOffset : amReuseOffset;
+                        }
+
+                    } else { // No reusal
+                        origView = null;
+                        nextOrigViewOffset = Integer.MAX_VALUE;
                     }
-                    int viewLength = view.getLength();
-                    createdViewEndOffset = creationOffset + viewLength;
-                    assert (viewLength > 0) : "viewLength=" + viewLength + " < 0"; // NOI18N
-                } else {
-                    createdViewEndOffset = state.factory.viewEndOffset(creationOffset, limitOffset);
+                    
+                    
+                    createdView = state.factory.createView(creationOffset, limitOffset, forcedLimit, origView, nextOrigViewOffset);
+                    if (createdView == null) { // Creation refused
+                        creationFailed = true;
+                        createdViewEndOffset = -1; // Ignored; will not reach updateLine()
+                    } else {
+                        int viewLength = createdView.getLength();
+                        createdViewEndOffset = creationOffset + viewLength;
+                        assert (viewLength > 0) : "viewLength=" + viewLength + " < 0"; // NOI18N
+                    }
+
+                } else { // Do not create local views
+                    createdViewEndOffset = state.factory.viewEndOffset(creationOffset, limitOffset, forcedLimit);
                     if (createdViewEndOffset == -1) { // Refused => Use a next factory
-                        continue;
+                        creationFailed = true;
                     }
+                }
+
+                if (creationFailed) {
+                    // Rescan the factory at next offset since it may request another view creation
+                    // within the area which may lower limitOffset
+                    state.updateNextViewStartOffset(creationOffset + 1);
+                    if (state.nextViewStartOffset <= limitOffset) {
+                        forcedLimit = true;
+                        limitOffset = state.nextViewStartOffset;
+                    }
+                    continue;
                 }
 
                 updateLine(createdViewEndOffset);
@@ -540,58 +927,70 @@ final class ViewBuilder {
                 // (again to avoid re-parenting of local views to new paragraph views).
                 if (eolView && inFirstReplace) { // Rest of views on first pagaraph view will be thrown away
                     // Remove local views till end of first paragraph view
-                    firstReplace.removeCount = firstReplace.view.getViewCount() - firstReplace.index;
+                    firstReplace.setRemoveCount(firstReplace.view.getViewCount() - firstReplace.index);
                     int index = docReplace.removeEndIndex();
-                    if (index < docReplace.view.getViewCount()) {
-                        matchOffset = docReplace.view.getParagraphView(index).getStartOffset();
+                    if (index < docView.getViewCount()) {
+                        matchOffset = docView.getParagraphView(index).getStartOffset();
                     } else {
-                        matchOffset = docViewEndBoundOffset;
+                        matchOffset = docView.getEndOffset();
                     }
                 }
                 if (createdViewEndOffset > matchOffset) {
+                    boolean matchOffsetValid = false;
                     if (inFirstReplace) { // Replacing in firstReplace
-                        int index;
+                        int index = firstReplace.removeEndIndex();
                         int localViewCount = firstReplace.view.getViewCount();
-                        while ((index = firstReplace.removeEndIndex()) < localViewCount) {
+                        while (index < localViewCount) {
                             // Use getLength() instead of getEndOffset() since for intra-line mods
                             // with modLength != 0 the views do not have updated offsets
                             matchOffset += localReplace.view.getEditorView(index).getLength();
-                            localReplace.removeCount++;
+                            localReplace.setRemoveCount(localReplace.getRemoveCount() + 1);
+                            index++;
                             // For eolView remove all till end; otherwise only until matchOffset is ok
+                            if (createdViewEndOffset <= matchOffset) {
+                                matchOffsetValid = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (!matchOffsetValid) {
+                        int pViewCount = docView.getViewCount();
+                        int index = docReplace.removeEndIndex();
+                        while (index < pViewCount) {
+                            matchOffset += docView.getParagraphView(index).getLength();
+                            docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
+                            index++;
                             if (createdViewEndOffset <= matchOffset) {
                                 break;
                             }
                         }
-                    } else { // Remove whole paragraph(s)
-                        int pViewCount = docReplace.view.getViewCount();
-                        if (docReplace.removeEndIndex() < pViewCount) {
-                            do {
-                                int index = docReplace.removeNext();
-                                if (index < pViewCount) {
-                                    matchOffset = docReplace.view.getParagraphView(index).getStartOffset();
-                                } else {
-                                    matchOffset = docViewEndBoundOffset;
-                                    break;
-                                }
-                            } while (createdViewEndOffset > matchOffset);
-                        } // matchOffset already assigned correctly
+                    }
+
+                } else if (createdViewEndOffset == matchOffset) {
+                    // Check for condition in ViewUpdatesTest.testInsertAndRemoveNewline()
+                    // when backspace pressed on begining of an empty line then rebuilding
+                    // could end up with a line not ended by NewlineView.
+                    if (inFirstReplace && !eolView && localReplace.removeEndIndex() ==
+                            localReplace.view.getViewCount()) // Would end up without NewlineView
+                    {
+                        // Rebuild next paragraph
+                        int index = docReplace.removeEndIndex();
+                        if (index < docView.getViewCount()) {
+                            matchOffset += docView.getParagraphView(index).getLength();
+                            docReplace.setRemoveCount(docReplace.getRemoveCount() + 1);
+                        }
                     }
                 }
 
                 if (localReplace == null) { // Finished a paragraph view previously
                     Position startPos;
-                    if (creationOffset == docViewStartOffset && docViewStartOffset != 0) { // Custom start bound
-                        // Reuse start position of the document view. This is important since
-                        // otherwise when undoing a removal that spanned custom start of document view
-                        // the docView.startPos could undo to another offset than firstParagraphView.startPos
-                        startPos = docReplace.view.getStartPosition();
-                    } else if (lineForParagraphView instanceof Position &&
+                    if (lineForParagraphView instanceof Position &&
                             creationOffset == lineForParagraphView.getStartOffset())
                     { // Reuse element as position
                         startPos = (Position) lineForParagraphView;
                     } else { // Create pos
                         try {
-                            startPos = docReplace.view.getDocument().createPosition(creationOffset);
+                            startPos = docView.getDocument().createPosition(creationOffset);
                         } catch (BadLocationException e) {
                             throw new IllegalStateException("Cannot create position at offset=" + creationOffset, e);
                         }
@@ -605,11 +1004,11 @@ final class ViewBuilder {
                     }
                 }
                 if (createLocalViews) {
-                    localReplace.add(view);
+                    localReplace.add(createdView);
                 }
 
                 if (eolView) {
-                    // Init view's length except for first replace where it's updated by EBVChildren.replace()
+                    // Init view's length except for first replace where it's updated by ParagraphViewChildren.replace()
                     if (localReplace != firstReplace) {
                         int length = createdViewEndOffset - localReplace.view.getStartOffset();
                         localReplace.view.setLength(length);
@@ -631,7 +1030,8 @@ final class ViewBuilder {
             } else { // cmp > 0 => next view starting somewhere above last view's end offset
                 // Remember the nextViewStartOffset as a limit offset for factories
                 // that lay below this factory
-                if (state.nextViewStartOffset < limitOffset) { // Can be Integer.MAX_VALUE
+                if (state.nextViewStartOffset <= limitOffset) {
+                    forcedLimit = true;
                     limitOffset = state.nextViewStartOffset;
                 }
             }
@@ -656,14 +1056,27 @@ final class ViewBuilder {
         // Check firstReplace (in PV at (docReplace.index - 1))
         boolean firstReplaceValid = firstReplace != null && firstReplace.isChanged();
         if (firstReplaceValid) {
-            // This generally does not affect layout (will be computed later and possibly fire a VH change)
-            // Also the lowerMeasuredEndIndex(index) is called by replace()
-            firstReplace.view.replace(firstReplace.index,
-                    firstReplace.removeCount, firstReplace.addedViews(), modLength);
+            ParagraphView pView = firstReplace.view;
+            if (insertAtPViewStart) {
+                pView.setStartPosition(ViewUtils.createPosition(docView.getDocument(), modOffset));
+            }
+            if (!pView.isChildrenValid()) {
+                // Check that rebuild fixes currently invalid children
+                int invalidLOffset = pView.children.getStartInvalidChildrenLocalOffset();
+                assert pView.children.startOffset(firstReplace.index) <= invalidLOffset :
+                        "rebuildLOffset=" + pView.children.startOffset(firstReplace.index) + // NOI18N
+                        " > invalidLOffset=" + invalidLOffset; // NOI18N
+                int invalidEndLOffset = pView.children.getEndInvalidChildrenLocalOffset();
+                assert pView.children.startOffset(firstReplace.removeEndIndex()) >= invalidEndLOffset :
+                        "rebuildEndLOffset=" + pView.children.startOffset(firstReplace.removeEndIndex()) + // NOI18N
+                        " < invalidEndIndex=" + invalidEndLOffset; // NOI18N
+                pView.markChildrenValid();
+            }
+            pView.replace(firstReplace.index, firstReplace.getRemoveCount(), firstReplace.addedViews());
         }
         // Remove paragraphs from text-layout-cache
         TextLayoutCache textLayoutCache = docView.op.getTextLayoutCache();
-        for (int i = 0; i < docReplace.removeCount; i++) {
+        for (int i = 0; i < docReplace.getRemoveCount(); i++) {
             ParagraphView pView = docView.getParagraphView(docReplace.index + i);
             if (pView.children != null) {
                 textLayoutCache.remove(pView, false);
@@ -680,9 +1093,9 @@ final class ViewBuilder {
         // Since the pViews are based on swing positions it make sense to go from the end back
         // since for document modifications the original position-based pViews will be shifted forward/back
         // accordingly.
-        List<ParagraphView> addedPViews = docReplace.added;
+        List<ParagraphView> addedPViews = docReplace.added();
         int addedCount = docReplace.addedSize();
-        int removeCount = docReplace.removeCount; // Number of pViews to be removed from docView
+        int removeCount = docReplace.getRemoveCount(); // Number of pViews to be removed from docView
         int index = docReplace.index;
         // Area between i0 and i1 will be set to default row height
         int i0 = 0; // first changed pView
@@ -776,15 +1189,23 @@ final class ViewBuilder {
             }
             // Replace views in docView (includes possible call to notifyHeightChange())
             double[] startEndDeltaY = docView.replaceViews(
-                    docReplace.index, docReplace.removeCount, docReplace.addedViews());
+                    docReplace.index, docReplace.getRemoveCount(), docReplace.addedViews());
             startY = startEndDeltaY[0];
             endY = startEndDeltaY[1];
             deltaY = startEndDeltaY[2];
+            int allReplacesSize = allReplaces.size();
+            if (forceCreateLocalViews) { // Ensure there will be enough space in TLCache
+                // Respect any previously set limit
+                TextLayoutCache tlCache = docView.op.getTextLayoutCache();
+                int newCapacity = Math.max(tlCache.capacity(), allReplacesSize);
+                tlCache.setCapacityOrDefault(newCapacity);
+            }
             // Replace contents of each added paragraph view (if the contents are built too).
-            for (int i = 0; i < allReplaces.size(); i++) {
+            for (int i = 0; i < allReplacesSize; i++) {
                 ViewReplace<ParagraphView, EditorView> replace = allReplaces.get(i);
                 if (replace.isChanged()) {
-                    replace.view.replace(replace.index, replace.removeCount, replace.addedViews());
+                    replace.view.replace(replace.index, replace.getRemoveCount(), replace.addedViews());
+                    replace.view.markChildrenValid();
                 }
             }
             // Add y change if necessary
@@ -803,27 +1224,25 @@ final class ViewBuilder {
                 }
             }
         } else { // docReplace empty
-            assert firstReplaceValid : "Invalid state - no updates done";
-            startY = docView.getY(docReplace.index - 1);
+            int startIndex = firstReplaceValid ? docReplace.index - 1 : docReplace.index;
+            startY = docView.getY(startIndex);
             endY = docView.getY(docReplace.index);
             deltaY = 0d;
         }
         
         // For accurate span force computation of text layouts
-        Rectangle2D.Double docViewRect = docView.getAllocationMutable();
-        if (docView.op.isAccurateSpan()) {
+        Rectangle2D.Double docViewRect = docView.getAllocationCopy();
+        if (docView.op.isAccurateSpan()) { // All pViews should already have children
             int pIndex = docReplace.index;
             int endIndex = docReplace.addEndIndex();
-            if (firstReplaceValid) {
+            if (firstReplaceValid) { // Include pView of firstReplace too
                 pIndex--;
             }
             for (; pIndex < endIndex; pIndex++) {
                 ParagraphView pView = docView.getParagraphView(pIndex);
-                Shape childAlloc = docView.getChildAllocation(pIndex, docViewRect);
-                if (pView.children != null) {
-                    pView.children.ensureIndexMeasured(pView, pView.getViewCount(), ViewUtils.shapeAsRect(childAlloc));
-                    docView.children.checkChildrenSpanChange(docView, pIndex);
-                }
+                Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
+                assert (!pView.isChildrenNull()) : "Null children for accurate span"; // NOI18N
+                pView.checkLayoutUpdate(pIndex, ViewUtils.shapeAsRect(pAlloc));
             }
         }
         
@@ -835,7 +1254,8 @@ final class ViewBuilder {
                 ? docViewRect.getMaxY() + Math.max(0d, deltaY)
                 : endY;
         docViewRect.height = endRepaintY - docViewRect.y;
-        docView.op.notifyRepaint(docView.op.extendToVisibleWidth(docViewRect));
+        docView.op.extendToVisibleWidth(docViewRect);
+        docView.op.notifyRepaint(docViewRect);
     }
     
     void finish() {
@@ -845,7 +1265,6 @@ final class ViewBuilder {
                 factoryState.finish();
             }
         }
-        docReplace.view.checkIntegrityIfLoggable();
     }
 
     /**
@@ -867,21 +1286,32 @@ final class ViewBuilder {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
-        sb.append("-------- ViewBuilder dump -------\n");
-        sb.append("creationOffset=").append(creationOffset).append('\n');
-        sb.append("docViewEndBoundOffset=").append(docViewEndBoundOffset).append('\n');
-        sb.append("lineIndex=").append(lineIndex).append('\n');
-        sb.append("lineEndOffset=").append(lineEndOffset).append('\n');
-        sb.append("matchOffset=").append(matchOffset).append('\n');
-        sb.append("modLength=").append(modLength).append('\n');
-        sb.append("firstReplace=").append(firstReplace).append('\n');
-        sb.append("docReplace=").append(docReplace).append('\n');
-        sb.append("pReplace=").append(localReplace).append('\n');
-        sb.append("pReplaceList=").append(allReplaces).append('\n');
-        sb.append("-------- End of ViewBuilder dump -------\n");
+        sb.append("-------- ViewBuilder dump -------\n"). // NOI18N
+                append("start/endCreationOffset:<").append(startCreationOffset). // NOI18N
+                append(",").append(endCreationOffset).append(">\n").
+                append("creationOffset=").append(creationOffset).append('\n').
+                append("matchOffset=").append(matchOffset).append('\n').  // NOI18N
+                append("modOffset=").append(modOffset).append('\n').  // NOI18N
+                append("endModOffset=").append(endModOffset).append('\n').  // NOI18N
+                append("bmReuseOffset=").append(bmReuseOffset).append('\n').  // NOI18N
+                append("bmReusePView=").append(bmReusePView).append('\n').  // NOI18N
+                append("bmReuseLocalIndex=").append(bmReuseLocalIndex).append('\n').  // NOI18N
+                append("amReuseOffset=").append(amReuseOffset).append('\n').  // NOI18N
+                append("amReusePIndex=").append(amReusePIndex).append('\n').  // NOI18N
+                append("amReusePView=").append(amReusePView).append('\n').  // NOI18N
+                append("amReuseLocalIndex=").append(amReuseLocalIndex).append('\n').  // NOI18N
+                append("docView <").append(docReplace.view.getStartOffset()).append(','). // NOI18N
+                append(docReplace.view.getEndOffset()).append(">\n"). // NOI18N
+                append("lineIndex=").append(lineIndex).append('\n'). // NOI18N
+                append("lineEndOffset=").append(lineEndOffset).append('\n').  // NOI18N
+                append("firstReplace=").append((firstReplace != null) ? firstReplace : "<NULL>\n").  // NOI18N
+                append("docReplace=").append(docReplace).  // NOI18N
+                append("localReplace=").append((localReplace != null) ? localReplace : "<NULL>\n").  // NOI18N
+                append("allocation=").append(allReplaces).
+                append("\n-------- End of ViewBuilder dump -------\n");  // NOI18N
         return sb.toString();
     }
-
+    
     private static final class FactoryState {
 
         final EditorViewFactory factory;
@@ -892,9 +1322,9 @@ final class ViewBuilder {
             this.factory = factory;
         }
 
-        void init(ViewBuilder viewBuilder, int startOffset, int matchOffset) {
+        void init(ViewBuilder viewBuilder, int startOffset, int matchOffset, boolean createViews) {
             factory.setViewBuilder(viewBuilder);
-            factory.restart(startOffset, matchOffset);
+            factory.restart(startOffset, matchOffset, createViews);
             updateNextViewStartOffset(startOffset);
         }
 

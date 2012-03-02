@@ -59,6 +59,7 @@ maven.junit,\
 maven.model,\
 maven.osgi,\
 nbjunit,\
+netbinox,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\
 o.n.core,\

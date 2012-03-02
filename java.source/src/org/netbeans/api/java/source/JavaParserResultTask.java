@@ -43,18 +43,19 @@
 package org.netbeans.api.java.source;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.spi.IndexingAwareParserResultTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.util.Parameters;
 
 /**
- * Java specific version of the {@link ParserResultTask}. In addition to the
- * {@link ParserResultTask} it adds a support for javac phases.
+ * Java specific version of the {@link IndexingAwareParserResultTask}. In addition to the
+ * {@link IndexingAwareParserResultTask} it adds a support for javac phases.
  * @see JavaSource
  * @since 0.42
  * @author Tomas Zezula
  */
-public abstract class JavaParserResultTask<T extends Parser.Result> extends ParserResultTask<T> {
+public abstract class JavaParserResultTask<T extends Parser.Result> extends IndexingAwareParserResultTask<T> {
 
     private final JavaSource.Phase phase;
 
@@ -63,7 +64,22 @@ public abstract class JavaParserResultTask<T extends Parser.Result> extends Pars
      * @param phase needed by the task.
      */
     protected JavaParserResultTask (final @NonNull JavaSource.Phase phase) {
-        Parameters.notNull("phase", phase);
+        this (phase, TaskIndexingMode.DISALLOWED_DURING_SCAN);
+    }
+    
+    /**
+     * Creates a new JavaParserResultTask
+     * @param phase needed by the task.
+     * @param taskIndexingMode the awareness of indexing. For tasks which can run
+     * during indexing use {@link TaskIndexingMode#ALLOWED_DURING_SCAN} for tasks
+     * which cannot run during indexing use {@link TaskIndexingMode#DISALLOWED_DURING_SCAN}.
+     * @since 0.94
+     */
+    protected JavaParserResultTask (
+        @NonNull final JavaSource.Phase phase,
+        @NonNull final TaskIndexingMode taskIndexingMode) {
+        super(taskIndexingMode);
+        Parameters.notNull("phase", phase); //NOI18
         this.phase = phase;
     }
 

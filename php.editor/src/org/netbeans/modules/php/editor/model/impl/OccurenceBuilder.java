@@ -1933,7 +1933,8 @@ class OccurenceBuilder {
                     }
                 }
                 if (originalNode instanceof StaticDispatch) {
-                    qualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
+                    QualifiedName pureQualifiedName = ASTNodeInfo.toQualifiedName(originalNode, true);
+                    qualifiedName = VariousUtils.getFullyQualifiedName(pureQualifiedName, originalNode.getStartOffset(), getScope());
                 } else {
                     if (getScope().getInScope() instanceof TypeScope) {
                         if (originalNode instanceof MethodDeclaration

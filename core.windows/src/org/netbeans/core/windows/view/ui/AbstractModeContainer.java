@@ -46,6 +46,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ModeContainer;
@@ -206,7 +207,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
     // Support for TopComponentDroppable
     protected Shape getIndicationForLocation(Point location) {
         return tabbedHandler.getIndicationForLocation(location,
-            windowDnDManager.getStartingTransfer(),
+            windowDnDManager.getStartingTransfer().getTopComponent(),
             windowDnDManager.getStartingPoint(),
             isAttachingPossible());
     }

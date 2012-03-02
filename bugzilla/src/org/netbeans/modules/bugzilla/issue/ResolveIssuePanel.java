@@ -49,7 +49,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -197,7 +197,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
-        Issue newIssue = BugtrackingUtil.selectIssue(
+        IssueProvider newIssue = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
                 issue.getBugzillaRepository(),
                 this,

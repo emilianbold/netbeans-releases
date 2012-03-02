@@ -62,11 +62,11 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.IssueProvider.LazyIssue;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.LazyIssue;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -100,13 +100,13 @@ public final class TaskListProvider extends PushTaskScanner {
     /**
      * all cached tasks, a subset is selected and displayed in the tasklist when it's scope changes
      */
-    private final WeakHashMap<IssueProvider.LazyIssue, Task> cachedTasks;
-    private final WeakHashMap<IssueProvider, Set<IssueProvider.LazyIssue> > cachedIssues;
-    private final WeakSet<IssueProvider.LazyIssue> validatedIssues;
+    private final WeakHashMap<TaskListIssueProvider.LazyIssue, Task> cachedTasks;
+    private final WeakHashMap<TaskListIssueProvider, Set<TaskListIssueProvider.LazyIssue> > cachedIssues;
+    private final WeakSet<TaskListIssueProvider.LazyIssue> validatedIssues;
     /**
      * Set of providers whose issues need to be validated. Validate means test if they belong to the current tasklist scope.
      */
-    private final HashSet<IssueProvider> providersToValidate;
+    private final HashSet<TaskListIssueProvider> providersToValidate;
     
     private boolean providersInitialized;
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.tasklist"); //NOI18N
@@ -115,9 +115,9 @@ public final class TaskListProvider extends PushTaskScanner {
 
     private TaskListProvider () {
         super(NbBundle.getMessage(TaskListProvider.class, "LBL_TaskListProvider_DisplayName"), NbBundle.getMessage(TaskListProvider.class, "LBL_TaskListProvider_Description"), null); //NOI18N
-        cachedTasks = new WeakHashMap<IssueProvider.LazyIssue, Task>(10);
-        cachedIssues = new WeakHashMap<IssueProvider, Set<IssueProvider.LazyIssue>>(5);
-        providersToValidate = new HashSet<IssueProvider>(5);
+        cachedTasks = new WeakHashMap<TaskListIssueProvider.LazyIssue, Task>(10);
+        cachedIssues = new WeakHashMap<TaskListIssueProvider, Set<TaskListIssueProvider.LazyIssue>>(5);
+        providersToValidate = new HashSet<TaskListIssueProvider>(5);
         validatedIssues = new WeakSet<LazyIssue>(10);
     }
 
@@ -134,7 +134,7 @@ public final class TaskListProvider extends PushTaskScanner {
         synchronized (SCOPE_LOCK) {
             if (!providersInitialized) {
                 // tasklist initialization
-                for (IssueProvider provider : Lookup.getDefault().lookupAll(IssueProvider.class)) {
+                for (TaskListIssueProvider provider : Lookup.getDefault().lookupAll(TaskListIssueProvider.class)) {
                     LOG.log(Level.FINER, "TaskListProvider.setScope: waking up {0}", provider.getClass().getName()); //NOI18N
                 }
                 providersInitialized = true;
@@ -152,18 +152,18 @@ public final class TaskListProvider extends PushTaskScanner {
      * @param openTaskList if set to true, the tasklist top component will be opened
      * @param issuesToAdd issues to be added
      */
-    public void add (IssueProvider provider, boolean openTaskList, IssueProvider.LazyIssue... issuesToAdd) {
+    public void add (TaskListIssueProvider provider, boolean openTaskList, TaskListIssueProvider.LazyIssue... issuesToAdd) {
         if (provider == null || issuesToAdd == null || issuesToAdd.length == 0) {
             LOG.log(Level.FINE, "TaskListProvider.add: provider: {0}, issuesToAdd: {1}", new Object[]{provider, issuesToAdd}); //NOI18N
             return;
         }
         LOG.log(Level.FINE, "TaskListProvider.add: adding {0} for {1}, request to open: {2}", new Object[]{issuesToAdd.length, provider, openTaskList}); //NOI18N
         synchronized (cachedIssues) {
-            Set<IssueProvider.LazyIssue> issues = cachedIssues.get(provider);
+            Set<TaskListIssueProvider.LazyIssue> issues = cachedIssues.get(provider);
             if (issues == null) {
-                issues = new HashSet<IssueProvider.LazyIssue>(5);
+                issues = new HashSet<TaskListIssueProvider.LazyIssue>(5);
             }
-            for (IssueProvider.LazyIssue issue : issuesToAdd) {
+            for (TaskListIssueProvider.LazyIssue issue : issuesToAdd) {
                 issues.add(issue);
             }
             if (LOG.isLoggable(Level.FINER)) {
@@ -195,16 +195,16 @@ public final class TaskListProvider extends PushTaskScanner {
      * @param provider issuetracking provider
      * @param issuesToRemove issues to be removed from the tasklist
      */
-    public void remove (IssueProvider provider, IssueProvider.LazyIssue... issuesToRemove) {
+    public void remove (TaskListIssueProvider provider, TaskListIssueProvider.LazyIssue... issuesToRemove) {
         if (provider == null || issuesToRemove == null || issuesToRemove.length == 0) {
             LOG.log(Level.FINE, "TaskListProvider.remove: provider: {0}, issuesToRemove: {1}", new Object[]{provider, issuesToRemove}); //NOI18N
             return;
         }
         LOG.log(Level.FINE, "TaskListProvider.remove: removing {0} for {1}", new Object[]{issuesToRemove.length, provider}); //NOI18N
         synchronized (cachedIssues) {
-            Set<IssueProvider.LazyIssue> issues = cachedIssues.get(provider);
+            Set<TaskListIssueProvider.LazyIssue> issues = cachedIssues.get(provider);
             if (issues != null) {
-                for (IssueProvider.LazyIssue issue : issuesToRemove) {
+                for (TaskListIssueProvider.LazyIssue issue : issuesToRemove) {
                     issues.remove(issue);
                 }
             }
@@ -220,7 +220,7 @@ public final class TaskListProvider extends PushTaskScanner {
      * Removes all issues for the given provider
      * @param provider
      */
-    public void removeAll (IssueProvider provider) {
+    public void removeAll (TaskListIssueProvider provider) {
         if (provider == null) {
             LOG.fine("TaskListProvider.removeAll: provider is null");   //NOI18N
             return;
@@ -258,7 +258,7 @@ public final class TaskListProvider extends PushTaskScanner {
         }
     }
 
-    private Task createTask(final LazyIssue lazyIssue, final WeakReference<IssueProvider> providerRef) {
+    private Task createTask(final LazyIssue lazyIssue, final WeakReference<TaskListIssueProvider> providerRef) {
         List<Action> actions = new LinkedList<Action>();
         // open action: a default action for the first action added by tasklist and for a dbl-click on a task
         ActionListener openIssueAL = new ActionListener() {
@@ -267,7 +267,7 @@ public final class TaskListProvider extends PushTaskScanner {
                 BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        Issue issue = lazyIssue.getIssue();
+                        IssueProvider issue = lazyIssue.getIssue();
                         if (issue != null) {
                             LOG.log(Level.FINER, "TaskListProvider: openning issue {0}", lazyIssue.getName()); //NOI18N
                             // openning the real issue in it's top component
@@ -283,7 +283,7 @@ public final class TaskListProvider extends PushTaskScanner {
         actions.add(new AbstractAction(NbBundle.getMessage(TaskListProvider.class, "TaskListProvider.Action.remove.name")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                IssueProvider provider = providerRef.get();
+                TaskListIssueProvider provider = providerRef.get();
                 if (provider != null) {
                     LOG.log(Level.FINE, "TaskListProvider: removing issue {0}", lazyIssue.getName()); //NOI18N
                     TaskListProvider.this.remove(provider, lazyIssue);
@@ -350,9 +350,9 @@ public final class TaskListProvider extends PushTaskScanner {
                 return;
             }
             // issues that can be directly included and don't need to be tested for belonging under the current scope
-            HashMap<IssueProvider.LazyIssue, IssueProvider> issuesToInclude = new HashMap<LazyIssue, IssueProvider>();
+            HashMap<TaskListIssueProvider.LazyIssue, TaskListIssueProvider> issuesToInclude = new HashMap<LazyIssue, TaskListIssueProvider>();
             // issues that can't be directly included and need to be tested for belonging under the current scope
-            HashMap<IssueProvider.LazyIssue, IssueProvider> issuesToValidate = new HashMap<LazyIssue, IssueProvider>();
+            HashMap<TaskListIssueProvider.LazyIssue, TaskListIssueProvider> issuesToValidate = new HashMap<LazyIssue, TaskListIssueProvider>();
             synchronized(cachedIssues) {
                 if (scopeChanged) {
                     // when a scope changes, all issues need to be re-validated
@@ -361,7 +361,7 @@ public final class TaskListProvider extends PushTaskScanner {
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.log(Level.FINER, "RefreshTask.run: providers to validate: {0}", providersToValidate); //NOI18N
                 }
-                for (Map.Entry<IssueProvider, Set<IssueProvider.LazyIssue>> e : cachedIssues.entrySet()) {
+                for (Map.Entry<TaskListIssueProvider, Set<TaskListIssueProvider.LazyIssue>> e : cachedIssues.entrySet()) {
                     if (providersToValidate.contains(e.getKey())) {
                         for (LazyIssue issue : e.getValue()) {
                             issuesToValidate.put(issue, e.getKey());
@@ -389,7 +389,7 @@ public final class TaskListProvider extends PushTaskScanner {
                     LOG.log(Level.FINER, "RefreshTask.run: all associated repositories: {0}", allAssociatedRepositories); //NOI18N
                 }
                 // validate issues
-                for (Map.Entry<LazyIssue, IssueProvider> e : issuesToValidate.entrySet()) {
+                for (Map.Entry<LazyIssue, TaskListIssueProvider> e : issuesToValidate.entrySet()) {
                     if (isIssueFromRepository(e.getKey(), repositoryUrls, allAssociatedRepositories)) {
                         if (LOG.isLoggable(Level.FINER)) {
                             LOG.log(Level.FINER, "RefreshTask.run: issue {0} is valid under current scope", e.getKey().getName()); //NOI18N
@@ -402,13 +402,13 @@ public final class TaskListProvider extends PushTaskScanner {
             }
             // list of tasks eventually inserted into the tasklist
             LinkedList<Task> tasks = new LinkedList<Task>();
-            for (Map.Entry<LazyIssue, IssueProvider> e : issuesToInclude.entrySet()) {
+            for (Map.Entry<LazyIssue, TaskListIssueProvider> e : issuesToInclude.entrySet()) {
                 LazyIssue issue = e.getKey();
                 Task t;
                 synchronized (cachedTasks) {
                     if ((t = cachedTasks.get(issue)) == null    // task is not yet created
                             || !issue.isValid()) {              // the issue is planned to be refreshed
-                        t = createTask(issue, new WeakReference<IssueProvider>(e.getValue()));
+                        t = createTask(issue, new WeakReference<TaskListIssueProvider>(e.getValue()));
                     }
                 }
                 tasks.add(t);
@@ -451,12 +451,12 @@ public final class TaskListProvider extends PushTaskScanner {
                     startTime = System.currentTimeMillis();
                 }
                 // lookup a repository registered with current projects
-                Repository repository = BugtrackingOwnerSupport.getInstance().getRepository(p, false);
+                RepositoryProvider repository = BugtrackingOwnerSupport.getInstance().getRepository(p, false);
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.log(Level.FINER, "getRepositoriesFor: repository: {0} for {1} after {2}", new Object[] {repository, p, (System.currentTimeMillis() - startTime)});
                 }
                 if (repository != null) {
-                    repositoryUrls.add(repository.getUrl());
+                    repositoryUrls.add(repository.getInfo().getUrl());
                 }
             }
         }
@@ -470,7 +470,7 @@ public final class TaskListProvider extends PushTaskScanner {
      * @param repositoryUrls collection of valid repository URLs in the current scope.
      * @return
      */
-    private boolean isIssueFromRepository (IssueProvider.LazyIssue issue, Collection<String> repositoryUrls, Collection<String> allAssociatedRepositories) {
+    private boolean isIssueFromRepository (TaskListIssueProvider.LazyIssue issue, Collection<String> repositoryUrls, Collection<String> allAssociatedRepositories) {
         String repositoryUrl = issue.getRepositoryUrl();
         boolean returnValue = false;
         if (repositoryUrl != null) {

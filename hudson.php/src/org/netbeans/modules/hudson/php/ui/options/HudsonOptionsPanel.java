@@ -95,8 +95,11 @@ public class HudsonOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
         "LBL_PpwHint=Full path of PPW script (typically {0} or {1}).",
         "TXT_PpwNote=<html>PHP Project Wizard (PPW) is used to generate the scripts and configuration files necessary for the build automation.</html>",
+        "# {0} - path separator",
         "LBL_JobConfigHint=Full path of job config (typically <some-directory>{0}php-template{0}config.xml).",
         "TXT_JobConfigNote=<html>Template for Jenkins Jobs for PHP Projects is used for new job configurations.</html>"
     })

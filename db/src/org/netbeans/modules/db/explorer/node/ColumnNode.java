@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.db.explorer.node;
 
 import java.awt.datatransfer.Transferable;
@@ -80,13 +79,11 @@ import org.openide.util.datatransfer.ExTransferable;
  * @author Rob Englander
  */
 public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNameProvider {
+
     private static final String COLUMN = "org/netbeans/modules/db/resources/column.gif";
     private static final String PRIMARY = "org/netbeans/modules/db/resources/columnPrimary.gif";
     private static final String INDEX = "org/netbeans/modules/db/resources/columnIndex.gif";
     private static final String FOLDER = "Column"; //NOI18N
-    private static final String TOOLTIP_COLUMN = NbBundle.getMessage(ColumnNode.class, "ND_Column");
-    private static final String TOOLTIP_PRIMARY = NbBundle.getMessage(ColumnNode.class, "ND_PrimaryKey");
-    private static final String TOOLTIP_INDEX = NbBundle.getMessage(ColumnNode.class, "ND_Index");
     private static final Logger LOG = Logger.getLogger(ColumnNode.class.getName());
 
     /**
@@ -100,11 +97,10 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         node.setup();
         return node;
     }
-
     private String name = ""; // NOI18N
     private String icon;
     /** Description used for tooltip. */
-    private String description = TOOLTIP_COLUMN;
+    private String description = "";
     private final MetadataElementHandle<Column> columnHandle;
     private final DatabaseConnection connection;
     private boolean isTableColumn = true;
@@ -134,82 +130,126 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             try {
                 metaDataModel.runReadAction(
                     new Action<Metadata>() {
+
                         @Override
                         public void run(Metadata metaData) {
+                                boolean isPartOfPrimaryKey = false;
+                                boolean isPartOfIndex = false;
                             Column column = columnHandle.resolve(metaData);
                             if (column != null) {
                                 name = column.getName();
                                 icon = COLUMN;
 
-                                updateProperties(column);
-
                                 Tuple tuple = column.getParent();
                                 if (tuple instanceof Table) {
-                                    Table table = (Table)tuple;
+                                        Table table = (Table) tuple;
                                     PrimaryKey pkey = table.getPrimaryKey();
 
-                                    boolean found = false;
                                     if (pkey != null) {
                                         Collection<Column> columns = pkey.getColumns();
                                         for (Column c : columns) {
                                             if (c != null && column.getName().equals(c.getName())) {
-                                                found = true;
                                                 icon = PRIMARY;
-                                                description = TOOLTIP_PRIMARY;
+                                                    isPartOfPrimaryKey = true;
                                                 break;
                                             }
                                         }
                                     }
 
-                                    if (!found) {
                                         Collection<Index> indexes = table.getIndexes();
                                         for (Index index : indexes) {
                                             Collection<IndexColumn> columns = index.getColumns();
                                             for (IndexColumn c : columns) {
                                                 if (c.getName().equals(column.getName())) {
-                                                    found = true;
+                                                    if (!isPartOfPrimaryKey) {
                                                     icon = INDEX;
-                                                    description = TOOLTIP_INDEX;
-                                                    break;
                                                 }
+                                                    isPartOfIndex = true;
+                                                    break;
                                             }
                                         }
                                     }
+                                        isTableColumn = true;
                                 } else {
                                     isTableColumn = false;
                                 }
+                                    
+                                    updateProperties(column, isPartOfPrimaryKey, isPartOfIndex);
                             }
                         }
-                    }
-                );
+                        });
             } catch (MetadataModelException e) {
                 NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
             }
         }
     }
 
-    private void updateProperties(Column column) {
+    private void updateProperties(Column column, boolean isPartOfPrimaryKey, boolean isPartOfIndex) {
         PropertySupport.Name ps = new PropertySupport.Name(this);
         addProperty(ps);
 
         assert column != null : "Column " + this + " cannot be null.";
         if (column == null) {
-            return ;
+            return;
         }
 
         try {
             addProperty(NULL, NULLDESC, Boolean.class, false, column.getNullable() == Nullable.NULLABLE);
+
             if (column.getType() != null) {
                 addProperty(DATATYPE, DATATYPEDESC, String.class, false, column.getType().toString());
             }
 
             int len = column.getLength();
+
             if (len == 0) {
                 len = column.getPrecision();
             }
+
             addProperty(COLUMNSIZE, COLUMNSIZEDESC, Integer.class, false, len);
             addProperty(DIGITS, DIGITSDESC, Short.class, false, column.getScale());
             addProperty(POSITION, POSITIONDESC, Integer.class, false, column.getPosition());
+            addProperty(PKPART, PKPARTDESC, Boolean.class, false, isPartOfPrimaryKey);
+            addProperty(INDEXPART, INDEXPARTDESC, Boolean.class, false, isPartOfIndex);
+            
+        StringBuilder strBuf = new StringBuilder("<html>");
+        strBuf.append("<table border=0 cellspacing=0 cellpadding=0 >")
+              .append("<tr> <td colspan='2'>&nbsp;<b>")
+              .append(getName())
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, TYPE))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(column.getType())
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, COLUMNSIZE))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(len)
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, DIGITS))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(column.getScale())
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, PKPART))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(isPartOfPrimaryKey)
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, INDEXPART))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(isPartOfIndex)
+              .append("</b></td></tr>")
+              .append("<tr><td>&nbsp;")
+              .append(NbBundle.getMessage(BaseNode.class, POSITION))
+              .append("</td><td>&nbsp; : &nbsp; <b>")
+              .append(column.getPosition())
+              .append("</b></td></tr>")
+              .append("</table></html>")
+            ;
+            description = strBuf.toString();
         } catch (Exception e) {
             LOG.log(Level.INFO, e.getMessage(), e);
         }
@@ -248,6 +288,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+
                     @Override
                     public void run(Metadata metaData) {
                         Column column = columnHandle.resolve(metaData);
@@ -255,8 +296,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                             array[0] = column.getPosition();
                         }
                     }
-                }
-            );
+                    });
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(this.getClass(), connection, e, true);
         }
@@ -284,7 +324,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             LOG.log(Level.INFO, e.getMessage(), e);
         }
 
-        SystemAction.get(RefreshAction.class).performAction(new Node[] { getParentNode() });
+        SystemAction.get(RefreshAction.class).performAction(new Node[]{getParentNode()});
     }
 
     @Override
@@ -321,6 +361,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
     public Transferable clipboardCopy() throws IOException {
         ExTransferable result = ExTransferable.create(super.clipboardCopy());
         result.put(new ExTransferable.Single(DatabaseMetaDataTransfer.COLUMN_FLAVOR) {
+
             @Override
             protected Object getData() {
                 return DatabaseMetaDataTransferAccessor.DEFAULT.createColumnData(connection.getDatabaseConnection(),
@@ -342,10 +383,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     public static String getColumnName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
         MetadataModel metaDataModel = connection.getMetadataModel();
-        final String[] array = { null };
+        final String[] array = {null};
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+
                     @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
@@ -353,8 +395,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                             array[0] = column.getName();
                         }
                     }
-                }
-            );
+                    });
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
@@ -364,11 +405,12 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
 
     public static String getParentName(DatabaseConnection connection, final MetadataElementHandle<Column> handle) {
         MetadataModel metaDataModel = connection.getMetadataModel();
-        final String[] array = { null };
+        final String[] array = {null};
 
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+
                     @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
@@ -376,8 +418,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                             array[0] = column.getParent().getName();
                         }
                     }
-                }
-            );
+                    });
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
@@ -392,6 +433,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+
                     @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
@@ -399,8 +441,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                             array[0] = column.getParent().getParent().getName();
                         }
                     }
-                }
-            );
+                    });
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
@@ -415,6 +456,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
         try {
             metaDataModel.runReadAction(
                 new Action<Metadata>() {
+
                     @Override
                     public void run(Metadata metaData) {
                         Column column = handle.resolve(metaData);
@@ -422,13 +464,11 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
                             array[0] = column.getParent().getParent().getParent().getName();
                         }
                     }
-                }
-            );
+                    });
         } catch (MetadataModelException e) {
             NodeRegistry.handleMetadataModelException(ColumnNode.class, connection, e, true);
         }
 
         return array[0];
     }
-
 }

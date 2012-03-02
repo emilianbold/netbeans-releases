@@ -128,12 +128,19 @@ public class OracleDeploymentManager implements DeploymentManager2 {
     }
 
     @Override
-    @NbBundle.Messages({"MSG_NoEjbDeployment=Deployment of standalone EJB module is not support. Deploy it in EAR instead."})
+    @NbBundle.Messages({
+        "MSG_NoEjbDeployment=Deployment of standalone EJB module is not support. Deploy it in EAR instead.",
+        "MSG_SDKProblem=There was an error calling Cloud SDK. Double check your cloud configuration and try again."})
     public ProgressObject distribute(Target[] targets, DeploymentContext deployment) {
         File f = deployment.getModuleFile();
         ProgressObjectImpl po = new ProgressObjectImpl(NbBundle.getMessage(OracleDeploymentManager.class, "OracleDeploymentManager.distributing"), false);
         if (deployment.getModule().getType() == J2eeModule.Type.EJB) {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_NoEjbDeployment()));
+            po.updateDepoymentResult(DeploymentStatus.FAILED, null);
+            return po;
+        }
+        if (pm == null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(Bundle.MSG_SDKProblem()));
             po.updateDepoymentResult(DeploymentStatus.FAILED, null);
             return po;
         }

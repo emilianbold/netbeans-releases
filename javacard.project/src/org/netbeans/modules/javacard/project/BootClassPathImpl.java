@@ -51,6 +51,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
 import org.netbeans.modules.javacard.common.ListenerProxy;
+import org.netbeans.modules.javacard.spi.JavacardPlatform;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 
@@ -116,8 +117,13 @@ final class BootClassPathImpl extends ListenerProxy<JCProject> implements ClassP
     }
 
     private ClassPath bootPath() {
-        return isProxy ? get().getPlatform().getBootstrapLibraries() :
-            get().getPlatform().getBootstrapLibraries(get().kind());
+        final JavacardPlatform platform = get().getPlatform();
+        if (platform == null) {
+            return null;
+        }
+        
+        return isProxy ? platform.getBootstrapLibraries() :
+            platform.getBootstrapLibraries(get().kind());
     }
 
     private final class PRI implements PathResourceImplementation {

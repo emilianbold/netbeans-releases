@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,7 +115,10 @@ final class FreeformSources implements Sources, AntProjectListener {
             for (Element folderE : XMLUtil.findSubElements(foldersE)) {
                 Element locationE = XMLUtil.findElement(folderE, "location", FreeformProjectType.NS_GENERAL); // NOI18N
                 final String location = XMLUtil.findText(locationE);
-                newFiles.add(project.helper().resolveFile(project.evaluator().evaluate(location)));
+                String locationEval = project.evaluator().evaluate(location);
+                if (locationEval != null) {
+                    newFiles.add(project.helper().resolveFile(locationEval));
+                }
                 if (folderE.getLocalName().equals("build-folder")) { // NOI18N
                     h.addNonSourceRoot(location);
                 } else if (folderE.getLocalName().equals("build-file")) { // NOI18N

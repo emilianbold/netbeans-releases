@@ -48,7 +48,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
@@ -62,6 +61,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
+import org.netbeans.core.startup.preferences.RelPaths;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 
@@ -206,7 +206,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         //    int contentLength | -1, byte[contentLength] content | String URL
         if (file.ref != null) {
             bw.writeInt(-1); // uri
-            bw.writeString(file.ref.toString());
+            bw.writeString(toRelativeURL(file.ref));
         } else if (file.contents != null) {
             bw.writeInt(file.contents.length);
             bw.writeBytes(file.contents);
@@ -237,7 +237,11 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         for (int i = 0; i < ATTR_TYPES.length; i++) {
             if(ATTR_TYPES[i].equals(attr.type)) {
                 bw.writeByte((byte)i);
-                bw.writeString(attr.data);
+                if (i == 9) {
+                    bw.writeString(toRelativeURL(attr.data));
+                } else {
+                    bw.writeString(attr.data);
+                }
                 return;
             }
         }
@@ -265,7 +269,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
              MemFile file = (MemFile)mf;
              size += 4; //    int contentLength
              if (file.ref != null) {
-                 size += computeSize(file.ref.toString(), text); // String uri
+                 size += computeSize(toRelativeURL(file.ref), text); // String uri
              } else if (file.contents != null) {
                  size += file.contents.length;
              } // else size += 0; // no content, no uri
@@ -308,7 +312,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
         private OutputStream os;
         private int position;
         /** map from base URL to int[1] value */
-        private final Map urls;
+        private final Map<String,Object> urls;
         private final Map<String,Integer> strings;
         BinaryWriter(OutputStream os, MemFolder root, int fsSize, Map<String,int[]> strings) throws IOException {
             this.os = os;
@@ -317,7 +321,7 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             urls = writeBaseUrls (root, fsSize, strings, map);
             position = 0;
         }
-        
+
         int getPosition() {
             return position;
         }
@@ -351,7 +355,8 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             writeBaseURL(url, false);
         }
         void writeBaseURL (java.net.URL url, boolean negative) throws IOException {
-            int[] number = (int[])urls.get (url);
+            String relUrl = toRelativeURL(url);
+            int[] number = (int[])urls.get (relUrl);
             assert number != null : "Should not be null, because it was collected: " + url + " map: " + urls;
             int index = number[0];
             if (negative) {
@@ -360,23 +365,23 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             writeInt (index);
         }
         
-        private java.util.Map writeBaseUrls(
+        private Map<String,Object> writeBaseUrls(
             MemFileOrFolder root, int fsSize, Map<String,int[]> texts, Map<String,Integer> fillIn
         ) throws IOException {
-            java.util.LinkedHashMap<URL,Object> map = new java.util.LinkedHashMap<URL,Object> ();
+            java.util.LinkedHashMap<String,Object> map = new java.util.LinkedHashMap<String,Object> ();
             int[] counter = new int[1];
             
             collectBaseUrls (root, map, counter);
             
             int size = 0;
-            java.util.Iterator it = map.entrySet ().iterator ();
+            Iterator<Entry<String, Object>> it = map.entrySet ().iterator ();
             for (int i = 0; i < counter[0]; i++) {
-                java.util.Map.Entry entry = (java.util.Map.Entry)it.next ();
-                java.net.URL u = (java.net.URL)entry.getKey ();
+                Entry<String, Object> entry = it.next ();
+                String u = entry.getKey ();
                 
                 assert ((int[])entry.getValue ())[0] == i : i + "th key should be it " + ((int[])entry.getValue ())[0];
                 
-                size += computeSize (u.toExternalForm (), texts);
+                size += computeSize (u, texts);
             }
             
             ByteArrayOutputStream arr = new ByteArrayOutputStream();
@@ -397,23 +402,21 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             
             it = map.entrySet ().iterator ();
             for (int i = 0; i < counter[0]; i++) {
-                java.util.Map.Entry entry = (java.util.Map.Entry)it.next ();
-                java.net.URL u = (java.net.URL)entry.getKey ();
-                
-                writeString (u.toExternalForm ());
+                Entry<String, Object> entry = it.next ();
+                writeString (entry.getKey());
             }
             return map;
         }
         
-        private void collectBaseUrls (MemFileOrFolder f, java.util.Map<URL,Object/*int[]*/> map, int[] counter) {
+        private void collectBaseUrls (MemFileOrFolder f, Map<String,Object/*int[]*/> map, int[] counter) {
             for (URL u : f.getURLs()) {
-                int[] exists = (int[])map.get (u);
+                String tmp = toRelativeURL(u);
+                int[] exists = (int[])map.get(tmp);
                 if (exists == null) {
-                    map.put (u, counter.clone ());
+                    map.put (tmp, counter.clone ());
                     counter[0]++;
                 }
             }
-            
             if (f instanceof MemFolder && ((MemFolder)f).children != null) {
                 Iterator it = ((MemFolder)f).children.iterator ();
                 while (it.hasNext ()) {
@@ -439,4 +442,18 @@ final class BinaryCacheManager extends ParsingLayerCacheManager {
             
         }
     }
+
+    private static String toRelativeURL(URL u) {
+        return toRelativeURL(u.toExternalForm());
+    }
+    private static String toRelativeURL(String tmp) {
+        if (tmp.startsWith("jar:file:")) {
+            final String[] relPath = RelPaths.findRelativePath(tmp.substring(9));
+            if (relPath != null) {
+                tmp = relPath[0] + '@' + relPath[1];
+            }
+        }
+        return tmp;
+    }
+    
 }

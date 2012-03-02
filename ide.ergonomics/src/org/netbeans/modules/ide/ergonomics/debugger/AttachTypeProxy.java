@@ -49,7 +49,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.ide.ergonomics.fod.ConfigurationPanel;
 import org.netbeans.modules.ide.ergonomics.fod.FeatureInfo;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.netbeans.spi.debugger.ui.AttachType;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.filesystems.FileObject;
@@ -74,7 +74,7 @@ public class AttachTypeProxy extends AttachType implements Controller, Callable<
     }
 
     public static AttachType create(FileObject fob) {
-        FeatureInfo whichProvides = FoDFileSystem.getInstance().whichProvides(fob);
+        FeatureInfo whichProvides = FoDLayersProvider.getInstance().whichProvides(fob);
         String displayName = (String) fob.getAttribute("displayName");
         if (displayName == null) {
             throw new IllegalArgumentException("No displayName attribute: " + fob);

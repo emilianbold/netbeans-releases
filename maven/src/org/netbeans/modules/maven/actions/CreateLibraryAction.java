@@ -142,9 +142,9 @@ public class CreateLibraryAction extends AbstractAction implements LookupListene
 
     @Messages({
         "MSG_Create_Library=Create Library",
-        "MSG_Downloading=Maven: downloading {0}",
-        "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
-        "MSG_Downloading_sources=Maven: downloading sources {0}"
+        "# {0} - Maven coordinates", "MSG_Downloading=Maven: downloading {0}",
+        "# {0} - Maven coordinates", "MSG_Downloading_javadoc=Maven: downloading Javadoc {0}",
+        "# {0} - Maven coordinates", "MSG_Downloading_sources=Maven: downloading sources {0}"
     })
     @SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE") // baseFolder.mkdirs; will throw IOE later from getJarUri
     private static @CheckForNull Library createLibrary(LibraryManager libraryManager, String libraryName, List<Artifact> includeArtifacts, boolean allSourceAndJavadoc, MavenProject project, String copyTo) {

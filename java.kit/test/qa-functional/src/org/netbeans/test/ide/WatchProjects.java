@@ -71,6 +71,8 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.jellytools.JavaProjectsTabOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.view.TreeView;
 
@@ -203,8 +205,18 @@ public final class WatchProjects {
             }
 
         };
-        OpenProjects.getDefault().open(new Project[] { p }, false);
-        OpenProjects.getDefault().setMainProject(p);
+        try {
+            OpenProjects.getDefault().open(new Project[] { p }, false);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during creation of fake project:");
+            ae.printStackTrace();
+        }
+        try {
+            OpenProjects.getDefault().setMainProject(p);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during setting of fake project as main:");
+            ae.printStackTrace();
+        }
         
         for (int i = 0; i < 10; i++) {
             EventQueue.invokeAndWait(new Runnable() {

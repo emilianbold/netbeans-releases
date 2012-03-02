@@ -107,7 +107,7 @@ public class ChildrenKeysIssue30907Test extends NbTestCase {
         }
     }
     
-    
+    @RandomlyFails // NB-Core-Build #7899: hung in waitActiveReferenceQueue
     public void testProperInitializationEvenIfInvokedFromMultipleThreadsBug30907SlowAddNotifyWithReadAccess () throws Exception {
         doBug30907 (true, true, 0, 2);
     }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.kenai;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -56,23 +57,16 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -213,48 +207,46 @@ public class IssueAccessorTest extends NbTestCase {
         return kenai.getProject(name);
     }
 
-    private static class TestRepository extends Repository {
-        private final Repository delegate;
+    private static class TestRepository extends RepositoryProvider {
+        private final RepositoryProvider delegate;
 
         public TestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
             delegate = KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName());
         }
-        public String getDisplayName() {
-            return delegate.getDisplayName();
+
+        @Override
+        public RepositoryInfo getInfo() {
+            return delegate.getInfo();
         }
-        public String getTooltip() {
-            return delegate.getTooltip();
-        }
-        public String getID() {
-            return delegate.getID();
-        }
-        public String getUrl() {
-            return delegate.getUrl();
-        }
+        
         public Lookup getLookup() {
             return delegate.getLookup();
         }
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public Issue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public IssueProvider getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        public BugtrackingController getController() { throw new UnsupportedOperationException("Not supported yet.");}
-        public Query createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
+        public QueryProvider createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
+        public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
+        public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
+        public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
-        public Collection<RepositoryUser> getUsers() {
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
-    private static class TestIssue extends Issue {
+    private static class TestIssue extends IssueProvider {
         private final String name;
         private final TestIssueController controller = new TestIssueController();
-        public TestIssue(Repository repository, String name) {
+        public TestIssue(RepositoryProvider repository, String name) {
             super(repository);
             this.name = name;
         }
@@ -281,6 +273,21 @@ public class IssueAccessorTest extends NbTestCase {
         public void addComment(String comment, boolean closeAsFixed) {throw new UnsupportedOperationException("Not supported yet.");}
         public void attachPatch(File file, String description) {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
+
+        @Override
+        public void setContext(Node[] nodes) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private static class TestIssueController extends BugtrackingController {
@@ -297,9 +304,13 @@ public class IssueAccessorTest extends NbTestCase {
         public void applyChanges() throws IOException { }
     }
 
-    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bugtracking.spi.BugtrackingConnector.class)
+    @BugtrackingConnector.Registration(
+            displayName=TestConnector.ID,
+            tooltip=TestConnector.ID,
+            id=TestConnector.ID
+    )
     public static class TestConnector extends BugtrackingConnector {
-        static String ID = "KenaiCconector";
+        public final static String ID = "KenaiCconector";
         static TestRepository kolibaRepository;
 //        static TestRepository goldenProjectRepository;
 
@@ -311,24 +322,17 @@ public class IssueAccessorTest extends NbTestCase {
         public String getTooltip() {
             return ID;
         }
-        public Repository createRepository() {
+        public RepositoryProvider createRepository(RepositoryInfo info) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        public RepositoryProvider createRepository() {
                 throw new UnsupportedOperationException("Not supported yet.");
         }
-        public Repository[] getRepositories() {
-            return new Repository[] {kolibaRepository /*, goldenProjectRepository*/};
+        public RepositoryProvider[] getRepositories() {
+            return new RepositoryProvider[] {kolibaRepository /*, goldenProjectRepository*/};
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
-        }
-
-        @Override
-        public String getID() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Image getIcon() {
-            throw new UnsupportedOperationException("Not supported yet.");
         }
     }  
 

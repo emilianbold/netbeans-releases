@@ -43,10 +43,13 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.ProjectComponent;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -95,12 +98,14 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
+import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 
 import org.netbeans.modules.cnd.modelimpl.csm.*;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileContainer.FileEntry;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer.FileEntry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
@@ -1123,7 +1128,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         for (FileImpl file : candidates) {
             boolean remove = true;
-            Set<CsmFile> parents = getGraphStorage().getParentFiles(file);
+            Set<CsmFile> parents = getParentFiles(file);
             for (CsmFile parent : parents) {
                 if (!candidates.contains((FileImpl)parent)) {
                     remove = false;
@@ -1473,8 +1478,10 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
                         entry.setStates(statesToKeep, new PreprocessorStatePair(newState, pcState));
-                        ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
-                                clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
+                        if (!TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
+                            ParserQueue.instance().add(csmFile, statesToParse, ParserQueue.Position.HEAD, clean,
+                                    clean ? ParserQueue.FileAction.MARK_REPARSE : ParserQueue.FileAction.MARK_MORE_PARSE);
+                        }
                         csmFile.setAPTCacheEntry(preprocHandler, aptCacheEntry, clean);
                         if (TRACE_FILE && FileImpl.traceFile(file) &&
                                 (TraceFlags.TRACE_PC_STATE || TraceFlags.TRACE_PC_STATE_COMPARISION)) {
@@ -2710,7 +2717,14 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     public final GraphContainer getGraph() {
         return getGraphStorage();
     }
-
+    
+    /**
+     * gets all files that direct or indirect include the referenced file.
+     */
+    public final Set<CsmFile> getParentFiles(CsmFile referencedFile) {
+        return getGraphStorage().getParentFiles(referencedFile);
+    }
+    
     private final static class DefaultFileItem implements NativeFileItem {
 
         private final NativeProject project;
@@ -3061,7 +3075,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private static void dumpProjectContainers(ClassifierContainer container, PrintStream printStream) {
         printStream.println("\n========== Dumping Dump Project Classifiers");//NOI18N
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getClassifiers().entrySet()) {
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestClassifiers().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
             if (entry.getValue() == null) {
                 printStream.println("null");//NOI18N
@@ -3070,7 +3084,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         }
         printStream.println("\n========== Dumping Dump Project Typedefs");//NOI18N
-        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTypedefs().entrySet()) {
+        for (Map.Entry<CharSequence, CsmClassifier> entry : container.getTestTypedefs().entrySet()) {
             printStream.print("\t" + entry.getKey().toString() + " ");//NOI18N
             if (entry.getValue() == null) {
                 printStream.println("null");//NOI18N
@@ -3082,7 +3096,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     private static void dumpProjectContainers(DeclarationContainerProject container, PrintStream printStream) {
         printStream.println("\n========== Dumping Project declarations");//NOI18N
-        for (Map.Entry<CharSequence, Object> entry : container.testDeclarations().entrySet()) {
+        for (Map.Entry<CharSequence, Object> entry : container.getTestDeclarations().entrySet()) {
             printStream.println("\t" + entry.getKey().toString());//NOI18N
             TreeMap<CharSequence, CsmDeclaration> set = new TreeMap<CharSequence, CsmDeclaration>();
             Object o = entry.getValue();
@@ -3091,20 +3105,30 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 @SuppressWarnings("unchecked") // checked //NOI18N
                 CsmUID<CsmDeclaration>[] uids = (CsmUID<CsmDeclaration>[]) o;
                 for (CsmUID<CsmDeclaration> uidt : uids) {
-                    set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                    final CsmDeclaration object = uidt.getObject();
+                    if (object != null) {
+                        set.put(((CsmOffsetableDeclaration) object).getContainingFile().getAbsolutePath(), object);
+                    } else {
+                        printStream.println("\tNO OBJECT FOR " + entry.getKey().toString() + "\n\t"+uidt);//NOI18N
+                    }
                 }
             } else if (o instanceof CsmUID<?>) {
                 // we know the template type to be CsmDeclaration
                 @SuppressWarnings("unchecked") // checked //NOI18N
                 CsmUID<CsmDeclaration> uidt = (CsmUID<CsmDeclaration>) o;
-                set.put(((CsmOffsetableDeclaration) uidt.getObject()).getContainingFile().getAbsolutePath(), uidt.getObject());
+                final CsmDeclaration object = uidt.getObject();
+                if (object != null) {
+                    set.put(((CsmOffsetableDeclaration) object).getContainingFile().getAbsolutePath(), object);
+                } else {
+                    printStream.println("\tNO OBJECT FOR " + entry.getKey().toString() + "\n\t" + uidt);//NOI18N
+                }
             }
             for (Map.Entry<CharSequence, CsmDeclaration> f : set.entrySet()) {
                 printStream.println("\t\t" + f.getValue() + " from " + f.getKey()); //NOI18N
             }
         }
         printStream.println("\n========== Dumping Project friends");//NOI18N
-        for (Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.testFriends().entrySet()) {
+        for (Map.Entry<CharSequence, Set<CsmUID<CsmFriend>>> entry : container.getTestFriends().entrySet()) {
             printStream.println("\t" + entry.getKey().toString());//NOI18N
             TreeMap<CharSequence, CsmFriend> set = new TreeMap<CharSequence, CsmFriend>();
             for (CsmUID<? extends CsmFriend> uid : entry.getValue()) {
@@ -3114,58 +3138,6 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             for (Map.Entry<CharSequence, CsmFriend> f : set.entrySet()) {
                 printStream.println("\t\t" + f.getKey() + " " + f.getValue());//NOI18N
             }
-        }
-    }
-    
-    public static final class WeakContainer<T> {
-
-        private WeakReference<T> weakContainer = TraceFlags.USE_WEAK_MEMORY_CACHE ? new WeakReference<T>(null) : null;
-        private int preventMultiplyDiagnosticExceptionsSorage = 0;
-        private final ProjectBase project;
-        private final Key sorageKey;
-        public WeakContainer(ProjectBase project, Key sorageKey) {
-            this.project = project;
-            this.sorageKey = sorageKey;
-        }
-
-        synchronized void clear() {
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE) {
-                weakContainer.clear();
-            }
-        }
-
-        @SuppressWarnings("unchecked")
-        T getContainer() {
-            T container  = getFromRef();
-            if (container != null) {
-                return container;
-            }
-            synchronized (this) {
-                container = getFromRef();
-                if (container != null) {
-                    return container;
-                }
-                container = (T) RepositoryUtils.get(sorageKey);
-                if (container == null && project.isValid() && preventMultiplyDiagnosticExceptionsSorage < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-                    DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + sorageKey)); // NOI18N
-                    preventMultiplyDiagnosticExceptionsSorage++;
-                }
-                if (TraceFlags.USE_WEAK_MEMORY_CACHE && container != null && weakContainer != null) {
-                    weakContainer = new WeakReference<T>(container);
-                }
-                return container;
-            }
-        }
-
-        private T getFromRef() {
-            WeakReference<T> weak = null;
-            if (TraceFlags.USE_WEAK_MEMORY_CACHE && project.isValid()) {
-                weak = weakContainer;
-                if (weak != null) {
-                    return weak.get();
-                }
-            }
-            return null;
         }
     }
 }

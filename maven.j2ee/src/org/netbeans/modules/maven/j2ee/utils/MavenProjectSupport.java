@@ -100,6 +100,9 @@ public class MavenProjectSupport {
      * @param initContextPath true if we want to initiate context path (f.e. when creating new project), false otherwise
      */
     public static synchronized void changeServer(Project project, boolean initContextPath) {
+        if (project == null) {
+            return;
+        }
         String[] ids = obtainServerIds(project);
         String instanceID = ids[0];
         String serverID = ids[1];

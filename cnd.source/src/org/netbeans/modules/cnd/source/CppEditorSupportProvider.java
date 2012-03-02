@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.source.spi.CndCookieProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.SaveAsCapable;
+import org.openide.nodes.Node;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.InstanceContent.Convertor;
 
@@ -81,7 +82,11 @@ public final class CppEditorSupportProvider extends CndCookieProvider {
         public synchronized CppEditorSupport convert(SourceDataObject obj) {
             CppEditorSupport res = cache.get(obj);
             if (res == null) {
-                res = new CppEditorSupport(obj);
+                Node nodeDelegate = null;
+                if (obj.isValid()) {
+                    nodeDelegate = obj.getNodeDelegate();
+                }
+                res = new CppEditorSupport(obj, nodeDelegate);
                 cache.put(obj, res);
             }
             return res;

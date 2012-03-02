@@ -205,7 +205,7 @@ public final class ViewHierarchyImpl {
 
     public double modelToY(DocumentView docView, int offset) {
         if (docView != null) {
-            return docView.modelToYUnlocked(offset);
+            return docView.modelToYNeedsLock(offset);
         } else { // Fallback behavior
             return fallBackModelToY(offset);
         }
@@ -229,7 +229,7 @@ public final class ViewHierarchyImpl {
     
     public double[] modelToY(DocumentView docView, int[] offsets) {
         if (docView != null) {
-            return docView.modelToYUnlocked(offsets);
+            return docView.modelToYNeedsLock(offsets);
         } else { // Fallback behavior
             double[] ys = new double[offsets.length];
             for (int i = 0; i < offsets.length; i++) {
@@ -241,7 +241,7 @@ public final class ViewHierarchyImpl {
 
     public Shape modelToView(DocumentView docView, int offset, Position.Bias bias) {
         if (docView != null) {
-            return docView.modelToViewUnlocked(offset, docView.getAllocation(), bias);
+            return docView.modelToViewNeedsLock(offset, docView.getAllocation(), bias);
         } else {
             TextUI ui = textComponent.getUI();
             try {
@@ -254,7 +254,7 @@ public final class ViewHierarchyImpl {
 
     public int viewToModel(DocumentView docView, double x, double y, Position.Bias[] biasReturn) {
         if (docView != null) {
-            return docView.viewToModelUnlocked(x, y, docView.getAllocation(), biasReturn);
+            return docView.viewToModelNeedsLock(x, y, docView.getAllocation(), biasReturn);
         } else {
             TextUI ui = textComponent.getUI();
             return (ui != null) ? ui.viewToModel(textComponent, new Point((int)x, (int)y), biasReturn) : null;
@@ -328,7 +328,6 @@ public final class ViewHierarchyImpl {
 
     @Override
     public String toString() {
-        // Use currentDocView.toStringUnlocked() otherwise stack overflow
         return (currentDocView != null) ? currentDocView.getDumpId() : "<NULL-docView>"; // NOI18N
     }
 

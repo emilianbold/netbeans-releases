@@ -171,14 +171,13 @@ public class ImplementOverrideMethodGenerator implements CodeGenerator {
                                 String message = NbBundle.getMessage(ImplementOverrideMethodGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                                 ArrayList<ExecutableElement> methodElements = new ArrayList<ExecutableElement>();
                                 for (ElementHandle<? extends Element> elementHandle : panel.getSelectedMethods())
                                     methodElements.add((ExecutableElement)elementHandle.resolve(copy));
                                 if (isImplement)
-                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements, idx);
+                                    GeneratorUtils.generateAbstractMethodImplementations(copy, path, methodElements);
                                 else
-                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements, idx);
+                                    GeneratorUtils.generateMethodOverrides(copy, path, methodElements);
                             }
                         }
                     });

@@ -110,6 +110,9 @@ class BracesStack implements Cloneable {
         if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_HALF_INDENTED){
             statementIndent = codeStyle.indentSize()/2;
         }
+        //if (codeStyle.getFormatNewlineBeforeBrace() == BracePlacement.NEW_LINE_FULL_INDENTED){
+        //    statementIndent = codeStyle.indentSize();
+        //}
         int switchIndent = codeStyle.indentSize();
         if (codeStyle.getFormatNewLineBeforeBraceSwitch() == BracePlacement.NEW_LINE_HALF_INDENTED){
             switchIndent = codeStyle.indentSize()/2;

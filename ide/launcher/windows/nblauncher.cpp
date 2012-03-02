@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -53,13 +53,20 @@ using namespace std;
 
 const char *NbLauncher::NBEXEC_FILE_PATH = "\\lib\\nbexec.dll";
 const char *NbLauncher::OPT_NB_DEFAULT_USER_DIR = "netbeans_default_userdir=";
+const char *NbLauncher::OPT_NB_DEFAULT_CACHE_DIR = "netbeans_default_cachedir=";
 const char *NbLauncher::OPT_NB_DEFAULT_OPTIONS = "netbeans_default_options=";
 const char *NbLauncher::OPT_NB_EXTRA_CLUSTERS = "netbeans_extraclusters=";
 const char *NbLauncher::OPT_NB_JDK_HOME = "netbeans_jdkhome=";
 const char *NbLauncher::ENV_USER_PROFILE = "USERPROFILE";
 const char *NbLauncher::HOME_TOKEN = "${HOME}";
+const char *NbLauncher::DEFAULT_USERDIR_ROOT_TOKEN = "${DEFAULT_USERDIR_ROOT}";
+const char *NbLauncher::DEFAULT_CACHEDIR_ROOT_TOKEN = "${DEFAULT_CACHEDIR_ROOT}";
 const char *NbLauncher::REG_SHELL_FOLDERS_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders";
 const char *NbLauncher::REG_DESKTOP_NAME = "Desktop";
+const char *NbLauncher::REG_DEFAULT_USERDIR_ROOT = "AppData";
+const char *NbLauncher::REG_DEFAULT_CACHEDIR_ROOT = "Local AppData";
+const char *NbLauncher::NETBEANS_DIRECTORY = "\\NetBeans\\";
+const char *NbLauncher::NETBEANS_CACHES_DIRECTORY = "\\NetBeans\\Cache\\";
 
 const char *NbLauncher::CON_ATTACH_MSG = 
 "\n\nThe launcher has determined that the parent process has a console and will reuse it for its own console output.\n"
@@ -133,6 +140,14 @@ int NbLauncher::start(int argc, char *argv[]) {
     if (!userDir.empty()) {
         newArgs.add(ARG_NAME_USER_DIR);
         newArgs.add(userDir.c_str());
+    }
+    if (!defUserDirRoot.empty()) {
+        newArgs.add(ARG_DEFAULT_USER_DIR_ROOT);
+        newArgs.add(defUserDirRoot.c_str());
+    }
+    if (!userDir.empty() && !customUserDirFound) {
+        newArgs.add(ARG_NAME_CACHE_DIR);
+        newArgs.add(cacheDir.c_str());
     }
     if (!nbOptions.empty()) {
         newArgs.addCmdLine(nbOptions.c_str());
@@ -307,6 +322,7 @@ bool NbLauncher::parseArgs(int argc, char *argv[]) {
     for (int i = 0; i < argc; i++) {
         logMsg("\t%s", argv[i]);
     }
+    customUserDirFound = 0;
     for (int i = 0; i < argc; i++) {
         if (strcmp(ARG_NAME_USER_DIR, argv[i]) == 0) {
             CHECK_ARG;
@@ -316,8 +332,20 @@ bool NbLauncher::parseArgs(int argc, char *argv[]) {
                 logErr(false, true, "User directory path \"%s\" is not valid.", argv[i]);
                 return false;
             }
+            customUserDirFound = 1;
             userDir = tmp;
             logMsg("User dir: %s", userDir.c_str());
+        }
+        if (strcmp(ARG_NAME_CACHE_DIR, argv[i]) == 0) {
+            CHECK_ARG;
+            char tmp[MAX_PATH + 1] = {0};
+            strncpy(tmp, argv[++i], MAX_PATH);
+            if (!normalizePath(tmp, MAX_PATH)) {
+                logErr(false, true, "Cache directory path \"%s\" is not valid.", argv[i]);
+                return false;
+            }
+            cacheDir = tmp;
+            logMsg("Cache dir: %s", cacheDir.c_str());
         }
     }
     logMsg("parseArgs() finished");
@@ -341,8 +369,30 @@ bool NbLauncher::findUserDir(const char *str) {
             logMsg("User home: %s", userHome.c_str());
         }
         userDir = userHome + (str + strlen(HOME_TOKEN));
+    } else if (strncmp(str, DEFAULT_USERDIR_ROOT_TOKEN, strlen(DEFAULT_USERDIR_ROOT_TOKEN)) == 0) {
+        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_USERDIR_ROOT, defUserDirRoot)) {
+            return false;
+        }
+        defUserDirRoot = defUserDirRoot + NETBEANS_DIRECTORY;
+        defUserDirRoot.erase(defUserDirRoot.rfind('\\'));
+        logMsg("Default Userdir Root: %s", defUserDirRoot.c_str());
+        userDir = defUserDirRoot + (str + strlen(DEFAULT_USERDIR_ROOT_TOKEN));
     } else {
         userDir = str;
+    }
+    return true;
+}
+
+bool NbLauncher::findCacheDir(const char *str) {
+    logMsg("NbLauncher::findCacheDir()");
+    if (strncmp(str, DEFAULT_CACHEDIR_ROOT_TOKEN, strlen(DEFAULT_CACHEDIR_ROOT_TOKEN)) == 0) {
+        if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_SHELL_FOLDERS_KEY, REG_DEFAULT_CACHEDIR_ROOT, defCacheDirRoot)) {
+            return false;
+        }
+        defCacheDirRoot = defCacheDirRoot + NETBEANS_CACHES_DIRECTORY;
+        defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
+        logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
+        cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
     }
     return true;
 }
@@ -380,6 +430,9 @@ bool NbLauncher::parseConfigFile(const char* path) {
         if (getOption(str, getDefUserDirOptName())) {
              findUserDir(str);
              logMsg("User dir: %s", userDir.c_str());
+        } else if (getOption(str, getDefCacheDirOptName())) {
+             findCacheDir(str);
+             logMsg("Cache dir: %s", cacheDir.c_str());
         } else if (getOption(str, getDefOptionsOptName())) {
             // replace \" by "
             int len = strlen(str);
@@ -471,6 +524,11 @@ void NbLauncher::addSpecificOptions(CmdArgs &args) {
 const char * NbLauncher::getDefUserDirOptName() {
     return OPT_NB_DEFAULT_USER_DIR;
 }
+
+const char * NbLauncher::getDefCacheDirOptName() {
+    return OPT_NB_DEFAULT_CACHE_DIR;
+}
+
 
 const char * NbLauncher::getDefOptionsOptName() {
     return OPT_NB_DEFAULT_OPTIONS;

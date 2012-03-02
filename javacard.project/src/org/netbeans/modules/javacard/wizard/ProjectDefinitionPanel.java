@@ -46,22 +46,6 @@ package org.netbeans.modules.javacard.wizard;
 import com.sun.javacard.AID;
 import java.awt.Component;
 import java.awt.event.ActionListener;
-import org.netbeans.modules.javacard.common.Utils;
-import org.netbeans.modules.javacard.common.JCConstants;
-import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
-import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
-import org.netbeans.modules.javacard.project.JCProjectProperties;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
-import org.openide.WizardDescriptor;
-import org.openide.WizardValidationException;
-import org.openide.filesystems.FileChooserBuilder;
-import org.openide.filesystems.FileUtil;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.File;
@@ -70,21 +54,25 @@ import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
-import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.javacard.JCUtil;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.javacard.common.JCConstants;
+import org.netbeans.modules.javacard.common.Utils;
+import org.netbeans.modules.javacard.constants.ProjectPropertyNames;
+import org.netbeans.modules.javacard.constants.ProjectWizardKeys;
+import org.netbeans.modules.javacard.project.JCProjectProperties;
 import org.netbeans.modules.javacard.spi.Card;
 import org.netbeans.modules.javacard.spi.JavacardPlatform;
-import org.netbeans.modules.javacard.spi.JavacardPlatformKeyNames;
 import org.netbeans.modules.javacard.spi.ProjectKind;
-import org.openide.modules.SpecificationVersion;
-import org.openide.util.ChangeSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
+import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
+import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.*;
 
 public class ProjectDefinitionPanel extends JPanel implements DocumentListener, FocusListener, LookupListener, ActionListener {
 
@@ -605,7 +593,8 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             d.putProperty("activeplatform", platform.getSystemName()); //NOI18N //XXX constant?
 
             // #200688
-            boolean usePreprocessor = Utils.useCompilationPreprocessor(platform.getJavacardVersion());
+            boolean usePreprocessor = Utils.canUseCompilationPreprocessor(platform.getJavacardVersion()) &&
+                    (kind == ProjectKind.CLASSIC_APPLET || kind == ProjectKind.CLASSIC_LIBRARY);
             d.putProperty(ProjectPropertyNames.PROJECT_PROP_USE_PREPROCESSOR, String.valueOf(usePreprocessor));
         } else {
             invalidPlatform = true;
@@ -697,7 +686,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
 
     private void setSomeDefaults() {
         String prefix = kind.prototypeProjectName();
-        int i = 1;
+        int i;
         for (i = 1; i < Integer.MAX_VALUE; i++) {
             File f = new File(projectLocationTextField.getText(), prefix + i);
             if (!f.exists()) {
@@ -747,14 +736,17 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
     private static final String PREF_LAST_PACKAGE = "package"; //NOI18N
 
     // Implementation of DocumentListener --------------------------------------
+    @Override
     public void changedUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         documentChanged(e);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         documentChanged(e);
     }
@@ -779,7 +771,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         try {
             String projectname = projectNameTextField.getText();
             if (kind == ProjectKind.WEB && !dontUpdateWcp) {
-                String proposedName = '/' + projectname.toLowerCase();
+                String proposedName = '/' + projectname.toLowerCase(); // NOI18N
                 while (proposedName.length() > 1 && Character.isDigit(proposedName.charAt(proposedName.length() - 1))) {
                     proposedName = proposedName.substring(0, proposedName.length() - 1);
                 }
@@ -794,7 +786,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
                 webContextPathField.setText(proposedText);
             }
             if (kind == ProjectKind.WEB && !dontUpdateServletMapping) {
-                String proposedName = "/" + projectname.toLowerCase();
+                String proposedName = "/" + projectname.toLowerCase(); // NOI18N
                 while (proposedName.length() > 1 && Character.isDigit(proposedName.charAt(proposedName.length() - 1))) {
                     proposedName = proposedName.substring(0, proposedName.length() - 1);
                 }
@@ -828,8 +820,8 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
 
     private static String parsePackageName(String rawName)
             throws IllegalArgumentException {
-        StringTokenizer st = new StringTokenizer(rawName, ".", true);
-        StringBuffer packageName = new StringBuffer();
+        StringTokenizer st = new StringTokenizer(rawName, ".", true); // NOI18N
+        StringBuilder packageName = new StringBuilder();
         boolean expectDelimeter = false;
 
         // Check that name is of form: <Java id> ( "." <Java id> )* //NOI18N
@@ -837,7 +829,7 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
             String id = st.nextToken();
 
             if (expectDelimeter) {
-                if (!id.equals(".")) {
+                if (!id.equals(".")) { // NOI18N
                     throw new IllegalArgumentException(NbBundle.getMessage(
                             ProjectDefinitionPanel.class,
                             "Not_a_valid_class_name.")); //NOI18N
@@ -881,13 +873,16 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         supp.addChangeListener(arg0);
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         ((JTextComponent) e.getComponent()).selectAll();
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
     }
 
+    @Override
     public void resultChanged(LookupEvent arg0) {
         fireChange();
     }

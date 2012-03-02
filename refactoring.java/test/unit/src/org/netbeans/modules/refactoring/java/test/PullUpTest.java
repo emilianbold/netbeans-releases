@@ -455,7 +455,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "    public abstract void method();\n"
                 + "}"));
     }
-
+    
     public void testPullUpAbsMethod() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
@@ -658,7 +658,7 @@ public class PullUpTest extends RefactoringTestBase {
                 new File("pullup/B.java", "package pullup; public class B { protected void foo() { } }"));
     }
         
-    private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpImplements(FileObject source, final int position, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -698,7 +698,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -740,7 +740,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUp(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUp(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 
@@ -782,7 +782,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
     
-    private void performPullUpSuper(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPullUpSuper(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 

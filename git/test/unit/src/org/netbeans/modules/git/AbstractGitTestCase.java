@@ -57,7 +57,7 @@ import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.libs.git.GitClient;
-import org.netbeans.libs.git.GitClientFactory;
+import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileObject;
@@ -153,7 +153,7 @@ public abstract class AbstractGitTestCase extends NbTestCase {
     }
 
     protected GitClient getClient (File repositoryLocation) throws GitException {
-        return GitClientFactory.getInstance().getClient(repositoryLocation);
+        return GitRepository.getInstance(repositoryLocation).getClient();
     }
 
     protected void add (File... files) throws GitException {
