@@ -158,6 +158,12 @@
                             <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtTabsIndents.getController"/>
                             <attr name="position" intvalue="100"/>
                         </file>
+
+                        <file name="Spaces.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.formatter.ui.FmtSpaces.getController"/>
+                            <attr name="position" intvalue="700"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>
