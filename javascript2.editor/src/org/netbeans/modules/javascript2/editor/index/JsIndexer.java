@@ -107,10 +107,13 @@ public class JsIndexer extends EmbeddingIndexer {
 
     private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
         if (object.isDeclared()) {
+            // if it's delcared, then store in the index as new document.
             support.addDocument(IndexedElement.createDocument(object, support, indexable));
-            for (JsObject property : object.getProperties().values()) {
-                storeObject(property, support, indexable);
-            }
+        }
+        // look for all other properties. Even if the object doesn't have to be delcared in the file
+        // there can be declared it's properties or methods
+        for (JsObject property : object.getProperties().values()) {
+            storeObject(property, support, indexable);
         }
     }
    

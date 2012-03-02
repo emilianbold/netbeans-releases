@@ -131,7 +131,7 @@ class ModelElementFactory {
         return (JsObjectImpl)newObject;
     }
     
-    static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, CallNode callNode, ModelBuilder modelBuilder) {
+    static JsObjectImpl createAnonymousObject(JsParserResult parserResult, ObjectNode objectNode, ModelBuilder modelBuilder) {
         String name = modelBuilder.getUnigueNameForAnonymObject();
         JsObjectImpl result = new AnonymousObject(modelBuilder.getGlobal(),
                     name, ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish()));
