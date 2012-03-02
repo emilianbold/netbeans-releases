@@ -393,10 +393,12 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         protected static CCPaintComponent.NamedQueryNameElementPaintComponent paintComponent = null;
         private String entity;
+        private String query;
 
-        public NamedQueryNameItem(String nqname, String entityName, boolean quote , int substituteOffset) {
+        public NamedQueryNameItem(String nqname, String entityName, String query, boolean quote , int substituteOffset) {
             super(nqname, quote, substituteOffset);
             entity = entityName;
+            this.query = query;
         }
 
         @Override
@@ -425,6 +427,30 @@ public abstract class JPACompletionItem implements CompletionItem {
             paintComponent.setSelected(isSelected);
             return paintComponent;
         }
+        
+        @Override
+        public CompletionTask createDocumentationTask() {
+            if(query != null){
+            return new AsyncCompletionTask(new AsyncCompletionQuery() {
+                @Override
+                protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    String docText = null;
+                    try{
+                        docText = NbBundle.getMessage(PUCompletionManager.class, "NAMED_QUERY_TEXT", getSubstitutionText(), entity, query);//NOI18N
+                    } catch (Exception ex){
+                        //just do not have doc by any reason
+                    }
+                    if (docText != null) {
+                        CompletionDocumentation documentation = PersistenceCompletionDocumentation.getAttribValueDoc(docText);
+                        resultSet.setDocumentation(documentation);
+                    }
+                    resultSet.finish();
+                }
+            });
+            }
+            return null;
+        }
+        
         @Override
          public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
             BaseDocument doc = (BaseDocument) c.getDocument();
