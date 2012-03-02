@@ -379,6 +379,7 @@ public class ProgressHandleTest extends NbTestCase {
 /**
  * test switching in non-status bar component
  */
+    @RandomlyFails // NB-Core-Build #7997
     public void testSwitch() throws Exception {
         final int WAIT = 1500;
 
