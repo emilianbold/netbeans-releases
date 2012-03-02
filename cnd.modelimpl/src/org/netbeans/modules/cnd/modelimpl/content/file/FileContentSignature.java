@@ -114,7 +114,7 @@ public final class FileContentSignature {
             List<String> diff = LineDiff.diff(first.signature, second.signature);
             if (!diff.isEmpty()) {
                 for (String line : diff) {
-                    out.append(line).append("\n");
+                    out.append(line).append('\n');// NOI18N
                 }
             }
         } else {
