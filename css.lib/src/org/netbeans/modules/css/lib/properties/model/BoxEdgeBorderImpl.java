@@ -42,12 +42,13 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
+import org.netbeans.modules.css.lib.api.properties.model.PrintableModel;
 
 /**
  *
  * @author marekfukala
  */
-public class BoxEdgeBorderImpl implements BoxEdgeBorder {
+public class BoxEdgeBorderImpl implements BoxEdgeBorder, PrintableModel {
 
     private Color color;
     private BorderStyleItem borderStyleItem;
@@ -73,5 +74,27 @@ public class BoxEdgeBorderImpl implements BoxEdgeBorder {
     public BorderStyleItem getStyle() {
         return borderStyleItem;
     }
+
+    @Override
+    public String asText() {
+        StringBuilder b = new StringBuilder();
+        if(getColor() != null) {
+            b.append(getColor().getValue());
+        }
+        if(getWidth() != null) {
+            if(b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(getWidth().asText());
+        }
+        if(getStyle() != null) {
+            if(b.length() > 0) {
+                b.append(' ');
+            }
+            b.append(getStyle().asText());
+        }
+        return b.toString();
+    }
+    
     
 }

@@ -118,7 +118,8 @@ public class BorderStyleItem extends NodeModel {
         return getTokenNode(fixedValue.getValue());
     }
 
-    public CharSequence getTextRepresentation() {
+    @Override
+    public CharSequence asText() {
         for (BorderWidthItem.FixedValue fv : BorderWidthItem.FixedValue.values()) {
             TokenNodeModel tnm = getFixedValueModel(fv);
             if (tnm != null) {
@@ -133,7 +134,7 @@ public class BorderStyleItem extends NodeModel {
         StringBuilder b = new StringBuilder();
         b.append(getClass().getSimpleName());
         b.append("(");
-        b.append(getTextRepresentation());
+        b.append(asText());
         b.append(")");
         return b.toString();
     }

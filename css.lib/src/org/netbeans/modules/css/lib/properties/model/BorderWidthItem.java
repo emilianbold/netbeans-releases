@@ -133,7 +133,8 @@ public class BorderWidthItem extends NodeModel {
         return getTokenNode(fixedValue.getValue());
     }
 
-    public CharSequence getTextRepresentation() {
+    @Override
+    public CharSequence asText() {
         if(getLength() != null) {
             return getLength().getLength().getValue();
         } else {
@@ -152,7 +153,7 @@ public class BorderWidthItem extends NodeModel {
         StringBuilder b = new StringBuilder();
         b.append(getClass().getSimpleName());
         b.append("(");
-        b.append(getTextRepresentation());
+        b.append(asText());
         b.append(")");
         return b.toString();
     }

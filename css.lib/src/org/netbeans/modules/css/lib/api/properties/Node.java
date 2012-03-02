@@ -79,11 +79,12 @@ public interface Node {
 
         @Override
         public void accept(NodeVisitor visitor) {
-            visitor.visit(this);
-            for(Node child : children()) {
-                child.accept(visitor);
+            if(visitor.visit(this)) {
+                for(Node child : children()) {
+                    child.accept(visitor);
+                }
+                visitor.unvisit(this);
             }
-            visitor.unvisit(this);
         }
 
     }

@@ -50,9 +50,9 @@ public class Utils {
     private Utils() {
     }
 
-    public static void dumpBox(Box<BoxEdgeSize> box) {
-        System.out.println("\n\t" + box.getEdge(Edge.TOP));
-        System.out.println(box.getEdge(Edge.LEFT) + "\t\t" + box.getEdge(Edge.RIGHT));
-        System.out.println("\t" + box.getEdge(Edge.BOTTOM) + "\n");
+    public static void dumpBox(Box<? extends PrintableModel> box) {
+        System.out.println("\n\t" + box.getEdge(Edge.TOP).asText());
+        System.out.println(box.getEdge(Edge.LEFT).asText() + "\t\t" + box.getEdge(Edge.RIGHT).asText());
+        System.out.println("\t" + box.getEdge(Edge.BOTTOM).asText() + "\n");
     }
 }

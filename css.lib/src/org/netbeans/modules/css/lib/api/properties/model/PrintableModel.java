@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.api.properties.model;
-
-import org.netbeans.modules.css.lib.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public enum PropertyModelId {
-            
-    MARGIN(Margin.class, MarginTop.class, MarginBottom.class, MarginLeft.class, MarginRight.class),
-    PADDING(Padding.class, PaddingTop.class, PaddingBottom.class, PaddingLeft.class, PaddingRight.class),
-    BORDER(Border.class, BorderBottom.class, BorderLeft.class, BorderRight.class, BorderTop.class,
-            BorderColor.class, Color.class);
+public interface PrintableModel {
     
-    private Class[] modelClasses;
-
-    private PropertyModelId(Class... modelClasses) {
-        this.modelClasses = modelClasses;
-    }
-    
-    public Class[] getModelClasses() {
-        return modelClasses;
-    }
-    
-    public String getBasePropertyName() {
-        return name().toLowerCase();
-    }
+    public CharSequence asText();
     
 }

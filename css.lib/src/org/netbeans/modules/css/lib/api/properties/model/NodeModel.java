@@ -53,7 +53,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class NodeModel implements SemanticModel {
+public class NodeModel implements SemanticModel, PrintableModel {
 
     private Node node;
     
@@ -70,6 +70,22 @@ public class NodeModel implements SemanticModel {
     
     public  Node getNode() {
         return node;
+    }
+    
+    @Override
+    public CharSequence asText() {
+        return getNode().image();
+    }
+    
+    /**
+     * If the model doesn't have a field corresponding to the child node name
+     * it still may get the model instance. In such case it needs to provide 
+     * the class for the given child node name. In such case it also needs to 
+     * override the {@link #setSubmodel()} method not to try to set the field but
+     * instead to save the given model in another (custom) way.
+     */
+    protected Class getModelClassForSubNode(String nodeName) {
+        return null;
     }
     
     protected Collection<NodeModel> getSubmodels() {

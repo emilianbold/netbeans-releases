@@ -64,31 +64,13 @@ public class MarginTest extends CssTestBase {
         ResolvedProperty val = new ResolvedProperty(model, "1px 20% 3px");
 
         Node root = val.getParseTree();
-        dumpTree(root);
-
-        System.out.println("-------------------");
+//        dumpTree(root);
 
         PropertyModel model2 = Properties.getPropertyModel("margin-left");
         ResolvedProperty val2 = new ResolvedProperty(model2, "1px");
 
         Node root2 = val2.getParseTree();
         dumpTree(root2);
-
-        NodeVisitor visitor = new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) {
-                System.out.println("visiting " + node.name());
-            }
-
-            @Override
-            public void unvisit(Node node) {
-            }
-        };
-
-        System.out.println("------------");
-        root2.accept(visitor);
-        System.out.println("------------");
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
 

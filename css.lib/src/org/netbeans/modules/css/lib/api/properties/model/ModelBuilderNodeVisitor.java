@@ -43,7 +43,6 @@ package org.netbeans.modules.css.lib.api.properties.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
@@ -112,7 +111,7 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
     }
 
     @Override
-    public void visit(Node node) {
+    public boolean visit(Node node) {
         //assuming model class elements cannot nest
         String modelClassName = getModelClassNameForNodeName(node.name());
         if (current.isEmpty()) {
@@ -121,9 +120,10 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
                 createModelInstance(modelClass, node);
                 current.push(this.model);
             }
+            return true;
         } else {
             //we've already created the model so now lets fill it with some data
-            handleNode(modelClassName, node);
+            return handleNode(modelClassName, node);
         }
     }
 
@@ -134,7 +134,7 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
         }
     }
 
-    private void handleNode(String modelClassName, Node node) {
+    private boolean handleNode(String modelClassName, Node node) {
         //1. find the corresponding field in the current node
         Class<? extends NodeModel> currentModelClass = current.peek().getClass();
         String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
@@ -145,7 +145,7 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
             //do not derive the model class type from the field type since there 
             //doesn't have to be any for the token nodes
             fieldType = TokenNodeModel.class;
-            
+
         } else if (node instanceof Node.GrammarElementNode) {
             constructorArgumentClass = Node.class;
             //get the model type from the field type
@@ -153,21 +153,24 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
                 Field field = currentModelClass.getField(submodelFieldName);
                 fieldType = field.getType();
             } catch (NoSuchFieldException nsfe) {
-//                String msg = String.format("Processing node %s: No public field %s found in the model class %s", node, submodelFieldName, currentModelClass);
-//                throw new RuntimeException(msg, nsfe);
-                
-                //having a field for each possinle subnode is now not necessary
-                //such node children are simply ignored and the node model is responsible
-                //for handling them manually
-                current.peek().setUnhandledChild(node);
-                
-                return ;
-                
+                //no such field in the class, lets use the modelClassName as the class name
+                fieldType = current.peek().getModelClassForSubNode(node.name());
+                if (fieldType == null) {
+                    //no type info provided, give up
+                    String msg = String.format(
+                            "Processing node %s: Neither public field %s found in the model class %s "
+                            + "nor the class provides a class for the node name %s", node, submodelFieldName, currentModelClass, node.name());
+                    System.err.println(msg);
+                    current.peek().setUnhandledChild(node);
+                    
+                    return false; //do not process children nodes of the given node
+                    
+                }
             }
         } else {
             throw new IllegalStateException();
         }
-        
+
         try {
             Constructor<?> constructor = fieldType.getConstructor(constructorArgumentClass);
             NodeModel modelInstance = (NodeModel) constructor.newInstance(node);
@@ -185,6 +188,8 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
             throw new RuntimeException(e);
 
         }
+        
+        return true; //proceede with the children nodes
     }
 
     private void createModelInstance(Class modelClass, Node node) {

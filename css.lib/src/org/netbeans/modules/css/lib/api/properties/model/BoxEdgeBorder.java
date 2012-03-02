@@ -49,7 +49,7 @@ import org.netbeans.modules.css.lib.properties.model.Color;
  *
  * @author marekfukala
  */
-public interface BoxEdgeBorder {
+public interface BoxEdgeBorder extends PrintableModel {
 
     public Color getColor();
     

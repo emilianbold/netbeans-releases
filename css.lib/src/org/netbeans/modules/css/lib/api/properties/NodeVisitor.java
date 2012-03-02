@@ -41,15 +41,13 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.Node;
-
 /**
  *
  * @author marekfukala
  */
 public interface NodeVisitor {
     
-    public void visit(Node node);
+    public boolean visit(Node node);
     
     public void unvisit(Node node);
     

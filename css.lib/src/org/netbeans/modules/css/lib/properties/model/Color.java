@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 
@@ -51,41 +52,32 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  */
 public class Color extends NodeModel {
 
-    public TokenNodeModel color;
-    
     public Color(Node node) {
         super(node);
     }
     
-    public Color(TokenNodeModel text) {
-        color = text;
+    public String getValue() {
+        //just gather all token nodes and join to an image
+        final StringBuilder builder = new StringBuilder();
+
+        getNode().accept(new NodeVisitor() {
+
+            @Override
+            public boolean visit(Node node) {
+                if(node instanceof Node.ResolvedTokenNode) {
+                    Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)node;
+                    builder.append(tokenNode.image());
+                }
+                return true;
+            }
+
+            @Override
+            public void unvisit(Node node) {
+            }
+        });
+        
+        return builder.toString();
     }
 
-    public Text getLength() {
-        return color;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Color other = (Color) obj;
-        if (this.color != other.color && (this.color == null || !this.color.equals(other.color))) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 37 * hash + (this.color != null ? this.color.hashCode() : 0);
-        return hash;
-    }
-    
     
 }

@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-
-
 
 /**
  *
@@ -55,15 +55,80 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  */
 public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
 
+    private List<Color> colorModels = new ArrayList<Color>();
 
     public BorderColor(Node node) {
         super(node);
     }
 
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-//        getNode().
+    protected Class getModelClassForSubNode(String nodeName) {
+        if (nodeName.equals("color")) { //NOI18N
+            return Color.class;
+        }
         return null;
     }
 
+    @Override
+    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        if (model instanceof Color) {
+            colorModels.add((Color) model);
+        }
+    }
+
+    List<Color> getColorModels() {
+        return colorModels;
+    }
+    
+    private BoxEdgeBorder forColor(Color color) {
+        return new BoxEdgeBorderImpl(color, null, null);
+    }
+
+    @Override
+    public BoxEdgeBorder getEdge(Edge edge) {
+        int values = colorModels.size();
+        switch (values) {
+            case 0:
+                return null;
+            case 1:
+                //all edges
+                return forColor(colorModels.get(0));
+            case 2:
+                //first == TB, second ==LR
+                switch (edge) {
+                    case TOP:
+                    case BOTTOM:
+                        return forColor(colorModels.get(0));
+                    case LEFT:
+                    case RIGHT:
+                        return forColor(colorModels.get(1));
+                }
+            case 3:
+                //first == T, second == R, L, third == B
+                switch (edge) {
+                    case TOP:
+                        return forColor(colorModels.get(0));
+                    case BOTTOM:
+                        return forColor(colorModels.get(2));
+                    case LEFT:
+                    case RIGHT:
+                        return forColor(colorModels.get(1));
+                }
+            case 4:
+                //each edge has its own value
+                switch (edge) {
+                    case TOP:
+                        return forColor(colorModels.get(0));
+                    case RIGHT:
+                        return forColor(colorModels.get(1));
+                    case BOTTOM:
+                        return forColor(colorModels.get(2));
+                    case LEFT:
+                        return forColor(colorModels.get(3));
+                }
+            default:
+                throw new IllegalStateException("Invalid number of color submodels"); //NOI18N
+        }
+    }
+    
 }

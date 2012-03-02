@@ -63,32 +63,16 @@ public class PaddingTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel("padding");
         ResolvedProperty val = new ResolvedProperty(model, "1px 20% 3px");
 
-        Node root = val.getParseTree();
-        dumpTree(root);
+//        Node root = val.getParseTree();
+//        dumpTree(root);
 
-        System.out.println("-------------------");
+//        System.out.println("-------------------");
 
         PropertyModel model2 = Properties.getPropertyModel("padding-left");
         ResolvedProperty val2 = new ResolvedProperty(model2, "1px");
 
         Node root2 = val2.getParseTree();
-        dumpTree(root2);
-
-        NodeVisitor visitor = new NodeVisitor() {
-
-            @Override
-            public void visit(Node node) {
-                System.out.println("visiting " + node.name());
-            }
-
-            @Override
-            public void unvisit(Node node) {
-            }
-        };
-
-        System.out.println("------------");
-        root2.accept(visitor);
-        System.out.println("------------");
+//        dumpTree(root2);
 
         ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.PADDING);
 
