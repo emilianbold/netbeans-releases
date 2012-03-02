@@ -74,10 +74,12 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new JavaFX project
  * 
- * @author phrebejk, Anton Chechel
+ * @author Petr Hrebejk
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-    public static enum WizardType {APPLICATION, PRELOADER, FXML, LIBRARY, EXTISTING}
+    public static enum WizardType {APPLICATION, PRELOADER, FXML, SWING, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     static final String MAIN_CLASS = "mainClass";
@@ -103,6 +105,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public static JavaFXProjectWizardIterator preloader() {
         return new JavaFXProjectWizardIterator(WizardType.PRELOADER);
+    }
+
+    public static JavaFXProjectWizardIterator swing() {
+        return new JavaFXProjectWizardIterator(WizardType.SWING);
     }
 
     public static JavaFXProjectWizardIterator library() {
@@ -212,7 +218,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             default:
                 String manifest = null;
-                if (type == WizardType.APPLICATION || type == WizardType.FXML) {
+                if (type == WizardType.APPLICATION || type == WizardType.FXML || type == WizardType.SWING) {
                     manifest = MANIFEST_FILE;
                 }
                 if (type == WizardType.PRELOADER) {
@@ -262,6 +268,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (type) {
             case APPLICATION:
             case FXML:
+            case SWING:
                 createManifest(dir, false);
                 break;
             case EXTISTING:
@@ -304,6 +311,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             case APPLICATION:
             case PRELOADER:
             case FXML:
+            case SWING:
                 WizardSettings.setNewApplicationCount(ind);
                 break;
             case LIBRARY:

@@ -74,7 +74,9 @@ import org.openide.util.*;
 
     
 /**
- * @author  phrebejk, Anton Chechel
+ * @author  Petr Hrebejk
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
 
@@ -161,6 +163,16 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 preloaderCheckBox.setVisible(false);
                 lblPreloaderProject.setVisible(false);
                 txtPreloaderProject.setVisible(false);
+                break;
+            case SWING:
+                createMainCheckBox.setSelected(lastMainClassCheck);
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createMainSwingCheckBox")); // NOI18N
+                mainClassTextField.setEnabled(lastMainClassCheck);
+                preloaderCheckBox.setVisible(false);
+                txtPreloaderProject.setVisible(false);
+                lblPreloaderProject.setVisible(false);
+                fxmlLabel.setVisible(false);
+                fxmlTextField.setVisible(false);
                 break;
             case EXTISTING:
                 createMainCheckBox.setVisible(false);

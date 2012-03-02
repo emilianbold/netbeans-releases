@@ -430,6 +430,11 @@ public class JFXProjectGenerator {
                 ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, ""); // NOI18N
             }
             
+            if (type == WizardType.SWING) {
+                ep.setProperty(JFXProjectProperties.JAVAFX_SWING, "true"); // NOI18N
+                ep.setComment(JFXProjectProperties.JAVAFX_SWING, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_use_swing")}, false); // NOI18N
+            }
+            
             if (type == WizardType.FXML) {
                 // Workaround of JavaFX 2.0 issue causing FXML apps crash when signing is disabled
                 ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true"); // NOI18N
@@ -680,6 +685,9 @@ public class JFXProjectGenerator {
                         break;
                     case PRELOADER:
                         template = FileUtil.getConfigFile("Templates/javafx/FXPreloader.java"); // NOI18N
+                        break;
+                    case SWING:
+                        template = FileUtil.getConfigFile("Templates/javafx/FXSwingMain.java"); // NOI18N
                         break;
                     case FXML:
                         template = FileUtil.getConfigFile("Templates/javafx/FXML.java"); // NOI18N

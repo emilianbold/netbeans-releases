@@ -84,6 +84,15 @@ made subject to such option by the copyright holder.
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXMLApp.html"/>
                     <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.fxml"/>
                 </file>
+
+                <file name="javafxSwingApp.xml">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/Project/JavaFX/javafxSwingApp.xml"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png"/>
+                    <attr name="position" intvalue="405"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/JavaFXSwingApp.html"/>
+                    <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.swing"/>
+                </file>
             </folder>
         </folder>
 
@@ -149,6 +158,17 @@ made subject to such option by the copyright holder.
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
             </file>
             
+            <file name="FXSwingMain.java" url="templates/FXSwingMain.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXSwingMain.java"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
+                <attr name="position" intvalue="800"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXSwingMain.html"/>
+                <attr name="templateCategory" stringvalue="javafx"/>
+            </file>
+
         </folder>
         
     </folder>  
