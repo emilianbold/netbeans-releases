@@ -80,6 +80,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     private boolean replacing;
     private boolean projectWide = false; // TODO
     private List<Presenter> presenters;
+    private DialogDescriptor dialogDescr;
     /**
      * OK button.
      */
@@ -167,6 +168,10 @@ public class SearchPanel extends JPanel implements FocusListener,
                 "TEXT_BUTTON_CANCEL"));     //NOI18N
     }
 
+    private void setDialogDescriptor(DialogDescriptor dialogDescriptor) {
+        this.dialogDescr = dialogDescriptor;
+    }
+
     private void initAccessibility() {
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "ACS_SearchPanel")); // NOI18N
         if (tabbedPane != null) {
@@ -228,11 +233,14 @@ public class SearchPanel extends JPanel implements FocusListener,
 
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.addWindowListener(new DialogCloseListener());
+        this.setDialogDescriptor(dialogDescriptor);
 
         dialog.pack();
         dialog.setVisible(
                 true);
         dialog.requestFocus();
+        this.requestFocusInWindow();
+        updateHelp();
         setCurrentlyShown(this);
     }
 
@@ -248,6 +256,15 @@ public class SearchPanel extends JPanel implements FocusListener,
         tabChanged();
     }
 
+    @Override
+    public boolean requestFocusInWindow() {
+        if (tabbedPane != null) {
+            return tabbedPane.getSelectedComponent().requestFocusInWindow();
+        } else {
+            return getComponent(0).requestFocusInWindow();
+        }
+    }
+
     /**
      * Called when tab panel was changed.
      */
@@ -257,6 +274,14 @@ public class SearchPanel extends JPanel implements FocusListener,
             SearchProvider.Presenter p = presenters.get(i);
             selectedPresenter = p;
             okButton.setEnabled(p.isUsable());
+            updateHelp();
+        }
+    }
+
+    private void updateHelp() {
+        HelpCtx ctx = selectedPresenter.getHelpCtx();
+        if (this.dialogDescr != null) {
+            dialogDescr.setHelpCtx(ctx);
         }
     }
 

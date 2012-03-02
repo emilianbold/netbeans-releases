@@ -109,14 +109,6 @@ public abstract class SearchProvider {
     public abstract boolean isEnabled();
 
     /**
-     * Get help ID for this type of search. Can return null if it is not
-     * available.
-     */
-    public @CheckForNull HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    /**
      * Presenter for search provider. This class is used to show panel and start
      * the search task.
      * 
@@ -279,6 +271,14 @@ public abstract class SearchProvider {
          */
         public final boolean isReplacing() {
             return replacing;
+        }
+
+        /**
+         * Get help ID for this type of search. Can return null if it is not
+         * available.
+         */
+        public @CheckForNull HelpCtx getHelpCtx() {
+            return null;
         }
     }
 }

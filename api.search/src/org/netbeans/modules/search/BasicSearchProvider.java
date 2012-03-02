@@ -62,6 +62,7 @@ import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -161,6 +162,12 @@ public class BasicSearchProvider extends SearchProvider {
                 });
             }
             return form;
+        }
+
+        @Override
+        public HelpCtx getHelpCtx() {
+            return new HelpCtx(SearchPanel.class.getCanonicalName()
+                    + "." + replacing);                                 //NOI18N
         }
 
         @Override
