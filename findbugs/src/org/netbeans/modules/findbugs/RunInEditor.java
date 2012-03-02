@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.findbugs;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePathScanner;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -48,8 +50,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.util.ElementScanner6;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
@@ -109,12 +111,17 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
 
         final Set<String> classNames = new HashSet<String>();
 
-        new ElementScanner6<Void, Void>() {
-            @Override public Void visitType(TypeElement e, Void p) {
-                classNames.add(parameter.getElements().getBinaryName(e).toString());
-                return super.visitType(e, p);
+        new TreePathScanner<Void, Void>() {
+            @Override public Void visitClass(ClassTree node, Void p) {
+                Element el = parameter.getTrees().getElement(getCurrentPath());
+
+                if (el != null && (el.getKind().isClass() || el.getKind().isClass())) {
+                    classNames.add(parameter.getElements().getBinaryName((TypeElement) el).toString());
+                }
+
+                return super.visitClass(node, p);
             }
-        }.scan(parameter.getTopLevelElements(), null);
+        }.scan(parameter.getCompilationUnit(), null);
 
         List<ErrorDescription> bugs = RunFindBugs.runFindBugs(parameter, null, null, sourceRoot, classNames, new SigFilesValidator() {
             @Override public boolean validate(Iterable<? extends FileObject> files) {
