@@ -239,6 +239,7 @@ public class AstUtil {
                 case CPPTokenTypes.CSM_COMPOUND_STATEMENT_LAZY:
                 case CPPTokenTypes.CSM_TRY_CATCH_STATEMENT_LAZY:
                 case CPPTokenTypes.COLON:
+                case CPPTokenTypes.POINTERTO:
                     break;
                 default:
                     type = type.getNextSibling();

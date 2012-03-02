@@ -388,6 +388,120 @@ public abstract class JPACompletionItem implements CompletionItem {
             return paintComponent;
         }
     }
+    
+    public static final class NamedQueryNameItem extends DBElementItem {
+
+        protected static CCPaintComponent.NamedQueryNameElementPaintComponent paintComponent = null;
+        private String entity;
+        private String query;
+
+        public NamedQueryNameItem(String nqname, String entityName, String query, boolean quote , int substituteOffset) {
+            super(nqname, quote, substituteOffset);
+            entity = entityName;
+            this.query = query;
+        }
+
+        @Override
+        public String getTypeName() {
+            return "Named Query";
+        }
+
+        @Override
+        protected String getName() {
+            return super.getName() + " ("+entity + ")";
+        }
+
+        
+        
+        @Override
+        public int getSortPriority() {
+            return 100;
+        }
+
+        @Override
+        public Component getPaintComponent(boolean isSelected) {
+            if (paintComponent == null) {
+                paintComponent = new CCPaintComponent.NamedQueryNameElementPaintComponent();
+            }
+            paintComponent.setContent(getName());
+            paintComponent.setSelected(isSelected);
+            return paintComponent;
+        }
+        
+        @Override
+        public CompletionTask createDocumentationTask() {
+            if(query != null){
+            return new AsyncCompletionTask(new AsyncCompletionQuery() {
+                @Override
+                protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+                    String docText = null;
+                    try{
+                        docText = NbBundle.getMessage(PUCompletionManager.class, "NAMED_QUERY_TEXT", getSubstitutionText(), entity, query);//NOI18N
+                    } catch (Exception ex){
+                        //just do not have doc by any reason
+                    }
+                    if (docText != null) {
+                        CompletionDocumentation documentation = PersistenceCompletionDocumentation.getAttribValueDoc(docText);
+                        resultSet.setDocumentation(documentation);
+                    }
+                    resultSet.finish();
+                }
+            });
+            }
+            return null;
+        }
+        
+        @Override
+         public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
+            BaseDocument doc = (BaseDocument) c.getDocument();
+            String text = getSubstitutionText();
+
+            if (text != null) {
+                if (toAdd != null && !toAdd.equals("\n")) // NOI18N
+                {
+                    text += toAdd;
+                }
+                // Update the text
+                doc.atomicLock();
+                try {
+                    String textToReplace = doc.getText(offset, len);
+                    if (text.equals(textToReplace)) {
+                        return false;
+                    }
+
+                    //
+                    if (!text.startsWith("\"")) {
+                        text = quoteText(text);
+                    }
+
+                    //check if there is already an end quote
+                    char ch = doc.getText(offset + len, 1).charAt(0);
+                    if (ch == '"') {
+                        //remove also this end quote since the inserted value is always quoted
+                        len++;
+                    }
+                    //check if there is already an start quote
+                    ch = doc.getText(offset -1, 1).charAt(0);
+                    if (ch == '"') {
+                        //remove also this end quote since the inserted value is always quoted
+                        len++;
+                        offset--;
+                    }
+
+                    doc.remove(offset, len);
+                    doc.insertString(offset, text, null);
+                } catch (BadLocationException e) {
+                    // Can't update
+                } finally {
+                    doc.atomicUnlock();
+                }
+                return true;
+
+            } else {
+                return false;
+            }
+        }
+    }
 
     public static final class EntityPropertyElementItem extends DBElementItem {
 
