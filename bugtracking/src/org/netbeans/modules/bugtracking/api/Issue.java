@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.api;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 
 /**
@@ -51,6 +52,12 @@ import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
  * @author Tomas Stupka
  */
 public final class Issue {
+    
+    /**
+     * issue data were refreshed
+     */
+    public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    
     private final IssueImpl impl;
 
     Issue(IssueImpl impl) {

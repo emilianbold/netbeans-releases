@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
@@ -54,6 +55,22 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
  * @author Tomas Stupka
  */
 public final class Query {
+    
+    /**
+     * queries issue list was changed
+     */
+    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
+
+    /**
+     * query was saved
+     */
+    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
+
+    /**
+     * query was removed
+     */
+    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
+
     private QueryImpl impl;
 
     Query(QueryImpl impl) {
