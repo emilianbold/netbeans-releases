@@ -96,6 +96,7 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
@@ -120,8 +121,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.lookup.ServiceProvider;
 
 /**A support class for writing a test for a Java Hint. A test verifying that correct
  * warnings are produced should look like:
@@ -1187,12 +1186,4 @@ public class HintTest {
         return f;
     }
 
-    @ServiceProvider(service = Lookup.class)
-    public static final class TestLookup extends ProxyLookup {
-
-        public void setLookupsImpl(Lookup... lookups) {
-            setLookups(lookups);
-        }
-
-    }
 }
