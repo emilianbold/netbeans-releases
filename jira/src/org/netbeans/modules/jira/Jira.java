@@ -48,9 +48,11 @@ import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.jira.issue.JiraIssueProvider;
-import org.netbeans.modules.jira.kenai.KenaiSupportImpl;
+import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.jira.issue.JiraTaskListProvider;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.query.JiraQuery;
+import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.repository.JiraStorageManager;
 import org.openide.util.RequestProcessor;
 
@@ -67,17 +69,13 @@ public class Jira {
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.Jira");
     private RequestProcessor rp;
 
-    private KenaiSupport kenaiSupport;
+    private BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> bf;
+    private JiraRepositoryProvider brp;
+    private JiraQueryProvider bqp;
+    private JiraIssueProvider bip;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
-    }
-
-    public KenaiSupport getKenaiSupport() {
-        if(kenaiSupport == null) {
-            kenaiSupport = new KenaiSupportImpl();
-        }
-        return kenaiSupport;
     }
 
     public static synchronized Jira getInstance() {
@@ -87,7 +85,7 @@ public class Jira {
             instance.getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() {
-                    JiraIssueProvider.getInstance();
+                    JiraTaskListProvider.getInstance();
                 }
             });
         }
@@ -137,8 +135,34 @@ public class Jira {
         }
         return storageManager;
     }
+
+    public BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> getBugtrackingFactory() {
+        if(bf == null) {
+            bf = new BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue>();
+        }    
+        return bf;
+    }    
     
     void shutdown () {
         getStorageManager().shutdown();
+    }    
+    
+    public JiraIssueProvider getIssueProvider() {
+        if(bip == null) {
+            bip = new JiraIssueProvider();
+        }
+        return bip; 
+    }
+    public JiraQueryProvider getQueryProvider() {
+        if(bqp == null) {
+            bqp = new JiraQueryProvider();
+        }
+        return bqp; 
+    }
+    public JiraRepositoryProvider getRepositoryProvider() {
+        if(brp == null) {
+            brp = new JiraRepositoryProvider();
+        }
+        return brp; 
     }    
 }

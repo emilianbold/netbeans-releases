@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 
@@ -53,7 +53,7 @@ import org.openide.nodes.Children;
 public class DummyNode extends AbstractNode {
 
     private final String name;
-    private final RepositoryProvider repository;
+    private final RepositoryImpl repository;
 
     public DummyNode() {
         this((String) null);
@@ -63,17 +63,17 @@ public class DummyNode extends AbstractNode {
         this(name, null);
     }
 
-    public DummyNode(RepositoryProvider repository) {
+    public DummyNode(RepositoryImpl repository) {
         this(null, repository);
     }
 
-    public DummyNode(String name, RepositoryProvider repository) {
+    public DummyNode(String name, RepositoryImpl repository) {
         super(Children.LEAF);
         this.name = name;
         this.repository = repository;
     }
 
-    RepositoryProvider getAssociatedRepository() {
+    RepositoryImpl getAssociatedRepository() {
         return repository;
     }
 

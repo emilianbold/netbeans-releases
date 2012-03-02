@@ -42,13 +42,22 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.util.Collection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssueFinder;
+import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -62,7 +71,7 @@ import org.openide.util.lookup.Lookups;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class BugzillaConnector extends BugtrackingConnector {
+public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
     private static BugzillaConnector instance;
@@ -73,19 +82,33 @@ public class BugzillaConnector extends BugtrackingConnector {
         instance = this;
     }
     
-    static BugzillaConnector getInstance() {
+    public static BugzillaConnector getInstance() {
         return instance;
     }
 
     @Override
-    public RepositoryProvider createRepository(RepositoryInfo info) {
-        return new BugzillaRepository(info);
+    public Repository createRepository(RepositoryInfo info) {
+        BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
+        return Bugzilla.getInstance().getBugtrackingFactory().
+                createRepository(
+                    this, 
+                    bugzillaRepository, 
+                    Bugzilla.getInstance().getRepositoryProvider(), 
+                    Bugzilla.getInstance().getQueryProvider(), 
+                    Bugzilla.getInstance().getIssueProvider());
     }
     
     @Override
-    public RepositoryProvider createRepository() {
+    public Repository createRepository() {
         Bugzilla.init();
-        return new BugzillaRepository();
+        BugzillaRepository bugzillaRepository = new BugzillaRepository();
+        return Bugzilla.getInstance().getBugtrackingFactory().
+                createRepository(
+                    this, 
+                    bugzillaRepository, 
+                    Bugzilla.getInstance().getRepositoryProvider(), 
+                    Bugzilla.getInstance().getQueryProvider(), 
+                    Bugzilla.getInstance().getIssueProvider());
     }
 
     public static String getConnectorName() {
@@ -100,9 +123,71 @@ public class BugzillaConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    /******************************************************************************
+     * Kenai
+     ******************************************************************************/
+    
     @Override
-    public Lookup getLookup() {
-        return Lookups.singleton(Bugzilla.getInstance().getKenaiSupport());
+    public Repository createRepository(KenaiProject project) {
+        if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
+            return null;
+        }
+
+        KenaiRepository repo = createKenaiRepository(project, project.getDisplayName(), project.getFeatureLocation());
+        if(BugzillaUtil.isNbRepository(repo)) {
+            NBRepositorySupport.getInstance().setNBBugzillaRepository(repo);
+        }
+        return BugzillaUtil.getRepository(repo);
+    }
+
+    private KenaiRepository createKenaiRepository(KenaiProject kenaiProject, String displayName, String location) {
+        final URL loc;
+        try {
+            loc = new URL(location);
+        } catch (MalformedURLException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        int idx = location.indexOf(IBugzillaConstants.URL_BUGLIST);
+        if (idx <= 0) {
+            Bugzilla.LOG.log(Level.WARNING, "can't get issue tracker url from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+        String productParamUrl = null;
+        String productAttribute = "product=";                           // NOI18N
+        String product = null;
+        int idxProductStart = location.indexOf(productAttribute);
+        if (idxProductStart <= 0) {
+            Bugzilla.LOG.log(Level.WARNING, "can''t get issue tracker product from [{0}, {1}]", new Object[]{displayName, location}); // NOI18N
+            return null;
+        } else {
+            int idxProductEnd = location.indexOf("&", idxProductStart); // NOI18N
+            if(idxProductEnd > -1) {
+                productParamUrl = location.substring(idxProductStart, idxProductEnd);
+                product = location.substring(idxProductStart + productAttribute.length(), idxProductEnd);
+            } else {
+                productParamUrl = location.substring(idxProductStart);
+                product = location.substring(idxProductStart + productAttribute.length());
+            }
+        }
+
+        return new KenaiRepository(kenaiProject, displayName, url, host, productParamUrl, product);
+    }
+
+    @Override
+    public BugtrackingType getType() {
+        return BugtrackingType.BUGZILLA;
+    }
+
+    @Override
+    public Repository findNBRepository() {
+        return NBBugzillaUtils.findNBRepository();
     }
 
 }

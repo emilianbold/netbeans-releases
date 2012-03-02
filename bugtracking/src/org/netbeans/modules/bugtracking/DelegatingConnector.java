@@ -42,15 +42,13 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -117,7 +115,7 @@ public class DelegatingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public RepositoryProvider createRepository(RepositoryInfo info) {
+    public Repository createRepository(RepositoryInfo info) {
         return getDelegate().createRepository(info);
     }
 
@@ -127,13 +125,8 @@ public class DelegatingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public RepositoryProvider createRepository() {
+    public Repository createRepository() {
         return getDelegate().createRepository();
-    }
-
-    @Override
-    public Lookup getLookup() {
-        return getDelegate().getLookup();
     }
 
 }

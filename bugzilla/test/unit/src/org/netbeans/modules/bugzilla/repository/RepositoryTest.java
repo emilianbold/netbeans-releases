@@ -48,12 +48,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.openide.util.test.MockLookup;
 
@@ -91,7 +93,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
     public void testController() throws Throwable {
         BugzillaConnector bc = getConnector();
-        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();       
+        BugzillaRepository repo = new BugzillaRepository();      
         BugzillaRepositoryController c = getController(repo);
         
         // populate
@@ -134,7 +136,7 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
 
     public void testControllerOnValidate() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
         BugzillaConnector bc = getConnector();
-        BugzillaRepository repo = (BugzillaRepository) bc.createRepository();
+        BugzillaRepository repo = new BugzillaRepository();
         BugzillaRepositoryController c = getController(repo);
 
         checkOnValidate(c, REPO_NAME, REPO_URL, null, REPO_PASSWD, true);
@@ -173,15 +175,16 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testRepo() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, Throwable {
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
+        BugzillaRepository repo = new BugzillaRepository(info);
 
         // test queries
-        QueryProvider[] queries = repo.getQueries();
-        assertEquals(0, queries.length);
+        Collection<BugzillaQuery> queries = repo.getQueries();
+        assertEquals(0, queries.size());
 
-        QueryProvider q = repo.createQuery();
+        BugzillaQuery q = repo.createQuery();
         queries = repo.getQueries();
-        assertEquals(0, queries.length); // returns only saved queries
+        assertEquals(0, queries.size()); // returns only saved queries
 
         // save query
         long lastRefresh = System.currentTimeMillis();
@@ -189,18 +192,18 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         BugzillaQuery bq = new BugzillaQuery(QUERY_NAME, repo, parameters, true, false, true);
         repo.saveQuery(bq);
         queries = repo.getQueries();
-        assertEquals(1, queries.length); // returns only saved queries
+        assertEquals(1, queries.size()); // returns only saved queries
 
         // remove query
         repo.removeQuery(bq);
         queries = repo.getQueries();
-        assertEquals(0, queries.length);
+        assertEquals(0, queries.size());
 
         // XXX repo.createIssue();
 
         // get issue
         String id = TestUtil.createIssue(repo, "somari");
-        IssueProvider i = repo.getIssue(id);
+        BugzillaIssue i = repo.getIssue(id);
         assertNotNull(i);
         assertEquals(id, i.getID());
         assertEquals("somari", i.getSummary());
@@ -210,21 +213,22 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         long ts = System.currentTimeMillis();
         String summary1 = "somary" + ts;
         String summary2 = "mary" + ts;
-        BugzillaRepository repo = new BugzillaRepository(REPO_NAME, REPO_NAME, REPO_URL, REPO_USER, REPO_PASSWD.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(REPO_NAME, BugzillaConnector.ID, REPO_URL, REPO_NAME, REPO_NAME, REPO_USER, null, REPO_PASSWD.toCharArray() , null);
+        BugzillaRepository repo = new BugzillaRepository(info);
 
         String id1 = TestUtil.createIssue(repo, summary1);
         String id2 = TestUtil.createIssue(repo, summary2);
 
-        IssueProvider[] issues = repo.simpleSearch(summary1);
-        assertEquals(1, issues.length);
-        assertEquals(summary1, issues[0].getSummary());
+        Collection<BugzillaIssue> issues = repo.simpleSearch(summary1);
+        assertEquals(1, issues.size());
+        assertEquals(summary1, issues.iterator().next().getSummary());
 
         issues = repo.simpleSearch(id1);
         // at least one as id might be also contained
         // in another issues summary
-        assertTrue(issues.length > 0);
-        IssueProvider i = null;
-        for(IssueProvider issue : issues) {
+        assertTrue(issues.size() > 0);
+        BugzillaIssue i = null;
+        for(BugzillaIssue issue : issues) {
             if(issue.getID().equals(id1)) {
                 i = issue;
                 break;
@@ -233,10 +237,10 @@ public class RepositoryTest extends NbTestCase implements TestConstants {
         assertNotNull(i);
 
         issues = repo.simpleSearch(summary2);
-        assertEquals(2, issues.length);
+        assertEquals(2, issues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(IssueProvider issue : issues) {
+        for(BugzillaIssue issue : issues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }

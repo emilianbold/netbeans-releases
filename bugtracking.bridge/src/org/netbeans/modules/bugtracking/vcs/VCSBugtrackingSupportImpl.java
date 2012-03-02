@@ -46,9 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
 
 /**
@@ -62,7 +62,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
 
     @Override
     public void setFirmAssociations(File[] files, String url) {
-        RepositoryProvider repo;
+        Repository repo;
         try {
             repo = KenaiUtil.getRepository(url);
         } catch (IOException ex) {
@@ -73,7 +73,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
             LOG.log(Level.WARNING, "No issue tracker available for the given vcs url {0}", url);         // NOI18N
             return;
         }
-        BugtrackingOwnerSupport.getInstance().setFirmAssociations(files, repo);
+        OwnerUtils.setFirmAssociations(files, repo);
     }
 
 

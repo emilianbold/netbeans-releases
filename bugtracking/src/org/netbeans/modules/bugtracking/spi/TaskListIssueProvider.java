@@ -45,6 +45,7 @@ package org.netbeans.modules.bugtracking.spi;
 import java.net.URL;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.LazyIssue;
 import org.netbeans.modules.bugtracking.tasklist.TaskListProvider;
 
 /**
@@ -160,12 +161,6 @@ public abstract class TaskListIssueProvider {
         }
 
         /**
-         * Implement this to load and return the real issue.
-         * @return the real issue or null
-         */
-        public abstract IssueProvider getIssue ();
-
-        /**
          * If the issue is not valid (previously invalidated by {@link #setValid(boolean)},
          * this will result in repainting the issue in the tasklist after it's next refresh.
          * @return true if the issue is valid, false otherwise
@@ -204,5 +199,7 @@ public abstract class TaskListIssueProvider {
         public String toString () {
             return super.toString() + ": " + getName();                 //NOI18N
         }
+
+        public abstract void open();
     }
 }
