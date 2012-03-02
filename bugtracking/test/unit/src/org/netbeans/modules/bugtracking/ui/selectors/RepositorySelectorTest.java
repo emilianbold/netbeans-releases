@@ -61,7 +61,7 @@ import org.netbeans.modules.bugtracking.TestIssue;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.TestQuery;
 import org.netbeans.modules.bugtracking.TestRepository;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.HelpCtx;
@@ -98,8 +98,8 @@ public class RepositorySelectorTest extends NbTestCase {
         assertEquals(errorMsg, text);
     }
 
-    private void createEditDescriptor(SelectorPanel sp, Repository repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", Repository.class, String.class);
+    private void createEditDescriptor(SelectorPanel sp, RepositoryImpl repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", RepositoryImpl.class, String.class);
         m.setAccessible(true);
         m.invoke(sp, repository, error);
     }

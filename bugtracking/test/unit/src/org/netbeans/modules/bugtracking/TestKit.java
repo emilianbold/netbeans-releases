@@ -45,26 +45,35 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
  *
  * @author tomas
  */
 public class TestKit {
-    public static Repository getRepository(BugtrackingConnector connector, TestRepository repo) {
-        return APIAccessor.IMPL.create(
+    public static RepositoryImpl getRepository(BugtrackingConnector connector, TestRepository repo) {
+        return new RepositoryImpl(
                 connector, 
                 repo, 
                 new TestRepositoryProvider(), 
-                new TestIssueProvider(),
-                new TestQueryProvider());
+                new TestQueryProvider(),
+                new TestIssueProvider());
     }
 
-    public static Issue getIssue(Repository repo, TestIssue issue) {
-        return APIAccessor.IMPL.findIssue(repo, issue);
+    public static IssueImpl getIssue(RepositoryImpl repo, TestIssue issue) {
+        return repo.getIssue(issue);
+    }
+    
+    public static IssueImpl getIssue(Repository repo, TestIssue issue) {
+        return APIAccessor.IMPL.getImpl(repo).getIssue(issue);
     }
 
-    public static Query getQuery(Repository repo, TestQuery query) {
-        return APIAccessor.IMPL.findQuery(repo, query);
+    public static QueryImpl getQuery(RepositoryImpl repo, TestQuery query) {
+        return repo.getQuery(query);
+    }
+
+    public static void openQuery(Query query) {
+        QueryAction.openQuery(APIAccessor.IMPL.getImpl(query), null);
     }
 }

@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
@@ -92,28 +91,28 @@ public class RecentIssuesTest extends NbTestCase {
         assertNotNull(ri);
         assertEquals(0, ri.size());
         
-        List<Issue> ri2 = BugtrackingManager.getInstance().getRecentIssues(getRepository(new RITestRepository("test repo")));
+        List<IssueImpl> ri2 = BugtrackingManager.getInstance().getRecentIssues(getRepository(new RITestRepository("test repo")));
         assertNotNull(ri2);
         assertEquals(0, ri.size());        
     }
 
     public void testAddRecentIssues() throws MalformedURLException, CoreException, IOException {
         final RITestRepository riTestRepo = new RITestRepository("test repo");
-        Repository repo = getRepository(riTestRepo);
-        Issue issue1 = getIssue(repo, new RITestIssue(riTestRepo, "1"));
-        Issue issue2 = getIssue(repo, new RITestIssue(riTestRepo, "2"));
+        RepositoryImpl repo = getRepository(riTestRepo);
+        IssueImpl issue1 = getIssue(repo, new RITestIssue(riTestRepo, "1"));
+        IssueImpl issue2 = getIssue(repo, new RITestIssue(riTestRepo, "2"));
 
         // add issue1
         BugtrackingManager.getInstance().addRecentIssue(repo, issue1);
 
         // test for another repo -> nothing is returned
-        Repository repo2 = getRepository(new RITestRepository("test repo 2"));
-        List<Issue>  issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo2);
+        RepositoryImpl repo2 = getRepository(new RITestRepository("test repo 2"));
+        List<IssueImpl>  issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo2);
         assertNotNull(issues);
         assertEquals(0, issues.size());
 
         // getIssues for repo -> issue1 is returned
-        issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
         assertNotNull(issues);
         assertEquals(1, issues.size());
         assertEquals(issue1.getID(), issues.iterator().next().getID());
@@ -129,7 +128,7 @@ public class RecentIssuesTest extends NbTestCase {
         BugtrackingManager.getInstance().addRecentIssue(repo, issue2);
 
         // getIssues -> issue1 & issue2 are returned
-        issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
         assertNotNull(issues);
         assertEquals(2, issues.size());
         assertEquals(issue2.getID(), issues.get(0).getID());
@@ -140,19 +139,19 @@ public class RecentIssuesTest extends NbTestCase {
         assertNotNull(allIssues);
         assertEquals(1, allIssues.size());
         assertTrue(allIssues.containsKey(repo.getId()));
-        assertRecentIssues(allIssues.get(repo.getId()), new Issue[] {issue2, issue1});
+        assertRecentIssues(allIssues.get(repo.getId()), new IssueImpl[] {issue2, issue1});
     }
 
     public void testAddRecentIssuesMoreThan5() throws MalformedURLException, CoreException, IOException {
         RITestRepository riTestRepo1 = new RITestRepository("test repo");
-        Repository repo1 = getRepository(new RITestRepository("test repo"));
-        Issue repo1issue1 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i1"));
-        Issue repo1issue2 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i2"));
-        Issue repo1issue3 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i3"));
-        Issue repo1issue4 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i4"));
-        Issue repo1issue5 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i5"));
-        Issue repo1issue6 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i6"));
-        Issue repo1issue7 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i7"));
+        RepositoryImpl repo1 = getRepository(new RITestRepository("test repo"));
+        IssueImpl repo1issue1 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i1"));
+        IssueImpl repo1issue2 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i2"));
+        IssueImpl repo1issue3 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i3"));
+        IssueImpl repo1issue4 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i4"));
+        IssueImpl repo1issue5 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i5"));
+        IssueImpl repo1issue6 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i6"));
+        IssueImpl repo1issue7 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i7"));
 
         // add repo1 issues 1, 2, 3, 4, 5, 6, 7,
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue1);
@@ -164,7 +163,7 @@ public class RecentIssuesTest extends NbTestCase {
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue7);
 
         // getIssues for repo1 -> repo1 issues 1..7 are returned
-        List<Issue> issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo1);
+        List<IssueImpl> issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo1);
         assertNotNull(issues);
         assertEquals(7, issues.size());
         assertEquals(repo1issue7.getID(), issues.get(0).getID());
@@ -176,14 +175,14 @@ public class RecentIssuesTest extends NbTestCase {
         assertEquals(repo1issue1.getID(), issues.get(6).getID());
 
         RITestRepository riTestrepo2 = new RITestRepository("test repo2");
-        Repository repo2 = getRepository(riTestrepo2);
-        Issue repo2issue1 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i1"));
-        Issue repo2issue2 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i2"));
-        Issue repo2issue3 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i3"));
-        Issue repo2issue4 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i4"));
-        Issue repo2issue5 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i5"));
-        Issue repo2issue6 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i6"));
-        Issue repo2issue7 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i7"));
+        RepositoryImpl repo2 = getRepository(riTestrepo2);
+        IssueImpl repo2issue1 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i1"));
+        IssueImpl repo2issue2 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i2"));
+        IssueImpl repo2issue3 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i3"));
+        IssueImpl repo2issue4 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i4"));
+        IssueImpl repo2issue5 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i5"));
+        IssueImpl repo2issue6 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i6"));
+        IssueImpl repo2issue7 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i7"));
 
         // add repo2 issues 1, 2, 3, 4, 5, 6, 7,
         BugtrackingManager.getInstance().addRecentIssue(repo2, repo2issue1);
@@ -209,13 +208,13 @@ public class RecentIssuesTest extends NbTestCase {
         // getAll -> repo1 issues 1..7 are returned and repo2 issues 1..7 are returned
         Map<String, List<RecentIssue>> map = BugtrackingManager.getInstance().getAllRecentIssues();
         List<RecentIssue> ri = map.get(repo1.getId());
-        assertRecentIssues(ri, new Issue[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
+        assertRecentIssues(ri, new IssueImpl[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
 
         ri = map.get(repo2.getId());
-        assertRecentIssues(ri, new Issue[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
+        assertRecentIssues(ri, new IssueImpl[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
     }
 
-    private void assertRecentIssues(List<RecentIssue> recent, Issue[] issues) {
+    private void assertRecentIssues(List<RecentIssue> recent, IssueImpl[] issues) {
         assertEquals(recent.size(), issues.length);
         for (int i = 0; i < issues.length; i++) {
             assertEquals(issues[i].getID(), recent.get(i).getIssue().getID());
@@ -294,11 +293,11 @@ public class RecentIssuesTest extends NbTestCase {
         }
     }
     
-    private Repository getRepository(RITestRepository repo) {
+    private RepositoryImpl getRepository(RITestRepository repo) {
         return TestKit.getRepository(new RITestConector(), repo);
     }
     
-    private Issue getIssue(Repository repo2, RITestIssue riTestIssue) {
+    private IssueImpl getIssue(RepositoryImpl repo2, RITestIssue riTestIssue) {
         return TestKit.getIssue(repo2, riTestIssue);
     }
     

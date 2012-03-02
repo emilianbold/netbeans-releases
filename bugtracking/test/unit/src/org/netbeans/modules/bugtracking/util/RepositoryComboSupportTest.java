@@ -66,8 +66,10 @@ import org.openide.util.lookup.InstanceContent;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static org.junit.Assert.*;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
@@ -130,9 +132,9 @@ public class RepositoryComboSupportTest {
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
-        protected Repository repository1;
-        protected Repository repository2;
-        protected Repository repository3;
+        protected RepositoryImpl repository1;
+        protected RepositoryImpl repository2;
+        protected RepositoryImpl repository3;
 
         public AbstractRepositoryComboTezt() {
             DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
@@ -145,17 +147,17 @@ public class RepositoryComboSupportTest {
         }
         
         protected void createRepository1() {
-            repository1 = connector.createRepository("alpha");
+            repository1 = APIAccessor.IMPL.getImpl(connector.createRepository("alpha"));
             repoNode1 = new DummyNode("node1", repository1);
         }
 
         protected void createRepository2() {
-            repository2 = connector.createRepository("beta");
+            repository2 = APIAccessor.IMPL.getImpl(connector.createRepository("beta"));
             repoNode2 = new DummyNode("node2", repository2);
         }
 
         protected void createRepository3() {
-            repository3 = connector.createRepository("gamma");
+            repository3 = APIAccessor.IMPL.getImpl(connector.createRepository("gamma"));
             repoNode3 = new DummyNode("node3", repository3);
         }
 
@@ -682,7 +684,7 @@ public class RepositoryComboSupportTest {
         runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, repository2);
+                return RepositoryComboSupport.setup(null, comboBox, repository2.getRepository());
             }
             @Override
             protected void scheduleTests(ProgressTester progressTester) {

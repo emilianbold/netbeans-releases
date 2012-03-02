@@ -49,7 +49,6 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 

@@ -115,7 +115,7 @@ public class IssueAccessorTest extends NbTestCase {
             throw new RuntimeException(ex);
         }
         if(IATestConnector.kolibaRepository == null) {
-            IATestConnector.kolibaRepository = TestKit.getRepository(IATestConnector.getInstance(), new IATestRepository("nb-jnet-test"));
+            IATestConnector.kolibaRepository = TestKit.getRepository(IATestConnector.getInstance(), new IATestRepository("nb-jnet-test")).getRepository();
 //            TestConnector.goldenProjectRepository = new TestRepository("golden-project-1");
         }
     }
@@ -132,9 +132,9 @@ public class IssueAccessorTest extends NbTestCase {
 
     public void testRecentIssuesOnOpen() throws MalformedURLException, CoreException, IOException, InterruptedException {
         
-        Issue issue1 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("1"));
-        Issue issue2 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("2"));
-        Issue issue3 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("3"));
+        Issue issue1 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("1")).getIssue();
+        Issue issue2 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("2")).getIssue();
+        Issue issue3 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("3")).getIssue();
 
         KenaiIssueAccessor accessor = getIssueAccessor();
 
@@ -212,16 +212,16 @@ public class IssueAccessorTest extends NbTestCase {
     }
 
     private static class IATestRepository extends TestRepository {
-        private final Repository delegate;
+        private final RepositoryImpl delegate;
 
         public IATestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
-            delegate = KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName());
+            delegate = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
         }
 
         @Override
         public RepositoryInfo getInfo() {
-            return APIAccessor.IMPL.getInfo(delegate);
+            return delegate.getInfo();
         }
         
         public Lookup getLookup() {

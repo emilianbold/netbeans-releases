@@ -125,19 +125,19 @@ public class BugtrackingUtilTest {
 
     @Test
     public void testIsNbRepositoryRepo() {
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository("enembenem"))));
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository("enembenem")).getUrl()));
         assertTrue(BugtrackingUtil.isNbRepository("https://netbeans.org/bugzilla"));        
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryNullRepo() {
         BUTestRepository repo = null;
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, repo)));
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, repo).getUrl()));
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryRepoNullUrl() {
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository(null))));
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository(null)).getUrl()));
     }
 
     private class BUTestRepository extends TestRepository {

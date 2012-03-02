@@ -57,8 +57,8 @@ import javax.swing.DefaultComboBoxModel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.HookType;
@@ -240,7 +240,7 @@ public class SvnHookTest extends NbTestCase {
         Field f = panel.getClass().getDeclaredField("qs");
         f.setAccessible(true);
         QuickSearchComboBar qs = (QuickSearchComboBar) f.get(panel);
-        Method m = qs.getClass().getDeclaredMethod("setIssue", Issue.class);
+        Method m = qs.getClass().getDeclaredMethod("setIssue", IssueImpl.class);
         m.setAccessible(true);
         HookIssue.getInstance().reset();
         m.invoke(qs, TestKit.getIssue(repository, HookIssue.getInstance()));
@@ -264,7 +264,7 @@ public class SvnHookTest extends NbTestCase {
 
     private void preparePanel(HookPanel panel) throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
         HookRepository hookRepository = new HookRepository();
-        Repository repository = TestKit.getRepository(HookConnector.getInstance(), hookRepository);
+        Repository repository = TestKit.getRepository(HookConnector.getInstance(), hookRepository).getRepository();
         setRepository(repository, panel);
         setIssue(repository, panel);
         panel.enableFields(); // emulate event

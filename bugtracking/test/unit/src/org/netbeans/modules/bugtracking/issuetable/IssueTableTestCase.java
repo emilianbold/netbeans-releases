@@ -45,8 +45,8 @@ package org.netbeans.modules.bugtracking.issuetable;
 import java.lang.reflect.Field;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
  *

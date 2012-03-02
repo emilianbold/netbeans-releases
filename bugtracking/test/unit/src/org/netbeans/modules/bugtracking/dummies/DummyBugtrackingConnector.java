@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.util.Lookup;
 
@@ -67,7 +68,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
-    private List<Repository> repositories;
+    private List<RepositoryImpl> repositories;
     public static DummyBugtrackingConnector instance;
 
     public DummyBugtrackingConnector() {
@@ -80,9 +81,9 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     public Repository createRepository(String repositoryName) {
-        Repository newRepository = TestKit.getRepository(instance, new DummyRepository(this, repositoryName));
+        RepositoryImpl newRepository = TestKit.getRepository(instance, new DummyRepository(this, repositoryName));
         storeRepository(newRepository);
-        return newRepository;
+        return newRepository.getRepository();
     }
 
     private String generateNewRepositoryName() {
@@ -93,15 +94,15 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         }
     }
 
-    private void storeRepository(Repository repository) {
+    private void storeRepository(RepositoryImpl repository) {
         if (repositories == null) {
-            repositories = new ArrayList<Repository>();
+            repositories = new ArrayList<RepositoryImpl>();
         }
         repositories.add(repository);
         RepositoryRegistry.getInstance().addRepository(repository);
     }
 
-    void removeRepository(Repository repository) {
+    void removeRepository(RepositoryImpl repository) {
         if (repositories == null) {
             return;
         }
@@ -112,7 +113,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
 
     public void reset() {
         if(repositories != null) {
-            for (Repository repository : repositories) {
+            for (RepositoryImpl repository : repositories) {
                 RepositoryRegistry.getInstance().removeRepository(repository);
             }
             repositories = null;

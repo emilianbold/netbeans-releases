@@ -60,7 +60,11 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
+import org.netbeans.modules.bugtracking.dummies.DummyRepository;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -381,6 +385,7 @@ public class StorageTest extends NbTestCase {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
-        return new IssueCache<DummyIssue, Object>("dummy", ia, null, null);
+        RepositoryImpl impl = TestKit.getRepository(new DummyBugtrackingConnector(), new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
+        return new IssueCache<DummyIssue, Object>("dummy", ia, null, impl.getRepository());
     }
 }

@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
@@ -77,26 +76,26 @@ public class RepositoryRegistryTest extends NbTestCase {
 
     @Override
     protected void tearDown() throws Exception {   
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
-        for (Repository repository : repos) {
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
+        for (RepositoryImpl repository : repos) {
             RepositoryRegistry.getInstance().removeRepository(repository);
         }
         RepositoryRegistry.getInstance().flushRepositories();
     }
 
     public void testEmpty() {
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(0, repos.size());
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
         assertEquals(0, repos.size());
     }
     
     public void testAddGetRemove() {
-        Repository repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
+        RepositoryImpl repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(1, repos.size());
         
         // remove
@@ -106,11 +105,11 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
     
     public void testWrongConnector() {
-        Repository repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
+        RepositoryImpl repo = getRepository(ID_CONNECTOR1, new MyRepository("1"));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo);
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(1, repos.size());
     
         repos = RepositoryRegistry.getInstance().getRepositories("fake");
@@ -118,17 +117,17 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
     
     public void testDifferentConnectors() {
-        Repository repo1c1 = getRepository(ID_CONNECTOR1, new MyRepository("r1", ID_CONNECTOR1));
-        Repository repo2c1 = getRepository(ID_CONNECTOR1, new MyRepository("r2", ID_CONNECTOR1));
-        Repository repo1c2 = getRepository(ID_CONNECTOR2, new MyRepository("r1", ID_CONNECTOR2));
-        Repository repo2c2 = getRepository(ID_CONNECTOR2, new MyRepository("r2", ID_CONNECTOR2));
+        RepositoryImpl repo1c1 = getRepository(ID_CONNECTOR1, new MyRepository("r1", ID_CONNECTOR1));
+        RepositoryImpl repo2c1 = getRepository(ID_CONNECTOR1, new MyRepository("r2", ID_CONNECTOR1));
+        RepositoryImpl repo1c2 = getRepository(ID_CONNECTOR2, new MyRepository("r1", ID_CONNECTOR2));
+        RepositoryImpl repo2c2 = getRepository(ID_CONNECTOR2, new MyRepository("r2", ID_CONNECTOR2));
 
         // add
         RepositoryRegistry.getInstance().addRepository(repo1c1);
         RepositoryRegistry.getInstance().addRepository(repo2c1);
         RepositoryRegistry.getInstance().addRepository(repo1c2);
         RepositoryRegistry.getInstance().addRepository(repo2c2);
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories();
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories();
         assertEquals(4, repos.size());
         repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(2, repos.size());
@@ -151,15 +150,15 @@ public class RepositoryRegistryTest extends NbTestCase {
     }
 
     public void testListener() {
-        Repository repo1 = getRepository(ID_CONNECTOR1, new MyRepository("1"));
-        Repository repo2 = getRepository(ID_CONNECTOR1, new MyRepository("2"));
+        RepositoryImpl repo1 = getRepository(ID_CONNECTOR1, new MyRepository("1"));
+        RepositoryImpl repo2 = getRepository(ID_CONNECTOR1, new MyRepository("2"));
         class L implements PropertyChangeListener {
-            private Collection<Repository> newRepos;
-            private Collection<Repository> oldRepos;
+            private Collection<RepositoryImpl> newRepos;
+            private Collection<RepositoryImpl> oldRepos;
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                oldRepos = (Collection<Repository>) evt.getOldValue();
-                newRepos = (Collection<Repository>) evt.getNewValue();
+                oldRepos = (Collection<RepositoryImpl>) evt.getOldValue();
+                newRepos = (Collection<RepositoryImpl>) evt.getNewValue();
             }
         };
         L l = new L();
@@ -207,14 +206,14 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryInfo info = new RepositoryInfo("repoid", ID_CONNECTOR1, "http://url", null, null, null, null, null, null);
         RepositoryRegistry.getInstance().putRepository(getRepository(ID_CONNECTOR1, new MyRepository(info)));
         
-        Collection<Repository> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(ID_CONNECTOR1);
         assertEquals(1, repos.size());
-        Repository repo = repos.iterator().next();
+        RepositoryImpl repo = repos.iterator().next();
         assertEquals("repoid", repo.getId());
-        assertEquals(ID_CONNECTOR1, APIAccessor.IMPL.getInfo(repo).getConnectorId());
+        assertEquals(ID_CONNECTOR1, repo.getConnectorId());
     }
 
-    private Repository getRepository(String connecrorID, MyRepository myRepository) {
+    private RepositoryImpl getRepository(String connecrorID, MyRepository myRepository) {
         DelegatingConnector connector = findConnector(connecrorID);
         return TestKit.getRepository(connector, myRepository);
     }
@@ -306,7 +305,7 @@ public class RepositoryRegistryTest extends NbTestCase {
 
         @Override
         public Repository createRepository(RepositoryInfo info) {
-            return TestKit.getRepository(this, new MyRepository(info));
+            return TestKit.getRepository(this, new MyRepository(info)).getRepository();
         }
 
         @Override

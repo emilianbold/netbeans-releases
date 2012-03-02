@@ -185,23 +185,23 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(ids.contains(id1));
         assertTrue(ids.contains(id2));
 
-        Collection<Issue> is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), "" + ts); // shoud return both issues
-        assertEquals(2, is.size());
-        summaries = new ArrayList<String>();
-        ids = new ArrayList<String>();
-        for(Issue issue : is) {
-            summaries.add(issue.getSummary());
-            ids.add(issue.getID());
-        }
-        assertTrue(summaries.contains(summary1));
-        assertTrue(summaries.contains(summary2));
-        assertTrue(ids.contains(id1));
-        assertTrue(ids.contains(id2));
-        
-        is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), summary1); // shoud return 1st issue
-        assertEquals(1, is.size());
-        assertEquals(id1, is.iterator().next().getID());
-        assertEquals(summary1, is.iterator().next().getSummary());
+//        Collection<Issue> is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), "" + ts); // shoud return both issues
+//        assertEquals(2, is.size());
+//        summaries = new ArrayList<String>();
+//        ids = new ArrayList<String>();
+//        for(Issue issue : is) {
+//            summaries.add(issue.getSummary());
+//            ids.add(issue.getID());
+//        }
+//        assertTrue(summaries.contains(summary1));
+//        assertTrue(summaries.contains(summary2));
+//        assertTrue(ids.contains(id1));
+//        assertTrue(ids.contains(id2));
+//        
+//        is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), summary1); // shoud return 1st issue
+//        assertEquals(1, is.size());
+//        assertEquals(id1, is.iterator().next().getID());
+//        assertEquals(summary1, is.iterator().next().getSummary());
     }
 
     // XXX test obsolete status

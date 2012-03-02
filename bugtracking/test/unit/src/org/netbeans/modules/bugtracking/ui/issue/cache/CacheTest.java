@@ -57,7 +57,7 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.*;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueAccessor;
@@ -367,8 +367,8 @@ public class CacheTest extends NbTestCase {
     private class CTestIssue extends TestIssue {
         private String[] dataArray;
         private Map<String, String> attrs = new HashMap<String, String>(3);
-        private Repository repository;
-        public CTestIssue(Repository repository, String data) {
+        private RepositoryImpl repository;
+        public CTestIssue(RepositoryImpl repository, String data) {
             this.repository = repository;
             setData(data);
         }
@@ -472,7 +472,7 @@ public class CacheTest extends NbTestCase {
         }
 
         private class TestCache extends IssueCache<CTestIssue, String> {
-            public TestCache(String nameSpace, Repository repository) {
+            public TestCache(String nameSpace, RepositoryImpl repository) {
                 super(
                     nameSpace, 
                     new IssueAccessor<CTestIssue, String>() {
@@ -509,7 +509,7 @@ public class CacheTest extends NbTestCase {
                         }
                     },
                     new CTestIssueProvider(), 
-                    repository);
+                    repository.getRepository());
             }
             
             protected void cleanup() {

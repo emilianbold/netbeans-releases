@@ -49,7 +49,9 @@ import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -120,7 +122,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                QueryAction.openQuery(BugzillaUtil.getQuery(q), null);
+                TestKit.openQuery(BugzillaUtil.getQuery(q));
             }
         }).waitFinished();
         assertFalse(lh.isDone());    // but this one wasn't yet
@@ -156,7 +158,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                QueryAction.openQuery(BugzillaUtil.getQuery(q), null);
+                TestKit.openQuery(BugzillaUtil.getQuery(q));
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();
@@ -178,41 +180,6 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             ic.add(new DummyBugtrackingOwnerSupport());
             ic.add(new BugzillaTaskListProvider());
         }
-    }
-    
-    public static class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
-        @Override
-        protected Repository getRepository(DataObject dataObj) {
-            return null;
-        }
-        @Override
-        public Repository getRepository(Project project, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        public Repository getRepository(File file, String issueId, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        protected Repository getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
-            return null;
-        }
-        @Override
-        public void setFirmAssociation(File file, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setFirmAssociations(File[] files, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setLooseAssociation(ContextType contextType, Repository repository) {
-            // do nothing
-        }
-        @Override
-        public void setLooseAssociation(File file, Repository repository) {
-            // do nothing
-        }        
     }
 
 }
