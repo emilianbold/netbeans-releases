@@ -71,8 +71,9 @@ public class JsIndex {
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
+    public static final String FIELD_PARAMETERS = "param"; //NOI18N
     
-    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL, FIELD_IS_DECLARED};
+    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL, FIELD_IS_DECLARED, FIELD_RETURN_TYPES, FIELD_PARAMETERS};
     public static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_JS_KIND};
     
     private JsIndex(QuerySupport querySupport) {

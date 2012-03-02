@@ -463,12 +463,13 @@ public class ModelVisitor extends PathNodeVisitor {
             if(previousVisited instanceof CallNode) {
                 // TODO there should be handled anonymous object that are going as parameter to a funciton
                 //create anonymous object
-                JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode, (CallNode)previousVisited, modelBuilder);
+                JsObjectImpl object = ModelElementFactory.createAnonymousObject(parserResult, objectNode,  modelBuilder);
                 modelBuilder.setCurrentObject(object);
                 return super.visit(objectNode, onset);
-            }
-            if (!(previousVisited instanceof ReturnNode
-                    || previousVisited instanceof CallNode)) {
+            } else if (previousVisited instanceof ReturnNode) {
+                JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
+                modelBuilder.setCurrentObject(objectScope);
+            } else {
                 List<Identifier> fqName = null;
                 int pathSize = getPath().size();
                 boolean isDeclaredInParent = false;
@@ -499,9 +500,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject(objectScope);
             }
         } else {
-            if (!(previousVisited instanceof ReturnNode)) {
-                modelBuilder.reset();
-            }
+            modelBuilder.reset();
         }
 
         return super.visit(objectNode, onset);

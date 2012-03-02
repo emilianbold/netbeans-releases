@@ -53,9 +53,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionParamTypes extends JsTestBase {
+public class JsCodeCompletionParamTypesTest extends JsTestBase {
     
-    public JsCodeCompletionParamTypes(String testName) {
+    public JsCodeCompletionParamTypesTest(String testName) {
         super(testName);
     }
     
@@ -64,6 +64,14 @@ public class JsCodeCompletionParamTypes extends JsTestBase {
     }
     
     public void testParameterTypesMethodDefinedInOtherFile01() throws Exception {
+        checkCompletion("testfiles/completion/paramTypes/testFile.js", "MyParamTestContext.^definedInOtherFile(22);", false);
+    }
+    
+    public void testShowMethodDefinedInOtherFile01() throws Exception {
+        checkCompletion("testfiles/completion/paramTypes/paramTypes01.js", "MyParamTestContext.^testParamDoc();", false);
+    }
+    
+    public void testShowMethodDefinedInOtherFile02() throws Exception {
         checkCompletion("testfiles/completion/paramTypes/testFile.js", "MyParamTestContext.^definedInOtherFile(22);", false);
     }
     

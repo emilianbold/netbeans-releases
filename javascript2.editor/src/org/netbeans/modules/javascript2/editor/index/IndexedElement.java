@@ -96,9 +96,7 @@ public class IndexedElement extends JsElementImpl {
         }
         elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
         
-        if (object.getJSKind() == JsElement.Kind.METHOD
-                || object.getJSKind() == JsElement.Kind.FUNCTION
-                || object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+        if (object.getJSKind().isFunction()) {
             sb = new StringBuilder();
             for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
                 sb.append(type.getType());
@@ -107,7 +105,9 @@ public class IndexedElement extends JsElementImpl {
                 sb.append("|");
             }
             elementDocument.addPair(JsIndex.FIELD_RETURN_TYPES, sb.toString(), false, true);
+            elementDocument.addPair(JsIndex.FIELD_PARAMETERS, codeParameters(((JsFunction)object).getParameters()), false, true);
         }
+        
         return elementDocument;
     }
     
@@ -117,7 +117,19 @@ public class IndexedElement extends JsElementImpl {
         boolean isDeclared = "1".equals(indexResult.getValue(JsIndex.FIELD_IS_DECLARED)); //NOI18N
         JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
-        IndexedElement result = new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+        IndexedElement result;
+        if (!kind.isFunction()) {
+            result = new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+        } else {
+            Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
+            Collection<String>rTypes = new ArrayList<String>();
+            for (TypeUsage type : returnTypes) {
+                rTypes.add(type.getType());
+            }
+            String paramText = indexResult.getValue(JsIndex.FIELD_PARAMETERS);
+            LinkedHashMap<String, Collection<String>> params  = decodeParameters(paramText);
+            result = new FunctionIndexedElement(fo, name, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC), params, rTypes);
+        }
         return result;
     }
     
@@ -167,21 +179,7 @@ public class IndexedElement extends JsElementImpl {
         result.append(jsKind.getId()).append(';');  //NOI18N
         result.append(property.isDeclared() ? "1" : "0").append(';'); //NOI18N
         if (jsKind.isFunction()) {
-            for (Iterator<? extends JsObject> it = ((JsFunction)property).getParameters().iterator(); it.hasNext();) {
-                JsObject parametr = it.next();
-                result.append(parametr.getName());
-                result.append(":");
-                for(Iterator<? extends TypeUsage> itType = parametr.getAssignmentForOffset(parametr.getOffset() + 1).iterator(); itType.hasNext();) {
-                    TypeUsage type = itType.next();
-                    result.append(type.getType());
-                    if (itType.hasNext()) {
-                        result.append("|");
-                    }
-                }
-                if (it.hasNext()) {
-                    result.append(',');
-                }
-            }
+            result.append(codeParameters(((JsFunction)property).getParameters()));
             result.append(";");
             for (Iterator<? extends TypeUsage> it = ((JsFunction)property).getReturnTypes().iterator(); it.hasNext();) {
                 TypeUsage type = it.next();
@@ -195,6 +193,47 @@ public class IndexedElement extends JsElementImpl {
         return result.toString();
     }
     
+    private static String codeParameters(Collection<? extends JsObject> params) {
+        StringBuilder result = new StringBuilder();
+        for (Iterator<? extends JsObject> it = params.iterator(); it.hasNext();) {
+            JsObject parametr = it.next();
+            result.append(parametr.getName());
+            result.append(":");
+            for (Iterator<? extends TypeUsage> itType = parametr.getAssignmentForOffset(parametr.getOffset() + 1).iterator(); itType.hasNext();) {
+                TypeUsage type = itType.next();
+                result.append(type.getType());
+                if (itType.hasNext()) {
+                    result.append("|");
+                }
+            }
+            if (it.hasNext()) {
+                result.append(',');
+            }
+        }
+        return result.toString();
+    }
+    
+    private static LinkedHashMap<String, Collection<String>> decodeParameters(String paramsText) {
+        LinkedHashMap<String, Collection<String>> parameters = new LinkedHashMap<String, Collection<String>>();
+        for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
+            String param = stringTokenizer.nextToken();
+            int index = param.indexOf(':');
+            Collection<String> types = new ArrayList<String>();
+            String paramName;
+            if (index > 0) {
+                paramName = param.substring(0, index);
+                String typesText = param.substring(index + 1);
+                for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
+                    types.add(stParamType.nextToken());
+                }
+            } else {
+                paramName = param;
+            }
+            parameters.put(paramName, types);
+        }
+        return parameters;
+    }
+    
     private static IndexedElement decodeProperty(String text, FileObject fo) {
         String[] parts = text.split(";");
         String name = parts[0];
@@ -203,23 +242,7 @@ public class IndexedElement extends JsElementImpl {
         if (parts.length > 3) {
             if (jsKind.isFunction()) {
                 String paramsText = parts[3];
-                LinkedHashMap<String, Collection<String>> parameters = new LinkedHashMap<String, Collection<String>>();
-                for (StringTokenizer stringTokenizer = new StringTokenizer(paramsText, ","); stringTokenizer.hasMoreTokens();) {
-                    String param = stringTokenizer.nextToken();
-                    int index = param.indexOf(':');
-                    Collection<String> types = new ArrayList<String>();
-                    String paramName;
-                    if (index > 0) {
-                        paramName = param.substring(0, index);
-                        String typesText = param.substring(index + 1);
-                        for (StringTokenizer stParamType = new StringTokenizer(typesText, "|"); stParamType.hasMoreTokens();) {
-                            types.add(stParamType.nextToken());
-                        }
-                    } else {
-                        paramName = param;
-                    }
-                    parameters.put(paramName, types);
-                }
+                LinkedHashMap<String, Collection<String>> parameters = decodeParameters(paramsText);
                 Collection<String> returnTypes = new ArrayList();
                 String returnTypesText = parts[4];
                 for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
