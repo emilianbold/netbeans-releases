@@ -58,6 +58,7 @@ import org.netbeans.modules.java.hints.jackpot.spi.PatternConvertor;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
 import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.providers.spi.Trigger;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
@@ -100,6 +101,7 @@ public class JackpotBaseRefactoring2 {
         List<HintDescription> descriptions = new ArrayList<HintDescription>();
 
         for (HintDescription hd : PatternConvertor.create(inputJackpotPattern)) {
+            final String triggerPattern = ((Trigger.PatternDescription) hd.getTrigger()).getPattern();
             descriptions.add(HintDescriptionFactory.create().setTrigger(hd.getTrigger()).setWorker(new Worker() {
                 @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
                     final Map<String, TypeMirrorHandle<?>> constraintsHandles = new HashMap<String, TypeMirrorHandle<?>>();
@@ -120,7 +122,7 @@ public class JackpotBaseRefactoring2 {
                                 constraints.put(c.getKey(), c.getValue().resolve(wc));
                             }
 
-                            Pattern pattern = PatternCompiler.compile(wc, inputJackpotPattern, constraints, Collections.<String>emptyList());
+                            Pattern pattern = PatternCompiler.compile(wc, triggerPattern, constraints, Collections.<String>emptyList());
                             Collection<? extends Occurrence> occurrence = Matcher.create(wc).setTreeTopSearch().setSearchRoot(ctx.getPath()).match(pattern);
 
                             assert occurrence.size() == 1;
