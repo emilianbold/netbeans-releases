@@ -79,6 +79,7 @@ import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.ProfilerIcons;
 import org.openide.DialogDisplayer;
+import org.openide.util.HelpCtx;
 
 
 /**
@@ -106,8 +107,12 @@ import org.openide.DialogDisplayer;
     "NewCustomConfiguration_ExistingRadioAccessDescr=Copy settings from existing configuration",
     "NewCustomConfiguration_OkButtonText=OK"
 })
-public class NewCustomConfiguration extends JPanel implements ChangeListener, ListSelectionListener, DocumentListener {
+public class NewCustomConfiguration extends JPanel implements ChangeListener, ListSelectionListener, DocumentListener, HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+    
+    private static final String HELP_CTX_KEY_NEW = "NewCustomConfiguration.HelpCtx"; // NOI18N
+    private static final String HELP_CTX_KEY_DUPLICATE = "DuplicateConfiguration.HelpCtx"; // NOI18N
+    private static final String HELP_CTX_KEY_RENAME = "RenameConfiguration.HelpCtx"; // NOI18N
 
     // --- Constants declaration -------------------------------------------------
     private static final int MODE_NEW_ANY = 0;
@@ -244,6 +249,20 @@ public class NewCustomConfiguration extends JPanel implements ChangeListener, Li
         }
 
         return newSettings;
+    }
+    
+    public HelpCtx getHelpCtx() {
+        switch (mode) {
+            case MODE_NEW_ANY:
+            case MODE_NEW_TYPE:
+                return new HelpCtx(HELP_CTX_KEY_NEW);
+            case MODE_DUPLICATE:
+                return new HelpCtx(HELP_CTX_KEY_DUPLICATE);
+            case MODE_RENAME:
+                return new HelpCtx(HELP_CTX_KEY_RENAME);
+            default:
+                return null;
+        }
     }
 
     public void changedUpdate(DocumentEvent e) {
