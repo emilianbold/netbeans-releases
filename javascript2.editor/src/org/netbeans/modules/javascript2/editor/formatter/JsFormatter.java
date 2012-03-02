@@ -130,15 +130,13 @@ public class JsFormatter implements Formatter {
 
                     switch (token.getKind()) {
                         case AFTER_BINARY_OPERATOR:
+                            if (CodeStyle.get(doc).spaceAroundBinaryOps()) {
+                                offsetDiff = addSpaceAfter(tokens, i, doc, offsetDiff);
+                            }
+                            break;
                         case AFTER_COMMA:
-                            next = getNextNonVirtual(token);
-                            if (next != null
-                                    && next.getKind() != FormatToken.Kind.WHITESPACE
-                                    && next.getKind() != FormatToken.Kind.EOL) {
-                                // TODO is previous token always comma ?
-                                FormatToken comma = tokens.get(i - 1);
-                                offsetDiff = insert(doc, comma.getOffset() + comma.getText().length(),
-                                        " ", offsetDiff); // NOI18N
+                            if (CodeStyle.get(doc).spaceAfterComma()) {
+                                offsetDiff = addSpaceAfter(tokens, i, doc, offsetDiff);
                             }
                             break;
                         case SOURCE_START:
@@ -214,6 +212,23 @@ public class JsFormatter implements Formatter {
                 LOGGER.log(Level.INFO, "Formatting changes: {0} ms", (System.nanoTime() - startTime) / 1000000);
             }
         });
+    }
+
+    private int addSpaceAfter(List<FormatToken> tokens, int index,
+            BaseDocument doc, int offsetDiff) {
+
+        FormatToken token = tokens.get(index);
+        FormatToken next = getNextNonVirtual(token);
+
+        if (next != null
+                && next.getKind() != FormatToken.Kind.WHITESPACE
+                && next.getKind() != FormatToken.Kind.EOL) {
+
+            FormatToken comma = tokens.get(index - 1);
+            return insert(doc, comma.getOffset() + comma.getText().length(),
+                    " ", offsetDiff); // NOI18N
+        }
+        return offsetDiff;
     }
 
     private boolean isContinuation(List<FormatToken> tokens, int index) {
