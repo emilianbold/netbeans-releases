@@ -192,6 +192,9 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -598,7 +601,8 @@ public final class TakeSnapshotProfilingPoint extends CodeProfilingPoint.Single 
         }
 
         synchronized(resultsSync) {
-            results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(), snapshotFilename));
+            if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(), snapshotFilename));
         }
         getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
     }
