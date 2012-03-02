@@ -47,6 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.lib.properties.model.TokenNodeModel;
 import org.openide.util.Exceptions;
 
 /**
@@ -113,7 +114,7 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
     @Override
     public void visit(Node node) {
         //assuming model class elements cannot nest
-        String modelClassName = getModelClassNameForNodeName(node.getName());
+        String modelClassName = getModelClassNameForNodeName(node.name());
         if (current.isEmpty()) {
             Class modelClass = getModelClass(modelClassName);
             if (modelClass != null) {
@@ -135,21 +136,39 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
 
     private void handleNode(String modelClassName, Node node) {
         //1. find the corresponding field in the current node
+        Class<? extends NodeModel> currentModelClass = current.peek().getClass();
         String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
         Class<?> constructorArgumentClass;
+        Class<?> fieldType;
         if (node instanceof Node.ResolvedTokenNode) {
             constructorArgumentClass = Node.ResolvedTokenNode.class;
-        } else if (node instanceof Node.GroupNode) {
+            //do not derive the model class type from the field type since there 
+            //doesn't have to be any for the token nodes
+            fieldType = TokenNodeModel.class;
+            
+        } else if (node instanceof Node.GrammarElementNode) {
             constructorArgumentClass = Node.class;
+            //get the model type from the field type
+            try {
+                Field field = currentModelClass.getField(submodelFieldName);
+                fieldType = field.getType();
+            } catch (NoSuchFieldException nsfe) {
+//                String msg = String.format("Processing node %s: No public field %s found in the model class %s", node, submodelFieldName, currentModelClass);
+//                throw new RuntimeException(msg, nsfe);
+                
+                //having a field for each possinle subnode is now not necessary
+                //such node children are simply ignored and the node model is responsible
+                //for handling them manually
+                current.peek().setUnhandledChild(node);
+                
+                return ;
+                
+            }
         } else {
             throw new IllegalStateException();
         }
-
-        Class<? extends NodeModel> currentModelClass = current.peek().getClass();
+        
         try {
-            Field field = currentModelClass.getField(submodelFieldName);
-            Class<?> fieldType = field.getType();
-
             Constructor<?> constructor = fieldType.getConstructor(constructorArgumentClass);
             NodeModel modelInstance = (NodeModel) constructor.newInstance(node);
 
@@ -157,9 +176,6 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
 
             current.push(modelInstance);
 
-        } catch (NoSuchFieldException ex) {
-            String msg = String.format("Processing node %s: No public field %s found in the model class %s", node, submodelFieldName, currentModelClass);
-            throw new RuntimeException(msg, ex);
         } catch (Exception e) {
             /*
              * NoSuchMethodException, InstantiationException,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.api.properties;
+
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
+import org.netbeans.modules.css.lib.api.properties.Token;
+import org.netbeans.modules.css.lib.api.properties.Tokenizer;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 
 /**
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public final class GrammarResolverResult {
+    
+    private Tokenizer tokenizer;
+    private boolean inputResolved;
+    private List<ResolvedToken> resolvedTokens;    
+    private Set<ValueGrammarElement> alternatives;
+    private Node parseTreeRoot;
 
-    public T getEdge(Edge edge);
+    public GrammarResolverResult(Tokenizer tokenizer, boolean inputResolved, List<ResolvedToken> resolvedTokens, Set<ValueGrammarElement> alternatives, Node parseTreeRoot) {
+        this.tokenizer = tokenizer;
+        this.inputResolved = inputResolved;
+        this.resolvedTokens = resolvedTokens;
+        this.alternatives = alternatives;
+        this.parseTreeRoot = parseTreeRoot;
+    }
+    
+    /**
+     * returns a list of value items not parsed
+     */
+    public List<Token> left() {
+        return tokenizer.tokensList().subList(tokenizer.tokenIndex(), tokenizer.tokensCount());
+    }
+    
+    public List<Token> tokens() {
+        return tokenizer.tokensList();
+    }
 
+    public List<ResolvedToken> resolved() {
+        return resolvedTokens;
+    }
+
+    public boolean success() {
+        return inputResolved;
+    }
+
+    public Set<ValueGrammarElement> getAlternatives() {
+        return alternatives;
+    }
+    
+    public Node getParseTree() {
+        return parseTreeRoot;
+    }
+    
 }

@@ -39,14 +39,31 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
+
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+
+
 
 /**
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
 
-    public T getEdge(Edge edge);
+
+    public BorderColor(Node node) {
+        super(node);
+    }
+
+    @Override
+    public BoxEdgeBorder getEdge(Edge edge) {
+//        getNode().
+        return null;
+    }
 
 }

@@ -65,7 +65,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     
     public void testListStyleCompletion() {
         PropertyModel p = Properties.getPropertyModel("list-style");
-        assertAlternatives(p.getGrammar(), "",
+        assertAlternatives(p.getGrammarElement(), "",
                 "repeating-linear-gradient","lower-latin","lower-greek",
                 "repeating-radial-gradient","disc","lower-alpha","lower-roman",
                 "!identifier","georgian","element","upper-alpha","armenian",
@@ -84,13 +84,13 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     
     public void testListStyleTypeCompletion() {
         PropertyModel p = Properties.getPropertyModel("list-style-type");
-        assertAlternatives(p.getGrammar(), "",
+        assertAlternatives(p.getGrammarElement(), "",
                 "georgian","armenian","upper-alpha","upper-latin","!string","lower-latin",
                 "circle","lower-greek","decimal","upper-roman","disc","lower-alpha",
                 "symbols","lower-roman","none","decimal-leading-zero","square","!identifier");
         
-        assertAlternatives(p.getGrammar(), "symbols", "(");
-        assertAlternatives(p.getGrammar(), "symbols(",
+        assertAlternatives(p.getGrammarElement(), "symbols", "(");
+        assertAlternatives(p.getGrammarElement(), "symbols(",
                 "repeating-linear-gradient","element","numeric","linear-gradient",
                 "!string","alphabetic","image","symbolic","repeating-radial-gradient",
                 "!uri","repeating","cross-fade","non-repeating","radial-gradient");

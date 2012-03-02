@@ -50,9 +50,11 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
 
 /**
  *
@@ -65,6 +67,10 @@ public class CssTestBase extends CslTestBase {
 
     public CssTestBase(String testName) {
         super(testName);
+    }
+    
+    protected Collection<GrammarResolver.Feature> getEnabledGrammarResolverFeatures() {
+        return Collections.emptyList();
     }
 
     protected CssParserResult assertResultOK(CssParserResult result) {
@@ -122,6 +128,14 @@ public class CssTestBase extends CslTestBase {
         }
     }
 
+    protected ResolvedProperty assertResolve(PropertyModel propertyModel, String inputText) {
+        return assertResolve(propertyModel, inputText, true);
+    }
+    
+    protected ResolvedProperty assertResolve(PropertyModel propertyModel, String inputText, boolean expectedSuccess) {
+        return assertResolve(propertyModel.getGrammarElement(), inputText, expectedSuccess);
+    }
+    
     protected ResolvedProperty assertResolve(String grammar, String inputText) {
         return assertResolve(grammar, inputText, true);
     }
@@ -144,7 +158,8 @@ public class CssTestBase extends CslTestBase {
     protected ResolvedProperty assertResolve(GroupGrammarElement tree, String inputText, boolean expectedSuccess) {
 
         long a = System.currentTimeMillis();
-        ResolvedProperty pv = new ResolvedProperty(tree, inputText);
+        
+        ResolvedProperty pv = new ResolvedProperty(createGrammarResolver(tree), inputText);
         long c = System.currentTimeMillis();
 
         if (PRINT_INFO_IN_ASSERT_RESOLVE) {
@@ -161,6 +176,14 @@ public class CssTestBase extends CslTestBase {
         }
 
         return pv;
+    }
+    
+    private GrammarResolver createGrammarResolver(GroupGrammarElement tree) {
+        GrammarResolver grammarResolver = new GrammarResolver(tree);
+        for(GrammarResolver.Feature feature : getEnabledGrammarResolverFeatures()) {
+            grammarResolver.enableFeature(feature);
+        }
+        return grammarResolver;
     }
 
     protected void assertParseFails(String grammar, String inputText) {
@@ -190,7 +213,9 @@ public class CssTestBase extends CslTestBase {
     }
 
     protected void assertAlternatives(String grammar, String input, String... expected) {
-        ResolvedProperty pv = new ResolvedProperty(grammar, input);
+        GroupGrammarElement tree = GrammarParser.parse(grammar);
+        GrammarResolver grammarResolver = createGrammarResolver(tree);
+        ResolvedProperty pv = new ResolvedProperty(grammarResolver, input);
         assertAlternatives(pv, expected);
     }
 

@@ -45,7 +45,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.netbeans.modules.css.lib.properties.model.TokenNodeModel;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 
 /**
@@ -58,6 +59,8 @@ public class NodeModel implements SemanticModel {
     
     private Collection<NodeModel> submodels = new ArrayList<NodeModel>();
 
+    private Collection<Node> unhandledChildren = new ArrayList<Node>();
+    
     public NodeModel(Node node) {
         this.node = node;
     }
@@ -65,20 +68,59 @@ public class NodeModel implements SemanticModel {
     protected NodeModel() {
     }
     
-    protected Node getNode() {
+    public  Node getNode() {
         return node;
     }
     
     protected Collection<NodeModel> getSubmodels() {
         return submodels;
     }
+    
+    //for diagnostic purposes, no need to use this in clients since they
+    //very well know what submodel they support and what not.
+    protected Collection<Node> getUnhandledChildren() {
+        return unhandledChildren;
+    }
+    
+    public void setUnhandledChild(Node child) {
+        unhandledChildren.add(child);
+    }
+    
+    //linear complexity - generate separate collection if called so often
+    protected Collection<TokenNodeModel> getTokenNodeSubmodels() {
+        Collection<TokenNodeModel> tnmodels = new ArrayList<TokenNodeModel>();
+        for(NodeModel model : getSubmodels()) {
+            if (model instanceof TokenNodeModel) {
+                tnmodels.add((TokenNodeModel)model);
+            }
+        }
+        return tnmodels;
+    }
+    
+    //linear complexity - generate map if called so often
+    protected TokenNodeModel getTokenNode(CharSequence image) {
+        for(TokenNodeModel tnm : getTokenNodeSubmodels()) {
+            if(LexerUtils.equals(tnm.getValue(), image, true, false)) {
+                return tnm;
+            }
+        }
+        return null;
+    }
 
     public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         String fieldName = getSubmodelFieldName(submodelClassName);
         Class<? extends NodeModel> currentModelClass = getClass();
-        Field field = currentModelClass.getField(fieldName);
-        field.setAccessible(true);
-        field.set(this, model);
+        try {
+            Field field = currentModelClass.getField(fieldName);
+            field.setAccessible(true);
+            field.set(this, model);
+        } catch(NoSuchFieldException nsfe) {
+            if(model instanceof TokenNodeModel) {
+                //no error - TokenNodeModel doesn't have to have a field
+            } else {
+                throw nsfe;
+            }
+        }
         
         submodels.add(model);
     }

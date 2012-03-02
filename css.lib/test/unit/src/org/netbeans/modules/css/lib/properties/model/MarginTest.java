@@ -78,7 +78,7 @@ public class MarginTest extends CssTestBase {
 
             @Override
             public void visit(Node node) {
-                System.out.println("visiting " + node.getName());
+                System.out.println("visiting " + node.name());
             }
 
             @Override

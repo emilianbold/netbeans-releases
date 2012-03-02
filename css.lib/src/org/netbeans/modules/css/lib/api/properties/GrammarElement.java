@@ -124,6 +124,8 @@ public abstract class GrammarElement {
     public String getVisibleOrigin() {
         return origin(false);
     }
+    
+    public abstract String getName();
 
     private String origin(boolean allowNonVisibleElements) {
         GroupGrammarElement p = parent;

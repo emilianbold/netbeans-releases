@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  *
@@ -52,13 +51,7 @@ import java.util.Map;
  */
 public interface Node {
 
-//    public int from();
-//
-//    public int to();
-
-//    public String type();
-    
-    public String getName();
+    public String name();
 
     public Collection<Node> children();
 
@@ -67,6 +60,9 @@ public interface Node {
     public void accept(NodeVisitor visitor);
 
     public CharSequence image();
+    
+    
+    
     
     static abstract class AbstractNode implements Node {
         
@@ -94,10 +90,13 @@ public interface Node {
     
     static class ResolvedTokenNode extends AbstractNode {
         
-        private ResolvedToken resolvedToken;
+        private ResolvedToken resolvedToken = null;
 
-        public ResolvedTokenNode(ResolvedToken token) {
-            this.resolvedToken = token;
+        public ResolvedTokenNode() {
+        }
+        
+        public void setResolvedToken(ResolvedToken resolvedToken) {
+            this.resolvedToken = resolvedToken;
         }
         
         @Override
@@ -118,96 +117,49 @@ public interface Node {
         public String toString() {
             return resolvedToken.token().toString();
         }
-        
+       
         @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final ResolvedTokenNode other = (ResolvedTokenNode) obj;
-            if (this.resolvedToken != other.resolvedToken && (this.resolvedToken == null || !this.resolvedToken.equals(other.resolvedToken))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 53 * hash + (this.resolvedToken != null ? this.resolvedToken.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public String getName() {
+        public String name() {
             return resolvedToken.getGrammarElement().value();
         }
         
     }
     
-    static class GroupNode extends AbstractNode {
+    static class GrammarElementNode extends AbstractNode {
         
-        protected GroupGrammarElement group;
-        
-        private Map<Node, Node> children = new LinkedHashMap<Node, Node>();
+        private GrammarElement element;
 
-        public GroupNode(GroupGrammarElement group) {
-            this.group = group;
+        private Collection<Node> children = new ArrayList<Node>();
+
+        public GrammarElementNode(GrammarElement group) {
+            this.element = group;
         }
 
-        /**
-         * @return the instance passed as the node argument if no child node
-         * equal to the given node argument exists already, otherwise returns
-         * the existing node.
-         */
         public <T extends AbstractNode> T addChild(T node) {
-            //do not overwrite the existing nodes, use the old ones instead
-            if(children.containsKey(node)) {
-                return (T)children.get(node); //safe
-            }
-            children.put(node, node);
+            children.add(node);
             node.setParent(this);
             
             return node;
         }
         
-        public String getName() {
-            return group.getName();
+        public <T extends AbstractNode> boolean removeChild(T node) {
+            node.setParent(null);
+            return children.remove(node);
+        }
+        
+        @Override
+        public String name() {
+            return element.getName();
         }
         
         @Override
         public Collection<Node> children() {
-            return children.values();
+            return children;
         }
 
         @Override
         public String toString() {
-            return group.toString();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final GroupNode other = (GroupNode) obj;
-            if (this.group != other.group && (this.group == null || !this.group.equals(other.group))) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            hash = 17 * hash + (this.group != null ? this.group.hashCode() : 0);
-            return hash;
+            return element.toString();
         }
 
         @Override

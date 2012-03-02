@@ -39,21 +39,16 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.Tokenizer;
-import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
-import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.GrammarElement;
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.api.properties.ResolvedToken;
 import java.util.Map.Entry;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static org.netbeans.modules.css.lib.properties.GrammarResolver.Log.*;
+import org.netbeans.modules.css.lib.api.properties.*;
+import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
+import static org.netbeans.modules.css.lib.api.properties.GrammarResolver.Log.*;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 
@@ -71,6 +66,7 @@ public class GrammarResolver {
         ALTERNATIVES
         
     }
+    
     static final Map<Log, AtomicBoolean> LOGGERS = new EnumMap<Log, AtomicBoolean>(Log.class);
 
     static {
@@ -97,19 +93,57 @@ public class GrammarResolver {
     private static boolean LOG = false;
     private static final Logger LOGGER = Logger.getLogger(GrammarResolver.class.getName());
 
-    public static GrammarResolver resolve(GroupGrammarElement grammar, CharSequence input) {
-        return new GrammarResolver(grammar, input);
+    
+    public static enum Feature {
+        /**
+         * The resulting parse tree WILL contain the anonymous grammar rules.
+         * Default behavior is not to put such nodes in the parse tree.
+         */
+        keepAnonymousElementsInParseTree
     }
-    private List<ResolvedToken> resolvedTokens = new ArrayList<ResolvedToken>();
+    
+    public static GrammarResolverResult resolve(GroupGrammarElement grammar, CharSequence input) {
+        return new GrammarResolver(grammar).resolve(input);
+    }
+    
+    private List<ResolvedToken> resolvedTokens;
     private Tokenizer tokenizer;
-    private boolean inputResolved;
+    
+    //keys are elements which matched the input, values are pairs of InputState 
+    //in the time of the match and collection of possible values which may follow
+    //the matched element
+    private Map<GrammarElement, Pair<InputState, Collection<ValueGrammarElement>>> resolvedSomething;
+    private GrammarElement lastResolved;
 
-    private GrammarResolver(GroupGrammarElement grammar, CharSequence input) {
+
+    private final Collection<GrammarResolverListener> LISTENERS  = new ArrayList<GrammarResolverListener>();
+    
+    private final GroupGrammarElement grammar;
+    
+    private final Map<Feature, Object> FEATURES = new EnumMap<Feature, Object>(Feature.class);
+    
+    public GrammarResolver(GroupGrammarElement grammar) {
+        this.grammar = grammar;
+    }
+    
+    //the grammar resolve has its internal state so this method needs to be synchronized
+    //if the class is supposed to be thread-safe.
+    public synchronized GrammarResolverResult resolve(CharSequence input) {
+        //reset internal state
+        resolvedTokens =  new ArrayList<ResolvedToken>();
+        resolvedSomething = new LinkedHashMap<GrammarElement, Pair<InputState, Collection<ValueGrammarElement>>>();
+        lastResolved = null;
         tokenizer = new Tokenizer(input);
+        
+        boolean skipAnonymousElements = !isFeatureEnabled(Feature.keepAnonymousElementsInParseTree);
+        GrammarParseTreeBuilder parseTreeBuilder = new GrammarParseTreeBuilder(skipAnonymousElements);
+        addGrammarResolverListener(parseTreeBuilder);
+        
+        fireStarting();
         
         groupMemberResolved(grammar, grammar, createInputState(), true);
 
-        inputResolved = resolve(grammar);
+        boolean inputResolved = resolve(grammar);
 
         if (tokenizer.moveNext()) {
             //the main element resolved, but something left in the input -- fail
@@ -117,25 +151,92 @@ public class GrammarResolver {
         }
 
         resolvingFinished();
-    }
-
-    /**
-     * returns a list of value items not parsed
-     */
-    public List<Token> left() {
-        return tokenizer.tokensList().subList(tokenizer.tokenIndex(), tokenizer.tokensCount());
+        
+        fireFinished();
+        
+        removeGrammarResolverListener(parseTreeBuilder);
+        
+        return new GrammarResolverResult(tokenizer, inputResolved, resolvedTokens, getAlternatives(), parseTreeBuilder.getParseTree());
+        
     }
     
-    public List<Token> tokens() {
-        return tokenizer.tokensList();
+    public void setFeature(Feature feature, Object value) {
+        FEATURES.put(feature, value);
     }
-
-    public List<ResolvedToken> resolved() {
-        return resolvedTokens;
+    
+    public void enableFeature(Feature feature) {
+        FEATURES.put(feature, Boolean.TRUE);
     }
-
-    public boolean success() {
-        return inputResolved;
+    
+    public void disableFeture(Feature feature) {
+        FEATURES.put(feature, null);
+    }
+    
+    public Object getFeature(Feature name) {
+        return FEATURES.get(name);
+    }
+    
+    private boolean isFeatureEnabled(Feature name) {
+        //just presence of the key and non-null value means enabled
+        return getFeature(name) != null;
+    }
+    
+    public void addGrammarResolverListener(GrammarResolverListener listener) {
+        LISTENERS.add(listener);
+    }
+    
+    public void removeGrammarResolverListener(GrammarResolverListener listener) {
+        LISTENERS.remove(listener);
+    }
+    
+    private void fireEntering(GroupGrammarElement group) {
+        for(GrammarResolverListener listener : LISTENERS) {
+            listener.entering(group);
+        }
+    }
+    
+    private void fireEntering(ValueGrammarElement value) {
+        for(GrammarResolverListener listener : LISTENERS) {
+            listener.entering(value);
+        }
+    }
+    
+    private void fireExited(GroupGrammarElement group, boolean accepted) {
+        for(GrammarResolverListener listener : LISTENERS) {
+            if(accepted) {
+                listener.accepted(group);
+            } else {
+                listener.rejected(group);
+            }
+        }
+    }
+    
+    private void fireExited(ValueGrammarElement value, ResolvedToken rt) {
+        for(GrammarResolverListener listener : LISTENERS) {
+            if(rt == null) {
+                listener.rejected(value);
+            } else {
+                listener.accepted(value, rt);
+            }
+        }
+    }
+    
+    private void fireRuleChoosen(GroupGrammarElement base, GrammarElement value) {
+        for(GrammarResolverListener listener : LISTENERS) {
+            listener.ruleChoosen(base, value);
+        }
+    }
+    
+    private void fireStarting() {
+        for(GrammarResolverListener listener : LISTENERS) {
+            listener.starting();
+        }
+    }
+    
+    private void fireFinished() {
+        for(GrammarResolverListener listener : LISTENERS) {
+            listener.finished();
+        }
     }
 
     private void resolvingFinished() {
@@ -191,10 +292,16 @@ public class GrammarResolver {
         boolean resolves;
         switch (e.getKind()) {
             case GROUP:
-                resolves = processGroup((GroupGrammarElement) e);
+                GroupGrammarElement group = (GroupGrammarElement) e;
+                fireEntering(group);
+                resolves = processGroup(group);
+                fireExited(group, resolves);
                 break;
             case VALUE:
-                resolves = processValue((ValueGrammarElement) e);
+                ValueGrammarElement value = (ValueGrammarElement) e;
+                fireEntering(value);
+                resolves = processValue(value);
+                fireExited(value, resolves ? resolvedTokens.get(resolvedTokens.size() - 1) : null);
                 break;
             default:
                 throw new IllegalStateException();
@@ -207,11 +314,6 @@ public class GrammarResolver {
     }
     //alternatives computation >>>
     //
-    //keys are elements which matched the input, values are pairs of InputState 
-    //in the time of the match and collection of possible values which may follow
-    //the matched element
-    private Map<GrammarElement, Pair<InputState, Collection<ValueGrammarElement>>> resolvedSomething = new LinkedHashMap<GrammarElement, Pair<InputState, Collection<ValueGrammarElement>>>();
-    private GrammarElement lastResolved;
 
     private void valueNotAccepted(ValueGrammarElement valueGrammarElement) {
         if (resolvedTokens.size() < tokenizer.tokensCount()) {
@@ -240,7 +342,7 @@ public class GrammarResolver {
         lastResolved = group;
     }
 
-    public Set<ValueGrammarElement> getAlternatives() {
+    private Set<ValueGrammarElement> getAlternatives() {
         HashSet<ValueGrammarElement> alternatives = new HashSet<ValueGrammarElement>();
         for (Pair<InputState, Collection<ValueGrammarElement>> tri : resolvedSomething.values()) {
             for (ValueGrammarElement value : tri.getB()) {
@@ -447,6 +549,8 @@ public class GrammarResolver {
                                 log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
                             }
                         }
+                        
+                        fireRuleChoosen(group, bestMatchElement);
 
                         //if we are in a COLLECTION or ALL, we need to remove 
                         //the choosen member from the further collection processing
