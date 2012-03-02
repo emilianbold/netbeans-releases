@@ -53,7 +53,9 @@ import java.awt.event.WindowEvent;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.MissingResourceException;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.event.ChangeEvent;
@@ -79,7 +81,7 @@ public class SearchPanel extends JPanel implements FocusListener,
     private static SearchPanel currentlyShown = null;
     private boolean replacing;
     private boolean projectWide = false; // TODO
-    private List<Presenter> presenters;
+    private List<PresenterProxy> presenters;
     private DialogDescriptor dialogDescr;
     /**
      * OK button.
@@ -128,11 +130,11 @@ public class SearchPanel extends JPanel implements FocusListener,
             add(presenters.get(0).getForm());
         } else {
             tabbedPane = new JTabbedPane();
-            for (Presenter presenter : presenters) {
-                Component tab = tabbedPane.add(presenter.getForm());
-                if (presenter == explicitPresenter) {
+            for (PresenterProxy pp : presenters) {
+                Component tab = tabbedPane.add(pp.getForm());
+                if (pp.isInitialized()) {
                     tabbedPane.setSelectedComponent(tab);
-                    selectedPresenter = explicitPresenter;
+                    selectedPresenter = pp.getPresenter();
                 }
             }
             tabbedPane.addChangeListener(new ChangeListener() {
@@ -145,9 +147,8 @@ public class SearchPanel extends JPanel implements FocusListener,
         }
         if (selectedPresenter == null) {
             // TODO select last opened tab.
-            selectedPresenter = presenters.get(0);
+            selectedPresenter = presenters.get(0).getPresenter();
         }
-        initChangeListener();
         initLocalStrings();
         initAccessibility();
         okButton.setEnabled(selectedPresenter.isUsable());
@@ -189,10 +190,9 @@ public class SearchPanel extends JPanel implements FocusListener,
      * presenter, that will be used instead of creating a new one.
      *
      */
-    private List<Presenter> makePresenters(Presenter explicitPresenter) {
+    private List<PresenterProxy> makePresenters(Presenter explicitPresenter) {
 
-        List<SearchProvider.Presenter> presenterList =
-                new LinkedList<SearchProvider.Presenter>();
+        List<PresenterProxy> presenterList = new LinkedList<PresenterProxy>();
         SearchProvider explicitProvider = explicitPresenter == null
                 ? null
                 : explicitPresenter.getSearchProvider();
@@ -200,9 +200,10 @@ public class SearchPanel extends JPanel implements FocusListener,
                 Lookup.getDefault().lookupAll(SearchProvider.class)) {
             if ((!replacing || p.isReplaceSupported()) && p.isEnabled()) {
                 if (explicitProvider == p) {
-                    presenterList.add(explicitPresenter);
+                    presenterList.add(new PresenterProxy(explicitProvider,
+                            explicitPresenter));
                 } else {
-                    presenterList.add(p.createPresenter(replacing));
+                    presenterList.add(new PresenterProxy(p));
                 }
             }
         }
@@ -271,9 +272,9 @@ public class SearchPanel extends JPanel implements FocusListener,
     private void tabChanged() {
         if (tabbedPane != null) {
             int i = tabbedPane.getSelectedIndex();
-            SearchProvider.Presenter p = presenters.get(i);
-            selectedPresenter = p;
-            okButton.setEnabled(p.isUsable());
+            PresenterProxy pp = presenters.get(i);
+            selectedPresenter = pp.getPresenter();
+            okButton.setEnabled(selectedPresenter.isUsable());
             updateHelp();
         }
     }
@@ -358,17 +359,15 @@ public class SearchPanel extends JPanel implements FocusListener,
     }
 
     /**
-     * Add change listener to all presenters.
+     * Add change listener to a presenter.
      */
-    private void initChangeListener() {
-        for (final Presenter p : presenters) {
-            p.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    okButton.setEnabled(p.isUsable());
-                }
-            });
-        }
+    private void initChangeListener(final Presenter p) {
+        p.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                okButton.setEnabled(p.isUsable());
+            }
+        });
     }
 
     /**
@@ -379,12 +378,63 @@ public class SearchPanel extends JPanel implements FocusListener,
 
         @Override
         public void windowClosed(WindowEvent e) {
-            for (SearchProvider.Presenter presenter : presenters) {
-                presenter.clean();
+            for (PresenterProxy presenter : presenters) {
+                if (presenter.isInitialized()) {
+                    presenter.getPresenter().clean();
+                }
             }
             if (getCurrentlyShown() == SearchPanel.this) {
                 setCurrentlyShown(null);
             }
+        }
+    }
+
+    private class PresenterProxy {
+
+        private SearchProvider searchProvider;
+        private Presenter presenter;
+        private JPanel panel;
+
+        PresenterProxy(SearchProvider searchProvider) {
+            this(searchProvider, null);
+        }
+
+        PresenterProxy(SearchProvider searchProvider,
+                Presenter presenter) {
+            this.searchProvider = searchProvider;
+            this.presenter = presenter;
+            this.panel = new JPanel();
+            this.panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
+            this.panel.setName(getTitle());
+            if (presenter != null) {
+                initUI();
+            }
+        }
+
+        final String getTitle() {
+            return searchProvider.getTitle();
+        }
+
+        synchronized Presenter getPresenter() {
+            if (presenter == null) {
+                presenter = searchProvider.createPresenter(replacing);
+                initUI();
+            }
+            return presenter;
+        }
+
+        synchronized boolean isInitialized() {
+            return presenter != null;
+        }
+
+        synchronized JComponent getForm() {
+            return panel;
+        }
+
+        private void initUI() {
+            panel.add(presenter.getForm());
+            initChangeListener(presenter);
+            panel.validate();
         }
     }
 }

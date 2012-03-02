@@ -93,6 +93,13 @@ public abstract class SearchProvider {
     public abstract @NonNull Presenter createPresenter(boolean replaceMode);
 
     /**
+     * Get title to show in a tab of the search dialog.
+     *
+     * @return Localized title for this search provider.
+     */
+    public abstract @NonNull String getTitle();
+
+    /**
      * If replace is supported, this dialog will be shown in replace dialog.
      *
      * @return True if replace is supported by this type of search, false

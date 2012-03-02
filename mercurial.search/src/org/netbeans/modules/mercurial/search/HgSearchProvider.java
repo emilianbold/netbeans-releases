@@ -44,6 +44,7 @@ package org.netbeans.modules.mercurial.search;
 
 import java.io.File;
 import org.netbeans.spi.search.provider.SearchProvider;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service=SearchProvider.class)
@@ -75,4 +76,9 @@ public class HgSearchProvider extends SearchProvider {
         return false;
     }
 
+    @Override
+    public String getTitle() {
+        return NbBundle.getMessage(HgSearchForm.class,
+                "HgSearchForm.name"); // NOI18N
+    }
 }

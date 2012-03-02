@@ -119,6 +119,11 @@ public class BasicSearchProvider extends SearchProvider {
         return new BasicSearchPresenter(replacing, scopeId, bsc);
     }
 
+    @Override
+    public String getTitle() {
+        return UiUtils.getText("BasicSearchForm.tabText");              //NOI18N
+    }
+
     /**
      *
      */
@@ -151,8 +156,6 @@ public class BasicSearchProvider extends SearchProvider {
                         : scopeId;
                 form = new BasicSearchForm(scopeToUse, isReplacing(),
                         explicitCriteria);
-                form.setName(UiUtils.getText(
-                        "BasicSearchForm.tabText"));                    //NOI18N
                 form.setUsabilityChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
