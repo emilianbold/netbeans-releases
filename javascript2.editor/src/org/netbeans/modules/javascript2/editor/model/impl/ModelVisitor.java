@@ -69,14 +69,14 @@ public class ModelVisitor extends PathNodeVisitor {
      */
     private final List<List<FunctionNode>> functionStack;
     private final JsParserResult parserResult;
-    private final DocumentationProvider docSupport;
+    private final DocumentationProvider docProvider;
 
-    public ModelVisitor(JsParserResult parserResult, DocumentationProvider docSupport) {
+    public ModelVisitor(JsParserResult parserResult, DocumentationProvider docProvider) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(fileObject));
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;
-        this.docSupport = docSupport;
+        this.docProvider = docProvider;
     }
 
     public JsObject getGlobalObject() {
@@ -417,7 +417,6 @@ public class ModelVisitor extends PathNodeVisitor {
             
             if (fncScope != null) {
                 
-                DocumentationProvider docProvider = DocumentationSupport.getDocumentationProvider(parserResult); 
                 List<Type> types = docProvider.getReturnType(functionNode);
                 if (types != null && !types.isEmpty()) {
                     for(Type type : types) {
