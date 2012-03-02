@@ -126,7 +126,6 @@ public class BasicSearchProvider extends SearchProvider {
             extends BasicSearchProvider.Presenter {
 
         BasicSearchForm form = null;
-        private boolean replacing;
         private String scopeId;
         private BasicSearchCriteria explicitCriteria;
 
@@ -150,7 +149,7 @@ public class BasicSearchProvider extends SearchProvider {
                 String scopeToUse = scopeId == null
                         ? FindDialogMemory.getDefault().getScopeTypeId()
                         : scopeId;
-                form = new BasicSearchForm(scopeToUse, replacing,
+                form = new BasicSearchForm(scopeToUse, isReplacing(),
                         explicitCriteria);
                 form.setName(UiUtils.getText(
                         "BasicSearchForm.tabText"));                    //NOI18N
@@ -167,7 +166,7 @@ public class BasicSearchProvider extends SearchProvider {
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(SearchPanel.class.getCanonicalName()
-                    + "." + replacing);                                 //NOI18N
+                    + "." + isReplacing());                             //NOI18N
         }
 
         @Override
