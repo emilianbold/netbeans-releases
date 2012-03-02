@@ -116,11 +116,7 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     protected JsComment getCommentForOffset(int offset) {
         int endOffset = getEndOffsetOfAssociatedComment(offset);
         if (endOffset > 0) {
-            for (JsComment jsComment : parserResult.getComments()) {
-                if (jsComment.getEndOffset() == endOffset) {
-                    return jsComment;
-                }
-            }
+            return parserResult.getComments().get(endOffset);
         }
         return null;
     }
