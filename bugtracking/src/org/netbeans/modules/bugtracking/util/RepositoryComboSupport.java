@@ -62,7 +62,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
@@ -70,6 +70,8 @@ import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
 import java.util.Arrays;
 import java.util.Collection;
 import static java.util.logging.Level.FINEST;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Loads the list of repositories and determines the default one off the AWT
@@ -102,9 +104,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     private boolean repositoriesDisplayed = false;
     private boolean defaultRepoSelected = false;
     private volatile Node[] selectedNodes;
-    private volatile Repository[] repositories;
+    private volatile RepositoryImpl[] repositories;
     private volatile boolean defaultRepoComputationPending;
-    private volatile Repository defaultRepo;
+    private volatile RepositoryImpl defaultRepo;
 
     /**
      * Setups the given repository with RepositoryComboRenderer. As soon as the component holding the combo
@@ -119,7 +121,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      */
     public static RepositoryComboSupport setup(JComponent component, JComboBox comboBox, boolean selectRepoIfSingle) {
         RepositoryComboSupport repositoryComboSupport
-                = new RepositoryComboSupport(comboBox, (Repository) null,
+                = new RepositoryComboSupport(comboBox, (RepositoryImpl) null,
                                                        (File) null,
                                                        selectRepoIfSingle);
         if (component != null) {
@@ -144,7 +146,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
 
         RepositoryComboSupport repositoryComboSupport
-                = new RepositoryComboSupport(comboBox, defaultRepo,
+                = new RepositoryComboSupport(comboBox, APIAccessor.IMPL.getImpl(defaultRepo),
                                                        (File) null,
                                                        false);
         if (component != null) {
@@ -169,7 +171,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
 
         RepositoryComboSupport repositoryComboSupport
-                = new RepositoryComboSupport(comboBox, (Repository) null,
+                = new RepositoryComboSupport(comboBox, (RepositoryImpl) null,
                                                        referenceFile,
                                                        false);
         if (component != null) {
@@ -179,7 +181,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
     private final RequestProcessor rp;
 
-    private RepositoryComboSupport(JComboBox comboBox, Repository defaultRepo,
+    private RepositoryComboSupport(JComboBox comboBox, RepositoryImpl defaultRepo,
                                                        File refFile,
                                                        boolean preselectSingleRepo) {
         if (comboBox == null) {
@@ -453,7 +455,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         updateProgress(Progress.WILL_DISPLAY_REPOS);
 
         boolean computationPending = defaultRepoComputationPending;
-        Repository knownDefaultRepo = computationPending ? null : defaultRepo;
+        RepositoryImpl knownDefaultRepo = computationPending ? null : defaultRepo;
 
         LOG.finest("going to display the list of repositories");        //NOI18N
         if ((knownDefaultRepo != null) && (LOG.isLoggable(FINEST))) {
@@ -477,7 +479,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         LOG.finest("going to select the default repository");           //NOI18N
         updateProgress(Progress.WILL_SELECT_DEFAULT_REPO);
         try {
-            if ((comboBox.getSelectedItem() instanceof Repository)
+            if ((comboBox.getSelectedItem() instanceof RepositoryImpl)
                     && !comboBox.isPopupVisible()) {
                 /*
                  * the user has already selected some item - do not override it
@@ -505,7 +507,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
      *
      * @param  repoToPreselect  repository to preselect
      */
-    private void preselectRepository(final Repository repoToPreselect) {
+    private void preselectRepository(final RepositoryImpl repoToPreselect) {
         assert EventQueue.isDispatchThread();
 
         if (LOG.isLoggable(Level.FINER)) {
@@ -544,15 +546,15 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
     }
 
     private static String getItemName(Object item) {
-        if (item instanceof Repository) {
-            return ((Repository) item).getDisplayName();
+        if (item instanceof RepositoryImpl) {
+            return ((RepositoryImpl) item).getDisplayName();
         } else{
             return item.toString();
         }
     }
 
-    private void setRepositories(Repository[] repos,
-                                 Repository knownDefaultRepository) {
+    private void setRepositories(RepositoryImpl[] repos,
+                                 RepositoryImpl knownDefaultRepository) {
         assert EventQueue.isDispatchThread();
 
         int reposCount = (repos != null) ? repos.length : 0;
@@ -582,7 +584,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         }
     }
 
-    private void refreshComboBoxData(Repository[] repos) {
+    private void refreshComboBoxData(RepositoryImpl[] repos) {
         setComboBoxData((repos.length == 0) ? new Object[] {NO_REPOSITORIES}
                                             : repos);
     }
@@ -613,8 +615,8 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if(refFile != null) {
             pingNBRepository(refFile);
         }
-        Collection<Repository> repos = BugtrackingUtil.getKnownRepositories(true);
-        repositories = repos.toArray(new Repository[repos.size()]);
+        Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
+        repositories = repos.toArray(new RepositoryImpl[repos.size()]);
 
         long endTimeMillis = System.currentTimeMillis();
         if (LOG.isLoggable(FINEST)) {
@@ -630,7 +632,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         updateProgress(Progress.WILL_DETERMINE_DEFAULT_REPO);
 
         long startTimeMillis, endTimeMillis;
-        Repository result;
+        RepositoryImpl result;
 
         startTimeMillis = System.currentTimeMillis();
 

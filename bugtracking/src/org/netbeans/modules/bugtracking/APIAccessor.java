@@ -41,21 +41,9 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -75,55 +63,22 @@ public abstract class APIAccessor {
             ex.printStackTrace();
         }
     }  
+
+    /**
+     * WARNING! To be called only from RepositoryImpl
+     * 
+     * @param impl
+     * @return 
+     */
+    public abstract Repository createRepository(RepositoryImpl impl);
     
-    public abstract RepositoryProvider convert(Repository repo);
-    public abstract <I> IssueProvider<I> convert(Issue Issue);
-    public abstract <Q, I> QueryProvider<Q, I> convert(Query Issue);
+    public abstract Query createQuery(QueryImpl impl);
     
-    public abstract Issue findIssue(Repository repository, Object i);
+    public abstract Issue createIssue(IssueImpl impl);
     
-    public abstract Query findQuery(Repository repository, Object q);
+    public abstract RepositoryImpl getImpl(Repository repository);
     
-    public abstract RepositoryController getController(Repository repo);
+    public abstract QueryImpl getImpl(Query repository);
     
-    public abstract <R, Q, I> Repository create(BugtrackingConnector connector, R r, RepositoryProvider<R, Q, I> rp, IssueProvider<I> ip, QueryProvider<Q, I> qp);
-    
-    public abstract BugtrackingController getController(Query query);
-    public abstract BugtrackingController getController(Issue issue);
-
-    public abstract Issue createNewIssue(Repository repo);
-
-    public abstract Query createNewQuery(Repository repo);
-
-    public abstract Collection<Issue> simpleSearch(Repository repository, String criteria);
-
-    public abstract Collection<Query> getQueries(Repository repo);
-
-    public abstract DelegatingConnector getConnector(Repository repo);
-
-    public abstract void removed(Repository repository);
-
-    public abstract String getConnectorId(Repository repository);
-    public abstract RepositoryInfo getInfo(Repository repository);
-
-    public abstract boolean isSaved(Query query);
-    public abstract boolean contains(Query query, String id);
-    public abstract Lookup getLookup(Repository repository);
-
-    public abstract void setContext(Query query, Node[] context);
-    public abstract void setContext(Issue issue, Node[] context);
-
-    public abstract void applyChanges(Repository repository) throws IOException;
-    
-    /********************************************************************************
-     * Kenai
-     *******************************************************************************/ 
-    
-    public abstract void setFilter(Query query, Filter filter);
-    public abstract boolean needsLogin(Query query);
-    public abstract void refresh(Query query, boolean synchronously);
-    public abstract Query getAllIssuesQuery(Repository repository);
-    public abstract Query getMyIssuesQuery(Repository repository);
-
-    
+    public abstract IssueImpl getImpl(Issue repository);
 }

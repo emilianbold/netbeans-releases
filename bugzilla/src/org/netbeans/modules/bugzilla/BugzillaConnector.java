@@ -188,6 +188,6 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
     @Override
     public Repository findNBRepository() {
         return NBBugzillaUtils.findNBRepository();
-    }    
+    }
 
 }

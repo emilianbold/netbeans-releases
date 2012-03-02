@@ -51,7 +51,7 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 
 /**
@@ -182,7 +182,7 @@ public class AttachPanel extends javax.swing.JPanel implements ItemListener, Pro
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        Repository repo = BugtrackingUtil.createRepository();
+        Repository repo = Util.createRepository();
         if(repo == null) {
             return;
         }

@@ -55,9 +55,9 @@ import java.util.logging.Level;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.util.NbPreferences;
 
@@ -103,10 +103,10 @@ public class RepositoryRegistry {
      * 
      * @return 
      */
-    public Collection<Repository> getRepositories() {
+    public Collection<RepositoryImpl> getRepositories() {
         synchronized(REPOSITORIES_LOCK) {
-            List<Repository> l = getStoredRepositories().getRepositories();
-            return new LinkedList<Repository>(l);
+            List<RepositoryImpl> l = getStoredRepositories().getRepositories();
+            return new LinkedList<RepositoryImpl>(l);
         }
     }
 
@@ -116,20 +116,20 @@ public class RepositoryRegistry {
      * @param connectorID
      * @return 
      */
-    public Collection<Repository> getRepositories(String connectorID) {
+    public Collection<RepositoryImpl> getRepositories(String connectorID) {
         synchronized(REPOSITORIES_LOCK) {
-            final Map<String, Repository> m = getStoredRepositories().get(connectorID);
+            final Map<String, RepositoryImpl> m = getStoredRepositories().get(connectorID);
             if(m != null) {
-                return new LinkedList<Repository>(m.values());
+                return new LinkedList<RepositoryImpl>(m.values());
             } else {
                 return Collections.emptyList();
             }
         }
     }
 
-    public Repository getRepository(String connectorId, String repoId) {
-        Collection<Repository> repos = getRepositories(connectorId);
-        for (Repository repo : repos) {
+    public RepositoryImpl getRepository(String connectorId, String repoId) {
+        Collection<RepositoryImpl> repos = getRepositories(connectorId);
+        for (RepositoryImpl repo : repos) {
             if(repo.getId().equals(repoId)) {
                 return repo;
             }
@@ -143,16 +143,16 @@ public class RepositoryRegistry {
      * 
      * @param repository 
      */
-    public void addRepository(Repository repository) {
+    public void addRepository(RepositoryImpl repository) {
         assert repository != null;
-        if(KenaiUtil.isKenai(repository) && !BugtrackingUtil.isNbRepository(repository)) {
+        if(KenaiUtil.isKenai(repository.getRepository()) && !BugtrackingUtil.isNbRepository(repository.getUrl())) {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;        
         }
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+        Collection<RepositoryImpl> oldRepos;
+        Collection<RepositoryImpl> newRepos;
         synchronized(REPOSITORIES_LOCK) {
-            oldRepos = Collections.unmodifiableCollection(new LinkedList<Repository>(getStoredRepositories().getRepositories()));
+            oldRepos = Collections.unmodifiableCollection(new LinkedList<RepositoryImpl>(getStoredRepositories().getRepositories()));
             getStoredRepositories().put(repository); // cache
             putRepository(repository); // persist
             newRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
@@ -166,12 +166,12 @@ public class RepositoryRegistry {
      * 
      * @param repository 
      */
-    public void removeRepository(Repository repository) {
-        Collection<Repository> oldRepos;
-        Collection<Repository> newRepos;
+    public void removeRepository(RepositoryImpl repository) {
+        Collection<RepositoryImpl> oldRepos;
+        Collection<RepositoryImpl> newRepos;
         synchronized(REPOSITORIES_LOCK) {
             oldRepos = Collections.unmodifiableCollection(getStoredRepositories().getRepositories());
-            RepositoryInfo info = APIAccessor.IMPL.getInfo(repository);
+            RepositoryInfo info = repository.getInfo();
             String connectorID = info.getConnectorId();  
             // persist remove
             getPreferences().remove(getRepositoryKey(info)); 
@@ -192,12 +192,16 @@ public class RepositoryRegistry {
      *                          currently opened in the IDE
      * @return repositories
      */
-    public Collection<Repository> getKnownRepositories(boolean pingOpenProjects) {
+    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
+        Collection<RepositoryImpl> otherRepos = getRepositories();
         Collection<Repository> kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        Collection<Repository> otherRepos = getRepositories();
-        List<Repository> ret = new ArrayList<Repository>(kenaiRepos.size() + otherRepos.size());
-        ret.addAll(kenaiRepos);
+        List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(kenaiRepos.size() + otherRepos.size());
+        
         ret.addAll(otherRepos);
+        for (Repository r : kenaiRepos) {
+            ret.add(APIAccessor.IMPL.getImpl(r));
+        }
+        
         return ret;
     }
     
@@ -253,7 +257,7 @@ public class RepositoryRegistry {
                         if(info != null) {
                             Repository repo = c.createRepository(info);
                             if (repo != null) {
-                                repositories.put(repo);
+                                repositories.put(APIAccessor.IMPL.getImpl(repo));
                             }
                         }
                     }
@@ -270,8 +274,8 @@ public class RepositoryRegistry {
     /**
      * package private for testing 
      */
-    void putRepository(Repository repository) {
-        RepositoryInfo info = APIAccessor.IMPL.getInfo(repository);
+    void putRepository(RepositoryImpl repository) {
+        RepositoryInfo info = repository.getInfo();
         final String key = getRepositoryKey(info);
         SPIAccessor.IMPL.store(getPreferences(), info, key);
 
@@ -309,29 +313,29 @@ public class RepositoryRegistry {
      * @param oldRepositories - lists repositories which were available for the connector before the change
      * @param newRepositories - lists repositories which are available for the connector after the change
      */
-    private void fireRepositoriesChanged(Collection<Repository> oldRepositories, Collection<Repository> newRepositories) {
+    private void fireRepositoriesChanged(Collection<RepositoryImpl> oldRepositories, Collection<RepositoryImpl> newRepositories) {
         changeSupport.firePropertyChange(EVENT_REPOSITORIES_CHANGED, oldRepositories, newRepositories);
     }
 
-    private class RepositoriesMap extends HashMap<String, Map<String, Repository>> {
-        public void remove(String connectorID, Repository repository) {
-            Map<String, Repository> m = get(connectorID);
+    private class RepositoriesMap extends HashMap<String, Map<String, RepositoryImpl>> {
+        public void remove(String connectorID, RepositoryImpl repository) {
+            Map<String, RepositoryImpl> m = get(connectorID);
             if(m != null) {
                 m.remove(repository.getId());
             }
         }
-        public void put(Repository repository) {
-            String connectorID = APIAccessor.IMPL.getInfo(repository).getConnectorId();
-            Map<String, Repository> m = get(connectorID);
+        public void put(RepositoryImpl repository) {
+            String connectorID = repository.getInfo().getConnectorId();
+            Map<String, RepositoryImpl> m = get(connectorID);
             if(m == null) {
-                m = new HashMap<String, Repository>();
+                m = new HashMap<String, RepositoryImpl>();
                 put(connectorID, m);
             }
             m.put(repository.getId(), repository);
         }
-        List<Repository> getRepositories() {
-            List<Repository> ret = new LinkedList<Repository>();
-            for (Entry<String, Map<String, Repository>> e : entrySet()) {
+        List<RepositoryImpl> getRepositories() {
+            List<RepositoryImpl> ret = new LinkedList<RepositoryImpl>();
+            for (Entry<String, Map<String, RepositoryImpl>> e : entrySet()) {
                 ret.addAll(e.getValue().values());
             }
             return ret;

@@ -48,9 +48,7 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
 
 /**
  *

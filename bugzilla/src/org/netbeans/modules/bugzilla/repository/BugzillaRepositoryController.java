@@ -59,6 +59,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -157,7 +158,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         // is name unique?
         Collection<Repository> repositories = null;
         if(repository.getTaskRepository() == null) {
-            repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+            repositories = Util.getRepositories(BugzillaConnector.ID);
             for (Repository repo : repositories) {
                 if(name.equals(repo.getDisplayName())) {
                     errorMessage = NbBundle.getMessage(BugzillaRepositoryController.class, "MSG_NAME_ALREADY_EXISTS");  // NOI18N

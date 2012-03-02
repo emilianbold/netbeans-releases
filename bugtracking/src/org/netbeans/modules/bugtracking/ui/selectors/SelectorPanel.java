@@ -46,7 +46,7 @@ import java.util.Arrays;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.ConnectorComparator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -71,7 +71,7 @@ public class SelectorPanel {
         return ret;
     }
 
-    boolean edit(Repository repository, String errorMessage) {
+    boolean edit(RepositoryImpl repository, String errorMessage) {
         DialogDescriptor dd = createEditDescriptor(repository, errorMessage);
         boolean ret = DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
         return ret;
@@ -84,7 +84,7 @@ public class SelectorPanel {
         return title;
     }
 
-    private DialogDescriptor createEditDescriptor(Repository repository, String errorMessage) throws MissingResourceException {
+    private DialogDescriptor createEditDescriptor(RepositoryImpl repository, String errorMessage) throws MissingResourceException {
         String title = NbBundle.getMessage(SelectorPanel.class, "CTL_EditTitle"); //NOI18N
         builder.setLabelVisible(false);
         builder.setComboBoxVisible(false);
@@ -94,7 +94,7 @@ public class SelectorPanel {
         return dd;
     }
 
-    Repository getRepository() {
+    RepositoryImpl getRepository() {
         return builder.getSelectedRepository();
     }
     

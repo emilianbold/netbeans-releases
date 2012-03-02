@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,99 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.bugtracking.api;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import static java.lang.Character.isSpaceChar;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Stupka
  */
 public final class Issue {
-    private static final int SHORT_DISP_NAME_LENGTH = 15;
-    
-    private Bind<?> bind;
-    private final Repository repo;
+    private final IssueImpl impl;
 
-    <I> Issue(Repository repo, IssueProvider<I> issueProvider, I data) {
-        this.bind = new Bind(issueProvider, data);
-        this.repo = repo;
+    Issue(IssueImpl impl) {
+        this.impl = impl;
     }
 
+    /**
+     * Returns the issue id
+     * 
+     * @return 
+     */
     public String getID() {
-        return bind.getID();
+        return impl.getID();
     }
 
-    public String getSummary() {
-        return bind.getSummary();
-    }
-
+    /**
+     * Returns the tooltip text describing the issue.
+     * 
+     * @return 
+     */
     public String getTooltip() {
-        return bind.getTooltip();
-    }
-
-    public void attachPatch(File file, String description) {
-        bind.attachPatch(file, description);
-    }
-
-    public void addComment(String comment, boolean closeAsFixed) {
-        bind.addComment(comment, closeAsFixed);
+        return impl.getTooltip();
     }
 
     /**
-     * Opens this issue in the IDE
+     * Registers a PropertyChangeListener
+     * @param listener 
      */
-    public void open() {
-        IssueAction.openIssue(this, false);
-    }
-
-    /**
-     * Opens the issue with the given issueId in the IDE. In case that issueId
-     * is null a new issue wil be created.
-     *
-     * @param repository
-     * @param issueId
-     */
-    public static void open(final Repository repository, final String issueId) {
-        if(issueId == null) {
-            IssueAction.createIssue(repository);
-        } else {            
-            IssueAction.openIssue(repository, issueId);
-        }
-    }
-
-    /**
-     * Opens this issue in the IDE
-     * @param refresh also refreshes the issue after opening
-     *
-     */
-    public final void open(final boolean refresh) {
-        IssueAction.openIssue(this, refresh);
-    }    
-    
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        bind.addPropertyChangeListener(listener);
+        impl.addPropertyChangeListener(listener);
     }
     
+    /**
+     * Unregisters a PropertyChangeListener
+     * @param listener 
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        bind.removePropertyChangeListener(listener);
+        impl.removePropertyChangeListener(listener);
     }
 
+    /**
+     * Refresh the issues state from the remote repository
+     * 
+     * @return 
+     */
     public boolean refresh() {
-        return bind.refresh();
+        return impl.refresh();
     }
 
-    public boolean isNew() {
-        return bind.isNew();
+    /**
+     * Returns the issues display name. Typicaly this should be the issue id and summary.
+     * 
+     * @return 
+     */
+    public String getDisplayName() {
+        return impl.getDisplayName();
     }
-
+    
     /**
      * Returns a short variant of the display name. The short variant is used
      * in cases where the full display name might be too long, such as when used
@@ -144,102 +123,69 @@ public final class Issue {
      * @see #getDisplayName
      */
     public String getShortenedDisplayName() {
-        String displayName = getDisplayName();
+        return impl.getShortenedDisplayName();
+    }    
 
-        int length = displayName.length();
-        int limit = SHORT_DISP_NAME_LENGTH;
-
-        if (length <= limit) {
-            return displayName;
-        }
-
-        String trimmed = displayName.substring(0, limit).trim();
-
-        StringBuilder buf = new StringBuilder(limit + 4);
-        buf.append(trimmed);
-        if ((length > (limit + 1)) && isSpaceChar(displayName.charAt(limit))) {
-            buf.append(' ');
-        }
-        buf.append("...");                                              //NOI18N
-
-        return buf.toString();
+    /**
+     * Opens this issue in the IDE
+     */
+    public void open() {
+        impl.open();
     }
 
-    public String getDisplayName() {
-        return bind.getDisplayName();
+    /**
+     * Opens this issue in the IDE
+     * 
+     * @param refresh if true the issue is also refreshed after opening
+     *
+     */
+    public final void open(final boolean refresh) {
+        impl.open(refresh);
+    }    
+    
+    /**
+     * Opens the issue with the given issueId in the IDE. In case that issueId
+     * is null a new issue will be created.
+     *
+     * @param repository
+     * @param issueId
+     */
+    public static void open(final Repository repository, final String issueId) {
+        if(issueId == null) {
+            IssueAction.createIssue(repository.getImpl());
+        } else {            
+            IssueAction.openIssue(repository.getImpl(), issueId);
+        }
     }
 
+    IssueImpl getImpl() {
+        return impl;
+    }
+
+    /**
+     * Returns this issues summary
+     * 
+     * @return 
+     */
+    public String getSummary() {
+        return impl.getSummary();
+    }
+
+    /**
+     * 
+     * @param file
+     * @param description 
+     */
+    public void attachPatch(File file, String description) {
+        impl.attachPatch(file, description);
+    }
+    
+    public void addComment(String msg, boolean closeAsFixed) {
+        impl.addComment(msg, closeAsFixed);
+    }
+    
     public Repository getRepository() {
-        return repo;
+        return impl.getRepositoryImpl().getRepository();
     }
 
-    IssueProvider getProvider() {
-        return bind.issueProvider;
-    }
-
-    Object getData() {
-        return bind.data;
-    }
-
-    void setContext(Node[] context) {
-        bind.setContext(context);
-    }
-    
-    private final class Bind<I> {
-        private final IssueProvider<I> issueProvider;
-        private final I data;
-
-        public Bind(IssueProvider<I> issueProvider, I data) {
-            this.issueProvider = issueProvider;
-            this.data = data;
-        }
-        
-        public String getID() {
-            return issueProvider.getID(data);
-        }
-        public String getSummary() {
-            return issueProvider.getSummary(data);
-        }
-        public String getTooltip() {
-            return issueProvider.getTooltip(data);
-        }
-
-        public void attachPatch(File file, String description) {
-            issueProvider.attachPatch(data, file, description);
-        }
-
-        public void addComment(String comment, boolean closeAsFixed) {
-            issueProvider.addComment(data, comment, closeAsFixed);
-        }
-
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            issueProvider.addPropertyChangeListener(data, listener);
-        }
-
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            issueProvider.removePropertyChangeListener(data, listener);
-        }
-
-        public boolean refresh() {
-            return issueProvider.refresh(data);
-        }
-
-        public boolean isNew() {
-            return issueProvider.isNew(data);
-        }
-
-        public String getDisplayName() {
-            return issueProvider.getDisplayName(data);
-        }
-
-        public Repository getRepository() {
-            return repo;
-        }
-
-        private void setContext(Node[] context) {
-            issueProvider.setContext(data, context);
-        }
-        
-    }
-    
 }

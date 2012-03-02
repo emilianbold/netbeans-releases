@@ -71,14 +71,11 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.SPIAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.ui.search.FindSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
-import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.netbeans.modules.bugtracking.util.*;
 import org.openide.awt.UndoRedo;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
@@ -96,7 +93,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     /** Set of opened {@code IssueTopComponent}s. */
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
     /** Issue displayed by this top-component. */
-    private Issue issue;
+    private IssueImpl issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
@@ -134,16 +131,16 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return issue displayed by this top-component.
      */
-    public Issue getIssue() {
+    public IssueImpl getIssue() {
         return issue;
     }
 
-    public void initNewIssue(Repository toSelect, Node[] context) {
+    public void initNewIssue(RepositoryImpl toSelect, Node[] context) {
         initNewIssue(toSelect, false, context);
     }
 
-    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
-        BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
+    public void initNewIssue(RepositoryImpl defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
+        LogUtils.logBugtrackingUsage(defaultRepository.getRepository(), "ISSUE_EDIT"); // NOI18N
         this.context = context;
 
         Font f = new JLabel().getFont();
@@ -164,7 +161,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
             if(defaultRepository == null) {
                 rs = RepositoryComboSupport.setup(this, repositoryComboBox, false);
             } else {
-                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository);
+                rs = RepositoryComboSupport.setup(this, repositoryComboBox, defaultRepository.getRepository());
             }
         }
         repositoryComboBox.addItemListener(new ItemListener() {
@@ -201,12 +198,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @param issue displayed by this top-component.
      */
-    public void setIssue(Issue issue) {
+    public void setIssue(IssueImpl issue) {
         assert (this.issue == null);
-        BugtrackingUtil.logBugtrackingUsage(issue.getRepository(), "ISSUE_EDIT"); // NOI18N
+        LogUtils.logBugtrackingUsage(issue.getRepositoryImpl().getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
         preparingLabel.setVisible(false);
-        issuePanel.add(APIAccessor.IMPL.getController(issue).getComponent(), BorderLayout.CENTER);
+        issuePanel.add(issue.getController().getComponent(), BorderLayout.CENTER);
         
         if(isOpened()) {
             // #opened() did not fire beacuse of null issue -> fire afterwards
@@ -315,7 +312,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
 
     private void onNewClick() {
-        Repository repo = BugtrackingUtil.createRepository();
+        RepositoryImpl repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
@@ -343,7 +340,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 try {
                     handle.start();
                     preparingLabel.setVisible(true);
-                    Repository repo = getRepository();
+                    RepositoryImpl repo = getRepository();
                     if (repo == null) {
                         return;
                     }
@@ -351,13 +348,13 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         if(controller != null) issuePanel.remove(controller.getComponent());
                         issue.removePropertyChangeListener(IssueTopComponent.this);
                     }
-                    issue = APIAccessor.IMPL.createNewIssue(repo);
+                    issue = repo.createNewIssue();
                     if (issue == null) {
                         return;
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    APIAccessor.IMPL.setContext(issue, context);
+                    issue.setContext(context);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -381,12 +378,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
-    private Repository getRepository() {
+    private RepositoryImpl getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof Repository)) {
+        if (item == null || !(item instanceof RepositoryImpl)) {
             return null;
         }
-        return (Repository) item;
+        return (RepositoryImpl) item;
     }
 
     private void focusFirstEnabledComponent() {
@@ -443,7 +440,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @param issue issue for which the top-component should be found.
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(Issue issue) {
+    public static synchronized IssueTopComponent find(IssueImpl issue) {
         return find(issue, true);
     }
 
@@ -455,7 +452,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
+    public static synchronized IssueTopComponent find(IssueImpl issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
@@ -478,7 +475,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public static synchronized IssueTopComponent find(String issueId) {
         assert issueId != null;
         for (IssueTopComponent tc : openIssues) {
-            Issue i = tc.getIssue();
+            IssueImpl i = tc.getIssue();
             if(i == null) continue;
             if (issueId.equals(i.getID())) {
                 return tc;
@@ -534,7 +531,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     private BugtrackingController getController() {
-        return APIAccessor.IMPL.getController(issue);
+        return issue.getController();
     }
 
     private class DelegatingUndoRedoManager implements UndoRedo {
@@ -542,7 +539,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
         void init() {
-            delegate = UndoRedoSupport.getUndoRedo(issue);
+            delegate = UndoRedoSupport.getUndoRedo(issue.getIssue());
             synchronized(this) {
                 for (ChangeListener l : listeners) {
                     delegate.addChangeListener(l);

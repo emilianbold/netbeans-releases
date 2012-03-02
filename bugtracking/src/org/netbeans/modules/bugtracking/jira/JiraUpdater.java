@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.jira;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -62,6 +61,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
@@ -207,9 +207,10 @@ public class JiraUpdater {
     }
     
     private class JiraProxyConector extends BugtrackingConnector {
+        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
         public Repository createRepository() {
-            return APIAccessor.IMPL.create(this, new Object(), new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(connector, f, new JiraProxyRepositoryProvider(), null, null);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {

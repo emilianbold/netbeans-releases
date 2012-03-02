@@ -95,15 +95,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.jira.Jira;
@@ -1114,7 +1113,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+        LogUtils.logAutoRefreshEvent(
             JiraConnector.getConnectorName(),
             query.getDisplayName(),
             false,
@@ -1387,9 +1386,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             setIssueCount(counter);
             
             // XXX move to API
-            BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                JiraUtils.getRepository(repository));                             
+            OwnerUtils.setLooseAssociation(JiraUtils.getRepository(repository), false);                             
         }
 
         @Override

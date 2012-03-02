@@ -89,11 +89,7 @@ import javax.swing.UIManager;
 import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.BugtrackingConfig;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.IssueTableSupport;
@@ -115,7 +111,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
     private TableSorter     sorter;
 
-    private Query query;
+    private QueryImpl query;
     private ColumnDescriptor[] descriptors;
 
     private Filter filter;
@@ -155,7 +151,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         assert descriptors != null;
         assert descriptors.length > 0;
 
-        this.query = APIAccessor.IMPL.findQuery(repository, q);
+        this.query = APIAccessor.IMPL.getImpl(repository).getQuery(q);
 
         this.descriptors = descriptors;
         this.query.addPropertyChangeListener(this);
@@ -192,7 +188,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
 
         table.addMouseListener(this);
         table.addKeyListener(this);
-        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query, this));
+        table.setDefaultRenderer(Node.Property.class, new QueryTableCellRenderer(query.getQuery(), this));
         queryTableHeaderRenderer = new QueryTableHeaderRenderer(table.getTableHeader().getDefaultRenderer(), this, query);
         table.getTableHeader().setDefaultRenderer(queryTableHeaderRenderer);
         table.addAncestorListener(this);
@@ -685,7 +681,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
                 // seen column
                 if(column == getSeenColumnIdx()) {
                     IssueNode in = (IssueNode) tableModel.getNodes()[row];
-                    final Issue issue = in.getLookup().lookup(Issue.class);
+                    final IssueImpl issue = in.getLookup().lookup(IssueImpl.class);
                     BugtrackingManager.getInstance().getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
@@ -770,7 +766,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         if(name == null) {
             name = "#find#issues#hitlist#table#";               // NOI18N
         }
-        return query.getRepository().getId() + ":" + name;      // NOI18N
+        return query.getRepositoryImpl().getId() + ":" + name;      // NOI18N
     }
 
     private class StoreColumnsHandler implements Runnable {

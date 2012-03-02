@@ -43,7 +43,6 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.IssueField;

@@ -37,13 +37,11 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
  *
@@ -76,18 +74,35 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        return APIAccessor.IMPL.create(connector, r, rp, ip, qp);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(connector, r, rp, qp, ip);
+        return impl.getRepository();
     }
     
     public Query getQuery(Repository repository, Q q) {
-        return APIAccessor.IMPL.findQuery(repository, q);
+        RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
+        QueryImpl impl = repositoryImpl.getQuery(q);
+        if(impl == null) {
+            return null;
+        }
+        return impl.getQuery();
     }
     
     public Issue getIssue(Repository repository, I i) {
-        return APIAccessor.IMPL.findIssue(repository, i);
+        RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
+        IssueImpl impl = repositoryImpl.getIssue(i);
+        return impl != null ? impl.getIssue() : null;
     }
     
     public Repository getRepository(String connectorId, String repositoryId) {
-        return RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        RepositoryImpl impl = RepositoryRegistry.getInstance().getRepository(connectorId, repositoryId);
+        if(impl == null) {
+            return null;
+        }
+        return impl.getRepository();
+    }
+    
+    public boolean isOpen(Repository repository, Q q) {
+        Query query = getQuery(repository, q);
+        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(query));
     }
 }

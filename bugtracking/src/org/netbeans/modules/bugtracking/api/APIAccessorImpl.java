@@ -41,20 +41,10 @@
  */
 package org.netbeans.modules.bugtracking.api;
 
-import java.io.IOException;
-import java.util.Collection;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryController;
-import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  *
@@ -69,143 +59,32 @@ class APIAccessorImpl extends APIAccessor {
     }
 
     @Override
-    public RepositoryProvider convert(Repository repo) {
-        return repo.getProvider();
+    public Repository createRepository(RepositoryImpl impl) {
+        return new Repository(impl);
     }
 
     @Override
-    public IssueProvider convert(Issue issue) {
-        return issue.getProvider();
-    }
-    
-    @Override
-    public <R, Q, I> Repository create(BugtrackingConnector connector, R r, RepositoryProvider<R, Q, I> rp, IssueProvider<I> ip, QueryProvider<Q, I> qp) {
-        return new Repository(connector, r, rp, qp, ip);
+    public Query createQuery(QueryImpl impl) {
+        return new Query(impl);
     }
 
     @Override
-    public RepositoryController getController(Repository repo) {
-        return repo.getProvider().getController(repo.getData());
+    public Issue createIssue(IssueImpl impl) {
+        return new Issue(impl);
     }
 
     @Override
-    public BugtrackingController getController(Query query) {
-        return query.getProvider().getController(query.getData());
-    }
-    
-    @Override
-    public BugtrackingController getController(Issue issue) {
-        return issue.getProvider().getController(issue.getData());
+    public RepositoryImpl getImpl(Repository repository) {
+        return repository.getImpl();
     }
 
     @Override
-    public Collection<Issue> simpleSearch(Repository repository, String criteria) {
-        return repository.simpleSearch(criteria);
+    public QueryImpl getImpl(Query query) {
+        return query.getImpl();
     }
 
     @Override
-    public Collection<Query> getQueries(Repository repo) {
-        return repo.getQueries();
+    public IssueImpl getImpl(Issue issue) {
+        return issue.getImpl();
     }
-
-    @Override
-    public DelegatingConnector getConnector(Repository repo) {
-        return repo.getConnector();
-    }
-
-    @Override
-    public void removed(Repository repository) {
-        convert(repository).remove(repository.getData());
-    }
-
-    @Override
-    public RepositoryInfo getInfo(Repository repository) {
-        return convert(repository).getInfo(repository.getData());
-    }
-
-    @Override
-    public QueryProvider convert(Query query) {
-        return query.getProvider();
-    }
-
-    @Override
-    public Issue createNewIssue(Repository repository) {
-        return repository.createNewIssue();
-    }
-
-    @Override
-    public Query createNewQuery(Repository repository) {
-        return repository.createNewQuery();
-    }
-
-    @Override
-    public Issue findIssue(Repository repository, Object i) {
-        return repository.findIssue(i);
-    }
-
-    @Override
-    public Query findQuery(Repository repository, Object i) {
-        return repository.findQuery(i);
-    }
-
-    @Override
-    public String getConnectorId(Repository repository) {
-        return repository.getConnector().getID();
-    }
-
-    @Override
-    public boolean isSaved(Query query) {
-        return query.isSaved();
-    }
-
-    @Override
-    public boolean contains(Query query, String id) {
-        return query.contains(id);
-    }
-
-    @Override
-    public Lookup getLookup(Repository repository) {
-        return repository.getLookup();
-    }
-
-    @Override
-    public void setContext(Query query, Node[] context) {
-        query.setContext(context);
-    }
-    
-    @Override
-    public void setContext(Issue issue, Node[] context) {
-        issue.setContext(context);
-    }
-
-    @Override
-    public void setFilter(Query query, Filter filter) {
-        query.setFilter(filter);
-    }
-
-    @Override
-    public boolean needsLogin(Query query) {
-        return query.needsLogin();
-    }
-
-    @Override
-    public void refresh(Query query, boolean synchronously) {
-        query.refresh(synchronously);
-    }
-
-    @Override
-    public Query getAllIssuesQuery(Repository repository) {
-        return repository.getAllIssuesQuery();
-    }
-
-    @Override
-    public Query getMyIssuesQuery(Repository repository) {
-        return repository.getMyIssuesQuery();
-    }
-
-    @Override
-    public void applyChanges(Repository repository)  throws IOException {
-        repository.applyChanges();
-    }
-
 }

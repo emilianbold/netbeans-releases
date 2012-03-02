@@ -71,11 +71,12 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -98,38 +99,6 @@ import org.openide.windows.TopComponent;
  * @author Marian Petras
  */
 public class BugtrackingUtil {
-
-    /**
-     * Metrics logger
-     */
-    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.bugtracking"); // NOI18N
-
-    /**
-     * The automatic refresh was set on or off.<br>
-     * Parameters:
-     * <ol>
-     *  <li>connector name : String
-     *  <li>is on : Boolean
-     * </ol>
-     */
-    public static final String USG_BUGTRACKING_AUTOMATIC_REFRESH = "USG_BUGTRACKING_AUTOMATIC_REFRESH"; // NOI18N
-
-    /**
-     * A query was refreshed.<br>
-     * Parameters:
-     * <ol>
-     *  <li>connector name : String
-     *  <li>query name : String
-     *  <li>issues count : Integer
-     *  <li>is a kenai query : Boolean
-     *  <li>is a automatic refresh : Boolean
-     * </ol>
-     */
-    public static final String USG_BUGTRACKING_QUERY             = "USG_BUGTRACKING_QUERY"; // NOI18N
-
-    private static final String USG_ISSUE_TRACKING = "USG_ISSUE_TRACKING"; // NOI18N
-
-    private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
@@ -154,12 +123,12 @@ public class BugtrackingUtil {
      * 
      * @return issues
      */
-    public static Collection<Issue> getOpenIssues() {
+    public static Collection<IssueImpl> getOpenIssues() {
         Set<TopComponent> tcs = TopComponent.getRegistry().getOpened();
-        List<Issue> issues = new ArrayList<Issue>();
+        List<IssueImpl> issues = new ArrayList<IssueImpl>();
         for (TopComponent tc : tcs) {
             if(tc instanceof IssueTopComponent) {
-                Issue issue = ((IssueTopComponent)tc).getIssue();
+                IssueImpl issue = ((IssueTopComponent)tc).getIssue();
                 if(!issue.isNew()) {
                     issues.add(issue);
                 }
@@ -173,7 +142,7 @@ public class BugtrackingUtil {
      * @param issue
      * @return true in case the given issue is opened in the editor are, otherwise false
      */
-    public static boolean isOpened(Issue issue) {
+    public static boolean isOpened(IssueImpl issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isOpened() : false;
     }
@@ -185,7 +154,7 @@ public class BugtrackingUtil {
      * @return true in case the given issue is opened in the editor area
      *         and showing on the screen, otherwise false
      */
-    public static boolean isShowing(Issue issue) {
+    public static boolean isShowing(IssueImpl issue) {
         IssueTopComponent tc = IssueTopComponent.find(issue, false);
         return tc != null ? tc.isShowing() : false;
     }
@@ -195,7 +164,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isOpened(Query query) {
+    public static boolean isOpened(QueryImpl query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isOpened() : false;
     }
@@ -206,7 +175,7 @@ public class BugtrackingUtil {
      * @param query
      * @return
      */
-    public static boolean isShowing(Query query) {
+    public static boolean isShowing(QueryImpl query) {
         QueryTopComponent tc = QueryTopComponent.find(query);
         return tc != null ? tc.isShowing() : false;
     }
@@ -220,7 +189,7 @@ public class BugtrackingUtil {
      * @param criteria
      * @return
      */
-    public static Collection<Issue> getByIdOrSummary(Collection<Issue> issues, String criteria) {
+    public static Collection<IssueImpl> getByIdOrSummary(Collection<IssueImpl> issues, String criteria) {
         if(criteria == null) {
             return issues;
         }
@@ -229,8 +198,8 @@ public class BugtrackingUtil {
             return issues;
         }
         criteria = criteria.toLowerCase();
-        List<Issue> ret = new ArrayList<Issue>();
-        for (Issue issue : issues) {
+        List<IssueImpl> ret = new ArrayList<IssueImpl>();
+        for (IssueImpl issue : issues) {
             if(issue.isNew()) continue;
             String id = issue.getID();
             if(id == null) continue;
@@ -244,26 +213,26 @@ public class BugtrackingUtil {
         return ret;
     }
 
-    public static Repository createRepository() {
+    public static RepositoryImpl createRepository() {
         RepositorySelector rs = new RepositorySelector();
-        Repository repo = rs.create();
+        RepositoryImpl repo = rs.create();
         return repo;
     }
 
     public static boolean editRepository(Repository repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
-        return rs.edit(repository, errorMessage);
+        return rs.edit(APIAccessor.IMPL.getImpl(repository), errorMessage);
     }
 
     public static boolean editRepository(Repository repository) {
         return editRepository(repository, null);
     }
 
-    public static Collection<Repository> getKnownRepositories(boolean pingOpenProjects) {
+    public static Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
         return RepositoryRegistry.getInstance().getKnownRepositories(pingOpenProjects);
     }
 
-    public static Collection<Repository> getRepositories(String id) {
+    public static Collection<RepositoryImpl> getRepositories(String id) {
         return RepositoryRegistry.getInstance().getRepositories(id);
     }    
     
@@ -370,117 +339,6 @@ public class BugtrackingUtil {
         file.delete();
     }
 
-    public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
-        name = obfuscateQueryName(name);
-        logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isKenai, isAutoRefresh} );
-    }
-
-    public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
-        queryName = obfuscateQueryName(queryName);
-        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
-    }
- 
-    public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
-        if (repository == null) {
-            return;
-        }
-        String btType = getBugtrackingType(APIAccessor.IMPL.convert(repository));
-        if (btType == null) {
-            return;
-        }
-        // log Kenai usage
-        if (KenaiUtil.isKenai(repository)) {
-            KenaiUtil.logKenaiUsage("ISSUE_TRACKING", btType); // NOI18N
-        }
-        if (operation == null) {
-            return;
-        }
-        // log general bugtracking usage
-        String paramStr = getParamString(btType, operation);
-        if (loggedParams == null || !loggedParams.contains(paramStr)) {
-            // not logged in this session yet
-            LogRecord rec = new LogRecord(Level.INFO, USG_ISSUE_TRACKING);
-            rec.setParameters(new Object[] { btType, operation });
-            rec.setLoggerName(METRICS_LOG.getName());
-            METRICS_LOG.log(rec);
-
-            if (loggedParams == null) {
-                loggedParams = new HashSet<String>();
-            }
-            loggedParams.add(paramStr);
-        }
-    }
-
-    private static String getParamString(Object... parameters) {
-        if (parameters == null || parameters.length == 0) {
-            return ""; // NOI18N
-        }
-        if (parameters.length == 1) {
-            return parameters[0].toString();
-        }
-        StringBuilder buf = new StringBuilder();
-        for (Object p : parameters) {
-            buf.append(p.toString());
-        }
-        return buf.toString();
-    }
-
-    private static String getBugtrackingType(RepositoryProvider repository) {
-        // XXX hack: there's no clean way to determine the type of bugtracking
-        // from RepositoryProvider (need BugtrackingConnector.getDisplayName)
-        String clsName = repository.getClass().getName();
-        if (clsName.contains(".bugzilla.")) { // NOI18N
-            return "Bugzilla"; // NOI18N
-        }
-        if (clsName.contains(".jira.")) { // NOI18N
-            return "Jira"; // NOI18N
-        }
-        return null;
-    }
-
-    /**
-     * Logs bugtracking events
-     *
-     * @param key - the events key
-     * @param parameters - the parameters for the given event
-     */
-    private static void logBugtrackingEvents(String key, Object[] parameters) {
-        LogRecord rec = new LogRecord(Level.INFO, key);
-        rec.setParameters(parameters);
-        rec.setLoggerName(METRICS_LOG.getName());
-        METRICS_LOG.log(rec);
-    }
-
-    private static String getMD5(String name) {
-        MessageDigest digest;
-        try {
-            digest = MessageDigest.getInstance("MD5");                          // NOI18N
-        } catch (NoSuchAlgorithmException e) {
-            // should not happen
-            return null;
-        }
-        digest.update(name.getBytes());
-        byte[] hash = digest.digest();
-        StringBuffer ret = new StringBuffer();
-        for (int i = 0; i < hash.length; i++) {
-            String hex = Integer.toHexString(hash[i] & 0x000000FF);
-            if(hex.length()==1) {
-                hex = "0" + hex;                                                // NOI18N
-            }
-            ret.append(hex);
-        }
-        return ret.toString();
-    }
-
-    private static String obfuscateQueryName(String name) {
-        if (name == null) {
-            name = "Find Issues"; // NOI18N
-        } else {
-            name = getMD5(name);
-        }
-        return name;
-    }
-
     public static void openPluginManager() {
         try {
             ClassLoader cl = Lookup.getDefault ().lookup (ClassLoader.class);
@@ -585,14 +443,10 @@ public class BugtrackingUtil {
         return false;
     }
 
-    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+    public static void openQuery(final QueryImpl query, final RepositoryImpl repository, final boolean suggestedSelectionOnly) {
         QueryAction.openQuery(query, repository, suggestedSelectionOnly);
     }
 
-    public static void openIssue(Repository repository, String issueId) {
-        IssueAction.openIssue(repository, issueId);
-    }
-    
     public static void openIssue(File file, String issueId) {
         IssueAction.openIssue(file, issueId);
     }
@@ -601,16 +455,8 @@ public class BugtrackingUtil {
         return BugtrackingManager.getInstance().getAllRecentIssues();
     }
 
-    public static Collection<Issue> getRecentIssues(Repository repo) {
+    public static Collection<IssueImpl> getRecentIssues(RepositoryImpl repo) {
         return BugtrackingManager.getInstance().getRecentIssues(repo);
-    }
-
-    public static void closeQuery(Query query) {
-        QueryAction.closeQuery(query);
-    }
-
-    public static void createIssue(Repository repo) {
-        IssueAction.createIssue(repo);
     }
 
     public static String getPasswordLog(char[] psswd) {

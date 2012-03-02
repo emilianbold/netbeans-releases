@@ -23,13 +23,12 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.issue.JiraIssueNode.MultiValueFieldProperty;
 import org.netbeans.modules.jira.issue.JiraIssueNode.PriorityProperty;
@@ -245,7 +244,7 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
                 if(parent != null) {
                     JiraUtils.openIssue(parent);
                 } else {
-                    BugtrackingUtil.openIssue(JiraUtils.getRepository(issue.getRepository()), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
+                    Util.openIssue(JiraUtils.getRepository(issue.getRepository()), id); // XXX show a wrong message in progress bar! opening ID instead of opening KEY
                 }
             }
         });

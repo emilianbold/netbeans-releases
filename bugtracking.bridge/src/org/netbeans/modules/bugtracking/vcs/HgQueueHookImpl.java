@@ -57,6 +57,7 @@ import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
@@ -104,9 +105,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         if(files.length == 0) {
 
             if (selectedRepository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
-                        selectedRepository);
+                OwnerUtils.setLooseAssociation(selectedRepository, true);
             }
 
             HookImpl.LOG.warning("calling beforePatchRefresh for zero files"); //NOI18N
@@ -114,7 +113,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         }
 
         if (selectedRepository != null) {
-            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+            OwnerUtils.setFirmAssociations(
                     files,
                     selectedRepository);
         }
@@ -227,7 +226,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         File file = files[0];
         HookImpl.LOG.log(Level.FINE, "afterPatchFinish start for {0}", file);              // NOI18N
 
-        Repository repository = BugtrackingOwnerSupport.getInstance().getRepository(file, op.getIssueID(), true);
+        Repository repository = OwnerUtils.getRepository(file, op.getIssueID(), true);
         if (repository == null) {
             HookImpl.LOG.log(Level.FINE, " no issue repository for {0}:{1}", new Object[] { op.getIssueID(), file }); //NOI18N
             return;
@@ -303,7 +302,7 @@ public class HgQueueHookImpl extends HgQueueHook {
                             Issue issue = null;
                             Repository repository = null;
                             try {
-                                repository = BugtrackingOwnerSupport.getInstance().getRepository(referenceFile, issueId, false);
+                                repository = OwnerUtils.getRepository(referenceFile, issueId, false);
                                 if (repository == null) {
                                     issue = null;
                                 } else {

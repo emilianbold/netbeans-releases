@@ -50,7 +50,7 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -66,16 +66,16 @@ public class RepositorySelector {
         // init connector cbo
     }
 
-    public Repository create() {
+    public RepositoryImpl create() {
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {
             return null;
         }
-        final Repository repo = selectorPanel.getRepository();
+        final RepositoryImpl repo = selectorPanel.getRepository();
         try {
-            APIAccessor.IMPL.applyChanges(repo);
+            repo.applyChanges();
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
@@ -90,13 +90,13 @@ public class RepositorySelector {
         return repo;
     }
 
-    public boolean edit(Repository repository, String errorMessage) {
+    public boolean edit(RepositoryImpl repository, String errorMessage) {
         if(!selectorPanel.edit(repository, errorMessage)) {
             return false;
         }
-        Repository repo = selectorPanel.getRepository();
+        RepositoryImpl repo = selectorPanel.getRepository();
         try {
-            APIAccessor.IMPL.applyChanges(repo);
+            repo.applyChanges();
             // no repo on edit
             RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {

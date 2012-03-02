@@ -53,9 +53,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -75,7 +78,7 @@ abstract class KenaiRepositories {
     /**
      * Holds already created kenai repositories
      */
-    private Map<String, Repository> repositoriesMap = Collections.synchronizedMap(new HashMap<String, Repository>());
+    private Map<String, RepositoryImpl> repositoriesMap = Collections.synchronizedMap(new HashMap<String, RepositoryImpl>());
 
     protected KenaiRepositories() { }
 
@@ -98,7 +101,7 @@ abstract class KenaiRepositories {
      * @param kp
      * @return
      */
-    public Repository getRepository(KenaiProject kp) {
+    public RepositoryImpl getRepository(KenaiProject kp) {
         return getRepository(kp, true);
     }
 
@@ -109,16 +112,16 @@ abstract class KenaiRepositories {
      * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
      * @return
      */
-    public Repository getRepository(KenaiProject kp, boolean forceCreate) {
+    public RepositoryImpl getRepository(KenaiProject kp, boolean forceCreate) {
 
         String repositoryKey = kp.getWebLocation().toString();
         BugtrackingManager.LOG.log(Level.FINER, "requesting repository for {0}", repositoryKey);  // NOI18N
 
         Object lock = getKenaiLock(kp);
         synchronized(lock) { // synchronize for a kenai instance and bugtracking type
-            Repository repository = repositoriesMap.get(repositoryKey);
+            RepositoryImpl repository = repositoriesMap.get(repositoryKey);
             if(repository == null && forceCreate) {
-                repository = KenaiUtil.createRepository(kp);
+                repository = createRepository(kp);
                 if(repository != null) {
                     // XXX what if more repos?!
                     repositoriesMap.put(repositoryKey, repository);
@@ -134,7 +137,42 @@ abstract class KenaiRepositories {
             return repository;
         }
     }
+    
+    /**
+     * Creates a {@link Repository} for the given {@link KenaiProject}
+     *
+     * @param project
+     * @return
+     */
+    private static RepositoryImpl createRepository(KenaiProject project) {
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+        for (BugtrackingConnector c : connectors) {
+            if (isType(c, project.getType())) {
+                BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
+                Repository repo = ((KenaiBugtrackingConnector) c).createRepository(project);
+                return APIAccessor.IMPL.getImpl(repo);
+            }
+        }
+        return null;
+    }    
 
+
+    private static boolean isSupported(KenaiProject project) {
+        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
+        for (BugtrackingConnector c : connectors) {
+            if (isType(c, project.getType())) {
+                BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
+                break;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    private static boolean isType(BugtrackingConnector connector, BugtrackingType type) {
+        return connector instanceof KenaiBugtrackingConnector && ((KenaiBugtrackingConnector) connector).getType() == type;
+    }
+    
     private Object getKenaiLock(KenaiProject kp) {
         BugtrackingType type = kp.getType();
         synchronized(kenaiLocks) {
@@ -160,7 +198,7 @@ abstract class KenaiRepositories {
      * @return  array of repositories collected from the projects
      *          (never {@code null})
      */
-    public abstract Collection<Repository> getRepositories(boolean allOpenProjects);
+    public abstract Collection<RepositoryImpl> getRepositories(boolean allOpenProjects);
 
     //--------------------------------------------------------------------------
 
@@ -172,7 +210,7 @@ abstract class KenaiRepositories {
     private static class DefaultImpl extends KenaiRepositories {
 
         @Override
-        public Collection<Repository> getRepositories(boolean allOpenProjects) {
+        public Collection<RepositoryImpl> getRepositories(boolean allOpenProjects) {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
                 allOpenProjects = false; 
             }
@@ -181,16 +219,16 @@ abstract class KenaiRepositories {
                                                    getProjectsViewProjects())
                                            : getDashboardProjects();
 
-            List<Repository> result = new ArrayList<Repository>(kenaiProjects.length);
+            List<RepositoryImpl> result = new ArrayList<RepositoryImpl>(kenaiProjects.length);
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             for (KenaiProject kp : kenaiProjects) {
                 if(!reluctantSupports.contains(kp.getType())) {
-                    Repository repo = getRepository(kp);
+                    RepositoryImpl repo = getRepository(kp);
                     if (repo != null) {
                         result.add(repo);
                     } else {
-                        if(KenaiUtil.isSupported(kp)) {
+                        if(isSupported(kp)) {
                             BugtrackingManager.LOG.log(
                                     Level.WARNING,
                                     "could not get repository for project {0} with {1} bugtracking type ",

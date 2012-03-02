@@ -168,7 +168,7 @@ public class BugzillaUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(BugzillaRepository repo) {
-        return BugtrackingUtil.isNbRepository(BugzillaUtil.getRepository(repo));
+        return BugtrackingUtil.isNbRepository(repo.getUrl());
     }
 
     public static boolean showQAContact(BugzillaRepository repo) {

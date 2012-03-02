@@ -47,8 +47,8 @@ import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.AbstractListModel;
 import javax.swing.Timer;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -71,7 +71,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
      * changes to listeners. */
     static final int COALESCE_TIME = 200;
 
-    private Map<Repository, Set<Issue>> issuesCached = new HashMap<Repository, Set<Issue>>();
+    private Map<RepositoryImpl, Set<IssueImpl>> issuesCached = new HashMap<RepositoryImpl, Set<IssueImpl>>();
 
     /** Singleton */
     private ResultsModel () {
@@ -89,18 +89,18 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         maybeFireChanges();
     }
 
-    synchronized void cacheIssues(Repository repo, Collection<Issue> issues) {
-        HashSet<Issue> s = new HashSet<Issue>();
-        for (Issue issue : issues) {
+    synchronized void cacheIssues(RepositoryImpl repo, Collection<IssueImpl> issues) {
+        HashSet<IssueImpl> s = new HashSet<IssueImpl>();
+        for (IssueImpl issue : issues) {
             assert issue != null;
             s.add(issue);
         }
         issuesCached.put(repo, s);
     }
 
-    synchronized Collection<Issue> getCachedIssues(Repository repo) {
+    synchronized Collection<IssueImpl> getCachedIssues(RepositoryImpl repo) {
         if(issuesCached != null) {
-            Set<Issue> s = issuesCached.get(repo);
+            Set<IssueImpl> s = issuesCached.get(repo);
             if(s != null) return s;
         }
         return Collections.emptyList();

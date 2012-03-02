@@ -56,8 +56,6 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -110,7 +108,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        BugtrackingUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, null, true);
     }
 
     @Override
@@ -143,7 +141,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            KenaiUtil.refresh(query, true);
+            query.refresh(true);
         }
     }
 
@@ -151,7 +149,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
         for (Issue issue : issues) {
             issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
-            IssueCacheUtils.addCacheListener(issue, this);
+            KenaiUtil.addCacheListener(issue, this);
         }
     }
 

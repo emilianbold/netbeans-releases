@@ -48,7 +48,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.JLabel;
 import javax.swing.JList;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.util.NbBundle;
 
 /**
@@ -71,11 +71,11 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
     @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String text;
-        Repository repo = null;
+        RepositoryImpl repo = null;
         if (value == null) {
             text = null;
-        } else if (value instanceof Repository) {
-            repo = (Repository) value;
+        } else if (value instanceof RepositoryImpl) {
+            repo = (RepositoryImpl) value;
             text = repo.getDisplayName();
         } else {
             if (value == RepositoryComboSupport.LOADING_REPOSITORIES) {

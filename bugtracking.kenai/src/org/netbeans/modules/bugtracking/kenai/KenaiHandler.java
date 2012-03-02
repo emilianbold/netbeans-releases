@@ -58,6 +58,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
@@ -291,7 +292,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        BugtrackingUtil.openQuery(null, repo, true);
+                        KenaiUtil.openQuery(null, repo, true);
                     }
                 });
             }
@@ -311,7 +312,7 @@ class KenaiHandler {
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        BugtrackingUtil.createIssue(repo);
+                        KenaiUtil.createIssue(repo);
                     }
                 });
             }
@@ -343,7 +344,7 @@ class KenaiHandler {
                     for (QueryHandle qh : queries) {
                         if(qh instanceof QueryHandleImpl) {
                             Query query = ((QueryHandleImpl)qh).getQuery();
-                            KenaiUtil.refresh(query, false);
+                            query.refresh(false);
                         }
                     }
                 }
@@ -353,7 +354,7 @@ class KenaiHandler {
         public void closeQueries() {
             for (QueryHandle qh : queries) {
                 if(qh instanceof QueryHandleImpl) {
-                    BugtrackingUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    KenaiUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {

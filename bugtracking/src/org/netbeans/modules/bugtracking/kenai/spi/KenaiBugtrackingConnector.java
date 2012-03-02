@@ -43,6 +43,7 @@ package org.netbeans.modules.bugtracking.kenai.spi;
 
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
  * Provides Kenai specific functionality to a {@link BugtrackingConnector}

@@ -621,7 +621,7 @@ public class BugzillaRepository {
             public void run() {
                 Collection<BugzillaQuery> qs = getQueries();
                 for (BugzillaQuery q : qs) {
-                    if(!onlyOpened || !BugtrackingUtil.isOpened(BugzillaUtil.getQuery(q))) {
+                    if(!onlyOpened || !Bugzilla.getInstance().getBugtrackingFactory().isOpen(BugzillaUtil.getRepository(BugzillaRepository.this), q)) {
                         continue;
                     }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N

@@ -58,6 +58,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -236,7 +237,7 @@ public class JiraQuery {
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             name,
             count,

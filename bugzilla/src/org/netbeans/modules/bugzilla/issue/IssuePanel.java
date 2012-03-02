@@ -117,6 +117,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
@@ -125,8 +126,7 @@ import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.util.UIUtils;
-import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
+import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue.Attachment;
@@ -2475,9 +2475,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (isNew) {
             BugzillaRepository repository = issue.getRepository();
             if (repository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                        BugzillaUtil.getRepository(repository));
+                OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(repository), false);
             }
         }
     }//GEN-LAST:event_submitButtonActionPerformed

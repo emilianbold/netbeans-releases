@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
@@ -110,7 +111,7 @@ public class IssueCache<I, D> {
     private long referenceTime;
     private final IssueAccessor<I, D> issueAccessor;
     private final IssueProvider<I> issueProvider;
-    private final Repository repository;
+    private final RepositoryImpl repository;
 
     /**
      *
@@ -188,7 +189,7 @@ public class IssueCache<I, D> {
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
         this.issueProvider = issueProvider;
-        this.repository = repository;
+        this.repository = APIAccessor.IMPL.getImpl(repository);
 
         try {
             this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
@@ -562,7 +563,7 @@ public class IssueCache<I, D> {
     }
     
     private Issue getIssue(I issue) {
-        return APIAccessor.IMPL.findIssue(repository, issue);
+        return repository.getIssue(issue).getIssue();
     }
     
     private IssueEntry createNewEntry(String id) {

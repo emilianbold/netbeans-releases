@@ -61,6 +61,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -407,7 +408,7 @@ public final class BugzillaTaskListProvider extends TaskListIssueProvider implem
     }
 
     private void addCommonIssues (Map<String, List<String>> repositoryIssues) {
-        Collection<Repository> repositories = BugtrackingUtil.getRepositories(BugzillaConnector.ID);
+        Collection<Repository> repositories = Util.getRepositories(BugzillaConnector.ID);
         for (Repository repository : repositories) {
             // all issues for this repository
             List<String> issueAttributes = repositoryIssues.get(repository.getUrl());

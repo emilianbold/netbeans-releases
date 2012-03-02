@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 import static java.lang.Math.max;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.SwingConstants.WEST;
-import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.QueryImpl;
 
 /**
  * Top part of the {@code QueryTopComponent} - displays the combo-box for
@@ -166,7 +166,7 @@ class RepoPanel extends ViewportWidthAwarePanel {
         return new Dimension(Short.MAX_VALUE, getPreferredSize().height);
     }
 
-    void setQueries(Query[] queries) {
+    void setQueries(QueryImpl[] queries) {
         assert EventQueue.isDispatchThread();
 
         if ((queries != null) && (queries.length == 0)) {

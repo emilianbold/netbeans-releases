@@ -49,8 +49,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
@@ -68,9 +68,9 @@ import org.openide.util.actions.SystemAction;
  * @author Tomas Stupka
  */
 public class RepositoryNode extends AbstractNode implements PropertyChangeListener {
-    private Repository repository;
+    private RepositoryImpl repository;
 
-    public RepositoryNode(Repository repository) {
+    public RepositoryNode(RepositoryImpl repository) {
         super(Children.LEAF);
         this.repository = repository;
         setName(repository.getDisplayName());
@@ -100,7 +100,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_EditRepository")) { // NOI18N
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    BugtrackingUtil.editRepository(repository);
+                    BugtrackingUtil.editRepository(repository.getRepository());
                 }
             },
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_RemoveRepository")) { // NOI18N
@@ -114,7 +114,7 @@ public class RepositoryNode extends AbstractNode implements PropertyChangeListen
                     if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
                         RequestProcessor.getDefault().post(new Runnable() {
                             public void run() {
-                                APIAccessor.IMPL.removed(repository);                                
+                                repository.remove();
                                 RepositoryRegistry.getInstance().removeRepository(repository);
                             }
                         });

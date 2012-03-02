@@ -57,6 +57,7 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -241,7 +242,7 @@ public class BugzillaQuery {
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             BugzillaConnector.getConnectorName(),
             name,
             count,

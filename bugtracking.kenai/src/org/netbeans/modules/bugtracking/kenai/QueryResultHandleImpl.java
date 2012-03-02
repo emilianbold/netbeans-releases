@@ -49,6 +49,7 @@ import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -104,7 +105,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         for (BugtrackingConnector c : connectors) {
             KenaiUtil.setFilter(query, filter);
         }
-        BugtrackingUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, null, true);
     }
 
     static QueryResultHandleImpl forStatus(Query query, int status) {
@@ -119,7 +120,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                         query,
                         totalFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
                         getTotalTooltip(issueCount),
-                        Filter.getAllFilter(query),
+                        KenaiUtil.getAllFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
@@ -138,7 +139,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                         query,
                         label,
                         tooltip,
-                        Filter.getNotSeenFilter(query),
+                        KenaiUtil.getNotSeenFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NEW:
@@ -158,7 +159,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                         query,
                         label,
                         tooltip,
-                        Filter.getNewFilter(query),
+                        KenaiUtil.getNewFilter(query),
                         ResultType.NAMED_RESULT);
 
             default:
@@ -175,7 +176,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Filter.getNotSeenFilter(query),
+                KenaiUtil.getNotSeenFilter(query),
                 ResultType.ALL_CHANGES_RESULT);
     }
 

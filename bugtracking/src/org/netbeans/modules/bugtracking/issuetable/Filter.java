@@ -52,8 +52,8 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.openide.util.NbBundle;
 
@@ -63,28 +63,28 @@ import org.openide.util.NbBundle;
  */
 public abstract class Filter {
 
-    private static Map<Query, Map<Class, Filter>> queryToFilter = new WeakHashMap<Query, Map<Class, Filter>>();
+    private static Map<QueryImpl, Map<Class, Filter>> queryToFilter = new WeakHashMap<QueryImpl, Map<Class, Filter>>();
 
     public abstract String getDisplayName();
     public abstract boolean accept(IssueNode issue);
 
-    public static Filter getAllFilter(Query query) {
+    public static Filter getAllFilter(QueryImpl query) {
         return getFilter(query, AllFilter.class);
     }
-    public static Filter getNotSeenFilter(Query query) {
+    public static Filter getNotSeenFilter(QueryImpl query) {
         return getFilter(query, NotSeenFilter.class);
     }
-    public static Filter getNewFilter(Query query) {
+    public static Filter getNewFilter(QueryImpl query) {
         return getFilter(query, NewFilter.class);
     }
-    public static Filter getObsoleteDateFilter(Query query) {
+    public static Filter getObsoleteDateFilter(QueryImpl query) {
         return getFilter(query, ObsoleteDateFilter.class);
     }
-    public static Filter getAllButObsoleteDateFilter(Query query) {
+    public static Filter getAllButObsoleteDateFilter(QueryImpl query) {
         return getFilter(query, AllButObsoleteDateFilter.class);
     }
 
-    private static <T extends Filter> Filter getFilter(Query query, Class<T> clazz) {
+    private static <T extends Filter> Filter getFilter(QueryImpl query, Class<T> clazz) {
         Map<Class, Filter> filters = queryToFilter.get(query);
         if(filters == null) {
             filters = new HashMap<Class, Filter>(5);
@@ -98,7 +98,7 @@ public abstract class Filter {
                     c = clazz.getDeclaredConstructor();
                     filter = c.newInstance();
                 } else {
-                    c = clazz.getDeclaredConstructor(Query.class);
+                    c = clazz.getDeclaredConstructor(QueryImpl.class);
                     filter = c.newInstance(query);
                 }
             } catch (Exception ex) {
@@ -110,8 +110,8 @@ public abstract class Filter {
     }
 
     private static class AllFilter extends Filter {
-        private final Query query;
-        AllFilter(Query query) {
+        private final QueryImpl query;
+        AllFilter(QueryImpl query) {
             this.query = query;
         }
         @Override
@@ -124,8 +124,8 @@ public abstract class Filter {
         }
     }
     private static class NotSeenFilter extends Filter {
-        private final Query query;
-        NotSeenFilter(Query query) {
+        private final QueryImpl query;
+        NotSeenFilter(QueryImpl query) {
             this.query = query;
         }
         @Override
@@ -138,8 +138,8 @@ public abstract class Filter {
         }
     }
     private static class NewFilter extends Filter {
-        private final Query query;
-        NewFilter(Query query) {
+        private final QueryImpl query;
+        NewFilter(QueryImpl query) {
             this.query = query;
         }
         @Override
@@ -152,8 +152,8 @@ public abstract class Filter {
         }
     }
     private static class ObsoleteDateFilter extends Filter {
-        private final Query query;
-        ObsoleteDateFilter(Query query) {
+        private final QueryImpl query;
+        ObsoleteDateFilter(QueryImpl query) {
             this.query = query;
         }
         @Override
@@ -166,8 +166,8 @@ public abstract class Filter {
         }
     }
     private static class AllButObsoleteDateFilter extends Filter {
-        private final Query query;
-        AllButObsoleteDateFilter(Query query) {
+        private final QueryImpl query;
+        AllButObsoleteDateFilter(QueryImpl query) {
             this.query = query;
         }
         @Override
@@ -180,8 +180,8 @@ public abstract class Filter {
         }
     }
     
-    private static boolean contains(Query query, String id) {
-        return APIAccessor.IMPL.contains(query, id);
+    private static boolean contains(QueryImpl query, String id) {
+        return query.contains(id);
     }
     
 }

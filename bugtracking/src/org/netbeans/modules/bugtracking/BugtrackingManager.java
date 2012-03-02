@@ -56,8 +56,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -123,20 +121,20 @@ public final class BugtrackingManager implements LookupListener {
         refreshConnectors();
     }
 
-    public List<Issue> getRecentIssues(Repository repo) {
+    public List<IssueImpl> getRecentIssues(RepositoryImpl repo) {
         assert repo != null;
         List<RecentIssue> l = getRecentIssues().get(repo.getId());
         if(l == null) {
             return Collections.EMPTY_LIST;
         }
-        List<Issue> ret = new ArrayList<Issue>(l.size());
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(l.size());
         for (RecentIssue recentIssue : l) {
-            ret.add(recentIssue.getIssue());
+            ret.add(APIAccessor.IMPL.getImpl(recentIssue.getIssue()));
         }
         return ret;
     }
 
-    public void addRecentIssue(Repository repo, Issue issue) {
+    public void addRecentIssue(RepositoryImpl repo, IssueImpl issue) {
         assert repo != null && issue != null;
         if (issue.getID() == null) {
             return;
@@ -152,7 +150,7 @@ public final class BugtrackingManager implements LookupListener {
                 break;
             }
         }
-        l.add(0, new RecentIssue(issue, System.currentTimeMillis()));
+        l.add(0, new RecentIssue(issue.getIssue(), System.currentTimeMillis()));
         if(LOG.isLoggable(Level.FINE)) {
             SimpleDateFormat f = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
             for (RecentIssue ri : l) {
@@ -160,7 +158,7 @@ public final class BugtrackingManager implements LookupListener {
                         Level.FINE,
                         "recent issue: [{0}, {1}, {2}]",                        // NOI18N
                         new Object[]{
-                            ri.getIssue().getRepository().getDisplayName(),
+                            APIAccessor.IMPL.getImpl(ri.getIssue()).getRepositoryImpl().getDisplayName(),
                             ri.getIssue().getID(),
                             f.format(new Date(ri.getTimestamp()))});                                                   // NOI18N
             }
@@ -217,12 +215,12 @@ public final class BugtrackingManager implements LookupListener {
                     return;
                 }
                 IssueTopComponent itc = (IssueTopComponent) tc;
-                Issue issue = itc.getIssue();
+                IssueImpl issue = itc.getIssue();
                 LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
                 if(issue == null || issue.isNew()) {
                     return;
                 }
-                addRecentIssue(issue.getRepository(), issue);
+                addRecentIssue(issue.getRepositoryImpl(), issue);
             } 
         }
     }

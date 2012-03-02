@@ -58,7 +58,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
 import org.netbeans.modules.bugtracking.APIAccessor;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 
 /**
@@ -69,7 +69,7 @@ public class RepositoryFormPanel extends JPanel {
 
     private Collection<String> cardNames = new ArrayList<String>(6);
 
-    private Repository selectedRepository = null;
+    private RepositoryImpl selectedRepository = null;
     private RepositoryController selectedFormController = null;
 
     private boolean isValidData = false;
@@ -87,7 +87,7 @@ public class RepositoryFormPanel extends JPanel {
         initComponents();
     }
 
-    public RepositoryFormPanel(Repository repository, String initialErrorMessage) {
+    public RepositoryFormPanel(RepositoryImpl repository, String initialErrorMessage) {
         this();
 
         displayForm(repository, initialErrorMessage);
@@ -116,7 +116,7 @@ public class RepositoryFormPanel extends JPanel {
         layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 
-    public boolean displayForm(Repository repository, String initialErrMsg) {
+    public boolean displayForm(RepositoryImpl repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -136,7 +136,7 @@ public class RepositoryFormPanel extends JPanel {
         updateErrorMessage(message);
     }
 
-    public Repository getSelectedRepository() {
+    public RepositoryImpl getSelectedRepository() {
         return selectedRepository;
     }
 
@@ -177,7 +177,7 @@ public class RepositoryFormPanel extends JPanel {
         }
     }
 
-    private boolean displayFormPanel(Repository repository, String initialErrMsg) {
+    private boolean displayFormPanel(RepositoryImpl repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -186,7 +186,7 @@ public class RepositoryFormPanel extends JPanel {
 
         if(repository != null) {
             String cardName = getCardName(repository);
-            RepositoryController controller = APIAccessor.IMPL.getController(repository);
+            RepositoryController controller = repository.getController();
 
             boolean firstTimeUse = registerCard(cardName);
             if (firstTimeUse) {
@@ -244,7 +244,7 @@ public class RepositoryFormPanel extends JPanel {
         stopListeningOnController();
     }
 
-    private static String getCardName(Repository repository) {
+    private static String getCardName(RepositoryImpl repository) {
         return Integer.toString(System.identityHashCode(repository), MAX_RADIX);
     }
 

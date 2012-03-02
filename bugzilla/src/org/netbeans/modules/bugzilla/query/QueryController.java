@@ -77,13 +77,13 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -860,7 +860,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+        LogUtils.logAutoRefreshEvent(
             BugzillaConnector.getConnectorName(),
             query.getDisplayName(),
             false,
@@ -1167,9 +1167,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
             counter = 0;
             setIssueCount(counter);
             // XXX move to API
-            BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                BugtrackingOwnerSupport.ContextType.SELECTED_FILE_AND_ALL_PROJECTS,
-                BugzillaUtil.getRepository(getRepository()));                 
+            OwnerUtils.setLooseAssociation(BugzillaUtil.getRepository(getRepository()), false);                 
         }
 
         @Override

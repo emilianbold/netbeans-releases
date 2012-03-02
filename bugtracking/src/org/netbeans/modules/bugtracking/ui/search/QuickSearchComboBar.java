@@ -59,7 +59,10 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.PopupItem.IssueItem;
@@ -84,8 +87,8 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         command.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                if(value instanceof Issue) {
-                    Issue item = (Issue) value;
+                if(value instanceof IssueImpl) {
+                    IssueImpl item = (IssueImpl) value;
                     value = IssueItem.getIssueDescription(item);
                 }
                 return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
@@ -106,17 +109,19 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
     public Issue getIssue() {
-        return (Issue) command.getEditor().getItem();
+        IssueImpl impl = (IssueImpl) command.getEditor().getItem();
+        return impl != null ? impl.getIssue() : null;
     }
 
     public void setRepository(Repository repo) {
-        displayer.setRepository(repo);
-        Collection<Issue> issues = BugtrackingManager.getInstance().getRecentIssues(repo);
-        command.setModel(new DefaultComboBoxModel(issues.toArray(new Issue[issues.size()])));
+        RepositoryImpl repositoryImpl = APIAccessor.IMPL.getImpl(repo);
+        displayer.setRepository(repositoryImpl);
+        Collection<IssueImpl> issues = BugtrackingManager.getInstance().getRecentIssues(repositoryImpl);
+        command.setModel(new DefaultComboBoxModel(issues.toArray(new IssueImpl[issues.size()])));
         command.setSelectedItem(null);
     }
 
-    void setIssue(Issue issue) {
+    void setIssue(IssueImpl issue) {
         if(issue != null) {
             command.getEditor().setItem(issue);
             displayer.setVisible(false);
@@ -248,7 +253,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
 
     private class ComboEditor implements ComboBoxEditor {
         private final JTextField editor;
-        private Issue issue;
+        private IssueImpl issue;
         private boolean ignoreCommandChanges = false;
         private final ComboBoxEditor delegate;
 
@@ -291,14 +296,14 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         }
 
         private void setItem(Object anObject, boolean keepText) {
-            Issue oldIssue = issue;
+            IssueImpl oldIssue = issue;
             if(anObject == null) {
                 issue = null;
                 if(!keepText) {
                     editor.setText("");
                 }
-            } else if(anObject instanceof Issue) {
-                issue = (Issue) anObject;
+            } else if(anObject instanceof IssueImpl) {
+                issue = (IssueImpl) anObject;
                 ignoreCommandChanges = true;
                 if(!keepText) {
                     editor.setText(IssueItem.getIssueDescription(issue));

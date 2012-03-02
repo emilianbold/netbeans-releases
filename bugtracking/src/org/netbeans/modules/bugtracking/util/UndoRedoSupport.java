@@ -64,6 +64,8 @@ import javax.swing.undo.CannotRedoException;
 import javax.swing.undo.CannotUndoException;
 import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.openide.awt.UndoRedo;
 import org.openide.util.ChangeSupport;
@@ -82,7 +84,7 @@ public class UndoRedoSupport {
     private static final String ACTION_NAME_UNDO = "undo.action"; //NOI18N
     private static final String ACTION_NAME_REDO = "redo.action"; //NOI18N
 
-    private static Map<Issue, UndoRedoSupport> managers = new WeakHashMap<Issue, UndoRedoSupport>();
+    private static Map<IssueImpl, UndoRedoSupport> managers = new WeakHashMap<IssueImpl, UndoRedoSupport>();
 
     private UndoRedoSupport () {
         delegateManager = new DelegateManager();
@@ -97,7 +99,7 @@ public class UndoRedoSupport {
         UndoRedoSupport support = managers.get(issue);
         if(support == null) {
             support = new UndoRedoSupport();
-            managers.put(issue, support);
+            managers.put(APIAccessor.IMPL.getImpl(issue), support);
         }
         return support;
     }
@@ -116,7 +118,7 @@ public class UndoRedoSupport {
      * Unregisters undo/redo manager on the component, removes registered listeners, etc.
      */
     public void unregisterAll (Issue issue) {
-        managers.remove(issue);
+        managers.remove(APIAccessor.IMPL.getImpl(issue));
         delegateManager.removeAll();
     }
     
