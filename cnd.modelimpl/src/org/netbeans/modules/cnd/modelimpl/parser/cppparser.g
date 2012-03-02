@@ -952,7 +952,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef enum_specifier)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
 /*    |
         // IZ#145071: forward declarations marked as error
@@ -966,7 +966,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (LCURLY | SEMICOLON)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -979,7 +979,25 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {action.end_enum_declaration(LT(1));}
         SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
-	|
+    |
+        // Enum definition (don't want to backtrack over this in other alts)
+        (   (LITERAL___extension__!)?
+            (   storage_class_specifier
+            |   cv_qualifier
+            )*
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
+        ) =>
+        {action.enum_declaration(LT(1));}
+        (LITERAL___extension__!)?
+            (   sc = storage_class_specifier
+            |   tq = cv_qualifier
+        )*
+        {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
+        enum_specifier (init_declarator_list[declOther])? 
+        {action.end_enum_declaration(LT(1));}
+        SEMICOLON! //{end_of_stmt();}
+        { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
+    |
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
 		((template_head)? dtor_head[true] LCURLY)=>
@@ -1339,7 +1357,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef enum_specifier)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|
 		// Constructor declarator
