@@ -47,24 +47,17 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.classpath.ClassPath.Entry;
-import org.netbeans.api.java.queries.AnnotationProcessingQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
-import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -72,28 +65,30 @@ import org.openide.util.WeakListeners;
  *
  * @author Tomas Zezula
  */
-public class SourcePath implements ClassPathImplementation, ClassIndexManagerListener, PropertyChangeListener {
+public class SourcePath implements ClassPathImplementation, PropertyChangeListener {
 
     private final PropertyChangeSupport listeners = new PropertyChangeSupport(this);
-    private final ClassPath delegate;
-    private final ClassIndexManager manager;
-    private final Function<List<ClassPath.Entry>,List<PathResourceImplementation>> f;
-    private List<PathResourceImplementation> resources;
+    private final ClassPathImplementation delegate;
+    private final boolean forcePreferSources;
+    private final Function<Pair<Boolean,List<? extends PathResourceImplementation>>,List<PathResourceImplementation>> f;
+    //@GuardedBy("this")
     private long eventId;
-    
+    //@GuardedBy("this")
+    private List<PathResourceImplementation> resources;
+
     @SuppressWarnings("LeakingThisInConstructor")
     private SourcePath (
-            @NonNull final ClassPath delegate,
-            @NonNull final Function<List<ClassPath.Entry>,List<PathResourceImplementation>> f) {
+            @NonNull final ClassPathImplementation delegate,
+            final boolean forcePreferSources,
+            @NonNull final Function<Pair<Boolean,List<? extends PathResourceImplementation>>,List<PathResourceImplementation>> f) {
         assert delegate != null;
         assert f != null;
         this.delegate = delegate;
+        this.forcePreferSources = forcePreferSources;
         this.f = f;
-        this.manager = ClassIndexManager.getDefault();
-        manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, delegate));
     }
-    
+
     @Override
     public List<? extends PathResourceImplementation> getResources() {
         long currentEventId;
@@ -103,9 +98,8 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
             }
             currentEventId = this.eventId;
         }
-        
-        List<PathResourceImplementation> res = f.apply(delegate.entries());
-
+        List<PathResourceImplementation> res = f.apply(
+                Pair.<Boolean,List<? extends PathResourceImplementation>>of(forcePreferSources,delegate.getResources()));
         synchronized (this) {
             if (currentEventId == this.eventId) {
                 if (this.resources == null) {
@@ -131,34 +125,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         Parameters.notNull("listener", listener);   //NOI18N
         listeners.removePropertyChangeListener(listener);
     }
-    
-    @Override
-    public void classIndexAdded(ClassIndexManagerEvent event) {
-        if (f.forcePrefSources) {
-            return;
-        }
-        final Set<? extends URL> newRoots = event.getRoots();
-        boolean changed = false;
-        for (ClassPath.Entry entry : delegate.entries()) {
-            changed = newRoots.contains(entry.getURL());
-            if (changed) {
-                break;
-            }
-        }
-        if (changed) {            
-            synchronized (this) {
-                this.resources = null;
-                this.eventId++;
-            }
-            listeners.firePropertyChange(PROP_RESOURCES, null, null);
-        }
-        
-    }
 
-    @Override
-    public void classIndexRemoved(ClassIndexManagerEvent event) {              
-    }
-    
     @Override
     public void propertyChange (final PropertyChangeEvent event) {
         synchronized (this) {
@@ -167,33 +134,95 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         }
         listeners.firePropertyChange(PROP_RESOURCES, null, null);
     }
-            
-    private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener {
-        
-        private final ClassPath classPath;
-        private final ClassPath.Entry entry;
+
+    public static ClassPathImplementation filtered (
+            @NonNull final ClassPathImplementation cpImpl,
+            final boolean bkgComp) {
+        assert cpImpl != null;
+        return new SourcePath(cpImpl, bkgComp, new FilterNonOpened());
+    }
+
+
+    private static class FilterNonOpened implements  Function<
+            Pair<Boolean,List<? extends PathResourceImplementation>>,
+            List<PathResourceImplementation>> {
+
+        @Override
+        public List<PathResourceImplementation> apply(
+                @NonNull final Pair<Boolean,List<? extends PathResourceImplementation>> resources) {
+            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>(resources.second.size());
+            for (PathResourceImplementation pr : resources.second) {
+                res.add(new FR(pr,resources.first));
+            }
+            return res;
+        }
+    }
+
+    private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener, ClassIndexManagerListener {
+
+        private final PathResourceImplementation pr;
+        private final boolean forcePreferSources;
         private final PropertyChangeSupport support;
-        private final URL[] cache;
-        
+        //@GuardedBy("this")
+        private URL[] cache;
+        //@GuardedBy("this")
+        private long eventId;
+
         @SuppressWarnings("LeakingThisInConstructor")
-        public FR (final ClassPath.Entry entry) {
-            assert entry != null;
+        public FR (
+                @NonNull final PathResourceImplementation pr,
+                final boolean forcePreferSources) {
+            assert pr != null;
+            this.pr = pr;
+            this.forcePreferSources = forcePreferSources;
             this.support = new PropertyChangeSupport(this);
-            this.entry = entry;
-            this.classPath = entry.getDefiningClassPath();
-            this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(this, classPath));
-            this.cache = new URL[] {entry.getURL()};
+            this.pr.addPropertyChangeListener(WeakListeners.propertyChange(this, pr));
+            final ClassIndexManager manager = ClassIndexManager.getDefault();
+            manager.addClassIndexManagerListener(WeakListeners.create(ClassIndexManagerListener.class, this, manager));
         }
 
         @Override
         public boolean includes(URL root, String resource) {
-            assert this.cache[0].equals(root);
-            return entry.includes(resource);
+            final URL[] roots = getRoots();
+            boolean contains = false;
+            for (URL r : roots) {
+                if (r.equals(root)) {
+                    contains = true;
+                }
+            }
+            return contains &&
+                (!(pr instanceof FilteringPathResourceImplementation) ||
+                    ((FilteringPathResourceImplementation)pr).includes(root, resource));
         }
 
         @Override
         public URL[] getRoots() {
-            return cache;
+            long currentEventId;
+            synchronized (this) {
+                if (cache != null) {
+                    return cache;
+                }
+                currentEventId = this.eventId;
+            }
+            final URL[] origRoots = pr.getRoots();
+            final List<URL> rootsList = new ArrayList<URL>(origRoots.length);
+            for (URL url : origRoots) {
+                if (forcePreferSources || JavaIndex.hasSourceCache(url,true)) {
+                    rootsList.add(url);
+                }
+            }
+            URL[] res = rootsList.toArray(new URL[rootsList.size()]);
+            synchronized (this) {
+                if (currentEventId == this.eventId) {
+                    if (cache == null) {
+                        cache = res;
+                    } else {
+                        res = cache;
+                    }
+                }
+            }
+            assert res != null;
+            return res;
         }
 
         @Override
@@ -213,116 +242,45 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (ClassPath.PROP_INCLUDES.equals(evt.getPropertyName())) {
+            if (PROP_ROOTS.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    this.cache = null;
+                    this.eventId++;
+                }
+                this.support.firePropertyChange(PROP_ROOTS, null, null);
+            } else if (PROP_INCLUDES.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    this.cache = null;
+                    this.eventId++;
+                }
                 this.support.firePropertyChange(PROP_INCLUDES, null, null);
             }
         }
-        
-    }
-    
-    public static ClassPath sources (final ClassPath cp, final boolean bkgComp) {
-        assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToSources(bkgComp)));
-    }
 
-    public static ClassPath apt (final ClassPath cp, final boolean bkgComp) {
-        assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToAptCache(bkgComp)));
-    }
-
-    public static ClassPath aptOputput(final ClassPath cp, final boolean bkgComp) {
-        assert cp != null;
-        return ClassPathFactory.createClassPath(new SourcePath(cp, new MapToAptGenerated(bkgComp)));
-    }
-
-    @NonNull
-    static Set<? extends URL> getAptBuildGeneratedFolders(@NonNull final List<ClassPath.Entry> entries) {
-        final Set<URL> roots = new HashSet<URL>();
-        final Set<URL> aptRoots = new LinkedHashSet<URL>();
-        for (ClassPath.Entry entry : entries) {
-            roots.add(entry.getURL());
-        }
-        for (ClassPath.Entry entry : entries) {
-            final FileObject fo = entry.getRoot();
-            if (fo != null) {
-                final URL aptRoot = AnnotationProcessingQuery.getAnnotationProcessingOptions(fo).sourceOutputDirectory();
-                if (roots.contains(aptRoot)) {
-                    aptRoots.add(aptRoot);
+        @Override
+        public void classIndexAdded(ClassIndexManagerEvent event) {
+            if (forcePreferSources) {
+                return;
+            }
+            final Set<? extends URL> newRoots = event.getRoots();
+            boolean changed = false;
+            for (URL url : pr.getRoots()) {
+                changed = newRoots.contains(url);
+                if (changed) {
+                    break;
                 }
             }
-        }
-        return aptRoots;
-    }
-
-    private static abstract class Function<P,R> {
-
-        protected final boolean forcePrefSources;
-
-        public Function(final boolean forcePrefSources) {
-            this.forcePrefSources = forcePrefSources;
-        }
-
-        abstract R apply(P param);        
-    }
-
-    private static class MapToSources extends  Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
-
-        private MapToSources(final boolean forcePrefSources) {
-            super(forcePrefSources);
+            if (changed) {
+                synchronized (this) {
+                    this.cache = null;
+                    this.eventId++;
+                }
+                this.support.firePropertyChange(PROP_ROOTS, null, null);
+            }
         }
 
         @Override
-        List<PathResourceImplementation> apply(List<ClassPath.Entry> entries) {
-            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
-            final Set<? extends URL> aptBuildGenerated = getAptBuildGeneratedFolders(entries);
-            for (ClassPath.Entry entry : entries) {
-                if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {                    
-                    if (!aptBuildGenerated.contains(entry.getURL())) {
-                        res.add(new FR (entry));
-                    }
-                }
-            }
-            return res;
+        public void classIndexRemoved(ClassIndexManagerEvent event) {
         }
     }
-
-    private static class MapToAptCache extends Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
-        
-        private MapToAptCache(final boolean forcePrefSources) {
-            super(forcePrefSources);
-        }
-
-        @Override
-        List<PathResourceImplementation> apply(List<Entry> entries) {
-            final List<PathResourceImplementation> res = new ArrayList<PathResourceImplementation>();
-            for (ClassPath.Entry entry : entries) {
-                if (forcePrefSources || !JavaIndex.isLibrary(entry.getURL())) {
-                    final URL aptRoot = AptCacheForSourceQuery.getAptFolder(entry.getURL());
-                    if (aptRoot != null) {
-                        res.add(ClassPathSupport.createResource(aptRoot));
-                    }
-                }
-            }
-            return res;
-        }
-
-    }
-
-    private static class MapToAptGenerated extends Function<List<ClassPath.Entry>,List<PathResourceImplementation>> {
-
-        private MapToAptGenerated(final boolean forcePrefSources) {
-            super(forcePrefSources);
-        }
-
-        @Override
-        List<PathResourceImplementation> apply(List<Entry> entries) {
-            final Set<? extends URL> aptGenerated = getAptBuildGeneratedFolders(entries);
-            final List<PathResourceImplementation> resources = new ArrayList<PathResourceImplementation>(aptGenerated.size());
-            for (URL agr : aptGenerated) {
-                resources.add(ClassPathSupport.createResource(agr));
-            }
-            return resources;
-        }
-    }
-
 }

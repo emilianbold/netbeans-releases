@@ -487,7 +487,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null)
                                 return (VariableElement)e;
                             int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
-                            if (types.isSameType(e.asType(), type))
+                            if (isSameType(e.asType(), type, types))
                                 d -= 1000;
                             if (d < distance) {
                                 distance = d;
@@ -528,7 +528,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             if (name == null)
                                 return (VariableElement)ee;
                             int d = ElementHeaders.getDistance(ee.getSimpleName().toString(), name);
-                            if (ee.getKind().isField() && types.isSameType(((VariableElement)ee).asType(), dType) || ee.getKind() == ElementKind.METHOD && types.isSameType(((ExecutableElement)ee).getReturnType(), dType))
+                            if (ee.getKind().isField() && isSameType(((VariableElement)ee).asType(), dType, types) || ee.getKind() == ElementKind.METHOD && isSameType(((ExecutableElement)ee).getReturnType(), dType, types))
                                 d -= 1000;
                             if (d < distance) {
                                 distance = d;
@@ -554,7 +554,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     for (Element e : typeVars) {
                         if (e instanceof TypeParameterElement && !ERROR.contentEquals(e.getSimpleName()) && types.isAssignable(e.asType(), type)) {
                             int d = ElementHeaders.getDistance(e.getSimpleName().toString(), name);
-                            if (types.isSameType(e.asType(), type))
+                            if (isSameType(e.asType(), type, types))
                                 d -= 1000;
                             if (d < distance) {
                                 distance = d;
@@ -870,6 +870,16 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         }
     }
     
+    private boolean isSameType(TypeMirror t1, TypeMirror t2, Types types) {
+        if (types.isSameType(t1, t2))
+            return true;
+        if (t1.getKind().isPrimitive() && types.isSameType(types.boxedClass((PrimitiveType)t1).asType(), t2))
+            return true;
+        if (t2.getKind().isPrimitive() && types.isSameType(t1, types.boxedClass((PrimitiveType)t1).asType()))            
+            return true;
+        return false;
+    }
+    
     private TypeMirror resolveCapturedType(TypeMirror type) {
         if (type.getKind() == TypeKind.TYPEVAR) {
             WildcardType wildcard = SourceUtils.resolveCapturedType(type);
@@ -886,7 +896,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             JavaSource js = JavaSource.forDocument(c.getDocument());
             if (js != null) {
                 try {
-                    Future<Void> initTask = js.runWhenScanFinished(new Task<CompilationController>() {
+                    js.runUserActionTask(new Task<CompilationController>() {
 
                         public void run(final CompilationController c) throws IOException {
                             if (cInfo != null)
@@ -945,8 +955,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             }
                         }
                     },true);
-                    if (!initTask.isDone())
-                        StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(JavaCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                 } catch(IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }

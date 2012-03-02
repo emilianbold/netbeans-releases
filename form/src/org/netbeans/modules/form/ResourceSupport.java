@@ -1822,12 +1822,14 @@ public class ResourceSupport {
         List<Node.Property> props = new ArrayList<Node.Property>();
         props.add(autoNamingProp);
         if ((getI18nService() != null) || (getResourceService() != null)) {
-            int autoMode = getAutoMode();
             props.add(autoModeProp);
-            if (autoMode == AUTO_OFF || autoMode == AUTO_I18N) {
+            if (mode == AUTO_OFF || mode == AUTO_I18N) {
                 props.add(formBundleProp);
             }
-            props.add(localeProp);
+            if ((getI18nService() != null && getI18nService().getAvailableLocales(getSourceFile(), getI18nBundleName()) != null)
+                    || (projectUsesResources() && mode != AUTO_I18N)) {
+                props.add(localeProp);
+            }
         }
         return props.toArray(new Node.Property[props.size()]);
     }
@@ -1860,7 +1862,7 @@ public class ResourceSupport {
                         tags = resourceService.getAvailableLocales(srcFile);
                 }
             }
-            return tags != null ? tags[1] : null;
+            return tags != null && tags.length == 2 ? tags[1] : null;
         }
 
         @Override

@@ -46,7 +46,7 @@ import java.awt.Component;
 import java.text.MessageFormat;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.openide.util.NbBundle;
 
 /**

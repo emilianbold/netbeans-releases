@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -168,7 +167,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private boolean isPhpUnitValid() {
-        return CommandUtils.getPhpUnit(true) != null;
+        return CommandUtils.getPhpUnit(project, true) != null;
     }
 
     void run(PhpUnitTestRunInfo info) {
@@ -178,7 +177,7 @@ class ConfigActionTest extends ConfigAction {
 
         // test groups, not for rerun
         if (!info.isRerun() && ProjectPropertiesSupport.askForTestGroups(project)) {
-            PhpUnit phpUnit = CommandUtils.getPhpUnit(false);
+            PhpUnit phpUnit = CommandUtils.getPhpUnit(project, false);
             ConfigFiles configFiles = PhpUnit.getConfigFiles(project, false);
 
             PhpUnitTestGroupsFetcher testGroupsFetcher = new PhpUnitTestGroupsFetcher(project);
@@ -201,7 +200,7 @@ class ConfigActionTest extends ConfigAction {
     }
 
     private PhpUnitTestRunInfo getPhpUnitTestRunInfo(Lookup context) {
-        PhpUnit phpUnit = CommandUtils.getPhpUnit(true);
+        PhpUnit phpUnit = CommandUtils.getPhpUnit(project, true);
         if (phpUnit == null) {
             return null;
         }
@@ -259,7 +258,7 @@ class ConfigActionTest extends ConfigAction {
             this.info = info;
             rerunUnitTestHandler = getRerunUnitTestHandler();
             testRunner = getTestRunner();
-            phpUnit = CommandUtils.getPhpUnit(false);
+            phpUnit = CommandUtils.getPhpUnit(project, false);
             assert phpUnit != null;
         }
 

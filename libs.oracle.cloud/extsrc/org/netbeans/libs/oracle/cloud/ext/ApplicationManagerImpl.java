@@ -46,6 +46,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.api.ApplicationManager;
+import org.netbeans.libs.oracle.cloud.sdkwrapper.exception.*;
 import org.netbeans.libs.oracle.cloud.sdkwrapper.model.*;
 
 public class ApplicationManagerImpl implements ApplicationManager {
@@ -59,72 +60,128 @@ public class ApplicationManagerImpl implements ApplicationManager {
     
     @Override
     public Job deployApplication(String s, String s1, String s2, ApplicationType applicationtype, InputStream inputstream) {
-        return convertJob(realApplicationManager.deployApplication(s, s1, s2, convertApplicationType(applicationtype), inputstream));
+        try {
+            return convertJob(realApplicationManager.deployApplication(s, s1, s2, convertApplicationType(applicationtype), inputstream));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Job redeployApplication(String s, String s1, String s2, InputStream inputstream) {
-        return convertJob(realApplicationManager.redeployApplication(s, s1, s2, inputstream));
+        try {
+            return convertJob(realApplicationManager.redeployApplication(s, s1, s2, inputstream));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Job undeployApplication(String s, String s1, String s2) {
-        return convertJob(realApplicationManager.undeployApplication(s, s1, s2));
+        try {
+            return convertJob(realApplicationManager.undeployApplication(s, s1, s2));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public List<Application> listApplications(String s, String s1) {
-        return convertApplicationList(realApplicationManager.listApplications(s, s1));
+        try {
+            return convertApplicationList(realApplicationManager.listApplications(s, s1));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Application describeApplication(String s, String s1, String s2) {
-        return convertApplication(realApplicationManager.describeApplication(s, s1, s2));
+        try {
+            return convertApplication(realApplicationManager.describeApplication(s, s1, s2));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Job startApplication(String s, String s1, String s2) {
-        return convertJob(realApplicationManager.startApplication(s, s1, s2));
+        try {
+            return convertJob(realApplicationManager.startApplication(s, s1, s2));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Job stopApplication(String s, String s1, String s2) {
-        return convertJob(realApplicationManager.stopApplication(s, s1, s2));
+        try {
+            return convertJob(realApplicationManager.stopApplication(s, s1, s2));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public List<Log> listServiceInstanceLogs(String s, String s1) {
-        return convertLogList(realApplicationManager.listServiceInstanceLogs(s, s1));
+        try {
+            return convertLogList(realApplicationManager.listServiceInstanceLogs(s, s1));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public void fetchServiceInstanceLog(String s, String s1, String s2, OutputStream outputstream) {
-        realApplicationManager.fetchServiceInstanceLog(s, s1, s2, outputstream);
+        try {
+            realApplicationManager.fetchServiceInstanceLog(s, s1, s2, outputstream);
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public List<Job> listJobs() {
-        return convertJobList(realApplicationManager.listJobs());
+        try {
+            return convertJobList(realApplicationManager.listJobs());
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public List<Job> listJobs(String s, String s1) {
-        return convertJobList(realApplicationManager.listJobs(s, s1));
+        try {
+            return convertJobList(realApplicationManager.listJobs(s, s1));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public Job describeJob(String s) {
-        return convertJob(realApplicationManager.describeJob(s));
+        try {
+            return convertJob(realApplicationManager.describeJob(s));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public List<Log> listJobLogs(String s) {
-        return convertLogList(realApplicationManager.listJobLogs(s));
+        try {
+            return convertLogList(realApplicationManager.listJobLogs(s));
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
     @Override
     public void fetchJobLog(String s, String s1, OutputStream outputstream) {
-        realApplicationManager.fetchJobLog(s, s1, outputstream);
+        try {
+            realApplicationManager.fetchJobLog(s, s1, outputstream);
+        } catch (oracle.cloud.paas.exception.ManagerException ex) {
+            throw wrapException(ex);
+        }
     }
 
 
@@ -206,5 +263,15 @@ public class ApplicationManagerImpl implements ApplicationManager {
             case SUBMITTED: return JobStatus.SUBMITTED;
         }
         return null;
+    }
+
+    static ManagerException wrapException(oracle.cloud.paas.exception.ManagerException ex) {
+        if (ex instanceof oracle.cloud.paas.exception.ResourceBusyException) {
+            return new ResourceBusyException(ex);
+        }
+        if (ex instanceof oracle.cloud.paas.exception.UnknownResourceException) {
+            return new UnknownResourceException(ex);
+        }
+        return new ManagerException(ex);
     }
 }

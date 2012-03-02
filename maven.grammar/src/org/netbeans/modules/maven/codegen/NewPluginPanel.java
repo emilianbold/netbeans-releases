@@ -143,7 +143,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
     public List<String> getGoals () {
         List<String> goals = new ArrayList<String>();
         Enumeration e  = listModel.elements();
-        GoalEntry ge = null;
+        GoalEntry ge;
         while (e.hasMoreElements()) {
             ge = (GoalEntry) e.nextElement();
             if (ge.isSelected) {
@@ -154,6 +154,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
     }
 
     /** delayed change of query text */
+    @Override
     public void stateChanged (ChangeEvent e) {
         Document doc = (Document)e.getSource();
         try {
@@ -190,6 +191,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
 
         Task t = RequestProcessor.getDefault().post(new Runnable() {
 
+            @Override
             public void run() {
                 // prepare query
                 List<QueryField> fields = new ArrayList<QueryField>();
@@ -232,6 +234,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
 
                 SwingUtilities.invokeLater(new Runnable() {
 
+                    @Override
                     public void run() {
                         queryPanel.getExplorerManager().setRootContext(createResultsNode(keyList, map));
                     }
@@ -241,12 +244,14 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
 
         t.addTaskListener(new TaskListener() {
 
+            @Override
             public void taskFinished(Task task) {
                 synchronized (LOCK) {
                     String localText = inProgressText;
                     inProgressText = null;
                     if (lastQueryText != null && !lastQueryText.equals(localText)) {
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 if (lastQueryText != null) {
                                     find(lastQueryText);
@@ -255,6 +260,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
                         });
                     } else {
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 setSearchInProgressUI(false);
                             }
@@ -268,6 +274,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
     /** Impl of comparator, sorts artifacts asfabetically with exception
      * of items that contain current query string, which take precedence.
      */
+    @Override
     public int compare(String s1, String s2) {
 
         int index1 = s1.indexOf(inProgressText);
@@ -344,6 +351,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             this.parentList = list;
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             GoalEntry ge = (GoalEntry)value;
 
@@ -361,6 +369,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             return this;
         }
 
+        @Override
         public void mouseClicked(MouseEvent e) {
             int idx = parentList.locationToIndex(e.getPoint());
             if (idx == -1) {
@@ -372,6 +381,7 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             }
         }
 
+        @Override
         public void keyPressed(KeyEvent e) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                 doCheck();
@@ -388,21 +398,27 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
             parentList.repaint();
         }
 
+        @Override
         public void mousePressed(MouseEvent e) {
         }
 
+        @Override
         public void mouseReleased(MouseEvent e) {
         }
 
+        @Override
         public void mouseEntered(MouseEvent e) {
         }
 
+        @Override
         public void mouseExited(MouseEvent e) {
         }
 
+        @Override
         public void keyTyped(KeyEvent e) {
         }
 
+        @Override
         public void keyReleased(KeyEvent e) {
         }
 
@@ -431,11 +447,13 @@ public class NewPluginPanel extends javax.swing.JPanel implements ChangeListener
         }
 
 
+        @Override
         public ExplorerManager getExplorerManager() {
             return manager;
         }
 
         /** PropertyChangeListener impl, stores maven coordinates of selected artifact */
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
                 Node[] selNodes = manager.getSelectedNodes();

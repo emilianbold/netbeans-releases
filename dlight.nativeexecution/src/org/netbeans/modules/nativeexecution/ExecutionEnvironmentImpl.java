@@ -64,35 +64,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
     static final long serialVersionUID = 2098997126628923682L;
 
     /**
-     * Creates a new instance of <tt>ExecutionEnvironment</tt> for local
-     * execution.
-     */
-    /*package-local*/ ExecutionEnvironmentImpl() {
-        this(null, null);
-    }
-
-    /**
-     * Creates a new instance of <tt>ExecutionEnvironment</tt>. If <tt>host</tt>
-     * refers to the localhost or is <tt>null</tt> then task, started in this
-     * environment will be executed locally. Otherwise it will be executed
-     * remotely using ssh connection to the specified host using default ssh
-     * port (22).
-     *
-     * @param user user name to be used in this environment
-     * @param host host identification string (either hostname or IP address)
-     */
-    /*package-local*/ ExecutionEnvironmentImpl(String user, String host) {
-        this(user, host, 0);
-    }
-
-    /**
      * Creates a new instance of <tt>ExecutionEnvironment</tt>.
-     * It is allowable to pass <tt>null</tt> values for <tt>user</tt> and/or
-     * <tt>host</tt> params. In this case
-     * <tt>System.getProperty("user.name")</tt> will be used as a username and
-     * <tt>HostInfo.LOCALHOST</tt> will be used for <tt>host</tt>.
-     * If sshPort == 0 and host identification string represents remote host,
-     * port 22 will be used.
      *
      * @param user user name for ssh connection.
      * @param host host identification string. Either hostname or IP address.
@@ -102,23 +74,14 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
             final String user,
             final String host,
             final int sshPort) {
-        if (user == null) {
-            this.user = System.getProperty("user.name"); // NOI18N
-        } else {
-            this.user = user;
-        }
 
-        if (host == null) {
-            this.host = HostInfoUtils.LOCALHOST;
-        } else {
-            this.host = host;
-        }
+        assert  host != null;
+        assert  user != null || ExecutionEnvironmentFactoryServiceImpl.DEFAULT_USER == null;
 
-        if (!HostInfoUtils.isLocalhost(host) && sshPort == 0) {
-            this.sshPort = 22;
-        } else {
-            this.sshPort = sshPort;
-        }
+        // that's caller who is responsible for passing not nulls
+        this.user = user;
+        this.host = host;
+        this.sshPort = sshPort;
 
         toString = this.user + "@" + this.host + // NOI18N
                 (this.sshPort == 0 ? "" : ":" + this.sshPort); // NOI18N

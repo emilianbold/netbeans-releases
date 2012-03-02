@@ -58,8 +58,11 @@ import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.tomcat5.ide.EjbSupportImpl;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -485,23 +488,28 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
         return profiles;
     }
     
-    public Set/*<String>*/ getSupportedJavaPlatformVersions() {
-        Set versions = new HashSet();
+    @Override
+    public Set<String> getSupportedJavaPlatformVersions() {
+        Set<String> versions = new HashSet<String>();
         versions.add("1.4"); // NOI18N
         versions.add("1.5"); // NOI18N
         versions.add("1.6"); // NOI18N
         return versions;
     }
     
+    @Override
     public JavaPlatform getJavaPlatform() {
         return tp.getJavaPlatform();
     }
     
+    @Override
     public Lookup getLookup() {
-        Lookup baseLookup = Lookups.fixed(tp.getCatalinaHome(), new EjbSupportImpl());
-        return LookupProviderSupport.createCompositeLookup(baseLookup, "J2EE/DeploymentPlugins/Tomcat5/Lookup"); //NOI18N
-//        WSStackSPI jaxWsStack = new TomcatJaxWsStack(tp.getCatalinaHome());
-//        return Lookups.fixed(WSStackFactory.createWSStack(jaxWsStack));
+        WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class ,
+                new TomcatJaxWsStack(tp.getCatalinaHome()), WSStack.Source.SERVER);
+        Lookup baseLookup = Lookups.fixed(tp.getCatalinaHome(), 
+                new EjbSupportImpl(), wsStack);
+        return LookupProviderSupport.createCompositeLookup(baseLookup, 
+                "J2EE/DeploymentPlugins/Tomcat5/Lookup"); //NOI18N
     }
     
     // private helper methods -------------------------------------------------

@@ -57,6 +57,7 @@ import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -71,6 +72,12 @@ import org.openide.windows.TopComponent;
  * 
  * @author gowri
  */
+@MIMEResolver.NamespaceRegistration(
+    mimeType=HibernateRevengDataLoader.REQUIRED_MIME,
+    displayName="org.netbeans.modules.hibernate.resources.Bundle#HibernateRevengResolver",
+    doctypePublicId="-//Hibernate/Hibernate Reverse Engineering DTD 3.0//EN",
+    position=1600
+)
 public class HibernateRevengDataObject extends MultiDataObject {
 
     private HibernateReverseEngineering revEngineering;

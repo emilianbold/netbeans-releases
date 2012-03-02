@@ -44,6 +44,7 @@
 package org.netbeans.modules.versioning;
 
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 
 
 /**
@@ -69,4 +70,6 @@ public abstract class Accessor {
     
     public abstract VCSContext createVCSContext(org.netbeans.modules.versioning.core.spi.VCSContext delegate);
     
+    public abstract VCSHistoryProvider.RevisionProvider getRevisionProvider(VCSHistoryProvider.HistoryEntry entry);
+    public abstract VCSHistoryProvider.MessageEditProvider getMessageEditProvider(VCSHistoryProvider.HistoryEntry entry);
 }

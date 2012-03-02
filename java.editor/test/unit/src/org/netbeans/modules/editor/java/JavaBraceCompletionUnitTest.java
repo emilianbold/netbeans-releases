@@ -62,6 +62,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.openide.awt.AcceleratorBinding;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
@@ -862,7 +865,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "if (a()|) \n )"
         );
     }
-
+//problem
     public void testSkipWhenBalanced198194a() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "for (int i = a(|); i < 10; i++)"
@@ -1134,7 +1137,88 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.typeChar('\f');
         ctx.assertDocumentTextEquals("()|");
     }
+    
+    public void testRemoveQuotesBackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\"\"\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    public void testRemoveQuotesDelete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\"\"|\"\"");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    public void testRemoveQuotes2BackSpace() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\'\'\'|\'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("\'\'|");
+    }
+    
+    public void testRemoveQuotes2Delete() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "\'\'|\'\'");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("\'\'|");
+    }
+    
+    public void testJumpCharacters() throws Exception {
+        Context ctx = new Context(new JavaKit(), "m(\"p|\");");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("m(\"p\"|);");
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals("m(\"p\")|;");
+    }
+    
+    public void testJumpQuote() throws Exception {
+        Context ctx = new Context(new JavaKit(), "\"|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("\"\"|");
+    }
+    
+    public void testInsertSquareBracket() throws Exception {
+        Context ctx = new Context(new JavaKit(), "|");
+        ctx.typeChar('[');
+        ctx.assertDocumentTextEquals("[|]");
+    }
 
+    public void testBackspaceSquareBracket() throws Exception {
+        Context ctx = new Context(new JavaKit(), "[|]");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("|");
+    }
+    
+    public void testDeleteSquareBracket() throws Exception {
+        Context ctx = new Context(new JavaKit(), "|[]");
+        ctx.typeChar('\f');
+        ctx.assertDocumentTextEquals("|");
+    }
+    
+    public void testInsertBracketInString() throws Exception {
+        Context ctx = new Context(new JavaKit(), "\"|\"");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("\"(|\"");
+        ctx = new Context(new JavaKit(), "\" |\"");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("\" (|\"");
+    }
+    
+    public void testInsertBracketInComment() throws Exception {
+        Context ctx = new Context(new JavaKit(), "//|");
+        ctx.typeChar('(');
+        ctx.assertDocumentTextEquals("//(|");
+    }
+    
+    public void testSkipBracketInComment() throws Exception {
+        Context ctx = new Context(new JavaKit(), "//(|)");
+        ctx.typeChar(')');
+        ctx.assertDocumentTextEquals("//()|)");
+    }
+     
     public void testCorrectHandlingOfStringEscapes184059() throws Exception {
         assertTrue(isInsideString("foo\n\"bar|\""));
         assertTrue(isInsideString("foo\n\"bar\\\"|\""));
@@ -1280,6 +1364,18 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
             } catch (Exception e) {
                 throw new IllegalStateException(e);
             }
+        }
+    }
+
+    @ServiceProvider(service=MIMEResolver.class)
+    public static final class MIMEResolverImpl extends MIMEResolver {
+
+        public MIMEResolverImpl() {
+            super("text/x-nbeditor-keybindingsettings");
+        }
+
+        @Override public String findMIMEType(FileObject fo) {
+            return fo.getPath().contains("Keybindings") ? "text/x-nbeditor-keybindingsettings" : null;
         }
     }
 

@@ -269,6 +269,7 @@ LNUM=[0-9]+
 DNUM=([0-9]*[\.][0-9]+)|([0-9]+[\.][0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
+BNUM="0b"[01]+
 //LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
 LABEL=[[:letter:]_\x7f-\xff][[:letter:][:digit:]_\x7f-\xff]*
 WHITESPACE=[ \n\r\t]+
@@ -732,6 +733,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
                 popState();
     }
     return  PHPTokenId.PHP_CURLY_CLOSE;
+}
+
+<ST_PHP_IN_SCRIPTING>{BNUM} {
+    return PHPTokenId.PHP_NUMBER;
 }
 
 <ST_PHP_IN_SCRIPTING>{LNUM} {

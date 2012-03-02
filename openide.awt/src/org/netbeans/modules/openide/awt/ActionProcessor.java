@@ -336,11 +336,8 @@ public final class ActionProcessor extends LayerGeneratingProcessor {
             if (refs == null) {
                 continue;
             }
-            if (e.getKind() != ElementKind.PACKAGE) {
-                ActionID id = e.getAnnotation(ActionID.class);
-                if (id == null) {
-                    throw new LayerGenerationException("Don't use @ActionReferences without @ActionRegistration", e, processingEnv, refs);
-                }
+            ActionID id = e.getAnnotation(ActionID.class);
+            if (id != null) {
                 for (ActionReference actionReference : refs.value()) {
                     if (!actionReference.id().id().isEmpty() || !actionReference.id().category().isEmpty()) {
                         throw new LayerGenerationException("Don't specify additional id=@ActionID(...) when using @ActionID on the element", e, processingEnv, actionReference.id());

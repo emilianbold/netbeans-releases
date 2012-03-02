@@ -73,6 +73,8 @@ import org.openide.util.Union2;
 @ServicesTabNodeRegistration(name=M2RepositoryBrowser.NAME, displayName="#CTL_M2RepositoryBrowserTopComponent", shortDescription="#HINT_M2RepositoryBrowserTopComponent", iconResource=M2RepositoryBrowser.ICON_PATH, position=431)
 @Messages({
     "CTL_M2RepositoryBrowserTopComponent=Maven Repositories",
+    "LBL_Add_Repo=Add Repository",
+    "ACT_Add_Repo=Add Repository...",
     "HINT_M2RepositoryBrowserTopComponent=Displays contents of local and remote Apache Maven repositories and permits them to be searched and indexed."
 })
 public final class M2RepositoryBrowser extends AbstractNode {
@@ -97,7 +99,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
 
     private static class AddAction extends AbstractAction {
         AddAction() {
-            super(LBL_Add_Repo());
+            super(ACT_Add_Repo());
         }
         @Override public void actionPerformed(ActionEvent e) {
     final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
@@ -131,7 +133,7 @@ public final class M2RepositoryBrowser extends AbstractNode {
     }
 
     private static class SearchAction extends AbstractAction {
-        @Messages("LBL_REPO_Find=Find")
+        @Messages("LBL_REPO_Find=Find...")
         SearchAction() {
             super(LBL_REPO_Find());
         }

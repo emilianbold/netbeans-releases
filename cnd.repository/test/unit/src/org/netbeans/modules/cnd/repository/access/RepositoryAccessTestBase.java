@@ -45,9 +45,7 @@
 package org.netbeans.modules.cnd.repository.access;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.junit.Manager;
@@ -74,7 +72,7 @@ public class RepositoryAccessTestBase  extends ModelImplBaseTestCase {
 
     @Override
     protected File getTestCaseDataDir() {
-	String dataPath = getDataDir().getAbsolutePath().replaceAll("/repository/", "/modelimpl/").replaceAll("\\\\repository\\\\", "\\modelimpl\\"); //NOI18N
+	String dataPath = convertToModelImplDataDir("repository");
         String filePath = "common";
         return Manager.normalizeFile(new File(dataPath, filePath));
     }

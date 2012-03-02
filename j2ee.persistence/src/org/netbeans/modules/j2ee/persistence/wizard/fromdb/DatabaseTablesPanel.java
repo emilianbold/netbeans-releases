@@ -134,7 +134,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
 
     public DatabaseTablesPanel() {
         initComponents();
-
+        initInitial();
         ListSelectionListener selectionListener = new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -232,6 +232,16 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                 updateSourceSchema();
             }
         });        
+    }
+    
+    private void initInitial(){
+        //just to avoid mix of controls before actual initialization
+        dbschemaRadioButton.setEnabled(false);
+        dbschemaComboBox.setEnabled(false);
+        dbschemaRadioButton.setVisible(false);
+        dbschemaComboBox.setVisible(false);   
+        datasourceRadioButton.setVisible(false);
+        org.openide.awt.Mnemonics.setLocalizedText(datasourceLabel, org.openide.util.NbBundle.getMessage(DatabaseTablesPanel.class, "LBL_Wait"));
     }
 
     private void initializeWithDatasources() {

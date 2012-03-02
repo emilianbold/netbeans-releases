@@ -66,6 +66,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bClassField.putClientProperty(OPTION_ID, blankLinesBeforeClass);
         aClassField.putClientProperty(OPTION_ID, blankLinesAfterClass);
         aClassHeaderField.putClientProperty(OPTION_ID, blankLinesAfterClassHeader);
+        anAnonymousClassHeaderField.putClientProperty(OPTION_ID, blankLinesAfterAnonymousClassHeader);
         bFieldsField.putClientProperty(OPTION_ID, blankLinesBeforeFields);
         aFieldsField.putClientProperty(OPTION_ID, blankLinesAfterFields);
         bMethodsField.putClientProperty(OPTION_ID, blankLinesBeforeMethods );
@@ -78,6 +79,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bClassField.addKeyListener(new NumericKeyListener());
         aClassField.addKeyListener(new NumericKeyListener());
         aClassHeaderField.addKeyListener(new NumericKeyListener());
+        anAnonymousClassHeaderField.addKeyListener(new NumericKeyListener());
         bFieldsField.addKeyListener(new NumericKeyListener());
         aFieldsField.addKeyListener(new NumericKeyListener());
         bMethodsField.addKeyListener(new NumericKeyListener());
@@ -112,6 +114,8 @@ public class FmtBlankLines extends javax.swing.JPanel {
         aClassField = new javax.swing.JTextField();
         aClassHeaderLabel = new javax.swing.JLabel();
         aClassHeaderField = new javax.swing.JTextField();
+        anAnonymousClassHeaderLabel = new javax.swing.JLabel();
+        anAnonymousClassHeaderField = new javax.swing.JTextField();
         bFieldsLabel = new javax.swing.JLabel();
         bFieldsField = new javax.swing.JTextField();
         aFieldsLabel = new javax.swing.JLabel();
@@ -127,7 +131,7 @@ public class FmtBlankLines extends javax.swing.JPanel {
         bPackageLabel.setLabelFor(bPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(bPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforePackage")); // NOI18N
 
-        bPackageField.setColumns(5);
+        bPackageField.setColumns(2);
 
         aPackageLabel.setLabelFor(aPackageField);
         org.openide.awt.Mnemonics.setLocalizedText(aPackageLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterPackage")); // NOI18N
@@ -158,6 +162,9 @@ public class FmtBlankLines extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(aClassHeaderLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterClassHeader")); // NOI18N
 
         aClassHeaderField.setColumns(5);
+
+        anAnonymousClassHeaderLabel.setLabelFor(anAnonymousClassHeaderField);
+        org.openide.awt.Mnemonics.setLocalizedText(anAnonymousClassHeaderLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blAfterAnonymousClassHeader")); // NOI18N
 
         bFieldsLabel.setLabelFor(bFieldsField);
         org.openide.awt.Mnemonics.setLocalizedText(bFieldsLabel, org.openide.util.NbBundle.getMessage(FmtBlankLines.class, "LBL_blBeforeFields")); // NOI18N
@@ -194,25 +201,25 @@ public class FmtBlankLines extends javax.swing.JPanel {
                     .addComponent(aClassHeaderLabel)
                     .addComponent(bFieldsLabel)
                     .addComponent(aFieldsLabel)
+                    .addComponent(anAnonymousClassHeaderLabel)
                     .addComponent(bMethodsLabel)
                     .addComponent(aMethodsLabel))
                 .addGap(6, 6, 6)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aClassField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bClassField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(aImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(bImportsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(aPackageField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(bPackageField)
+                    .addComponent(aFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(bFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(anAnonymousClassHeaderField)
+                    .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(aClassField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(bClassField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(bMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
-
-        layout.linkSize( javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[]{aClassField, aClassHeaderField, aFieldsField, aImportsField, aMethodsField, aPackageField, bClassField, bFieldsField, bImportsField, bMethodsField, bPackageField});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -243,25 +250,30 @@ public class FmtBlankLines extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(aClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(aClassHeaderLabel))
-                .addGap(4, 4, 4)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bFieldsLabel))
-                .addGap(4, 4, 4)
+                    .addComponent(anAnonymousClassHeaderLabel)
+                    .addComponent(anAnonymousClassHeaderField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(aFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aFieldsLabel))
-                .addGap(4, 4, 4)
+                    .addComponent(bFieldsLabel)
+                    .addComponent(bFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(bMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(bMethodsLabel))
-                .addGap(4, 4, 4)
+                    .addComponent(aFieldsLabel)
+                    .addComponent(aFieldsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(aMethodsLabel)))
+                    .addComponent(bMethodsLabel)
+                    .addComponent(bMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(aMethodsLabel)
+                    .addComponent(aMethodsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize( javax.swing.SwingConstants.VERTICAL, new java.awt.Component[]{aClassField, aClassHeaderField, aFieldsField, aImportsField, aMethodsField, aPackageField, bClassField, bFieldsField, bImportsField, bMethodsField, bPackageField});
+        layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {aClassField, aClassHeaderField, aFieldsField, aImportsField, aMethodsField, aPackageField, bClassField, bFieldsField, bImportsField, bMethodsField, bPackageField});
 
     }// </editor-fold>//GEN-END:initComponents
     
@@ -279,6 +291,8 @@ public class FmtBlankLines extends javax.swing.JPanel {
     private javax.swing.JLabel aMethodsLabel;
     private javax.swing.JTextField aPackageField;
     private javax.swing.JLabel aPackageLabel;
+    private javax.swing.JTextField anAnonymousClassHeaderField;
+    private javax.swing.JLabel anAnonymousClassHeaderLabel;
     private javax.swing.JTextField bClassField;
     private javax.swing.JLabel bClassLabel;
     private javax.swing.JTextField bFieldsField;

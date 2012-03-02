@@ -19,49 +19,43 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jScrollPane2" alignment="0" pref="668" max="32767" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblGoals" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblMappings" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="-2" pref="28" max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtGoals" alignment="0" pref="532" max="32767" attributes="2"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="jScrollPane1" pref="392" max="32767" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
-                              </Group>
-                          </Group>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="comConfiguration" pref="389" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" pref="143" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                  </Group>
-                  <Group type="102" alignment="1" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
-                          <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtProfiles" pref="532" max="32767" attributes="2"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="532" max="32767" attributes="0"/>
-                      </Group>
-                  </Group>
+                  <Component id="lblConfiguration" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblGoals" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblMappings" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="txtGoals" alignment="0" pref="549" max="32767" attributes="2"/>
+                  <Component id="txtProfiles" alignment="0" pref="549" max="32767" attributes="2"/>
+                  <Component id="jScrollPane3" alignment="0" pref="549" max="32767" attributes="0"/>
+                  <Component id="comConfiguration" alignment="0" pref="549" max="32767" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="122" pref="122" max="-2" attributes="0"/>
+              <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
+              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <Component id="cbBuildWithDeps" min="-2" max="-2" attributes="0"/>
+              <EmptySpace pref="115" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="1" attributes="0">
+              <EmptySpace min="-2" pref="124" max="-2" attributes="0"/>
+              <Component id="jScrollPane1" max="32767" attributes="1"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="btnRemove" linkSize="1" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnAdd" linkSize="1" alignment="0" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+          </Group>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace min="6" pref="6" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" pref="665" max="32767" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -106,9 +100,9 @@
                   <Component id="cbRecursively" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="cbBuildWithDeps" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-              <Component id="jScrollPane2" min="-2" pref="105" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Component id="jScrollPane2" min="-2" pref="134" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -269,7 +263,6 @@
             <EmptyBorder/>
           </Border>
         </Property>
-        <Property name="horizontalScrollBarPolicy" type="int" value="31"/>
       </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>

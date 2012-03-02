@@ -62,6 +62,8 @@ public final class RemoteValidator {
     public static String validateHost(String host) {
         if (!StringUtils.hasText(host)) {
             return NbBundle.getMessage(RemoteValidator.class, "MSG_NoHostName");
+        } else if (host.contains(" ")) { // NOI18N
+            return NbBundle.getMessage(RemoteValidator.class, "MSG_HostNameSpaces");
         }
         return null;
     }
@@ -109,7 +111,9 @@ public final class RemoteValidator {
 
     @NbBundle.Messages({
         "RemoteValidator.error.uploadDirectory.missing=Upload directory must be specified.",
+        "# {0} - remote path separator",
         "RemoteValidator.error.uploadDirectory.start=Upload directory must start with \"{0}\".",
+        "# {0} - invalid path separator",
         "RemoteValidator.error.uploadDirectory.content=Upload directory cannot contain \"{0}\"."
     })
     public static String validateUploadDirectory(String uploadDirectory) {

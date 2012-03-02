@@ -249,7 +249,7 @@ public class SrcNode extends FilterNode {
             this.project = project;
             this.isTest = isTest;
 
-            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
+            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override

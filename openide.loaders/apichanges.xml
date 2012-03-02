@@ -109,6 +109,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="DataObjec.Registration">
+          <api name="loaders"/>
+          <summary>Introduced <code>DataObject.Registration</code> and <code>DataObject.Registrations</code></summary>
+          <version major="7" minor="36"/>
+          <date day="23" month="1" year="2012"/>
+          <author login="skygo"/>
+          <compatibility addition="yes"/>
+          <description>
+             <p>
+                  Introduced a new annotation for registering DataObject.
+              </p>
+          </description>
+          <class package="org.openide.loaders" name="DataObject"/>
+          <issue number="207219"/>
+          <issue number="208670"/>
+      </change>
       <change id="ToolbarPool.isFinished">
           <api name="awt"/>
           <summary><code>ToolbarPool.isFinished</code></summary>

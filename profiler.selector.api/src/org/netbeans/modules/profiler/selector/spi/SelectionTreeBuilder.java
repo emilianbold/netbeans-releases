@@ -43,6 +43,7 @@
 
 package org.netbeans.modules.profiler.selector.spi;
 
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import java.util.Collections;
 import java.util.List;
@@ -67,56 +68,15 @@ public abstract class SelectionTreeBuilder {
             return 0;
         }
     };
-
-    public static class Type {
-        final public String id;
-        final public String displayName;
-
-        public Type(String id, String displayName) {
-            this.id = id;
-            this.displayName = displayName;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final Type other = (Type) obj;
-            if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
-                return false;
-            }
-            if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 11 * hash + (this.id != null ? this.id.hashCode() : 0);
-            hash = 11 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public String toString() {
-            return displayName;
-        }
-    }
     
-    private Type type = new Type("NULL", "YOU SHOULD NOT SEE THIS"); // NOI18N
+    private SelectionTreeBuilderType type = new SelectionTreeBuilderType("NULL", "YOU SHOULD NOT SEE THIS"); // NOI18N
     private boolean preferredFlag;
     private Lookup context;
 
     public SelectionTreeBuilder() {
-        this(new Type("NULL", "YOU SHOULD NOT SEE THIS"), false); // NOI18N
+        this(new SelectionTreeBuilderType("NULL", "YOU SHOULD NOT SEE THIS"), false); // NOI18N
     }
-    public SelectionTreeBuilder(Type builderType, boolean isPreferred) {
+    public SelectionTreeBuilder(SelectionTreeBuilderType builderType, boolean isPreferred) {
         this.type = builderType;
         this.preferredFlag = isPreferred;
     }
@@ -145,7 +105,7 @@ public abstract class SelectionTreeBuilder {
         return type.id;
     }
 
-    final public Type getType() {
+    final public SelectionTreeBuilderType getType() {
         return type;
     }
 
@@ -162,7 +122,7 @@ public abstract class SelectionTreeBuilder {
      *         Return -1 if the builder would generate an empty tree
      */
     abstract public int estimatedNodeCount();
-
+    
     @Override
     /**
      * By default the {@linkplain SelectionTreeBuilder#displayName} is used

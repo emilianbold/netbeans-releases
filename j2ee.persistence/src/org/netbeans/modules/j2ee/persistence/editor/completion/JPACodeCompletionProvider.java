@@ -44,32 +44,21 @@ package org.netbeans.modules.j2ee.persistence.editor.completion;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.*;
 import javax.lang.model.element.ElementKind;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappings;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
@@ -81,11 +70,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.spi.editor.completion.CompletionDocumentation;
-import org.netbeans.spi.editor.completion.CompletionItem;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionResultSet;
-import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.openide.ErrorManager;
@@ -98,7 +83,7 @@ import org.openide.util.NbBundle;
  * see NNCompletionProvider and NNCompletionQuery as nb 5.5 precursors for this class 
  * @author sp153251
  */
-@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class)//NOI18N
+@MimeRegistration(mimeType = "text/x-java", service = CompletionProvider.class, position = 400)//NOI18N
 public class JPACodeCompletionProvider implements CompletionProvider {
 
     @Override
@@ -112,37 +97,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
     @Override
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
         return 0;//will not appear automatically
-    }
-
-    static int getRowFirstNonWhite(StyledDocument doc, int offset)
-            throws BadLocationException {
-        Element lineElement = doc.getParagraphElement(offset);
-        int start = lineElement.getStartOffset();
-        while (start + 1 < lineElement.getEndOffset()) {
-            try {
-                if (doc.getText(start, 1).charAt(0) != ' ') {
-                    break;
-                }
-            } catch (BadLocationException ex) {
-                throw (BadLocationException) new BadLocationException(
-                        "calling getText(" + start + ", " + (start + 1)
-                        + ") on doc of length: " + doc.getLength(), start).initCause(ex);
-            }
-            start++;
-        }
-        return start;
-    }
-
-    static int indexOfWhite(char[] line) {
-        int i = line.length;
-        while (--i > -1) {
-            final char c = line[i];
-            if (Character.isWhitespace(c)) {
-                return i;
-            }
-        }
-        org.netbeans.editor.ext.ExtSyntaxSupport f = new org.netbeans.editor.ext.ExtSyntaxSupport(null);
-        return -1;
     }
 
     class JPACodeCompletionQuery extends AsyncCompletionQuery {
@@ -172,6 +126,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             //XXX temporary - should be registered somehow better
             resolvers = new ArrayList<CompletionContextResolver>();
             resolvers.add(new DBCompletionContextResolver());
+            resolvers.add(new ETCompletionContextResolver());
         }
 
         @Override
@@ -186,12 +141,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
-                            Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
-                            if (!f.isDone()) {
-                                component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
-                                resultSet.setWaitText(NbBundle.getMessage(JPACodeCompletionProvider.class, "scanning-in-progress")); //NOI18N
-                                f.get();
-                            }
+                            ParserManager.parse(Collections.singletonList(source), getTask());
                             if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                                 if (results != null) {
                                     resultSet.addAllItems(results);
@@ -224,39 +174,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
 
         @Override
         protected boolean canFilter(JTextComponent component) {
-            return false;
-//            filterPrefix = null;
-//            int newOffset = component.getSelectionStart();
-//            if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-//                int offset = Math.min(anchorOffset, caretOffset);
-//                if (offset > -1) {
-//                    if (newOffset < offset)
-//                        return true;
-//                    if (newOffset >= caretOffset) {
-//                        try {
-//                            String prefix = component.getDocument().getText(offset, newOffset - offset);
-//                            filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
-//                            if (filterPrefix == null) {
-//                            } else if (filterPrefix.length() == 0) {
-//                                anchorOffset = newOffset;
-//                            }
-//                        } catch (BadLocationException e) {}
-//                        return true;
-//                    }
-//                }
-//                return false;
-//            } else if (queryType == TOOLTIP_QUERY_TYPE) {
-//                try {
-//                    if (newOffset == caretOffset)
-//                        filterPrefix = EMPTY;
-//                    else if (newOffset - caretOffset > 0)
-//                        filterPrefix = component.getDocument().getText(caretOffset, newOffset - caretOffset);
-//                    else if (newOffset - caretOffset < 0)
-//                        filterPrefix = newOffset > toolTipOffset ? component.getDocument().getText(newOffset, caretOffset - newOffset) : null;
-//                } catch (BadLocationException ex) {}
-//                return (filterPrefix != null && filterPrefix.indexOf(',') == -1 && filterPrefix.indexOf('(') == -1 && filterPrefix.indexOf(')') == -1); // NOI18N
-//            }
-//            return false;
+            return false;//TODO: implement filter
         }
         
         @Override
@@ -283,7 +201,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             if (prefix.length() == 0)
                 return data;
             List ret = new ArrayList();
-            boolean camelCase = isCamelCasePrefix(prefix);
             for (Iterator<JPACompletionItem> it = data.iterator(); it.hasNext();) {
                 CompletionItem itm = it.next();
                 if (itm.getInsertPrefix().toString().startsWith(prefix))
@@ -292,7 +209,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return ret;
         }
         private void run(CompilationController controller) {
-            String filter = null;
             int startOffset = caretOffset;
             Iterator resolversItr = resolvers.iterator();
             TreePath env = null;
@@ -315,7 +231,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         entityMappingsModel = scope.getEntityMappingsModel(false); // false since I guess you only want the entity classes defined in the project
                     }
                     if(entityMappingsModel != null){
-                        entityMappingsModel.runReadAction(new TaskUserAction(controller, resolver, startOffset));
+                        entityMappingsModel.runReadAction(task);
                     }
                 } catch (IOException ex) {
                    
@@ -413,22 +329,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         TreePath path = controller.getTreeUtilities().pathFor(offset);
         return path;
     }
-    private static boolean isJavaIdentifierPart(String text) {
-        for (int i = 0; i < text.length(); i++) {
-            if (!(Character.isJavaIdentifierPart(text.charAt(i))))
-                return false;
-        }
-        return true;
-    }
-    private static boolean isCamelCasePrefix(String prefix) {
-        if (prefix == null || prefix.length() < 2 || prefix.charAt(0) == '"')
-            return false;
-        for (int i = 1; i < prefix.length(); i++) {
-            if (Character.isUpperCase(prefix.charAt(i)))
-                    return true;                
-        }
-        return false;
-    }
+
     public final class Context {
 
         /** Text component */
@@ -438,19 +339,15 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         private int endOffset;
         private PersistenceUnit[] pus;
         private EntityMappings emaps;
-        /** True when code completion is invoked by auto popup. In such case, code completion returns no result
-         * after "new ". To get a result, code completion has to be invoked manually (using Ctrl-Space). */ // NOI18N
-        private boolean autoPopup;
         private String completedMemberName, completedMemberJavaClassName;
         private CCParser CCParser;
         private CCParser.CC parsednn = null;
+        private String methodName = null;
 
         public Context(JTextComponent component, CompilationController controller, int endOffset, boolean autoPopup) {
             this.component = component;
             this.controller = controller;
             this.endOffset = endOffset;
-            this.autoPopup = autoPopup;
-
 
             FileObject documentFO = getFileObject();
             if (documentFO != null) {
@@ -603,7 +500,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
 
         private TokenSequence<JavaTokenId> nextNonWhitespaceToken(TokenSequence<JavaTokenId> ts) {
             while (ts.moveNext()) {
-                int offset = ts.offset();
                 switch (ts.token().id()) {
                     case WHITESPACE:
                     case LINE_COMMENT:
@@ -622,6 +518,13 @@ public class JPACodeCompletionProvider implements CompletionProvider {
          */
         public CompilationController getController() {
             return controller;
+        }
+
+        String getMethod() {
+            if(methodName == null){
+                //getCompletedMemberClassName();
+            }
+            return methodName;
         }
     }
     

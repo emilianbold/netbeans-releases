@@ -127,7 +127,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
                 try {
                     javaSrc.runUserActionTask(new OverriddenAbsMethodFinder(treePathHandle, abstractMethHandles), true);
                 } catch (IOException ioException) {
-                    ErrorManager.getDefault().notify(cancelRequest?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
+                    ErrorManager.getDefault().notify(cancelRequested.get()?ErrorManager.INFORMATIONAL:ErrorManager.UNKNOWN,ioException);
                 }
             }
             
@@ -281,6 +281,7 @@ public class SafeDeleteRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
 //        Element[] refElements = refactoring.getRefactoredObjects();
 //        for(int i = 0;i < refElements.length; ++i) {
 //            Element refactoredObject = refElements[i];

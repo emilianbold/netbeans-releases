@@ -53,11 +53,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle.Messages;
 
 
 /** Iterator useful for NewFileWizard. Implements WD.InstantiatingIterator,
@@ -87,12 +90,17 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         return new NewFileIterator (false);
     }
     
+    @TemplateRegistration(
+        folder="Other",
+        position=2100,
+        displayName="#folderIterator",
+        iconBase="org/openide/loaders/defaultFolder.gif",
+        description="templatesFolder.html",
+        category="simple-files"
+    )
+    @Messages("folderIterator=Folder")
     public static NewFileIterator folderIterator () {
         return new NewFileIterator (true);
-    }
-    
-    public static NewFileIterator emptyFileIterator () {
-        return new NewFileIterator (false);
     }
     
     private WizardDescriptor.Iterator<WizardDescriptor> getSimpleIterator () {
@@ -140,7 +148,7 @@ public class NewFileIterator implements WizardDescriptor.InstantiatingIterator<W
         FileObject dir = Templates.getTargetFolder( wiz );
         
         DataFolder df = DataFolder.findFolder( dir );
-        FileObject template = Templates.getTemplate( wiz );
+        FileObject template = isFolder ? FileUtil.createMemoryFileSystem().getRoot() : Templates.getTemplate( wiz );
         
         DataObject dTemplate = DataObject.find( template );                
         DataObject dobj = dTemplate.createFromTemplate( df, Templates.getTargetName( wiz )  );

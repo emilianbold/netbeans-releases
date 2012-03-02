@@ -118,6 +118,7 @@ public class SvnFileSystemTest extends FileSystemFactoryHid {
         suite.addTestSuite(FileObjectTestHid.class);
 //        suite.addTestSuite(URLMapperTestHidden.class);
 //        suite.addTestSuite(FileUtilTestHidden.class);
+//        suite.addTestSuite(FileUtilJavaIOFileHidden.class);
 //        suite.addTestSuite(BaseFileObjectTestHid.class);
         return new SvnFileSystemTest(suite);
     }

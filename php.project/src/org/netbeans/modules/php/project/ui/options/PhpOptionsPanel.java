@@ -223,9 +223,8 @@ public final  class PhpOptionsPanel extends JPanel {
         removeButton = new JButton();
         moveUpButton = new JButton();
         moveDownButton = new JButton();
+        globalIncludePathInfoLabel = new JLabel();
         errorLabel = new JLabel();
-
-        setFocusTraversalPolicy(null);
 
         commandLineLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(commandLineLabel, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_CommandLine")); // NOI18N
@@ -264,6 +263,7 @@ public final  class PhpOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_Remove"));
         Mnemonics.setLocalizedText(moveUpButton, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_MoveUp"));
         Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(PhpOptionsPanel.class, "LBL_MoveDown"));
+        Mnemonics.setLocalizedText(globalIncludePathInfoLabel, NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.globalIncludePathInfoLabel.text"));
 
         errorLabel.setLabelFor(this);
         Mnemonics.setLocalizedText(errorLabel, "ERROR");
@@ -271,47 +271,32 @@ public final  class PhpOptionsPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(phpInterpreterLabel)
-                    .addComponent(openResultInLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpInterpreterTextField, GroupLayout.DEFAULT_SIZE, 107, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(phpInterpreterBrowseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(phpInterpreterSearchButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(outputWindowCheckBox)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(webBrowserCheckBox)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(editorCheckBox))))
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addComponent(commandLineLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(commandLineSeparator, GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                            .addComponent(addFolderButton)
-                            .addComponent(removeButton)
-                            .addComponent(moveUpButton)
-                            .addComponent(moveDownButton)))
-                    .addComponent(useTheFollowingPathByDefaultLabel)))
-            .addComponent(errorLabel)
-            .addGroup(layout.createSequentialGroup()
+
+                .addPreferredGap(ComponentPlacement.RELATED).addComponent(commandLineSeparator)).addGroup(layout.createSequentialGroup()
                 .addComponent(globalIncludePathLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(globalIncludePathSeparator, GroupLayout.DEFAULT_SIZE, 326, Short.MAX_VALUE))
+
+                .addPreferredGap(ComponentPlacement.RELATED).addComponent(globalIncludePathSeparator)).addGroup(layout.createSequentialGroup()
+                .addGap(12, 12, 12)
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(phpInterpreterLabel).addComponent(openResultInLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                                .addComponent(phpInterpreterTextField)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(phpInterpreterBrowseButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpInterpreterSearchButton)).addGroup(layout.createSequentialGroup()
+                                .addComponent(outputWindowCheckBox)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(webBrowserCheckBox).addPreferredGap(ComponentPlacement.RELATED).addComponent(editorCheckBox)))).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(includePathScrollPane)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addComponent(addFolderButton).addComponent(removeButton).addComponent(moveUpButton).addComponent(moveDownButton))).addComponent(useTheFollowingPathByDefaultLabel))).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(errorLabel).addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+
+                        .addComponent(globalIncludePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))).addGap(0, 0, Short.MAX_VALUE))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton});
@@ -319,42 +304,12 @@ public final  class PhpOptionsPanel extends JPanel {
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpInterpreterBrowseButton, phpInterpreterSearchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(commandLineLabel)
-                    .addComponent(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(phpInterpreterBrowseButton)
-                    .addComponent(phpInterpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(phpInterpreterSearchButton)
-                    .addComponent(phpInterpreterLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(outputWindowCheckBox)
-                    .addComponent(webBrowserCheckBox)
-                    .addComponent(editorCheckBox)
-                    .addComponent(openResultInLabel))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(globalIncludePathLabel)
-                    .addComponent(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(useTheFollowingPathByDefaultLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.TRAILING).addComponent(commandLineLabel).addComponent(commandLineSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpInterpreterBrowseButton).addComponent(phpInterpreterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(phpInterpreterSearchButton).addComponent(phpInterpreterLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(outputWindowCheckBox).addComponent(webBrowserCheckBox).addComponent(editorCheckBox).addComponent(openResultInLabel)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.TRAILING).addComponent(globalIncludePathLabel).addComponent(globalIncludePathSeparator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addComponent(useTheFollowingPathByDefaultLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(addFolderButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(removeButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(moveUpButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(moveDownButton)))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(errorLabel))
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(removeButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(moveUpButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(moveDownButton)).addComponent(includePathScrollPane)).addPreferredGap(ComponentPlacement.RELATED).addComponent(globalIncludePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(errorLabel))
         );
 
         commandLineSeparator.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.commandLineSeparator.AccessibleContext.accessibleName_1")); // NOI18N
@@ -399,7 +354,7 @@ public final  class PhpOptionsPanel extends JPanel {
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpOptionsPanel.class, "PhpOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
+    
     private void phpInterpreterBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_phpInterpreterBrowseButtonActionPerformed
         Utils.browsePhpInterpreter(this, phpInterpreterTextField);
     }//GEN-LAST:event_phpInterpreterBrowseButtonActionPerformed
@@ -443,6 +398,7 @@ public final  class PhpOptionsPanel extends JPanel {
     private JSeparator commandLineSeparator;
     private JCheckBox editorCheckBox;
     private JLabel errorLabel;
+    private JLabel globalIncludePathInfoLabel;
     private JLabel globalIncludePathLabel;
     private JSeparator globalIncludePathSeparator;
     private JList includePathList;

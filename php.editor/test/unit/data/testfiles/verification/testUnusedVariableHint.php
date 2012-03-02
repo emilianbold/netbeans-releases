@@ -88,6 +88,11 @@ function($param1) use ($field1) {return $field1;};
 
 function($param11) use ($field11) {return $param11;};
 
+$instanceOf = "\Foo";
+if ($ins instanceof $instanceOf) {
+
+}
+
 //END
 ?>
 

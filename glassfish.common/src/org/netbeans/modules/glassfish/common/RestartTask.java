@@ -168,7 +168,7 @@ public class RestartTask extends BasicTask<OperationState> {
                 if (GlassfishModule.PROFILE_MODE.equals(o)) {
                     support.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, false);
                 }
-                Future<OperationState> startTask = support.startServer(null);
+                Future<OperationState> startTask = support.startServer(null, ServerState.RUNNING);
                 OperationState startResult = OperationState.FAILED;
                 try {
                     startResult = startTask.get(START_TIMEOUT, TIMEUNIT);

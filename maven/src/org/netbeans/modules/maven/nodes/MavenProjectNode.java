@@ -100,8 +100,10 @@ public class MavenProjectNode extends AbstractNode {
         });
         reporter = proj.getLookup().lookup(ProblemReporterImpl.class);
         reporter.addChangeListener(new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent e) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         fireIconChange();
                         fireOpenedIconChange();

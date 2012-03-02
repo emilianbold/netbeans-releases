@@ -44,23 +44,17 @@
 package org.netbeans.modules.versioning.core;
 
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Lookup;
 import org.openide.util.actions.Presenter;
 import org.openide.awt.Actions;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 
 import javax.swing.*;
-import javax.swing.text.Document;
 import java.io.File;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -68,8 +62,8 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.api.VersioningSupport;
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -387,5 +381,13 @@ public class Utils {
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, message, new String[]{Long.toString(last), file.getPath()});
             Logger.getLogger(Utils.class.getName()).log(Level.INFO, sb.toString());
         }
+    }
+
+    static String getSystemMenuName(VCSSystemProvider.VersioningSystem system) {
+        if(VersioningManager.getInstance().isLocalHistory(system)) {
+            return NbBundle.getMessage(Utils.class, "CTL_LocalHistoryMenuName"); // NOI18N
+        } else {
+            return system.getDisplayName();
+        }    
     }
 }

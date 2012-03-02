@@ -84,10 +84,21 @@ final class WrapUndoEdit implements UndoableEdit {
     @Override
     public void undo() throws CannotUndoException {
         UndoRedoManager.checkLogOp("WrapUndoEdit.undo", this);
-        undoRedoManager.beforeUndoCheck(this);
-        delegate.undo();
-        // This will only happen if delegate.undo() does not throw CannotUndoException
-        undoRedoManager.afterUndoCheck(this);
+        boolean savepoint = undoRedoManager.isAtSavepoint();
+        if (savepoint) {
+            undoRedoManager.beforeUndoAtSavepoint(this);
+        }
+        boolean done = false;
+        try {
+            delegate.undo();
+            done = true;
+            // This will only happen if delegate.undo() does not throw CannotUndoException
+            undoRedoManager.afterUndoCheck(this);
+        } finally {
+            if (!done && savepoint) {
+                undoRedoManager.delegateUndoFailedAtSavepoint(this);
+            }
+        }
     }
 
     @Override
@@ -98,10 +109,21 @@ final class WrapUndoEdit implements UndoableEdit {
     @Override
     public void redo() throws CannotRedoException {
         UndoRedoManager.checkLogOp("WrapUndoEdit.redo", this);
-        undoRedoManager.beforeRedoCheck(this);
-        delegate.redo();
-        // This will only happen if delegate.redo() does not throw CannotRedoException
-        undoRedoManager.afterRedoCheck(this);
+        boolean savepoint = undoRedoManager.isAtSavepoint();
+        if (savepoint) {
+            undoRedoManager.beforeRedoAtSavepoint(this);
+        }
+        boolean done = false;
+        try {
+            delegate.redo();
+            done = true;
+            // This will only happen if delegate.redo() does not throw CannotRedoException
+            undoRedoManager.afterRedoCheck(this);
+        } finally {
+            if (!done && savepoint) {
+                undoRedoManager.delegateRedoFailedAtSavepoint(this);
+            }
+        }
     }
 
     @Override

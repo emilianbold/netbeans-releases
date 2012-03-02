@@ -129,6 +129,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         project.waitParse();
 
         assertTrue("CsmFile is invalid", csmFile.isValid());
+        assertFalse(csmFile.getIncludes().isEmpty());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 
@@ -157,6 +158,7 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         project.waitParse();
 
         assertTrue("CsmFile is invalid", csmFile.isValid());
+        assertFalse(csmFile.getIncludes().isEmpty());
         assertNotNull(csmFile.getIncludes().iterator().next().getIncludeFile());
     }
 

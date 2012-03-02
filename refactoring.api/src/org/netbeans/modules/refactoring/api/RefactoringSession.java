@@ -49,6 +49,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -60,6 +62,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.Transaction;
 import org.netbeans.modules.refactoring.spi.impl.UndoManager;
 import org.openide.LifecycleManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 
@@ -68,16 +71,19 @@ import org.openide.util.Parameters;
  * @author Martin Matula, Daniel Prusa, Jan Becicka
  */
 public final class RefactoringSession {
-    private final LinkedList<RefactoringElementImplementation> internalList;
+    //private final LinkedList<RefactoringElementImplementation> internalList;
+    private final ArrayList<RefactoringElementImplementation> internalList;
     private final RefactoringElementsBag bag;
     private final Collection<RefactoringElement> refactoringElements;
     private final String description;
     private ProgressSupport progressSupport;
     private UndoManager undoManager = UndoManager.getDefault();
     boolean realcommit = true;
+    private AtomicBoolean finished = new AtomicBoolean(false);
     
     private RefactoringSession(String description) {
-        internalList = new LinkedList();
+        //internalList = new LinkedList();
+        internalList = new ArrayList<RefactoringElementImplementation>() ;
         bag = SPIAccessor.DEFAULT.createBag(this, internalList);
         this.description = description;
         this.refactoringElements = new ElementsCollection();
@@ -199,6 +205,10 @@ public final class RefactoringSession {
         return refactoringElements;
     }
     
+    void finished() {
+        finished.set(true);
+    }
+    
     /**
      *  Adds progress listener to this RefactoringSession
      * @param listener to add
@@ -248,8 +258,9 @@ public final class RefactoringSession {
         @Override
         public Iterator<RefactoringElement> iterator() {
             return new Iterator() {
-                private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
+                //private final Iterator<RefactoringElementImplementation> inner = internalList.iterator();
                 private final Iterator<RefactoringElementImplementation> inner2 = SPIAccessor.DEFAULT.getFileChanges(bag).iterator();
+                private int index = 0;
 
                 @Override
                 public void remove() {
@@ -258,8 +269,8 @@ public final class RefactoringSession {
                 
                 @Override
                 public RefactoringElement next() {
-                    if (inner.hasNext()) {
-                        return new RefactoringElement(inner.next());
+                    if (index < internalList.size()) {
+                        return new RefactoringElement(internalList.get(index++));
                     } else {
                         return new RefactoringElement(inner2.next());
                     }
@@ -267,7 +278,21 @@ public final class RefactoringSession {
                 
                 @Override
                 public boolean hasNext() {
-                    return (inner.hasNext() || inner2.hasNext());
+                    boolean hasNext = index < internalList.size();
+                    if (hasNext) {
+                        return hasNext;
+                    }
+                    while (!finished.get()) {
+                        try {
+                            Thread.sleep(300);
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        hasNext = index < internalList.size();
+                        if (hasNext)
+                            return hasNext;
+                    }
+                    return index < internalList.size() || inner2.hasNext();
                 }
             };
         }

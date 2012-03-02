@@ -129,7 +129,7 @@ public final class BrowseFolderPanel extends JPanel {
         assert notificationLineSupport != null;
 
         String docFolder = getDocFolder();
-        String error = FileUtils.validateDirectory(docFolder);
+        String error = FileUtils.validateDirectory(docFolder, true);
         if (error != null) {
             notificationLineSupport.setErrorMessage(error);
             dialogDescriptor.setValid(false);

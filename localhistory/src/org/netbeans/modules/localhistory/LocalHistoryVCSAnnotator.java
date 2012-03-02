@@ -48,8 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.ui.actions.RevertDeletedAction;
-import org.netbeans.modules.localhistory.ui.revert.RevertToAction;
-import org.netbeans.modules.localhistory.ui.view.ShowLocalHistoryAction;
+import org.netbeans.modules.localhistory.ui.view.ShowHistoryAction;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
@@ -83,22 +82,18 @@ public class LocalHistoryVCSAnnotator extends VCSAnnotator {
         Lookup context = ctx.getElements();
         List<Action> actions = new ArrayList<Action>();
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
-            actions.add(SystemAction.get(ShowLocalHistoryAction.class));
+            actions.add(SystemAction.get(ShowHistoryAction.class));
             actions.add(SystemAction.get(RevertDeletedAction.class));
-            actions.add(SystemAction.get(RevertToAction.class));            
         } else {
             actions.add(SystemActionBridge.createAction(
-                                            SystemAction.get(ShowLocalHistoryAction.class), 
-                                            NbBundle.getMessage(ShowLocalHistoryAction.class, "CTL_ShowLocalHistory"), 
+                                            SystemAction.get(ShowHistoryAction.class), 
+                                            NbBundle.getMessage(ShowHistoryAction.class, "CTL_ShowHistory"), 
                                             context));
             actions.add(SystemActionBridge.createAction(
                                             SystemAction.get(RevertDeletedAction.class), 
                                             NbBundle.getMessage(RevertDeletedAction.class, "CTL_ShowRevertDeleted"),  
                                             context));           
-            actions.add(SystemActionBridge.createAction(
-                                            SystemAction.get(RevertToAction.class), 
-                                            RevertToAction.getMenuName(), 
-                                            context));                                
+            
         }
         return actions.toArray(new Action[actions.size()]);
     }    

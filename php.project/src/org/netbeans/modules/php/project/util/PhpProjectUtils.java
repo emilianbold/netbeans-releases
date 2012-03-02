@@ -58,10 +58,13 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -80,6 +83,7 @@ import org.openide.util.NbBundle;
  * Utility methods.
  * @author Tomas Mysik
  */
+@SuppressWarnings("ClassWithMultipleLoggers")
 public final class PhpProjectUtils {
     private static final Logger LOGGER = Logger.getLogger(PhpProjectUtils.class.getName());
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.php"); //NOI18N
@@ -283,6 +287,36 @@ public final class PhpProjectUtils {
         } catch (Exception exc) {
             return defaultValue;
         }
+    }
+
+    /**
+     * Resolve local file.
+     * @param parentDir parent directory
+     * @param relativeFilePath relative path ("/" expected as a separator), can be {@link StringUtils#hasText(String) empty}
+     * @return resolved file
+     */
+    public static File resolveFile(File parentDir, String relativeFilePath) {
+        if (parentDir == null) {
+            throw new NullPointerException("Parameter 'parentDir' must be set");
+        }
+        if (StringUtils.hasText(relativeFilePath)) {
+            return new File(parentDir, relativeFilePath.replace('/', File.separatorChar)); // NOI18N
+        }
+        return parentDir;
+    }
+
+    /**
+     * Open project customizer, Run Configuration category.
+     */
+    public static void openCustomizerRun(Project project) {
+        openCustomizer(project, CompositePanelProviderImpl.RUN);
+    }
+
+    /**
+     * Open project customizer.
+     */
+    public static void openCustomizer(Project project, String category) {
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
     }
 
     // http://wiki.netbeans.org/UsageLoggingSpecification

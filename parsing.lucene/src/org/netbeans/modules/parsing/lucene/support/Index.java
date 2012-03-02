@@ -79,7 +79,12 @@ public interface Index {
         /**
          * Index is valid
          */
-        VALID;
+        VALID, 
+        /**
+         * The index is being written to
+         * @since 2.7
+         */
+        WRITING;
     }
     
     /**
@@ -162,4 +167,47 @@ public interface Index {
      * @throws IOException in case of IO problem
      */
     void close () throws IOException;
+    
+    /**
+     * An extension to the basic Index interface, which allows to batch writes into
+     * transactions. IndexReaders do not see content written by {@link #txStore}
+     * until the transaction is {@link #commit}ted. Note that calling {@link #close}
+     * without fist commit will <b>rollback</b> the opened transaction.
+     * <p/>
+     * A transaction is started implicitly  by a call to {@link #txStore}, and committed
+     * or rolled back by {@link #commit} or {@link #rollback} methods.
+     * @since 2.7
+     */
+    public interface Transactional extends Index {
+        /**
+         * Stores new data and/or deletes old one, just as {@link #store}, but does not
+         * expose the written data to readers. You must call {@link #commit} to finish the 
+         * transaction and make the data visible.
+         * 
+         * @param toAdd the objects to be added into the index
+         * @param toDelete the objects to be removed from the index
+         * @param docConvertor the {@link Convertor} used to convert toAdd objects into lucene's Documents which are stored into the {@link Index}
+         * @param queryConvertor the {@link Convertor} used to convert toDelete objects into lucene's Queries used to delete the documents from {@link Index}
+         * @param optimize if true the index is optimized. The optimized index is faster for queries but optimize takes significant time.
+         * @throws IOException in case of IO problem
+         * @see #store
+         */
+        <S, T> void txStore(
+                @NonNull Collection<T> toAdd, 
+                @NonNull Collection<S> toDelete, 
+                @NonNull Convertor<? super T, ? extends Document> docConvertor, 
+                @NonNull Convertor<? super S, ? extends Query> queryConvertor) throws IOException;
+
+        /**
+         * Commits the data written by txStore; no op, if a transaction is not opened
+         * 
+         * @throws IOException in case of I/O error during commit
+         */
+        void commit() throws IOException;
+        
+        /**
+         * Rolls back the transaction, frees associated resources. No op if a transaction is not opened
+         */
+        void rollback() throws IOException;
+    }
 }

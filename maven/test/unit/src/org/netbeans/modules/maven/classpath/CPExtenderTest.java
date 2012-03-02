@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.classpath;
 import java.beans.Customizer;
 import java.net.URL;
 import java.util.Collections;
+import java.util.logging.Level;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -52,6 +53,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.project.libraries.DefaultLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -72,6 +74,15 @@ public class CPExtenderTest extends NbTestCase {
         clearWorkDir();
     }
 
+    @Override protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override protected String logRoot() {
+        return "org.netbeans.modules.maven";
+    }
+
+    @RandomlyFails // frequently fails in NB-Core-Build; [CPExtender] checkLibraryForPoms on Library[Stuff] -> true and [Utilities] WORKDIR/o.n.m.m.c.C/testAddRemovePomLib/pom.xml@1:2: CHILD_REMOVED:org.netbeans.modules.maven.model.pom.impl.ProjectImpl$PList@4 yet [Utilities] no changes in org.openide.loaders.XMLDataObject@c[WORKDIR/o.n.m.m.c.C/testAddRemovePomLib/pom.xml@1:2] where modified=true
     public void testAddRemovePomLib() throws Exception {
         Library lib = LibraryManager.getDefault().createLibrary("j2se", "Stuff", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/1.0/stuff-1.0.pom"))));
         Library lib2 = LibraryManager.getDefault().createLibrary("j2se", "Stuff2", Collections.singletonMap("maven-pom", Collections.singletonList(new URL("http://repo1.maven.org/maven2/grp/stuff/2.0/stuff-2.0.pom"))));

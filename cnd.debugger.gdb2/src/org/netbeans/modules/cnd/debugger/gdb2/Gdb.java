@@ -679,14 +679,18 @@ public class Gdb {
      * action, we're NOT asking dbx to do it - this we're actually doing
      * ourselves!!
      */
-    boolean pause(int pid, boolean silentStop) {
+    boolean pause(int pid, boolean silentStop, boolean interruptGdb) {
         // The following predicate is _not_ the same as isReceptive()
         if (debugger.state().isRunning && debugger.state().isProcess) {
-	    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
 	    try {
                 signalled = true;
                 this.silentStop = silentStop;
-		signaller.interrupt(pid);
+                if (interruptGdb) {
+                    executor.interruptGroup();
+                } else {
+                    Executor signaller = Executor.getDefault("signaller", factory.host, 0); // NOI18N
+                    signaller.interrupt(pid);
+                }
 	    } catch(java.io.IOException e) {
 		ErrorManager.getDefault().annotate(e,
 		    "Sending kill signal to process failed"); // NOI18N
@@ -1132,7 +1136,7 @@ public class Gdb {
             if (record.token() == 0) {
                 if (record.cls().equals("thread-group-started")) { //NOI18N
                     debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
-                    debugger.session().setPid(Long.valueOf(record.results().valueOf("pid").asConst().value())); //NOI18N
+                    debugger.session().setPid(Long.valueOf(record.results().getConstValue("pid"))); //NOI18N
                 } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N

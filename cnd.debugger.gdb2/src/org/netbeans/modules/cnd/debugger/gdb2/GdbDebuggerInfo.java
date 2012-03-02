@@ -46,8 +46,8 @@ package org.netbeans.modules.cnd.debugger.gdb2;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerInfo;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
-import org.netbeans.modules.cnd.debugger.gdb2.options.GdbProfile;
 import org.netbeans.modules.cnd.debugger.common2.debugger.options.DbgProfile;
+import org.netbeans.modules.cnd.debugger.gdb2.options.GdbProfile;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -58,22 +58,25 @@ import org.openide.util.lookup.ServiceProvider;
 public final class GdbDebuggerInfo extends NativeDebuggerInfo {
 
     private DbgProfile gdbProfile = null;
-    private String remoteTarget = null;
+    private String targetCommand = null;
 
     private GdbDebuggerInfo() {
 	super(GdbEngineCapabilityProvider.getGdbEngineType());
     } 
 
+    @Override
     public DbgProfile getDbgProfile() {
 	if (gdbProfile == null)
 	    gdbProfile = (DbgProfile) getConfiguration().getAuxObject(GdbProfile.PROFILE_ID);
 	return gdbProfile;
     }
 
+    @Override
     public void setDbgProfile(DbgProfile profile) {
 	gdbProfile = profile;
     }
 
+    @Override
     public String getID() { 
 	// See META-INF/services
 	// SHOULD this be "netbeans-" or something like "sun-" or what?
@@ -84,12 +87,12 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
 	return new GdbDebuggerInfo();
     }
     
-    public String getRemoteTarget() {
-        return remoteTarget;
+    public String getTargetCommand() {
+        return targetCommand;
     }
 
-    public void setRemoteTarget(String remoteTarget) {
-        this.remoteTarget = remoteTarget;
+    public void setTargetCommand(String targetCommand) {
+        this.targetCommand = targetCommand;
     }
 
     @ServiceProvider(service = NativeDebuggerInfo.Factory.class)
@@ -99,6 +102,7 @@ public final class GdbDebuggerInfo extends NativeDebuggerInfo {
         public GdbFactory() {
         }
 
+        @Override
         public NativeDebuggerInfo create(EngineType debuggerType) {
             if (GdbEngineCapabilityProvider.getGdbEngineType().equals(debuggerType)) {
                 return GdbDebuggerInfo.create();
