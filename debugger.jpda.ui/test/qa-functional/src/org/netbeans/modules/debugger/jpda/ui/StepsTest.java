@@ -93,7 +93,7 @@ public class StepsTest extends DebuggerTestCase {
         if (projectNode == null) {
             projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-                        new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            assertTrue(Utilities.verifyPopup(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName), new String[] {Utilities.unsetMainProjectAction}));
         }
         new OpenAction().performAPI(beanNode);
     }
