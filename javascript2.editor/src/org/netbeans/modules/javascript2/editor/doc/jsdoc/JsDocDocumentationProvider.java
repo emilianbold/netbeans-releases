@@ -54,10 +54,11 @@ import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.NamedParameterEle
 import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.UnnamedParameterElement;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
+import org.netbeans.modules.javascript2.editor.model.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.DocumentationProvider;
+import org.netbeans.modules.javascript2.editor.model.JsComment;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -124,26 +125,6 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
-//    private int getNearestNodeOffsetForOffset(int nodeOffset, int commentEndOffset) {
-//        int nearestOffset = nodeOffset;
-//        FunctionNode root = parserResult.getRoot();
-//        for (Node node : root.getStatements()) {
-//            if ((node.getStart() > commentEndOffset) && (node.getStart() < nearestOffset)) {
-//                nearestOffset = node.getStart();
-//            }
-//        }
-//        return nearestOffset;
-//    }
-//
-//    private boolean isAssociatedComment(int nodeOffset, int commentEndOffset) {
-//        // for small diffs you can return true immediately
-//        if (nodeOffset - commentEndOffset <= 1) {
-//            return true;
-//        }
-//        int nearestNodeOffset = getNearestNodeOffsetForOffset(nodeOffset, commentEndOffset);
-//        return !(nearestNodeOffset < nodeOffset);
-//    }
-
     private int getEndOffsetOfAssociatedComment(int offset) {
         TokenHierarchy<?> tokenHierarchy = parserResult.getSnapshot().getTokenHierarchy();
         if (tokenHierarchy == null) {
@@ -152,21 +133,18 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
         if (ts != null) {
             ts.move(offset);
-            boolean activated = false;
+
+            // get to first EOL
+            while (ts.movePrevious() && ts.token().id() != JsTokenId.EOL);
+
+            // search for DOC_COMMENT
             while (ts.movePrevious()) {
-                if (!activated) {
-                    if (ts.token().id() == JsTokenId.EOL) {
-                        activated = true;
-                        continue;
-                    }
+                if (ts.token().id() == JsTokenId.DOC_COMMENT) {
+                    return ts.token().offset(tokenHierarchy) + ts.token().length();
+                } else if (isWhitespaceToken(ts.token())) {
+                    continue;
                 } else {
-                    if (ts.token().id() == JsTokenId.DOC_COMMENT) {
-                        return ts.token().offset(tokenHierarchy) + ts.token().length();
-                    } else if (isWhitespaceToken(ts.token())) {
-                        continue;
-                    } else {
-                        return -1;
-                    }
+                    return -1;
                 }
             }
         }
