@@ -57,6 +57,11 @@ public class ValueGrammarElement extends GrammarElement {
     }
 
     @Override
+    public String getName() {
+        return value();
+    }
+
+    @Override
     public GrammarElementKind getKind() {
         return GrammarElementKind.VALUE;
     }

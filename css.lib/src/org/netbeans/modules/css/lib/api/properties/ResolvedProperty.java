@@ -47,7 +47,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
-import org.netbeans.modules.css.lib.properties.GrammarResolver;
 
 /**
  * Represents a resolved css declaration
@@ -56,10 +55,8 @@ import org.netbeans.modules.css.lib.properties.GrammarResolver;
  */
 public class ResolvedProperty {
 
-    private final GroupGrammarElement groupGrammarElement;
-    private final GrammarResolver grammarResolver;
+    private final GrammarResolverResult grammarResolverResult;
     private static final Pattern FILTER_COMMENTS_PATTERN = Pattern.compile("/\\*.*?\\*/");//NOI18N
-    private Node simpleParseTree, fullParseTree;
     private PropertyModel propertyModel;
 
     public static ResolvedProperty resolve(PropertyModel propertyModel, CharSequence propertyValue) {
@@ -76,8 +73,11 @@ public class ResolvedProperty {
     //
     //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     public ResolvedProperty(GroupGrammarElement groupGrammarElement, String value) {
-        this.groupGrammarElement = groupGrammarElement;
-        this.grammarResolver = GrammarResolver.resolve(groupGrammarElement, value);
+        this.grammarResolverResult = GrammarResolver.resolve(groupGrammarElement, value);
+    }
+    
+    public ResolvedProperty(GrammarResolver grammarResolver, String value) {
+        this.grammarResolverResult = grammarResolver.resolve(value);
     }
     
     public ResolvedProperty(String grammar, String value) {
@@ -85,11 +85,11 @@ public class ResolvedProperty {
     }
 
     public List<Token> getTokens() {
-        return grammarResolver.tokens();
+        return grammarResolverResult.tokens();
     }
     
     public List<ResolvedToken> getResolvedTokens() {
-        return grammarResolver.resolved();
+        return grammarResolverResult.resolved();
     }
     //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
@@ -104,7 +104,7 @@ public class ResolvedProperty {
      * @return true if the property value fully corresponds to the property grammar.
      */
     public boolean isResolved() {
-        return grammarResolver.success();
+        return grammarResolverResult.success();
     }
     
     /**
@@ -114,7 +114,7 @@ public class ResolvedProperty {
      * Currently used just by the CssAnalyzer - error checking of the property values
      */
     public List<Token> getUnresolvedTokens() {
-        return grammarResolver.left();
+        return grammarResolverResult.left();
     }
     
     /**
@@ -122,7 +122,7 @@ public class ResolvedProperty {
      * The values are computed according to the grammar and the existing property value
      */
     public Set<ValueGrammarElement> getAlternatives() {
-        return grammarResolver.getAlternatives();
+        return grammarResolverResult.getAlternatives();
     }
 
     /**
@@ -132,29 +132,9 @@ public class ResolvedProperty {
      * In most cases clients will use this method.
      */    
     public synchronized Node getParseTree() {
-        if(simpleParseTree == null) {
-            simpleParseTree = generateParseTree(false);
-        }
-        return simpleParseTree;
+        return grammarResolverResult.getParseTree();
     }
     
-    /**
-     * @return a parse tree for the property value. 
-     * The parse tree contains also the anonymous group nodes.
-     * If false the parse tree contains only named nodes (references)
-     * 
-     * Possibly remove from the API later since {@link #getParseTree()} 
-     * is the preferred way for clients wishing to work with the parse tree.
-     * 
-     * Mostly used for debugging and tests.
-     */
-    @Deprecated
-    public synchronized Node getFullParseTree() {
-        if(fullParseTree == null) {
-            fullParseTree = generateParseTree(true);
-        }
-        return fullParseTree;
-    }
 
     //--------- private -----------
     
@@ -177,48 +157,5 @@ public class ResolvedProperty {
         return b.toString();
     }
 
-    /**
-     * @param fullParseTree - if true then the parse tree contains also the anonymous
-     * group nodes. If false the parse tree contains only named nodes (references)
-     */
-    private Node generateParseTree(final boolean fullParseTree) {
-        Node.GroupNode root = new Node.GroupNode(groupGrammarElement) {
-
-            @Override
-            public String toString() {
-                return fullParseTree ? super.toString() : group.getName();
-            }
-            
-        };
-        
-        for(ResolvedToken token : getResolvedTokens()) {
-            Node.GroupNode current = root; //each path starts with the root element
-            List<GrammarElement> path = token.getGrammarElement().elementsPath();
-            //create group nodes for the elements excluding the root node and the value node itself
-            for(GrammarElement element : path.subList(1, path.size() - 1)) {
-                GroupGrammarElement groupElement = (GroupGrammarElement)element;
-                if(!fullParseTree) {
-                    if(groupElement.getName() == null) {
-                        //referred element == null so skip the anonymous element
-                        continue; 
-                    }
-                }
-                
-                Node.GroupNode newGroupNode = new Node.GroupNode(groupElement) {
-
-                    @Override
-                    public String toString() {
-                        return fullParseTree ? super.toString() : group.getName();
-                    }
-                    
-                };
-                Node.GroupNode child = current.addChild(newGroupNode); //either returns the given node or an existing one equal to it.
-                current = child;
-            }
-            current.addChild(new Node.ResolvedTokenNode(token)); //add the leaf node for the resolved token itself
-        }
-        
-        return root;
-    }
-
+   
 }

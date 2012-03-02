@@ -41,12 +41,20 @@
  */
 package org.netbeans.modules.css.lib.api.properties.model;
 
+import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
+import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
+import org.netbeans.modules.css.lib.properties.model.Color;
+
 /**
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public interface BoxEdgeBorder {
 
-    public T getEdge(Edge edge);
-
+    public Color getColor();
+    
+    public BorderWidthItem getWidth();
+    
+    public BorderStyleItem getStyle();
+    
 }

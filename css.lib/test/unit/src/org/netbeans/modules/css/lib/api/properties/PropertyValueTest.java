@@ -42,8 +42,10 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 
 /**
  *
@@ -61,6 +63,12 @@ public class PropertyValueTest extends CssTestBase {
 //        GrammarResolver.setLogging(GrammarResolver.Log.ALTERNATIVES, true);
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
     }
+    
+    @Override
+    protected Collection<GrammarResolver.Feature> getEnabledGrammarResolverFeatures() {
+        return Collections.singletonList(GrammarResolver.Feature.keepAnonymousElementsInParseTree);
+    }
+    
 
     public void testAlternativesComplicated1() {
         String grammar1 = "[ marek  jitka  [ [ ovecka | bubu ]? nee ] ] | [ marek jitka [ tobik | bibik ] ] ";
@@ -349,15 +357,15 @@ public class PropertyValueTest extends CssTestBase {
         assertAlternatives(g, "", "x", "-");
     }
 
-    public void testGetSimpleParseTree() {
+    public void testGetParseTree() {
         String g = " a [ b [ c | d ]* ]";
-        ResolvedProperty pv = new ResolvedProperty(g, "a b d d d c d");
         
-//        for(ResolvedToken t : pv.getResolvedTokens()) {
-//            System.out.println(t);
-//        }
+        GrammarResolver resolver = new GrammarResolver(GrammarParser.parse(g));
+        resolver.enableFeature(GrammarResolver.Feature.keepAnonymousElementsInParseTree);
+        GrammarResolverResult result = resolver.resolve("a b d d d c d");
         
-        Node root = pv.getFullParseTree();
+        Node root = result.getParseTree();
+        
 //        dumpTree(root);
         assertNotNull(root);
         assertNull(root.parent()); //root node has no parent
@@ -376,22 +384,24 @@ public class PropertyValueTest extends CssTestBase {
         
         Node ch2 = i.next();
         assertNotNull(ch2);
-        assertTrue(ch2 instanceof Node.GroupNode);
+        assertTrue(ch2 instanceof Node.GrammarElementNode);
         assertEquals(root, ch2.parent());
         
 
     }
     
-    public void testGetSimpltParseTree2() {
+    public void testGetSimpleParseTree2() {
         PropertyModel p = Properties.getPropertyModel("font-family");
         ResolvedProperty pv = new ResolvedProperty(p, "fantasy, monospace");
         
+//        System.out.println(p.getGrammarElement().toString2(0));
+        
         Node root = pv.getParseTree();
-        dumpTree(root);
+//        dumpTree(root);
         
         assertNotNull(root);
         assertNull(root.parent()); //root node has no parent
-        assertEquals("font-family", root.toString());
+        assertEquals("font-family", root.name());
         
         Collection<Node> ch = root.children();
         assertEquals(1, ch.size());
@@ -399,8 +409,8 @@ public class PropertyValueTest extends CssTestBase {
         Iterator<Node> i = ch.iterator();
         Node ch1 = i.next();
         assertNotNull(ch1);
-        assertTrue(ch1 instanceof Node.GroupNode);
-        assertEquals("@family-name", ch1.toString());
+        assertTrue(ch1 instanceof Node.GrammarElementNode);
+        assertEquals("@family-name", ch1.name());
         assertEquals(root, ch1.parent());
         
         ch = ch1.children();

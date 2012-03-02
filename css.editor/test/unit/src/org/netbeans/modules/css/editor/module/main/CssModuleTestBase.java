@@ -185,7 +185,8 @@ public class CssModuleTestBase extends CslTestBase {
         }
     }
 
-    protected void assertAlternatives(String grammar, String input, String... expected) {
+    
+    protected void assertAlternatives(GroupGrammarElement grammar, String input, String... expected) {
         ResolvedProperty pv = new ResolvedProperty(grammar, input);
         assertAlternatives(pv, expected);
     }

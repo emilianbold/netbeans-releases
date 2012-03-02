@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
+import org.netbeans.modules.css.lib.api.properties.GrammarResolver.Feature;
 
 /**
  *
@@ -60,6 +64,12 @@ public class GrammarResolverTest extends CssTestBase {
     protected void setUp() throws Exception {
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarParseTreeBuilder.DEBUG = true;
+    }
+
+    @Override
+    protected Collection<Feature> getEnabledGrammarResolverFeatures() {
+        return Collections.singletonList(GrammarResolver.Feature.keepAnonymousElementsInParseTree);
     }
     
     public void testParseVerySimpleGrammar() {
@@ -108,7 +118,7 @@ public class GrammarResolverTest extends CssTestBase {
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -144,7 +154,7 @@ public class GrammarResolverTest extends CssTestBase {
                 
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -177,7 +187,7 @@ public class GrammarResolverTest extends CssTestBase {
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -212,7 +222,7 @@ public class GrammarResolverTest extends CssTestBase {
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -248,7 +258,7 @@ public class GrammarResolverTest extends CssTestBase {
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -281,7 +291,7 @@ public class GrammarResolverTest extends CssTestBase {
         
         GroupGrammarElement tree = GrammarParser.parse(g);
         
-        ResolvedProperty v = new ResolvedProperty(tree, "keyword b");
+        ResolvedProperty v = assertResolve(tree, "keyword b");
         
         assertTrue(v.isResolved());
         
@@ -496,10 +506,10 @@ public class GrammarResolverTest extends CssTestBase {
     public void testConsume() {
         String rule = "[ [color]{1,4} | transparent ] | inherit ";
 
-        assertTrue(new ResolvedProperty(rule, "color").isResolved());
-        assertTrue(new ResolvedProperty(rule, "inherit").isResolved());
-        assertTrue(new ResolvedProperty(rule, "color color").isResolved());
-        assertTrue(new ResolvedProperty(rule, "color color color color").isResolved());
+        assertTrue(assertResolve(rule, "color").isResolved());
+        assertTrue(assertResolve(rule, "inherit").isResolved());
+        assertTrue(assertResolve(rule, "color color").isResolved());
+        assertTrue(assertResolve(rule, "color color color color").isResolved());
     }
 
     public void testConsumeFails() {
@@ -514,7 +524,7 @@ public class GrammarResolverTest extends CssTestBase {
         String rule = "[marek]{1,2} jitka";
         String text = "marek marek jitka";
 
-        ResolvedProperty csspv = new ResolvedProperty(rule, text);
+        ResolvedProperty csspv = assertResolve(rule, text);
 
         assertTrue(csspv.isResolved());
     }
@@ -525,7 +535,7 @@ public class GrammarResolverTest extends CssTestBase {
 
     public void testFont() {
         PropertyModel p = Properties.getPropertyModel("font");
-        ResolvedProperty pv = new ResolvedProperty(p, "20% serif");
+        ResolvedProperty pv = assertResolve(p, "20% serif");
         assertTrue(pv.isResolved());
     }
     
@@ -548,22 +558,22 @@ public class GrammarResolverTest extends CssTestBase {
     public void testZeroMultiplicity() {
         String rule = "[marek]?  [jitka]?  [ovecka]";
         String text = "ovecka";
-        ResolvedProperty csspv = new ResolvedProperty(rule, text);
+        ResolvedProperty csspv = assertResolve(rule, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testFontFamily() {
         PropertyModel p = Properties.getPropertyModel("font-family");
 
-        assertTrue(new ResolvedProperty(p, "serif").isResolved());
-        assertTrue(new ResolvedProperty(p, "cursive, serif").isResolved());
-        assertFalse(new ResolvedProperty(p, "cursive serif").isResolved());
+        assertResolve(p, "serif");
+        assertResolve(p, "cursive, serif");
+        assertResolve(p, "cursive serif", false);
 
     }
 
     public void testFontFamilyWithQuotedValue() {
         PropertyModel p = Properties.getPropertyModel("font-family");
-        ResolvedProperty csspv = new ResolvedProperty(p, "'Times New Roman',serif");
+        ResolvedProperty csspv = assertResolve(p, "'Times New Roman',serif");
 //        dumpResult(csspv);
         assertTrue(csspv.isResolved());
     }
@@ -572,7 +582,7 @@ public class GrammarResolverTest extends CssTestBase {
         PropertyModel p = Properties.getPropertyModel("font-size");
         String text = "xx-small";
 
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
 
         assertTrue(csspv.isResolved());
     }
@@ -580,102 +590,96 @@ public class GrammarResolverTest extends CssTestBase {
     public void testBorder() {
         PropertyModel p = Properties.getPropertyModel("border");
         String text = "20px double";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testMarginWidth() {
         PropertyModel p = Properties.getPropertyModel("margin");
         String text = "20px 10em 30px 30em";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testPaddingWidth() {
         PropertyModel p = Properties.getPropertyModel("padding");
         String text = "20px 10em 30px 30em";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testTimeUnit() {
         PropertyModel p = Properties.getPropertyModel("pause-after");
         String text = "200ms";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
 
         text = "200";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
+        assertResolve(p, text, false);
 
         text = "AAms";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
-
+        assertResolve(p, text, false);
+        
     }
 
     public void testFrequencyUnit() {
         PropertyModel p = Properties.getPropertyModel("pitch");
         String text = "200kHz";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
 
         text = "200";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
+        assertResolve(p, text, false);
 
         text = "AAHz";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
+        assertResolve(p, text, false);
 
     }
 
     public void testIdentifierUnit() {
         PropertyModel p = Properties.getPropertyModel("counter-increment");
         String text = "ovecka";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
 
         text = "10ovecek";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
+        assertResolve(p, text, false);
+        
 
         text = "-beranek";
-        csspv = new ResolvedProperty(p, text);
-        assertTrue(csspv.isResolved());
+        assertResolve(p, text);
 
     }
 
     public void testBackgroundImageURL() {
         PropertyModel p = Properties.getPropertyModel("background-image");
         String text = "url('/images/v6/tabs-bg.png')";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
 
 //        dumpResult(csspv);
 
         assertTrue(csspv.isResolved());
 
         text = "url'/images/v6/tabs-bg.png')";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
+        assertResolve(p, text, false);
+        
 
         text = "ury('/images/v6/tabs-bg.png')";
-        csspv = new ResolvedProperty(p, text);
-        assertFalse(csspv.isResolved());
-
+        assertResolve(p, text, false);
+        
     }
 
     public void testAbsoluteLengthUnits() {
         PropertyModel p = Properties.getPropertyModel("font");
         String text = "12px/14cm sans-serif";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testUnquotedURL() {
         PropertyModel p = Properties.getPropertyModel("@uri");
         String text = "url(http://www.redballs.com/redball.png)";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
@@ -709,22 +713,19 @@ public class GrammarResolverTest extends CssTestBase {
     public void testBorder_Top_Style() {
         PropertyModel p = Properties.getPropertyModel("border-top-style");
 
-        ResolvedProperty csspv = new ResolvedProperty(p, "dotted dotted dashed dashed");
-        assertFalse(csspv.isResolved());
-
-        csspv = new ResolvedProperty(p, "dotted");
-        assertTrue(csspv.isResolved());
-
+        assertResolve(p, "dotted dotted dashed dashed", false);
+        assertResolve(p, "dotted");
+        
     }
 
     public void testCaseSensitivity() {
         PropertyModel p = Properties.getPropertyModel("azimuth");
         String text = "behind";
-        ResolvedProperty csspv = new ResolvedProperty(p, text);
+        ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
 
         text = "BEHIND";
-        csspv = new ResolvedProperty(p, text);
+        csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
 
     }

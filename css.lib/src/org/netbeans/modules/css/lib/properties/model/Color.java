@@ -39,14 +39,53 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
+
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+
 
 /**
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public class Color extends NodeModel {
 
-    public T getEdge(Edge edge);
+    public TokenNodeModel color;
+    
+    public Color(Node node) {
+        super(node);
+    }
+    
+    public Color(TokenNodeModel text) {
+        color = text;
+    }
 
+    public Text getLength() {
+        return color;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Color other = (Color) obj;
+        if (this.color != other.color && (this.color == null || !this.color.equals(other.color))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 37 * hash + (this.color != null ? this.color.hashCode() : 0);
+        return hash;
+    }
+    
+    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
+
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 
 /**
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public class BoxEdgeBorderImpl implements BoxEdgeBorder {
 
-    public T getEdge(Edge edge);
+    private Color color;
+    private BorderStyleItem borderStyleItem;
+    private BorderWidthItem borderWidthItem;
 
+    public BoxEdgeBorderImpl(Color color, BorderStyleItem borderStyleItem, BorderWidthItem borderWidthItem) {
+        this.color = color;
+        this.borderStyleItem = borderStyleItem;
+        this.borderWidthItem = borderWidthItem;
+    }
+
+    @Override
+    public Color getColor() {
+        return color;
+    }
+
+    @Override
+    public BorderWidthItem getWidth() {
+        return borderWidthItem;
+    }
+
+    @Override
+    public BorderStyleItem getStyle() {
+        return borderStyleItem;
+    }
+    
 }

@@ -133,6 +133,7 @@ public class GroupGrammarElement extends GrammarElement {
         return all;
     }
     
+    @Override
     public String getName() {
         return referenceName;
     }

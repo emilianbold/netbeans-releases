@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.properties.GrammarResolver;
+import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -86,9 +86,8 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         PropertyModel prop = Properties.getPropertyModel("background-position");
         assertNotNull(prop);
         
-        assertResolve(prop.getGrammar(), "left      top");
-        assertResolve(prop.getGrammar(), "left 10px top 15px");
-        
+        assertTrue(new ResolvedProperty(prop, "left      top").isResolved());
+        assertTrue(new ResolvedProperty(prop, "left 10px top 15px").isResolved());
     }
     
     public void testIssue201769() {
@@ -102,7 +101,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         PropertyModel prop = Properties.getPropertyModel("background");
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-        assertResolve(prop.getGrammar(), "url(image.png) , url(image2.png)");
+        assertTrue(new ResolvedProperty(prop, "url(image.png) , url(image2.png)").isResolved());
 
     }
     

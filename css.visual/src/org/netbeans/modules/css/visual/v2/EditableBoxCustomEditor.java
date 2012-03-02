@@ -44,11 +44,14 @@ package org.netbeans.modules.css.visual.v2;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
 
 /**
  *
@@ -118,8 +121,13 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     
     private ComboBoxModel modelFor(Edge e) {
         BoxEdgeSize mw = editor.editableBox.getEdge(e);
-        String value = mw != null ? mw.getTextRepresentation().toString() : null;
-        return new DefaultComboBoxModel(new String[]{value, "auto"});
+        String value = mw != null ? mw.getTextRepresentation().toString() : "";
+        
+        Set<String> set = new TreeSet<String>();
+        set.add(value);
+        set.add("auto");
+        
+        return new DefaultComboBoxModel(new Vector(set));
     }
 
     /**
