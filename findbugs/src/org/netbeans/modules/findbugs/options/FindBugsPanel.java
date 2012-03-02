@@ -386,6 +386,17 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         return where.contains(what);
     }
 
+    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+
+    private String translate(String input) {
+        for (int cntr = 0; cntr < c.length; cntr++) {
+            input = input.replaceAll(c[cntr], tags[cntr]);
+        }
+
+        return input;
+    }
+    
     private class CheckBoxRenderer implements TreeCellRenderer {
 
         private JCheckBox renderer = new JCheckBox();
@@ -403,8 +414,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 renderer.setText(((BugCategory) user).getShortDescription());
                 renderer.setSelected(enabled((BugCategory) user));
             } else if (user instanceof BugPattern) {
-                renderer.setText(((BugPattern) user).getShortDescription());
-                renderer.setSelected(enabled((BugPattern) user));
+                BugPattern bp = (BugPattern) user;
+                renderer.setText("<html>" + (bp.isDeprecated() ? "<s>" : "") + translate(bp.getShortDescription()));
+                renderer.setSelected(enabled(bp));
             }
 
             return renderer;
