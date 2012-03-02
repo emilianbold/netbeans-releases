@@ -3563,13 +3563,13 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   balanceParensInExpression 
             |   balanceSquaresInExpression 
-                (options {greedy = true;}:  
+                (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>
                     (balanceParensInExpression)? 
                     (LITERAL_mutable)?
                     (trailing_type)? 
                     compound_statement
-                )?
-
+                |
+                )
             |   constant
 
             |   LITERAL_typename
