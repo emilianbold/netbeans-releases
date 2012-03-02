@@ -1,5 +1,5 @@
 Code completion result for source line:
-MyObj.create().getInfo().|big();
+param1.|length;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     anchor(nameAttribute): String   [PUBLIC]   stub_core_String.js

@@ -107,10 +107,9 @@ public abstract class JsTestBase extends CslTestBase {
 //    }
 //
     @Override
-    protected void setUp() throws Exception {
-        //JsIndexer.setClusterUrl("file:/bogus"); // No translation
-        super.setUp();
+    protected void setUp() throws Exception {        
         TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
+        super.setUp();//        JsIndexer.setClusterUrl("file:/bogus"); // No translation
     }
     
 //    @Override
