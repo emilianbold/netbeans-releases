@@ -787,6 +787,7 @@ public class RepositoryUpdater2Test extends NbTestCase {
         }
     } // End of FixedClassPathProvider class
 
+    @RandomlyFails
     public void testNestedRoots() throws Exception {
         FileUtil.setMIMEType("txt", "text/plain");
         final FileObject root = workDir.createFolder("root");
