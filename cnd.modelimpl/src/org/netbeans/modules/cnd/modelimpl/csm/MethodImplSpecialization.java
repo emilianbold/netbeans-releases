@@ -106,7 +106,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImplSpecialization methodImpl = new MethodImplSpecialization(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodImplSpecialization<T> methodImpl = new MethodImplSpecialization<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();

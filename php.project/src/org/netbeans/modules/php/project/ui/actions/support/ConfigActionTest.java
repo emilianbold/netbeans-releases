@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;

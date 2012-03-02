@@ -61,6 +61,8 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -76,8 +78,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.lib.profiler.ui.SwingWorker;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilingRoots;
+import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.netbeans.modules.profiler.stp.ui.FilterSetsPanel;
@@ -85,6 +89,7 @@ import org.netbeans.modules.profiler.stp.ui.GlobalFiltersPanel;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 import org.netbeans.modules.profiler.stp.ui.PreferredInstrFilterPanel;
 import org.netbeans.modules.profiler.stp.ui.QuickFilterPanel;
+import org.netbeans.modules.profiler.ui.ProfilerProgressDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
@@ -97,7 +102,9 @@ import org.openide.util.RequestProcessor;
  */
 @NbBundle.Messages({
     "CPUSettingsBasicPanel_DefaultRootsString=<font color=\"{0}\">default profiling roots, </font><a href=\"#\" {1}>customize...</a>",
+    "CPUSettingsBasicPanel_DefaultRootsToolTip=Click the link to define custom profiling roots.",
     "CPUSettingsBasicPanel_CustomRootsString=<font color=\"{0}\">custom profiling roots, </font><a href=\"#\" {1}>edit...</a>",
+    "CPUSettingsBasicPanel_CustomRootsToolTip=Click the link to customize defined profiling roots.",
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
     "CPUSettingsBasicPanel_FilterSetsDialogCaption=Customize Filter Sets",
     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption=Edit Global Filters",
@@ -352,6 +359,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                     performRootMethodsAction();
                 }
             });
+        partOfAppHintLink.setToolTipText(Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip());
 //        partOfAppHintLink.setVisible(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
@@ -707,27 +715,54 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         filterCombo.requestFocus();
     }
 
+    final private AtomicBoolean rootMethodsActionExecuting = new AtomicBoolean(false);
+    @NbBundle.Messages({
+        "MSG_DefaultRoots=Computing default project profiling roots"
+    })
     private void performRootMethodsAction() {
-//        JOptionPane.showMessageDialog(null, Arrays.toString(rootMethods));
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-//                if (defaultRootMethods == null)
-//                    // TODO: provide FileObject if defined!
-//                    // TODO: include also subprojects according to the selected filter!
-//                    defaultRootMethods = ProjectContentsSupport.get(project).getProfilingRoots(null, false);
-//                if (rootMethods.length == 0)
-//                    rootMethods = defaultRootMethods;
-                ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(
-                        rootMethods.length == 0 ? ProjectContentsSupport.get(project).
-                        getProfilingRoots(null, ProjectUtilities.hasSubprojects(project)) :
-                        rootMethods, project);
-//                JOptionPane.showMessageDialog(null, Arrays.toString(roots));
-                if (roots != null) {
-                    rootMethods = roots;
-                    updateControls();
+        if (rootMethodsActionExecuting.compareAndSet(false, true)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    new SwingWorker(false) {
+                        private ProgressDisplayer pd = ProfilerProgressDisplayer.getDefault();
+                        final private AtomicBoolean cancelled = new AtomicBoolean(false);
+                        private ClientUtils.SourceCodeSelection[] rms;
+
+                        @Override
+                        protected void doInBackground() {
+                            if (rootMethods.length == 0) {
+                                rms = ProjectContentsSupport.get(project).getProfilingRoots(null, ProjectUtilities.hasSubprojects(project));
+                            } else {
+                                rms = rootMethods;
+                            }
+                        }
+
+                        @Override
+                        protected void nonResponding() {
+                            pd.showProgress(Bundle.MSG_DefaultRoots(), new ProgressDisplayer.ProgressController() {
+                                @Override
+                                public boolean cancel() {
+                                    cancelled.set(true);
+                                    return true;
+                                }
+                            });
+                        }
+
+                        @Override
+                        protected void done() {
+                            pd.close();
+                            ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rms, project);
+                            if (roots != null) {
+                                rootMethods = roots;
+                                updateControls();
+                            }
+                            rootMethodsActionExecuting.set(false);
+                        }
+
+                    }.execute();
                 }
-            }
-        });
+            });
+        }
     }
 
     private void performShowFilterAction() {
@@ -837,12 +872,14 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             
             String labelText;
             String labelFocusedText;
+            String labelToolTip;
 
             if (rootMethods.length == 0) {
                 labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
                                    + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip();
                 rootMethodsSubmitOK = true;
             } else {
                 labelText = "<nobr>" //NOI18N
@@ -850,10 +887,12 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
                             + "</nobr>"; //NOI18N
                 labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_CustomRootsToolTip();
                 rootMethodsSubmitOK = true;
             }
 
             partOfAppHintLink.setText(labelText, labelFocusedText);
+            partOfAppHintLink.setToolTipText(labelToolTip);
         }
 
         if (quickFilter != null && quickFilter.equals(filterCombo.getSelectedItem())

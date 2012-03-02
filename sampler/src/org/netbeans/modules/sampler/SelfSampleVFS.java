@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.core.ui.sampler;
+package org.netbeans.modules.sampler;
 
 import java.io.File;
 import java.io.FileInputStream;

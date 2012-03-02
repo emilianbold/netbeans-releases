@@ -73,7 +73,7 @@ public class InitTest extends AbstractGitTestCase {
 
     public void testInit () throws Exception {
         File repo2 = new File(workDir.getParentFile(), "other");
-        GitClient client = GitRepository.getInstance(repo2).getClient();
+        GitClient client = GitRepository.getInstance(repo2).createClient();
         Field f = GitClient.class.getDeclaredField("gitRepository");
         f.setAccessible(true);
         JGitRepository jgitRepo = (JGitRepository) f.get(client);
