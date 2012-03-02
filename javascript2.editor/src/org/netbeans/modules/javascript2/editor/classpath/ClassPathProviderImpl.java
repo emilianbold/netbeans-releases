@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.classpath;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -119,10 +120,16 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     public static synchronized void registerJsClassPathIfNeeded() {
         if(!JS_CLASSPATH_REGISTERED.get()) {
             JS_CLASSPATH_REGISTERED.set(true);
-            ClassPath cp = ClassPathProviderImpl.getBootClassPath();
-            if (cp != null) {
-                GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.BOOT_CP, new ClassPath[]{cp});
-            }
+            SwingUtilities.invokeLater(new Runnable() {
+                public void run() {
+                    ClassPath cp = ClassPathProviderImpl.getBootClassPath();
+                    if (cp != null) {
+                        GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.BOOT_CP, new ClassPath[]{cp});
+                    }
+                }
+            });
         }
+        
+        
     }
 }
