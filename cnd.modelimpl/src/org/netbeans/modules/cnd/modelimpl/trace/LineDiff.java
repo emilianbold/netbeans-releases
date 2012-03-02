@@ -138,7 +138,7 @@ public final class LineDiff {
         merge(results);
         //get print variant
         try {
-            File tmpDiffFile = File.createTempFile("cnd_diff_lines", ".diff");
+            File tmpDiffFile = File.createTempFile("cnd_diff_lines", ".diff");// NOI18N
             printResults(passLines, refLines, results, tmpDiffFile);
             FileObject fo = FileUtil.toFileObject(tmpDiffFile);
             List<String> asLines = new ArrayList<String>(fo.asLines());
@@ -148,7 +148,7 @@ public final class LineDiff {
             }
             return asLines;
         } catch (IOException e) {
-            return Collections.singletonList("ERROR ON DIFF LINES " + e.getLocalizedMessage());
+            return Collections.singletonList("ERROR ON DIFF LINES " + e.getLocalizedMessage());// NOI18N
         }
     }
 
@@ -341,9 +341,9 @@ public final class LineDiff {
         String num=String.valueOf(lineNumber+1);
         int rem=numLength+1-num.length();
         for (int j=0;j < rem;j++)
-            ps.print(' ');
+            ps.print(' ');// NOI18N
         ps.print(num);
-        ps.print("   ");
+        ps.print("   ");// NOI18N
         ps.println(passLines[lineNumber]);
     }
     
@@ -371,16 +371,16 @@ public final class LineDiff {
             for  (int i=start;i < end;i++) {
                 if (newLine) {
                     for (int j=0;j < numLength+2;j++)
-                        ps.print(' ');
-                    ps.print("+ ");
+                        ps.print(' ');// NOI18N
+                    ps.print("+ ");// NOI18N
                     ps.println(refLines[i]);
                 } else {
                     String num=String.valueOf(i+1);
                     int rem=numLength+1-num.length();
                     for (int j=0;j < rem;j++)
-                        ps.print(' ');
+                        ps.print(' ');// NOI18N
                     ps.print(num);
-                    ps.print(" - ");
+                    ps.print(" - ");// NOI18N
                     ps.println(passLines[i]);
                 }
             }
