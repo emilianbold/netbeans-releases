@@ -123,6 +123,7 @@ import org.openide.windows.WindowManager;
     "ProfilingPointsManager_AnotherPpEditedMsg=Another Profiling Point is currently being edited!",
     "ProfilingPointsManager_PpCustomizerCaption=Customize Profiling Point",
     "ProfilingPointsManager_CannotStorePpMsg=Cannot store {0} Profiling Points to {1}",
+    "ProfilingPointsManager_ShowingFirstNItemsTxt=Showing first {0} items",
     "ProfilingPointsManager_OkButtonText=OK"
 })
 @ServiceProvider(service=ProfilingPointsProcessor.class)
@@ -303,6 +304,8 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
     }
 
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
+    
+    private static final int MAX_HITS = Integer.getInteger("nbprofiler.ppoints.maxhits", 1000); // NOI18N
 
     public static final String PROPERTY_PROJECTS_CHANGED = "p_projects_changed"; // NOI18N
     public static final String PROPERTY_PROFILING_POINTS_CHANGED = "p_profiling_points_changed"; // NOI18N
@@ -777,6 +780,14 @@ public final class ProfilingPointsManager extends ProfilingPointsProcessor
                 }
             }
         }
+    }
+    
+    public boolean belowMaxHits(int hitsCount) {
+        return hitsCount < MAX_HITS;
+    }
+    
+    public String getTruncatedResultsText() {
+        return "<br>&nbsp;" + Bundle.ProfilingPointsManager_ShowingFirstNItemsTxt(MAX_HITS); // NOI18N
     }
 
     boolean isAnyCustomizerShowing() {

@@ -172,6 +172,9 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -545,7 +548,8 @@ public final class TriggeredTakeSnapshotProfilingPoint extends TriggeredGlobalPr
         }
 
         synchronized(resultsSync) {
-            results.add(new Result(currentTime, hitValue, snapshotFilename));
+            if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                results.add(new Result(currentTime, hitValue, snapshotFilename));
         }
         getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
     }
