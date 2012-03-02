@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,41 +34,24 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
- */
-
-package org.netbeans.modules.db.dataview.table;
-
-import java.awt.Color;
-import java.awt.Component;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableCellRenderer;
-
-/**
  *
- * @author Shankari
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-public class CellFocusCustomRenderer extends DefaultTableCellRenderer {
 
-    public CellFocusCustomRenderer() {       
-        setOpaque(true);
+package org.netbeans.modules.parsing.impl.indexing;
+
+import java.util.concurrent.Callable;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
+import org.openide.util.lookup.ServiceProvider;
+
+@ServiceProvider(service=IndexingBridge.class)
+public class IndexingBridgeImpl extends IndexingBridge {
+
+    @Override public <T> T runProtected(Callable<T> operation) throws Exception {
+        return IndexingManager.getDefault().runProtected(operation);
     }
 
-    @Override
-    public Component getTableCellRendererComponent(JTable table,Object value,boolean isSelected,boolean hasFocus,int row, int column) {
-        super.getTableCellRendererComponent(table,value,isSelected,hasFocus,row,column);
-        if (hasFocus) {
-            setBackground(new Color(204,204,255));
-            setForeground(Color.BLACK);
-        } else if (isSelected) {
-            setBackground(table.getSelectionBackground());
-        } else {
-            setBackground(table.getBackground());
-        }
-        this.putClientProperty("html.disable", Boolean.TRUE);
-        return this;
-    }
 }
