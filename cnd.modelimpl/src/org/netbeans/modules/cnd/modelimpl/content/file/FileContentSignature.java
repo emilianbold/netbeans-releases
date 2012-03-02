@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.modelimpl.trace.LineDiff;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 
 /**
@@ -96,6 +97,40 @@ public final class FileContentSignature {
             return false;
         }
         return true;
+    }
+
+    public static CharSequence testDifference(FileContentSignature first, FileContentSignature second) {
+        StringBuilder out = new StringBuilder();
+        if (!first.file.equals(second.file)) {
+            out.append("<FILE=").append(first.file);// NOI18N
+            out.append(">FILE=").append(second.file);// NOI18N
+            return out;
+        }
+        if (first.hashCode != second.hashCode) {
+            out.append("<HASH=").append(first.hashCode);// NOI18N
+            out.append(">HASH=").append(second.hashCode);// NOI18N
+        }
+        if (!first.signature.isEmpty() && !second.signature.isEmpty()) {
+            List<String> diff = LineDiff.diff(first.signature, second.signature);
+            if (!diff.isEmpty()) {
+                for (String line : diff) {
+                    out.append(line).append('\n');// NOI18N
+                }
+            }
+        } else {
+            List<CharSequence> sigToDump;
+            if (first.signature.isEmpty()) {
+                out.append("FIRST is empty, content of the second:\n"); // NOI18N
+                sigToDump = first.signature;
+            } else {
+                out.append("SECOND is empty, content of the first:\n"); // NOI18N
+                sigToDump = second.signature;
+            }
+            for (CharSequence sigElem : sigToDump) {
+                out.append(sigElem).append('\n');
+            }
+        }
+        return out;
     }
 
     private static int hash(List<CharSequence> signature) {

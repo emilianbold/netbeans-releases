@@ -2304,8 +2304,11 @@ public class AstRenderer {
                 planB = true;
             }                    
             if(planB) {
-                AST token = getTypeToken(node);
+                AST token = getTypeToken(node.getFirstChild());
                 if( token != null ) {
+                    if(token.getFirstChild() != null && token.getFirstChild().getType() == CPPTokenTypes.LITERAL_auto) {
+                        token = getTypeToken(token.getNextSibling());
+                    }
                     ret = AstRenderer.renderType(token, file);
                 }
                 if( ret == null ) {
@@ -2338,7 +2341,7 @@ public class AstRenderer {
         }
         
         private static AST getTypeToken(AST node) {
-            for( AST token = node.getFirstChild(); token != null; token = token.getNextSibling() ) {
+            for( AST token = node; token != null; token = token.getNextSibling() ) {
                 int type = token.getType();
                 switch( type ) {
                     case CPPTokenTypes.CSM_TYPE_BUILTIN:
