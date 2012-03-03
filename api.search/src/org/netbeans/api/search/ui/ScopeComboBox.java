@@ -41,71 +41,216 @@
  */
 package org.netbeans.api.search.ui;
 
+import java.awt.Dialog;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.modules.search.SearchScopeList;
+import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Lookup;
+import org.openide.util.WeakListeners;
 
 /**
- * Component for selecting search scope.
+ * Component controller for selecting search scope.
+ *
+ * Use {@link ComponentFactory} to create instances of this class.
  *
  * @author jhavlin
  */
-public abstract class ScopeComboBox extends JComboBox {
+public final class ScopeComboBox extends ComponentController<JComboBox> {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    ScopeComboBox.SearchScopeChangeListener searchScopeChangeListener;
+    Lookup.Result lookupResult;
+    private SearchScopeDefinition selectedSearchScope;
+    private ScopeComboBox.ManualSelectionListener manualSelectionListener;
+    private String manuallySelectedId = null;
+    SearchScopeList scopeList = new SearchScopeList();
+
+    ScopeComboBox(JComboBox jComboBox, String prefferedId) {
+        super(jComboBox);
+        manualSelectionListener = new ScopeComboBox.ManualSelectionListener();
+        searchScopeChangeListener = new ScopeComboBox.SearchScopeChangeListener();
+        scopeList.addChangeListener(
+                WeakListeners.change(searchScopeChangeListener,
+                scopeList));
+        component.setEditable(false);
+        init(prefferedId);
+    }
 
     /**
-     * Get info for selected search scope.
+     * Add row with selection of scope to the form panel.
      */
-    public abstract @NonNull SearchInfo getSearchScopeInfo();
+    protected final void init(String prefferedId) {
+
+        updateScopeItems(prefferedId);
+        component.addActionListener(manualSelectionListener);
+    }
+
+    private void updateScopeItems(String prefferedId) {
+
+        component.removeAllItems();
+        selectedSearchScope = null;
+
+        for (SearchScopeDefinition ss : scopeList.getSeachScopeDefinitions()) {
+            if (ss.isApplicable()) { // add only enabled search scopes
+                ScopeItem si = new ScopeItem(ss);
+                component.addItem(si);
+                if (selectedSearchScope == null) {
+                    if (ss.getTypeId().equals(prefferedId)) {
+                        selectedSearchScope = ss;
+                        component.setSelectedItem(si);
+                    }
+                }
+            }
+        }
+        if (selectedSearchScope == null) {
+            ScopeItem si = (ScopeItem) component.getItemAt(0);
+            selectedSearchScope = si.getSearchScope();
+            component.setSelectedIndex(0);
+        }
+    }
+
+    /**
+     *
+     * @return Currently selected search scope, or null if no search scope is
+     * available.
+     */
+    private SearchScopeDefinition getSelectedSearchScope() {
+        return selectedSearchScope;
+    }
+
+    /**
+     * @return ID of selected search scope, or null if no scope is selected.
+     */
+    public @CheckForNull String getSelectedScopeId() {
+        SearchScopeDefinition ss = getSelectedSearchScope();
+        return ss == null ? null : ss.getTypeId();
+    }
+
+    /**
+     * Get search info for selected search scope.
+     *
+     * @return Appropriate search info, or null if not available.
+     */
+    public @CheckForNull
+    SearchInfo getSearchInfo() {
+        SearchScopeDefinition ss = getSelectedSearchScope();
+        if (ss == null) {
+            return null;
+        } else {
+            SearchInfo ssi = ss.getSearchInfo();
+            return ssi;
+        }
+    }
+
+    /**
+     * Wrapper of scope to be used as JComboBox item.
+     */
+    private final class ScopeItem {
+
+        private static final String START = "(";                       // NOI18N
+        private static final String END = ")";                         // NOI18N
+        private static final String SP = " ";                          // NOI18N
+        private static final String ELLIPSIS = "...";                  // NOI18N
+        private static final int MAX_EXTRA_INFO_LEN = 20;
+        private SearchScopeDefinition searchScope;
+
+        public ScopeItem(SearchScopeDefinition searchScope) {
+            this.searchScope = searchScope;
+        }
+
+        public SearchScopeDefinition getSearchScope() {
+            return this.searchScope;
+        }
+
+        private boolean isAdditionaInfoAvailable() {
+            return searchScope.getAdditionalInfo() != null
+                    && searchScope.getAdditionalInfo().length() > 0;
+        }
+
+        private String getTextForLabel(String text) {
+            String extraInfo = searchScope.getAdditionalInfo();
+            String extraText = extraInfo;
+            if (extraInfo.length() > MAX_EXTRA_INFO_LEN) {
+                extraText = extraInfo.substring(0, MAX_EXTRA_INFO_LEN)
+                        + ELLIPSIS;
+                if (extraText.length() >= extraInfo.length()) {
+                    extraText = extraInfo;
+                }
+            }
+            return getFullText(text, extraText);
+        }
+
+        private String getFullText(String text, String extraText) {
+            return text + SP + START + SP + extraText + SP + END;
+        }
+
+        @Override
+        public String toString() {
+            if (isAdditionaInfoAvailable()) {
+                return getTextForLabel(clr(searchScope.getDisplayName()));
+            } else {
+                return clr(searchScope.getDisplayName());
+            }
+        }
+
+        /**
+         * Clear some legacy special characters from scope names.
+         *
+         * Some providers can still include ampresands that were used for
+         * mnemonics in previous versions, but now are ignored.
+         */
+        private String clr(String s) {
+            return s.replaceAll("\\&", "");                             //NOI18N
+        }
+    }
+
+    private class SearchScopeChangeListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            if (manuallySelectedId == null && selectedSearchScope != null) {
+                manuallySelectedId = selectedSearchScope.getTypeId();
+            }
+            component.removeActionListener(manualSelectionListener);
+            updateScopeItems(manuallySelectedId);
+            component.addActionListener(manualSelectionListener);
+            Dialog d = (Dialog) SwingUtilities.getAncestorOfClass(
+                    Dialog.class, component);
+            if (d != null) {
+                d.repaint();
+            }
+        }
+    }
+
+    private class ManualSelectionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            ScopeItem item = (ScopeItem) component.getSelectedItem();
+            if (item != null) {
+                selectedSearchScope = item.getSearchScope();
+                manuallySelectedId = selectedSearchScope.getTypeId();
+            } else {
+                selectedSearchScope = null;
+            }
+        }
+    }
 
     /**
      * Clean all resources when the component is no longer needed.
      */
-    public abstract void clean();
-
-    /**
-     * Adds a <code>ChangeListener</code> that is notified about chagnes in the
-     * selected scope to the listener list. The same listener object may be
-     * added more than once, and will be called as many times as it is added. If
-     * <code>listener</code> is null, no exception is thrown and no action is
-     * taken.
-     *
-     * @param listener the <code>ChangeListener</code> to be added.
-     */
-    public final void addChangeListener(@NonNull ChangeListener l) {
-        changeSupport.addChangeListener(l);
-    }
-
-    /**
-     * Removes a <code>ChangeListener</code> from the listener list. If
-     * <code>listener</code> was added more than once, it will be notified one
-     * less time after being removed. If <code>listener</code> is null, or was
-     * never added, no exception is thrown and no action is taken.
-     *
-     * @param listener the <code>ChangeListener</code> to be removed.
-     */
-    public final void removeChangeListener(@NonNull ChangeListener l) {
-        changeSupport.removeChangeListener(l);
-    }
-
-    /**
-     * Fires a change event to all registered listeners.
-     */
-    protected final void fireChange() {
-        changeSupport.fireChange();
-    }
-
-    /**
-     * Checks if there are any listeners registered to this
-     * <code>ChangeSupport</code>.
-     *
-     * @return true if there are one or more listeners for the given property,
-     * false otherwise.
-     */
-    public final boolean hasListeners() {
-        return changeSupport.hasListeners();
+    public void clean() {
+        lookupResult = null;
+        scopeList.removeChangeListener(
+                searchScopeChangeListener);
+        scopeList.clean();
     }
 };

@@ -61,15 +61,16 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.ui.ComponentFactory;
 import org.netbeans.api.search.ui.FileNameComboBox;
+import org.netbeans.api.search.ui.ScopeComboBox;
 import org.netbeans.api.search.ui.ScopeSettingsPanel;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
-import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -178,13 +179,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
 
         lblScope = new JLabel();
-        cboxScope = new ScopeComboBox(preferredSearchScopeType);
-        lblScope.setLabelFor(cboxScope);
+        cboxScope = ComponentFactory.createScopeComboBox(new JComboBox(),
+                preferredSearchScopeType);
+        lblScope.setLabelFor(cboxScope.getComponent());
 
         lblFileNamePattern = new JLabel();
-        cboxFileNamePattern = ComponentFactory.createFileNameComboBox();
-        cboxFileNamePattern.setEditable(true);
-        lblFileNamePattern.setLabelFor(cboxFileNamePattern);        
+        cboxFileNamePattern = ComponentFactory.createFileNameComboBox(
+                new JComboBox());
+        lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());
         
         chkWholeWords = new JCheckBox();
         chkCaseSensitive = new JCheckBox();
@@ -220,8 +222,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (searchAndReplace) {
             formPanel.addRow(lblReplacement, cboxReplacement);
         }
-        formPanel.addRow(lblScope, cboxScope);
-        formPanel.addRow(lblFileNamePattern, cboxFileNamePattern);
+        formPanel.addRow(lblScope, cboxScope.getComponent());
+        formPanel.addRow(lblFileNamePattern,
+                cboxFileNamePattern.getComponent());
         initScopeOptionsRow(searchAndReplace);
     }
 
@@ -254,8 +257,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
     private void initScopeOptionsRow(boolean searchAndReplace) {
         this.scopeSettingsPanel = ComponentFactory.createScopeSettingsPanel(
-                searchAndReplace, cboxFileNamePattern);
-        formPanel.addRow(new JLabel(), scopeSettingsPanel);
+                new JPanel(), searchAndReplace, cboxFileNamePattern);
+        formPanel.addRow(new JLabel(), scopeSettingsPanel.getComponent());
     }
 
     /**
@@ -303,7 +306,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         scopeSettingsPanel.setFileNameRegexp(initialCriteria.isFileNameRegexp());
         scopeSettingsPanel.setUseIgnoreList(initialCriteria.isUseIgnoreList());
         cboxFileNamePattern.setRegularExpression(initialCriteria.isFileNameRegexp());
-        cboxFileNamePattern.setSelectedItem(initialCriteria.getFileNamePatternExpr());
+        cboxFileNamePattern.setFileNamePattern(initialCriteria.getFileNamePatternExpr());
         if (!searchAndReplace) {
             scopeSettingsPanel.setSearchInArchives(
                     initialCriteria.isSearchInArchives());
@@ -422,11 +425,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         FindDialogMemory memory = FindDialogMemory.getDefault();
         List<String> entries;
 
-        entries = memory.getFileNamePatterns();
-        if (!entries.isEmpty()) {
-            cboxFileNamePattern.setModel(new ListComboBoxModel(entries, true));
-        }
-
         if (cboxReplacement != null) {
             entries = memory.getReplacementExpressions();
             if (!entries.isEmpty()) {
@@ -445,8 +443,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             cboxTextToFind.setSelectedIndex(0);
         }
         if (memory.isFileNamePatternSpecified()
-                && cboxFileNamePattern.getItemCount() != 0) {
-            cboxFileNamePattern.setSelectedIndex(0);
+                && cboxFileNamePattern.getComponent().getItemCount() != 0) {
+            cboxFileNamePattern.getComponent().setSelectedIndex(0);
         }
         if (cboxReplacement != null && cboxReplacement.getItemCount() != 0) {
             cboxReplacement.setSelectedIndex(0);
@@ -642,8 +640,8 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
         memory.setFilePathRegex(scopeSettingsPanel.isFileNameRegExp());
         memory.setUseIgnoreList(scopeSettingsPanel.isUseIgnoreList());
-        if (getSelectedSearchScope() != null) {
-            memory.setScopeTypeId(getSelectedSearchScope().getTypeId());
+        if (cboxScope.getSelectedScopeId() != null) {
+            memory.setScopeTypeId(cboxScope.getSelectedScopeId());
         }
     }
 
@@ -659,12 +657,11 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                                     chkCaseSensitive.isSelected(),
                                     chkRegexp.isSelected());
     }
-    
+
     /**
      */
-    SearchScopeDefinition getSelectedSearchScope() {
-        assert cboxScope.getSelectedSearchScope() != null;
-        return cboxScope.getSelectedSearchScope();
+    public SearchInfo getSearchInfo() {
+        return cboxScope.getSearchInfo();
     }
 
     /** */
@@ -673,7 +670,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
     
     boolean isUsable() {
-        return (cboxScope.getSearchScopeInfo() != null)
+        return (cboxScope.getSearchInfo() != null)
                && searchCriteria.isUsable();
     }
 

@@ -51,19 +51,10 @@
   </Layout>
   <SubComponents>
     <Component class="javax.swing.JComboBox" name="scopeCombo">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.api.search.ui.ComponentFactory.createScopeComboBox()"/>
-      </AuxValues>
     </Component>
     <Component class="javax.swing.JComboBox" name="fileCombo">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.api.search.ui.ComponentFactory.createFileNameComboBox()"/>
-      </AuxValues>
     </Component>
     <Container class="javax.swing.JPanel" name="scopePanel">
-      <AuxValues>
-        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="org.netbeans.api.search.ui.ComponentFactory.createScopeSettingsPanel(false, fileCombo())"/>
-      </AuxValues>
 
       <Layout>
         <DimensionLayout dim="0">

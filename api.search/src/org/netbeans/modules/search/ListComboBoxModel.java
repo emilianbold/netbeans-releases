@@ -46,7 +46,7 @@ import static javax.swing.event.ListDataEvent.CONTENTS_CHANGED;
  *
  * @author  Marian Petras
  */
-final class ListComboBoxModel implements ComboBoxModel {
+public final class ListComboBoxModel implements ComboBoxModel {
 
     private final List<? extends Object> elements;
     private final int maxIndex;

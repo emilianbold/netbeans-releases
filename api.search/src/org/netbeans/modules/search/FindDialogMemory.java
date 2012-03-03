@@ -259,7 +259,7 @@ public final class FindDialogMemory {
      * @return  list of the last used file name patterns, or an empty list
      *          if no file name patterns are stored
      */
-    List<String> getFileNamePatterns() {
+    public List<String> getFileNamePatterns() {
         return (fileNamePatterns != null) ? fileNamePatterns
                                           : Collections.<String>emptyList();
     }

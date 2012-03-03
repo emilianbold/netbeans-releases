@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchInfo;
+import org.netbeans.api.search.ui.ComponentFactory;
 import org.netbeans.api.search.ui.FileNameComboBox;
 import org.netbeans.api.search.ui.ScopeComboBox;
 import org.netbeans.api.search.ui.ScopeSettingsPanel;
@@ -60,12 +61,19 @@ import org.openide.filesystems.FileUtil;
 class HgSearchForm extends JPanel implements ChangeListener {
 
     static final String PROP_USABLE = "usable";
+    private ScopeComboBox scopeController;
+    private FileNameComboBox fileNameController;
+    private ScopeSettingsPanel scopeSettinsController;
 
     HgSearchForm() {
         initComponents();
-        scopeCombo().addChangeListener(this);
-        fileCombo().addChangeListener(this);
-        scopePanel().addChangeListener(this);
+        scopeController = ComponentFactory.createScopeComboBox(fileCombo, null);
+        fileNameController = ComponentFactory.createFileNameComboBox(fileCombo);
+        scopeSettinsController = ComponentFactory.createScopeSettingsPanel(
+                scopePanel, false, fileNameController);
+        scopeController.addChangeListener(this);
+        fileNameController.addChangeListener(this);
+        scopeSettinsController.addChangeListener(this);
         patternField.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) {
                 stateChanged(null);
@@ -85,7 +93,7 @@ class HgSearchForm extends JPanel implements ChangeListener {
         if (patternField.getText().isEmpty()) {
             return false;
         }
-        SearchInfo searchInfo = scopeCombo().getSearchScopeInfo();
+        SearchInfo searchInfo = scopeController.getSearchInfo();
         if (!searchInfo.canSearch()) {
             return false;
         }
@@ -109,7 +117,7 @@ class HgSearchForm extends JPanel implements ChangeListener {
 
     SearchComposition<?> composeSearch(SearchProvider.Presenter presenter) {
         // XXX pick out the actual root substrings and prepend them to pattern
-        File repo = findRepo(FileUtil.toFile(scopeCombo().getSearchScopeInfo().getSearchRoots().get(0).getFileObject()));
+        File repo = findRepo(FileUtil.toFile(scopeController.getSearchInfo().getSearchRoots().get(0).getFileObject()));
         // XXX pay attention to SearchRoot.filters
         // XXX check for regexp vs. basic, and map to Hg pattern syntax
         //String pattern = fileCombo().getFileNamePattern();
@@ -130,24 +138,13 @@ class HgSearchForm extends JPanel implements ChangeListener {
         }
     }
 
-    // #209061
-    private ScopeComboBox scopeCombo() {
-        return (ScopeComboBox) scopeCombo;
-    }
-    private FileNameComboBox fileCombo() {
-        return (FileNameComboBox) fileCombo;
-    }
-    private ScopeSettingsPanel scopePanel() {
-        return (ScopeSettingsPanel) scopePanel;
-    }
-
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        scopeCombo = org.netbeans.api.search.ui.ComponentFactory.createScopeComboBox();
-        fileCombo = org.netbeans.api.search.ui.ComponentFactory.createFileNameComboBox();
-        scopePanel = org.netbeans.api.search.ui.ComponentFactory.createScopeSettingsPanel(false, fileCombo());
+        scopeCombo = new javax.swing.JComboBox();
+        fileCombo = new javax.swing.JComboBox();
+        scopePanel = new javax.swing.JPanel();
         patternField = new javax.swing.JTextField();
 
         setName(org.openide.util.NbBundle.getMessage(HgSearchForm.class, "HgSearchForm.name")); // NOI18N

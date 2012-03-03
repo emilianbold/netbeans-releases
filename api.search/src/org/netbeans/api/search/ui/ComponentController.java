@@ -41,70 +41,74 @@
  */
 package org.netbeans.api.search.ui;
 
-import javax.swing.JComboBox;
-import javax.swing.JPanel;
+import javax.swing.JComponent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.search.FindDialogMemory;
+import org.openide.util.ChangeSupport;
 
 /**
- * Factory class containing methods for creating controller objects for GUI
- * components and adjusting their properties so that they can be used in search
- * forms of search dialog.
+ * Base class for component controllers.
  *
  * @author jhavlin
  */
-public class ComponentFactory {
+abstract class ComponentController<T extends JComponent> {
 
-    private ComponentFactory() {
-        // hiding default constructor
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    protected T component;
+
+    protected ComponentController(T component) {
+        this.component = component;
+    }
+
+    public final T getComponent() {
+        return component;
     }
 
     /**
-     * Adjust a jComboBox to act as component for selecting file name pattern,
-     * and return a controller object for interacting with it.
+     * Adds a
+     * <code>ChangeListener</code> to the listener list. The same listener
+     * object may be added more than once, and will be called as many times as
+     * it is added. If
+     * <code>listener</code> is null, no exception is thrown and no action is
+     * taken.
      *
-     * @param jComboBox Freshly created component that will be modified.
-     * @return Controller for modified jComboBox.
+     * @param listener the
+     * <code>ChangeListener</code> to be added.
      */
-    public static @NonNull FileNameComboBox createFileNameComboBox(
-            @NonNull JComboBox jComboBox) {
-        return new FileNameComboBox(jComboBox);
+    public final void addChangeListener(@NonNull ChangeListener l) {
+        changeSupport.addChangeListener(l);
     }
 
     /**
-     * Adjust a jComboBox to act as component for selecting search scope, and
-     * return a controller object for interacting with it.
+     * Removes a
+     * <code>ChangeListener</code> from the listener list. If
+     * <code>listener</code> was added more than once, it will be notified one
+     * less time after being removed. If
+     * <code>listener</code> is null, or was never added, no exception is thrown
+     * and no action is taken.
      *
-     * @param jComboBox Freshly created component that will be modified.
-     * @return Controller for modified jComboBox.
+     * @param listener the
+     * <code>ChangeListener</code> to be removed.
      */
-    public static @NonNull
-    ScopeComboBox createScopeComboBox(
-            @NonNull JComboBox jComboBox,
-            @NullAllowed String preferredScopeId) {
-        return new ScopeComboBox(jComboBox,
-                preferredScopeId == null
-                ? FindDialogMemory.getDefault().getScopeTypeId()
-                : preferredScopeId);
+    public final void removeChangeListener(@NonNull ChangeListener l) {
+        changeSupport.removeChangeListener(l);
     }
 
     /**
-     * Adjust a panel for specifying search scope options.
-     *
-     * @param jPanel Empty (with no child components) panel to adjust.
-     * @param searchAndReplace True if options for search-and-replace mode
-     * should be shown.
-     * @param fileNameComboBox File-name combo box that will be bound to this
-     * settings panel.
-     * @return Panel with controls for setting search options (search in
-     * archives, search in generated sources, use ignore list, treat file name
-     * pattern as regular expression matching file path)
+     * Fires a change event to all registered listeners.
      */
-    public static @NonNull ScopeSettingsPanel createScopeSettingsPanel(
-            @NonNull JPanel jPanel, boolean searchAndReplace,
-            @NonNull FileNameComboBox fileNameComboBox) {
-         return new ScopeSettingsPanel(jPanel, fileNameComboBox,
-                searchAndReplace);
+    protected final void fireChange() {
+        changeSupport.fireChange();
+    }
+
+    /**
+     * Checks if there are any listeners registered to this
+     * <code>ChangeSupport</code>.
+     *
+     * @return true if there are one or more listeners for the given property,
+     * false otherwise.
+     */
+    public final boolean hasListeners() {
+        return changeSupport.hasListeners();
     }
 }

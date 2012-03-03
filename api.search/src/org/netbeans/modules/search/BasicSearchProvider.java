@@ -189,7 +189,6 @@ public class BasicSearchProvider extends SearchProvider {
             }
 
             form.onOk();
-            SearchScopeDefinition searchScope = form.getSelectedSearchScope();
             BasicSearchCriteria basicSearchCriteria =
                     form.getBasicSearchCriteria();
 
@@ -197,8 +196,7 @@ public class BasicSearchProvider extends SearchProvider {
             if (basicSearchCriteria.isUseIgnoreList()) {
                 so.addFilter(new IgnoreListFilter());
             }
-            SearchInfo ssi = searchScope.getSearchInfo();
-
+            SearchInfo ssi = form.getSearchInfo();
             return new BasicComposition(
                     ssi,
                     new DefaultMatcher(basicSearchCriteria.getSearchPattern()),
