@@ -162,7 +162,7 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.javafx2.project.Bundle#Templates/javafx/FXSwingMain.java"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/java/resources/class.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator"/>
-                <attr name="position" intvalue="800"/>
+                <attr name="position" intvalue="900"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/javafx2/project/templates/FXSwingMain.html"/>
