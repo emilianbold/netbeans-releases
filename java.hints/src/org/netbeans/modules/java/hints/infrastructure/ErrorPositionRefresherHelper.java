@@ -56,10 +56,7 @@ import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.Doc
  *
  * @author lahvac
  */
-@MimeRegistrations({
-    @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class),
-    @MimeRegistration(mimeType="text/x-java", service=ErrorPositionRefresherHelper.class)
-})
+@MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class)
 public class ErrorPositionRefresherHelper extends PositionRefresherHelper<DocumentVersion> {
     public ErrorPositionRefresherHelper() {
         super(IntroduceHint.class.getName());

@@ -68,6 +68,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
+import org.netbeans.modules.java.hints.spiimpl.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -228,8 +229,8 @@ public class JavaHintsPositionRefresherTest extends NbTestCase {
 
         SwingUtilities.invokeAndWait(new Runnable() {
             public void run() {
-         //       Map<String, List<ErrorDescription>> edsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
-//                errorDescriptionsAt.putAll(edsAt);
+                Map<String, List<ErrorDescription>> edsAt = new JavaHintsPositionRefresher().getErrorDescriptionsAt(ctx, doc);
+                errorDescriptionsAt.putAll(edsAt);
             }
         });
 

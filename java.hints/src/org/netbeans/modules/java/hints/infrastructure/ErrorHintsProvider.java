@@ -94,6 +94,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -569,6 +570,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
             HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
 
+            MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
             MimeLookup.getLookup("text/x-java").lookup(ErrorPositionRefresherHelper.class).setVersion(doc, errors);
             
             long end = System.currentTimeMillis();
