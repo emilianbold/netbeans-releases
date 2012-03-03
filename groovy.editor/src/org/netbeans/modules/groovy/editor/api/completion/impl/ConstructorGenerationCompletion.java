@@ -53,6 +53,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
  * This should complete constructor generation.
@@ -85,6 +86,16 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
 
         // We don't want to offer costructor generation when creating new instance
         if (request.ctx.before1 != null && request.ctx.before1.text().toString().equals("new") && request.prefix.length() > 0) {
+            return false;
+        }
+
+        // We are after implements keyword
+        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) {
+            return false;
+        }
+
+        // We are in 'String ^' situation
+        if (request.ctx.before1 != null && request.ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
             return false;
         }
 
