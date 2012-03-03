@@ -57,28 +57,40 @@ import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
  * This should complete constructor generation.
+ *  We are processing e.g. SB, StrB both results in:
  *
- *  We are processing:
- *      SB   --> StringBuilder
- *      StrB --> StringBuilder
+ *      StringBuilder() {
+ *      }
  * 
  * @author Martin Janicek
  */
 public class ConstructorGenerationCompletion extends BaseCompletion {
 
-    private List<CompletionProposal> proposals;
-    private CompletionRequest request;
-    private int anchor;
-
-    
     @Override
     public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
-        this.proposals = proposals;
-        this.request = request;
-        this.anchor = anchor;
+        LOG.log(Level.FINEST, "-> constructor generation completion"); // NOI18N
 
-        LOG.log(Level.FINEST, "-> completeCamelCase"); // NOI18N
+        if (!isValidLocation(request)) {
+            return false;
+        }
 
+        ClassNode requestedClass = RequestHelper.getSurroundingClassNode(request);
+        if (requestedClass == null) {
+            LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
+            return false;
+        }
+        String className = NbUtilities.stripPackage(requestedClass.getName());
+
+        boolean camelCaseMatch = CamelCaseUtil.compareCamelCase(className, request.prefix);
+        if (camelCaseMatch) {
+            LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
+            proposals.add(new CompletionItem.ConstructorItem(className, "", Collections.EMPTY_LIST, anchor, true));
+        }
+
+        return camelCaseMatch;
+    }
+
+    private boolean isValidLocation(CompletionRequest request) {
         if (!(request.location == CaretLocation.INSIDE_CLASS)) {
             LOG.log(Level.FINEST, "Not inside a class"); // NOI18N
             return false;
@@ -99,24 +111,9 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
             return false;
         }
 
-        String prefix = request.prefix;
-        if (prefix == null || prefix.length() < 0) {
+        if (request.prefix == null || request.prefix.length() < 0) {
             return false;
         }
-
-        ClassNode requestedClass = RequestHelper.getSurroundingClassNode(request);
-        if (requestedClass == null) {
-            LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
-            return false;
-        }
-        String className = NbUtilities.stripPackage(requestedClass.getName());
-
-        boolean camelCaseMatch = CamelCaseUtil.compareCamelCase(className, prefix);
-        if (camelCaseMatch) {
-            LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
-            proposals.add(new CompletionItem.ConstructorItem(className, "", Collections.EMPTY_LIST, anchor, true));
-        }
-
-        return camelCaseMatch;
+        return true;
     }
 }
