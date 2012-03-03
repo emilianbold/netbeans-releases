@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -68,12 +67,25 @@ import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
  */
 public class CamelCaseCompletion extends BaseCompletion {
 
+    private List<CompletionProposal> proposals;
+    private CompletionRequest request;
+    private int anchor;
+
+    
     @Override
     public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+        this.proposals = proposals;
+        this.request = request;
+        this.anchor = anchor;
+
         LOG.log(Level.FINEST, "-> completeCamelCase"); // NOI18N
+        boolean constructorCompleted = completeConstructors();
+        boolean typesCompleted = completeTypes();
 
-        // variant a) adding constructors.
+        return constructorCompleted || typesCompleted;
+    }
 
+    public boolean completeConstructors() {
         if (!(request.location == CaretLocation.INSIDE_CLASS)) {
             LOG.log(Level.FINEST, "Not inside a class"); // NOI18N
             return false;
@@ -103,7 +115,10 @@ public class CamelCaseCompletion extends BaseCompletion {
         }
 
         return camelCaseMatch;
+    }
 
-        // todo: variant b) needs to have the CamelCase signatures in the index.
+    public boolean completeTypes() {
+        
+        return false;
     }
 }
