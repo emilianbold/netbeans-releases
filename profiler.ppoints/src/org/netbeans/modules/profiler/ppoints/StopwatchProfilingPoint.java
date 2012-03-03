@@ -207,6 +207,9 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -513,7 +516,8 @@ public final class StopwatchProfilingPoint extends CodeProfilingPoint.Paired imp
         synchronized(resultsSync) {
             if (!usesEndLocation() || (index == 0)) {
                 // TODO: should endpoint hit before startpoint hit be processed somehow?
-                results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
+                if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                    results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
 
                 //System.out.println("Time start  thread "+hitEvent.getThreadId()+" time "+Long.toHexString(hitEvent.getTimestamp()));
             } else {

@@ -86,7 +86,7 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
     public void testToggleBreakpoints() {        
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode); // NOI18N
-        new Action(null, Utilities.setMainProjectAction) {}.perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+        assertTrue(Utilities.verifyPopup(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName), new String[] {Utilities.unsetMainProjectAction}));
         new EventTool().waitNoEvent(1000);
         EditorOperator eo = new EditorOperator("MemoryView.java");
         //place breakpoint
@@ -102,7 +102,7 @@ public class DebuggingBreakpointsActionsTest extends DebuggerTestCase{
         
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            assertTrue(Utilities.verifyPopup(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName), new String[] {Utilities.unsetMainProjectAction}));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.toggleBreakpoint(eo, 80);

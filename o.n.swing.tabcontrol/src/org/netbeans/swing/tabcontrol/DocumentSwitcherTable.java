@@ -149,10 +149,10 @@ class DocumentSwitcherTable extends SwitcherTable {
         //allow third party look and feels to provide their own icons
         Icon defaultIcon = UIManager.getIcon( "nb.popupswitcher.closebutton.defaultIcon" ); //NOI18N
         if( null != defaultIcon )
-            btnClose.setIcon( defaultIcon );
+            res.setIcon( defaultIcon );
         Icon rolloverIcon = UIManager.getIcon( "nb.popupswitcher.closebutton.rolloverIcon" ); //NOI18N
         if( null != rolloverIcon )
-            btnClose.setRolloverIcon( rolloverIcon );
+            res.setRolloverIcon( rolloverIcon );
         return res;
     }
 

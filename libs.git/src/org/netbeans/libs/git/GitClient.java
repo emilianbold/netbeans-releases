@@ -113,7 +113,7 @@ import org.netbeans.libs.git.progress.StatusListener;
  * <ol>
  * <li><h6>Acquire an instance of a git client</h6>
  * <p>Instances of a git client are provided by {@link GitRepository}. To get one call
- * {@link GitRepository#getClient() }.</p>
+ * {@link GitRepository#createClient() }.</p>
  * </li>
  * <li><h6>Configure the client</h6>
  * <p>Some git client commands may (or may not) require additional setup of the client to successfully finish their work.

@@ -59,7 +59,7 @@ package org.netbeans.libs.git;
  * Let's assume we want to run a fetch command on a remote repository at http://myrepositoryhost/path 
  * that requires credentials username/password:
  * <pre>
- * GitClient client = {@link GitRepository#getInstance(java.io.File) GitRepository.getInstance(myLocalReposiry)}.{@link GitRepository#getClient() getClient()};
+ * GitClient client = {@link GitRepository#getInstance(java.io.File) GitRepository.getInstance(myLocalReposiry)}.{@link GitRepository#createClient() createClient()};
  * GitClientCallback myCallback = {@link GitClientCallback#GitClientCallback() new GitClientCallback ()} {
  *     public String askQuestion (String uri, String prompt) { return null; }
  *     

@@ -255,6 +255,9 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -559,11 +562,13 @@ public class LoadGenProfilingPoint extends CodeProfilingPoint.Paired implements 
                             private long correlationId = hitEvent.getTimestamp();
 
                             public void afterStart(LoadGenPlugin.Result result) {
-                                Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
-                                                         result == LoadGenPlugin.Result.SUCCESS);
-                                results.add(rslt);
-                                correlationId = hitEvent.getTimestamp();
-                                getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+                                if (ProfilingPointsManager.getDefault().belowMaxHits(results.size())) {
+                                    Result rslt = new Result(hitEvent.getTimestamp(), hitEvent.getThreadId(),
+                                                            result == LoadGenPlugin.Result.SUCCESS);
+                                    results.add(rslt);
+                                    correlationId = hitEvent.getTimestamp();
+                                    getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);
+                                }
                             }
 
                             public void afterStop(LoadGenPlugin.Result result) {

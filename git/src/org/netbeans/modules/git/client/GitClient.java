@@ -196,7 +196,7 @@ public final class GitClient {
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
-        delegate = GitRepository.getInstance(repository).getClient();
+        delegate = GitRepository.getInstance(repository).createClient();
         this.progressSupport = progressSupport;
         this.handleAuthenticationIssues = handleAuthenticationIssues;
     }

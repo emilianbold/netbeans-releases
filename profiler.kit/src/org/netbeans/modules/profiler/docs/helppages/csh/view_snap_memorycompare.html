@@ -6,25 +6,46 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>Liveness Comparison</title>
+        <title>Memory Snapshot Comparison</title>
         <link rel="StyleSheet" href="nbdocs:/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>Liveness Comparison</h2>
+        <h2>Memory Snapshot Comparison</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
         
-        <p>The Liveness Comparison window enables you to
-        view a comparison of two memory snapshots.
-        The Liveness Comparison window opens in the main
-        editor window after you choose the Compare Memory
-        Snapshots command and select the two memory snapshots.</p>
+        <p>The Memory Snapshot Comparison window displays a comparison of two memory snapshots.
+        This window opens in the main editor window after you choose the Compare Memory
+        Snapshots command and select the two memory snapshots.
+        Alternatively, you can click the Compare Memory Snapshot button
+        in the toolbar of a memory snapshot.</p>
+        
+        <p>The window displays a table with details about the number of 
+        object instances and the amount of memory occupied by the 
+        allocated objects at the time the snapshots were taken.
+        The IDE compares the two snapshot and for each object 
+        displays the changes that occurred between the snapshots. </p>
+        
+        <p>The comparison that is displayed depends upon the data that is contained in the snapshots. 
+        The data that is captured in the snapshot depends upon the options that were selected 
+        for the profiling session.</p>
+        
 
-        <p>The window displays a table that lists the
-        live allocated objects at the time the snapshots were taken.
-        The IDE compares the two snapshot and for each live object 
-        displays the changes that occurred between the
-        snapshots in the number of live instances, age and the amount of memory occupied by 
-        the live instances.</p>
+        <h3>Allocations Comparison</h3>
+        <p>If <b>Record object creation</b> was selected for the profiling session,
+        the comparison provides details on the total number of instances.</p>
+        
+        <p>The table in the Allocations Comparison window contains the following columns:</p>
+        <ul>
+            <li><b>Class Name - Live Allocated Objects.</b> Name of the class or allocated object.</li>
+            <li><b>Bytes Allocated.</b> Graphic display of the relative amount of memory occupied by instances of the class.</li>
+            <li><b>Bytes Allocated.</b> Memory size in bytes occupied by the instances of the class. </li>
+            <li><b>Objects Allocated.</b> Number of all instances of the class.</li>
+        </ul>
+
+        
+        <h3>Liveness Comparison</h3>
+        <p>If <b>Record both object creation and garbage collection</b> was selected for the profiling session,
+        the comparison provides more detailed data on live instances.</p>
                     
         <p>The table in the Liveness Comparison window contains the following columns:</p>
         <ul>
@@ -36,13 +57,17 @@
             <li><b>Average Age.</b> Average age in generations of live instances of the class.</li>
             <li><b>Generations.</b> Number of different generations (garbage collections survived) of live instances of the class.</li>
         </ul>
-        <p>You click a column header to sort the order that the results are displayed. </p>
-        <p>You can load the source <tt>.java</tt> file of a class by right-clicking in 
-            the row for the class and choosing Go To Source.</p>
-        <p>You can filter the list by class name by typing the filter criteria in the 
-        Class Name Filter at the bottom of the window. Only classes that contain 
-        the filter term will be displayed in the table.</p>
-
+        
+        <p>You can perform the following actions in the memory comparison window.</p>
+        <ul>
+        
+            <li>You can click a column header to sort the order that the results are displayed. </li>
+            <li>You can load the source <tt>.java</tt> file of a class by right-clicking in 
+            the row for the class and choosing Go To Source.</li>
+            <li>You can filter the list by the class name by typing the filter criteria in the 
+            Class Name Filter at the bottom of the window and clicking the filter icon
+            (&nbsp;<img src="../img/filter.png" alt="Filter icon">&nbsp;) to selecting a filter option.</li>
+        </ul>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>

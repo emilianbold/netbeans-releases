@@ -462,7 +462,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         }
                         return variableToUse;
                     }
-                    
+
                 });
                 VariableName variableToUseName = null;
                 try {
