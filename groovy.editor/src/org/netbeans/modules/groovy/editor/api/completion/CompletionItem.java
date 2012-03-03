@@ -46,12 +46,11 @@ import groovy.lang.MetaMethod;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -61,10 +60,10 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.util.ImageUtilities;
@@ -77,16 +76,14 @@ import org.openide.util.ImageUtilities;
 // FIXME static accessors
 public abstract class CompletionItem extends DefaultCompletionProposal {
 
-    private static final Logger LOG = Logger.getLogger(CompletionItem.class.getName());
-
     protected final GroovyElement element;
-
+    
+    private static final Logger LOG = Logger.getLogger(CompletionItem.class.getName());
     private static volatile ImageIcon groovyIcon;
-
     private static volatile ImageIcon javaIcon;
-
     private static volatile ImageIcon newConstructorIcon;
 
+    
     private CompletionItem(GroovyElement element, int anchorOffset) {
         this.element = element;
         this.anchorOffset = anchorOffset;
@@ -99,6 +96,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return element.getName();
     }
 
+    @Override
     public ElementHandle getElement() {
         LOG.log(Level.FINEST, "getElement() element : {0}", element);
 
@@ -462,7 +460,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
                 String sig = signature.substring(start + 1, end);
 
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
 
                 for (String param : sig.split(",")) {
                     if (buf.length() > 0) {
