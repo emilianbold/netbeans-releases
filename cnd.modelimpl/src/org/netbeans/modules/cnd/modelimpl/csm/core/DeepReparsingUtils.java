@@ -124,14 +124,14 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void reparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
-        if (true) {
-            reparseOnChangedFileImpl(fileImpl, project);
-            return;
-        }
         if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
             LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             reparseOnlyOneFile(project, fileImpl);
         } else {
+            if (true) {
+                reparseOnChangedFileImpl(fileImpl, project);
+                return;
+            }
             RequestProcessor.Task task = PARTIAL_RP.post(new Runnable() {
                 @Override
                 public void run() {
