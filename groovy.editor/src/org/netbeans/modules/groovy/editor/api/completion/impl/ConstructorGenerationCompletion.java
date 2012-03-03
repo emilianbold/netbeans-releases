@@ -55,9 +55,7 @@ import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 
 /**
- * This should complete CamelCaseTypes. Simply type SB for StringBuilder.
- *  a) New Constructors for existing classes
- *  b) Imported, or in the CP available Types
+ * This should complete constructor generation.
  *
  *  We are processing:
  *      SB   --> StringBuilder
@@ -65,7 +63,7 @@ import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
  * 
  * @author Martin Janicek
  */
-public class CamelCaseCompletion extends BaseCompletion {
+public class ConstructorGenerationCompletion extends BaseCompletion {
 
     private List<CompletionProposal> proposals;
     private CompletionRequest request;
@@ -79,13 +77,7 @@ public class CamelCaseCompletion extends BaseCompletion {
         this.anchor = anchor;
 
         LOG.log(Level.FINEST, "-> completeCamelCase"); // NOI18N
-        boolean constructorCompleted = completeConstructors();
-        boolean typesCompleted = completeTypes();
 
-        return constructorCompleted || typesCompleted;
-    }
-
-    public boolean completeConstructors() {
         if (!(request.location == CaretLocation.INSIDE_CLASS)) {
             LOG.log(Level.FINEST, "Not inside a class"); // NOI18N
             return false;
@@ -115,10 +107,5 @@ public class CamelCaseCompletion extends BaseCompletion {
         }
 
         return camelCaseMatch;
-    }
-
-    public boolean completeTypes() {
-        
-        return false;
     }
 }
