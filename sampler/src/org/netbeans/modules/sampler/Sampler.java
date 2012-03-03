@@ -39,32 +39,32 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.sampler;
+package org.netbeans.modules.sampler;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- *
+ * Sampler class provides API for self-sampling of NetBeans
+ * platform application. The self-sampling should be used for
+ * diagnostic purposes and should help NetBeans platform developers
+ * with solving CPU related performance problems. Sampled data are
+ * stored in NPSS file, which can be opened by NetBeans Profiler or
+ * Java VisualVM for later analysis of sampled data.
+ * 
  * @author Jaroslav Bachorik, Tomas Hurka, Jaroslav Tulach
  */
-abstract class Sampler implements Runnable, ActionListener {
+public abstract class Sampler {
     private static final int SAMPLER_RATE = 10;
     private static final double MAX_AVERAGE = SAMPLER_RATE * 3;
     private static final double MAX_STDDEVIATION = SAMPLER_RATE * 4;
@@ -87,6 +87,36 @@ abstract class Sampler implements Runnable, ActionListener {
     private volatile boolean stopped;
     private volatile boolean running;
 
+    /**
+     * Factory method for creating Sampler suitable for automatic reporting
+     * of the slow operation (i.e. AWT blocked for some time). This method can
+     * return <code>null</code> if the sampled application is in nonstandard mode
+     * which will produce unrealistic data - for example application is  
+     * running under debugger or profiler. It can return <code>null</code> if it
+     * is running on some exotic variant of JDK, where sampling is not supported.
+     * @param name which identifies the sampler thread
+     * @return instance of the {@link Sampler} or <code>null</code> if application
+     * is in nonstandard mode or sampling is not supported.
+     */
+    public static @CheckForNull Sampler createSampler(@NonNull String name) {
+        return InternalSampler.createInternalSampler(name);
+    }
+    
+    /**
+     * Factory method for creating Sampler suitable for manual or user invoked
+     * scanning. This method can return <code>null</code> if it is running on 
+     * some exotic variant of JDK, where sampling is not supported.
+     * @param name which identifies the sampler thread 
+     * @return instance of the {@link Sampler} or <code>null</code> if sampling 
+     * is not supported.
+     */
+    public static @CheckForNull Sampler createManualSampler(@NonNull String name) {
+        if (SamplesOutputStream.isSupported()) {
+            return new InternalSampler(name);
+        }
+        return null;
+    }
+    
     Sampler(String n) {
         name = n;
     }
@@ -94,25 +124,25 @@ abstract class Sampler implements Runnable, ActionListener {
     /** Returns the bean to use for sampling.
      * @return instance of the bean to take thread dumps from
      */
-    protected abstract ThreadMXBean getThreadMXBean();
+    abstract ThreadMXBean getThreadMXBean();
 
     /** Allows subclasses to handle created snapshot
      * @param arr the content of the snapshot
      * @throws IOException thrown in case of I/O error
      */
-    protected abstract void saveSnapshot(byte[] arr) throws IOException;
+    abstract void saveSnapshot(byte[] arr) throws IOException;
     
     /** How to report an exception.
      * 
      * @param ex exception
      */
-    protected abstract void printStackTrace(Throwable ex);
+    abstract void printStackTrace(Throwable ex);
     
     /** Methods for displaying progress.
      */
-    protected abstract void openProgress(int steps);
-    protected abstract void closeProgress();
-    protected abstract void progress(int i);
+    abstract void openProgress(int steps);
+    abstract void closeProgress();
+    abstract void progress(int i);
     
     private void updateStats(long timestamp) {
         if (laststamp != 0) {
@@ -129,9 +159,13 @@ abstract class Sampler implements Runnable, ActionListener {
         laststamp = timestamp;
     }
 
-    @Override
-    public synchronized void run() {
-        assert !running;
+    /**
+     * Start self-sampling. This method starts timer identified by <code>name</code>
+     * for actual sampling and returns immediately.
+     */
+    public final synchronized void start() {
+        if (running) throw new IllegalStateException("sampling is already running");    // NOI18N
+        if (stopped) throw new IllegalStateException("it is not possible to restart sampling");   // NOI18N
         running = true;
         final ThreadMXBean threadBean = getThreadMXBean();
         out = new ByteArrayOutputStream(64 * 1024);
@@ -143,7 +177,8 @@ abstract class Sampler implements Runnable, ActionListener {
         }
         startTime = System.currentTimeMillis();
         nanoTimeCorrection = startTime * 1000000 - System.nanoTime();
-        timer = new Timer(name);
+        // make sure that the sampler thread can be detected in a thread dump - add prefix
+        timer = new Timer("sampler-"+name);   // NOI18N
         timer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
@@ -165,21 +200,51 @@ abstract class Sampler implements Runnable, ActionListener {
         }, SAMPLER_RATE, SAMPLER_RATE);
     }
 
-    @Override
-    public synchronized void actionPerformed(ActionEvent e) {
+    /**
+     * Cancels the self-sampling. All sampled data are discarded.
+     */
+    public final void cancel() {
+        stopSampling(true, null);
+    }
+    
+    /**
+     * Stop the self-sampling started by {@link #start()} method and writes the data to 
+     * {@link DataOutputStream}. If the internal sampling logic detects that
+     * the data are distorted for example due to heavy system I/O, collected 
+     * samples are discarded and nothing is written to {@link DataOutputStream}.
+     * <br>
+     * This method can take a long time and should not be invoked from EDT.
+     * @param dos {@link DataOutputStream} where sampled data is written to.
+     */
+    public final void stopAndWriteTo(@NonNull DataOutputStream dos) {
+        stopSampling(false, dos);
+    }
+    
+    /**
+     * Stop the self-sampling, save and open gathered data. If there is no
+     * sampled data, this method does nothing and returns immediately.
+     * <br>
+     * This method can take a long time and should not be invoked from EDT.
+     */
+    public final void stop() {
+        stopSampling(false, null);
+    }
+    
+    private synchronized void stopSampling(boolean cancel, DataOutputStream dos) {
         try {
-            assert running;
-            assert !stopped;
+            if (!running) throw new IllegalStateException("sampling was not started"); // NOI18N
+            if (stopped) throw new IllegalStateException("sampling is not running");    // NOI18N
             stopped = true;
             timer.cancel();
-            if ("cancel".equals(e.getActionCommand()) || samples < 1) {     // NOi18N
+            if (cancel || samples < 1) {
                 return;
             }
+            if (SwingUtilities.isEventDispatchThread()) throw new IllegalStateException("sampling cannot be stopped from EDT");  //NOI18N
             double average = sum / samples;
             double std_deviation = Math.sqrt(devSquaresSum / samples);
-            boolean writeCommand = "write".equals(e.getActionCommand()); // NOI18N
+            boolean writeCommand = dos != null;
             if (writeCommand) {
-                Object[] params = new Object[]{startTime, "Samples", samples, "Average", average, "Minimum", min, "Maximum", max, "Std. deviation", std_deviation};
+                Object[] params = new Object[]{startTime, "Samples", samples, "Average", average, "Minimum", min, "Maximum", max, "Std. deviation", std_deviation};  // NOI18N
                 Logger.getLogger("org.netbeans.ui.performance").log(Level.CONFIG, "Snapshot statistics", params); // NOI18N
                 if (average > MAX_AVERAGE || std_deviation > MAX_STDDEVIATION || samples < MIN_SAMPLES) {
                     // do not take snapshot if the sampling was not regular enough
@@ -189,7 +254,6 @@ abstract class Sampler implements Runnable, ActionListener {
             samplesStream.close();
             samplesStream = null;
             if (writeCommand) {
-                DataOutputStream dos = (DataOutputStream) e.getSource();
                 dos.write(out.toByteArray());
                 dos.close();
                 return;
@@ -202,101 +266,5 @@ abstract class Sampler implements Runnable, ActionListener {
             out = null;
             samplesStream = null;
         }
-    }
-    
-    //
-    // Support for sampling from command line
-    //
-    
-    public static void main(String... args) throws Exception {
-        if (args.length != 2) {
-            System.out.println("Usage: <port> <snapshot.npss>");
-            System.out.println();
-            System.out.println("First of all start your application with following parameters:");
-            System.out.println("  -Dcom.sun.management.jmxremote.authenticate=false");
-            System.out.println("  -Dcom.sun.management.jmxremote.ssl=false");
-            System.out.println("  -Dcom.sun.management.jmxremote.port=<port>");
-            System.out.println("Then you can start this sampler with correct port and file to write snapshot to.");
-            System.exit(1);
-        }
-        
-        String u = args[0];
-        try {
-            u = "service:jmx:rmi:///jndi/rmi://localhost:" + Integer.parseInt(args[0]) + "/jmxrmi";
-        } catch (NumberFormatException ex) {
-            // OK, use args[0]
-        }
-        
-        System.err.println("Connecting to " + u);
-        JMXServiceURL url = new JMXServiceURL(u);
-        JMXConnector jmxc = null;
-        Exception ex = null;
-        for (int i = 0; i < 100; i++) {
-            try {
-                jmxc = JMXConnectorFactory.connect(url, null);
-                break;
-            } catch (IOException e) {
-                ex = e;
-                System.err.println("Connection failed. Will retry in 300ms.");
-                Thread.sleep(300);
-            }
-        }
-        if (jmxc == null) {
-            ex.printStackTrace();
-            System.err.println("Cannot connect to " + u);
-            System.exit(3);
-        }
-        MBeanServerConnection server = jmxc.getMBeanServerConnection();
-        
-        final ThreadMXBean threadMXBean = ManagementFactory.newPlatformMXBeanProxy(
-            server,ManagementFactory.THREAD_MXBEAN_NAME,ThreadMXBean.class
-        );
-        final File output = new File(args[1]);
-        class CLISampler extends Sampler {
-            CLISampler() {
-                super("");
-            }
-            
-            @Override
-            protected ThreadMXBean getThreadMXBean() {
-                return threadMXBean;
-            }
-
-            @Override
-            protected void saveSnapshot(byte[] arr) throws IOException {
-                FileOutputStream os = new FileOutputStream(output);
-                os.write(arr);
-                os.close();
-            }
-
-            @Override
-            protected void printStackTrace(Throwable ex) {
-                ex.printStackTrace();
-                System.exit(2);
-            }
-
-            @Override
-            protected void openProgress(int steps) {
-            }
-
-            @Override
-            protected void closeProgress() {
-            }
-
-            @Override
-            protected void progress(int i) {
-                System.out.print("#");
-                System.out.flush();
-            }
-        }
-        
-        CLISampler s = new CLISampler();
-        s.run();
-        System.out.println("Press enter to generate sample into " + output);
-        System.in.read();
-        s.actionPerformed(new ActionEvent(s, 0, ""));
-        System.out.println();
-        System.out.println("Sample written to " + output);
-        System.exit(0);
-    }
+    }    
 }

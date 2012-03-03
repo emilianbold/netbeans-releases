@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.ProfilingSettings;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.modules.profiler.ppoints.ProfilingPoint;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
@@ -64,6 +65,8 @@ import org.openide.windows.TopComponent;
         "ProfilingPointReport_NoCurrentString=Current profiling mode not supported by this profiling point." // NOI18N
     })
 public abstract class ProfilingPointReport extends TopComponent {
+    private static final String HELP_CTX_KEY = "ProfilingPointReport.HelpCtx"; // NOI18N
+    private static final HelpCtx HELP_CTX = new HelpCtx(HELP_CTX_KEY);
     
     private static final ProfilingSettings REF_CPU_INSTR =
             ProfilingSettingsPresets.createCPUPreset(ProfilingSettings.PROFILE_CPU_ENTIRE);
@@ -72,6 +75,10 @@ public abstract class ProfilingPointReport extends TopComponent {
     private static boolean profilingRunning;
     private static ProfilingSettings currentSettings;
     
+    
+    public HelpCtx getHelpCtx() {
+        return HELP_CTX;
+    }
     
     public final int getPersistenceType() {
         return TopComponent.PERSISTENCE_NEVER;
