@@ -121,6 +121,32 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return cls + "(" + getKind() + "): " + getName();
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CompletionItem other = (CompletionItem) obj;
+        if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+            return false;
+        }
+        if (this.getKind() != other.getKind()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+        hash = 47 * hash + (this.getKind() != null ? this.getKind().hashCode() : 0);
+        return hash;
+    }
+
     public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
             TypeMirror returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
             boolean emphasise, boolean nameOnly) {
