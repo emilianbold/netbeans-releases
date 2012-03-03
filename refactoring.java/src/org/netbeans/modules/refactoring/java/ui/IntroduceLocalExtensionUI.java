@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ralph Ruijs
  */
-@NbBundle.Messages({"DSC_IntroduceLocalExtension=Introduce Local Extension for {0}",
+@NbBundle.Messages({"# {0} - Element Html Display Name","DSC_IntroduceLocalExtension=Introduce Local Extension for {0}",
     "LBL_IntroduceLocalExtension=Introduce Local Extension"})
 public final class IntroduceLocalExtensionUI implements RefactoringUI {
 
