@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import java.util.Enumeration;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.ConfigAction;
@@ -98,8 +100,12 @@ public class RunTestsCommand extends Command implements Displayable {
         if (!file.isFolder()) {
             return null;
         }
-        for (FileObject child : file.getChildren()) {
-            if (isTestFile(child)) {
+        Enumeration<? extends FileObject> children = file.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (child.isData()
+                    && isTestFile(child)
+                    && FileUtils.isPhpFile(child)) {
                 return file;
             }
         }
