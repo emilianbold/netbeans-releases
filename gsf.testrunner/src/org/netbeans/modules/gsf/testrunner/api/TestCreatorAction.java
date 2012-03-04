@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -113,7 +114,10 @@ public class TestCreatorAction extends NodeAction {
         Collection<? extends TestCreatorProvider> providers = Lookup.getDefault().lookupAll(TestCreatorProvider.class);
         for (TestCreatorProvider provider : providers) {
             if(provider.canHandleMultipleClasses(activatedNodes)) {
-                testingFrameworksToAdd.add(provider.getDisplayName());
+                Registration regAnnotation = provider.getClass().getAnnotation(Registration.class);
+                if(regAnnotation != null) {
+                    testingFrameworksToAdd.add(regAnnotation.displayName());
+                }
             }
         }
         cfg.addTestingFrameworks(testingFrameworksToAdd);
@@ -124,14 +128,18 @@ public class TestCreatorAction extends NodeAction {
         String selected = cfg.getSelectedTestingFramework();
         
         for (TestCreatorProvider provider : providers) {
-            if(provider.getDisplayName().equals(selected)) {
-                TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
-                context.setSingleClass(cfg.isSingleClass());
-                context.setTargetFolder(cfg.getTargetFolder());
-                context.setTestClassName(cfg.getTestClassName());
-                provider.createTests(context);
-                cfg = null;
-                break;
+            Registration regAnnotation = provider.getClass().getAnnotation(Registration.class);
+            if (regAnnotation != null) {
+                String displayName = regAnnotation.displayName();
+                if (displayName.equals(selected)) {
+                    TestCreatorProvider.Context context = new TestCreatorProvider.Context(activatedNodes);
+                    context.setSingleClass(cfg.isSingleClass());
+                    context.setTargetFolder(cfg.getTargetFolder());
+                    context.setTestClassName(cfg.getTestClassName());
+                    provider.createTests(context);
+                    cfg = null;
+                    break;
+                }
             }
         }
     }

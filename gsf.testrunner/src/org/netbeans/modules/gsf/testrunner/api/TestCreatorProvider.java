@@ -41,12 +41,16 @@
  */
 package org.netbeans.modules.gsf.testrunner.api;
 
-import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.gsf.testrunner.plugin.RootsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -58,7 +62,15 @@ import org.openide.util.Lookup;
  */
 public abstract class TestCreatorProvider {
     
-    public abstract String getDisplayName();
+    @Target(ElementType.TYPE)
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface Registration {
+
+        /**
+         * Display name of the TestCreatorProvider.
+         */
+        String displayName();
+    }
     
     public abstract boolean canHandleMultipleClasses(Node[] activatedNodes);
     

@@ -51,6 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.junit.plugin.JUnitPlugin;
@@ -65,20 +66,13 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author theofanis
  */
-@ServiceProvider(service=TestCreatorProvider.class, position=10)
-@org.netbeans.modules.gsf.testrunner.api.TestCreator.Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
+@Registration(displayName=GuiUtils.JUNIT_TEST_FRAMEWORK)
 public class JUnitTestCreatorProvider extends TestCreatorProvider {
-
-    @Override
-    public String getDisplayName() {
-        return GuiUtils.JUNIT_TEST_FRAMEWORK;
-    }
     
     @Override
     public boolean canHandleMultipleClasses(Node[] activatedNodes) {
