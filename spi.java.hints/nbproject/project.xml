@@ -412,6 +412,10 @@
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.hints.declarative</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                         <compile-dependency/>
                         <test/>
