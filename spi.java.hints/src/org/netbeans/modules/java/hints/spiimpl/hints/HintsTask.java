@@ -216,7 +216,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
     public static final class SuggestionsPositionRefresherHelper extends PositionRefresherHelper<SuggestionsDocumentVersion> {
 
         public SuggestionsPositionRefresherHelper() {
-            super(KEY_HINTS);
+            super(KEY_SUGGESTIONS);
         }
 
         @Override
