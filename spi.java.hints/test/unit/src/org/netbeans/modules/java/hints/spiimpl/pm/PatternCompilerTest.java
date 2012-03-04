@@ -53,8 +53,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
 import org.netbeans.modules.java.hints.infrastructure.Pair;
-import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
 
 /**
  *

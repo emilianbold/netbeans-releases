@@ -28,7 +28,7 @@
  *
  * Portions Copyrighted 2007-2010 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.java.hints.matching;
+package org.netbeans.modules.java.source.matching;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -91,7 +91,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -105,11 +104,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 
-/**
+/**TODO: tested by CopyFinderTest in java.hints module.
  *
  * @author Jan Lahoda
  */
-class CopyFinder extends TreeScanner<Boolean, TreePath> {
+public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
     private final TreePath searchingFor;
     private final CompilationInfo info;
@@ -1540,8 +1539,8 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
         public final Map<String, TreePath> variables;
         public final Map<String, Collection<? extends TreePath>> multiVariables;
         public final Map<String, String> variables2Names;
-               final Map<Element, Element> variablesRemapToElement;
-               final Map<Element, TreePath> variablesRemapToTrees;
+        public final Map<Element, Element> variablesRemapToElement;
+        public final Map<Element, TreePath> variablesRemapToTrees;
 
         public VariableAssignments(Map<String, TreePath> variables, Map<String, Collection<? extends TreePath>> multiVariables, Map<String, String> variables2Names) {
             this.variables = variables;
@@ -1583,7 +1582,7 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
         }
     }
 
-    static final class State {
+    public static final class State {
         final Map<String, TreePath> variables;
         final Map<String, Collection<? extends TreePath>> multiVariables;
         final Map<String, String> variables2Names;
@@ -1681,7 +1680,7 @@ class CopyFinder extends TreeScanner<Boolean, TreePath> {
         return false;
     }
 
-    interface Cancel {
+    public interface Cancel {
         public boolean isCancelled();
     }
 }

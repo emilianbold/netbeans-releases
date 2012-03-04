@@ -46,7 +46,7 @@ import com.sun.source.tree.Tree.Kind;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.spi.java.hints.matching.Pattern;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.openide.util.Parameters;
 
 /**A base class for triggers.

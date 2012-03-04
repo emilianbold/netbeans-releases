@@ -48,7 +48,7 @@ import java.util.regex.Matcher;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
-import org.netbeans.spi.java.hints.matching.Pattern;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.modules.java.hints.spiimpl.Hacks;
 
 /**

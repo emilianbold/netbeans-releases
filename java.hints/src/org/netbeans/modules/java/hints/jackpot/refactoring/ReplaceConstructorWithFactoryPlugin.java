@@ -65,7 +65,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.java.hints.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.openide.util.Exceptions;
 
 /**

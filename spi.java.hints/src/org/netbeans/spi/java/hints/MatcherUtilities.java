@@ -58,9 +58,9 @@ import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
-import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Occurrence;
-import org.netbeans.spi.java.hints.matching.Pattern;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 
 /**XXX: cancelability
  * TODO: needed?

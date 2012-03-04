@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.java.hints.matching;
+package org.netbeans.api.java.source.matching;
 
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.util.TreePath;
@@ -54,10 +54,11 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.java.hints.matching.CopyFinder.Cancel;
-import org.netbeans.spi.java.hints.matching.CopyFinder.Options;
-import org.netbeans.spi.java.hints.matching.CopyFinder.State;
-import org.netbeans.spi.java.hints.matching.CopyFinder.VariableAssignments;
+import org.netbeans.modules.java.source.matching.CopyFinder;
+import org.netbeans.modules.java.source.matching.CopyFinder.Cancel;
+import org.netbeans.modules.java.source.matching.CopyFinder.Options;
+import org.netbeans.modules.java.source.matching.CopyFinder.State;
+import org.netbeans.modules.java.source.matching.CopyFinder.VariableAssignments;
 import org.openide.util.Cancellable;
 
 /**Searches for occurrences of a {@link Pattern}.

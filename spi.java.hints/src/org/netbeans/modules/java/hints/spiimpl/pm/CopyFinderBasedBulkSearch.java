@@ -56,9 +56,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
-import org.netbeans.spi.java.hints.matching.Matcher;
-import org.netbeans.spi.java.hints.matching.Occurrence;
-import org.netbeans.spi.java.hints.matching.Pattern;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.openide.util.Parameters;
 
 /**

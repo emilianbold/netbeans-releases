@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.spi.java.hints.matching;
+package org.netbeans.api.java.source.matching;
 
 import com.sun.source.util.TreePath;
 import java.util.Collection;

@@ -30,7 +30,6 @@
  */
 package org.netbeans.spi.java.hints.matching;
 
-import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
@@ -61,15 +60,19 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.matching.MatchingTestAccessor;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.introduce.IntroduceHint;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch;
 import org.netbeans.modules.java.hints.spiimpl.pm.BulkSearch.BulkPattern;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
-import org.netbeans.spi.java.hints.matching.CopyFinder.Cancel;
-import org.netbeans.spi.java.hints.matching.CopyFinder.Options;
-import org.netbeans.spi.java.hints.matching.CopyFinder.VariableAssignments;
+import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
+import org.netbeans.modules.java.source.matching.CopyFinder;
+import org.netbeans.modules.java.source.matching.CopyFinder.Cancel;
+import org.netbeans.modules.java.source.matching.CopyFinder.Options;
+import org.netbeans.modules.java.source.matching.CopyFinder.VariableAssignments;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -1200,7 +1203,7 @@ public class CopyFinderTest extends NbTestCase {
         String patternCode = PatternCompilerUtilities.parseOutTypesFromPattern(info, pattern, constraints);
 
         Pattern patternObj = PatternCompiler.compile(info, patternCode, constraints, Collections.<String>emptyList());
-        TreePath patternPath = patternObj.pattern.iterator().next();
+        TreePath patternPath = MatchingTestAccessor.getPattern(patternObj).iterator().next();
         Map<TreePath, VariableAssignments> result;
 
         if (useBulkSearch) {
@@ -1210,7 +1213,7 @@ public class CopyFinderTest extends NbTestCase {
 
             for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
                 for (TreePath tp : e.getValue()) {
-                    VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), patternObj.variable2Type);
+                    VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), MatchingTestAccessor.getVariable2Type(patternObj));
 
                     if (vars != null) {
                         result.put(tp, vars);
@@ -1218,7 +1221,7 @@ public class CopyFinderTest extends NbTestCase {
                 }
             }
         } else {
-            result = computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), patternObj.variable2Type);
+            result = computeDuplicates(info, patternPath, new TreePath( info.getCompilationUnit()), new AtomicBoolean(), MatchingTestAccessor.getVariable2Type(patternObj));
         }
 
         if (noOccurrences) {

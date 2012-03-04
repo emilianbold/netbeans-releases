@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.spi.java.hints.matching.Pattern;
+import org.netbeans.api.java.source.matching.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -124,7 +124,7 @@ import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
-import org.netbeans.spi.java.hints.matching.Matcher;
+import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -135,7 +135,7 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
-import org.netbeans.spi.java.hints.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

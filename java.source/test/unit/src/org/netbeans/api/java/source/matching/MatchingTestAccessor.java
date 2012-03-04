@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,36 +37,26 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008-2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.api.java.source.matching;
 
-package org.netbeans.modules.java.hints.spiimpl.pm;
-
-import com.sun.source.tree.Scope;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import java.util.Collection;
 import java.util.Map;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spiimpl.Utilities;
-import org.netbeans.api.java.source.matching.Pattern;
 
-/**XXX: cancelability!
+/**
  *
- * @author Jan Lahoda
+ * @author lahvac
  */
-public class PatternCompiler {
+public class MatchingTestAccessor {
 
-    public static Pattern compile(CompilationInfo info, String pattern, Map<String, TypeMirror> constraints, Iterable<? extends String> imports) {
-        Scope scope = Utilities.constructScope(info, constraints, imports);
-
-        if (scope == null) {
-            return null; //TODO: can happen?
-        }
-
-        Tree patternTree = Utilities.parseAndAttribute(info, pattern, scope);
-
-        return Pattern.createPatternWithFreeVariables(new TreePath(new TreePath(info.getCompilationUnit()), patternTree), constraints);
+    public static Collection<? extends TreePath> getPattern(Pattern p) {
+        return p.pattern;
     }
 
+    public static Map<String, TypeMirror> getVariable2Type(Pattern p) {
+        return p.variable2Type;
+    }
 }
