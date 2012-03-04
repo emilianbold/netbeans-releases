@@ -379,8 +379,10 @@ public final class IndexingManager {
 
     /**
      * Runs the <code>operation</code> in protected mode. All events that would normally
-     * trigger rescanning are rememberd and processed after the operation finishes.
-     *
+     * trigger rescanning are remembered and processed after the operation finishes.
+     * <p>Note that events coming from other threads during the time that this
+     * thread is performing the operation will also be queued.
+     * Also note that this call is not reentrant.
      * @param operation The operation to run without rescanning while the operation
      *   is running.
      * @return Whatever value the <code>operation</code> returns.

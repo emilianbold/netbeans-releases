@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.util.TreePath;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -57,9 +58,10 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
-import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -92,7 +94,7 @@ public final class JavaFixImpl implements Fix {
                     return;
                 }
 
-                Accessor.INSTANCE.process(jf, wc, true, null);
+                Accessor.INSTANCE.process(jf, wc, true, null, /*Ignored in editor:*/new ArrayList<RefactoringElementImplementation>());
             }
         }).commit();
 
@@ -112,7 +114,7 @@ public final class JavaFixImpl implements Fix {
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);
-        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent) throws Exception;
+        public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent, Collection<? super RefactoringElementImplementation> fileChanges) throws Exception;
         public abstract FileObject getFile(JavaFix jf);
         public abstract Map<String, String> getOptions(JavaFix jf);
         public abstract Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports);

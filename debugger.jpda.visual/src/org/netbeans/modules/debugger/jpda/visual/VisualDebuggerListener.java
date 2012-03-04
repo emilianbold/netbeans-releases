@@ -295,6 +295,9 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 it.remove();
             }
         }
+        synchronized (componentsAndStackTraces) {
+            componentsAndStackTraces.remove(debugger);
+        }
     }
     
     private void stopDebuggerRemoteService(JPDADebugger d) {

@@ -652,13 +652,13 @@ public class Util {
                 getFileObjectFromClassName(entityFqn, project);
 
             if (entityFileObject == null) {
-                return;
+                return; 
             }
             final JavaSource javaSource = JavaSource.forFileObject(entityFileObject);
             if (javaSource == null) {
                 return;
             }
-            final boolean isIncomplete[] = new boolean[0];
+            final boolean isIncomplete[] = new boolean[1];
             final Task<CompilationController> task = new Task<CompilationController>(){
                 @Override
                 public void run(CompilationController controller) throws Exception {

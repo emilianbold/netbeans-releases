@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.j2ee.persistence.editor.completion.db;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -62,15 +61,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
-import org.eclipse.persistence.jpa.jpql.JPQLQueryProblem;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.dbschema.ColumnElement;
@@ -84,11 +78,8 @@ import org.netbeans.modules.j2ee.persistence.api.metadata.orm.OneToOne;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Table;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser.CC;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser.NNAttr;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CompletionContextResolver;
 import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
-import org.netbeans.modules.j2ee.persistence.editor.completion.JPACodeCompletionProvider.Context;
 import org.netbeans.modules.j2ee.persistence.editor.completion.JPACompletionItem;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
 import org.netbeans.modules.j2ee.persistence.editor.completion.JPACodeCompletionProvider;
@@ -101,12 +92,11 @@ import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerU
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
- * @author Marek Fukala
+ * @author Marek Fukala, Sergey Petrov
  */
 public class DBCompletionContextResolver implements CompletionContextResolver {
     
@@ -353,7 +343,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
     
     private List completePrimaryKeyJoinColumn(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) throws SQLException {
         String completedMember = nnattr.getName();
-        Map<String,Object> members = nn.getAttributes();
         
         if ("name".equals(completedMember)) { // NOI18N
             //XXX should I take into account the @SecondaryTable here???
@@ -469,8 +458,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             if(entity != null && entity.getAttributes() != null) {
                 String propertyName = ctx.getCompletedMemberName();
                 String resolvedClassName = ctx.getCompletedMemberClassName();
-//                JCClass resolvedClass = ctx.getSyntaxSupport().getClassFromName(resolvedClassName, true);
-                TypeElement type = null;//ctx.getSyntaxSupport().getTypeFromName(resolvedClassName, false, null, false);
+                TypeElement type = null;
                 
                 if(type == null) {
                     //show an error message
@@ -643,7 +631,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         Map<String,Object> members = nn.getAttributes();
         
         if ("mappedBy".equals(completedMember)) { // NOI18N
-            String resolvedClassName = ctx.getCompletedMemberClassName();
             Element type = null;//ctx.getSyntaxSupport().getTypeFromName(resolvedClassName, false, null, false);
             if(type != null && type instanceof TypeElement) {
                 TypeElement cdef = (TypeElement)type;

@@ -353,6 +353,21 @@ public class CCPaintComponent extends JPanel {
         }
         
     }
+    public static final class NamedQueryNameElementPaintComponent extends NbStringPaintComponent {
+        
+        private String puName;
+        
+        public void setContent(String puName) {
+            this.puName = puName;
+        }
+        
+        @Override
+        protected void draw(Graphics g){
+            drawIcon(g, new ImageIcon(Utilities.loadImage(PU_ICON)));
+            drawString(g, puName, Color.BLACK, getDrawFont().deriveFont(Font.BOLD), false);
+        }
+        
+    }
     
     public static final class EntityPropertyElementPaintComponent extends NbStringPaintComponent {
         

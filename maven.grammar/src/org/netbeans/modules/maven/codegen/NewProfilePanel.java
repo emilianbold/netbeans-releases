@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.codegen;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Profile;
 import org.openide.DialogDescriptor;
@@ -55,6 +56,8 @@ import org.openide.util.NbBundle;
  *
  * @author mkleint
  */
+@NbBundle.Messages({"NewProfilePanel_cbPlugins_text2=&Generate Plugins section",
+                    "NewProfilePanel_cbDependencies_text2=Generate &Dependencies section"})
 public class NewProfilePanel extends javax.swing.JPanel {
     private POMModel model;
     private NotificationLineSupport nls;
@@ -64,16 +67,19 @@ public class NewProfilePanel extends javax.swing.JPanel {
         this.model = model;
         boolean pomPackaging = "pom".equals(model.getProject().getPackaging()); //NOI18N
         if (!pomPackaging) {
-            Mnemonics.setLocalizedText(cbPlugins, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbPlugins.text2")); // NOI18N
-            Mnemonics.setLocalizedText(cbDependencies, org.openide.util.NbBundle.getMessage(NewProfilePanel.class, "NewProfilePanel.cbDependencies.text2")); // NOI18N
+            Mnemonics.setLocalizedText(cbPlugins, NewProfilePanel_cbPlugins_text2()); // NOI18N
+            Mnemonics.setLocalizedText(cbDependencies, NewProfilePanel_cbDependencies_text2()); // NOI18N
         }
         txtId.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkId();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkId();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkId();
             }

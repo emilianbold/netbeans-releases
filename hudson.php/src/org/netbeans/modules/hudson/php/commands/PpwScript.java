@@ -100,7 +100,9 @@ public class PpwScript extends PhpProgram {
     }
 
     @NbBundle.Messages({
+        "# {0} - project name",
         "PpwScript.create.title=Hudson job files for {0}",
+        "# {0} - project name",
         "PpwScript.create.progress=Creating Hudson job files for project {0}..."
     })
     public boolean createProjectFiles(PhpModule phpModule, Map<String, String> optionalParams) {

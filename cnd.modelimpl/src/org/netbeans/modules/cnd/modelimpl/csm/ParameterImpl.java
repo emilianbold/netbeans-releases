@@ -73,6 +73,11 @@ public class ParameterImpl extends VariableImpl<CsmParameter> implements CsmPara
     }
 
     @Override
+    protected boolean unregisterInProject() {
+        return false;
+    }
+
+    @Override
     public boolean isVarArgs() {
         return false;
     }

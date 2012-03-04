@@ -77,6 +77,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Stamps;
+import org.netbeans.core.startup.preferences.RelPaths;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -166,7 +167,7 @@ final class BinaryFS extends FileSystem implements DataInput {
         urls = new ArrayList<String>();
         List<Long> _modifications = new ArrayList<Long>();
         while (buff.position() < stop) {
-            urls.add(getString(buff));
+            urls.add(toAbsoluteURL(getString(buff)));
             _modifications.add(null);
         }
         modifications = Collections.synchronizedList(_modifications);
@@ -261,6 +262,20 @@ final class BinaryFS extends FileSystem implements DataInput {
             texts.put(offset, s);
             return s;
         }
+    }
+    private static String toAbsoluteURL(String relURL) {
+        if (relURL.startsWith("home@")) {
+            return "jar:file:" + System.getProperty("netbeans.home") + relURL.substring(5);
+        }
+        if (relURL.startsWith("user@")) {
+            return "jar:file:" + System.getProperty("netbeans.user") + relURL.substring(5);
+        }
+        int indx = relURL.indexOf('@');
+        if (indx == -1) {
+            return relURL;
+        }
+        int cluster = Integer.parseInt(relURL.substring(0, indx));
+        return "jar:file:" + RelPaths.cluster(cluster) + relURL.substring(indx + 1);
     }
     
     @Override
@@ -861,7 +876,7 @@ final class BinaryFS extends FileSystem implements DataInput {
                     new URL(uri).openConnection().getInputStream() : // len from URI
                     new ByteArrayInputStream(data());
             } catch (Exception e) {
-                throw (FileNotFoundException) new FileNotFoundException(e.toString()).initCause(e);
+                throw (FileNotFoundException) new FileNotFoundException("Cannot find '" + uri + "'").initCause(e);
             }
         }
 
@@ -942,7 +957,7 @@ final class BinaryFS extends FileSystem implements DataInput {
             len = sub.getInt();
             contentOffset = sub.position();
             if (len == -1) {
-                uri = getString(sub);
+                uri = toAbsoluteURL(getString(sub));
             } else {
                 sub.position(contentOffset+len);
             }

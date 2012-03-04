@@ -94,10 +94,8 @@ import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.EntityResolver;
-import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
 
 /** Makes a <code>.nbm</code> (<b>N</b>et<b>B</b>eans <b>M</b>odule) file.
  *
@@ -1071,11 +1069,7 @@ public class MakeNBM extends Task {
     }
 
     static void validateAgainstAUDTDs(InputSource input, final Path updaterJar, final Task task) throws IOException, SAXException {
-        XMLUtil.parse(input, true, false, new ErrorHandler() {
-            public void warning(SAXParseException exception) throws SAXException {throw exception;}
-            public void error(SAXParseException exception) throws SAXException {throw exception;}
-            public void fatalError(SAXParseException exception) throws SAXException {throw exception;}
-        }, new EntityResolver() {
+        XMLUtil.parse(input, true, false, XMLUtil.rethrowHandler(), new EntityResolver() {
             ClassLoader loader = new AntClassLoader(task.getProject(), updaterJar);
             public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
                 String remote = "http://www.netbeans.org/dtds/";

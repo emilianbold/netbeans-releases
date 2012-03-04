@@ -74,17 +74,22 @@ import org.openide.util.NbBundle;
 /**
  * Wizard to create a new JavaFX project
  * 
- * @author phrebejk, Anton Chechel
+ * @author Petr Hrebejk
+ * @author Anton Chechel
+ * @author Petr Somol
  */
 public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
-    public static enum WizardType {APPLICATION, PRELOADER, FXML, LIBRARY, EXTISTING}
+    public static enum WizardType {APPLICATION, PRELOADER, FXML, SWING, LIBRARY, EXTISTING}
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
-    static final String PROP_PRELOADER_NAME = "preloader.name"; // NOI18N
+    static final String MAIN_CLASS = "mainClass";
+    static final String PROP_PRELOADER_NAME = "preloaderName"; // NOI18N
+    static final String SHARED_LIBRARIES = "sharedLibraries"; // NOI18N
+    static final String FXML_NAME = "fxmlName"; // NOI18N
     
     static final String MANIFEST_FILE = "manifest.mf"; // NOI18N
     //static final String GENERATED_PRELOADER_CLASS_NAME = "SimplePreloader"; // NOI18N
-    static final String GENERATED_FXML_CLASS_NAME = "Sample"; // NOI18N
+//    static final String GENERATED_FXML_CLASS_NAME = "Sample"; // NOI18N
 
     private static final long serialVersionUID = 1L;
     
@@ -100,6 +105,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
 
     public static JavaFXProjectWizardIterator preloader() {
         return new JavaFXProjectWizardIterator(WizardType.PRELOADER);
+    }
+
+    public static JavaFXProjectWizardIterator swing() {
+        return new JavaFXProjectWizardIterator(WizardType.SWING);
     }
 
     public static JavaFXProjectWizardIterator library() {
@@ -160,9 +169,10 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         dirF = FileUtil.normalizeFile(dirF);
         
         String name = (String) wiz.getProperty("name"); // NOI18N
-        String mainClass = (String) wiz.getProperty("mainClass"); // NOI18N
+        String mainClass = (String) wiz.getProperty(MAIN_CLASS); // NOI18N
+        String fxmlName = (String) wiz.getProperty(FXML_NAME);
         
-        String librariesDefinition = (String) wiz.getProperty(PanelOptionsVisual.SHARED_LIBRARIES);
+        String librariesDefinition = (String) wiz.getProperty(SHARED_LIBRARIES);
         if (librariesDefinition != null) {
             if (!librariesDefinition.endsWith(File.separator)) {
                 librariesDefinition += File.separatorChar;
@@ -208,13 +218,13 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                 break;
             default:
                 String manifest = null;
-                if (type == WizardType.APPLICATION || type == WizardType.FXML) {
+                if (type == WizardType.APPLICATION || type == WizardType.FXML || type == WizardType.SWING) {
                     manifest = MANIFEST_FILE;
                 }
                 if (type == WizardType.PRELOADER) {
                     projectHelper = JFXProjectGenerator.createPreloaderProject(dirF, name, librariesDefinition, platformName, mainClass);
                 } else {
-                    projectHelper = JFXProjectGenerator.createProject(dirF, name, mainClass, manifest, librariesDefinition,
+                    projectHelper = JFXProjectGenerator.createProject(dirF, name, mainClass, fxmlName, manifest, librariesDefinition,
                             platformName, preloader, type);
                 }
                 handle.progress(2);
@@ -242,11 +252,12 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                             pName += '/'; // NOI18N
                         }
                     }
-                    FileObject controller = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".java"); // NOI18N
+                    
+                    FileObject controller = sourcesRoot.getFileObject(pName + fxmlName + ".java"); // NOI18N
                     if (controller != null) {
                         resultSet.add(controller);
                     }
-                    FileObject fxml = sourcesRoot.getFileObject(pName + GENERATED_FXML_CLASS_NAME + ".fxml"); // NOI18N
+                    FileObject fxml = sourcesRoot.getFileObject(pName + fxmlName + ".fxml"); // NOI18N
                     if (fxml != null) {
                         resultSet.add(fxml);
                     }
@@ -257,6 +268,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         switch (type) {
             case APPLICATION:
             case FXML:
+            case SWING:
                 createManifest(dir, false);
                 break;
             case EXTISTING:
@@ -299,6 +311,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
             case APPLICATION:
             case PRELOADER:
             case FXML:
+            case SWING:
                 WizardSettings.setNewApplicationCount(ind);
                 break;
             case LIBRARY:
@@ -361,7 +374,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (this.wiz != null) {
             this.wiz.putProperty("projdir", null); // NOI18N
             this.wiz.putProperty("name", null); // NOI18N
-            this.wiz.putProperty("mainClass", null); // NOI18N
+            this.wiz.putProperty(MAIN_CLASS, null); // NOI18N
             switch (type) {
                 case EXTISTING:
                     this.wiz.putProperty("sourceRoot", null); // NOI18N
@@ -445,9 +458,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
      * @throws IOException in case of problems
      */
     static void createManifest(final FileObject dir, final boolean skeepIfExists) throws IOException {
-        if (skeepIfExists && dir.getFileObject(MANIFEST_FILE) != null) {
-            return;
-        } else {
+        if (!skeepIfExists || dir.getFileObject(MANIFEST_FILE) == null) {
             FileObject manifest = dir.createData(MANIFEST_FILE);
             FileLock lock = manifest.lock();
             try {

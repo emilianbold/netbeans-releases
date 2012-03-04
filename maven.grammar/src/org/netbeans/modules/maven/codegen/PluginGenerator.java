@@ -52,6 +52,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.Constants;
+import static org.netbeans.modules.maven.codegen.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
@@ -68,16 +69,20 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Milos Kleint
  */
+@Messages({"NAME_Plugin=Plugin...",
+           "TIT_Add_plugin=Add new plugin"})
 public class PluginGenerator implements CodeGenerator {
 
     @MimeRegistration(mimeType=Constants.POM_MIME_TYPE, service=CodeGenerator.Factory.class, position=200)
     public static class Factory implements CodeGenerator.Factory {
         
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> toRet = new ArrayList<CodeGenerator>();
             POMModel model = context.lookup(POMModel.class);
@@ -98,10 +103,12 @@ public class PluginGenerator implements CodeGenerator {
         this.component = component;
     }
 
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(PluginGenerator.class, "NAME_Plugin");
+        return NAME_Plugin();
     }
 
+    @Override
     public void invoke() {
         try {
             model.sync();
@@ -121,7 +128,7 @@ public class PluginGenerator implements CodeGenerator {
 
         NewPluginPanel pluginPanel = new NewPluginPanel();
         DialogDescriptor dd = new DialogDescriptor(pluginPanel,
-                NbBundle.getMessage(PluginGenerator.class, "TIT_Add_plugin"));
+                TIT_Add_plugin());
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             NBVersionInfo vi = pluginPanel.getPlugin();
             if (vi != null) {

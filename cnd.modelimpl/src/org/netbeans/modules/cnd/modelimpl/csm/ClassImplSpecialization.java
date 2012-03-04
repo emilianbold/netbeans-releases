@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
@@ -78,7 +79,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    public final void init(CsmScope scope, AST ast, CsmFile file, FileImplContent fileContent, boolean register) {
+    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
@@ -102,7 +103,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, FileImplContent fileContent, boolean register, DeclarationsContainer container) {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) {
         ClassImpl clsImpl = findExistingClassImplInContainer(container, ast);
         ClassImplSpecialization impl = null;
         if (clsImpl instanceof ClassImplSpecialization) {
@@ -116,7 +117,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         }
         impl.init(scope, ast, file, fileContent, register);
         if (nameHolder != null) {
-            nameHolder.addReference(file, impl);
+            nameHolder.addReference(fileContent, impl);
         }
         return impl;
     }

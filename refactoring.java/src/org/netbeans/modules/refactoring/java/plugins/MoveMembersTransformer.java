@@ -591,9 +591,9 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             boolean result = false;
 
                             if (isElementBeingMoved(el) == null) {
-                                String isThis = node.toString();
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
+                                String isThis = node.toString();
                                 if (isThis.equals("this") || isThis.endsWith(".this")) { //NOI18N
                                     // Check for static
                                     if (!el.getModifiers().contains(Modifier.STATIC)) {

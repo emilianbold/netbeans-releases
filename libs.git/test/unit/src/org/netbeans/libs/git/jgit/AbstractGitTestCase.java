@@ -175,7 +175,7 @@ public class AbstractGitTestCase extends NbTestCase {
 
         if (createLocalClone()) {
             GitRepository fact = GitRepository.getInstance(wc);
-            fact.getClient().init(NULL_PROGRESS_MONITOR);
+            fact.createClient().init(NULL_PROGRESS_MONITOR);
             Field f = GitRepository.class.getDeclaredField("gitRepository");
             f.setAccessible(true);
             localRepository = (JGitRepository) f.get(fact);
@@ -183,7 +183,7 @@ public class AbstractGitTestCase extends NbTestCase {
     }
 
     protected GitClient getClient (File repository) throws GitException {
-        return GitRepository.getInstance(repository).getClient();
+        return GitRepository.getInstance(repository).createClient();
     }
 
     protected void add (File... files) throws GitException {

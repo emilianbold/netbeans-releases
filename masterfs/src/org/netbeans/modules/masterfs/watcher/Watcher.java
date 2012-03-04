@@ -151,10 +151,10 @@ public final class Watcher extends AnnotationProvider {
         return ext;
     }
     
-    public void shutdown() {
-        if (ext != null) {
+    public static void shutdown() {
+        if (isEnabled()) {
             try {
-                ext.shutdown();
+                ext().shutdown();
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Error on shutdown", ex);
             } catch (InterruptedException ex) {

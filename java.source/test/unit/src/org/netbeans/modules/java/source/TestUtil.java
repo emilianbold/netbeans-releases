@@ -63,6 +63,7 @@ import java.util.zip.ZipFile;
 import junit.framework.TestCase;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
+import org.openide.util.Utilities;
 
 
 /**
@@ -73,6 +74,7 @@ public class TestUtil {
         
     public static final String RT_JAR = "jre/lib/rt.jar";
     public static final String SRC_ZIP = "src.zip";
+    private static final String MAC_SRC_ZIP = "Home/src.jar";   //NOI18N
     
     /** Creates a new instance of TestUtil */
     private TestUtil() {
@@ -250,6 +252,18 @@ public class TestUtil {
 	    throw new IllegalArgumentException( "Can't read file " + f );
 	}
 		
+    }
+    
+    public static File getJdkSources() {
+        try {
+            return getJdkFile(SRC_ZIP);
+        } catch (IllegalArgumentException iae) {
+            if (Utilities.isMac()) {
+                return getJdkFile(MAC_SRC_ZIP);
+            } else {
+                throw iae;
+            }
+        }
     }
 
     public static void setJavaFileFilter(JavaFileFilterImplementation impl) {

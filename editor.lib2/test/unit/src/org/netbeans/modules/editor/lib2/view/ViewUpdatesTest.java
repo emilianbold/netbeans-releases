@@ -76,7 +76,8 @@ public class ViewUpdatesTest extends NbTestCase {
 //        includes.add("testModsWithHighlights");
 //        includes.add("testLongHighlightedLine");
 //        includes.add("testRemoveAtBeginning");
-//        filterTests(includes);
+        includes.add("testRemoveTrailingWhitespace");
+        filterTests(includes);
     }
 
     private void filterTests(List<String> includeTestNames) {
@@ -1650,4 +1651,106 @@ ViewBuilder.RebuildCause.INIT_PARAGRAPHS,
         ViewUpdatesTesting.setTestValues();
     }
     
+    public void testRemoveTrailingWhitespace() throws Exception {
+        loggingOn();
+        ViewUpdatesTesting.setTestValues(ViewUpdatesTesting.NO_OP_TEST_VALUE);
+        JEditorPane pane = ViewUpdatesTesting.createPane();
+        Document doc = pane.getDocument();
+        final DocumentView docView = DocumentView.get(pane);
+        final PositionsBag highlights = ViewUpdatesTesting.getSingleHighlightingLayer(pane);
+        int offset;
+        String text;
+        int cRegionStartOffset;
+        int cRegionEndOffset;
+        
+        offset = 0;
+        text = "abc  \nde  \nf  ";
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ 0,
+/*matchOffset*/         offset + text.length(),
+/*endCreationOffset*/   offset + text.length() + 1, // includes '\n'
+/*bmReuseOffset*/       0,
+/*bmReusePView*/        docView.getParagraphView(0),
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset + text.length(),
+/*amReusePIndex*/       0,
+/*amReusePView*/        docView.getParagraphView(0),
+/*amReuseLocalIndex*/   0 // Could reuse NewlineView
+        );
+        doc.insertString(offset, text, null);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            5, HI_VIEW,
+            1, NL_VIEW /* e:6 */,
+            4, HI_VIEW,
+            1, NL_VIEW /* e:11 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:15 */        );
+
+        ParagraphView pView1 = docView.getParagraphView(1);
+        int removeLength = 2;
+        offset = pView1.getEndOffset() - 1 - removeLength; // Remove two last spaces in front of ending newline
+        assert (offset == 8);
+//        cRegionStartOffset = offset;
+//        cRegionEndOffset = offset + removeLength;
+//        docView.op.viewUpdates.extendCharRebuildRegion(OffsetRegion.create(doc, cRegionStartOffset, cRegionEndOffset));
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ pView1.getStartOffset(),
+/*matchOffset*/         offset,
+/*endCreationOffset*/   pView1.getEndOffset() - removeLength,
+/*bmReuseOffset*/       pView1.getStartOffset(),
+/*bmReusePView*/        pView1,
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset,
+/*amReusePIndex*/       1,
+/*amReusePView*/        pView1,
+/*amReuseLocalIndex*/   1 // Could reuse NewlineView
+        );
+        doc.remove(offset, removeLength);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            5, HI_VIEW,
+            1, NL_VIEW /* e:6 */,
+            2, HI_VIEW,
+            1, NL_VIEW /* e:9 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:13 */
+        );
+
+        ParagraphView pView0 = docView.getParagraphView(0);
+        removeLength = 2;
+        offset = pView0.getEndOffset() - 1 - removeLength; // Remove two last spaces in front of ending newline
+        assert (offset == 3);
+        cRegionStartOffset = docView.getParagraphView(1).getEndOffset() - 1;
+        cRegionEndOffset = cRegionStartOffset;
+        docView.op.viewUpdates.extendCharRebuildRegion(OffsetRegion.create(doc, cRegionStartOffset, cRegionEndOffset));
+        ViewUpdatesTesting.setTestValues(
+/*rebuildCause*/        ViewBuilder.RebuildCause.MOD_UPDATE,
+/*createLocalViews*/    true,
+/*startCreationOffset*/ pView0.getStartOffset(),
+/*matchOffset*/         offset,
+/*endCreationOffset*/   pView0.getEndOffset() - removeLength,
+/*bmReuseOffset*/       pView0.getStartOffset(),
+/*bmReusePView*/        pView0,
+/*bmReuseLocalIndex*/   0,
+/*amReuseOffset*/       offset,
+/*amReusePIndex*/       0,
+/*amReusePView*/        pView0,
+/*amReuseLocalIndex*/   1 // Could reuse NewlineView
+        );
+        doc.remove(offset, removeLength);
+        ViewUpdatesTesting.checkViews(docView, 0, -1,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:4 */,
+            2, HI_VIEW,
+            1, NL_VIEW /* e:7 */,
+            3, HI_VIEW,
+            1, NL_VIEW /* e:11 */
+        );
+
+        ViewUpdatesTesting.setTestValues();
+    }
+
 }

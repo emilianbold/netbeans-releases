@@ -326,6 +326,14 @@ public class PanelProjectLocationVisual extends SettingsPanel implements Documen
                     }
                     settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
                     break;
+                case SWING:
+                    baseCount = WizardSettings.getNewApplicationCount() + 1;
+                    formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaFXSwingApplication"); // NOI18N
+                    while ((projectName = validFreeProjectName(projectLocation, formatter, baseCount)) == null) {
+                        baseCount++;
+                    }
+                    settings.putProperty(JavaFXProjectWizardIterator.PROP_NAME_INDEX, new Integer(baseCount));
+                    break;
                 default:
                     baseCount = WizardSettings.getNewLibraryCount() + 1;
                     formatter = NbBundle.getMessage(PanelSourceFolders.class, "TXT_JavaLibrary"); // NOI18N

@@ -313,7 +313,17 @@ class AWTGrabHandler {
         //    return false; // Not an X server
         //}
         Toolkit t = Toolkit.getDefaultToolkit();
-        Class XToolkit = Class.forName("sun.awt.X11.XToolkit");                 // NOI18N
+        Class XToolkit;
+        try {
+            XToolkit = Class.forName("sun.awt.X11.XToolkit");                   // NOI18N
+        } catch (ClassNotFoundException cnfex) {
+            throw cnfex;
+        } catch (Exception ccex) {
+            // We're not able to load the X11 toolkit class
+            // See http://netbeans.org/bugzilla/show_bug.cgi?id=208751
+            logger.log(Level.INFO, "Can not load sun.awt.X11.XToolkit class.", ccex);
+            return false;
+        }
         if (!XToolkit.isAssignableFrom(t.getClass())) {
             logger.fine("XToolkit not found.");                                 // NOI18N
             return false;

@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
@@ -138,7 +139,7 @@ public abstract class JavaFix {
                 return jf.getText();
             }
             @Override
-            public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent) throws Exception {
+            public ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent, Collection<? super RefactoringElementImplementation> fileChanges) throws Exception {
                 TreePath tp = jf.handle.resolve(wc);
 
                 if (tp == null) {
@@ -146,7 +147,7 @@ public abstract class JavaFix {
                     return null;
                 }
 
-                jf.performRewrite(new TransformationContext(wc, tp, canShowUI, resourceContent));
+                jf.performRewrite(new TransformationContext(wc, tp, canShowUI, resourceContent, fileChanges));
 
                 return null;
             }
@@ -185,11 +186,13 @@ public abstract class JavaFix {
         private final TreePath path;
         private final boolean canShowUI;
         private final Map<FileObject, byte[]> resourceContentChanges;
-        TransformationContext(WorkingCopy workingCopy, TreePath path, boolean canShowUI, Map<FileObject, byte[]> resourceContentChanges) {
+        private final Collection<? super RefactoringElementImplementation> fileChanges;
+        TransformationContext(WorkingCopy workingCopy, TreePath path, boolean canShowUI, Map<FileObject, byte[]> resourceContentChanges, Collection<? super RefactoringElementImplementation> fileChanges) {
             this.workingCopy = workingCopy;
             this.path = path;
             this.canShowUI = canShowUI;
             this.resourceContentChanges = resourceContentChanges;
+            this.fileChanges = fileChanges;
         }
 
         boolean isCanShowUI() {
@@ -259,6 +262,11 @@ public abstract class JavaFix {
                 }
             };
         }
+
+        Collection<? super RefactoringElementImplementation> getFileChanges() {
+            return fileChanges;
+        }
+
     }
 
 }

@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
@@ -56,6 +57,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
@@ -406,6 +408,27 @@ public class UtilitiesTest extends TestBase {
         golden = "new $type(){ $mods$$resultType $methodName($args$) { $statements$; } }";
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
         assertTrue(errors.toString(), errors.isEmpty());
+    }
+    
+    public void testPackagePattern() throws Exception {
+        prepareTest("test/a/Test.java", "package test.a; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "test.$1", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.MEMBER_SELECT);
+
+        String golden = "test.$1";
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
+        
+        Element total = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), result));
+        
+        assertTrue(Utilities.isError(total));
+        
+        Element testPack = info.getTrees().getElement(new TreePath(new TreePath(info.getCompilationUnit()), ((MemberSelectTree) result).getExpression()));
+
+        assertFalse(Utilities.isError(testPack));
+        assertEquals(info.getElements().getPackageElement("test"), testPack);
     }
 
     public void DtestMultiStatementVarWithModifiers() throws Exception {

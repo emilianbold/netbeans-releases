@@ -55,6 +55,7 @@ import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,7 +74,7 @@ public class Hacks {
         List<MessageImpl> problems = new LinkedList<MessageImpl>();
 
         try {
-            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, null, problems)) {
+            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, null, new ArrayList<RefactoringElementImplementation>(), problems)) {
                 throw new IllegalStateException();
             }
         } catch (IllegalStateException ex) {

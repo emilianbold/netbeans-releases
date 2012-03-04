@@ -88,21 +88,22 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter;
-import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
-import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Resource;
-import org.netbeans.spi.java.hints.HintContext.MessageKind;
-import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl.Accessor;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Resource;
 import org.netbeans.modules.java.hints.spiimpl.ipi.upgrade.ProjectDependencyUpgrader;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext.MessageKind;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -117,6 +118,10 @@ public class BatchUtilities {
     private static final Logger LOG = Logger.getLogger(BatchUtilities.class.getName());
     
     public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super MessageImpl> problems) {
+        return applyFixes(candidates, progress, cancel, new ArrayList<RefactoringElementImplementation>(), problems);
+    }
+    
+    public static Collection<ModificationResult> applyFixes(BatchResult candidates, @NonNull final ProgressHandleWrapper progress, AtomicBoolean cancel, final Collection<? super RefactoringElementImplementation> fileChanges, final Collection<? super MessageImpl> problems) {
         final Map<Project, Set<String>> processedDependencyChanges = new IdentityHashMap<Project, Set<String>>();
         final Map<FileObject, List<ModificationResult.Difference>> result = new LinkedHashMap<FileObject, List<ModificationResult.Difference>>();
         final Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
@@ -141,7 +146,7 @@ public class BatchUtilities {
                 copy.toPhase(Phase.RESOLVED);
                 progress.tick();
                 
-                if (applyFixes(copy, processedDependencyChanges, hints, resourceContentChanges, problems)) {
+                if (applyFixes(copy, processedDependencyChanges, hints, resourceContentChanges, fileChanges, problems)) {
                     return false;
                 }
 
@@ -230,7 +235,7 @@ public class BatchUtilities {
         }
     }
 
-    public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
+    public static boolean applyFixes(WorkingCopy copy, Map<Project, Set<String>> processedDependencyChanges, Collection<? extends ErrorDescription> hints, Map<FileObject, byte[]> resourceContentChanges, Collection<? super RefactoringElementImplementation> fileChanges, Collection<? super MessageImpl> problems) throws IllegalStateException, Exception {
         List<JavaFix> fixes = new ArrayList<JavaFix>();
         for (ErrorDescription ed : hints) {
             if (!ed.getFixes().isComputed()) {
@@ -269,7 +274,7 @@ public class BatchUtilities {
         for (JavaFix f : fixes) {
 //                    if (cancel.get()) return ;
 
-            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false, resourceContentChanges);
+            JavaFixImpl.Accessor.INSTANCE.process(f, copy, false, resourceContentChanges, fileChanges);
         }
         return false;
     }

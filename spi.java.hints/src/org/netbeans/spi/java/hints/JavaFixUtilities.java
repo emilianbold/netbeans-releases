@@ -50,6 +50,7 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.CatchTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
@@ -74,12 +75,14 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -95,8 +98,10 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath.PathConversionMode;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
@@ -108,12 +113,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spiimpl.Hacks;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.ipi.upgrade.ProjectDependencyUpgrader;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
+import org.openide.text.PositionBounds;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 
 /**Factory methods for various predefined {@link JavaFix} implementations.
  *
@@ -210,7 +222,7 @@ public class JavaFixUtilities {
         return "Rewrite to " + replaceTarget;
     }
 
-    private static void checkDependency(WorkingCopy copy, Element e, boolean canShowUI) {
+    private static void checkDependency(CompilationInfo copy, Element e, boolean canShowUI) {
         SpecificationVersion sv = computeSpecVersion(copy, e);
 
         while (sv == null && e.getKind() != ElementKind.PACKAGE) {
@@ -278,7 +290,7 @@ public class JavaFixUtilities {
     }
 
     @SuppressWarnings("deprecation")
-    private static FileObject getFile(WorkingCopy copy, Element e) {
+    private static FileObject getFile(CompilationInfo copy, Element e) {
         return SourceUtils.getFile(e, copy.getClasspathInfo());
     }
 
@@ -406,6 +418,7 @@ public class JavaFixUtilities {
             assert scope != null;
 
             Tree parsed = Utilities.parseAndAttribute(wc, to, scope);
+            Map<Tree, Tree> rewriteFromTo = new IdentityHashMap<Tree, Tree>();
 
             if (Utilities.isFakeBlock(parsed)) {
                 TreePath parent = tp.getParentPath();
@@ -424,9 +437,9 @@ public class JavaFixUtilities {
                         }
                     }
 
-                    wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
+                    rewriteFromTo.put(parent.getLeaf(), wc.getTreeMaker().Block(newStatements, ((BlockTree) parent.getLeaf()).isStatic()));
                 } else {
-                    wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
+                    rewriteFromTo.put(tp.getLeaf(), wc.getTreeMaker().Block(statements, false));
                 }
             } else if (Utilities.isFakeClass(parsed)) {
                 TreePath parent = tp.getParentPath();
@@ -448,7 +461,7 @@ public class JavaFixUtilities {
                     }
                 }
 
-                wc.rewrite(parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
+                rewriteFromTo.put(parent.getLeaf(), wc.getTreeMaker().Class(ct.getModifiers(), ct.getSimpleName(), ct.getTypeParameters(), ct.getExtendsClause(), ct.getImplementsClause(), newMembers));
             } else if (tp.getLeaf().getKind() == Kind.BLOCK && parametersMulti.containsKey("$$1$") && parsed.getKind() != Kind.BLOCK && StatementTree.class.isAssignableFrom(parsed.getKind().asInterface())) {
                 List<StatementTree> newStatements = new LinkedList<StatementTree>();
 
@@ -458,7 +471,7 @@ public class JavaFixUtilities {
 
                 parsed = wc.getTreeMaker().Block(newStatements, ((BlockTree) tp.getLeaf()).isStatic());
 
-                wc.rewrite(tp.getLeaf(), parsed);
+                rewriteFromTo.put(tp.getLeaf(), parsed);
             } else {
                 while (   tp.getParentPath().getLeaf().getKind() == Kind.PARENTHESIZED
                        && tp.getLeaf().getKind() != parsed.getKind()
@@ -467,20 +480,39 @@ public class JavaFixUtilities {
                        && !requiresParenthesis(parsed, tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf())
                        && requiresParenthesis(tp.getLeaf(), tp.getParentPath().getLeaf(), tp.getParentPath().getParentPath().getLeaf()))
                     tp = tp.getParentPath();
-                wc.rewrite(tp.getLeaf(), parsed);
+                rewriteFromTo.put(tp.getLeaf(), parsed);
             }
 
             //prevent generating QualIdents inside import clauses - might be better to solve that inside ImportAnalysis2,
             //but that seems not to be straightforward:
             boolean inImport = parsed.getKind() == Kind.IMPORT;
-            TreePath w = tp.getParentPath();
+            boolean inPackage = false;
+            TreePath w = tp;
 
             while (!inImport && w != null) {
                 inImport |= w.getLeaf().getKind() == Kind.IMPORT;
+                inPackage |= w.getParentPath() != null && w.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT && ((CompilationUnitTree) w.getParentPath().getLeaf()).getPackageName() == w.getLeaf();
                 w = w.getParentPath();
             }
 
-            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, parametersMulti, parameterNames).scan(new TreePath(tp.getParentPath(), parsed), null);
+            new ReplaceParameters(wc, ctx.isCanShowUI(), inImport, parameters, parametersMulti, parameterNames, rewriteFromTo).scan(new TreePath(tp.getParentPath(), parsed), null);
+
+            if (inPackage) {
+                String newPackage = wc.getTreeUtilities().translate(wc.getCompilationUnit().getPackageName(), new IdentityHashMap<Tree, Tree>(rewriteFromTo))./*XXX: not correct*/toString();
+
+                ClassPath source = wc.getClasspathInfo().getClassPath(PathKind.SOURCE);
+                FileObject ownerRoot = source.findOwnerRoot(wc.getFileObject());
+
+                if (ownerRoot != null) {
+                    ctx.getFileChanges().add(new MoveFile(wc.getFileObject(), ownerRoot, newPackage.replace('.', '/')));
+                } else {
+                    Logger.getLogger(JavaFix.class.getName()).log(Level.WARNING, "{0} not on its source path ({1})", new Object[] {FileUtil.getFileDisplayName(wc.getFileObject()), source.toString(PathConversionMode.PRINT)});
+                }
+            }
+            
+            for (Entry<Tree, Tree> e : rewriteFromTo.entrySet()) {
+                wc.rewrite(e.getKey(), e.getValue());
+            }
         }
     }
 
@@ -488,20 +520,24 @@ public class JavaFixUtilities {
 
     private static class ReplaceParameters extends TreePathScanner<Number, Void> {
 
-        private final WorkingCopy wc;
+        private final CompilationInfo info;
+        private final TreeMaker make;
         private final boolean canShowUI;
         private final boolean inImport;
         private final Map<String, TreePath> parameters;
         private final Map<String, Collection<TreePath>> parametersMulti;
         private final Map<String, String> parameterNames;
+        private final Map<Tree, Tree> rewriteFromTo;
 
-        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames) {
+        public ReplaceParameters(WorkingCopy wc, boolean canShowUI, boolean inImport, Map<String, TreePath> parameters, Map<String, Collection<TreePath>> parametersMulti, Map<String, String> parameterNames, Map<Tree, Tree> rewriteFromTo) {
             this.parameters = parameters;
-            this.wc = wc;
+            this.info = wc;
+            this.make = wc.getTreeMaker();
             this.canShowUI = canShowUI;
             this.inImport = inImport;
             this.parametersMulti = parametersMulti;
             this.parameterNames = parameterNames;
+            this.rewriteFromTo = rewriteFromTo;
         }
 
         @Override
@@ -512,14 +548,14 @@ public class JavaFixUtilities {
             if (tp != null) {
                 if (tp.getLeaf() instanceof Hacks.RenameTree) {
                     Hacks.RenameTree rt = (Hacks.RenameTree) tp.getLeaf();
-                    Tree nue = wc.getTreeMaker().setLabel(rt.originalTree, rt.newName);
+                    Tree nue = make.setLabel(rt.originalTree, rt.newName);
 
-                    wc.rewrite(node, nue);
+                    rewrite(node, nue);
 
                     return null;
                 }
                 if (!parameterNames.containsKey(name)) {
-                    wc.rewrite(node, tp.getLeaf());
+                    rewrite(node, tp.getLeaf());
                     if (NUMBER_LITERAL_KINDS.contains(tp.getLeaf().getKind())) {
                         return (Number) ((LiteralTree) tp.getLeaf()).getValue();
                     }
@@ -530,9 +566,9 @@ public class JavaFixUtilities {
 //                        target = ((ParenthesizedTree) target).getExpression();
 //                    }
                     if (requiresParenthesis(target, node, getCurrentPath().getParentPath().getLeaf())) {
-                        target = wc.getTreeMaker().Parenthesized((ExpressionTree) target);
+                        target = make.Parenthesized((ExpressionTree) target);
                     }
-                    wc.rewrite(node, target);
+                    rewrite(node, target);
                     return null;
                 }
             }
@@ -540,14 +576,14 @@ public class JavaFixUtilities {
             String variableName = parameterNames.get(name);
 
             if (variableName != null) {
-                wc.rewrite(node, wc.getTreeMaker().Identifier(variableName));
+                rewrite(node, make.Identifier(variableName));
                 return null;
             }
 
-            Element e = wc.getTrees().getElement(getCurrentPath());
+            Element e = info.getTrees().getElement(getCurrentPath());
 
             if (e != null && isStaticElement(e) && !inImport) {
-                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+                rewrite(node, make.QualIdent(e));
             }
 
             return super.visitIdentifier(node, p);
@@ -555,14 +591,14 @@ public class JavaFixUtilities {
 
         @Override
         public Number visitMemberSelect(MemberSelectTree node, Void p) {
-            Element e = wc.getTrees().getElement(getCurrentPath());
+            Element e = info.getTrees().getElement(getCurrentPath());
 
             if (e == null || (e.getKind() == ElementKind.CLASS && ((TypeElement) e).asType().getKind() == TypeKind.ERROR)) {
                 MemberSelectTree nue = node;
                 String selectedName = node.getIdentifier().toString();
 
                 if (selectedName.startsWith("$") && parameterNames.get(selectedName) != null) {
-                    nue = wc.getTreeMaker().MemberSelect(node.getExpression(), parameterNames.get(selectedName));
+                    nue = make.MemberSelect(node.getExpression(), parameterNames.get(selectedName));
                 }
 
                 if (nue.getExpression().getKind() == Kind.IDENTIFIER) {
@@ -570,21 +606,20 @@ public class JavaFixUtilities {
 
                     if (name.startsWith("$") && parameters.get(name) == null) {
                         //XXX: unbound variable, use identifier instead of member select - may cause problems?
-                        wc.rewrite(node, wc.getTreeMaker().Identifier(nue.getIdentifier()));
+                        rewrite(node, make.Identifier(nue.getIdentifier()));
                         return null;
                     }
                 }
 
-                wc.rewrite(node, nue);
-
+                rewrite(node, nue);
                 return super.visitMemberSelect(node, p);
             }
 
             //check correct dependency:
-            checkDependency(wc, e, canShowUI);
+            checkDependency(info, e, canShowUI);
 
             if (isStaticElement(e) && !inImport) {
-                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+                rewrite(node, make.QualIdent(e));
 
                 return null;
             } else {
@@ -600,9 +635,9 @@ public class JavaFixUtilities {
                 String nueName = parameterNames.get(name);
 
                 if (nueName != null) {
-                    VariableTree nue = wc.getTreeMaker().Variable(node.getModifiers(), nueName, node.getType(), node.getInitializer());
+                    VariableTree nue = make.Variable(node.getModifiers(), nueName, node.getType(), node.getInitializer());
 
-                    wc.rewrite(node, nue);
+                    rewrite(node, nue);
 
                     return super.visitVariable(nue, p);
                 }
@@ -619,7 +654,7 @@ public class JavaFixUtilities {
                 TreePath tp = parameters.get(name.toString());
 
                 if (tp != null) {
-                    wc.rewrite(node, tp.getLeaf());
+                    rewrite(node, tp.getLeaf());
                     return null;
                 }
             }
@@ -776,7 +811,7 @@ public class JavaFixUtilities {
                 }
 
                 if (result != null) {
-                    wc.rewrite(node, wc.getTreeMaker().Literal(result));
+                    rewrite(node, make.Literal(result));
 
                     return result;
                 }
@@ -811,7 +846,7 @@ public class JavaFixUtilities {
                 }
 
                 if (result != null) {
-                    wc.rewrite(node, wc.getTreeMaker().Literal(result));
+                    rewrite(node, make.Literal(result));
 
                     return result;
                 }
@@ -823,9 +858,9 @@ public class JavaFixUtilities {
         @Override
         public Number visitBlock(BlockTree node, Void p) {
             List<? extends StatementTree> nueStatement = resolveMultiParameters(node.getStatements());
-            BlockTree nue = wc.getTreeMaker().Block(nueStatement, node.isStatic());
+            BlockTree nue = make.Block(nueStatement, node.isStatic());
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
 
             return super.visitBlock(nue, p);
         }
@@ -833,9 +868,9 @@ public class JavaFixUtilities {
         @Override
         public Number visitCase(CaseTree node, Void p) {
             List<? extends StatementTree> statements = (List<? extends StatementTree>) resolveMultiParameters(node.getStatements());
-            CaseTree nue = wc.getTreeMaker().Case(node.getExpression(), statements);
+            CaseTree nue = make.Case(node.getExpression(), statements);
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
             return super.visitCase(node, p);
         }
 
@@ -843,9 +878,9 @@ public class JavaFixUtilities {
         public Number visitMethodInvocation(MethodInvocationTree node, Void p) {
             List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
             List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
-            MethodInvocationTree nue = wc.getTreeMaker().MethodInvocation(typeArgs, node.getMethodSelect(), args);
+            MethodInvocationTree nue = make.MethodInvocation(typeArgs, node.getMethodSelect(), args);
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
 
             return super.visitMethodInvocation(nue, p);
         }
@@ -854,27 +889,27 @@ public class JavaFixUtilities {
         public Number visitNewClass(NewClassTree node, Void p) {
             List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
             List<? extends ExpressionTree> args = resolveMultiParameters(node.getArguments());
-            NewClassTree nue = wc.getTreeMaker().NewClass(node.getEnclosingExpression(), typeArgs, node.getIdentifier(), args, node.getClassBody());
+            NewClassTree nue = make.NewClass(node.getEnclosingExpression(), typeArgs, node.getIdentifier(), args, node.getClassBody());
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
             return super.visitNewClass(nue, p);
         }
 
         @Override
         public Number visitParameterizedType(ParameterizedTypeTree node, Void p) {
             List<? extends ExpressionTree> typeArgs = (List<? extends ExpressionTree>) resolveMultiParameters(node.getTypeArguments());
-            ParameterizedTypeTree nue = wc.getTreeMaker().ParameterizedType(node.getType(), typeArgs);
+            ParameterizedTypeTree nue = make.ParameterizedType(node.getType(), typeArgs);
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
             return super.visitParameterizedType(node, p);
         }
 
         @Override
         public Number visitSwitch(SwitchTree node, Void p) {
             List<? extends CaseTree> cases = (List<? extends CaseTree>) resolveMultiParameters(node.getCases());
-            SwitchTree nue = wc.getTreeMaker().Switch(node.getExpression(), cases);
+            SwitchTree nue = make.Switch(node.getExpression(), cases);
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
             return super.visitSwitch(node, p);
         }
 
@@ -882,9 +917,9 @@ public class JavaFixUtilities {
         public Number visitTry(TryTree node, Void p) {
             List<? extends Tree> resources = (List<? extends Tree>) resolveMultiParameters(node.getResources());
             List<? extends CatchTree> catches = (List<? extends CatchTree>) resolveMultiParameters(node.getCatches());
-            TryTree nue = wc.getTreeMaker().Try(resources, node.getBlock(), catches, node.getFinallyBlock());
+            TryTree nue = make.Try(resources, node.getBlock(), catches, node.getFinallyBlock());
 
-            wc.rewrite(node, nue);
+            rewrite(node, nue);
             return super.visitTry(node, p);
         }
 
@@ -908,6 +943,10 @@ public class JavaFixUtilities {
             }
 
             return result;
+        }
+
+        private void rewrite(Tree from, Tree to) {
+            rewriteFromTo.put(from, to);
         }
     }
 
@@ -1203,5 +1242,82 @@ public class JavaFixUtilities {
             }
         }
 
+    }
+
+    //TODO: from FileMovePlugin
+    private static class MoveFile extends SimpleRefactoringElementImplementation {
+
+        private FileObject toMove;
+        private final FileObject sourceRoot;
+        private final String targetFolderName;
+
+        public MoveFile(FileObject toMove, FileObject sourceRoot, String targetFolderName) {
+            this.toMove = toMove;
+            this.sourceRoot = sourceRoot;
+            this.targetFolderName = targetFolderName;
+        }
+
+        @Override
+        @Messages({"#{0} - original file name", "TXT_MoveFile=Move {0}"})
+        public String getText() {
+            return Bundle.TXT_MoveFile(toMove.getNameExt());
+        }
+
+        @Override
+        public String getDisplayText() {
+            return getText();
+        }
+
+        DataFolder sourceFolder;
+        DataObject source;
+        @Override
+        public void performChange() {
+            try {
+                FileObject target = FileUtil.createFolder(sourceRoot, targetFolderName);
+                DataFolder targetFolder = DataFolder.findFolder(target);
+                if (!toMove.isValid()) {
+                    String path = FileUtil.getFileDisplayName(toMove);
+                    Logger.getLogger(JavaFix.class.getName()).fine("Invalid FileObject " + path + "trying to recreate...");
+                    toMove = FileUtil.toFileObject(FileUtil.toFile(toMove));
+                    if (toMove==null) {
+                        Logger.getLogger(JavaFix.class.getName()).severe("Invalid FileObject " + path + "\n. File not found.");
+                        return;
+                    }
+                }
+                source = DataObject.find(toMove);
+                sourceFolder = source.getFolder();
+                source.move(targetFolder);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public void undoChange() {
+            try {
+                source.move(sourceFolder);
+            } catch (DataObjectNotFoundException ex) {
+                ex.printStackTrace();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return Lookup.EMPTY;
+        }
+
+        @Override
+        public FileObject getParentFile() {
+            return toMove;
+        }
+
+        @Override
+        public PositionBounds getPosition() {
+            return null;
+        }
     }
 }
