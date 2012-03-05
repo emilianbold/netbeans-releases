@@ -43,9 +43,9 @@
  */
 package org.netbeans.performance.j2se.setup;
 
+import java.io.IOException;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.jellytools.JellyTestCase;
-import java.io.*;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
 
 /**
@@ -54,7 +54,7 @@ import org.openide.util.Exceptions;
  *
  * @author  mmirilovic@netbeans.org
  */
-public class J2SESetup extends JellyTestCase {
+public class J2SESetup extends PerformanceTestCase2 {
 
     public J2SESetup(java.lang.String testName) {
         super(testName);
