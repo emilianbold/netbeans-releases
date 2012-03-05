@@ -87,7 +87,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         return semanticHighlights;
     }
 
-    public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
+    private Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
         return unusedUsesOffsetRanges;
     }
 
