@@ -489,6 +489,16 @@ public final class ModuleManager extends Modules {
         }
     }
 
+    private static int countEnabled(List<Module> toEnable) {
+        int cnt = 0;
+        for (Module m : toEnable) {
+            if (m.isEnabled()) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -1092,6 +1102,9 @@ public final class ModuleManager extends Modules {
                 toEnable.addAll(toEnableMore);
                 Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
                 continue;
+            }
+            if (countEnabled(toEnable) == 0) {
+                throw new InvalidException("No module could be enabled: " + toEnable);
             }
             installer.load(toEnable);
             NetigsoFramework.startFramework();
