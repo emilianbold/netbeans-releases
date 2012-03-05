@@ -724,11 +724,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (enclosingClass != null) {
                 List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
                 String clsName = enclosingClass.getName().getName();
-                if (clsName != null) {
+                NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
+                String fullyQualifiedClassName = VariousUtils.qualifyTypeNames(clsName, request.anchor, namespaceScope);
+                if (fullyQualifiedClassName != null) {
                     final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
                     final ElementFilter classFilter = ElementFilter.allOf(
                             ElementFilter.forFiles(fileObject), ElementFilter.allOf(superTypeIndices));
-                    Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(clsName)));
+                    Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(fullyQualifiedClassName)));
                     for (ClassElement classElement : classes) {
                         ElementFilter methodFilter = ElementFilter.allOf(
                                 ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
