@@ -111,6 +111,14 @@ public class ImportDataCreatorTest extends PHPTestBase {
         performTest("Homepage^Presenter", new Options(false, false, false));
     }
 
+    public void testImportData_07() throws Exception {
+        performTest("class ^Blah");
+    }
+
+    public void testImportData_08() throws Exception {
+        performTest("class ^Blah");
+    }
+
     private void performTest(String caretLine) throws Exception {
         performTest(caretLine, null);
     }
