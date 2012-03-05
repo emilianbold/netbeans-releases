@@ -793,12 +793,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
-            Collection<? extends TypeScope> types = Collections.emptyList();
 
             if (staticContext && varName.startsWith("$")) {
                 return;
             }
-            types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+            Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext  = false;
             boolean staticLateBindingContext = false;
             if (varName.equals("self")) { //NOI18N
