@@ -130,11 +130,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         cancelled = false;
     }
 
-    public @Override int getPriority() {
+    @Override
+    public int getPriority() {
         return 0;
     }
 
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
