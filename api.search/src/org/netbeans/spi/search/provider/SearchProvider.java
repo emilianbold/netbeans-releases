@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.openide.NotificationLineSupport;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 
@@ -205,10 +206,15 @@ public abstract class SearchProvider {
          * Test that the current settings specified in associated form are
          * usable for searching.
          *
+         * @param notificationLineSupport You can set warning, info or error
+         * message shown in the dialog using this object. If you set warning or
+         * error messages, call {@link NotificationLineSupport#clearMessages()}
+         * before this method returns true.
          * @return True if search can start with the current settings, false
          * otherwise.
          */
-        public abstract boolean isUsable();
+        public abstract boolean isUsable(
+                @NonNull NotificationLineSupport notificationLineSupport);
 
         /**
          * Adds a <code>ChangeListener</code> to the listener list. The same

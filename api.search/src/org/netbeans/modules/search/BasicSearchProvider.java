@@ -60,6 +60,7 @@ import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -204,8 +205,15 @@ public class BasicSearchProvider extends SearchProvider {
         }
 
         @Override
-        public boolean isUsable() {
-            return form.isUsable();
+        public boolean isUsable(NotificationLineSupport notifySupport) {
+            boolean usable = form.isUsable();
+            if (!usable) {
+                notifySupport.setErrorMessage(UiUtils.getText(
+                        "BasicSearchForm.txtErrorMissingCriteria"));    //NOI18N
+            } else {
+                notifySupport.clearMessages();
+            }
+            return usable;
         }
 
         @Override

@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
+import org.openide.NotificationLineSupport;
 
 class HgSearchPresenter extends SearchProvider.Presenter implements PropertyChangeListener {
 
@@ -63,7 +64,7 @@ class HgSearchPresenter extends SearchProvider.Presenter implements PropertyChan
         return form;
     }
 
-    @Override public boolean isUsable() {
+    @Override public boolean isUsable(NotificationLineSupport nls) {
         return getForm().isUsable();
     }
 

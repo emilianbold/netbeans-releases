@@ -151,7 +151,6 @@ public class SearchPanel extends JPanel implements FocusListener,
         }
         initLocalStrings();
         initAccessibility();
-        okButton.setEnabled(selectedPresenter.isUsable());
     }
 
     private void initLocalStrings() throws MissingResourceException {
@@ -231,6 +230,7 @@ public class SearchPanel extends JPanel implements FocusListener,
                 this);
 
         dialogDescriptor.setTitle(NbBundle.getMessage(getClass(), titleMsgKey));
+        dialogDescriptor.createNotificationLineSupport();
 
         dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);
         dialog.addWindowListener(new DialogCloseListener());
@@ -242,6 +242,7 @@ public class SearchPanel extends JPanel implements FocusListener,
         dialog.requestFocus();
         this.requestFocusInWindow();
         updateHelp();
+        updateUsability();
         setCurrentlyShown(this);
     }
 
@@ -274,7 +275,8 @@ public class SearchPanel extends JPanel implements FocusListener,
             int i = tabbedPane.getSelectedIndex();
             PresenterProxy pp = presenters.get(i);
             selectedPresenter = pp.getPresenter();
-            okButton.setEnabled(selectedPresenter.isUsable());
+            dialogDescr.getNotificationLineSupport().clearMessages();
+            updateUsability();
             updateHelp();
         }
     }
@@ -365,9 +367,15 @@ public class SearchPanel extends JPanel implements FocusListener,
         p.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                okButton.setEnabled(p.isUsable());
+                okButton.setEnabled(p.isUsable(
+                        dialogDescr.getNotificationLineSupport()));
             }
         });
+    }
+
+    private void updateUsability() {
+        okButton.setEnabled(selectedPresenter.isUsable(
+                dialogDescr.getNotificationLineSupport()));
     }
 
     /**
