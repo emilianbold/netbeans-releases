@@ -89,6 +89,14 @@ public class UsedNamesComputerTest extends PHPTestBase {
         performTest("useCase_06", "Homepage^Presenter");
     }
 
+    public void testUseCase_07() throws Exception {
+        performTest("useCase_07", "class Class^Name {");
+    }
+
+    public void testUseCase_08() throws Exception {
+        performTest("useCase_08", "class Class^Name {");
+    }
+
     protected void performTest(String fileName, String caretLine) throws Exception {
         String exactFileName = "testfiles/actions/" + fileName + ".php";
         Map<String, List<UsedNamespaceName>> testResult = getTestResult(exactFileName, caretLine);
