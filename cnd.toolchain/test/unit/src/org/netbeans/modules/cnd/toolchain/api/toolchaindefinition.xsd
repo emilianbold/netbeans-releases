@@ -211,11 +211,28 @@
                 <xs:element ref="tns:multithreading"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:standard"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:language_extension"  minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:cpp_standard"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:library"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:output_object_file"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:dependency_generation"  minOccurs="0" maxOccurs="1"/>
                 <xs:element ref="tns:precompiled_header"  minOccurs="0" maxOccurs="1"/>
             </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="cpp_standard">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="tns:default" minOccurs="0" maxOccurs="1"/>
+                <xs:element ref="tns:cpp11" minOccurs="0" maxOccurs="1"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="cpp11">
+        <xs:complexType>
+            <xs:attribute name="flags" type="xs:string" use="optional" />
+            <xs:attribute name="default" type="xs:string" use="optional" />
         </xs:complexType>
     </xs:element>
 

@@ -59,7 +59,19 @@ import java.util.logging.Logger;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import static org.netbeans.modules.cnd.api.toolchain.ToolchainManager.*;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.AlternativePath;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.BaseFolder;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CMakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.LinkerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.MakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.PredefinedMacro;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.QMakeDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolDescriptor;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -594,6 +606,7 @@ public final class ToolchainManagerImpl {
         writeMultithreading(doc, element, compiler);
         writeStandard(doc, element, compiler);
         writeLanguageExtension(doc, element, compiler);
+        writeCppStandatd(doc, element, compiler);
         writeLibrary(doc, element, compiler);
         if (compiler.getOutputObjectFileFlags() != null) {
             e = doc.createElement("output_object_file"); // NOI18N
@@ -752,6 +765,29 @@ public final class ToolchainManagerImpl {
         element.appendChild(e);
         Element c;
         String[] names = new String[]{"none", "default", "all"}; // NOI18N
+        for (int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i) {
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeCppStandatd(Document doc, Element element, CompilerDescriptor compiler) {
+        String[] flags = compiler.getCppStandardFlags();
+        if (flags == null) {
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl) compiler).tool.cppStandard.default_selection;
+        }
+        Element e = doc.createElement("cpp_standard"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"default", "cpp11"}; // NOI18N
         for (int i = 0; i < flags.length; i++) {
             c = doc.createElement(names[i]);
             c.setAttribute("flags", flags[i]); // NOI18N
@@ -1080,6 +1116,7 @@ public final class ToolchainManagerImpl {
         MultiThreading multithreading = new MultiThreading();
         Standard standard = new Standard();
         LanguageExtension languageExtension = new LanguageExtension();
+        CppStandard cppStandard = new CppStandard();
         Library library = new Library();
 
         public boolean isValid() {
@@ -1272,6 +1309,27 @@ public final class ToolchainManagerImpl {
         public String[] values() {
             if (isValid()) {
                 return new String[]{old, legacy, default_standard, modern};
+            }
+            return null;
+        }
+    }
+
+    /**
+     * class package-local for testing only
+     */
+    static final class CppStandard {
+
+        String cppDefault;
+        String cpp11;
+        int default_selection = 0;
+
+        public boolean isValid() {
+            return cppDefault != null && cpp11 != null;
+        }
+
+        public String[] values() {
+            if (isValid()) {
+                return new String[]{cppDefault, cpp11};
             }
             return null;
         }
@@ -1733,6 +1791,19 @@ public final class ToolchainManagerImpl {
                     a.bits_64 = flags;
                     if (isDefault) {
                         a.default_selection = 2;
+                    }
+                }
+            } else if (path.indexOf(".cpp_standard.") > 0) { // NOI18N
+                CppStandard st = c.cppStandard;
+                if (path.endsWith(".default")) { // NOI18N
+                    st.cppDefault = flags;
+                    if (isDefault) {
+                        st.default_selection = 0;
+                    }
+                } else if (path.endsWith(".cpp11")) { // NOI18N
+                    st.cpp11 = flags;
+                    if (isDefault) {
+                        st.default_selection = 1;
                     }
                 }
             } else if (path.endsWith(".strip")) { // NOI18N
@@ -2217,6 +2288,11 @@ public final class ToolchainManagerImpl {
         @Override
         public String[] getArchitectureFlags() {
             return tool.architecture.values();
+        }
+
+        @Override
+        public String[] getCppStandardFlags() {
+            return tool.cppStandard.values();
         }
 
         @Override
