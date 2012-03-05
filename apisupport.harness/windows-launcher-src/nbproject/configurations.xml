@@ -69,7 +69,7 @@
         <ccTool>
           <developmentMode>5</developmentMode>
           <architecture>2</architecture>
-          <commandLine>-mno-cygwin</commandLine>
+          <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>
             <Elem>NBEXEC_DLL="/lib/nbexec.dll"</Elem>
           </preprocessorList>

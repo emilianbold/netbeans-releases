@@ -44,8 +44,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-m64 -mno-cygwin
-CXXFLAGS=-m64 -mno-cygwin
+CCFLAGS=-m64 -mno-cygwin -static-libgcc -static-libstdc++
+CXXFLAGS=-m64 -mno-cygwin -static-libgcc -static-libstdc++
 
 # Fortran Compiler Flags
 FFLAGS=
