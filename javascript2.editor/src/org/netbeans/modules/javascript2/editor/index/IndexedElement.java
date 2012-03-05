@@ -65,15 +65,21 @@ import org.openide.filesystems.FileObject;
 public class IndexedElement extends JsElementImpl {
     
     private final JsElement.Kind jsKind;
+    private final String fqn;
     
-    public IndexedElement(FileObject fileObject, String name, boolean isDeclared, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
+    public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers) {
         super(fileObject, name, isDeclared, offsetRange, modifiers);
         this.jsKind = kind;
+        this.fqn = fqn;
     }
 
     @Override
     public Kind getJSKind() {
         return this.jsKind;
+    }
+    
+    public String getFQN() {
+        return this.fqn;
     }
     
     public static IndexDocument createDocument(JsObject object, IndexingSupport support, Indexable indexable) {
@@ -114,12 +120,13 @@ public class IndexedElement extends JsElementImpl {
     public static IndexedElement create(IndexResult indexResult) {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
+        String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
         boolean isDeclared = "1".equals(indexResult.getValue(JsIndex.FIELD_IS_DECLARED)); //NOI18N
         JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
         IndexedElement result;
         if (!kind.isFunction()) {
-            result = new IndexedElement(fo, name, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+            result = new IndexedElement(fo, name, fqn, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
         } else {
             Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
             Collection<String>rTypes = new ArrayList<String>();
@@ -128,7 +135,7 @@ public class IndexedElement extends JsElementImpl {
             }
             String paramText = indexResult.getValue(JsIndex.FIELD_PARAMETERS);
             LinkedHashMap<String, Collection<String>> params  = decodeParameters(paramText);
-            result = new FunctionIndexedElement(fo, name, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC), params, rTypes);
+            result = new FunctionIndexedElement(fo, name, fqn, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC), params, rTypes);
         }
         return result;
     }
@@ -248,18 +255,18 @@ public class IndexedElement extends JsElementImpl {
                 for (StringTokenizer stringTokenizer = new StringTokenizer(returnTypesText, ","); stringTokenizer.hasMoreTokens();) {
                     returnTypes.add(stringTokenizer.nextToken());
                 }
-                return new FunctionIndexedElement(fo, name, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
+                return new FunctionIndexedElement(fo, name, null, jsKind, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parameters, returnTypes);
             }
         }
-        return new IndexedElement(fo, name, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
+        return new IndexedElement(fo, name, null, isDeclared, jsKind,OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC));
     }
     
     public static class FunctionIndexedElement extends IndexedElement {
         private final LinkedHashMap<String, Collection<String>> parameters;
         private final Collection<String> returnTypes;
         
-        public FunctionIndexedElement(FileObject fileObject, String name, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes) {
-            super(fileObject, name, true, kind, offsetRange, modifiers);
+        public FunctionIndexedElement(FileObject fileObject, String name, String fqn, Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, LinkedHashMap<String, Collection<String>> parameters, Collection<String> returnTypes) {
+            super(fileObject, name, fqn, true, kind, offsetRange, modifiers);
             this.parameters = parameters;
             this.returnTypes = returnTypes;
         }

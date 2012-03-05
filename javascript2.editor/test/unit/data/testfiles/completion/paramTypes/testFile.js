@@ -12,3 +12,4 @@ MyParamTestContext.definedInOtherFile = function (param1) {
 
 MyParamTestContext.definedInOtherFile(22);
 
+formatter.print("text");
