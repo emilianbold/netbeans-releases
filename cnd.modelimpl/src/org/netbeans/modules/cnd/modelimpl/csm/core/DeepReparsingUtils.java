@@ -78,7 +78,7 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = CndUtils.isDebugMode();
+    private static final boolean TRACE = false; // CndUtils.isDebugMode();
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
     private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
     private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
