@@ -50,8 +50,18 @@ import java.util.List;
  */
 public interface DocumentationProvider {
 
-    public List<Type> getReturnType(Node node);
+    /**
+     * Gets possible return types get from the method.
+     * @param node of the javaScript code
+     * @return list of potential return types, never {@code null}
+     */
+    List<Type> getReturnType(Node node);
 
-    public List<DocParameter> getParameters(Node node);
+    /**
+     * Gets parameters of the method.
+     * @param node of the javaScript code
+     * @return list of parameters, never {@code null}
+     */
+    List<DocParameter> getParameters(Node node);
 
 }
