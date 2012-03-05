@@ -142,6 +142,10 @@ public class FixImportsHelper {
             if (index != null) {
                 Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
                 for (IndexedClass indexedClass : classes) {
+                    if (!indexedClass.getName().equals(missingClass)) {
+                        continue;
+                    }
+
                     if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
                         addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.CLASS, result);
                     }
