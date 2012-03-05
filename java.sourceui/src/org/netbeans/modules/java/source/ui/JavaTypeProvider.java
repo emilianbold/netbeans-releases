@@ -389,7 +389,7 @@ public class JavaTypeProvider implements TypeProvider {
 
     }
 
-    private static String removeNonJavaChars(String text) {
+    static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
 
        for( int i = 0; i < text.length(); i++) {

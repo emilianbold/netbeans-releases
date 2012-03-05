@@ -53,6 +53,7 @@ import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.ui.Icons;
+import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.cookies.EditCookie;
@@ -121,6 +122,9 @@ public final class FastTypeProvider implements TypeProvider {
     public void computeTypeNames(Context context, Result result) {
         StringBuilder pattern = new StringBuilder();
         boolean sensitive = true;
+        
+        String quotedText = Pattern.quote(context.getText());
+        
         switch (context.getSearchType()) {
             case CASE_INSENSITIVE_EXACT_NAME:
                 sensitive = false;
@@ -128,17 +132,22 @@ public final class FastTypeProvider implements TypeProvider {
                 pattern.append(createCamelCaseRegExp(context.getText(), sensitive));
                 break;
             case EXACT_NAME:
-                pattern.append("^").append(context.getText()).append("$"); // NOI18N
+                pattern.append("^").append(quotedText).append("$"); // NOI18N
                 break;
             case CASE_INSENSITIVE_PREFIX:
                 sensitive = false;
             case PREFIX:
-                pattern.append("^").append(context.getText()); // NOI18N
+                pattern.append("^").append(quotedText); // NOI18N
                 break;
             case CASE_INSENSITIVE_REGEXP:
                 sensitive = false;
             case REGEXP:
-                pattern.append(context.getText());
+                pattern.append(
+                        NameMatcherFactory.wildcardsToRegexp(
+                            JavaTypeProvider.removeNonJavaChars(context.getText()),
+                            false
+                        )
+                );
                 break;
         }
         Pattern searchPattern = Pattern.compile(
