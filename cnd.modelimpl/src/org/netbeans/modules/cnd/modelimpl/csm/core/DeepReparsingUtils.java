@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentF
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -78,8 +77,8 @@ import org.openide.util.RequestProcessor;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false; // CndUtils.isDebugMode();
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
+    private static final boolean TRACE = LOG.isLoggable(Level.FINE);
     private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
     private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
     
@@ -140,9 +139,9 @@ public final class DeepReparsingUtils {
                         if (val > 10) {
                             LOG.log(Level.INFO, "there are {0} pending partial check task", val);
                         }
+                        FileContentSignature prevSig = fileImpl.getSignature();
                         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
                         fileImpl.markReparseNeeded(false);
-                        FileContentSignature prevSig = fileImpl.getSignature();
                         try {
                             // wait file parse
                             fileImpl.scheduleParsing(true);

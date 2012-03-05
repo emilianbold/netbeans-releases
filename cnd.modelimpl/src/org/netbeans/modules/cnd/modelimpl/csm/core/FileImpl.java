@@ -1646,7 +1646,7 @@ public final class FileImpl implements CsmFile,
                             System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                         }
                         boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
-                                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                                ParserQueue.Position.IMMEDIATE, false, ParserQueue.FileAction.NOTHING);
                         if (!added) {
                             return;
                         }
