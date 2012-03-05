@@ -247,7 +247,8 @@ public class JsFormatter implements Formatter {
             } else if (next.next() != null
                     && next.next().getKind() != FormatToken.Kind.EOL) {
                 if (remove) {
-                    return remove(doc, comma.getOffset() + comma.getText().length(), next.getText().length(), offsetDiff);
+                    return remove(doc, comma.getOffset() + comma.getText().length(),
+                            next.getText().length(), offsetDiff);
                 } else if (next.getText().length() != 1) {
                     return replace(doc, comma.getOffset() + comma.getText().length(),
                             next.getText().toString(), " ", offsetDiff); // NOI18N
@@ -262,13 +263,18 @@ public class JsFormatter implements Formatter {
 
         // find previous non white token
         FormatToken start = null;
+        boolean containsEol = false;
+
         for (int i = index - 1; i >= 0; i--) {
             FormatToken current = tokens.get(i);
-            if (current != null && !current.isVirtual()
-                    && current.getKind() != FormatToken.Kind.WHITESPACE
+            if (current != null && !current.isVirtual()) {
+                if(current.getKind() != FormatToken.Kind.WHITESPACE
                     && current.getKind() != FormatToken.Kind.EOL) {
-                start = current;
-                break;
+                    start = current;
+                    break;
+                } else if (current.getKind() == FormatToken.Kind.EOL){
+                    containsEol = true;
+                }
             }
         }
 
@@ -280,8 +286,15 @@ public class JsFormatter implements Formatter {
                 if (!remove) {
                     return insert(doc, start.getOffset(), " ", offsetDiff); // NOI18N
                 }
-            } else {
-                // FIXME
+            // TODO is this right ? not consistent with java and php
+            } else if (!containsEol) {
+                if (remove) {
+                    return remove(doc, start.getOffset(),
+                            comma.getOffset() - start.getOffset(), offsetDiff);
+                } else if (start.getText().length() != 1) {
+                    return replace(doc, start.getOffset(),
+                            start.getText().toString(), " ", offsetDiff); // NOI18N
+                }
             }
         }
         return offsetDiff;

@@ -2310,7 +2310,7 @@ var Position = {
     realOffset: function(element) {
         var valueT = 0, valueL = 0;
         do {
-            valueT += element.scrollTop  || 0;
+            valueT += element.scrollTop || 0;
             valueL += element.scrollLeft || 0;
             element = element.parentNode;
         } while (element);
@@ -2320,7 +2320,7 @@ var Position = {
     cumulativeOffset: function(element) {
         var valueT = 0, valueL = 0;
         do {
-            valueT += element.offsetTop  || 0;
+            valueT += element.offsetTop || 0;
             valueL += element.offsetLeft || 0;
             element = element.offsetParent;
         } while (element);
@@ -2330,7 +2330,7 @@ var Position = {
     positionedOffset: function(element) {
         var valueT = 0, valueL = 0;
         do {
-            valueT += element.offsetTop  || 0;
+            valueT += element.offsetTop || 0;
             valueL += element.offsetLeft || 0;
             element = element.offsetParent;
             if (element) {
@@ -2396,7 +2396,7 @@ var Position = {
 
         var element = forElement;
         do {
-            valueT += element.offsetTop  || 0;
+            valueT += element.offsetTop || 0;
             valueL += element.offsetLeft || 0;
 
             // Safari fix
@@ -2408,7 +2408,7 @@ var Position = {
         element = forElement;
         do {
             if (!window.opera || element.tagName == 'BODY') {
-                valueT -= element.scrollTop  || 0;
+                valueT -= element.scrollTop || 0;
                 valueL -= element.scrollLeft || 0;
             }
         } while (element = element.parentNode);
@@ -2465,7 +2465,7 @@ var Position = {
         var width   = element.clientWidth;
         var height  = element.clientHeight;
 
-        element._originalLeft   = left - parseFloat(element.style.left  || 0);
+        element._originalLeft   = left - parseFloat(element.style.left || 0);
         element._originalTop    = top  - parseFloat(element.style.top || 0);
         element._originalWidth  = element.style.width;
         element._originalHeight = element.style.height;
@@ -2483,7 +2483,7 @@ var Position = {
         Position.prepare();
 
         element.style.position = 'relative';
-        var top  = parseFloat(element.style.top  || 0) - (element._originalTop || 0);
+        var top  = parseFloat(element.style.top || 0) - (element._originalTop || 0);
         var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
 
         element.style.top    = top + 'px';
@@ -2500,7 +2500,7 @@ if (/Konqueror|Safari|KHTML/.test(navigator.userAgent)) {
     Position.cumulativeOffset = function(element) {
         var valueT = 0, valueL = 0;
         do {
-            valueT += element.offsetTop  || 0;
+            valueT += element.offsetTop || 0;
             valueL += element.offsetLeft || 0;
             if (element.offsetParent == document.body)
                 if (Element.getStyle(element, 'position') == 'absolute') break;
