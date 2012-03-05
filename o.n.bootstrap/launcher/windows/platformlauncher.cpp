@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -122,6 +122,7 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
     }
     jvmLauncher.getJavaPath(jdkhome);
 
+    deteteNewClustersFile();
     prepareOptions();
 
     if (nextAction.empty()) {
@@ -357,6 +358,21 @@ bool PlatformLauncher::processAutoUpdateCL() {
     fclose(file);
     delete[] str;
     return true;
+}
+
+void PlatformLauncher::deteteNewClustersFile() {
+    logMsg("deteteNewClustersFile()...");
+    if (userDir.empty()) {
+        logMsg("\tuserdir empty, quiting");
+        return;
+    }
+    string listPath = userDir;
+    listPath += "\\update\\download\\netbeans.dirs";
+
+    if (fileExists(listPath.c_str())) {
+        DeleteFileA(listPath.c_str());
+        logMsg("%s file deleted.", listPath.c_str());
+    }
 }
 
 // check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
