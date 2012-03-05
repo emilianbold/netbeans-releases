@@ -1103,7 +1103,7 @@ public final class ModuleManager extends Modules {
                 Util.err.log(Level.FINE, "Adding {0} and trying again", toEnableMore);
                 continue;
             }
-            if (countEnabled(toEnable) == 0) {
+            if (!toEnable.isEmpty() && countEnabled(toEnable) == 0) {
                 throw new InvalidException("No module could be enabled: " + toEnable);
             }
             installer.load(toEnable);
