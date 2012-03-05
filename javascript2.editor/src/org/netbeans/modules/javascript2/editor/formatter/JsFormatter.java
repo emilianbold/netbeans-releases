@@ -280,7 +280,7 @@ public class JsFormatter implements Formatter {
                     && current.getKind() != FormatToken.Kind.EOL) {
                     start = current;
                     break;
-                } else if (current.getKind() == FormatToken.Kind.EOL){
+                } else if (current.getKind() == FormatToken.Kind.EOL) {
                     containsEol = true;
                 }
             }

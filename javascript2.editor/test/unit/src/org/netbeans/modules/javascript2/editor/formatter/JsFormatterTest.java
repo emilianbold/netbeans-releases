@@ -41,14 +41,24 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.prefs.Preferences;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Petr Hejl
  */
 public class JsFormatterTest extends JsTestBase {
+
+    private String FORMAT_START_MARK = "/*FORMAT_START*/"; //NOI18N
+    private String FORMAT_END_MARK = "/*FORMAT_END*/"; //NOI18N
 
     public JsFormatterTest(String testName) {
         super(testName);
@@ -152,5 +162,67 @@ public class JsFormatterTest extends JsTestBase {
 
     public void testPrototype() throws Exception {
         reformatFileContents("testfiles/formatter/prototype.js",new IndentPrefs(4, 4));
+    }
+
+    public void testInitialIndentation1() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.initialIndent, 4);
+        reformatFileContents("testfiles/formatter/initialIndentation1.js", options);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
+        FileObject fo = getTestFile(file);
+        assertNotNull(fo);
+
+        String text = read(fo);
+
+        int formatStart = 0;
+        int formatEnd = text.length();
+        int startMarkPos = text.indexOf(FORMAT_START_MARK);
+
+        if (startMarkPos >= 0){
+            formatStart = startMarkPos;
+            text = text.substring(0, formatStart) + text.substring(formatStart + FORMAT_START_MARK.length());
+            formatEnd = text.indexOf(FORMAT_END_MARK);
+            text = text.substring(0, formatEnd) + text.substring(formatEnd + FORMAT_END_MARK.length());
+            formatEnd --;
+            if (formatEnd == -1){
+                throw new IllegalStateException();
+            }
+        }
+
+        BaseDocument doc = getDocument(text);
+        assertNotNull(doc);
+
+
+        IndentPrefs preferences = new IndentPrefs(4, 4);
+        Formatter formatter = getFormatter(preferences);
+        //assertNotNull("getFormatter must be implemented", formatter);
+
+        setupDocumentIndentation(doc, preferences);
+
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer)value).intValue());
+            }
+            else if (value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+            else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean)value).toString());
+            }
+	    else if (value instanceof CodeStyle.BracePlacement) {
+		prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+	    }
+	    else if (value instanceof CodeStyle.WrapStyle) {
+		prefs.put(option, ((CodeStyle.WrapStyle)value).name());
+	    }
+        }
+
+        format(doc, formatter, formatStart, formatEnd, false);
+        String after = doc.getText(0, doc.getLength());
+        assertDescriptionMatches(file, after, false, ".formatted");
     }
 }
