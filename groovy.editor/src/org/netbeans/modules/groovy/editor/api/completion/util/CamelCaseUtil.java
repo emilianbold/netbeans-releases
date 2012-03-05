@@ -67,6 +67,10 @@ public class CamelCaseUtil {
         List<String> splittedClassName = splitByUpperCases(longName);
         List<String> splittedPrefixes = splitByUpperCases(camelCasePrefix);
 
+        if (splittedPrefixes.size() > splittedClassName.size()) {
+            return false;
+        }
+
         for (int i = 0; i < splittedPrefixes.size(); i++) {
             if (splittedClassName.get(i).startsWith(splittedPrefixes.get(i)) == false) {
                 return false;

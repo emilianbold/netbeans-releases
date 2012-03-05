@@ -46,17 +46,16 @@ package org.netbeans.modules.groovy.editor.api;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -71,25 +70,18 @@ import org.openide.util.Exceptions;
 public final class GroovyIndex {
 
     private static final Logger LOG = Logger.getLogger(GroovyIndex.class.getName());
-
     private static final GroovyIndex EMPTY = new GroovyIndex(null);
-    
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
-
     private static String clusterUrl = null;
-
     private final QuerySupport querySupport;
 
-    /** Creates a new instance of JsIndex */
+
     private GroovyIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
     }
 
     /**
      * Get the index. Use wisely multiple calls are expensive.
-     *
-     * @param roots
-     * @return
      */
     public static GroovyIndex get(Collection<FileObject> roots) {
         try {
@@ -131,11 +123,6 @@ public final class GroovyIndex {
         }
 
         final Set<IndexResult> result = new HashSet<IndexResult>();
-
-        //        if (!isValid()) {
-        //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
-        //            return;
-        //        }
         String field;
 
         switch (kind) {
@@ -193,7 +180,6 @@ public final class GroovyIndex {
                     if (in != null) {
                         // Superslow, make faster 
                         StringBuilder sb = new StringBuilder();
-//                        String prefix = null;
                         int lastIndex = 0;
                         int idx;
                         do {
@@ -207,11 +193,7 @@ public final class GroovyIndex {
                             }
                             idx = nextUpper;
                             String token = classFqn.substring(lastIndex, idx == -1 ? classFqn.length(): idx);
-//                            if ( lastIndex == 0 ) {
-//                                prefix = token;
-//                            }
                             sb.append(token); 
-                            // TODO - add in Ruby chars here?
                             sb.append( idx != -1 ?  "[\\p{javaLowerCase}\\p{Digit}_\\$]*" : ".*"); // NOI18N         
                             lastIndex = idx;
                         }
@@ -236,7 +218,6 @@ public final class GroovyIndex {
             if (attrs != null) {
                 int flags = IndexedElement.stringToFlag(attrs, 0);
                 isClass = (flags & IndexedClass.MODULE) == 0;
-                
             }
 
             if (skipClasses && isClass) {
@@ -275,10 +256,6 @@ public final class GroovyIndex {
         //    public void searchByCriteria(final String name, final ClassIndex.NameKind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> result) throws IOException {
         final Set<IndexResult> result = new HashSet<IndexResult>();
 
-        //        if (!isValid()) {
-        //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
-        //            return;
-        //        }
         String field = GroovyIndexer.METHOD_NAME;
         QuerySupport.Kind originalKind = kind;
         if (kind == QuerySupport.Kind.EXACT) {
@@ -288,16 +265,7 @@ public final class GroovyIndex {
             kind = QuerySupport.Kind.PREFIX;
         }
 
-        // No point in doing case insensitive searches on method names because
-        // method names in Ruby are always case insensitive anyway
-        //            case CASE_INSENSITIVE_PREFIX:
-        //            case CASE_INSENSITIVE_REGEXP:
-        //                field = RubyIndexer.FIELD_CASE_INSENSITIVE_METHOD_NAME;
-        //                break;
-
         search(field, name, kind, result);
-
-        //return Collections.unmodifiableSet(result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
@@ -340,7 +308,7 @@ public final class GroovyIndex {
                             if (!n.matches(name)) {
                                 continue;
                             }
-                        } catch (Exception e) {
+                        } catch (PatternSyntaxException e) {
                             // Silently ignore regexp failures in the search expression
                         }
                     } else if (originalKind == QuerySupport.Kind.EXACT) {
@@ -359,43 +327,6 @@ public final class GroovyIndex {
                     methods.add(createMethod(signature, map, inherited));
                 }
             }
-
-// XXX looks like copied from Ruby - getters and setters for properties are already indexed as methods
-//            String[] attributes = map.getValues(GroovyIndexer.ATTRIBUTE_NAME);
-//
-//            if (attributes != null) {
-//                for (String signature : attributes) {
-//                    // Skip weird methods... Think harder about this
-//                    if (((name == null) || (name.length() == 0)) &&
-//                            !Character.isLowerCase(signature.charAt(0))) {
-//                        continue;
-//                    }
-//
-//                    // Lucene returns some inexact matches, TODO investigate why this is necessary
-//                    if (kind == NameKind.PREFIX && !signature.startsWith(name)) {
-//                        continue;
-//                    } else if (kind == NameKind.CASE_INSENSITIVE_PREFIX && !signature.regionMatches(true, 0, name, 0, name.length())) {
-//                        continue;
-//                    } else if (kind == NameKind.CASE_INSENSITIVE_REGEXP && !signature.matches(name)) {
-//                        continue;
-//                    } else if (originalKind == NameKind.EXACT_NAME) {
-//                        // Make sure the name matches exactly
-//                        // We know that the prefix is correct from the first part of
-//                        // this if clause, by the signature may have more
-//                        if (((signature.length() > name.length()) &&
-//                                //(signature.charAt(name.length()) != '(')) &&
-//                                (signature.charAt(name.length()) != ';'))) {
-//                            continue;
-//                        }
-//                    }
-//
-//                    // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
-//                    assert map != null;
-//                    // Create method for the attribute
-//                    methods.add(createMethod(signature, map, inherited));
-//                }
-//            }
-
         }
 
         return methods;
@@ -403,16 +334,9 @@ public final class GroovyIndex {
 
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
-
         boolean inherited = clz == null;
-
-        //    public void searchByCriteria(final String name, final ClassIndex.NameKind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> result) throws IOException {
         final Set<IndexResult> result = new HashSet<IndexResult>();
 
-        //        if (!isValid()) {
-        //            LOGGER.fine(String.format("LuceneIndex[%s] is invalid!\n", this.toString()));
-        //            return;
-        //        }
         String field = GroovyIndexer.FIELD_NAME;
         QuerySupport.Kind originalKind = kind;
         if (kind == QuerySupport.Kind.EXACT) {
@@ -422,16 +346,7 @@ public final class GroovyIndex {
             kind = QuerySupport.Kind.PREFIX;
         }
 
-        // No point in doing case insensitive searches on method names because
-        // method names in Ruby are always case insensitive anyway
-        //            case CASE_INSENSITIVE_PREFIX:
-        //            case CASE_INSENSITIVE_REGEXP:
-        //                field = RubyIndexer.FIELD_CASE_INSENSITIVE_METHOD_NAME;
-        //                break;
-
         search(field, name, kind, result);
-
-        //return Collections.unmodifiableSet(result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
         final Set<IndexedField> fields = new HashSet<IndexedField>();
@@ -472,7 +387,7 @@ public final class GroovyIndex {
                             if (!n.matches(name)) {
                                 continue;
                             }
-                        } catch (Exception e) {
+                        } catch (PatternSyntaxException e) {
                             // Silently ignore regexp failures in the search expression
                         }
                     } else if (originalKind == QuerySupport.Kind.EXACT) {
@@ -546,16 +461,6 @@ public final class GroovyIndex {
             return foundIt;
         }
 
-// XXX looks like copied from Ruby
-//        String extendsClass = null;
-//
-//        String classIn = null;
-//        int fqnIndex = classFqn.lastIndexOf("."); // NOI18N
-//
-//        if (fqnIndex != -1) {
-//            classIn = classFqn.substring(0, fqnIndex);
-//        }
-
         for (IndexResult map : result) {
             assert map != null;
 
@@ -593,74 +498,12 @@ public final class GroovyIndex {
                     }
                 }
             }
-
-// XXX looks like copied from Ruby - getters and setters for properties are already indexed as methods
-//            String[] attributes = map.getValues(GroovyIndexer.ATTRIBUTE_NAME);
-//
-//            if (attributes != null) {
-//                for (String attribute : attributes) {
-//                    // Skip weird methods like "[]" etc. in completion lists... TODO Think harder about this
-//                    if ((prefix.length() == 0) && !Character.isLowerCase(attribute.charAt(0))) {
-//                        continue;
-//                    }
-//
-//                    // Prevent duplicates when method is redefined
-//                    if (!seenSignatures.contains(attribute)) {
-//                        if (attribute.startsWith(prefix)) {
-//                            if (kind == NameKind.EXACT_NAME) {
-//                                // Ensure that the method is not longer than the prefix
-//                                if ((attribute.length() > prefix.length()) &&
-//                                        (attribute.charAt(prefix.length()) != '(') &&
-//                                        (attribute.charAt(prefix.length()) != ';')) {
-//                                    continue;
-//                                }
-//                            } else {
-//                                // REGEXP, CAMELCASE filtering etc. not supported here
-//                                assert (kind == NameKind.PREFIX) ||
-//                                (kind == NameKind.CASE_INSENSITIVE_PREFIX);
-//                            }
-//
-//                            seenSignatures.add(attribute);
-//
-//                            // TODO - create both getter and setter methods
-//                            IndexedMethod method = createMethod(attribute, map, inheriting);
-//                            method.setSmart(!haveRedirected);
-//                            method.setMethodType(IndexedMethod.MethodType.ATTRIBUTE);
-//                            methods.add(method);
-//                        }
-//                    }
-//                }
-//            }
         }
 
 //        if (extendsClass == null) {
             // XXX GroovyObject, GroovyScript
-            addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses, // NOI18N
-                true, true);
-// XXX looks like copied from Ruby
-//        } else {
-//            // We're not sure we have a fully qualified path, so try some different candidates
-//            if (!addMethodsFromClass(prefix, kind, extendsClass, methods, seenSignatures,
-//                        scannedClasses, haveRedirected, true)) {
-//                // Search by classIn
-//                String fqn = classIn;
-//
-//                while (fqn != null) {
-//                    if (addMethodsFromClass(prefix, kind, fqn + "." + extendsClass, methods,
-//                                seenSignatures, scannedClasses, haveRedirected, true)) {
-//                        break;
-//                    }
-//
-//                    int f = fqn.lastIndexOf("."); // NOI18N
-//
-//                    if (f == -1) {
-//                        break;
-//                    } else {
-//                        fqn = fqn.substring(0, f);
-//                    }
-//                }
-//            }
-//        }
+        addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses, // NOI18N
+            true, true);
 
         return foundIt;
     }
@@ -723,7 +566,6 @@ public final class GroovyIndex {
             if (signature.length() > attributeIndex+1) {
                 attributes = signature.substring(attributeIndex+1, signature.length());
             }
-
         }
 
         IndexedMethod m = IndexedMethod.create(this, methodSignature, type, clz, map, attributes, flags);
@@ -780,8 +622,7 @@ public final class GroovyIndex {
 
     private boolean search(String key, String name, QuerySupport.Kind kind, Set<IndexResult> result) {
         try {
-            //index.search(key, name, kind, ALL_SCOPE, result, null);
-            result.addAll(querySupport.query(key, name, kind,  (String[]) null));
+            result.addAll(querySupport.query(key, name, kind));
             return true;
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
@@ -825,5 +666,4 @@ public final class GroovyIndex {
 
         return clusterUrl;
     }
-    
 }
