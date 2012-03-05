@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.Utils;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.groovy.refactoring.WhereUsedQueryConstants;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
@@ -73,7 +73,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     public WhereUsedQueryUI(GroovyRefactoringElement jmiObject) {
         this.query = new WhereUsedQuery(Lookups.singleton(jmiObject));
-        this.query.getContext().add(Utils.getClasspathInfoFor(jmiObject.getFileObject()));
+        this.query.getContext().add(GroovyProjectUtil.getClasspathInfoFor(jmiObject.getFileObject()));
         this.element = jmiObject;
         name = jmiObject.getName();
         kind = jmiObject.getKind();

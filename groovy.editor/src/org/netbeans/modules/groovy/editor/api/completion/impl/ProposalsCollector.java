@@ -81,7 +81,7 @@ public class ProposalsCollector {
         keywordCompletion = new KeywordCompletion();
         packageCompletion = new PackageCompletion();
         localVarCompletion = new LocalVarCompletion();
-        camelCaseCompletion = new CamelCaseCompletion();
+        camelCaseCompletion = new ConstructorGenerationCompletion();
     }
 
     public void completeKeywords(CompletionRequest completionRequest) {
