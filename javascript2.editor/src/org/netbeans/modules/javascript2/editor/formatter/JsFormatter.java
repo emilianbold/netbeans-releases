@@ -124,20 +124,25 @@ public class JsFormatter implements Formatter {
                     }
                 }
 
+                // stores whether the last operation was indentation of the line
+                boolean indented = false;
+
                 for (int i = 0; i < tokens.size(); i++) {
                     FormatToken token = tokens.get(i);
-                    FormatToken next = null;
+                    indented = false;
 
                     switch (token.getKind()) {
                         case AFTER_BINARY_OPERATOR:
-                            if (CodeStyle.get(doc).spaceAroundBinaryOps()) {
-                                offsetDiff = addSpaceAfter(tokens, i, doc, offsetDiff);
-                            }
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAroundBinaryOps());
+                            break;
+                        case BEFORE_COMMA:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeComma());
                             break;
                         case AFTER_COMMA:
-                            if (CodeStyle.get(doc).spaceAfterComma()) {
-                                offsetDiff = addSpaceAfter(tokens, i, doc, offsetDiff);
-                            }
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAfterComma());
                             break;
                         case SOURCE_START:
                         case EOL:
@@ -161,10 +166,11 @@ public class JsFormatter implements Formatter {
                                 start = start.next();
                             }
                             // following code handles the indentation
+                            indented = true;
 
                             // do not do indentation for line comments starting
                             // at the beginning of the line to support comment/uncomment
-                            next = getNextNonVirtual(token);
+                            FormatToken next = getNextNonVirtual(token);
                             if (next != null && next.getKind() == FormatToken.Kind.LINE_COMMENT) {
                                 break;
                             }
@@ -214,19 +220,64 @@ public class JsFormatter implements Formatter {
         });
     }
 
-    private int addSpaceAfter(List<FormatToken> tokens, int index,
-            BaseDocument doc, int offsetDiff) {
+    private int handleSpaceAfter(List<FormatToken> tokens, int index,
+            BaseDocument doc, int offsetDiff, boolean remove) {
 
         FormatToken token = tokens.get(index);
         FormatToken next = getNextNonVirtual(token);
 
+        // has next and it is not an eol
         if (next != null
-                && next.getKind() != FormatToken.Kind.WHITESPACE
                 && next.getKind() != FormatToken.Kind.EOL) {
 
             FormatToken comma = tokens.get(index - 1);
-            return insert(doc, comma.getOffset() + comma.getText().length(),
-                    " ", offsetDiff); // NOI18N
+            // next is a meaningful non white token
+            if (next.getKind() != FormatToken.Kind.WHITESPACE) {
+                if (!remove) {
+                    return insert(doc, comma.getOffset() + comma.getText().length(),
+                            " ", offsetDiff); // NOI18N
+                }
+
+            // next is whitespace not followed by EOL
+            // (this would be removed by trailing space logic)
+            } else if (next.next() != null
+                    && next.next().getKind() != FormatToken.Kind.EOL) {
+                if (remove) {
+                    return remove(doc, comma.getOffset() + comma.getText().length(), next.getText().length(), offsetDiff);
+                } else if (next.getText().length() != 1) {
+                    return replace(doc, comma.getOffset() + comma.getText().length(),
+                            next.getText().toString(), " ", offsetDiff); // NOI18N
+                }
+            }
+        }
+        return offsetDiff;
+    }
+
+    private int handleSpaceBefore(List<FormatToken> tokens, int index,
+            BaseDocument doc, int offsetDiff, boolean remove) {
+
+        // find previous non white token
+        FormatToken start = null;
+        for (int i = index - 1; i >= 0; i--) {
+            FormatToken current = tokens.get(i);
+            if (current != null && !current.isVirtual()
+                    && current.getKind() != FormatToken.Kind.WHITESPACE
+                    && current.getKind() != FormatToken.Kind.EOL) {
+                start = current;
+                break;
+            }
+        }
+
+        if (start != null) {
+            start = getNextNonVirtual(start);
+            FormatToken comma = tokens.get(index + 1);
+            if (start.getKind() != FormatToken.Kind.WHITESPACE) {
+                if (!remove) {
+                    return insert(doc, start.getOffset(), " ", offsetDiff); // NOI18N
+                }
+            } else {
+                // FIXME
+            }
         }
         return offsetDiff;
     }
