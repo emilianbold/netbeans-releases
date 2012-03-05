@@ -50,6 +50,8 @@ import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.MatchingObject.Def;
 import org.netbeans.modules.search.matcher.AbstractMatcher;
+import org.netbeans.modules.search.ui.UiUtils;
+import org.netbeans.spi.search.SearchScopeDefinition;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
@@ -70,12 +72,19 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
     AtomicBoolean terminated = new AtomicBoolean(false);
 
     public BasicComposition(SearchInfo searchInfo, AbstractMatcher matcher,
-            BasicSearchCriteria basicSearchCriteria, Presenter presenter) {
+            BasicSearchCriteria basicSearchCriteria, String scopeDisplayName) {
 
         this.searchInfo = searchInfo;
         this.matcher = matcher;
         this.basicSearchCriteria = basicSearchCriteria;
-        this.presenter = presenter;
+        this.presenter = BasicSearchProvider.createBasicPresenter(
+                basicSearchCriteria.isSearchAndReplace(),
+                basicSearchCriteria.getSearchPattern(),
+                basicSearchCriteria.getReplaceExpr(),
+                basicSearchCriteria.isPreserveCase(),
+                basicSearchCriteria.getSearcherOptions(),
+                basicSearchCriteria.isUseIgnoreList(), "last",          //NOI18N
+                new LastScopeDefinition(searchInfo, scopeDisplayName));
     }
 
     @Override
@@ -135,5 +144,62 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
 
     public SearchProvider.Presenter getSearchProviderPresenter() {
         return presenter;
+    }
+
+    /**
+     * Search scope conserving last used search info.
+     */
+    private static class LastScopeDefinition extends SearchScopeDefinition {
+
+        private static final String PREFIX =
+                UiUtils.getText("LBL_ScopeLastName");                   //NOI18N
+        private SearchInfo searchInfo;
+        private String lastScopeDisplayName;
+
+        public LastScopeDefinition(SearchInfo lastSearchInfo,
+                String lastScopeDisplayName) {
+            this.searchInfo = lastSearchInfo;
+            this.lastScopeDisplayName = normalizeTitle(lastScopeDisplayName);
+        }
+
+        @Override
+        public String getTypeId() {
+            return "last";                                              //NOI18N
+        }
+
+        @Override
+        public String getDisplayName() {
+            return PREFIX + (lastScopeDisplayName == null
+                    ? "" : ": " + lastScopeDisplayName);                //NOI18N
+        }
+
+        @Override
+        public boolean isApplicable() {
+            return true;
+        }
+
+        @Override
+        public SearchInfo getSearchInfo() {
+            return searchInfo;
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        @Override
+        public void clean() {
+        }
+
+        private String normalizeTitle(String title) {
+            if (title == null || title.equals(PREFIX)) {
+                return null;
+            } else if (title.startsWith(PREFIX + ": ")) {               //NOI18N
+                return title.substring(PREFIX.length() + 2);
+            } else {
+                return title;
+            }
+        }
     }
 }

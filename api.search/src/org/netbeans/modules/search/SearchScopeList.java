@@ -42,6 +42,7 @@
 package org.netbeans.modules.search;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,8 +70,8 @@ public class SearchScopeList {
      * Create list of search scopes. Use providers currently registered int the
      * lookup.
      */
-    public SearchScopeList() {
-        this.scopes = createScopeList();
+    public SearchScopeList(SearchScopeDefinition... extraSearchScopes) {
+        this.scopes = createScopeList(extraSearchScopes);
     }
 
     /**
@@ -100,7 +101,8 @@ public class SearchScopeList {
         this.changeListeners.remove(changeListener);
     }
 
-    private List<SearchScopeDefinition> createScopeList() {
+    private List<SearchScopeDefinition> createScopeList(
+            SearchScopeDefinition... extraSearchScopes) {
 
         scopes = new ArrayList<SearchScopeDefinition>(6);
         Collection<? extends SearchScopeDefinitionProvider> providers;
@@ -109,6 +111,7 @@ public class SearchScopeList {
         for (SearchScopeDefinitionProvider provider : providers) {
             scopes.addAll(provider.createSearchScopeDefinitions());
         }
+        scopes.addAll(Arrays.asList(extraSearchScopes));
         Collections.sort(scopes, new ScopePriorityComparator());
         for (SearchScopeDefinition scope : scopes) {
             scope.addChangeListener(proxyChangeListener);

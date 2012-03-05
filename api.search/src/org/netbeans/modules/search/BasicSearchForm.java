@@ -71,6 +71,7 @@ import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
+import org.netbeans.spi.search.SearchScopeDefinition;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
@@ -86,12 +87,15 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     private final String preferredSearchScopeType;
     private ChangeListener usabilityChangeListener;
     private BasicSearchCriteria searchCriteria = new BasicSearchCriteria();
+    private SearchScopeDefinition[] extraSearchScopes;
 
     /** Creates new form BasicSearchForm */
     BasicSearchForm(String preferredSearchScopeType,
-            boolean searchAndReplace, BasicSearchCriteria initialCriteria) {
+            boolean searchAndReplace, BasicSearchCriteria initialCriteria,
+            SearchScopeDefinition... extraSearchScopes) {
 
         this.preferredSearchScopeType = preferredSearchScopeType;
+        this.extraSearchScopes = extraSearchScopes;
         initComponents(searchAndReplace);
         initAccessibility(searchAndReplace);
         initHistory();
@@ -180,7 +184,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
         lblScope = new JLabel();
         cboxScope = ComponentFactory.createScopeComboBox(new JComboBox(),
-                preferredSearchScopeType);
+                preferredSearchScopeType, extraSearchScopes);
         lblScope.setLabelFor(cboxScope.getComponent());
 
         lblFileNamePattern = new JLabel();
@@ -662,6 +666,10 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     public SearchInfo getSearchInfo() {
         return cboxScope.getSearchInfo();
+    }
+
+    public String getSelectedScopeName() {
+        return cboxScope.getSelectedScopeTitle();
     }
 
     /** */

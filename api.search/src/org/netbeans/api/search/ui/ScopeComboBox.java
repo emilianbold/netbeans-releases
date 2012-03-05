@@ -71,10 +71,12 @@ public final class ScopeComboBox extends ComponentController<JComboBox> {
     private SearchScopeDefinition selectedSearchScope;
     private ScopeComboBox.ManualSelectionListener manualSelectionListener;
     private String manuallySelectedId = null;
-    SearchScopeList scopeList = new SearchScopeList();
+    SearchScopeList scopeList;
 
-    ScopeComboBox(JComboBox jComboBox, String prefferedId) {
+    ScopeComboBox(JComboBox jComboBox, String prefferedId,
+            SearchScopeDefinition... extraSearchScopes) {
         super(jComboBox);
+        scopeList = new SearchScopeList(extraSearchScopes);
         manualSelectionListener = new ScopeComboBox.ManualSelectionListener();
         searchScopeChangeListener = new ScopeComboBox.SearchScopeChangeListener();
         scopeList.addChangeListener(
@@ -132,6 +134,11 @@ public final class ScopeComboBox extends ComponentController<JComboBox> {
     public @CheckForNull String getSelectedScopeId() {
         SearchScopeDefinition ss = getSelectedSearchScope();
         return ss == null ? null : ss.getTypeId();
+    }
+
+    public @CheckForNull String getSelectedScopeTitle() {
+        ScopeItem si = (ScopeItem) component.getSelectedItem();
+        return si == null ? null : si.toString();
     }
 
     /**

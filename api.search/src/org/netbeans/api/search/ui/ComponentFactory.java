@@ -46,6 +46,8 @@ import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.search.FindDialogMemory;
+import org.netbeans.spi.search.SearchScopeDefinition;
+import org.netbeans.spi.search.SearchScopeDefinitionProvider;
 
 /**
  * Factory class containing methods for creating controller objects for GUI
@@ -77,16 +79,21 @@ public class ComponentFactory {
      * return a controller object for interacting with it.
      *
      * @param jComboBox Freshly created component that will be modified.
+     * @param preferredScopeId Preferred search scope ID.
+     * @param extraSearchScopes Extra search scopes that should be visible among
+     * standard search scopes created by {@link SearchScopeDefinitionProvider}s.
      * @return Controller for modified jComboBox.
      */
     public static @NonNull
     ScopeComboBox createScopeComboBox(
             @NonNull JComboBox jComboBox,
-            @NullAllowed String preferredScopeId) {
+            @NullAllowed String preferredScopeId,
+            @NonNull SearchScopeDefinition... extraSearchScopes) {
         return new ScopeComboBox(jComboBox,
                 preferredScopeId == null
                 ? FindDialogMemory.getDefault().getScopeTypeId()
-                : preferredScopeId);
+                : preferredScopeId,
+                extraSearchScopes);
     }
 
     /**

@@ -112,12 +112,14 @@ public class BasicSearchProvider extends SearchProvider {
             @NullAllowed Boolean preserveCase,
             @NullAllowed SearchScopeOptions searchScopeOptions,
             @NullAllowed Boolean useIgnoreList,
-            @NullAllowed String scopeId
+            @NullAllowed String scopeId,
+            @NonNull SearchScopeDefinition... extraSearchScopes
             ) {
         BasicSearchCriteria bsc = createCriteria(searchScopeOptions,
                 useIgnoreList, searchPattern, preserveCase, replacing,
                 replaceString);
-        return new BasicSearchPresenter(replacing, scopeId, bsc);
+        return new BasicSearchPresenter(replacing, scopeId, bsc,
+                extraSearchScopes);
     }
 
     @Override
@@ -134,19 +136,24 @@ public class BasicSearchProvider extends SearchProvider {
         BasicSearchForm form = null;
         private String scopeId;
         private BasicSearchCriteria explicitCriteria;
+        private SearchScopeDefinition[] extraSearchScopes;
 
         public BasicSearchPresenter(boolean replacing, String scopeId,
-                BasicSearchCriteria explicitCriteria) {
+                BasicSearchCriteria explicitCriteria,
+                SearchScopeDefinition... extraSearchScopes) {
             this(replacing, scopeId, explicitCriteria,
-                    Lookup.getDefault().lookup(BasicSearchProvider.class));
+                    Lookup.getDefault().lookup(BasicSearchProvider.class),
+                    extraSearchScopes);
         }
 
         public BasicSearchPresenter(boolean replacing, String scopeId,
                 BasicSearchCriteria explicitCriteria,
-                BasicSearchProvider provider) {
+                BasicSearchProvider provider,
+                SearchScopeDefinition... extraSearchScopes) {
             super(provider, replacing);
             this.scopeId = scopeId;
             this.explicitCriteria = explicitCriteria;
+            this.extraSearchScopes = extraSearchScopes;
         }
 
         @Override
@@ -156,7 +163,7 @@ public class BasicSearchProvider extends SearchProvider {
                         ? FindDialogMemory.getDefault().getScopeTypeId()
                         : scopeId;
                 form = new BasicSearchForm(scopeToUse, isReplacing(),
-                        explicitCriteria);
+                        explicitCriteria, extraSearchScopes);
                 form.setUsabilityChangeListener(new ChangeListener() {
                     @Override
                     public void stateChanged(ChangeEvent e) {
@@ -201,7 +208,7 @@ public class BasicSearchProvider extends SearchProvider {
             return new BasicComposition(
                     ssi,
                     new DefaultMatcher(basicSearchCriteria.getSearchPattern()),
-                    basicSearchCriteria, this);
+                    basicSearchCriteria, form.getSelectedScopeName());
         }
 
         @Override
@@ -290,8 +297,7 @@ public class BasicSearchProvider extends SearchProvider {
         SearchScopeDefinition bestScope = findBestSearchScope(scopeId);
         BasicComposition composition = new BasicComposition(
                 bestScope.getSearchInfo(), new DefaultMatcher(searchPattern),
-                criteria, BasicSearchProvider.createBasicPresenter(true,
-                searchPattern, null, false, searchScopeOptions, false, scopeId));
+                criteria, null);
         Manager.getInstance().scheduleSearchTask(
                 new SearchTask(composition, false));
     }
