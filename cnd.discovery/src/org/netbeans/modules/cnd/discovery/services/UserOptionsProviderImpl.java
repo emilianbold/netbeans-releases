@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -137,6 +138,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     public LanguageFlavor getLanguageFlavor(AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
+            IntConfiguration cppStandard = makeConfiguration.getCCCompilerConfiguration().getCppStandard();
             if (compiler.getKind() == PredefinedToolKind.CCompiler) {
                 if (options.indexOf("-xc99") >= 0) { // NOI18N
                     return LanguageFlavor.C99;
@@ -149,7 +151,8 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
                 if (options.indexOf("-std=c++0x") >= 0 || // NOI18N
                         options.indexOf("-std=c++11") >= 0 || // NOI18N
                         options.indexOf("-std=gnu++0x") >= 0 || // NOI18N
-                        options.indexOf("-std=gnu++11") >= 0) { // NOI18N
+                        options.indexOf("-std=gnu++11") >= 0 || // NOI18N
+                        cppStandard.getValue() != cppStandard.getDefault()) {
                     return LanguageFlavor.CPP11;
                 } else {
                     return LanguageFlavor.CPP;
