@@ -101,7 +101,7 @@ public class JsDocParser {
                 link.insert(0, cleanedPart);
             } else if (link.length() > 0) {
                 storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
-                link = new StringBuilder();
+                link.delete(0, link.toString().length());
             } else {
                 storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
             }
