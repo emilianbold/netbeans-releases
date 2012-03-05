@@ -163,4 +163,11 @@ public abstract class SearchScopeDefinition {
      * needed.
      */
     public abstract void clean();
+
+    /**
+     * This method is called when the search scope is selected in the UI.
+     * Default implementation does nothing.
+     */
+    public void selected() {
+    }
 }

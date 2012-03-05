@@ -65,46 +65,114 @@ import org.openide.filesystems.FileUtil;
  *
  * @author jhavlin
  */
-public class SearchScopeBrowse extends SearchScopeDefinition {
+public class SearchScopeBrowse {
 
-    private SearchInfo searchInfo = SearchInfoUtils.createForDefinition(
-            new BrowseSearchInfo());
+    private static FileObject[] roots = null;
+    private SearchScopeDefinition browseScope = new BrowseScope();
+    private SearchScopeDefinition getLastScope = new GetLastScope();
 
-    @Override
-    public String getTypeId() {
-        return "browse";                                                //NOI18N
+    /**
+     * Search Scope with title "Browse..." that can open file chooser to get
+     * search roots.
+     */
+    private class BrowseScope extends SearchScopeDefinition {
+
+        private SearchInfo searchInfo = SearchInfoUtils.createForDefinition(
+                new BrowseSearchInfo());
+
+        @Override
+        public String getTypeId() {
+            return "browse";                                            //NOI18N
+        }
+
+        @Override
+        public String getDisplayName() {
+            return UiUtils.getText("LBL_ScopeBrowseName");              //NOI18N
+        }
+
+        @Override
+        public boolean isApplicable() {
+            return true;
+        }
+
+        @Override
+        public SearchInfo getSearchInfo() {
+            return searchInfo;
+        }
+
+        @Override
+        public int getPriority() {
+            return 501;
+        }
+
+        @Override
+        public void clean() {
+            // nothing to do
+        }
+
+        /**
+         * Browse... scope changes to previously selected scope and previously
+         * selected scope changes to Browse...
+         */
+        @Override
+        public void selected() {
+            FileObject[] fileObjects = chooseRoots();
+            if (fileObjects != null && fileObjects.length > 0) {
+                roots = fileObjects;
+                notifyListeners();
+            }
+        }
     }
 
-    @Override
-    public String getDisplayName() {
-        return UiUtils.getText("LBL_ScopeBrowseName");                  //NOI18N
-    }
+    /**
+     * Search scope representing previously selected search roots.
+     */
+    private class GetLastScope extends SearchScopeDefinition {
 
-    @Override
-    public boolean isApplicable() {
-        return true;
-    }
+        @Override
+        public String getTypeId() {
+            return "browse";                                            //NOI18N
+        }
 
-    @Override
-    public SearchInfo getSearchInfo() {
-        return searchInfo;
-    }
+        @Override
+        public String getDisplayName() {
+            if (roots != null && roots.length > 0) {
+                return UiUtils.getText("LBL_ScopeBrowseName") //NOI18N
+                        + " [" + roots[0].getName() //NOI18N
+                        + (roots.length > 1 ? "..." : "") + "]";        //NOI18N
+            } else {
+                return "no files selected";                             //NOI18N
+            }
+        }
 
-    @Override
-    public int getPriority() {
-        return 500;
-    }
+        @Override
+        public boolean isApplicable() {
+            return roots != null && roots.length > 0;
+        }
 
-    @Override
-    public void clean() {
-        // nothing to do
+        @Override
+        public SearchInfo getSearchInfo() {
+            return SearchInfoUtils.createSearchInfoForRoots(roots);
+        }
+
+        @Override
+        public int getPriority() {
+            return 500;
+        }
+
+        @Override
+        public void clean() {
+        }
     }
 
     /**
      * Search info definition that opens file chooser when search roots or file
      * iterator is requested for the first time.
+     *
+     * This is used if the Browse... scope was not clicked in the UI but was
+     * displayed as the default search scope.
      */
-    private static class BrowseSearchInfo extends SearchInfoDefinition {
+    private class BrowseSearchInfo extends SearchInfoDefinition {
 
         private SearchInfo delegate;
 
@@ -134,17 +202,40 @@ public class SearchScopeBrowse extends SearchScopeDefinition {
         }
 
         private SearchInfo createDelegate() {
-            FileChooserBuilder chooserBuilder =
-                    new FileChooserBuilder(SearchScopeBrowse.class);
-            File[] files = chooserBuilder.showMultiOpenDialog();
-            if (files == null) {
-                files = new File[0];
-            }
-            FileObject[] fileObjects = new FileObject[files.length];
-            for (int i = 0; i < files.length; i++) {
-                fileObjects[i] = FileUtil.toFileObject(files[i]);
-            }
+            FileObject[] fileObjects = chooseRoots();
             return SearchInfoUtils.createSearchInfoForRoots(fileObjects);
         }
+    }
+
+    /**
+     * Open file chooser to choose search roots.
+     */
+    private FileObject[] chooseRoots() {
+        FileChooserBuilder chooserBuilder =
+                new FileChooserBuilder(SearchScopeBrowse.class);
+        File[] files = chooserBuilder.showMultiOpenDialog();
+        if (files == null) {
+            files = new File[0];
+        }
+        FileObject[] fileObjects = new FileObject[files.length];
+        for (int i = 0; i < files.length; i++) {
+            fileObjects[i] = FileUtil.toFileObject(files[i]);
+        }
+        return fileObjects;
+    }
+
+    /**
+     * Get instance for choosing search roots, by selecting the item in combo
+     * box or by starting the search.
+     */
+    public SearchScopeDefinition getBrowseScope() {
+        return browseScope;
+    }
+
+    /**
+     * Get instance representing previously chosen search roots.
+     */
+    public SearchScopeDefinition getGetLastScope() {
+        return getLastScope;
     }
 }

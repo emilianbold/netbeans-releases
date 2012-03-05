@@ -56,9 +56,11 @@ public class DefaultSearchScopeProvider extends SearchScopeDefinitionProvider {
 
     @Override
     public List<SearchScopeDefinition> createSearchScopeDefinitions() {
+        SearchScopeBrowse ssb = new SearchScopeBrowse();
         List<SearchScopeDefinition> list =
                 new ArrayList<SearchScopeDefinition>(2);
-        list.add(new SearchScopeBrowse());
+        list.add(ssb.getBrowseScope());
+        list.add(ssb.getGetLastScope());
         return list;
     }
 }

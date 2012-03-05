@@ -238,6 +238,7 @@ public final class ScopeComboBox extends ComponentController<JComboBox> {
             if (item != null) {
                 selectedSearchScope = item.getSearchScope();
                 manuallySelectedId = selectedSearchScope.getTypeId();
+                selectedSearchScope.selected();
             } else {
                 selectedSearchScope = null;
             }
