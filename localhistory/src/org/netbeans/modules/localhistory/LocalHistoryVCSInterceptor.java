@@ -48,6 +48,8 @@ import java.io.File;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 
@@ -58,6 +60,8 @@ import org.netbeans.modules.versioning.spi.VCSInterceptor;
  * @author Tomas Stupka
  */
 class LocalHistoryVCSInterceptor extends VCSInterceptor {
+
+    static final Logger LOG = Logger.getLogger(LocalHistoryVCSInterceptor.class.getName());
 
     private class StorageMoveHandler {
         private long ts = -1;
@@ -101,11 +105,13 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     @Override
     public boolean beforeDelete(File file) {
+        LOG.log(Level.FINE, "beforeDelete {0}", file); // NOI18N
         if(!accept(file)) {
             return false;
         }
         toBeDeleted.add(file); // XXX do this with a hanlder, get the correct ts
-        storeFile(file); // will be stored in the history if there is no actuall entry yet
+        getStore().waitForProcessedStoring(file, "beforeDelete"); // NOI18N
+        
         return false;
     }
 
@@ -206,6 +212,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     
     @Override
     public void beforeChange(File file) {
+        LOG.log(Level.FINE, "beforeChange {0}", file); // NOI18N
         if(toBeCreated.contains(file) || 
            wasJustCreated.remove(file)) 
         {
@@ -216,8 +223,8 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         }
         if(!accept(file)) {
             return;
-        }
-        storeFile(file, true);
+        } 
+        getStore().waitForProcessedStoring(file, "beforeChange"); // NOI18N
     }
 
     @Override
@@ -227,14 +234,11 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         LocalHistory.getInstance().touch(file);
     }
 
-    private void storeFile(File file) {
-        storeFile(file, false);
+    @Override
+    public void beforeEdit(File file) {
+        getStore().fileChange(file, file.lastModified());
     }
     
-    private void storeFile(File file, boolean handleAsync) {
-        getStore().fileChange(file, handleAsync, file.lastModified());
-    }
-
     private Map<String, StorageMoveHandler> getMoveHandlerMap() {
         if(moveHandlerMap == null) {
             moveHandlerMap = new HashMap<String, StorageMoveHandler>();
