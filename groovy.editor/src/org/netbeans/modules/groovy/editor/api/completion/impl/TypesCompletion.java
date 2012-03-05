@@ -66,6 +66,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
+import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
@@ -102,7 +103,7 @@ import org.openide.filesystems.FileObject;
  */
 public class TypesCompletion extends BaseCompletion {
 
-    // There attributes should be initiated after each complete() method call
+    // There attributes should be initiated for each complete() method call
     private List<CompletionProposal> proposals;
     private CompletionRequest request;
     private int anchor;
@@ -145,43 +146,18 @@ public class TypesCompletion extends BaseCompletion {
             onlyInterfaces = true;
         }
 
-        // This ModuleNode is used to retrieve the types defined here
-        // and the package name.
-
-        ModuleNode mn = null;
-        AstPath path = request.path;
-        if (path != null) {
-            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-                ASTNode current = it.next();
-                if (current instanceof ModuleNode) {
-                    LOG.log(Level.FINEST, "Found ModuleNode");
-                    mn = (ModuleNode) current;
-                }
-            }
-        }
-
-        // Get current package
-        String currentPackage = null;
-        if (mn != null) {
-            currentPackage = mn.getPackageName();
-        } else {
-            ClassNode node = RequestHelper.getSurroundingClassNode(request);
-            if (node != null) {
-                currentPackage = node.getPackageName();
-            }
-        }
-
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
 
-        // get the JavaSource for our file.
-        final JavaSource javaSource = getJavaSourceFromRequest();
+        // This ModuleNode is used to retrieve the types defined here and the package name.
+        ModuleNode moduleNode = retrieveModuleNode();
+        String currentPackage = getCurrentPackageName(moduleNode);
+        JavaSource javaSource = getJavaSourceFromRequest();
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
-
         if (packageRequest.basePackage.length() > 0 || request.behindImport) {
             if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
 
-                List<TypeHolder> typeList = getElementListForPackageAsTypeHolder(javaSource, packageRequest.basePackage, currentPackage);
+                List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
 
                 LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
@@ -189,11 +165,8 @@ public class TypesCompletion extends BaseCompletion {
                     addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
                 }
             }
-
             return true;
-
         }
-        // already exited if package completion
 
         // dont want types for objectExpression.something
         if (request.isBehindDot()) {
@@ -203,7 +176,7 @@ public class TypesCompletion extends BaseCompletion {
         // Retrieve the package we are living in from AST and then
         // all classes from that package using the Groovy Index.
 
-        if (mn != null) {
+        if (moduleNode != null) {
             LOG.log(Level.FINEST, "We are living in package : {0} ", currentPackage);
 
             // FIXME parsing API
@@ -251,17 +224,14 @@ public class TypesCompletion extends BaseCompletion {
 
         // Are there any manually imported types?
 
-        if (mn != null) {
+        if (moduleNode != null) {
 
             // this gets the list of full-qualified names of imports.
-            List<ImportNode> imports = mn.getImports();
+            List<ImportNode> imports = moduleNode.getImports();
 
             if (imports != null) {
                 for (ImportNode importNode : imports) {
-                    LOG.log(Level.FINEST, "From getImports() : {0} ", importNode.getClassName());
-
                     ElementKind ek;
-
                     if (importNode.getClass().isInterface()) {
                         ek = ElementKind.INTERFACE;
                     } else {
@@ -273,11 +243,9 @@ public class TypesCompletion extends BaseCompletion {
             }
 
             // this returns a list of String's of wildcard-like included types.
-            List<ImportNode> importNodes = mn.getStarImports();
+            List<ImportNode> importNodes = moduleNode.getStarImports();
 
             for (ImportNode wildcardImport : importNodes) {
-                LOG.log(Level.FINEST, "From getImportPackages() : {0} ", wildcardImport.getText());
-
                 localDefaultImports.add(wildcardImport.getPackageName());
             }
         }
@@ -293,7 +261,7 @@ public class TypesCompletion extends BaseCompletion {
         // prefix
 
         for (String singlePackage : localDefaultImports) {
-            List<TypeHolder> typeList = getElementListForPackageAsTypeHolder(javaSource, singlePackage, currentPackage);
+            List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, singlePackage, currentPackage);
 
             LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
@@ -315,6 +283,32 @@ public class TypesCompletion extends BaseCompletion {
         return true;
     }
 
+    private ModuleNode retrieveModuleNode() {
+        AstPath path = request.path;
+        if (path != null) {
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode current = it.next();
+                if (current instanceof ModuleNode) {
+                    LOG.log(Level.FINEST, "Found ModuleNode");
+                    return (ModuleNode) current;
+                }
+            }
+        }
+        return null;
+    }
+
+    private String getCurrentPackageName(ModuleNode moduleNode) {
+        if (moduleNode != null) {
+            return moduleNode.getPackageName();
+        } else {
+            ClassNode node = RequestHelper.getSurroundingClassNode(request);
+            if (node != null) {
+                return node.getPackageName();
+            }
+        }
+        return "";
+    }
+
     private JavaSource getJavaSourceFromRequest() {
         ClasspathInfo pathInfo = getClasspathInfoFromRequest(request);
         assert pathInfo != null;
@@ -330,10 +324,10 @@ public class TypesCompletion extends BaseCompletion {
     /**
      * Adds the type given in fqn with its simple name to the proposals, filtered by
      * the prefix and the package name.
-     *
-     * @param proposals
-     * @param request
-     * @param fqn
+     * 
+     * @param alreadyPresent already presented proposals
+     * @param type type we want to add into proposals
+     * @param onlyInterfaces true, if we are dealing with only interfaces completion
      */
     private void addToProposalUsingFilter(Set<TypeHolder> alreadyPresent, TypeHolder type, boolean onlyInterfaces) {
         if ((onlyInterfaces && (type.getKind() != ElementKind.INTERFACE)) || alreadyPresent.contains(type)) {
@@ -349,14 +343,24 @@ public class TypesCompletion extends BaseCompletion {
             return;
         }
 
+        // We are dealing with prefix for some class type
         if (isPrefixed(request, typeName)) {
             alreadyPresent.add(type);
             proposals.add(new CompletionItem.TypeItem(typeName, anchor, type.getKind()));
         }
+
+        // We are dealing with CamelCase completion for some class type
+        if (CamelCaseUtil.compareCamelCase(typeName, request.prefix)) {
+            CompletionItem.TypeItem camelCaseProposal = new CompletionItem.TypeItem(typeName, anchor, ElementKind.CLASS);
+            
+            if (!proposals.contains(camelCaseProposal)) {
+                proposals.add(camelCaseProposal);
+            }
+        }
     }
 
     @NonNull
-    private List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
+    private List<TypeHolder> getTypeHoldersForPackage(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
 
         final List<TypeHolder> result = new ArrayList<TypeHolder>();
@@ -402,9 +406,9 @@ public class TypesCompletion extends BaseCompletion {
     private static class TypeHolder {
 
         private final String name;
-
         private final ElementKind kind;
 
+        
         public TypeHolder(String name, ElementKind kind) {
             this.name = name;
             this.kind = kind;

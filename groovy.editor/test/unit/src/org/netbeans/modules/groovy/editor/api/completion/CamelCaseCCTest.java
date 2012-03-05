@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,67 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring;
-
-import java.util.List;
-import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
-import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
- * A refactoring plugin for groovy refactorings.
- * 
- * @author Erno Mononen
+ *
+ * @author Martin Janicek
  */
-public class GroovyRefactoringPlugin implements RefactoringPlugin {
+public class CamelCaseCCTest extends GroovyCCTestBase {
 
-    private final List<GroovyRefactoring> refactorings;
-
-    public GroovyRefactoringPlugin(List<GroovyRefactoring> refactorings) {
-        this.refactorings = refactorings;
+    public CamelCaseCCTest(String testName) {
+        super(testName);
     }
 
-    public Problem preCheck() {
-        Problem result = null;
-        for (GroovyRefactoring each : refactorings){
-            result = RefactoringUtil.addToEnd(each.preCheck(), result);
-        }
-        return result;
+    @Override
+    protected String getTestType() {
+        return "camelcase";
     }
 
-    public Problem checkParameters() {
-        return null;
+    /*
+     * All upper case letters used
+     */
+    public void testCamelCaseCompletion1() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion1.groovy", "    CamCaTGC^", false);
     }
 
-    public Problem fastCheckParameters() {
-        return null;
+    public void testCamelCaseCompletion2() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion2.groovy", "    CCTestGClass^", false);
     }
 
-    public void cancelRequest() {
-        return;
+    public void testCamelCaseCompletion3() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion3.groovy", "    CamelCTGC^", false);
     }
 
-    public Problem prepare(RefactoringElementsBag refactoringElements) {
-        Problem result = null;
-        for (GroovyRefactoring each : refactorings){
-            result = RefactoringUtil.addToEnd(each.prepare(refactoringElements), result);
-        }
-        return result;
+    /*
+     * Some upper case letter might be missing
+     */
+    public void testCamelCaseCompletion4() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion4.groovy", "    CCT^", false);
     }
     
+    public void testCamelCaseCompletion5() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion5.groovy", "    CamCa^", false);
+    }
+
+    /*
+     * General class type CamelCase completion tests
+     */
+    public void testCamelCaseCompletion6() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion6.groovy", "    NS^", false);
+    }
+
+    public void testCamelCaseCompletion7() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion7.groovy", "    NoSE^", false);
+    }
+
+    public void testCamelCaseCompletion8() throws Exception {
+        checkCompletion(BASE + "CamelCaseCompletion8.groovy", "    NoSuFie^", false);
+    }
 }
