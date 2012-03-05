@@ -41,11 +41,7 @@
  */
 package org.netbeans.modules.groovy.refactoring;
 
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.FieldNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.AstPath;
@@ -128,5 +124,4 @@ public class GroovyRefactoringElement extends AstElement {
         }
         return super.getKind();
     }
-
 }

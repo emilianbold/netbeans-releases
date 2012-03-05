@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.groovy.refactoring;
+package org.netbeans.modules.groovy.refactoring.utils;
 
 import java.io.IOException;
 import java.net.URL;
@@ -61,6 +61,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
@@ -77,7 +78,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
-public class Utils {
+public class GroovyProjectUtil {
 
     public static ClasspathInfo getClasspathInfoFor(FileObject ... files) {
         assert files.length >0;
@@ -116,7 +117,7 @@ public class Utils {
     }
 
     public static List<FileObject> getGroovyFilesInProject(FileObject fileInProject) {
-        ClasspathInfo cpInfo = Utils.getClasspathInfoFor(fileInProject);
+        ClasspathInfo cpInfo = GroovyProjectUtil.getClasspathInfoFor(fileInProject);
         ClassPath cp = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
         List<FileObject> list = new ArrayList<FileObject>(100);
         for (ClassPath.Entry entry : cp.entries()) {
@@ -149,8 +150,7 @@ public class Utils {
     }
 
     public static boolean isGroovyFile(FileObject f) {
-//        return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
-        return "groovy".equals(f.getExt()); // NOI18N
+        return GroovyTokenId.GROOVY_MIME_TYPE.equals(f.getMIMEType());
     }
 
     public static boolean isGspFile(FileObject f) {
@@ -192,7 +192,7 @@ public class Utils {
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return Utils.findCloneableEditorSupport(dob);
+        return GroovyProjectUtil.findCloneableEditorSupport(dob);
     }
 
     public static CloneableEditorSupport findCloneableEditorSupport(DataObject dob) {
@@ -228,8 +228,6 @@ public class Utils {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-
         return doc;
     }
-
 }

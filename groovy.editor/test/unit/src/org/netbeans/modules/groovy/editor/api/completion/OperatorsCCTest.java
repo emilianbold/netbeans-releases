@@ -91,7 +91,7 @@ public class OperatorsCCTest extends GroovyCCTestBase {
 
 
     /*
-     *  Not implemented yet - only for TDD purpose
+     *  Not implemented yet (see issue #151034) - only for TDD purpose
      */
     
     /*
@@ -110,7 +110,6 @@ public class OperatorsCCTest extends GroovyCCTestBase {
     public void testElvisOperator3_1() throws Exception {
         checkCompletion(BASE + "ElvisOperator3.groovy", "        def something = x ?: ^", true);
     }
-    */
 
     public void testSpreadOperator1_stringArray_all() throws Exception {
         checkCompletion(BASE + "SpreadOperator1.groovy", "        ['cat', 'elephant']*.^", true);
@@ -126,5 +125,5 @@ public class OperatorsCCTest extends GroovyCCTestBase {
 
     public void testSpreadOperator2_stringArray_sPrefix() throws Exception {
         checkCompletion(BASE + "SpreadOperator2.groovy", "        [1,2]*.s^", true);
-    }
+    }*/
 }
