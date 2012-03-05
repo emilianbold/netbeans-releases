@@ -132,6 +132,10 @@ public class JsFormatter implements Formatter {
                     indented = false;
 
                     switch (token.getKind()) {
+                        case BEFORE_BINARY_OPERATOR:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAroundBinaryOps());
+                            break;
                         case AFTER_BINARY_OPERATOR:
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceAroundBinaryOps());
