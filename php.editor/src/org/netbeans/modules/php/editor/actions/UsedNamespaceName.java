@@ -42,19 +42,26 @@
 package org.netbeans.modules.php.editor.actions;
 
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class UsedNamespaceName {
-    private final NamespaceName node;
+    private final ASTNode node;
     private final QualifiedName qualifiedName;
 
     public UsedNamespaceName(NamespaceName node) {
         this.node = node;
         this.qualifiedName = QualifiedName.create(node);
+    }
+
+    public UsedNamespaceName(PHPDocTypeNode node) {
+        this.node = node;
+        this.qualifiedName = QualifiedName.create(node.getValue());
     }
 
     public int getOffset() {

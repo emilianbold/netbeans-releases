@@ -151,22 +151,19 @@ public class WhereUsedQueryUI implements RefactoringUI {
                     }
             } else {
                 if (kind == ElementKind.METHOD) {
-                    String description = null;
                     if (panel.isMethodFindUsages()) {
-                        description = getString("DSC_FindUsages");
-                    }
-                    
-                    if (panel.isMethodOverriders()) {
-                        if (description != null) {
-                            description += " " + getString("DSC_And") + " ";
+                        if (panel.isMethodOverriders()) {
+                            return getString("DSC_WhereUsedFindUsagesAndMethodOverriders", panel.getMethodDeclaringClass(), name); //NOI18N
                         } else {
-                            description = "";
+                            return getString("DSC_WhereUsedFindUsages", panel.getMethodDeclaringClass() + name); //NOI18N
                         }
-                        description += getString("DSC_WhereUsedMethodOverriders");
+                    } else {
+                        if (panel.isMethodOverriders()) {
+                            return getString("DSC_WhereUsedMethodOverriders", panel.getMethodDeclaringClass() + name); //NOI18N
+                        } else {
+                            return getString("DSC_WhereUsed", panel.getMethodDeclaringClass() + name); //NOI18N
+                        }
                     }
-                    
-                    description += " " + getString("DSC_WhereUsedOf", panel.getMethodDeclaringClass() + '.' + name); //NOI18N
-                    return description;
                 }
             }
         }
@@ -181,8 +178,8 @@ public class WhereUsedQueryUI implements RefactoringUI {
         return bundle.getString(key);
     }
     
-    private String getString(String key, String value) {
-        return new MessageFormat(getString(key)).format (new Object[] {value});
+    private String getString(String key, String ... values) {
+        return new MessageFormat(getString(key)).format (new Object[] {values});
     }
 
 
