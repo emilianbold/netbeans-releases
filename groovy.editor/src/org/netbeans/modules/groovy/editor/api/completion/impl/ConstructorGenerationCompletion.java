@@ -46,11 +46,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import org.codehaus.groovy.ast.ClassNode;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
@@ -106,13 +109,19 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
             return false;
         }
 
-        // We are in 'String ^' situation
-        if (request.ctx.before1 != null && request.ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
+        if (request.prefix == null || request.prefix.length() < 0) {
             return false;
         }
 
-        if (request.prefix == null || request.prefix.length() < 0) {
-            return false;
+        // We can be either in 'String ^' or in 'NoSE^' situation
+        if (request.ctx.before1 != null && request.ctx.before1.id() == GroovyTokenId.IDENTIFIER) {
+            request.ctx.ts.movePrevious();
+            Token<?> caretToken = request.ctx.ts.token();
+
+            if (" ".equals(caretToken.text().toString())) {
+                // 'String ^' situation --> No constructor generation proposals
+                return false;
+            }
         }
         return true;
     }
