@@ -2362,9 +2362,9 @@ var Position = {
         this.offset = this.cumulativeOffset(element);
 
         return (y >= this.offset[1] &&
-                y <  this.offset[1] + element.offsetHeight &&
+                y < this.offset[1] + element.offsetHeight &&
                 x >= this.offset[0] &&
-                x <  this.offset[0] + element.offsetWidth);
+                x < this.offset[0] + element.offsetWidth);
     },
 
     withinIncludingScrolloffsets: function(element, x, y) {
@@ -2375,9 +2375,9 @@ var Position = {
         this.offset = this.cumulativeOffset(element);
 
         return (this.ycomp >= this.offset[1] &&
-                this.ycomp <  this.offset[1] + element.offsetHeight &&
+                this.ycomp < this.offset[1] + element.offsetHeight &&
                 this.xcomp >= this.offset[0] &&
-                this.xcomp <  this.offset[0] + element.offsetWidth);
+                this.xcomp < this.offset[0] + element.offsetWidth);
     },
 
     // within must be called directly before

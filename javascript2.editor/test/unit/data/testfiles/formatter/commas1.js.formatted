@@ -12,12 +12,12 @@ function Car (color, maker) {
 
 // fsdfsdfsd
 function Address (street,
-        town,        country) {
+        town, country) {
     this.street = street;
     this.town = town;
     this.country = country;
 }
 
 function Dummy (street,
-        town,    country) {
+        town, country) {
 }
