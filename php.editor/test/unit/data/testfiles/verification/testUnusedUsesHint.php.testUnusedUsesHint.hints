@@ -6,3 +6,7 @@ use Unused\Simple\Statement;
 ----------------------------
 HINT:Unused Use Statement
 FIX:Remove Unused Use Statement
+use Foo\Bar\Baz\Dex;
+--------------------
+HINT:Unused Use Statement
+FIX:Remove Unused Use Statement

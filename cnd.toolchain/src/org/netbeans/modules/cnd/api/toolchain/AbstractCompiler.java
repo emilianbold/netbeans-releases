@@ -108,6 +108,13 @@ public abstract class AbstractCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getCppStandardOptions(int value) {
+        // TODO this should be implemented
+        // if (value == 0) return ""
+        // if (value == 1) return "-std=c++11"
+        return ""; //NOI18N
+    }
+    
     public String getStripOption(boolean value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && value){

@@ -125,7 +125,7 @@ public class FixUsesPerformer {
                 useParts.add(sanitizedUse.getSanitizedUsePart());
                 List<UsedNamespaceName> namesToModify = importData.usedNamespaceNames.get(i);
                 for (UsedNamespaceName usedNamespaceName : namesToModify) {
-                    editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), true, 0);
+                    editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), false, 0);
                 }
             }
         }
@@ -198,7 +198,7 @@ public class FixUsesPerformer {
         }
         for (OffsetRange offsetRange : visitor.getUsedRanges()) {
             int startOffset = getOffsetWithoutLeadingWhitespaces(offsetRange.getStart());
-            editList.replace(startOffset, offsetRange.getEnd() - startOffset, EMPTY_STRING, true, 0);
+            editList.replace(startOffset, offsetRange.getEnd() - startOffset, EMPTY_STRING, false, 0);
         }
     }
 
