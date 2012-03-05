@@ -271,7 +271,8 @@ public class JsFormatter implements Formatter {
         if (start != null) {
             start = getNextNonVirtual(start);
             FormatToken comma = tokens.get(index + 1);
-            if (start.getKind() != FormatToken.Kind.WHITESPACE) {
+            if (start.getKind() != FormatToken.Kind.WHITESPACE
+                    && start.getKind() != FormatToken.Kind.EOL) {
                 if (!remove) {
                     return insert(doc, start.getOffset(), " ", offsetDiff); // NOI18N
                 }
