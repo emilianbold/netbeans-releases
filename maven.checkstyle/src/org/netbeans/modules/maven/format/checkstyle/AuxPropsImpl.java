@@ -55,6 +55,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Plugin;
@@ -106,7 +108,6 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     private FileObject copyToCacheDir(FileObject fo) throws IOException {
-        assert Thread.holdsLock(this);
         FileObject cacheDir = cacheDir();
         FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
         if (file != null) {
@@ -116,7 +117,6 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
     }
 
     private FileObject copyToCacheDir(InputStream in) throws IOException {
-        assert Thread.holdsLock(this);
         FileObject cacheDir = cacheDir();
         FileObject file = cacheDir.getFileObject("checkstyle-checker.xml");
         if (file == null) {
@@ -294,7 +294,18 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
         synchronized (this) {
         if (cache == null || recheck) {
             if (enabled != null && Boolean.parseBoolean(enabled)) {
-                cache = convert();
+                    try {
+                        cache = RequestProcessor.getDefault().submit(new Callable<Properties>() {
+                                @Override
+                                public Properties call() throws Exception {
+                                    return convert();
+                                }
+                            }).get();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (ExecutionException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
             } else {
                 cache = new Properties();
             }
