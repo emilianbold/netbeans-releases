@@ -160,6 +160,20 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/commas1.js",new IndentPrefs(4, 4));
     }
 
+    public void testCommas2() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAfterComma, false);
+        options.put(FmtOptions.spaceBeforeComma, false);
+        reformatFileContents("testfiles/formatter/commas2.js", options);
+    }
+
+    public void testCommas3() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAfterComma, false);
+        options.put(FmtOptions.spaceBeforeComma, true);
+        reformatFileContents("testfiles/formatter/commas3.js", options);
+    }
+
     public void testPrototype() throws Exception {
         reformatFileContents("testfiles/formatter/prototype.js",new IndentPrefs(4, 4));
     }
@@ -204,24 +218,23 @@ public class JsFormatterTest extends JsTestBase {
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         for (String option : options.keySet()) {
             Object value = options.get(option);
-            if (value instanceof Integer) {
-                prefs.putInt(option, ((Integer)value).intValue());
-            }
-            else if (value instanceof String) {
-                prefs.put(option, (String)value);
-            }
-            else if (value instanceof Boolean) {
-                prefs.put(option, ((Boolean)value).toString());
-            }
-	    else if (value instanceof CodeStyle.BracePlacement) {
+            if (value instanceof CodeStyle.BracePlacement) {
 		prefs.put(option, ((CodeStyle.BracePlacement)value).name());
 	    }
 	    else if (value instanceof CodeStyle.WrapStyle) {
 		prefs.put(option, ((CodeStyle.WrapStyle)value).name());
-	    }
+	    } else {
+                prefs.put(option, value.toString());
+            }
         }
 
-        format(doc, formatter, formatStart, formatEnd, false);
+        try {
+            format(doc, formatter, formatStart, formatEnd, false);
+        } finally {
+            for (String option : options.keySet()) {
+                prefs.put(option, FmtOptions.getDefaultAsString(option));
+            }
+        }
         String after = doc.getText(0, doc.getLength());
         assertDescriptionMatches(file, after, false, ".formatted");
     }
