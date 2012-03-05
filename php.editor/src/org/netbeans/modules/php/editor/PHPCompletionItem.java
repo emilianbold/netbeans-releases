@@ -616,10 +616,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             List<ParameterElement> allParameters = parameters;
             for (int i = 0; i < allParameters.size(); i++) {
                 ParameterElement parameter = allParameters.get(i);
-                String paramName = parameter.getName();
-                if (paramName.startsWith("&")) {//NOI18N
-                    paramName = paramName.substring(1);
-                }
                 if (i != 0) {
                     formatter.appendText(", "); // NOI18N
                 }
