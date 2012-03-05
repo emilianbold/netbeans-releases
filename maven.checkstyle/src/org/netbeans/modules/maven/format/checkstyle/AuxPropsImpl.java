@@ -272,6 +272,7 @@ public class AuxPropsImpl implements AuxiliaryProperties, PropertyChangeListener
                                 try {
                                     //TODO add progress bar.
                                     // XXX does online.resolve(...) not suffice?
+                                    online.setUpLegacySupport();
                                     builder.buildFromRepository(projectArtifact, p.getMavenProject().getRemoteArtifactRepositories(), online.getLocalRepository());
                                     synchronized (AuxPropsImpl.this) {
                                         recheck = true;
