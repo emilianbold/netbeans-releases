@@ -158,7 +158,7 @@ Object.extend(String.prototype, {
             if (match = source.match(pattern)) {
                 result += source.slice(0, match.index);
                 result += String.interpret(replacement(match));
-                source  = source.slice(match.index + match[0].length);
+                source = source.slice(match.index + match[0].length);
             } else {
                 result += source, source = '';
             }
@@ -304,7 +304,7 @@ Template.Pattern = /(^|.|\r|\n)(#\{(.*?)\})/;
 Template.prototype = {
     initialize: function(template, pattern) {
         this.template = template.toString();
-        this.pattern  = pattern || Template.Pattern;
+        this.pattern = pattern || Template.Pattern;
     },
 
     evaluate: function(object) {
@@ -316,7 +316,7 @@ Template.prototype = {
     }
 }
 
-var $break    = new Object();
+var $break = new Object();
 var $continue = new Object();
 
 var Enumerable = {
@@ -2083,8 +2083,8 @@ Abstract.TimedObserver = function() {}
 Abstract.TimedObserver.prototype = {
     initialize: function(element, frequency, callback) {
         this.frequency = frequency;
-        this.element   = $(element);
-        this.callback  = callback;
+        this.element = $(element);
+        this.callback = callback;
 
         this.lastValue = this.getValue();
         this.registerCallback();
@@ -2124,7 +2124,7 @@ Form.Observer.prototype = Object.extend(new Abstract.TimedObserver(), {
 Abstract.EventObserver = function() {}
 Abstract.EventObserver.prototype = {
     initialize: function(element, callback) {
-        this.element  = $(element);
+        this.element = $(element);
         this.callback = callback;
 
         this.lastValue = this.getValue();
@@ -2297,11 +2297,11 @@ var Position = {
     // must be called before calling withinIncludingScrolloffset, every time the
     // page is scrolled
     prepare: function() {
-        this.deltaX =  window.pageXOffset
+        this.deltaX = window.pageXOffset
                 || document.documentElement.scrollLeft
                 || document.body.scrollLeft
                 || 0;
-        this.deltaY =  window.pageYOffset
+        this.deltaY = window.pageYOffset
                 || document.documentElement.scrollTop
                 || document.body.scrollTop
                 || 0;
@@ -2448,8 +2448,8 @@ var Position = {
         }
 
         // set position
-        if(options.setLeft)   target.style.left  = (p[0] - delta[0] + options.offsetLeft) + 'px';
-        if(options.setTop)    target.style.top   = (p[1] - delta[1] + options.offsetTop) + 'px';
+        if(options.setLeft)   target.style.left = (p[0] - delta[0] + options.offsetLeft) + 'px';
+        if(options.setTop)    target.style.top = (p[1] - delta[1] + options.offsetTop) + 'px';
         if(options.setWidth)  target.style.width = source.offsetWidth + 'px';
         if(options.setHeight) target.style.height = source.offsetHeight + 'px';
     },
@@ -2460,20 +2460,20 @@ var Position = {
         Position.prepare();
 
         var offsets = Position.positionedOffset(element);
-        var top     = offsets[1];
-        var left    = offsets[0];
-        var width   = element.clientWidth;
-        var height  = element.clientHeight;
+        var top = offsets[1];
+        var left = offsets[0];
+        var width = element.clientWidth;
+        var height = element.clientHeight;
 
-        element._originalLeft   = left - parseFloat(element.style.left || 0);
-        element._originalTop    = top  - parseFloat(element.style.top || 0);
-        element._originalWidth  = element.style.width;
+        element._originalLeft = left - parseFloat(element.style.left || 0);
+        element._originalTop = top  - parseFloat(element.style.top || 0);
+        element._originalWidth = element.style.width;
         element._originalHeight = element.style.height;
 
         element.style.position = 'absolute';
-        element.style.top    = top + 'px';
-        element.style.left   = left + 'px';
-        element.style.width  = width + 'px';
+        element.style.top = top + 'px';
+        element.style.left = left + 'px';
+        element.style.width = width + 'px';
         element.style.height = height + 'px';
     },
 
@@ -2483,13 +2483,13 @@ var Position = {
         Position.prepare();
 
         element.style.position = 'relative';
-        var top  = parseFloat(element.style.top || 0) - (element._originalTop || 0);
+        var top = parseFloat(element.style.top || 0) - (element._originalTop || 0);
         var left = parseFloat(element.style.left || 0) - (element._originalLeft || 0);
 
-        element.style.top    = top + 'px';
-        element.style.left   = left + 'px';
+        element.style.top = top + 'px';
+        element.style.left = left + 'px';
         element.style.height = element._originalHeight;
-        element.style.width  = element._originalWidth;
+        element.style.width = element._originalWidth;
     }
 }
 

@@ -112,6 +112,17 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR));
                     break;
                 case OPERATOR_ASSIGNMENT:
+                case OPERATOR_PLUS_ASSIGNMENT:
+                case OPERATOR_MINUS_ASSIGNMENT:
+                case OPERATOR_MULTIPLICATION_ASSIGNMENT:
+                case OPERATOR_DIVISION_ASSIGNMENT:
+                case OPERATOR_BITWISE_AND_ASSIGNMENT:
+                case OPERATOR_BITWISE_OR_ASSIGNMENT:
+                case OPERATOR_BITWISE_XOR_ASSIGNMENT:
+                case OPERATOR_MODULUS_ASSIGNMENT:
+                case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
+                case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
+                case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ASSIGNMENT_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_ASSIGNMENT_OPERATOR));
