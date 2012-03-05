@@ -109,6 +109,20 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         });
     }
 
+    // TODO - REFACTOR LATER
+    private void checkDocumentation(Source source, final int offset, final String expected) throws Exception {
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result result = resultIterator.getParserResult();
+                assertTrue(result instanceof JsParserResult);
+                JsParserResult parserResult = (JsParserResult) result;
+
+                JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
+                assertEquals(expected, documentationProvider.getDocumentation(getNodeForOffset(parserResult, offset)));
+            }
+        });
+    }
+
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
@@ -227,6 +241,24 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 669), "\"for example Jackie Chan\"", "userName is optional", true,
                 Arrays.asList(new TypeImpl("String", 660)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
+    }
+
+    public void testDocumentationDescriptionReturns() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Shape(){^");
+        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Construct a new Shape object.</p><b>Returns:</b><br><p>Shape|Coordinate</p>");
+    }
+
+    public void testDocumentationDescription() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function addReference(){^");
+        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>This is an inner method, just used here as an example</p>");
+    }
+
+    public void testDocumentationDescriptionExamples() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
+        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Create a new Hexagon instance.</p><b>Examples:</b><br><p>var h = new Hexagon(2);</p><p>if (hasHex) { hex   = new Hexagon(5); color = hex.getColor(); }</p>");
     }
 
     private static class FakeDocParameter implements DocParameter {

@@ -49,10 +49,7 @@ import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DeclarationElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.NamedParameterElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.UnnamedParameterElement;
+import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.*;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
@@ -78,15 +75,20 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
     public List<Type> getReturnType(Node node) {
         JsDocBlock block = getCommentForOffset(node.getStart());
         if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
-            for (JsDocElement jsDocElement : block.getTagsForTypes(
-                    new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS})) {
-                return ((UnnamedParameterElement) jsDocElement).getParamTypes();
-            }
-            for (JsDocElement jsDocElement : block.getTagsForType(JsDocElement.Type.TYPE)) {
-                return Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType());
-            }
+            return getReturnType(block);
         }
-        return null;
+        return Collections.<Type>emptyList();
+    }
+
+    private List<Type> getReturnType(JsDocBlock block) {
+        for (JsDocElement jsDocElement : block.getTagsForTypes(
+                new JsDocElement.Type[]{JsDocElement.Type.RETURN, JsDocElement.Type.RETURNS})) {
+            return ((UnnamedParameterElement) jsDocElement).getParamTypes();
+        }
+        for (JsDocElement jsDocElement : block.getTagsForType(JsDocElement.Type.TYPE)) {
+            return Arrays.asList(((DeclarationElement) jsDocElement).getDeclaredType());
+        }
+        return Collections.<Type>emptyList();
     }
 
     // TODO - rewrite for getting all associated comments and call getter for all and merge results
@@ -105,12 +107,52 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return Collections.<DocParameter>emptyList();
     }
 
+    // TODO - rewrite for getting all associated comments and call getter for all and merge results
+    // TODO - try to move that directly into JsDocBlock
+    @Override
+    public String getDocumentation(Node node) {
+        JsDocBlock block = getCommentForOffset(node.getStart());
+        if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
+            return buildDocumentation(block);
+        }
+        return null;
+    }
+
     protected JsDocBlock getCommentForOffset(int offset) {
         int endOffset = getEndOffsetOfAssociatedComment(offset);
         if (endOffset > 0) {
             return (JsDocBlock) parserResult.getComments().get(endOffset);
         }
         return null;
+    }
+
+    private String buildDocumentation(JsDocBlock docBlock) {
+        // Summary
+        StringBuilder doc = new StringBuilder("<b>Summary:</b><br>");
+        // documentation element should be only one DescriptionElement
+        List<? extends JsDocElement> description = docBlock.getTagsForTypes(
+                new JsDocElement.Type[]{JsDocElement.Type.DESCRIPTION, JsDocElement.Type.CONTEXT_SENSITIVE});
+        if (!description.isEmpty()) {
+            doc.append("<p>").append(((DescriptionElement) description.get(0)).getDescription()).append("</p>");
+        }
+
+        // Examples
+        List<? extends JsDocElement> examples = docBlock.getTagsForType(JsDocElement.Type.EXAMPLE);
+        if (!examples.isEmpty()) {
+            doc.append("<b>Examples:</b><br>");
+            for (JsDocElement example : examples) {
+                doc.append("<p>").append(((DescriptionElement) example).getDescription()).append("</p>");
+            }
+        }
+
+        // Returns
+        List<Type> returnType = getReturnType(docBlock);
+        if (!returnType.isEmpty()) {
+            doc.append("<b>Returns:</b><br>");
+            doc.append("<p>").append(getStringFromTypes(returnType)).append("</p>");
+        }
+
+        return doc.toString();
     }
 
     private int getEndOffsetOfAssociatedComment(int offset) {
@@ -143,4 +185,13 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
                 || token.id() == JsTokenId.LINE_COMMENT;
     }
 
+    private String getStringFromTypes(List<Type> types) {
+        StringBuilder sb = new StringBuilder();
+        String delimiter = ""; //NOI18N
+        for (Type type : types) {
+            sb.append(delimiter).append(type.getType());
+            delimiter = "|"; //NOI18N
+        }
+        return sb.toString();
+    }
 }
