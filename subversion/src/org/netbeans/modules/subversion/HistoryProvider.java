@@ -159,7 +159,7 @@ public class HistoryProvider implements VCSHistoryProvider {
 
             return ret.toArray(new HistoryEntry[ret.size()]);
         } catch (SVNClientException e) {
-            Subversion.LOG.log(Level.WARNING, null, e);
+            Subversion.LOG.log(SvnClientExceptionHandler.isCancelledAction(e.getMessage()) ? Level.FINE : Level.WARNING, null, e);
         }
         return null;
     }

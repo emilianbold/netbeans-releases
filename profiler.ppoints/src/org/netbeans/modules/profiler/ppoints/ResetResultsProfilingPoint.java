@@ -160,6 +160,9 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
                         dataAreaTextBuilder.append(getDataResultItem(i));
                         dataAreaTextBuilder.append("<br>"); // NOI18N
                     }
+                    ProfilingPointsManager m = ProfilingPointsManager.getDefault();
+                    if (!m.belowMaxHits(results.size()))
+                        dataAreaTextBuilder.append(m.getTruncatedResultsText());
                 }
             }
 
@@ -374,7 +377,8 @@ public final class ResetResultsProfilingPoint extends CodeProfilingPoint.Single 
 
     void hit(RuntimeProfilingPoint.HitEvent hitEvent, int index) {
         synchronized(resultsSync) {
-            results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
+            if (ProfilingPointsManager.getDefault().belowMaxHits(results.size()))
+                results.add(new Result(hitEvent.getTimestamp(), hitEvent.getThreadId()));
         }
         //    ResultsManager.getDefault().reset();
         getChangeSupport().firePropertyChange(PROPERTY_RESULTS, false, true);

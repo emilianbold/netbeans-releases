@@ -191,7 +191,7 @@ final public class MarkerProcessor extends CategoryDefinitionProcessor implement
         JavaSource src = ElementUtilitiesEx.getSources(pp);
         if (src != null) {
             try {
-                src.runUserActionTask(new Task<CompilationController>() {
+                src.runWhenScanFinished(new Task<CompilationController>() {
                     
                     @Override
                     public void run(CompilationController cc) throws Exception {

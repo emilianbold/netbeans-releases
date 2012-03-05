@@ -55,6 +55,7 @@ import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.LifecycleManager;
 import org.openide.execution.ExecutionEngine;
@@ -136,8 +137,16 @@ public final class RunUtils {
         return brc;
     }
     
-    private static ExecutorTask executeMavenImpl(String runtimeName, MavenExecutor exec) {
-        ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, exec, exec.getInputOutput());
+    private static ExecutorTask executeMavenImpl(String runtimeName, final MavenExecutor exec) {
+        ExecutorTask task =  ExecutionEngine.getDefault().execute(runtimeName, new Runnable() {
+            @Override public void run() {
+                IndexingBridge.getDefault().runProtected(new Runnable() {
+                    @Override public void run() {
+                        exec.run();
+                    }
+                });
+            }
+        }, exec.getInputOutput());
         exec.setTask(task);
         return task;
     }

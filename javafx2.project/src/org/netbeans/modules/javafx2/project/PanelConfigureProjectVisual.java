@@ -84,6 +84,13 @@ public class PanelConfigureProjectVisual extends JPanel {
                 getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXPreloaderApp")); // NOI18N
                 getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaFXPreloaderApp")); // NOI18N
                 break;
+            case SWING:
+                projectLocationPanel = new PanelProjectLocationVisual(panel, type);
+                putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXSwingApp")); // NOI18N
+                jSeparator1.setVisible(true);
+                getAccessibleContext().setAccessibleName(NbBundle.getMessage(PanelConfigureProjectVisual.class, "TXT_NewJavaFXSwingApp")); // NOI18N
+                getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PanelConfigureProjectVisual.class, "ACSD_NewJavaFXSwingApp")); // NOI18N
+                break;
             case LIBRARY:
                 projectLocationPanel = new PanelProjectLocationVisual(panel, type);
                 jSeparator1.setVisible(true);

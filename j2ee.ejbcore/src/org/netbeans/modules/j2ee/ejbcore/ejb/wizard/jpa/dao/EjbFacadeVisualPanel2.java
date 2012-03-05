@@ -35,8 +35,8 @@ import org.openide.util.NbBundle;
 
 public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListener {
     
-    private final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal");
-    private final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote");
+    private final String CLASSNAME_LOCAL = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeLocal"); //NOI18N
+    private final String CLASSNAME_REMOTE = NbBundle.getMessage(EjbFacadeVisualPanel2.class, "LBL_GeneratedFacadeRemote"); //NOI18N
     
     private WizardDescriptor wizard;
     private Project project;
@@ -180,9 +180,9 @@ public final class EjbFacadeVisualPanel2 extends JPanel implements DocumentListe
     private void handleCheckboxes() {
         createdFilesText.setText(NbBundle.getMessage(
             EjbFacadeVisualPanel2.class,
-            "LBL_CreatedFIles",
-            isLocal() ? CLASSNAME_LOCAL : "",
-            isRemote() ? CLASSNAME_REMOTE : ""
+            "LBL_CreatedFIles", //NOI18N
+            isLocal() ? ", " + CLASSNAME_LOCAL : "", //NOI18N
+            isRemote() ? ", " + CLASSNAME_REMOTE : "" //NOI18N
         )); 
     }
     

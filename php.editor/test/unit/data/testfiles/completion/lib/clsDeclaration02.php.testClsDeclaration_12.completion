@@ -13,6 +13,7 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null

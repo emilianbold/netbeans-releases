@@ -77,7 +77,7 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.core.ui.sampler.SamplesOutputStream;
+import org.netbeans.modules.sampler.CustomSamplesStream;
 import org.openide.util.Exceptions;
 
 /**
@@ -114,7 +114,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
     private String newWhitelistFileName;
     private String previousWhitelistFileName = null;
     private File whitelistStorageDir = null;
-    private SamplesOutputStream samples;
+    private CustomSamplesStream samples;
     private ThreadInfo lastThreadInfo;
     private ByteArrayOutputStream stream;
     private ThreadMXBean threadBean;
@@ -177,7 +177,7 @@ public class BlacklistedClassesHandlerSingleton extends Handler implements Black
         start = System.currentTimeMillis();
         stream = new ByteArrayOutputStream();
         try {
-            samples = new SamplesOutputStream(stream, null, 5000);
+            samples = new CustomSamplesStream(stream, 5000);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

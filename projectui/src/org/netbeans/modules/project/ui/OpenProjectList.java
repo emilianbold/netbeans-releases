@@ -119,6 +119,7 @@ import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -606,17 +607,24 @@ public final class OpenProjectList {
         "# {0} - project path", "OpenProjectList.deleted_project={0} seems to have been deleted."
     })
     public void open(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
-        assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+        List<Project> toHandle = new LinkedList<Project>();
+
         pchSupport.firePropertyChange(PROPERTY_WILL_OPEN_PROJECTS, null, projects);
-        for (int i = 0; i < projects.length; i++) {
+        for (Project p : projects) {
+            Parameters.notNull("projects", p);
             try {
-                projects[i] = ProjectManager.getDefault().findProject(projects[i].getProjectDirectory());
+                Project p2 = ProjectManager.getDefault().findProject(p.getProjectDirectory());
+                if (p2 != null) {
+                    toHandle.add(p2);
+                } else {
+                    LOGGER.log(Level.WARNING, "Project in {0} disappeared", p.getProjectDirectory());
+                }
             } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+                LOGGER.log(Level.INFO, "Cannot convert " + p.getProjectDirectory(), ex);
             } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+                LOGGER.log(Level.INFO, "Cannot convert " + p.getProjectDirectory(), ex);
             }
         }
             
@@ -635,8 +643,6 @@ public final class OpenProjectList {
         
         Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
-        List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
-        
         while (!toHandle.isEmpty()) {
             if (canceled != null && canceled.get()) {
                 break;

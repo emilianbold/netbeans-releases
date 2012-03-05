@@ -158,8 +158,10 @@ public abstract class AbstractServiceProviderProcessor extends AbstractProcessor
                     clazz, ann, findAnnotationValue(ann, "service"));
             return;
         }
+        /*
         processingEnv.getMessager().printMessage(Kind.NOTE,
                 impl + " to be registered as a " + xface + (path.length() > 0 ? " under " + path : ""));
+        */
         String rsrc = (path.length() > 0 ? "META-INF/namedservices/" + path + "/" : "META-INF/services/") + xface;
         Filer filer = processingEnv.getFiler();
         {

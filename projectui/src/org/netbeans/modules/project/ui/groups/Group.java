@@ -70,6 +70,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.OpenProjectListSettings;
 import org.netbeans.modules.project.ui.ProjectTab;
@@ -382,19 +383,21 @@ public abstract class Group {
         } else {
             handleLabel = Group_close_handle();
         }
-        ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
+        final ProgressHandle h = ProgressHandleFactory.createHandle(handleLabel);
         try {
         h.start(200);
         ProjectUtilities.WaitCursor.show();
-        OpenProjectList opl = OpenProjectList.getDefault();
+        final OpenProjectList opl = OpenProjectList.getDefault();
         Set<Project> oldOpen = new HashSet<Project>(Arrays.asList(opl.getOpenProjects()));
         Set<Project> newOpen = g != null ? g.getProjects(h, 10, 100) : Collections.<Project>emptySet();
-        Set<Project> toClose = new HashSet<Project>(oldOpen);
+        final Set<Project> toClose = new HashSet<Project>(oldOpen);
         toClose.removeAll(newOpen);
-        Set<Project> toOpen = new HashSet<Project>(newOpen);
+        final Set<Project> toOpen = new HashSet<Project>(newOpen);
         toOpen.removeAll(oldOpen);
         assert !toClose.contains(null) : toClose;
         assert !toOpen.contains(null) : toOpen;
+        IndexingBridge.getDefault().runProtected(new Runnable() {
+            @Override public void run() {
         h.progress(Group_progress_closing(toClose.size()), 110);
         opl.close(toClose.toArray(new Project[toClose.size()]), false);
         h.switchToIndeterminate();
@@ -403,6 +406,8 @@ public abstract class Group {
         if (g != null) {
             opl.setMainProject(g.getMainProject());
         }
+            }
+        });
         } finally {
             ProjectUtilities.WaitCursor.hide();
             h.finish();

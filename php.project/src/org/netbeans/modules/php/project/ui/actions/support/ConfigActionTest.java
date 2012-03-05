@@ -243,7 +243,17 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        return new PhpUnitTestRunInfo(fileObj.getParent(), fileObj, fileObj.getName());
+        final FileObject workDir;
+        final String name;
+        if (fileObj.isFolder()) {
+            // #195525 - run tests in folder
+            workDir = fileObj;
+            name = fileObj.getNameExt();
+        } else {
+            workDir = fileObj.getParent();
+            name = fileObj.getName();
+        }
+        return new PhpUnitTestRunInfo(workDir, fileObj, name);
     }
 
     private class RunScriptProvider implements RunScript.Provider {
