@@ -60,18 +60,31 @@ public class PerformanceTestCase2 extends JellyTestCase{
     @Override
     public void openDataProjects(String... projects) throws IOException {
         String[] fullPaths = new String[projects.length];
-        String altPath = null;
-        altPath = System.getProperty("nb_perf_alt_path");
-        if (altPath==null) {
-            for (int i = 0; i < projects.length; i++) {
-               fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];
-            }
-        } else {
-            for (int i = 0; i < projects.length; i++) {
-               fullPaths[i] = altPath + File.separator + projects[i];
+        String altPath = "/space/a/performance/performance";
+        for (int i = 0; i < projects.length; i++) {
+            if (altPath!=null) {
+                fullPaths[i] = mergePaths(altPath,getDataDir().getAbsolutePath()) + File.separator + projects[i];
+            } else {
+                fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];
             }
         }
+        
         openProjects(fullPaths);
+    }
+
+    private String mergePaths(String altPath, String absolutePath) {
+        if (absolutePath.startsWith(altPath)) {
+            return absolutePath;
+        }
+        final String PERF = "performance"; //NOI18N
+        StringBuilder sb;
+        if (absolutePath.contains(PERF)) {
+            sb  = new StringBuilder(absolutePath);
+            sb.replace(0,absolutePath.indexOf(PERF)+11, altPath);
+        } else {
+            sb = new StringBuilder(altPath);            
+        }        
+        return sb.toString();
     }
     
 }
