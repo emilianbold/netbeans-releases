@@ -195,7 +195,7 @@ public class NetigsoTest extends NetigsoHid {
             assertEquals("2.3.0", m2.getSpecificationVersion().toString());
             assertEquals("2.3.0.Prelude-rel24", m2.getImplementationVersion());
         } finally {
-            if (m2 != null) {
+            if (m2 != null && m2.isEnabled()) {
                 mgr.disable(m2);
             }
             mgr.mutexPrivileged().exitWriteAccess();

@@ -4,12 +4,9 @@ if [ -z "$JOB_URL" ]; then
   JOB_URL=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/
 fi
 
-sigtest_prev=$WORKSPACE/nbbuild/build/prevsigtest/snapshot
-if (
-  mkdir -p $sigtest_prev && cd $sigtest_prev/.. && \
-  wget "$JOB_URL""lastSuccessfulBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip" &&
-  unzip snapshot.zip
-) then
+sigtest_prev=$WORKSPACE/nbbuild/build/prior-sigtest
+if [ -d $sigtest_prev ]
+then
     echo SigTest: Previous Snapshots
     ls $sigtest_prev
     echo SigTest: Checking All Changes
@@ -23,11 +20,11 @@ if (
         content=`cat $report`
         (
             echo "Code changes:";
-            echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/changes"; 
+            echo "${BUILD_URL}changes"; 
             echo "API changes:";
-            echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/nbbuild/build/sigtest/check-snapshot/html/index.html"; 
+            echo "${BUILD_URL}artifact/nbbuild/build/sigtest/check-snapshot/html/index.html"; 
             echo "Failure output is available as StdErr output of sigtest test for appropriate module.";
-    #                echo "http://deadlock.netbeans.org/hudson/job/$JOB_NAME/$BUILD_NUMBER/artifact/$sigtest_out/`basename $report`"; 
+    #                echo "${BUILD_URL}artifact/$sigtest_out/`basename $report`"; 
             echo; 
             expr "$content" : ".*CDATA\[\(.*\)\]\].*"
         ) | mail -s "`basename $report` - sigchanges in $JOB_NAME build #$BUILD_NUMBER" $sigtest_email
@@ -35,8 +32,7 @@ if (
     done
     echo SigTest: Checking All Changes Done
 else
-    echo SigTest: Cannot download previous Snapshot
-    exit 2
+    echo SigTest: Did not find previous Snapshot
 fi
 
 echo SigTest: Generating Golden Files
