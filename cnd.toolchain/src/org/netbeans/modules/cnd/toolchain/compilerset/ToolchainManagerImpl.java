@@ -606,7 +606,7 @@ public final class ToolchainManagerImpl {
         writeMultithreading(doc, element, compiler);
         writeStandard(doc, element, compiler);
         writeLanguageExtension(doc, element, compiler);
-        writeCppStandatd(doc, element, compiler);
+        writeCppStandard(doc, element, compiler);
         writeLibrary(doc, element, compiler);
         if (compiler.getOutputObjectFileFlags() != null) {
             e = doc.createElement("output_object_file"); // NOI18N
@@ -775,7 +775,7 @@ public final class ToolchainManagerImpl {
         }
     }
 
-    private void writeCppStandatd(Document doc, Element element, CompilerDescriptor compiler) {
+    private void writeCppStandard(Document doc, Element element, CompilerDescriptor compiler) {
         String[] flags = compiler.getCppStandardFlags();
         if (flags == null) {
             return;
