@@ -83,6 +83,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         semanticHighlights = null;
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
@@ -91,10 +92,12 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         return unusedUsesOffsetRanges;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
 
+    @Override
     public void run(Result r, SchedulerEvent event) {
         resume();
 
