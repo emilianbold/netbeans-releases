@@ -117,6 +117,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     @Override
     public void afterDelete(File file) {
+        LOG.log(Level.FINE, "afterDelete {0}", file); // NOI18N
         if(!toBeDeleted.remove(file)) {
             // do nothing if the file wasn't marked
             // as to be deleted
@@ -142,6 +143,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     
     @Override
     public boolean beforeMove(final File from, final File to) {
+        LOG.log(Level.FINE, "beforeMove {0} to {1}", new Object[] {from, to}); // NOI18N
         if(!accept(from)) {
             return false;
         }
@@ -157,6 +159,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     @Override
     public void afterMove(File from, File to) {
+        LOG.log(Level.FINE, "afterMove {0} to {1}", new Object[] {from, to}); // NOI18N
         String key = to.getAbsolutePath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
@@ -176,12 +179,14 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     @Override
     public boolean beforeCreate(File file, boolean isDirectory) {
+        LOG.log(Level.FINE, "beforeCreate {0}", file); // NOI18N
         toBeCreated.add(file);
         return false;
     }
 
     @Override
     public void afterCreate(File file) {
+        LOG.log(Level.FINE, "afterCreate {0}", file); // NOI18N
         if(LocalHistory.getInstance().isManagedByParent(file) == null) {
             // XXX: the VCS interceptor doesn't filter afterCreate because
             // of a workaround for caching problems in other VCS systems. 
@@ -229,6 +234,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     @Override
     public void afterChange(File file) {
+        LOG.log(Level.FINE, "afterChange {0}", file); // NOI18N
         // just in case
         wasJustCreated.remove(file);
         LocalHistory.getInstance().touch(file);
@@ -236,6 +242,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
 
     @Override
     public void beforeEdit(File file) {
+        LOG.log(Level.FINE, "beforeEdit {0}", file); // NOI18N
         getStore().fileChange(file, file.lastModified());
     }
     

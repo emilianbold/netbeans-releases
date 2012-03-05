@@ -104,6 +104,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     
     private static FilenameFilter fileEntriesFilter =
             new FilenameFilter() {
+        @Override
                 public boolean accept(File dir, String fileName) {
                     return !( fileName.endsWith(DATA_FILE)    ||
                               fileName.endsWith(HISTORY_FILE) ||
@@ -813,7 +814,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(files != null) {
             for(File f : files) {
                 // XXX check the timestamp when touched
-                long ts = 0;
+                long ts;
                 try {
                     ts = Long.parseLong(f.getName());
                 } catch (NumberFormatException ex) {
