@@ -122,6 +122,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToASTOffset;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 
 /**
@@ -355,7 +356,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteInterfaceNames(completionResult, request);
                     break;
                 case USE_KEYWORD:
-                    autoCompleteAfterUses(completionResult, request, QualifiedNameKind.QUALIFIED, false);
+                    CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                    autoCompleteAfterUses(completionResult, request, codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED, false);
                     break;
                 case TYPE_NAME:
                     autoCompleteNamespaces(completionResult, request);
