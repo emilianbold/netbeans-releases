@@ -82,6 +82,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
 
     @Override
     public boolean canFindUsages(Lookup lookup) {
+        /*
         Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
         if (nodes.size() != 1) {
             return false;
@@ -98,6 +99,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         if ((dob!=null) && GroovyProjectUtil.isGroovyOrGspFile(fo)) {
             return true;
         }
+        */
         return false;
     }
 
