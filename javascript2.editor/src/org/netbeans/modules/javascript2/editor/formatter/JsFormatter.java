@@ -242,11 +242,11 @@ public class JsFormatter implements Formatter {
         if (next != null
                 && next.getKind() != FormatToken.Kind.EOL) {
 
-            FormatToken comma = tokens.get(index - 1);
+            FormatToken theToken = tokens.get(index - 1);
             // next is a meaningful non white token
             if (next.getKind() != FormatToken.Kind.WHITESPACE) {
                 if (!remove) {
-                    return insert(doc, comma.getOffset() + comma.getText().length(),
+                    return insert(doc, theToken.getOffset() + theToken.getText().length(),
                             " ", offsetDiff); // NOI18N
                 }
 
@@ -255,10 +255,10 @@ public class JsFormatter implements Formatter {
             } else if (next.next() != null
                     && next.next().getKind() != FormatToken.Kind.EOL) {
                 if (remove) {
-                    return remove(doc, comma.getOffset() + comma.getText().length(),
+                    return remove(doc, theToken.getOffset() + theToken.getText().length(),
                             next.getText().length(), offsetDiff);
                 } else if (next.getText().length() != 1) {
-                    return replace(doc, comma.getOffset() + comma.getText().length(),
+                    return replace(doc, theToken.getOffset() + theToken.getText().length(),
                             next.getText().toString(), " ", offsetDiff); // NOI18N
                 }
             }
@@ -288,7 +288,7 @@ public class JsFormatter implements Formatter {
 
         if (start != null) {
             start = getNextNonVirtual(start);
-            FormatToken comma = tokens.get(index + 1);
+            FormatToken theToken = tokens.get(index + 1);
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
                 if (!remove) {
@@ -298,7 +298,7 @@ public class JsFormatter implements Formatter {
             } else if (!containsEol) {
                 if (remove) {
                     return remove(doc, start.getOffset(),
-                            comma.getOffset() - start.getOffset(), offsetDiff);
+                            theToken.getOffset() - start.getOffset(), offsetDiff);
                 } else if (start.getText().length() != 1) {
                     return replace(doc, start.getOffset(),
                             start.getText().toString(), " ", offsetDiff); // NOI18N
