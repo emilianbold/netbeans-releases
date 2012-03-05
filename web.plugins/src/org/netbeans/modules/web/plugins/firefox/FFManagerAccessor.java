@@ -423,27 +423,23 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 return null;
             }
             File rdfFile = null;
-            InputStream iStream = null;
-            if ( file.isDirectory() ){
-                rdfFile = new File(file, "install.rdf"); // NOI18N
-            }
-            else {
-                iStream = Utils.getInputStream(file, "install.rdf"); // NOI18N
-            }
-            if ( rdfFile == null && iStream == null ){
-                return null;
-            }
+            
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = null;
             Document doc = null;
+            
             try {
                 builder = factory.newDocumentBuilder();
-           
-                if ( rdfFile!= null && rdfFile.isFile() ){
-                    doc = builder.parse( rdfFile);
+                
+                if ( file.isDirectory() ){
+                    rdfFile = new File(file, "install.rdf");                // NOI18N
                 }
-                else if ( iStream != null ){
-                    doc = builder.parse( iStream );
+                else {
+                    return Utils.parseZipXml(file, "install.rdf", builder);  // NOI18N
+                }
+                
+                if ( rdfFile.isFile() ){
+                    doc = builder.parse( rdfFile);
                 }
                 return doc;
             }

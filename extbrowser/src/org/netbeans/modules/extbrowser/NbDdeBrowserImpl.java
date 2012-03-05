@@ -66,6 +66,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.plugins.BrowserId;
 import org.openide.util.Exceptions;
 
 
@@ -172,6 +173,22 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         nativeRunnable.postTask (new DisplayTask (url, this));
     }
     
+    @Override
+    protected BrowserId getPluginId(){
+        BrowserId id = super.getPluginId();
+        if ( id != null ){
+            return id;
+        }
+        String ddeServer = realDDEServer();
+        if ( ExtWebBrowser.FIREFOX.equals( ddeServer ) ){
+            return BrowserId.FIREFOX;
+        }
+        else if ( ExtWebBrowser.CHROME.equals( ddeServer)){
+            return BrowserId.CHROME;
+        }
+        return null;
+    }
+    
     /** Finds the name of DDE server. 
      *  If <Default system browser> is set then it resolves it into either 
      *  Netscape or IExplore
@@ -195,13 +212,14 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                 if (cmd.toUpperCase ().indexOf ("CHROME") >= 0) { // NOI18N
                     return ExtWebBrowser.CHROME;
                 }
+
+                // check FF before Mozilla becuase FF is Mozilla but Mozills itself is old one
+                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
+                    return ExtWebBrowser.FIREFOX;
+                }
                 
                 if (cmd.toUpperCase ().indexOf (ExtWebBrowser.MOZILLA) >= 0) {
                     return ExtWebBrowser.MOZILLA;
-                }
-
-                if (cmd.toUpperCase ().indexOf (ExtWebBrowser.FIREFOX) >= 0) {
-                    return ExtWebBrowser.FIREFOX;
                 }
             }
         } catch (Exception ex) {

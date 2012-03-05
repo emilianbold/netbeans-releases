@@ -60,7 +60,11 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.parsers.DocumentBuilder;
+
 import org.openide.util.Utilities;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 
 /**
@@ -208,7 +212,9 @@ public final class Utils {
         folder.delete();
     }
     
-    public static InputStream getInputStream( File zipFile , String requiredName ){
+    public static Document parseZipXml( File zipFile , String requiredName , 
+            DocumentBuilder builder) throws SAXException
+    {
         ZipFile zip = null;
         try {
             zip = new ZipFile(zipFile);
@@ -217,7 +223,7 @@ public final class Utils {
                 ZipEntry entry = entries.nextElement();
                 String fileName = entry.getName();
                 if ( fileName.equals(requiredName)){
-                    return zip.getInputStream(entry);
+                    return builder.parse(zip.getInputStream(entry));
                 }
             }
         }
