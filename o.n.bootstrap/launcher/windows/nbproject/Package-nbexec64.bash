@@ -6,14 +6,14 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=Cygwin-Windows
-CND_CONF=nbexec
+CND_PLATFORM=Cygwin64-Windows
+CND_CONF=nbexec64
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 NBTMPDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}/tmp-packaging
 TMPDIRNAME=tmp-packaging
-OUTPUT_PATH=nbexec.dll
-OUTPUT_BASENAME=nbexec.dll
+OUTPUT_PATH=nbexec64.dll
+OUTPUT_BASENAME=nbexec64.dll
 PACKAGE_TOP_DIR=libwindows.dll/
 
 # Functions

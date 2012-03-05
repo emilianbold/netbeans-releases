@@ -14,15 +14,15 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
+CC=x86_64-w64-mingw32-gcc.exe
+CCC=x86_64-w64-mingw32-g++.exe
+CXX=x86_64-w64-mingw32-g++.exe
 FC=gfortran
 AS=as.exe
 
 # Macros
-CND_PLATFORM=Cygwin-Windows
-CND_CONF=netbeans.exe
+CND_PLATFORM=Cygwin64-Windows
+CND_CONF=netbeans64.exe
 CND_DISTDIR=dist
 CND_BUILDDIR=build
 
@@ -43,8 +43,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-m32 -mno-cygwin
-CXXFLAGS=-m32 -mno-cygwin
+CCFLAGS=-m64 -mno-cygwin -static-libgcc -static-libstdc++
+CXXFLAGS=-m64 -mno-cygwin -static-libgcc -static-libstdc++
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -53,29 +53,29 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=netbeans.res
+LDLIBSOPTIONS=netbeans64.res
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk netbeans.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk netbeans64.exe
 
-netbeans.exe: ${OBJECTFILES}
-	${LINK.cc} -mwindows -o netbeans.exe ${OBJECTFILES} ${LDLIBSOPTIONS} 
+netbeans64.exe: ${OBJECTFILES}
+	${LINK.cc} -mwindows -o netbeans64.exe ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/netbeans.o: netbeans.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/netbeans.o netbeans.cpp
 
 ${OBJECTDIR}/nblauncher.o: nblauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/nblauncher.o nblauncher.cpp
 
 ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o: ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/1413142467
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -s -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o ../../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
 
 # Subprojects
 .build-subprojects:
@@ -83,7 +83,7 @@ ${OBJECTDIR}/_ext/1413142467/utilsfuncs.o: ../../../o.n.bootstrap/launcher/windo
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} netbeans.exe
+	${RM} netbeans64.exe
 
 # Subprojects
 .clean-subprojects:

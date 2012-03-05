@@ -51,7 +51,7 @@
 
 using namespace std;
 
-const char *NbLauncher::NBEXEC_FILE_PATH = "\\lib\\nbexec.dll";
+const char *NbLauncher::NBEXEC_FILE_PATH = NBEXEC_DLL;
 const char *NbLauncher::OPT_NB_DEFAULT_USER_DIR = "netbeans_default_userdir=";
 const char *NbLauncher::OPT_NB_DEFAULT_CACHE_DIR = "netbeans_default_cachedir=";
 const char *NbLauncher::OPT_NB_DEFAULT_OPTIONS = "netbeans_default_options=";

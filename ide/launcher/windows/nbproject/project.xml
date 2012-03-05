@@ -16,6 +16,10 @@
                     <name>netbeans.exe</name>
                     <type>1</type>
                 </confElem>
+                <confElem>
+                    <name>netbeans64.exe</name>
+                    <type>1</type>
+                </confElem>
             </confList>
         </data>
     </configuration>

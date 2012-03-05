@@ -6,7 +6,7 @@
 
 # Macros
 TOP=`pwd`
-CND_PLATFORM=Cygwin_1-Windows
+CND_PLATFORM=Cygwin-Windows
 CND_CONF=netbeans.exe
 CND_DISTDIR=dist
 CND_BUILDDIR=build
