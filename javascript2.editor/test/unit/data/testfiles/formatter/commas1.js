@@ -1,4 +1,4 @@
-function Car (color,maker) {
+function Car (color    ,maker) {
     this.color = color;
     this.maker = maker;
 
