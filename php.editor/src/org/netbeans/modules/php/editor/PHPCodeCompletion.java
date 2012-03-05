@@ -1251,10 +1251,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (ts == null) {
             return QueryType.STOP;
         }
-       Token t = null;
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
-            t = ts.token();
+            Token t = ts.token();
             if (OptionsUtils.autoCompletionTypes()) {
                 if (lastChar == ' ' || lastChar == '\t'){
                     if (ts.movePrevious()
