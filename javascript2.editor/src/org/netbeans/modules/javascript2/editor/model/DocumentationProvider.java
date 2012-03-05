@@ -64,4 +64,11 @@ public interface DocumentationProvider {
      */
     List<DocParameter> getParameters(Node node);
 
+    /**
+     * Gets documentation for given Node.
+     * @param node of the javaScript code
+     * @return documentation text if any {@code null} otherwise
+     */
+    String getDocumentation(Node node);
+    
 }
