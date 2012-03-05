@@ -41,10 +41,6 @@
  */
 package org.netbeans.modules.maven;
 
-import java.util.prefs.BackingStoreException;
-import org.apache.maven.project.MavenProject;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.maven.api.FileUtilities;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -62,6 +58,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.model.Model;
@@ -70,12 +67,14 @@ import org.apache.maven.model.Parent;
 import org.apache.maven.model.Profile;
 import org.apache.maven.model.Repository;
 import org.apache.maven.model.io.ModelReader;
-import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
@@ -85,6 +84,7 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.modules.maven.problems.BatchProblemNotifier;
+import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -110,6 +110,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
    
     private final Project proj;
     private List<URI> uriReferences = new ArrayList<URI>();
+    private CopyResourcesOnSave copyResourcesOnSave;
 
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.maven.project"; //NOI18N
@@ -180,7 +181,8 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             register(repo, mp.getPluginRepositories());
         }
 
-        CopyResourcesOnSave.opened();
+        copyResourcesOnSave = new CopyResourcesOnSave(project.getProjectWatcher(), proj);
+        copyResourcesOnSave.opened();
 
         //only check for the updates of index, if the indexing was already used.
         if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
@@ -259,7 +261,11 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
         BatchProblemNotifier.closed(project);
-        CopyResourcesOnSave.closed();
+        if (copyResourcesOnSave != null) {
+            copyResourcesOnSave.closed();
+        }
+        copyResourcesOnSave = null;
+        
         RepositoryPreferences.getInstance().removeTransientRepositories(this);
     }
    
