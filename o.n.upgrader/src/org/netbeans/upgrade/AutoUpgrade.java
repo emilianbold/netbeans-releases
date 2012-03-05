@@ -113,7 +113,7 @@ public final class AutoUpgrade {
     // the order of VERSION_TO_CHECK here defines the precedence of imports
     // the first one will be choosen for import
     final static private List<String> VERSION_TO_CHECK = 
-            Arrays.asList (new String[] { ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
+            Arrays.asList (new String[] { ".netbeans/7.1.1", ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9" });//NOI18N
     
     // userdir on OS specific root of userdir (see issue 196075)
     static final List<String> NEWER_VERSION_TO_CHECK =
