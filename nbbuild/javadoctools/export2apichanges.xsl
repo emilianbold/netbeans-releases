@@ -115,8 +115,9 @@ made subject to such option by the copyright holder.
                 <a href="http://bits.netbeans.org/6.9/javadoc/apichanges.html">release 6.9</a>,
                 <a href="http://bits.netbeans.org/6.9.1/javadoc/apichanges.html">release 6.9.1</a>,
                 <a href="http://bits.netbeans.org/7.0/javadoc/apichanges.html">release 7.0</a>,
-                <a href="http://bits.netbeans.org/7.0.1/javadoc/apichanges.html">release 7.0.1</a>, and
-                <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>.
+                <a href="http://bits.netbeans.org/7.0.1/javadoc/apichanges.html">release 7.0.1</a>,
+                <a href="http://bits.netbeans.org/7.1/javadoc/apichanges.html">release 7.1</a>, and
+                <a href="http://bits.netbeans.org/7.1.1/javadoc/apichanges.html">release 7.1.1</a>.
             <xsl:call-template name="do-the-table" />
             </body>
             </html>

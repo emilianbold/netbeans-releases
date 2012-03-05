@@ -54,6 +54,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -196,6 +197,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         System.setProperty("activated.count", "0");
     }
 
+    @RandomlyFails // NB-Core-Build #8003: expected:<0> but was:<2>
     public void testReadAccess() throws Exception {
         LOG.info("Inside testReadAccess");
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);

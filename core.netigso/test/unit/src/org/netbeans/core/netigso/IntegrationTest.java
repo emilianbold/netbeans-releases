@@ -57,6 +57,7 @@ import org.netbeans.SetupHid;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Lookup;
 import org.osgi.framework.launch.Framework;
 
@@ -98,7 +99,7 @@ public class IntegrationTest extends NbTestCase {
         j1 = SetupHid.createTestJAR(getDataDir(), jars, "simple-module.jar", null);
     }
 
-
+    @RandomlyFails // NB-Core-Build #8007: Framework found
     public void testCheckWhichContainerIsRunning() throws Exception {
         ModuleManager mgr = Main.getModuleSystem().getManager();
         Module m1;

@@ -58,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
@@ -851,7 +852,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         assertEquals(FileUtil.normalizeFile(testFile).toURI().toURL(), FileUtil.normalizeFile(testFile2).toURI().toURL());
     }   
-    
+
+    @RandomlyFails // NB-Core-Build #7927 (from FileBasedFileSystemWithUninitializedExtensionsTest): Didn't receive a FileEvent on the parent.
     public void testEventsAfterCreatedFiles55550() throws Exception {
         FileObject parent = root.getFileObject("testdir/mountdir8");  
         assertNotNull(parent);
