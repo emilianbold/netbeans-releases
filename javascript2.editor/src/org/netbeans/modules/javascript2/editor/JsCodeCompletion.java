@@ -437,6 +437,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
                             } else {
+                                newResolvedTypes.add(new TypeUsageImpl(typeUsage.getType() + "." + name));
                             }
                         }
                     }
@@ -446,31 +447,62 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
             HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
-            for (JsObject resolved : lastResolvedObjects) {
-                addObjectPropertiesToCC(resolved, request, addedProperties);
-            }
-            // TODO there should be added objects from prototype chain
-            // add as last type Object
-            lastResolvedTypes.add(0, new TypeUsageImpl("Object", -1, true));
+            boolean isFunction = false; // addding Function to the prototype chain?
+            List<IndexedElement> indexedElements = new ArrayList<IndexedElement>();
             for (TypeUsage typeUsage : lastResolvedTypes) {
                 // at first try to find the type in the model
                 JsObject jsObject = ModelUtils.findJsObjectByName(request.result.getModel(), typeUsage.getType());
                 if (jsObject != null) {
-                    addObjectPropertiesToCC(jsObject, request, addedProperties);
-                } else {
+                    lastResolvedObjects.add(jsObject);
+                }
+                if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
-                    FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-                    Collection<IndexedElement> properties = JsIndex.get(fo).getProperties(typeUsage.getType());
+                    for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
+                        JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                        if (kind.isFunction()) {
+                            isFunction = true;
+                        }
+                    }
+                    Collection<IndexedElement> properties = jsIndex.getProperties(typeUsage.getType());
                     for (IndexedElement indexedElement : properties) {
                         JsElement element = addedProperties.get(indexedElement.getName());
                         if (startsWith(indexedElement.getName(), request.prefix) 
                                 && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                            addedProperties.put(indexedElement.getName(), indexedElement);
+                            indexedElements.add(indexedElement);
                         }
                     }
                 }
             }
+            for (JsObject resolved : lastResolvedObjects) {
+                if(!isFunction && resolved.getJSKind().isFunction()) {
+                    isFunction = true;
+                }
+                addObjectPropertiesToCC(resolved, request, addedProperties);
+            }
+            
+            // add as last type Object
+            for (IndexedElement indexedElement : jsIndex.getProperties("Object")) {
+                if (startsWith(indexedElement.getName(), request.prefix)) {
+                    addedProperties.put(indexedElement.getName(), indexedElement);
+                }
+            }
+            // TODO there should be added objects from prototype chain
+            if (isFunction) {
+                for (IndexedElement indexedElement : jsIndex.getProperties("Function")) {
+                    if (startsWith(indexedElement.getName(), request.prefix)) {
+                        addedProperties.put(indexedElement.getName(), indexedElement);
+                    }
+                }
+            }
+            
+            
+            for(IndexedElement indexedElement : indexedElements) {
+                addedProperties.put(indexedElement.getName(), indexedElement);
+            }
+            
             // now look to the index again for declared item outside
             StringBuilder fqn = new StringBuilder();
             for (int i = exp.size() - 1; i > -1; i--) {
@@ -478,8 +510,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 fqn.append('.');
             }
             fqn.append(request.prefix);
-            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-            Collection<? extends IndexResult> indexResults = JsIndex.get(fo).query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+            Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
             for (IndexResult indexResult : indexResults) {
                 IndexedElement indexedElement = IndexedElement.create(indexResult);
                 JsElement element = addedProperties.get(indexedElement.getName());
