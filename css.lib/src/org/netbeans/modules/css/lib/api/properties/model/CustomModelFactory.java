@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public interface CustomModelFactory {
 
-    List<Color> models = new ArrayList<Color>();
+    public NodeModel createModel(Node node);
 
-    public BorderColor(Node node) {
-        super(node);
-    }
-
-    @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
+    public static class Query {
+        
+        private static Collection<? extends CustomModelFactory> getFactories() {
+            return Lookup.getDefault().lookupAll(CustomModelFactory.class);
         }
-        return null;
-    }
-
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
+        
+        public static NodeModel createModel(Node node) {
+            for(CustomModelFactory cmf : getFactories()) {
+                NodeModel model = cmf.createModel(node);
+                if(model != null) {
+                    return model;
+                }
+            }
+            return null;
         }
-    }
-
-    @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        
     }
 }

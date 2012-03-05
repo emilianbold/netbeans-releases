@@ -41,46 +41,69 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderColorTest extends BorderTestBase {
 
-    List<Color> models = new ArrayList<Color>();
-
-    public BorderColor(Node node) {
-        super(node);
+    public BorderColorTest(String name) {
+        super(name);
     }
 
-    @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
-        }
-        return null;
+    public void testBorderColorBasic() {
+        PropertyModel model = Properties.getPropertyModel("border-color");
+        ResolvedProperty val = new ResolvedProperty(model, "red green blue");
+
+        Node root = val.getParseTree();
+//        dumpTree(root);
+
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
+
+        root.accept(modelvisitor);
+
+        BorderColor borderColor = (BorderColor) modelvisitor.getModel();
+        assertNotNull(borderColor);
+
+        List<Color> models = borderColor.models;
+        
+        assertEquals(3, models.size());
+        Color colorModel1 = models.get(0);
+        Color colorModel2 = models.get(1);
+        Color colorModel3 = models.get(2);
+
+        assertEquals("red", colorModel1.getValue());
+        assertEquals("green", colorModel2.getValue());
+        assertEquals("blue", colorModel3.getValue());
+
     }
 
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
-    }
+    public void testBorderColorBox() {
+        PropertyModel model = Properties.getPropertyModel("border-color");
+        ResolvedProperty val = new ResolvedProperty(model, "red green blue");
 
-    @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        Node root = val.getParseTree();
+//        dumpTree(root);
+
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
+
+        root.accept(modelvisitor);
+
+        BorderColor borderColor = (BorderColor) modelvisitor.getModel();
+        assertNotNull(borderColor);
+
+//        dumpBox(borderColor);
+        assertBox(borderColor, "red", "green", "blue", "green");
+
     }
+    
 }

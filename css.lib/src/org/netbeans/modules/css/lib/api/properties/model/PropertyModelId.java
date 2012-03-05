@@ -48,24 +48,24 @@ import org.netbeans.modules.css.lib.properties.model.*;
  * @author marekfukala
  */
 public enum PropertyModelId {
-            
+
     MARGIN(Margin.class, MarginTop.class, MarginBottom.class, MarginLeft.class, MarginRight.class),
     PADDING(Padding.class, PaddingTop.class, PaddingBottom.class, PaddingLeft.class, PaddingRight.class),
     BORDER(Border.class, BorderBottom.class, BorderLeft.class, BorderRight.class, BorderTop.class,
-            BorderColor.class, Color.class);
+    BorderColor.class, BorderStyle.class, BorderWidth.class, Color.class, BorderStyleItem.class,
+    BorderWidthItem.class);
     
     private Class[] modelClasses;
 
     private PropertyModelId(Class... modelClasses) {
         this.modelClasses = modelClasses;
     }
-    
+
     public Class[] getModelClasses() {
         return modelClasses;
     }
-    
+
     public String getBasePropertyName() {
         return name().toLowerCase();
     }
-    
 }

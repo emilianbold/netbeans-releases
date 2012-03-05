@@ -71,7 +71,7 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
     
     private void updateModel() {
         for (Declaration declaration : declarations.getDeclarations()) {
-            ModelBuilderNodeVisitor<BoxEdgeSize> modelvisitor = new ModelBuilderNodeVisitor<BoxEdgeSize>(getPropertyModelId());
+            ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(getPropertyModelId());
             declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
             Box<BoxEdgeSize> model = (Box<BoxEdgeSize>) modelvisitor.getModel();
             if (model != null) {

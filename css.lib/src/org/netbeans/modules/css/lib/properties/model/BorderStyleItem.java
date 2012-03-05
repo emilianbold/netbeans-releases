@@ -114,13 +114,13 @@ public class BorderStyleItem extends NodeModel {
         return super.getTokenNode(image);
     }
 
-    public TokenNodeModel getFixedValueModel(BorderWidthItem.FixedValue fixedValue) {
+    public TokenNodeModel getFixedValueModel(FixedValue fixedValue) {
         return getTokenNode(fixedValue.getValue());
     }
 
     @Override
     public CharSequence asText() {
-        for (BorderWidthItem.FixedValue fv : BorderWidthItem.FixedValue.values()) {
+        for (FixedValue fv : FixedValue.values()) {
             TokenNodeModel tnm = getFixedValueModel(fv);
             if (tnm != null) {
                 return tnm.getValue();

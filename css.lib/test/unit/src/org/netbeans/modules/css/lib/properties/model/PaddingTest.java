@@ -74,7 +74,7 @@ public class PaddingTest extends CssTestBase {
         Node root2 = val2.getParseTree();
 //        dumpTree(root2);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.PADDING);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.PADDING);
 
         root2.accept(modelvisitor);
 
@@ -88,7 +88,7 @@ public class PaddingTest extends CssTestBase {
         Node root = val.getParseTree();
         dumpTree(root);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.PADDING);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.PADDING);
         root.accept(modelvisitor);
 
         Padding padding = (Padding)modelvisitor.getModel();
@@ -212,7 +212,7 @@ public class PaddingTest extends CssTestBase {
 
         dumpTree(val.getParseTree());
         
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.PADDING);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.PADDING);
         val.getParseTree().accept(modelvisitor);
 
         Box<BoxEdgeSize> mbox = (Box<BoxEdgeSize>)modelvisitor.getModel();
@@ -224,7 +224,7 @@ public class PaddingTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel("padding");
         ResolvedProperty val = new ResolvedProperty(model, value);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.PADDING);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.PADDING);
         val.getParseTree().accept(modelvisitor);
 
         Padding padding = (Padding)modelvisitor.getModel();

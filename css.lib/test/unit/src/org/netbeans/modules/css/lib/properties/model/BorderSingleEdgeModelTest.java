@@ -41,46 +41,39 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderSingleEdgeModelTest extends BorderTestBase {
 
-    List<Color> models = new ArrayList<Color>();
-
-    public BorderColor(Node node) {
-        super(node);
+    public BorderSingleEdgeModelTest(String name) {
+        super(name);
     }
 
-    @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
-        }
-        return null;
-    }
+    public void testBorderTopColor() {
+        PropertyModel model = Properties.getPropertyModel("border-top-color");
+        ResolvedProperty val = new ResolvedProperty(model, "red");
 
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
-    }
+        Node root = val.getParseTree();
+        dumpTree(root);
+        
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
+        root.accept(modelvisitor);
 
-    @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        BorderSingleEdgeColor bsem = (BorderSingleEdgeColor) modelvisitor.getModel();
+        assertNotNull(bsem);
+
+        dumpBox(bsem);
+        
     }
+    
+   
 }

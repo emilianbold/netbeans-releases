@@ -72,7 +72,7 @@ public class MarginTest extends CssTestBase {
         Node root2 = val2.getParseTree();
         dumpTree(root2);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
 
         root2.accept(modelvisitor);
 
@@ -86,7 +86,7 @@ public class MarginTest extends CssTestBase {
         Node root = val.getParseTree();
         dumpTree(root);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
         root.accept(modelvisitor);
 
         Margin margin = (Margin)modelvisitor.getModel();
@@ -210,7 +210,7 @@ public class MarginTest extends CssTestBase {
 
         dumpTree(val.getParseTree());
         
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
         val.getParseTree().accept(modelvisitor);
 
         Box<BoxEdgeSize> mbox = (Box<BoxEdgeSize>)modelvisitor.getModel();
@@ -222,7 +222,7 @@ public class MarginTest extends CssTestBase {
         PropertyModel model = Properties.getPropertyModel("margin");
         ResolvedProperty val = new ResolvedProperty(model, value);
 
-        ModelBuilderNodeVisitor<NodeModel> modelvisitor = new ModelBuilderNodeVisitor<NodeModel>(PropertyModelId.MARGIN);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
         val.getParseTree().accept(modelvisitor);
 
         Margin margin = (Margin)modelvisitor.getModel();

@@ -51,8 +51,13 @@ public class Utils {
     }
 
     public static void dumpBox(Box<? extends PrintableModel> box) {
-        System.out.println("\n\t" + box.getEdge(Edge.TOP).asText());
-        System.out.println(box.getEdge(Edge.LEFT).asText() + "\t\t" + box.getEdge(Edge.RIGHT).asText());
-        System.out.println("\t" + box.getEdge(Edge.BOTTOM).asText() + "\n");
+        PrintableModel top = box.getEdge(Edge.TOP);
+        PrintableModel right = box.getEdge(Edge.RIGHT);
+        PrintableModel bottom = box.getEdge(Edge.BOTTOM);
+        PrintableModel left = box.getEdge(Edge.LEFT);
+        
+        System.out.println("\n\t" + (top == null ? null : top.asText()));
+        System.out.println((left == null ? null : left.asText()) + "\t\t" + (right == null ? null : right.asText()));
+        System.out.println("\t" + (bottom == null ? null : bottom.asText()) + "\n");
     }
 }

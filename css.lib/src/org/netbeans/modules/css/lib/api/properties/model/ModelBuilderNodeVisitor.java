@@ -53,17 +53,17 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor {
+public class ModelBuilderNodeVisitor implements NodeVisitor {
 
-    private T model;
+    private NodeModel model;
     private PropertyModelId propertyModel;
-    private Stack<NodeModel> current = new Stack();
+    private Stack<NodeModel> current = new Stack<NodeModel>();
 
     public ModelBuilderNodeVisitor(PropertyModelId propertyModel) {
         this.propertyModel = propertyModel;
     }
 
-    public T getModel() {
+    public SemanticModel getModel() {
         return model;
     }
 
@@ -115,11 +115,21 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
         //assuming model class elements cannot nest
         String modelClassName = getModelClassNameForNodeName(node.name());
         if (current.isEmpty()) {
-            Class modelClass = getModelClass(modelClassName);
-            if (modelClass != null) {
-                createModelInstance(modelClass, node);
-                current.push(this.model);
+            //first try custom model 
+            model = createModelInstance(node);
+            
+            //if no model created then use the class mechanism
+            if(model == null) {
+                Class modelClass = getModelClass(modelClassName);
+                if (modelClass != null) {
+                    model = createModelInstance(modelClass, node);
+                }
             }
+            
+            if(model != null) {
+                current.push(model);
+            }
+            
             return true;
         } else {
             //we've already created the model so now lets fill it with some data
@@ -135,67 +145,89 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
     }
 
     private boolean handleNode(String modelClassName, Node node) {
-        //1. find the corresponding field in the current node
-        Class<? extends NodeModel> currentModelClass = current.peek().getClass();
-        String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
-        Class<?> constructorArgumentClass;
-        Class<?> fieldType;
-        if (node instanceof Node.ResolvedTokenNode) {
-            constructorArgumentClass = Node.ResolvedTokenNode.class;
-            //do not derive the model class type from the field type since there 
-            //doesn't have to be any for the token nodes
-            fieldType = TokenNodeModel.class;
-
-        } else if (node instanceof Node.GrammarElementNode) {
-            constructorArgumentClass = Node.class;
-            //get the model type from the field type
+        //first try the custom models
+        NodeModel nmodel = CustomModelFactory.Query.createModel(node);
+        if (nmodel != null) {
             try {
-                Field field = currentModelClass.getField(submodelFieldName);
-                fieldType = field.getType();
-            } catch (NoSuchFieldException nsfe) {
-                //no such field in the class, lets use the modelClassName as the class name
-                fieldType = current.peek().getModelClassForSubNode(node.name());
-                if (fieldType == null) {
-                    //no type info provided, give up
-                    String msg = String.format(
-                            "Processing node %s: Neither public field %s found in the model class %s "
-                            + "nor the class provides a class for the node name %s", node, submodelFieldName, currentModelClass, node.name());
-                    System.err.println(msg);
-                    current.peek().setUnhandledChild(node);
-                    
-                    return false; //do not process children nodes of the given node
-                    
-                }
+                current.peek().setSubmodel(modelClassName, nmodel);
+                current.push(nmodel);
+            } catch (NoSuchFieldException ex) {
+                //no-op
+            } catch (IllegalArgumentException ex) {
+                //no-op
+            } catch (IllegalAccessException ex) {
+                //no-op
             }
         } else {
-            throw new IllegalStateException();
+            //1. find the corresponding field in the current node
+            Class<? extends NodeModel> currentModelClass = current.peek().getClass();
+            String submodelFieldName = NodeModel.getSubmodelFieldName(modelClassName);
+            Class<?> constructorArgumentClass;
+            Class<?> fieldType;
+            if (node instanceof Node.ResolvedTokenNode) {
+                constructorArgumentClass = Node.ResolvedTokenNode.class;
+                //do not derive the model class type from the field type since there 
+                //doesn't have to be any for the token nodes
+                fieldType = TokenNodeModel.class;
+
+            } else if (node instanceof Node.GrammarElementNode) {
+                constructorArgumentClass = Node.class;
+                //get the model type from the field type
+                try {
+                    Field field = currentModelClass.getField(submodelFieldName);
+                    fieldType = field.getType();
+                } catch (NoSuchFieldException nsfe) {
+                    //no such field in the class, lets use the modelClassName as the class name
+                    fieldType = current.peek().getModelClassForSubNode(node.name());
+                    if (fieldType == null) {
+                        //no type info provided, give up
+                        String msg = String.format(
+                                "Processing node %s: Neither public field %s found in the model class %s "
+                                + "nor the class provides a class for the node name %s", node, submodelFieldName, currentModelClass, node.name());
+                        System.err.println(msg);
+                        current.peek().setUnhandledChild(node);
+
+                        return false; //do not process children nodes of the given node
+
+                    }
+                }
+            } else {
+                throw new IllegalStateException();
+            }
+
+            try {
+                Constructor<?> constructor = fieldType.getConstructor(constructorArgumentClass);
+                NodeModel modelInstance = (NodeModel) constructor.newInstance(node);
+
+                current.peek().setSubmodel(modelClassName, modelInstance);
+
+                current.push(modelInstance);
+
+            } catch (Exception e) {
+                /*
+                 * NoSuchMethodException, InstantiationException,
+                 * IllegalAccessException, InvocationTargetException,
+                 * SecurityException
+                 */
+                throw new RuntimeException(e);
+
+            }
+
         }
 
-        try {
-            Constructor<?> constructor = fieldType.getConstructor(constructorArgumentClass);
-            NodeModel modelInstance = (NodeModel) constructor.newInstance(node);
-
-            current.peek().setSubmodel(modelClassName, modelInstance);
-
-            current.push(modelInstance);
-
-        } catch (Exception e) {
-            /*
-             * NoSuchMethodException, InstantiationException,
-             * IllegalAccessException, InvocationTargetException,
-             * SecurityException
-             */
-            throw new RuntimeException(e);
-
-        }
-        
         return true; //proceede with the children nodes
     }
 
-    private void createModelInstance(Class modelClass, Node node) {
+    private NodeModel createModelInstance(Node node) {
+        //try custom model factories first
+        return CustomModelFactory.Query.createModel(node);
+    }
+
+    private NodeModel createModelInstance(Class modelClass, Node node) {
+        //custom model not create, use the class based model loading mechanism
         try {
-            Constructor<T> constructor = modelClass.getConstructor(Node.class);
-            this.model = constructor.newInstance(node);
+            Constructor<NodeModel> constructor = modelClass.getConstructor(Node.class);
+            return constructor.newInstance(node);
         } catch (Exception /*
                  * InstantiationException | IllegalAccessException |
                  * IllegalArgumentException | InvocationTargetException |
@@ -203,5 +235,6 @@ public class ModelBuilderNodeVisitor<T extends NodeModel> implements NodeVisitor
                  */ ex) {
             Exceptions.printStackTrace(ex);
         }
+        return null;
     }
 }

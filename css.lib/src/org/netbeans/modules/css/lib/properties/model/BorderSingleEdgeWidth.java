@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,12 +37,10 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
@@ -53,34 +51,24 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderSingleEdgeWidth extends NodeModel implements Box<BoxEdgeBorder> {
 
-    List<Color> models = new ArrayList<Color>();
+    public BorderWidthItem borderEdgeWidth;
+    
+    private Edge edge;
 
-    public BorderColor(Node node) {
+    public BorderSingleEdgeWidth(Edge edge, Node node) {
         super(node);
+        this.edge = edge;
     }
-
-    @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
-        }
-        return null;
-    }
-
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
-    }
-
+    
     @Override
     public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        if(this.edge == edge) {
+            return new BoxEdgeBorderImpl(null, null, borderEdgeWidth);
+        }
+        return null;
+        
     }
+    
 }

@@ -53,26 +53,26 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderStyle extends NodeModel implements Box<BoxEdgeBorder> {
 
-    List<Color> models = new ArrayList<Color>();
+    private List<BorderStyleItem> models = new ArrayList<BorderStyleItem>();
 
-    public BorderColor(Node node) {
+    public BorderStyle(Node node) {
         super(node);
     }
 
     @Override
     protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
+        if (nodeName.equals("@border-style-item")) { //NOI18N
+            return BorderStyleItem.class;
         }
         return null;
     }
 
     @Override
     public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
+        if (model instanceof BorderStyleItem) {
+            models.add((BorderStyleItem) model);
         }
     }
 
@@ -80,7 +80,8 @@ public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
     public BoxEdgeBorder getEdge(Edge edge) {
         int values = models.size();
         int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        BorderStyleItem bsi = models.get(index);
+        return new BoxEdgeBorderImpl(null, bsi, null);
     }
+    
 }

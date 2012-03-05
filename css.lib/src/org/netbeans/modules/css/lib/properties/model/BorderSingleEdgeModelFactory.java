@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+@ServiceProvider(service = CustomModelFactory.class)
+public class BorderSingleEdgeModelFactory implements CustomModelFactory {
 
-    List<Color> models = new ArrayList<Color>();
+    private static final String BORDER_PREFIX = "border-"; //NOI18N
+    
+    private Map<String, Edge> EDGE_NAMES = new HashMap<String, Edge>();
 
-    public BorderColor(Node node) {
-        super(node);
+    public BorderSingleEdgeModelFactory() {
+        for (Edge e : Edge.values()) {
+            EDGE_NAMES.put(e.name().toLowerCase(), e);
+        }
     }
 
     @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
+    public NodeModel createModel(Node node) {
+        String nodeName = node.name().toLowerCase(Locale.ENGLISH);
+
+        if (nodeName.startsWith(BORDER_PREFIX)) {
+            int secondDashIndex = nodeName.lastIndexOf('-'); //e.g. in border-top"-"color
+            if (secondDashIndex == -1) {
+                return null;
+            }
+
+            String edgeName = nodeName.substring(BORDER_PREFIX.length(), secondDashIndex);
+            Edge edge = EDGE_NAMES.get(edgeName);
+            if (edge == null) {
+                return null;
+            }
+
+            String typeName = nodeName.substring(secondDashIndex + 1);
+            if("color".equals(typeName)) {
+                return new BorderSingleEdgeColor(edge, node);
+            } else if("style".equals(typeName)) {
+                
+            } else if("width".equals(typeName)) {
+                
+            }
+
+
+
         }
+
         return null;
-    }
-
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
-    }
-
-    @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
     }
 }

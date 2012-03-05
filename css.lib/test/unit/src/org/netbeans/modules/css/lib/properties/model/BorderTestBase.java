@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,42 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.Utils;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderTestBase extends CssTestBase {
 
-    List<Color> models = new ArrayList<Color>();
-
-    public BorderColor(Node node) {
-        super(node);
+    public BorderTestBase(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected Class getModelClassForSubNode(String nodeName) {
-        if (nodeName.equals("color")) { //NOI18N
-            return Color.class;
-        }
-        return null;
+    protected void dumpBox(Box<BoxEdgeBorder> box) {
+        Utils.dumpBox(box);
     }
 
-    @Override
-    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        if (model instanceof Color) {
-            models.add((Color) model);
-        }
-    }
+    protected void assertBox(Box<BoxEdgeBorder> box, String top, String right, String bottom, String left) {
+        BoxEdgeBorder e = box.getEdge(Edge.TOP);
+        assertEquals(top, e == null ? null : e.asText());
 
-    @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        e = box.getEdge(Edge.RIGHT);
+        assertEquals(right, e == null ? null : e.asText());
+
+        e = box.getEdge(Edge.BOTTOM);
+        assertEquals(bottom, e == null ? null : e.asText());
+
+        e = box.getEdge(Edge.LEFT);
+        assertEquals(left, e == null ? null : e.asText());
+
     }
 }
