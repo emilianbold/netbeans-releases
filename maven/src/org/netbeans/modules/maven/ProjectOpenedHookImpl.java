@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -109,7 +111,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private static final String PROP_SOURCE_CHECKED = "sourceChecked";
    
     private final Project proj;
-    private List<URI> uriReferences = new ArrayList<URI>();
+    private final List<URI> uriReferences = new ArrayList<URI>();
     private CopyResourcesOnSave copyResourcesOnSave;
 
     // ui logging
@@ -121,6 +123,31 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
 
     private static final Logger LOGGER = Logger.getLogger(ProjectOpenedHookImpl.class.getName());
     private static final AtomicBoolean checkedIndices = new AtomicBoolean();
+    
+    //here we handle properly the case when someone changes a
+    // ../../src path to ../../src2 path in the lifetime of the project.
+    private final PropertyChangeListener extRootChangeListener = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (NbMavenProject.PROP_PROJECT.equals(pce.getPropertyName())) {
+                NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
+                Set<URI> newuris = getProjectExternalSourceRoots(project);
+                synchronized (uriReferences) {
+                    Set<URI> olduris = new HashSet<URI>(uriReferences);
+                    olduris.removeAll(newuris);
+                    newuris.removeAll(uriReferences);
+                    for (URI old : olduris) {
+                        FileOwnerQuery.markExternalOwner(old, null, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    }
+                    for (URI nw : newuris) {
+                        FileOwnerQuery.markExternalOwner(nw, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                    }
+                    uriReferences.removeAll(olduris);
+                    uriReferences.addAll(newuris);
+                }
+            }
+        }
+    };
     
     public ProjectOpenedHookImpl(Project proj) {
         this.proj = proj;
@@ -134,23 +161,13 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
         project.attachUpdater();
         registerWithSubmodules(FileUtil.toFile(proj.getProjectDirectory()), new HashSet<File>());
-        Set<URI> uris = new HashSet<URI>();
-        uris.addAll(Arrays.asList(project.getSourceRoots(false)));
-        uris.addAll(Arrays.asList(project.getSourceRoots(true)));
-        //#167572 in the unlikely event that generated sources are located outside of
-        // the project root.
-        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(false)));
-        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(true)));
-        URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
-        File rootDir = new File(rootUri);
+        Set<URI> uris = getProjectExternalSourceRoots(project);
         for (URI uri : uris) {
-            if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
-                FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-                //TODO we do not handle properly the case when someone changes a
-                // ../../src path to ../../src2 path in the lifetime of the project.
-                uriReferences.add(uri);
-            }
+            FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+            uriReferences.add(uri);
         }
+        //XXX: is there an ordering problem? should this be done first right after the project changes, instead of ordinary listener?
+        project.getProjectWatcher().addPropertyChangeListener(extRootChangeListener);
         
         // register project's classpaths to GlobalPathRegistry
         ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
@@ -216,6 +233,25 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
             }, 1000 * 60 * 2);
         }
     }
+
+    private Set<URI> getProjectExternalSourceRoots(NbMavenProjectImpl project) throws IllegalArgumentException {
+        Set<URI> uris = new HashSet<URI>();
+        Set<URI> toRet = new HashSet<URI>();
+        uris.addAll(Arrays.asList(project.getSourceRoots(false)));
+        uris.addAll(Arrays.asList(project.getSourceRoots(true)));
+        //#167572 in the unlikely event that generated sources are located outside of
+        // the project root.
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(false)));
+        uris.addAll(Arrays.asList(project.getGeneratedSourceRoots(true)));
+        URI rootUri = FileUtil.toFile(project.getProjectDirectory()).toURI();
+        File rootDir = new File(rootUri);
+        for (URI uri : uris) {
+            if (FileUtilities.getRelativePath(rootDir, new File(uri)) == null) {
+                toRet.add(uri);
+            }
+        }
+        return toRet;
+    }
     private void register(ArtifactRepository repo, List<Repository> definitions) {
         String id = repo.getId();
         String displayName = id;
@@ -251,8 +287,14 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     }
 
     protected @Override void projectClosed() {
-        uriReferences.clear();
         NbMavenProjectImpl project = proj.getLookup().lookup(NbMavenProjectImpl.class);
+        //we stop listening for changes in external roots
+        //but as before, we keep the latest known roots upon closing..
+        project.getProjectWatcher().removePropertyChangeListener(extRootChangeListener);
+        synchronized (uriReferences) {
+            uriReferences.clear();
+        }
+        
         project.detachUpdater();
         // unregister project's classpaths to GlobalPathRegistry
         ProjectSourcesClassPathProvider cpProvider = proj.getLookup().lookup(ProjectSourcesClassPathProvider.class);
