@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.maven.cos;
 
-import org.codehaus.plexus.util.DirectoryScanner;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,12 +50,13 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.apache.maven.model.Resource;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.FileUtilities;
@@ -74,22 +76,69 @@ import org.openide.util.RequestProcessor;
  */
 public class CopyResourcesOnSave extends FileChangeAdapter {
 
-    private CopyResourcesOnSave() {}
-
-    private static final CopyResourcesOnSave instance = new CopyResourcesOnSave();
     private static final RequestProcessor RP = new RequestProcessor(CopyResourcesOnSave.class);
     private static final Logger LOG = Logger.getLogger(CopyResourcesOnSave.class.getName());
-    private static final AtomicInteger openedCount = new AtomicInteger();
+    
+    private final NbMavenProject nbproject;
+    private final Set<File> resourceUris = new HashSet<File>();
+    private final Project project;
+    private PropertyChangeListener pchl = new PropertyChangeListener() {
 
-    public static void opened() {
-        if (openedCount.getAndIncrement() == 0) {
-            FileUtil.addFileChangeListener(instance);
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if (NbMavenProject.PROP_PROJECT.equals(pce.getPropertyName())) {
+                refresh();
+            }
+        }
+    };
+
+    public CopyResourcesOnSave(NbMavenProject nbprj, Project prj) {
+        this.nbproject = nbprj;
+        this.project = prj;
+    }
+    
+    public final void opened() {
+        refresh();
+        nbproject.addPropertyChangeListener(pchl);
+    }
+    
+
+    public final void closed() {
+        nbproject.removePropertyChangeListener(pchl);
+        synchronized (resourceUris) {
+            for (File fl : resourceUris) {
+                FileUtil.removeFileChangeListener(this, fl);
+            }
         }
     }
-
-    public static void closed() {
-        if (openedCount.decrementAndGet() == 0) {
-            FileUtil.removeFileChangeListener(instance);
+    
+    final void refresh() {
+        synchronized (resourceUris) {
+            List<Resource> resources = new ArrayList<Resource>();
+            resources.addAll(nbproject.getMavenProject().getResources());
+            resources.addAll(nbproject.getMavenProject().getTestResources());
+            Set<File> old = new HashSet<File>(resourceUris);
+            Set<File> added = new HashSet<File>();
+            if (resources != null) {
+                for (Resource res : resources) {
+                    String dir = res.getDirectory();
+                    if (dir == null) {
+                        continue;
+                    }
+                    URI uri = FileUtilities.getDirURI(project.getProjectDirectory(), dir);
+                    File file = new File(uri);
+                    if (!old.contains(file)) {
+                        FileUtil.addFileChangeListener(this, file);
+                        added.add(file);
+                    }
+                }
+            }
+            old.removeAll(added);
+            for (File oldFile : old) {
+                FileUtil.removeFileChangeListener(this, oldFile);
+            }
+            resourceUris.removeAll(old);
+            resourceUris.addAll(added);
         }
     }
 
@@ -119,7 +168,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     private Project getOwningMavenProject(FileObject file) {
         Project prj = FileOwnerQuery.getOwner(file);
-        if (prj == null) {
+        if (prj == null || !prj.equals(project)) {
             return null;
         }
         //#180447
@@ -141,15 +190,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
      */
     @Override
     public void fileChanged(final FileEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    fileChanged(fe);
-                }
-            });
-            return;
-        }
+        RP.post(new Runnable() {//#167740
+            @Override
+            public void run() {
+                fileChangedImpl(fe);
+            }
+        });
+    }
+    
+    private  void fileChangedImpl(final FileEvent fe) {
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
@@ -163,15 +212,14 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     @Override
     public void fileDataCreated(final FileEvent fe) {
-       if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    fileDataCreated(fe);
-                }
-            });
-            return;
-        }
+        RP.post(new Runnable() {//#167740
+            @Override
+            public void run() {
+                fileDataCreatedImpl(fe);
+            }
+        });
+    }
+    private void fileDataCreatedImpl(final FileEvent fe) {
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
@@ -185,15 +233,14 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     @Override
     public void fileRenamed(final FileRenameEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    fileRenamed(fe);
-                }
-            });
-            return;
-        }
+        RP.post(new Runnable() {//#167740
+            @Override
+            public void run() {
+                fileRenamedImpl(fe);
+            }
+        });
+    }
+    private void fileRenamedImpl(final FileRenameEvent fe) {
         try {
             FileObject fo = fe.getFile();
             Project owning = getOwningMavenProject(fo);
@@ -220,15 +267,15 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
 
     @Override
     public void fileDeleted(final FileEvent fe) {
-        if (SwingUtilities.isEventDispatchThread()) {//#167740
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    fileDeleted(fe);
-                }
-            });
-            return;
-        }
+        RP.post(new Runnable() {//#167740
+            @Override
+            public void run() {
+                fileDeletedImpl(fe);
+            }
+        });
+    }
+    
+    private void fileDeletedImpl(final FileEvent fe) {
         Project owning = getOwningMavenProject(fe.getFile());
         if (owning == null) {
             return;
@@ -323,7 +370,7 @@ public class CopyResourcesOnSave extends FileChangeAdapter {
         if (resources == null) {
             return null;
         }
-        FileObject target = null;
+        FileObject target;
         //now figure the destination output folder
         File fil = nbproj.getOutputDirectory(test);
         File stamp = new File(fil, CosChecker.NB_COS);
