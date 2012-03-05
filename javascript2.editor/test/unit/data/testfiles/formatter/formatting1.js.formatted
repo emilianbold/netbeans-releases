@@ -27,7 +27,7 @@ function addSpace(count) {
 }
 
 function Ridic(name, surname){
-    this.name =  name;
+    this.name = name;
     this.surname = surname;
 
     this.getName = function() {
@@ -62,7 +62,7 @@ Ridic.prototype.getSurname = function () {
     return this.surname;
 }
 
-var motor =  {
+var motor = {
     pocetValcu : 8,
     vykon: "22kfdafa",
     getDescription: function () {
