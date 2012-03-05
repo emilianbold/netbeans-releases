@@ -83,18 +83,21 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         semanticHighlights = null;
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
-    public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
+    private Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
         return unusedUsesOffsetRanges;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
 
+    @Override
     public void run(Result r, SchedulerEvent event) {
         resume();
 
@@ -127,11 +130,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         cancelled = false;
     }
 
-    public @Override int getPriority() {
+    @Override
+    public int getPriority() {
         return 0;
     }
 
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
