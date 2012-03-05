@@ -460,10 +460,12 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
                 if(jsObject == null || !jsObject.isDeclared()){
                     // look at the index
-                    for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
-                        JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
-                        if (kind.isFunction()) {
-                            isFunction = true;
+                    if (exp.get(1).equals("@pro")) {
+                        for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
+                            JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            if (kind.isFunction()) {
+                                isFunction = true;
+                            }
                         }
                     }
                     Collection<IndexedElement> properties = jsIndex.getProperties(typeUsage.getType());
@@ -500,7 +502,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             
             
             for(IndexedElement indexedElement : indexedElements) {
-                addedProperties.put(indexedElement.getName(), indexedElement);
+                JsElement property = addedProperties.get(indexedElement.getName());
+                if (property == null 
+                        && (property == null || (!property.isDeclared() && indexedElement.isDeclared()))) {
+                    addedProperties.put(indexedElement.getName(), indexedElement);
+                }
             }
             
             // now look to the index again for declared item outside

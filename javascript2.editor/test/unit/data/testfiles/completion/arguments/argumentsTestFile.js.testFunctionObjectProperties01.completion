@@ -18,7 +18,7 @@ FIELD      arguments                       [PUBLIC]   stub_core_Function.js
 FIELD      arity                           [PUBLIC]   stub_core_Function.js
 FIELD      caller                          [PUBLIC]   stub_core_Function.js
 FIELD      constructor                     [PUBLIC]   stub_core_Function.js
-FIELD      length                          [PUBLIC]   arguments.js
-FIELD      name                            [PUBLIC]   arguments.js
+FIELD      length                          [PUBLIC]   stub_core_Function.js
+FIELD      name                            [PUBLIC]   stub_core_Function.js
 FIELD      prototype                       [PUBLIC]   stub_core_Function.js
 VARIABLE   i                               [PUBLIC]   arguments.js

@@ -66,6 +66,10 @@ public class JsCodeCompletionArgumentsTest extends JsTestBase {
     public void testFunctionObjectProperties02() throws Exception {
         checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction.^length + \" arguments.\");", false);
     }
+
+    public void testFunctionObjectProperties03() throws Exception {
+        checkCompletion("testfiles/completion/arguments/arguments.js", "+ ArgumentsContext.testFunction(1, 2).^toString());", false);
+    }
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
