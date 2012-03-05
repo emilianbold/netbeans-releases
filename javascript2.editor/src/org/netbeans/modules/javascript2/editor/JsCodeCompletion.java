@@ -95,6 +95,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         
         ParserResult info = ccContext.getParserResult();
         int caretOffset = ccContext.getCaretOffset();
+        FileObject fileObject = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
         JsParserResult jsParserResult = (JsParserResult)info;
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
         
@@ -117,12 +118,45 @@ class JsCodeCompletion implements CodeCompletionHandler {
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         switch (context) {
             case GLOBAL:
+                HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
                 for(JsObject object : request.result.getModel().getVariables(caretOffset)) {
                     if (!(object instanceof JsFunction && ((JsFunction)object).isAnonymous())
-                            && startsWith(object.getName(), request.prefix))
-                        resultList.add(JsCompletionItem.Factory.create(object, request));
+                            && startsWith(object.getName(), request.prefix)) {
+                        JsElement element = addedProperties.get(object.getName());
+                        if (element == null) {
+                            if (object.isDeclared()) {
+                                resultList.add(JsCompletionItem.Factory.create(object, request));
+                            }
+                            addedProperties.put(object.getName(), object);
+                        } else if (!element.isDeclared() && object.isDeclared()) {
+                            resultList.add(JsCompletionItem.Factory.create(object, request));
+                            addedProperties.put(object.getName(), object);
+                        }
+                        
+                    }
                 }
                 completeKeywords(request, resultList);
+                Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
+                for (IndexedElement indexElement: fromIndex) {
+                    if(startsWith(indexElement.getName(), request.prefix)) {
+                        JsElement element = addedProperties.get(indexElement.getName());
+                        if (element == null) {
+                            if (indexElement.isDeclared()) {
+                                resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                            }
+                            addedProperties.put(indexElement.getName(), indexElement);
+                        } else if (!element.isDeclared() && indexElement.isDeclared()){
+                            resultList.add(JsCompletionItem.Factory.create(indexElement, request));
+                            addedProperties.put(indexElement.getName(), indexElement);
+                        }
+                    }
+                }
+                
+                for(JsElement element: addedProperties.values()) {
+                    if (!element.isDeclared()) {
+                        resultList.add(JsCompletionItem.Factory.create(element, request));
+                    }
+                }
                 break;
             case EXPRESSION:
                 completeExpression(request, resultList);
@@ -350,33 +384,35 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     if(type == null || type.getAssignmentForOffset(request.anchor).isEmpty()) {
                         // also check, whether the same type is not in the index
                         lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                    }
-
-                    if ("@mtd".equals(kind)) {  //NOI18N
-                        if (type.getJSKind().isFunction()) {
-                            lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
-                        }
-                    } else {
-                        // just property
-                        Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
-
-                        if (lastTypeAssignment.isEmpty()) {
-                            lastResolvedObjects.add(type);
+                    } 
+                    
+                    if (type != null) {
+                        if ("@mtd".equals(kind)) {  //NOI18N
+                            if (type.getJSKind().isFunction()) {
+                                lastResolvedTypes.addAll(((JsFunction) type).getReturnTypes());
+                            }
                         } else {
-                            for (Type typeName : lastTypeAssignment) {
-                                boolean wasFound = false;
-                                for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
-                                    if (object.getName().equals(typeName.getType())) {
-                                        lastResolvedObjects.add(object);
-                                        wasFound = true;
-                                        break;
+                            // just property
+                            Collection<? extends Type> lastTypeAssignment = type.getAssignmentForOffset(request.anchor);
+
+                            if (lastTypeAssignment.isEmpty()) {
+                                lastResolvedObjects.add(type);
+                            } else {
+                                for (Type typeName : lastTypeAssignment) {
+                                    boolean wasFound = false;
+                                    for (JsObject object : request.result.getModel().getVariables(request.anchor)) {
+                                        if (object.getName().equals(typeName.getType())) {
+                                            lastResolvedObjects.add(object);
+                                            wasFound = true;
+                                            break;
+                                        }
+                                    }
+                                    if (!wasFound) {
+                                        lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
                                     }
                                 }
-                                if (!wasFound) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(typeName.getType(), -1, true));
-                                }
+                                break;
                             }
-                            break;
                         }
                     }
 
@@ -448,7 +484,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 IndexedElement indexedElement = IndexedElement.create(indexResult);
                 JsElement element = addedProperties.get(indexedElement.getName());
                 if (startsWith(indexedElement.getName(), request.prefix) 
-                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                        && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
+                        && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
                     addedProperties.put(indexedElement.getName(), indexedElement);
                 }
             }

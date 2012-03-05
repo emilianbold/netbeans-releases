@@ -102,7 +102,7 @@ public class CompletionContextFinder {
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
         }
-        if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, true)) {
+        if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {
             return CompletionContext.OBJECT_PROPERTY;
         }
         

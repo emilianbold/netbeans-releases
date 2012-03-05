@@ -75,13 +75,18 @@ public class JsCodeCompletionParamTypesTest extends JsTestBase {
         checkCompletion("testfiles/completion/paramTypes/testFile.js", "MyParamTestContext.^definedInOtherFile(22);", false);
     }
     
+    public void testGlobalContext01() throws Exception {
+        checkCompletion("testfiles/completion/paramTypes/testFile.js", "f^ormatter.print(\"text\");", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(new FileObject[] {
                 FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/runtime")),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/paramTypes"))
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/paramTypes")),
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
             })
         );
     }
