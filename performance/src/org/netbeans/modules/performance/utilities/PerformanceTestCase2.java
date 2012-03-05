@@ -60,7 +60,7 @@ public class PerformanceTestCase2 extends JellyTestCase{
     @Override
     public void openDataProjects(String... projects) throws IOException {
         String[] fullPaths = new String[projects.length];
-        String altPath = "/space/a/performance/performance";
+        String altPath = System.getProperty("nb_perf_alt_path");
         for (int i = 0; i < projects.length; i++) {
             if (altPath!=null) {
                 fullPaths[i] = mergePaths(altPath,getDataDir().getAbsolutePath()) + File.separator + projects[i];
