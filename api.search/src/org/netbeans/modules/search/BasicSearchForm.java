@@ -682,10 +682,6 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
                && searchCriteria.isUsable();
     }
 
-    void clean() {
-        cboxScope.clean();
-    }
-
     private void setMnemonics(boolean searchAndReplace) {
 
         lclz(lblTextToFind, "BasicSearchForm.lblTextToFind.text");      //NOI18N

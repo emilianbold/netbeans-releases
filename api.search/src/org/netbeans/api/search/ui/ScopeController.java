@@ -44,6 +44,8 @@ package org.netbeans.api.search.ui;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -52,8 +54,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.modules.search.SearchScopeList;
 import org.netbeans.spi.search.SearchScopeDefinition;
-import org.openide.util.ChangeSupport;
-import org.openide.util.Lookup;
 import org.openide.util.WeakListeners;
 
 /**
@@ -65,34 +65,22 @@ import org.openide.util.WeakListeners;
  */
 public final class ScopeController extends ComponentController<JComboBox> {
 
-    private final ChangeSupport changeSupport = new ChangeSupport(this);
-    ScopeController.SearchScopeChangeListener searchScopeChangeListener;
-    Lookup.Result lookupResult;
+    SearchScopeChangeListener searchScopeChangeListener;
+    ChangeListener searchScopeChangeListenerWeak;
     private SearchScopeDefinition selectedSearchScope;
     private ScopeController.ManualSelectionListener manualSelectionListener;
     private String manuallySelectedId = null;
+    private boolean active = false;
     SearchScopeList scopeList;
+    SearchScopeDefinition[] extraSearchScopes;
 
     ScopeController(JComboBox jComboBox, String prefferedId,
             SearchScopeDefinition... extraSearchScopes) {
         super(jComboBox);
-        scopeList = new SearchScopeList(extraSearchScopes);
-        manualSelectionListener = new ScopeController.ManualSelectionListener();
-        searchScopeChangeListener = new ScopeController.SearchScopeChangeListener();
-        scopeList.addChangeListener(
-                WeakListeners.change(searchScopeChangeListener,
-                scopeList));
+        this.manuallySelectedId = prefferedId;
+        this.extraSearchScopes = extraSearchScopes;
+        component.addHierarchyListener(new ScopeComboBoxHierarchyListener());
         component.setEditable(false);
-        init(prefferedId);
-    }
-
-    /**
-     * Add row with selection of scope to the form panel.
-     */
-    protected final void init(String prefferedId) {
-
-        updateScopeItems(prefferedId);
-        component.addActionListener(manualSelectionListener);
     }
 
     private void updateScopeItems(String prefferedId) {
@@ -252,13 +240,44 @@ public final class ScopeController extends ComponentController<JComboBox> {
         }
     }
 
-    /**
-     * Clean all resources when the component is no longer needed.
-     */
-    public void clean() {
-        lookupResult = null;
-        scopeList.removeChangeListener(
-                searchScopeChangeListener);
-        scopeList.clean();
+    private class ScopeComboBoxHierarchyListener implements HierarchyListener {
+
+        @Override
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                toggleListeners();
+            }
+        }
+
+        private synchronized void toggleListeners() {
+            if (component.isShowing() && !active) {
+                initListeners();
+            } else if (!component.isShowing() && active) {
+                cleanListeners();
+            }
+        }
+
+        private void initListeners() {
+            scopeList = new SearchScopeList(extraSearchScopes);
+            manualSelectionListener = new ManualSelectionListener();
+            searchScopeChangeListener = new SearchScopeChangeListener();
+            searchScopeChangeListenerWeak = WeakListeners.change(
+                    searchScopeChangeListener, scopeList);
+            scopeList.addChangeListener(searchScopeChangeListenerWeak);
+            updateScopeItems(manuallySelectedId);
+            component.addActionListener(manualSelectionListener);
+            active = true;
+        }
+
+        private void cleanListeners() {
+            scopeList.removeChangeListener(searchScopeChangeListenerWeak);
+            searchScopeChangeListenerWeak = null;
+            searchScopeChangeListener = null;
+            scopeList.clean();
+            scopeList = null;
+            component.removeActionListener(manualSelectionListener);
+            manualSelectionListener = null;
+            active = false;
+        }
     }
 };

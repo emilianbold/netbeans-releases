@@ -226,7 +226,6 @@ public class BasicSearchProvider extends SearchProvider {
         @Override
         public void clean() {
             super.clean();
-            form.clean();
         }
     }
 
