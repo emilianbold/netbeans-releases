@@ -125,6 +125,7 @@ public final class ScopeSettingsPanel extends ComponentController<JPanel> {
         btnEditIgnoreList = new JButton();
         checkBoxListener = new CheckBoxListener();
 
+        component.setLayout(new FlowLayout(FlowLayout.LEADING, 0, 0));
         setMnemonics();
         initIgnoreListControlComponents();
         initScopeOptionsRow(replacing);
