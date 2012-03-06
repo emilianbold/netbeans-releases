@@ -187,7 +187,6 @@ public class BugzillaUtil {
         Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
         if(repository == null) {
             repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
-                    BugzillaConnector.getInstance(), 
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(),

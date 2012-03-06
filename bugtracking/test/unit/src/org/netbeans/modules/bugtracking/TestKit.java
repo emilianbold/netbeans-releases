@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
 /**
@@ -52,9 +50,8 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
  * @author tomas
  */
 public class TestKit {
-    public static RepositoryImpl getRepository(BugtrackingConnector connector, TestRepository repo) {
+    public static RepositoryImpl getRepository(TestRepository repo) {
         return new RepositoryImpl(
-                connector, 
                 repo, 
                 new TestRepositoryProvider(), 
                 new TestQueryProvider(),

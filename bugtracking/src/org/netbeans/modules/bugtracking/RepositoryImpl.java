@@ -71,14 +71,12 @@ public class RepositoryImpl<R, Q, I> {
     private final IssueProvider<I> issueProvider;
     private final QueryProvider<Q, I> queryProvider;
     private final R r;
-    private final DelegatingConnector connector;
 
     private Map<I, IssueImpl> issueMap = new HashMap<I, IssueImpl>();
     private Map<Q, QueryImpl> queryMap = new HashMap<Q, QueryImpl>();
     private Repository repository;
     
-    public RepositoryImpl(BugtrackingConnector connector, R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
-        this.connector = findDelegatingConnector(connector);
+    public RepositoryImpl(R r, RepositoryProvider<R, Q, I> repositoryProvider, QueryProvider<Q, I> queryProvider, IssueProvider<I> issueProvider) {
         this.repositoryProvider = repositoryProvider;
         this.issueProvider = issueProvider;
         this.queryProvider = queryProvider;
@@ -93,24 +91,6 @@ public class RepositoryImpl<R, Q, I> {
         return repository;
     }
     
-    private DelegatingConnector findDelegatingConnector(BugtrackingConnector connector) {
-        if(connector == null) {
-            BugtrackingManager.LOG.log(Level.WARNING, "Repository init with null connector");
-            return null;
-        }
-        if(connector instanceof DelegatingConnector) {
-            return (DelegatingConnector) connector;
-        }
-        DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
-        for (DelegatingConnector dc : conns) {
-            if(dc.getDelegate() == connector) {
-                return dc;
-            }
-        }
-        BugtrackingManager.LOG.log(Level.WARNING, "No delegate for {0}", connector.getClass().getName());
-        return null;
-    }
-
     /**
      * Returns the icon for this repository
      * @return
@@ -197,10 +177,6 @@ public class RepositoryImpl<R, Q, I> {
         I issueData = repositoryProvider.createIssue(r);
         return getIssue(issueData);
     }   
-    
-    DelegatingConnector getConnector() {
-        return connector;
-    }
 
     public RepositoryProvider<R, Q, I> getProvider() {
         return repositoryProvider;

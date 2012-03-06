@@ -448,7 +448,7 @@ public class CacheTest extends NbTestCase {
 
         public Lookup getLookup() {
             if(cache == null) {
-                cache = new TestCache(name, TestKit.getRepository(null, this));
+                cache = new TestCache(name, TestKit.getRepository(this));
             }
             return Lookups.singleton(cache);
         }
@@ -483,7 +483,7 @@ public class CacheTest extends NbTestCase {
                         }
                         @Override
                         public CTestIssue createIssue(String issueData) {
-                            return new CTestIssue(TestKit.getRepository(null, CTestRepository.this), issueData);
+                            return new CTestIssue(TestKit.getRepository(CTestRepository.this), issueData);
                         }
 
                         @Override

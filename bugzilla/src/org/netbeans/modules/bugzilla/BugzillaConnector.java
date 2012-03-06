@@ -74,24 +74,16 @@ import org.openide.util.lookup.Lookups;
 public class BugzillaConnector extends KenaiBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
-    private static BugzillaConnector instance;
 
     private BugzillaIssueFinder issueFinder;
 
-    public BugzillaConnector() {
-        instance = this;
-    }
+    public BugzillaConnector() {}
     
-    public static BugzillaConnector getInstance() {
-        return instance;
-    }
-
     @Override
     public Repository createRepository(RepositoryInfo info) {
         BugzillaRepository bugzillaRepository = new BugzillaRepository(info);
         return Bugzilla.getInstance().getBugtrackingFactory().
                 createRepository(
-                    this, 
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(), 
@@ -104,7 +96,6 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
         BugzillaRepository bugzillaRepository = new BugzillaRepository();
         return Bugzilla.getInstance().getBugtrackingFactory().
                 createRepository(
-                    this, 
                     bugzillaRepository, 
                     Bugzilla.getInstance().getRepositoryProvider(), 
                     Bugzilla.getInstance().getQueryProvider(), 

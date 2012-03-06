@@ -385,7 +385,7 @@ public class StorageTest extends NbTestCase {
                 throw new UnsupportedOperationException("Not supported yet.");
             }
         };
-        RepositoryImpl impl = TestKit.getRepository(new DummyBugtrackingConnector(), new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
+        RepositoryImpl impl = TestKit.getRepository(new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
         return new IssueCache<DummyIssue, Object>("dummy", ia, null, impl.getRepository());
     }
 }

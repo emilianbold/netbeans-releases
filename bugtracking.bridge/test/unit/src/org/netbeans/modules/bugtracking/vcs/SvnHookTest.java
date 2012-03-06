@@ -264,7 +264,7 @@ public class SvnHookTest extends NbTestCase {
 
     private void preparePanel(HookPanel panel) throws NoSuchMethodException, IllegalArgumentException, IllegalAccessException, NoSuchFieldException, InvocationTargetException {
         HookRepository hookRepository = new HookRepository();
-        Repository repository = TestKit.getRepository(HookConnector.getInstance(), hookRepository).getRepository();
+        Repository repository = TestKit.getRepository(hookRepository).getRepository();
         setRepository(repository, panel);
         setIssue(repository, panel);
         panel.enableFields(); // emulate event

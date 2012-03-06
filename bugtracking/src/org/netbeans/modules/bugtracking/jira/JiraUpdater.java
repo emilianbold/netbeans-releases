@@ -210,7 +210,7 @@ public class JiraUpdater {
         private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
         public Repository createRepository() {
-            return f.createRepository(connector, f, new JiraProxyRepositoryProvider(), null, null);
+            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
         }
         @Override
         public Repository createRepository(RepositoryInfo info) {

@@ -77,22 +77,14 @@ public class JiraConnector extends KenaiBugtrackingConnector {
     private boolean alreadyLogged = false;
 
     public static final String ID = "org.netbeans.modules.jira";                                     //  NOI18N
-    private static JiraConnector instance;
 
-    public JiraConnector() {
-        instance = this;
-    }
-
-    public static JiraConnector getInstance() {
-        return instance;
-    }
+    public JiraConnector() {}
 
     @Override
     public Repository createRepository(RepositoryInfo info) {
         JiraRepository jiraRepository = new JiraRepository(info);
         return Jira.getInstance().getBugtrackingFactory().
                 createRepository(
-                    this, 
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(), 
                     Jira.getInstance().getQueryProvider(), 
@@ -113,7 +105,6 @@ public class JiraConnector extends KenaiBugtrackingConnector {
         JiraRepository jiraRepository = new JiraRepository();
         return Jira.getInstance().getBugtrackingFactory().
                 createRepository(
-                    this, 
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(), 
                     Jira.getInstance().getQueryProvider(), 

@@ -91,7 +91,7 @@ public class DummyRepository extends TestRepository {
 
     @Override
     public void remove() {
-        connector.removeRepository(TestKit.getRepository(connector, this));
+        connector.removeRepository(TestKit.getRepository(this));
     }
 
     @Override

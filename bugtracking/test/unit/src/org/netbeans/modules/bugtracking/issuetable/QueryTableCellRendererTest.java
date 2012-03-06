@@ -77,7 +77,7 @@ public class QueryTableCellRendererTest {
         Color modifiedHighlightColor       = new Color(0x0000ff);
         Color obsoleteHighlightColor       = new Color(0x999999);
         
-        RepositoryImpl repository = TestKit.getRepository(null, rendererRepository);
+        RepositoryImpl repository = TestKit.getRepository(rendererRepository);
         QueryImpl query = TestKit.getQuery(repository, rendererQuery);
         
         IssueTable<RendererQuery> issueTable = new IssueTable(
@@ -205,7 +205,7 @@ public class QueryTableCellRendererTest {
         IssueProperty property = new RendererNode(issue, "some value", rendererRepository).createProperty();
 
         IssueTable<RendererQuery> issueTable = new IssueTable(
-                TestKit.getRepository(null, rendererRepository).getRepository(),
+                TestKit.getRepository(rendererRepository).getRepository(),
                 query, 
                 new ColumnDescriptor[] {new ColumnDescriptor("dummy", String.class, "dummy", "dummy")});
         
@@ -302,7 +302,7 @@ public class QueryTableCellRendererTest {
 
         Object propertyValue;
         public RendererNode(RendererIssue issue, String value, RendererRepository rendererRepository) {
-            super(TestKit.getRepository(null, rendererRepository).getRepository(), issue);
+            super(TestKit.getRepository(rendererRepository).getRepository(), issue);
             propertyValue = value;
         }
         RendererIssueProperty createProperty() {
@@ -457,7 +457,7 @@ public class QueryTableCellRendererTest {
                     }
                 };
                 TestIssueProvider issueProvider = new TestIssueProvider();
-                RepositoryImpl repo = TestKit.getRepository(null, this);
+                RepositoryImpl repo = TestKit.getRepository(this);
                 cache = new IssueCache<TestIssue, Object>("test", issueAccessor, issueProvider, repo.getRepository());
             }
             return cache;

@@ -294,7 +294,7 @@ public class RecentIssuesTest extends NbTestCase {
     }
     
     private RepositoryImpl getRepository(RITestRepository repo) {
-        return TestKit.getRepository(new RITestConector(), repo);
+        return TestKit.getRepository(repo);
     }
     
     private IssueImpl getIssue(RepositoryImpl repo2, RITestIssue riTestIssue) {

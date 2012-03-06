@@ -81,7 +81,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     public Repository createRepository(String repositoryName) {
-        RepositoryImpl newRepository = TestKit.getRepository(instance, new DummyRepository(this, repositoryName));
+        RepositoryImpl newRepository = TestKit.getRepository(new DummyRepository(this, repositoryName));
         storeRepository(newRepository);
         return newRepository.getRepository();
     }

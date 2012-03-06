@@ -358,7 +358,6 @@ public class JiraUtils {
         Repository repository = Jira.getInstance().getBugtrackingFactory().getRepository(JiraConnector.ID, jiraRepository.getID());
         if(repository == null) {
             repository = Jira.getInstance().getBugtrackingFactory().createRepository(
-                    JiraConnector.getInstance(), 
                     jiraRepository, 
                     Jira.getInstance().getRepositoryProvider(),
                     Jira.getInstance().getQueryProvider(), 

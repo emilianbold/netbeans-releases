@@ -58,9 +58,7 @@ public final class BugtrackingFactory<R, Q, I> {
      * @param qp
      * @return 
      */
-    public Repository createRepository(
-            BugtrackingConnector connector, 
-            R r, 
+    public Repository createRepository(R r, 
             RepositoryProvider<R, Q, I> rp, 
             QueryProvider<Q, I> qp,
             IssueProvider<I> ip) 
@@ -74,7 +72,7 @@ public final class BugtrackingFactory<R, Q, I> {
                 return repo;
             }
         }
-        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(connector, r, rp, qp, ip);
+        RepositoryImpl<R, Q, I> impl = new RepositoryImpl<R, Q, I>(r, rp, qp, ip);
         return impl.getRepository();
     }
     

@@ -135,10 +135,6 @@ public class Bugzilla {
         return rp;
     }
     
-    public BugzillaConnector getConnector() {
-        return BugzillaConnector.getInstance();
-    }
-
     public BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue> getBugtrackingFactory() {
         if(bf == null) {
             bf = new BugtrackingFactory<BugzillaRepository, BugzillaQuery, BugzillaIssue>();

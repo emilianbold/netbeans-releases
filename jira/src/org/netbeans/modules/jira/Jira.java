@@ -109,10 +109,6 @@ public class Jira {
         return rp;
     }
 
-    public JiraConnector getConnector() {
-        return JiraConnector.getInstance();
-    }
-
     public JiraRepositoryConnector getRepositoryConnector() {
         if(jrc == null) {
             jrc = new JiraRepositoryConnector();

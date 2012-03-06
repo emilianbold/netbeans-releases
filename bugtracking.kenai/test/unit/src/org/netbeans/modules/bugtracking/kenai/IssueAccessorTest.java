@@ -115,7 +115,7 @@ public class IssueAccessorTest extends NbTestCase {
             throw new RuntimeException(ex);
         }
         if(IATestConnector.kolibaRepository == null) {
-            IATestConnector.kolibaRepository = TestKit.getRepository(IATestConnector.getInstance(), new IATestRepository("nb-jnet-test")).getRepository();
+            IATestConnector.kolibaRepository = TestKit.getRepository(new IATestRepository("nb-jnet-test")).getRepository();
 //            TestConnector.goldenProjectRepository = new TestRepository("golden-project-1");
         }
     }

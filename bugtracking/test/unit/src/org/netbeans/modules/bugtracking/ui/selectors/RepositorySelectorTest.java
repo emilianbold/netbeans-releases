@@ -92,7 +92,7 @@ public class RepositorySelectorTest extends NbTestCase {
         MyRepository repo = new MyRepository();
 
         SelectorPanel sp = new SelectorPanel();
-        createEditDescriptor(sp, TestKit.getRepository(null, repo), errorMsg);
+        createEditDescriptor(sp, TestKit.getRepository(repo), errorMsg);
 
         String text = getErrroLabelText(sp);
         assertEquals(errorMsg, text);
