@@ -172,6 +172,7 @@ public class Installer extends ModuleInstall implements Runnable {
     private static OutputStream logStreamMetrics;
     private static int logsSize;
     private static int logsSizeMetrics;
+    private static long logsFirstDateMetric;
     private static URL hintURL;
     private static Object[] selectedExcParams;
 
@@ -266,6 +267,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
+        logsFirstDateMetric = prefs.getLong("firstDateMetric", -1);
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
@@ -513,18 +515,36 @@ public class Installer extends ModuleInstall implements Runnable {
         userData.setLoggerName(logger.getName());
         return userData;
     }
+    
+    private static boolean uploadMetricsTest() {
+        if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+            return true;
+        }
+        int daysSinceFirstMetric = (int) ((System.currentTimeMillis() - logsFirstDateMetric)/(1000*60*60*24));
+        if (daysSinceFirstMetric > MetricsHandler.MAX_DAYS) {
+            return true;
+        }
+        return false;
+    }
 
     static void writeOutMetrics (LogRecord r) {
         try {
+            boolean upload;
             synchronized (METRICS_LOG_LOCK) {
                 LogRecords.write(logStreamMetrics(), r);
-            }
-            logsSizeMetrics++;
-            if (preferencesWritable) {
-                prefs.putInt("countMetrics", logsSizeMetrics);
-            }
-            if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
-                synchronized (METRICS_LOG_LOCK) {
+                logsSizeMetrics++;
+                boolean firstDateMetric = logsFirstDateMetric < 0;
+                if (firstDateMetric) {
+                    logsFirstDateMetric = System.currentTimeMillis();
+                }
+                if (preferencesWritable) {
+                    prefs.putInt("countMetrics", logsSizeMetrics);
+                    if (firstDateMetric) {
+                        prefs.putLong("firstDateMetric", logsFirstDateMetric);
+                    }
+                }
+                upload = uploadMetricsTest();
+                if (upload) {
                     MetricsHandler.waitFlushed();
                     closeLogStreamMetrics();
                     File f = logFileMetrics(0);
@@ -554,10 +574,14 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                     }
                     logsSizeMetrics = 0;
+                    logsFirstDateMetric = System.currentTimeMillis();
                     if (preferencesWritable) {
                         prefs.putInt("countMetrics", logsSizeMetrics);
+                        prefs.putLong("dateFirstMetric", logsFirstDateMetric);
                     }
                 }
+            }
+            if (upload) {
                 //Task to upload metrics data
                 class Auto implements Runnable {
                     @Override
