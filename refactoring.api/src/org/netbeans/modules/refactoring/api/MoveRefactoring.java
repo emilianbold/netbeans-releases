@@ -71,6 +71,7 @@ public final class MoveRefactoring extends AbstractRefactoring {
      *   <tr><td>Refactoring API (Default impl.)</td><td>{@link org.openide.filesystems.FileObject}(s)</td><td>Does file(s) move</td></tr>
      *   <tr><td>Java Refactoring</td><td>{@link org.openide.filesystems.FileObject}(s) with content type text/x-java</td><td>Does refactoring inside .java files</td></tr>
      *   <tr><td></td><td>{@link org.netbeans.api.java.source.TreePathHandle}(s)</td><td>Does refactoring of members in .java files</td></tr>
+     *   <tr><td></td><td>{@link org.netbeans.api.java.source.TreePathHandle} of class</td><td>Does refactoring of class in .java files</td></tr>
      * </table>
      * @param objectsToMove store your objects into Lookup
      */
