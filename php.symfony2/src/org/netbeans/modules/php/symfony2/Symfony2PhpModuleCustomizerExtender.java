@@ -42,14 +42,17 @@
 package org.netbeans.modules.php.symfony2;
 
 import java.util.EnumSet;
-import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModule.Change;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.phpmodule.PhpModuleCustomizerExtender;
-import org.netbeans.modules.php.symfony2.options.Symfony2Options;
+import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.netbeans.modules.php.symfony2.ui.customizer.Symfony2CustomizerPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle.Messages;
 
@@ -58,22 +61,25 @@ import org.openide.util.NbBundle.Messages;
  */
 public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExtender {
 
-    private static final String IGNORE_CACHE_DIRECTORY = "ignore-cache-directory"; // NOI18N
-
     private final PhpModule phpModule;
-    private final boolean originalState;
+    private final boolean originalEnabled;
+    private final String originalAppDir;
+    private final boolean originalCacheDirIgnored;
 
+    // @GuardedBy(EDT)
     private Symfony2CustomizerPanel component;
+    // @GuardedBy(EDT)
+    private boolean valid = false;
+    // @GuardedBy(EDT)
+    private String errorMessage = null;
 
 
     Symfony2PhpModuleCustomizerExtender(PhpModule phpModule) {
         this.phpModule = phpModule;
 
-        originalState = isCacheDirectoryIgnored(phpModule);
-    }
-
-    public static boolean isCacheDirectoryIgnored(PhpModule phpModule) {
-        return getPreferences(phpModule).getBoolean(IGNORE_CACHE_DIRECTORY, Symfony2Options.getInstance().getIgnoreCache());
+        originalEnabled = Symfony2PhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
+        originalAppDir = Symfony2Preferences.getAppDir(phpModule);
+        originalCacheDirIgnored = Symfony2Preferences.isCacheDirIgnored(phpModule);
     }
 
     @Messages("LBL_Symfony2=Symfony2")
@@ -84,12 +90,12 @@ public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExte
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        // not needed
+        getPanel().addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        // not needed
+        getPanel().removeChangeListener(listener);
     }
 
     @Override
@@ -104,40 +110,98 @@ public class Symfony2PhpModuleCustomizerExtender extends PhpModuleCustomizerExte
 
     @Override
     public boolean isValid() {
-        // always valid
-        return true;
+        validate();
+        return valid;
     }
 
     @Override
     public String getErrorMessage() {
-        // always valid
-        return null;
+        validate();
+        return errorMessage;
     }
 
     @Override
     public EnumSet<Change> save(PhpModule phpModule) {
-        boolean newState = getPanel().isIgnoreCacheDirectory();
-        if (newState != originalState) {
-            getPreferences().putBoolean(IGNORE_CACHE_DIRECTORY, newState);
-            return EnumSet.of(Change.IGNORED_FILES_CHANGE);
+        EnumSet<Change> changes = EnumSet.noneOf(Change.class);
+        saveEnabled(changes);
+        saveAppDir(changes);
+        saveCacheIgnored(changes);
+        if (changes.isEmpty()) {
+            return null;
         }
-        return null;
+        return changes;
+    }
+
+    private void saveEnabled(EnumSet<Change> changes) {
+        boolean newEnabled = getPanel().isSupportEnabled();
+        if (newEnabled != originalEnabled) {
+            Symfony2Preferences.setEnabled(phpModule, newEnabled);
+            changes.add(Change.FRAMEWORK_CHANGE);
+        }
+    }
+
+    private void saveAppDir(EnumSet<Change> changes) {
+        String newAppDir = getPanel().getAppDirectory();
+        if (!newAppDir.equals(originalAppDir)) {
+            Symfony2Preferences.setAppDir(phpModule, newAppDir);
+            changes.add(Change.FRAMEWORK_CHANGE);
+        }
+    }
+
+    private void saveCacheIgnored(EnumSet<Change> changes) {
+        boolean newIgnored = getPanel().isIgnoreCacheDirectory();
+        if (newIgnored != originalCacheDirIgnored) {
+            Symfony2Preferences.setCacheDirIgnored(phpModule, newIgnored);
+            changes.add(Change.IGNORED_FILES_CHANGE);
+        }
     }
 
     private Symfony2CustomizerPanel getPanel() {
         if (component == null) {
-            component = new Symfony2CustomizerPanel();
-            component.setIgnoreCacheDirectory(originalState);
+            component = new Symfony2CustomizerPanel(phpModule.getSourceDirectory());
+            component.setSupportEnabled(originalEnabled);
+            component.setAppDirectory(originalAppDir);
+            component.setIgnoreCacheDirectory(originalCacheDirIgnored);
         }
         return component;
     }
 
-    private Preferences getPreferences() {
-        return getPreferences(phpModule);
-    }
-
-    private static Preferences getPreferences(PhpModule module) {
-        return module.getPreferences(Symfony2PhpFrameworkProvider.class, true);
+    @Messages({
+        "Symfony2PhpModuleCustomizerExtender.error.appDir.empty=App directory must be set.",
+        "Symfony2PhpModuleCustomizerExtender.error.appDir.notChild=App directory must be underneath Source Files.",
+        "Symfony2PhpModuleCustomizerExtender.error.appDir.consoleNotFound=Console script not found underneath App directory."
+    })
+    private void validate() {
+        Symfony2CustomizerPanel panel = getPanel();
+        if (!panel.isSupportEnabled()) {
+            // nothing to validate
+            valid = true;
+            errorMessage = null;
+            return;
+        }
+        // check app dir
+        String appDir = panel.getAppDirectory();
+        if (!StringUtils.hasText(appDir)) {
+            valid = false;
+            errorMessage = Bundle.Symfony2PhpModuleCustomizerExtender_error_appDir_empty();
+            return;
+        }
+        FileObject sources = phpModule.getSourceDirectory();
+        FileObject fo = sources.getFileObject(appDir);
+        if (fo == null
+                || !FileUtil.isParentOf(sources, fo)) {
+            valid = false;
+            errorMessage = Bundle.Symfony2PhpModuleCustomizerExtender_error_appDir_notChild();
+            return;
+        }
+        if (Symfony2Script.getPath(phpModule, appDir) == null) {
+            valid = false;
+            errorMessage = Bundle.Symfony2PhpModuleCustomizerExtender_error_appDir_consoleNotFound();
+            return;
+        }
+        // everything ok
+        valid = true;
+        errorMessage = null;
     }
 
 }
