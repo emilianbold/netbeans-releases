@@ -106,7 +106,7 @@ public abstract class IssueNode<I> extends AbstractNode {
         refreshHtmlDisplayName();
         IssueCacheUtils.addCacheListener(issue, new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
-                if(IssueNode.this.issue != evt.getSource()) {
+                if(IssueNode.this.issue.getIssue() != evt.getSource()) {
                     return;
                 }
                 if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
