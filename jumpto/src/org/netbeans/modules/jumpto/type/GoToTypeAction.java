@@ -798,8 +798,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         @Override
         public synchronized void run() {
-            profiling = true;
-            profiler.start();
+            if (profiler != null) {
+                profiling = true;
+                profiler.start();
+            }
         }
 
         private synchronized void stop() throws Exception {
