@@ -180,13 +180,18 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                 found = true;
                 b = f.getAbsolutePath();
             }
+            f = new java.io.File ("/opt/google/chrome/google-chrome"); // NOI18N
+            if ( !found && f.exists()) {
+                found = true;
+                b = f.getAbsolutePath();
+            }
             f = new java.io.File ("/usr/bin/google-chrome"); // NOI18N
-            if (f.exists()) {
+            if ( !found && f.exists()) {
                 found = true;
                 b = f.getAbsolutePath();
             }
             f = new java.io.File ("/usr/local/bin/google-chrome"); // NOI18N
-            if (f.exists()) {
+            if ( ! found && f.exists()) {
                 found = true;
                 b = f.getAbsolutePath();
             }
