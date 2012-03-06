@@ -54,8 +54,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.logging.Level;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeListener;
@@ -75,7 +75,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -83,88 +82,111 @@ import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
-public class MoveClassUI implements RefactoringUI, RefactoringUIBypass, JavaRefactoringUIFactory {
-    
-    private DataObject javaObject;    
+public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
+
+    private DataObject javaObject;
     private MoveClassPanel panel;
     private MoveRefactoring refactoring;
     private String targetPkgName = "";
     private boolean disable;
+    private TreePathHandle javaClass;
     private FileObject targetFolder;
     private PasteType pasteType;
-    private Lookup lookup;
-    
-    static final String getString(String key) {
-        return NbBundle.getMessage(MoveClassUI.class, key);
+    private final String sourceName;
+
+    public MoveClassUI(DataObject javaObject) {
+        this(javaObject, null, null);
     }
     
-    public MoveClassUI (DataObject javaObject) {
-        this(javaObject, null, null, Collections.<TreePathHandle>emptyList());
+    public MoveClassUI(TreePathHandle javaClass, String sourceName) {
+        this(javaClass, null, null, sourceName);
     }
-    
-    public MoveClassUI(Lookup lookup) {
-        this.lookup = lookup;
-    }
-    
-    public MoveClassUI (DataObject javaObject, FileObject targetFolder, PasteType pasteType, Collection<TreePathHandle> handles) {
-        this.disable = targetFolder != null ;
+
+    public MoveClassUI(DataObject javaObject, FileObject targetFolder, PasteType pasteType) {
+        this.disable = targetFolder != null;
         this.targetFolder = targetFolder;
         this.javaObject = javaObject;
+        this.sourceName = javaObject.getName();
         this.pasteType = pasteType;
-        this.refactoring = new MoveRefactoring(Lookups.fixed(javaObject.getPrimaryFile(), handles.toArray(new Object[handles.size()])));
+        this.refactoring = new MoveRefactoring(Lookups.fixed(javaObject.getPrimaryFile()));
         this.refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(javaObject.getPrimaryFile()));
     }
-    
+
+    public MoveClassUI(TreePathHandle javaClass, FileObject targetFolder, PasteType pasteType, String sourceName) {
+        this.disable = targetFolder != null;
+        this.javaClass = javaClass;
+        this.sourceName = sourceName;
+        this.targetFolder = targetFolder;
+        this.pasteType = pasteType;
+        this.refactoring = new MoveRefactoring(Lookups.fixed(javaClass));
+        this.refactoring.getContext().add(JavaRefactoringUtils.getClasspathInfoFor(javaClass.getFileObject()));
+    }
+
     @Override
     public String getName() {
-        return getString ("LBL_MoveClass");
+        return NbBundle.getMessage(MoveClassUI.class, "LBL_MoveClass");
     }
-     
+
     @Override
     public String getDescription() {
-        return new MessageFormat(getString("DSC_MoveClass")).format(
-                new Object[] {javaObject.getName(), packageName()}
-        );
+        return NbBundle.getMessage(MoveClassUI.class, "DSC_MoveClass", sourceName, packageName());
     }
-    
+
     @Override
     public boolean isQuery() {
         return false;
     }
-        
+
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            String pkgName = targetFolder!=null?getPackageName(targetFolder):getPackageName(javaObject.getPrimaryFile().getParent());
-            panel = new MoveClassPanel (parent, pkgName, 
-                    new MessageFormat(getString("LBL_MoveClassNamed")).format (
-                    new Object[] {javaObject.getPrimaryFile().getName()}
-                ),
-                getString("LBL_MoveWithoutReferences"),
-                targetFolder != null ? targetFolder : (javaObject != null ? javaObject.getPrimaryFile(): null)
-            );
+            final String pkgName;
+            if (targetFolder != null) {
+                pkgName = getPackageName(targetFolder);
+            } else if (javaObject != null) {
+                pkgName = getPackageName(javaObject.getPrimaryFile().getParent());
+            } else {
+                pkgName = getPackageName(javaClass.getFileObject().getParent());
+            }
+
+            final FileObject target;
+            if (targetFolder != null) {
+                target = targetFolder;
+            } else if (javaObject != null) {
+                target = javaObject.getPrimaryFile();
+            } else {
+                target = javaClass.getFileObject();
+            }
+
+            panel = new MoveClassPanel(parent,
+                    pkgName,
+                    NbBundle.getMessage(MoveClassUI.class, "LBL_MoveClassNamed", sourceName),
+                    NbBundle.getMessage(MoveClassUI.class, "LBL_MoveWithoutReferences"),
+                    target);
+
             panel.setCombosEnabled(!disable);
         }
         return panel;
     }
-    
+
     private static String getPackageName(FileObject file) {
         ClassPath cp = ClassPath.getClassPath(file, ClassPath.SOURCE);
         return cp.getResourceName(file, '.', false);
     }
 
-    private String packageName () {
-        return targetPkgName.trim().length() == 0 ? getString ("LBL_DefaultPackage") : targetPkgName.trim ();
+    private String packageName() {
+        return targetPkgName.trim().length() == 0 ? NbBundle.getMessage(MoveClassUI.class, "LBL_DefaultPackage") : targetPkgName.trim();
     }
-    
+
     private Problem setParameters(boolean checkOnly) {
-        if (panel==null)
+        if (panel == null) {
             return null;
-        targetPkgName = panel.getPackageName ();
+        }
+        targetPkgName = panel.getPackageName();
 
         URL url = URLMapper.findURL(panel.getRootFolder(), URLMapper.EXTERNAL);
         try {
-            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.','/')))); // NOI18N
+            refactoring.setTarget(Lookups.singleton(new URL(url.toExternalForm() + panel.getPackageName().replace('.', '/')))); // NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -174,27 +196,27 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass, JavaRefa
             return refactoring.checkParameters();
         }
     }
-    
+
     @Override
     public Problem checkParameters() {
         return setParameters(true);
     }
-    
+
     @Override
     public Problem setParameters() {
         return setParameters(false);
     }
-    
+
     @Override
     public AbstractRefactoring getRefactoring() {
         return refactoring;
     }
-    
+
     @Override
     public boolean hasParameters() {
         return true;
     }
-    
+
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(MoveClassUI.class);
@@ -204,115 +226,139 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass, JavaRefa
     public boolean isRefactoringBypassRequired() {
         return panel != null && panel.isRefactoringBypassRequired();
     }
+
     @Override
     public void doRefactoringBypass() throws IOException {
         pasteType.paste();
     }
 
     public static JavaRefactoringUIFactory factory(Lookup lookup) {
-        return new MoveClassUI(lookup);
+        return new RefactoringUIFactory(lookup);
     }
-    
-    @Override
-    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
-        PasteType paste = RefactoringActionsProvider.getPaste(lookup);
-        FileObject tar = RefactoringActionsProvider.getTarget(lookup);
 
-        if (files!=null && (files.length > 1 || (files.length == 1 && files[0].isFolder()))) {
-            Set<FileObject> s = new HashSet<FileObject>();
-            s.addAll(Arrays.asList(files));
-            return new MoveClassesUI(s, tar, paste);
+    private static class RefactoringUIFactory implements JavaRefactoringUIFactory {
+
+        private final Lookup lookup;
+
+        public RefactoringUIFactory(Lookup lookup) {
+            this.lookup = lookup;
         }
 
+        @Override
+        public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+            PasteType paste = RefactoringActionsProvider.getPaste(lookup);
+            FileObject tar = RefactoringActionsProvider.getTarget(lookup);
 
-        EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec==null) {
-            try {
-                if (files==null) {
-                    return new MoveMembersUI(handles);
-                } else {
-                    return new MoveClassUI(DataObject.find(files[0]), tar, paste, Arrays.asList(handles));
-                }
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+            if (files != null && (files.length > 1 || (files.length == 1 && files[0].isFolder()))) {
+                Set<FileObject> s = new HashSet<FileObject>();
+                s.addAll(Arrays.asList(files));
+                return new MoveClassesUI(s, tar, paste);
             }
-        }
 
-        TreePathHandle selectedElement = handles[0];
-        TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
-        Element e = info.getTrees().getElement(enclosingClassPath);
-        if (e == null) {
-            return null;
-        }
-        JEditorPane[] openedPanes = ec.getOpenedPanes();
-        if (openedPanes == null) {
-            try {
-                return new MoveClassUI(DataObject.find(files[0]), tar, paste, Arrays.asList(handles));
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        JEditorPane textC = openedPanes[0];
-        int startOffset = textC.getSelectionStart();
-        int endOffset = textC.getSelectionEnd();
-        if (startOffset == endOffset) {
-            return doCursorPosition(info, selectedElement, startOffset);
-        } else {
-            if (!(e.getKind().isClass() || e.getKind().isInterface())) {
-                e = info.getElementUtilities().enclosingTypeElement(e);
-            }
-            Collection<TreePathHandle> tphs = new ArrayList<TreePathHandle>();
-            SourcePositions sourcePositions = info.getTrees().getSourcePositions();
-            for (Element ele : e.getEnclosedElements()) {
-                Tree leaf = info.getTrees().getPath(ele).getLeaf();
-                long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
-                long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
-                if ((start >= startOffset && start <= endOffset)
-                        || (end >= startOffset && end <= endOffset)) {
-                    tphs.add(TreePathHandle.create(ele, info));
+            EditorCookie ec = lookup.lookup(EditorCookie.class);
+            if (ec == null) {
+                try {
+                    if (files == null) {
+                        if (handles.length == 1 && handles[0].getElementHandle() != null && handles[0].getElementHandle().getKind() == ElementKind.CLASS) {
+                            CompilationUnitTree compilationUnit = handles[0].resolve(info).getCompilationUnit();
+                            if(compilationUnit.getTypeDecls().size() == 1) {
+                                return new MoveClassUI(DataObject.find(handles[0].getFileObject()), tar, paste);
+                            } else {
+                                return new MoveClassUI(handles[0], tar, paste, handles[0].resolveElement(info).getSimpleName().toString());
+                            }
+                        }
+                        return new MoveMembersUI(handles);
+                    } else {
+                        return new MoveClassUI(DataObject.find(files[0]), tar, paste);
+                    }
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
-            if (tphs.isEmpty()) {
+
+            TreePathHandle selectedElement = handles[0];
+            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, selectedElement.resolve(info), true, true, true, true, true);
+            Element e = info.getTrees().getElement(enclosingClassPath);
+            if (e == null) {
+                return null;
+            }
+            JEditorPane[] openedPanes = ec.getOpenedPanes();
+            if (openedPanes == null) {
+                try {
+                    return new MoveClassUI(DataObject.find(files[0]), tar, paste);
+                } catch (DataObjectNotFoundException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            JEditorPane textC = openedPanes[0];
+            int startOffset = textC.getSelectionStart();
+            int endOffset = textC.getSelectionEnd();
+            if (startOffset == endOffset) {
                 return doCursorPosition(info, selectedElement, startOffset);
-            }
-            return new MoveMembersUI(tphs.toArray(new TreePathHandle[tphs.size()]));
-        }
-    }
-
-    private RefactoringUI doCursorPosition(CompilationInfo info, TreePathHandle selectedElement, int position) throws RuntimeException {
-        List<? extends TypeElement> topLevelElements = info.getTopLevelElements();
-        Trees trees = info.getTrees();
-        SourcePositions sourcePositions = trees.getSourcePositions();
-        CompilationUnitTree compilationUnit = info.getCompilationUnit();
-
-        for (TypeElement typeElement : topLevelElements) {
-            ClassTree topLevelClass = trees.getTree(typeElement);
-            long startPosition = sourcePositions.getStartPosition(compilationUnit, topLevelClass);
-            long endPosition = sourcePositions.getEndPosition(compilationUnit, topLevelClass);
-            if (position > startPosition && position < endPosition) {
-                for (Element element : typeElement.getEnclosedElements()) {
-                    Tree member = trees.getTree(element);
-                    long startMember = sourcePositions.getStartPosition(compilationUnit, member);
-                    long endMember = sourcePositions.getEndPosition(compilationUnit, member);
-                    if (position > startMember && position < endMember) {
-                        TreePathHandle tph = TreePathHandle.create(element, info);
-                        return new MoveMembersUI(tph);
+            } else {
+                if (!(e.getKind().isClass() || e.getKind().isInterface())) {
+                    e = info.getElementUtilities().enclosingTypeElement(e);
+                }
+                Collection<TreePathHandle> tphs = new ArrayList<TreePathHandle>();
+                SourcePositions sourcePositions = info.getTrees().getSourcePositions();
+                for (Element ele : e.getEnclosedElements()) {
+                    Tree leaf = info.getTrees().getPath(ele).getLeaf();
+                    long start = sourcePositions.getStartPosition(info.getCompilationUnit(), leaf);
+                    long end = sourcePositions.getEndPosition(info.getCompilationUnit(), leaf);
+                    if ((start >= startOffset && start <= endOffset)
+                            || (end >= startOffset && end <= endOffset)) {
+                        tphs.add(TreePathHandle.create(ele, info));
                     }
                 }
-                try {
-                    // TODO: Support nested classes
-                    return new MoveClassUI(DataObject.find(info.getFileObject()));
-                } catch (DataObjectNotFoundException ex) {
-                    throw new RuntimeException(ex);
+                if (tphs.isEmpty()) {
+                    return doCursorPosition(info, selectedElement, startOffset);
                 }
+                return new MoveMembersUI(tphs.toArray(new TreePathHandle[tphs.size()]));
             }
         }
+
+        private RefactoringUI doCursorPosition(CompilationInfo info, TreePathHandle selectedElement, int position) throws RuntimeException {
+            List<? extends TypeElement> topLevelElements = info.getTopLevelElements();
+            Trees trees = info.getTrees();
+            SourcePositions sourcePositions = trees.getSourcePositions();
+            CompilationUnitTree compilationUnit = info.getCompilationUnit();
+
+            for (TypeElement typeElement : topLevelElements) {
+                ClassTree topLevelClass = trees.getTree(typeElement);
+                long startPosition = sourcePositions.getStartPosition(compilationUnit, topLevelClass);
+                long endPosition = sourcePositions.getEndPosition(compilationUnit, topLevelClass);
+                if (position > startPosition && position < endPosition) {
+                    for (Element element : typeElement.getEnclosedElements()) {
+                        /* We need to go through all members to see if the position
+                         * is on a member, if we try to get the element from the
+                         * TreePath we could get the type of the member instead
+                         * of the member itself.*/
+                        Tree member = trees.getTree(element);
+                        long startMember = sourcePositions.getStartPosition(compilationUnit, member);
+                        long endMember = sourcePositions.getEndPosition(compilationUnit, member);
+                        if (position > startMember && position < endMember) {
+                            TreePathHandle tph = TreePathHandle.create(element, info);
+                            return new MoveMembersUI(tph);
+                        }
+                    }
+                    try {
+                        if(topLevelElements.size() == 1) {
+                            return new MoveClassUI(DataObject.find(info.getFileObject()));
+                        } else {
+                            return new MoveClassUI(TreePathHandle.create(typeElement, info), typeElement.getSimpleName().toString());
+                        }
+                    } catch (DataObjectNotFoundException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
 //                    if (selectedElement.resolve(info).getLeaf().getKind() == Tree.Kind.COMPILATION_UNIT) {
-        try {
-            return new MoveClassUI(DataObject.find(info.getFileObject()));
-        } catch (DataObjectNotFoundException ex) {
-            throw new RuntimeException(ex);
-        }
+            try {
+                return new MoveClassUI(DataObject.find(info.getFileObject()));
+            } catch (DataObjectNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
 //                    }
+        }
     }
 }
