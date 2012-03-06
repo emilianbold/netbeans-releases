@@ -1,0 +1,61 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+import org.junit.Test;
+import org.netbeans.modules.java.hints.test.api.HintTest;
+
+/*TODO: to make this test work, please:
+ * -add test dependency on Java Hints Test API
+ * -for nb.org modules, add "requires.nb.javac=true" into nbproject/project.properties
+ * -for non-nb.org ant-based modules, add the following to build.xml:
+    <target name="build-init" depends="harness.build-init">
+        <pathconvert property="bootclasspath.prepend">
+            <fileset dir="${r"${nbplatform.active.dir}"}">
+                <filename name="java/modules/ext/javac*.jar"/>
+            </fileset>
+        </pathconvert>
+    </target>
+ */
+public class ${CLASS_NAME}Test {
+
+    @Test
+    public void testWarningProduced() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        assert args[0].equals(\"\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(${CLASS_NAME}.class)
+                .assertWarnings("3:23-3:29:verifier:ERR_${PACKAGE_NAME}.${CLASS_NAME}");
+    }
+
+<#if GENERATE_FIX??>
+    @Test
+    public void testFixWorking() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        assert args[0].equals(\"\");\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(${CLASS_NAME}.class)
+                .findWarning("3:23-3:29:verifier:ERR_${PACKAGE_NAME}.${CLASS_NAME}")
+                .applyFix()
+                .assertCompilable()
+                //TODO: change to match expected output
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        assert args[0].equals(\"\");\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+</#if>
+}

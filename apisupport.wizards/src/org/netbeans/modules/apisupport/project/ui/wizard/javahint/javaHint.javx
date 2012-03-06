@@ -19,20 +19,25 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 <#if GENERATE_FIX??>
 import org.netbeans.spi.java.hints.JavaFix;
-import org.netbeans.spi.java.hints.JavaFixUtilities;
 </#if>
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
-@Hint(category = "general") //NOI18N
+@Hint(displayName="DN_${PACKAGE_NAME}.${CLASS_NAME}",
+      description="DESC_${PACKAGE_NAME}.${CLASS_NAME}",
+      category = "general") //NOI18N
+@Messages({"DN_${PACKAGE_NAME}.${CLASS_NAME}=${DISPLAY_NAME}",
+           "DESC_${PACKAGE_NAME}.${CLASS_NAME}=${DESCRIPTION}"})
 public class ${CLASS_NAME} {
 
     @TriggerPattern(value = "$str.equals(\"\")", //Specify a pattern as needed
                     constraints = @ConstraintVariableType(variable = "$str", type = "java.lang.String"))
+    @Messages("ERR_${PACKAGE_NAME}.${CLASS_NAME}=${WARNING_MESSAGE}")
     public static ErrorDescription computeWarning(HintContext ctx) {
-        String warningDisplayName = NbBundle.getMessage(Test.class, "ERR_${PACKAGE_NAME}.${CLASS_NAME}");
+        String warningDisplayName = NbBundle.getMessage(${CLASS_NAME}.class, Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
 <#if GENERATE_FIX??>
-        Fix fix = JavaFixUtilities.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath()));
+        Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warningDisplayName, fix);
 <#else>
         return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warningDisplayName);
@@ -47,8 +52,9 @@ public class ${CLASS_NAME} {
         }
 
         @Override
+        @Messages("FIX_${PACKAGE_NAME}.${CLASS_NAME}=${FIX_MESSAGE}")
         protected String getText() {
-            return NbBundle.getMessage(Test.class, "FIX_${PACKAGE_NAME}.${CLASS_NAME}");
+            return NbBundle.getMessage(${CLASS_NAME}.class, Bundle.FIX_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
         }
 
         @Override

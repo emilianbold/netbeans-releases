@@ -61,6 +61,7 @@ made subject to such option by the copyright holder.
             <file name="quickSearch.java" url="../quicksearch/quickSearch.javx"/>
             <file name="contextProvider.java" url="../codegenerator/contextProvider.javx"/>
             <file name="javaHint.java" url="../javahint/javaHint.javx"/>
+            <file name="javaHintTest.java" url="../javahint/javaHintTest.javx"/>
             <file name="template_myplugin-helpset.xml" url="../javahelp/template_myplugin-helpset.xml"/>
             <file name="template_myplugin.xml" url="../javahelp/template_myplugin.hs"/>
             <file name="template_myplugin-idx.xml" url="../javahelp/template_myplugin-idx.xml"/>

@@ -87,25 +87,35 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         cmf.add(cmf.addModuleDependency("org.netbeans.libs.javacapi")); // NOI18N
 
         String className = model.getClassName();
-        FileObject template = CreatedModifiedFiles.getTemplate("javaHint.java"); // NOI18N
-        assert template != null;
+        FileObject hintTemplate = CreatedModifiedFiles.getTemplate("javaHint.java"); // NOI18N
+        assert hintTemplate != null;
 
-        String actionPath = model.getDefaultPackagePath(className + ".java", false); // NOI18N
+        String hintPath = model.getDefaultPackagePath(className + ".java", false); // NOI18N
 
         Map<String,String> replaceTokens = new HashMap<String,String>();
         replaceTokens.put("CLASS_NAME", className); // NOI18N
         replaceTokens.put("PACKAGE_NAME", model.getPackageName()); // NOI18N
+        replaceTokens.put("PACKAGE_NAME_UNDERSCORES", model.getPackageName().replace('.', '_')); // NOI18N
         replaceTokens.put("GENERATE_FIX", model.isDoFix() ? "true" : null); // NOI18N
-        cmf.add(cmf.createFileWithSubstitutions(actionPath, template, replaceTokens));
+        replaceTokens.put("DISPLAY_NAME", model.getDisplayName()); // NOI18N
+        replaceTokens.put("DESCRIPTION", model.getDescription()); // NOI18N
+        replaceTokens.put("WARNING_MESSAGE", model.getWarningMessage()); // NOI18N
+        if (model.isDoFix()) {
+            replaceTokens.put("FIX_MESSAGE", model.getFixText()); // NOI18N
+        }
+
+        cmf.add(cmf.createFileWithSubstitutions(hintPath, hintTemplate, replaceTokens));
+
+        String testPath = model.getDefaultPackagePath(className + "Test.java", false, true); // NOI18N
+        FileObject testTemplate = CreatedModifiedFiles.getTemplate("javaHintTest.java"); // NOI18N
+        assert testTemplate != null;
+
+        cmf.add(cmf.createFileWithSubstitutions(testPath, testTemplate, replaceTokens));
 
         //bundle keys:
-        cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle.properties", true), "DN_" + model.getPackageName() + "." + className, model.getDisplayName()));
-        cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle.properties", true), "DESC_" + model.getPackageName() + "." + className, model.getDisplayName()));
-        cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle.properties", true), "ERR_" + model.getPackageName() + "." + className, model.getDisplayName()));
         cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle_test.properties", true, true), "ERR_" + model.getPackageName() + "." + className, "ERR_" + model.getPackageName() + "." + className));
 
         if (model.isDoFix()) {
-            cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle.properties", true), "FIX_" + model.getPackageName() + "." + className, model.getFixText()));
             cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle_test.properties", true, true), "FIX_" + model.getPackageName() + "." + className, "FIX_" + model.getPackageName() + "." + className));
         }
 
