@@ -43,19 +43,17 @@ package org.netbeans.modules.css.model;
 
 import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.BadLocationException;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.PrintableModel;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -94,17 +92,25 @@ public class ModelTestBase extends NbTestCase {
     protected StyleSheet createStyleSheet(String source) {
         return getStyleSheet(createModel(source));
     }
-
+    
     protected Model createModel(String source) {
         CssParserResult result = TestUtil.parse(source);
         return new Model(result);
     }
 
-    protected void assertBox(Box<BoxEdgeSize> box, String top, String right, String bottom, String left) {
-        assertEquals(top, box.getEdge(Edge.TOP).getTextRepresentation());
-        assertEquals(right, box.getEdge(Edge.RIGHT).getTextRepresentation());
-        assertEquals(bottom, box.getEdge(Edge.BOTTOM).getTextRepresentation());
-        assertEquals(left, box.getEdge(Edge.LEFT).getTextRepresentation());
+    protected void assertBox(Box<? extends PrintableModel> box, String top, String right, String bottom, String left) {
+        PrintableModel e = box.getEdge(Edge.TOP);
+        assertEquals("unexpected top value", top, e == null ? null : e.asText());
+
+        e = box.getEdge(Edge.RIGHT);
+        assertEquals("unexpected right value", right, e == null ? null : e.asText());
+
+        e = box.getEdge(Edge.BOTTOM);
+        assertEquals("unexpected bottom value", bottom, e == null ? null : e.asText());
+
+        e = box.getEdge(Edge.LEFT);
+        assertEquals("unexpected left value", left, e == null ? null : e.asText());
+
     }
 
     protected void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {

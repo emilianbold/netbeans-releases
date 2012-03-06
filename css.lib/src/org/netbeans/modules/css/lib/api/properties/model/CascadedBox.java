@@ -48,9 +48,9 @@ import java.util.List;
  *
  * @author marekfukala
  */
-public class CascadedBox <T extends NodeModel> implements Box<T> {
+public class CascadedBox <T> implements Box<T> {
 
-    private List<Box<T>> boxes = new ArrayList<Box<T>>();
+    protected List<Box<T>> boxes = new ArrayList<Box<T>>();
 
     public void addBox(Box<T> box) {
         boxes.add(box);
@@ -90,6 +90,16 @@ public class CascadedBox <T extends NodeModel> implements Box<T> {
     @Override
     public String getCategoryName() {
         return null;
+    }
+
+    @Override
+    public boolean isValid() {
+        for(SemanticModel model : boxes) {
+            if(!model.isValid()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

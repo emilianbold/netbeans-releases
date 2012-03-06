@@ -821,6 +821,10 @@ public class GrammarResolverTest extends CssTestBase {
         assertResolve(pm.getGrammarElement(), "url(images/shadow.gif) no-repeat bottom right");
     }
     
+    public void testBorder2() {
+        assertResolve(Properties.getPropertyModel("border"), "red solid");
+    }
+    
     /*
     //Bug 206035 - Incorrect background property value validation/completion
     public void testBackground2() {

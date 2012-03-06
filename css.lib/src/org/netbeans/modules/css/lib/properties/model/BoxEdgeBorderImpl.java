@@ -53,11 +53,18 @@ public class BoxEdgeBorderImpl implements BoxEdgeBorder, PrintableModel {
     private Color color;
     private BorderStyleItem borderStyleItem;
     private BorderWidthItem borderWidthItem;
+    
+    private boolean definingColor, definingStyle, definingWidth;
 
-    public BoxEdgeBorderImpl(Color color, BorderStyleItem borderStyleItem, BorderWidthItem borderWidthItem) {
+    public BoxEdgeBorderImpl(boolean definingColor, Color color, 
+            boolean definingStyle, BorderStyleItem borderStyleItem, 
+            boolean definintWidth, BorderWidthItem borderWidthItem) {
         this.color = color;
         this.borderStyleItem = borderStyleItem;
         this.borderWidthItem = borderWidthItem;
+        this.definingColor = definingColor;
+        this.definingStyle = definingStyle;
+        this.definingWidth = definintWidth;
     }
 
     @Override
@@ -73,6 +80,21 @@ public class BoxEdgeBorderImpl implements BoxEdgeBorder, PrintableModel {
     @Override
     public BorderStyleItem getStyle() {
         return borderStyleItem;
+    }
+
+    @Override
+    public boolean isDefiningStyle() {
+        return definingStyle;
+    }
+
+    @Override
+    public boolean isDefiningColor() {
+        return definingColor;
+    }
+
+    @Override
+    public boolean isDefiningWidth() {
+        return definingWidth;
     }
 
     @Override
@@ -94,6 +116,30 @@ public class BoxEdgeBorderImpl implements BoxEdgeBorder, PrintableModel {
             b.append(getStyle().asText());
         }
         return b.toString();
+    }
+    
+    public static class ColorOnly extends BoxEdgeBorderImpl {
+
+        public ColorOnly(Color color) {
+            super(true, color, false, null, false, null);
+        }
+    
+    }
+    
+    public static class StyleOnly extends BoxEdgeBorderImpl {
+
+        public StyleOnly(BorderStyleItem item) {
+            super(false, null, true, item, false, null);
+        }
+    
+    }
+    
+    public static class WidthOnly extends BoxEdgeBorderImpl {
+
+        public WidthOnly(BorderWidthItem item) {
+            super(false, null, false, null, true, item);
+        }
+    
     }
     
     

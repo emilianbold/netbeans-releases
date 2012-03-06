@@ -81,9 +81,9 @@ public class BorderSingleEdgeModelFactory implements CustomModelFactory {
             if("color".equals(typeName)) {
                 return new BorderSingleEdgeColor(edge, node);
             } else if("style".equals(typeName)) {
-                
+                return new BorderSingleEdgeStyle(edge, node);
             } else if("width".equals(typeName)) {
-                
+                return new BorderSingleEdgeWidth(edge, node);
             }
 
         }

@@ -81,6 +81,13 @@ public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
         int values = models.size();
         int index = BoxPropertySupport.getParameterIndex(values, edge);
         Color color = models.get(index);
-        return new BoxEdgeBorderImpl(color, null, null);
+        return new BoxEdgeBorderImpl.ColorOnly(color);
     }
+
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
+    }
+    
+    
 }

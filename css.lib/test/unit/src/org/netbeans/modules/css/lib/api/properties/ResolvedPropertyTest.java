@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.api.properties;
 
 import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
 
 /**
  *
@@ -61,7 +62,20 @@ public class ResolvedPropertyTest extends CssTestBase {
 
         assertTrue(rp.isResolved());
 
-        dumpTree(rp.getParseTree());
+//        dumpTree(rp.getParseTree());
+        
+    }
+    
+    public void testBorder() {
+        PropertyModel pm = Properties.getPropertyModel("border");
+        assertNotNull(pm);
+
+        GrammarParseTreeBuilder.DEBUG = true;
+        ResolvedProperty rp = new ResolvedProperty(pm, "red solid");
+
+        assertTrue(rp.isResolved());
+
+//        dumpTree(rp.getParseTree());
         
     }
     
@@ -73,7 +87,7 @@ public class ResolvedPropertyTest extends CssTestBase {
 
         assertTrue(rp.isResolved());
 
-        dumpTree(rp.getParseTree());
+//        dumpTree(rp.getParseTree());
         
     }
 }

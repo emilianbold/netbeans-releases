@@ -67,7 +67,7 @@ public class BorderWidthItem extends NodeModel {
         }
         
     }
-
+    
     public BorderWidthItem(Node node) {
         super(node);
     }

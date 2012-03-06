@@ -53,7 +53,7 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  */
 public class BorderSingleEdgeWidth extends NodeModel implements Box<BoxEdgeBorder> {
 
-    public BorderWidthItem borderEdgeWidth;
+    public BorderWidthItem borderWidthItem;
     
     private Edge edge;
 
@@ -65,10 +65,16 @@ public class BorderSingleEdgeWidth extends NodeModel implements Box<BoxEdgeBorde
     @Override
     public BoxEdgeBorder getEdge(Edge edge) {
         if(this.edge == edge) {
-            return new BoxEdgeBorderImpl(null, null, borderEdgeWidth);
+            return new BoxEdgeBorderImpl.WidthOnly(borderWidthItem);
         }
         return null;
         
     }
+
+    @Override
+    public boolean isValid() {
+        return borderWidthItem != null;
+    }
+    
     
 }

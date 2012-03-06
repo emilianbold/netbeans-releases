@@ -41,34 +41,23 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderTop extends NodeModel implements Box<BoxEdgeBorder> {
-
-    public BorderWidthItem borderWidthItem;
-    public BorderStyleItem borderStyleItem;
-    public Color color;
+public class BorderTop extends BorderDefiningEachEdge implements Box<BoxEdgeBorder> {
 
     public BorderTop(Node node) {
         super(node);
     }
-
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        return edge == Edge.TOP
-                ? new BoxEdgeBorderImpl(color, borderStyleItem, borderWidthItem)
-                : null;
-
+    protected Edge getDefiningEdge() {
+        return Edge.TOP;
     }
+    
 }

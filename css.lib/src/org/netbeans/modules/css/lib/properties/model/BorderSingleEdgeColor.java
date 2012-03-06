@@ -65,10 +65,16 @@ public class BorderSingleEdgeColor extends NodeModel implements Box<BoxEdgeBorde
     @Override
     public BoxEdgeBorder getEdge(Edge edge) {
         if(this.edge == edge) {
-            return new BoxEdgeBorderImpl(color, null, null);
+            return new BoxEdgeBorderImpl.ColorOnly(color);
         }
         return null;
         
     }
+
+    @Override
+    public boolean isValid() {
+        return color != null;
+    }
+    
     
 }

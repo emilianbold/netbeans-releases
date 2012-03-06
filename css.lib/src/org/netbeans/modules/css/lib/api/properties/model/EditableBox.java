@@ -45,7 +45,7 @@ package org.netbeans.modules.css.lib.api.properties.model;
  *
  * @author marekfukala
  */
-public interface EditableBox<T extends NodeModel> extends Box<T>, EditableSemanticModel {
+public interface EditableBox<T> extends Box<T>, EditableSemanticModel {
     
     public void setEdge(Edge edge, T value);
  

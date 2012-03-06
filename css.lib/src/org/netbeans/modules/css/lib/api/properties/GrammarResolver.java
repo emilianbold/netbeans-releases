@@ -551,7 +551,7 @@ public class GrammarResolver {
                         }
                         
                         fireRuleChoosen(group, bestMatchElement);
-
+                        
                         //if we are in a COLLECTION or ALL, we need to remove 
                         //the choosen member from the further collection processing
                         switch (group.getType()) {
