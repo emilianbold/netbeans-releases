@@ -489,6 +489,18 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
     }
 
+    public void testIssue209187_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue209187_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue209187_03() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

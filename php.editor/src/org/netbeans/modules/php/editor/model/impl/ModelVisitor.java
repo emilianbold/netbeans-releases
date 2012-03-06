@@ -355,6 +355,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
         modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
+        if (statementPart.getAlias() == null) {
+            occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), modelBuilder.getCurrentScope());
+        }
         super.visit(statementPart);
     }
 
