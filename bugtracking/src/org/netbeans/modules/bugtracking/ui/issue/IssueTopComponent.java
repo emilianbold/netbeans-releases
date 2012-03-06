@@ -140,7 +140,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }
 
     public void initNewIssue(RepositoryImpl defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
-        LogUtils.logBugtrackingUsage(defaultRepository.getRepository(), "ISSUE_EDIT"); // NOI18N
+        LogUtils.logBugtrackingUsage(defaultRepository != null ? defaultRepository.getRepository() : null, "ISSUE_EDIT"); // NOI18N
         this.context = context;
 
         Font f = new JLabel().getFont();

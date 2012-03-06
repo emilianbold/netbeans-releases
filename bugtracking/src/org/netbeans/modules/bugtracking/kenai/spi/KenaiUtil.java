@@ -156,14 +156,16 @@ public class KenaiUtil {
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject)
      */
     public static Repository getRepository(KenaiProject project) {
-        return KenaiRepositories.getInstance().getRepository(project).getRepository();
+        RepositoryImpl impl = KenaiRepositories.getInstance().getRepository(project);
+        return impl != null ? impl.getRepository() : null;
     }
 
     /**
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject, boolean)
      */
     public static Repository getRepository(KenaiProject project, boolean forceCreate) {
-        return KenaiRepositories.getInstance().getRepository(project, forceCreate).getRepository();
+        RepositoryImpl impl = KenaiRepositories.getInstance().getRepository(project, forceCreate);
+        return impl != null ? impl.getRepository() : null;
     }
 
     /**

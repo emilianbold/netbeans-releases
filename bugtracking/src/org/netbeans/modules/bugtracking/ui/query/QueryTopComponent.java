@@ -287,7 +287,13 @@ public final class QueryTopComponent extends TopComponent
             newButton.addFocusListener(this);
             repositoryComboBox.addFocusListener(this);
         }
-        LogUtils.logBugtrackingUsage(query != null ? query.getRepositoryImpl().getRepository() : defaultRepository.getRepository(), "ISSUE_QUERY"); // NOI18N
+        Repository repo = null;
+        if(query != null) {
+            repo = query.getRepositoryImpl().getRepository();
+        } else if(defaultRepository != null) {
+            repo = defaultRepository.getRepository();
+        }
+        LogUtils.logBugtrackingUsage(repo, "ISSUE_QUERY"); // NOI18N
     }
 
     private BugtrackingController getController(QueryImpl query) {
