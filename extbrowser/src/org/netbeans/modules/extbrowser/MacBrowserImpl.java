@@ -148,6 +148,9 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     private BrowserId parseDefaultApps( String defaultApps, String key,
             String value )
     {
+        if ( defaultApps == null ){
+            return null;
+        }
         int index =0;
         while( true ){
             index = defaultApps.indexOf(value, index );
@@ -174,7 +177,6 @@ public class MacBrowserImpl extends ExtBrowserImpl {
                 continue;
             }
         }
-        return null;
     }
 
     private String getDefaultApps(){
@@ -215,5 +217,6 @@ public class MacBrowserImpl extends ExtBrowserImpl {
                 }
             }
         }
+        return null;
     }
 }
