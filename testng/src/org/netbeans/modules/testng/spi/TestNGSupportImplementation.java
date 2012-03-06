@@ -39,14 +39,8 @@
 package org.netbeans.modules.testng.spi;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.openide.filesystems.FileObject;
 
@@ -81,29 +75,6 @@ public abstract class TestNGSupportImplementation {
      * @return instance of TestExecutor
      */
     public abstract TestExecutor createExecutor(Project p);
-
-    /**
-     * Add bundled TestNG library to COMPILE ClassPath of given FileObject
-     *
-     * @param fo FileObject whose classpath to extend
-     * @return true if a library was added to the project
-     * @throws java.io.IOException
-     */
-    protected final boolean addLibrary(FileObject fo) throws IOException {
-        assert fo != null;
-        Project p = FileOwnerQuery.getOwner(fo);
-        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.COMPILE);
-        FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
-        if (ng == null) {
-            // add library to the project
-            Library nglib = LibraryManager.getDefault().getLibrary("TestNG-6.4beta"); //NOI18N
-            if (!ProjectClassPathModifier.addLibraries(new Library[]{nglib}, fo, ClassPath.COMPILE)) {
-                LOGGER.log(Level.FINE, "TestNG library not added to project {0}", p); //NOI18N
-                return false;
-            }
-        }
-        return true;
-    }
 
     /**
      *

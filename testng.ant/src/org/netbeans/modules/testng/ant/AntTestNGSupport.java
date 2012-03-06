@@ -50,12 +50,15 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.ant.AntBuildExtender.Extension;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
@@ -95,12 +98,25 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
 
     @Override
     public void configureProject(FileObject createdFile) {
-        try {
-            addLibrary(createdFile);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-        }
+        assert createdFile != null;
+        
         Project p = FileOwnerQuery.getOwner(createdFile);
+        ClassPath cp = ClassPath.getClassPath(createdFile, ClassPath.COMPILE);
+        FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
+        if (ng == null) {
+            // add library to the project
+            Library nglib = LibraryManager.getDefault().getLibrary("TestNG-6.4beta"); //NOI18N
+            try {
+                if (!ProjectClassPathModifier.addLibraries(new Library[]{nglib}, createdFile, ClassPath.COMPILE)) {
+                    LOGGER.log(Level.FINE, "TestNG library not added to project {0}", p); //NOI18N
+                }
+            } catch (IOException ex) {
+                Logger.getLogger(AntTestNGSupport.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (UnsupportedOperationException ex) {
+                Logger.getLogger(AntTestNGSupport.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
         if (extender != null) {
             String ID = "test-ng-1.0"; //NOI18N

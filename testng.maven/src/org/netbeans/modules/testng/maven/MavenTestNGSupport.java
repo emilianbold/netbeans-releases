@@ -43,18 +43,19 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
 import org.netbeans.modules.testng.spi.XMLSuiteSupport;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -86,14 +87,14 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
     }
 
     public void configureProject(FileObject createdFile) {
-        try {
-            addLibrary(createdFile);
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+        ClassPath cp = ClassPath.getClassPath(createdFile, ClassPath.COMPILE);
+        FileObject ng = cp.findResource("org.testng.annotations.Test"); //NOI18N
+        if (ng == null) {
+            Project p = FileOwnerQuery.getOwner(createdFile);
+            FileObject pom = p.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
+            ModelUtils.addDependency(pom, "org.testng", "testng", "6.3.1", null, "test", null, true);
+            MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
         }
-        Project p = FileOwnerQuery.getOwner(createdFile);
-        FileObject pom = p.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-        MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
     }
 
     public TestExecutor createExecutor(Project p) {
