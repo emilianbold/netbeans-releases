@@ -109,7 +109,7 @@ is the proper place.
     <changes>
         <change id="typing-hooks-replace">
             <summary>Replace is done before insert and fix inserting empty text</summary>
-            <version major="3" minor="20" subminor="1"/>
+            <version major="3" minor="21"/>
             <date day="27" month="2" year="2012"/>
             <author login="mkristofic"/>
             <compatibility binary="compatible" semantic="incompatible" modification="yes"/>
