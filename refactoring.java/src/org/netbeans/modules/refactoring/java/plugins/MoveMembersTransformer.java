@@ -216,7 +216,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
                     long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
                     String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "WRN_NoAccessor", source))); //NOI18N
                 } else {
                     Element localVar = vars.iterator().next();
                     MemberSelectTree selectTree = (MemberSelectTree) node;
@@ -291,10 +291,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
      * @param target
      */
     private void changeMethodInvocation(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
-        rewrite(node, createMethodInvocationTree(el, node, currentPath, target));
+        rewrite(node, createMethodInvocationTree(el, node, currentPath, target, false));
     }
 
-    private MethodInvocationTree createMethodInvocationTree(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target) {
+    private MethodInvocationTree createMethodInvocationTree(final ExecutableElement el, final MethodInvocationTree node, final TreePath currentPath, final Element target, boolean delegate) {
         TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, true);
         Element enclosingElement = workingCopy.getTrees().getElement(enclosingClassPath);
 
@@ -338,11 +338,15 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     }
                 });
                 if (!vars.iterator().hasNext()) {
-                    SourcePositions positions = workingCopy.getTrees().getSourcePositions();
-                    long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
-                    long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
-                    String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
-                    problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    if(delegate) {
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", NbBundle.getMessage(MoveMembersTransformer.class, "TXT_DelegatingMethod"))));
+                    } else {
+                        SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                        long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                        long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                        String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                        problem = JavaPluginUtils.chainProblems(problem, new Problem(false, NbBundle.getMessage(MoveMembersTransformer.class, "WRN_NoAccessor", source))); //NOI18N
+                    }
                     selectExpression = null;
                 } else {
                     Element localVar = vars.iterator().next();
@@ -753,7 +757,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                             make.Identifier(element),
                             paramList);
-                    methodInvocation = createMethodInvocationTree(element, methodInvocation, currentPath, target);
+                    methodInvocation = createMethodInvocationTree(element, methodInvocation, currentPath, target, true);
 
                     TypeMirror methodReturnType = element.getReturnType();
 
