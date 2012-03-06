@@ -10,7 +10,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %class JavaScriptColoringLexer
 %type JsTokenId
 %unicode
-%caseless
 %char
 
 %{
