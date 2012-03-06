@@ -159,7 +159,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     final public void setURL(URL url) {
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (tab == null) {
-            BrowserId pluginId = getPluginId();
+            BrowserId pluginId = getPluginId( url );
             boolean pluginAvailable = ExtensionManager.isInstalled(pluginId);
             if ( !pluginAvailable ){
                 ExtensionManager.installExtension( pluginId, new PluginLoader() {
@@ -182,7 +182,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     
     abstract protected void loadURLInBrowser(URL url);
     
-    protected BrowserId getPluginId(){
+    protected BrowserId getPluginId(URL url){
         if ( extBrowserFactory instanceof FirefoxBrowser ){
             return BrowserId.FIREFOX;
         }

@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -52,6 +56,7 @@ import java.util.logging.Level;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.plugins.BrowserId;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -102,5 +107,113 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     private static void logInfo(Exception ex) {
         Logger logger = Logger.getLogger(MacBrowserImpl.class.getName());
         logger.log(Level.INFO, null, ex);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.extbrowser.ExtBrowserImpl#getPluginId(java.net.URL)
+     */
+    @Override
+    protected BrowserId getPluginId( URL url ) {
+        BrowserId pluginId = super.getPluginId(url);
+        if ( pluginId != null ){
+            return pluginId;
+        }
+        String protocol = url.getProtocol();
+        String defaultApps = getDefaultApps();
+        if ( protocol != null ){
+            pluginId = parseDefaultApps( defaultApps , "LSHandlerURLScheme",    // NOI18N
+                    protocol );
+        }
+        if ( pluginId != null ){
+            return pluginId;
+        }
+        String file = url.getFile();
+        if ( file!= null ){
+            int index = file.lastIndexOf('.');
+            if ( index != -1 && file.length() > index +1 ){
+                String ext = file.substring( index +1);
+                pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",
+                        "public."+ext );                                        // NOI18N
+            }
+        }
+        if ( pluginId == null ){
+            return parseDefaultApps( defaultApps , "LSHandlerContentType",    
+                    "public.url" );                                             // NOI18N
+        }
+        else {
+            return pluginId;
+        }
+    }
+    
+    private BrowserId parseDefaultApps( String defaultApps, String key,
+            String value )
+    {
+        int index =0;
+        while( true ){
+            index = defaultApps.indexOf(value, index );
+            if ( index == -1 ){
+                return null;
+            }
+            int lBrace = defaultApps.substring(0, index).lastIndexOf('{');
+            int rBrace = defaultApps.indexOf('}', index );
+            if ( lBrace == -1 || rBrace == -1 ){
+                return null;
+            }
+            int valueIndex = defaultApps.indexOf( key , lBrace );
+            if ( valueIndex != -1 && valueIndex <index ){
+                int chromeIndex = defaultApps.indexOf("chrome", lBrace);        // NOI18N
+                if ( chromeIndex <rBrace ){
+                    return BrowserId.CHROME;
+                }
+                int firefoxIndex = defaultApps.indexOf("firefox", lBrace);      // NOI18N
+                if ( firefoxIndex <rBrace ){
+                    return BrowserId.FIREFOX;
+                }
+            }
+            else {
+                continue;
+            }
+        }
+        return null;
+    }
+
+    private String getDefaultApps(){
+        BufferedReader reader = null;
+        try {
+            Process process = Runtime.getRuntime().exec(
+                    "defaults read com.apple.LaunchServices");          // NOI18N
+            process.waitFor();
+
+            InputStream inputStream = process.getInputStream();
+            reader = new BufferedReader(new InputStreamReader(inputStream));
+            StringBuilder builder = new StringBuilder();
+
+            String line;
+            while ((line = reader.readLine())!= null) {
+                if (line.trim().length() == 0) {
+                    continue;
+                }
+                builder.append(line);
+            }
+            return builder.toString();
+        }
+        catch (Exception ex) {
+            Logger.getLogger(MacBrowserImpl.class.getCanonicalName()).
+                log(Level.INFO, "Unable to run process: " +
+                		"'defaults read com.apple.LaunchServices'", ex ); // NOI18N
+        }
+        finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                }
+                catch (IOException ex) {
+                    Logger.getLogger(MacBrowserImpl.class.getCanonicalName()).
+                        log(Level.INFO, 
+                                "Unable close process input stream reader " ,       // NOI18N 
+                                    ex );      
+                }
+            }
+        }
     }
 }
