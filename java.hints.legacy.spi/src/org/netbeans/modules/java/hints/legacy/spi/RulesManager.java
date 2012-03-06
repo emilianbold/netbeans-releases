@@ -73,6 +73,7 @@ import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
 import org.netbeans.modules.java.hints.spi.TreeRule;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.cookies.InstanceCookie;
@@ -403,7 +404,7 @@ public class RulesManager implements FileChangeListener {
 
             for (ErrorDescription ed : result) {
                 if (ed == null || ed.getRange() == null) continue;
-                List<Fix> fixesForED = ErrorDescriptionFactory.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
+                List<Fix> fixesForED = JavaFixImpl.Accessor.INSTANCE.resolveDefaultFixes(ctx, ed.getFixes().getFixes().toArray(new Fix[0]));
 
                 ErrorDescription nue = createErrorDescription(ed.getSeverity(),
                                                               ed.getDescription(),

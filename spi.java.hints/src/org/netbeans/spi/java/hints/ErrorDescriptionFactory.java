@@ -178,7 +178,7 @@ public class ErrorDescriptionFactory {
     }
 
     //XXX: should not be public:
-    public static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+    static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
         List<Fix> auxiliaryFixes = new LinkedList<Fix>();
         HintMetadata hm = SPIAccessor.getINSTANCE().getHintMetadata(ctx);
 

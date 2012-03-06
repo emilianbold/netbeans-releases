@@ -61,6 +61,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -120,5 +121,6 @@ public final class JavaFixImpl implements Fix {
         public abstract Fix rewriteFix(CompilationInfo info, String displayName, TreePath what, final String to, Map<String, TreePath> parameters, Map<String, Collection<? extends TreePath>> parametersMulti, final Map<String, String> parameterNames, Map<String, TypeMirror> constraints, Map<String, String> options, String... imports);
         public abstract Fix createSuppressWarningsFix(CompilationInfo compilationInfo, TreePath treePath, String... keys);
         public abstract List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys);
+        public abstract List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided);
     }
 }

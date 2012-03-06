@@ -174,6 +174,11 @@ public abstract class JavaFix {
             public List<Fix> createSuppressWarnings(CompilationInfo compilationInfo, TreePath treePath, String... keys) {
                 return ErrorDescriptionFactory.createSuppressWarnings(compilationInfo, treePath, keys);
             }
+
+            @Override
+            public List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
+                return ErrorDescriptionFactory.resolveDefaultFixes(ctx, provided);
+            }
         };
     }
 
