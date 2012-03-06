@@ -51,7 +51,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
@@ -69,7 +71,14 @@ import org.openide.util.Lookup;
  * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
  */
 public class CachingPreventsFileTouchesTest extends NbTestCase {
-    private static final Logger LOG = Logger.getLogger(CachingPreventsFileTouchesTest.class.getName());
+    static {
+        System.setProperty("java.util.logging.config.class", CaptureLog.class.getName());
+    }
+    private static final Logger LOG;
+    static {
+        LOG = Logger.getLogger(CachingPreventsFileTouchesTest.class.getName());
+        CaptureLog.assertCalled();
+    }
 
     private static void initCheckReadAccess() throws IOException {
         Set<String> allowedFiles = new HashSet<String>();
@@ -82,7 +91,6 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     
     public static Test suite() throws IOException {
         CountingSecurityManager.initialize("none", CountingSecurityManager.Mode.CHECK_READ, null);
-        System.setProperty("org.netbeans.Stamps.level", "ALL");
 
         NbTestSuite suite = new NbTestSuite();
         {
@@ -106,6 +114,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         }
         
         suite.addTest(new CachingPreventsFileTouchesTest("testCachesDontUseAbsolutePaths"));
+        suite.addTest(new CachingPreventsFileTouchesTest("testDontLoadManifests"));
         
         return suite;
     }
@@ -125,7 +134,8 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     }
 
     public void testInMiddle() {
-        LOG.info("First run finished, starting another one");
+        String p = System.getProperty("manifestParsing");
+        assertNotNull("Parsing of manifests during first run is natural", p);
     }
 
     public void testReadAccess() throws Exception {
@@ -177,6 +187,13 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         }
         assertTrue("Some cache files found", cnt > 4);
     }
+    
+    public void testDontLoadManifests() {
+        String p = System.getProperty("manifestParsing");
+        if (p != null) {
+            fail("No manifest parsing should happen:\n" + p);
+        }
+    }
 
     private static void assertFileDoesNotContain(File file, String text) throws IOException, PropertyVetoException {
         LocalFileSystem lfs = new LocalFileSystem();
@@ -186,6 +203,44 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         String content = fo.asText();
         if (content.contains(text)) {
             fail("File " + file + " seems to contain '" + text + "'!");
+        }
+    }
+    
+    public static final class CaptureLog extends Handler {
+        private static Logger watchOver = Logger.getLogger("org.netbeans.core.modules");
+        private static void assertCalled() {
+            assertEquals("OK", System.getProperty("CaptureLog"));
+        }
+
+        public CaptureLog() {
+            System.setProperty("CaptureLog", "OK");
+            close();
+        }
+        
+        @Override
+        public void publish(LogRecord record) {
+            if (record.getMessage().contains("loading manifest")) {
+                String prev = System.getProperty("manifestParsing");
+                if (prev == null) {
+                    prev = record.getMessage();
+                } else {
+                    prev = prev + "\n" + record.getMessage();
+                }
+                System.setProperty("manifestParsing", prev);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+            watchOver.addHandler(this);
+            setLevel(Level.FINE);
+            watchOver.setLevel(Level.FINE);
+            
+            Logger.getLogger("org.netbeans.Stamps").setLevel(Level.ALL);
         }
     }
 }
