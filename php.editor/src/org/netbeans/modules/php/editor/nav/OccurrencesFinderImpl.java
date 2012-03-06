@@ -76,6 +76,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     private int caretPosition;
     private volatile boolean cancelled;
 
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
     }
