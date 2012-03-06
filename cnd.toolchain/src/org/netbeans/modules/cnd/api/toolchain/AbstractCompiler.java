@@ -107,6 +107,14 @@ public abstract class AbstractCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getCStandardOptions(int value) {
+        // TODO this should be implemented
+        // if (value == 0) return "";
+        // if (value == 1) return "-std=c89";
+        // if (value == 2) return "-std=c99";
+        return ""; //NOI18N
+    }
+    
     public String getCppStandardOptions(int value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getCppStandardFlags() != null && compiler.getCppStandardFlags().length > value){

@@ -86,6 +86,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         getCppStandard().assign(conf.getCppStandard());
     }
     
+    @Override
+    public boolean getModified() {
+        return super.getModified() || getCppStandard().getModified();
+    }    
+    
     // Cloning
     @Override
     public CCCompilerConfiguration clone() {
