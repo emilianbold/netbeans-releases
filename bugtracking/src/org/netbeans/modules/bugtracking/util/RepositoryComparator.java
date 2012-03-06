@@ -42,14 +42,14 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.util.Comparator;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class RepositoryComparator implements Comparator<RepositoryImpl> {
-    public int compare(RepositoryImpl r1, RepositoryImpl r2) {
+public class RepositoryComparator implements Comparator<Repository> {
+    public int compare(Repository r1, Repository r2) {
         if(r1 == null && r2 == null) return 0;
         if(r1 == null) return -1;
         if(r2 == null) return 1;

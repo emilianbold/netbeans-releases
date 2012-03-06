@@ -69,7 +69,6 @@ import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.LOADING_REPOSITORIES;
 import static org.netbeans.modules.bugtracking.util.RepositoryComboSupport.SELECT_REPOSITORY;
@@ -132,9 +131,9 @@ public class RepositoryComboSupportTest {
         protected Node repoNode1;
         protected Node repoNode2;
         protected Node repoNode3;
-        protected RepositoryImpl repository1;
-        protected RepositoryImpl repository2;
-        protected RepositoryImpl repository3;
+        protected Repository repository1;
+        protected Repository repository2;
+        protected Repository repository3;
 
         public AbstractRepositoryComboTezt() {
             DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
@@ -147,17 +146,17 @@ public class RepositoryComboSupportTest {
         }
         
         protected void createRepository1() {
-            repository1 = APIAccessor.IMPL.getImpl(connector.createRepository("alpha"));
+            repository1 = connector.createRepository("alpha");
             repoNode1 = new DummyNode("node1", repository1);
         }
 
         protected void createRepository2() {
-            repository2 = APIAccessor.IMPL.getImpl(connector.createRepository("beta"));
+            repository2 = connector.createRepository("beta");
             repoNode2 = new DummyNode("node2", repository2);
         }
 
         protected void createRepository3() {
-            repository3 = APIAccessor.IMPL.getImpl(connector.createRepository("gamma"));
+            repository3 = connector.createRepository("gamma");
             repoNode3 = new DummyNode("node3", repository3);
         }
 
@@ -684,7 +683,7 @@ public class RepositoryComboSupportTest {
         runRepositoryComboTest(new AbstractRepositoryComboTezt() {
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {
-                return RepositoryComboSupport.setup(null, comboBox, repository2.getRepository());
+                return RepositoryComboSupport.setup(null, comboBox, repository2);
             }
             @Override
             protected void scheduleTests(ProgressTester progressTester) {
@@ -721,7 +720,7 @@ public class RepositoryComboSupportTest {
             private File dummyFile = new File("dummy file");
             @Override
             protected void setUpEnvironment() {
-                getBugtrackingOwnerSupport().setAssociation(dummyFile, repository2);
+                getBugtrackingOwnerSupport().setAssociation(dummyFile, APIAccessor.IMPL.getImpl(repository2));
             }
             @Override
             RepositoryComboSupport setupComboSupport(JComboBox comboBox) {

@@ -69,11 +69,11 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.SPIAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.*;
 import org.openide.awt.UndoRedo;
@@ -150,10 +150,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         if ((defaultRepository != null) && !suggestedSelectionOnly) {
             /* fixed selection that cannot be changed by user */
             DefaultComboBoxModel  repoModel = new DefaultComboBoxModel();
-            repoModel.addElement(defaultRepository);
+            repoModel.addElement(defaultRepository.getRepository());
             repositoryComboBox.setModel(repoModel);
             repositoryComboBox.setRenderer(new RepositoryComboRenderer());
-            repositoryComboBox.setSelectedItem(defaultRepository);
+            repositoryComboBox.setSelectedItem(defaultRepository.getRepository());
             repositoryComboBox.setEnabled(false);
             newButton.setEnabled(false);
             onRepoSelected();
@@ -380,10 +380,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     private RepositoryImpl getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof RepositoryImpl)) {
+        if (item == null || !(item instanceof Repository)) {
             return null;
         }
-        return (RepositoryImpl) item;
+        return APIAccessor.IMPL.getImpl((Repository) item);
     }
 
     private void focusFirstEnabledComponent() {

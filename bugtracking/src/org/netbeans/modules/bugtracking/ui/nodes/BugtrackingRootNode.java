@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.RepositoryComparator;
+import org.netbeans.modules.bugtracking.util.RepositoryImplComparator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
@@ -150,7 +150,7 @@ public class BugtrackingRootNode extends AbstractNode {
         @Override
         protected boolean createKeys(List<RepositoryImpl> toPopulate) {
             toPopulate.addAll(RepositoryRegistry.getInstance().getRepositories());
-            Collections.sort(toPopulate, new RepositoryComparator());
+            Collections.sort(toPopulate, new RepositoryImplComparator());
             return true;
         }
     }

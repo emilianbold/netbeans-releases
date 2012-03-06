@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,44 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.util;
 
-package org.netbeans.modules.bugtracking.dummies;
-
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
+import java.util.Comparator;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  *
- * @author Marian Petras
+ * @author Tomas Stupka
  */
-public class DummyNode extends AbstractNode {
-
-    private final String name;
-    private final Repository repository;
-
-    public DummyNode() {
-        this((String) null);
+public class RepositoryImplComparator implements Comparator<RepositoryImpl> {
+    public int compare(RepositoryImpl r1, RepositoryImpl r2) {
+        if(r1 == null && r2 == null) return 0;
+        if(r1 == null) return -1;
+        if(r2 == null) return 1;
+        return r1.getDisplayName().compareTo(r2.getDisplayName());
     }
-
-    public DummyNode(String name) {
-        this(name, null);
-    }
-
-    public DummyNode(Repository repository) {
-        this(null, repository);
-    }
-
-    public DummyNode(String name, Repository repository) {
-        super(Children.LEAF);
-        this.name = name;
-        this.repository = repository;
-    }
-
-    Repository getAssociatedRepository() {
-        return repository;
-    }
-
 }

@@ -97,8 +97,7 @@ import static javax.swing.SwingConstants.NORTH;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.*;
@@ -269,13 +268,13 @@ public final class QueryTopComponent extends TopComponent
                 public void itemStateChanged(ItemEvent e) {
                     if (e.getStateChange() == ItemEvent.SELECTED) {
                         Object item = e.getItem();
-                        if (item instanceof RepositoryImpl) {
+                        if (item instanceof Repository) {
                             onRepoSelected();
                         }
                     } else if (e.getStateChange() == ItemEvent.DESELECTED) {
                         Object item = e.getItem();
-                        if (item instanceof RepositoryImpl) {
-                            ((RepositoryImpl) item).removePropertyChangeListener(QueryTopComponent.this);
+                        if (item instanceof Repository) {
+                            ((Repository) item).removePropertyChangeListener(QueryTopComponent.this);
                         }
                     }
                 }
@@ -552,10 +551,10 @@ public final class QueryTopComponent extends TopComponent
 
     private RepositoryImpl getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof RepositoryImpl)) {
+        if (item == null || !(item instanceof Repository)) {
             return null;
         }
-        return (RepositoryImpl) item;
+        return APIAccessor.IMPL.getImpl((Repository)item);
     }
 
     private void focusFirstEnabledComponent() {
