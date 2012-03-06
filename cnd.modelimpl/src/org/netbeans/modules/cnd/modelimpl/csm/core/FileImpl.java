@@ -184,24 +184,10 @@ public final class FileImpl implements CsmFile,
      * it invokes ensureParsed(DUMMY_HANDLERS), which parses the file with all valid states from container.
      * This (2) might happen only when there are NO other states in queue
      */
-    public static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
-    public static final APTPreprocHandler.State DUMMY_STATE = new APTPreprocHandler.State() {
-
-        @Override
-        public boolean isCleaned() {
-            return true;
-        }
-
-        @Override
-        public boolean isCompileContext() {
-            return false;
-        }
-
-        @Override
-        public boolean isValid() {
-            return false;
-        }
-    };
+    static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
+    static final APTPreprocHandler.State DUMMY_STATE = new SpecialStateImpl();
+    static final APTPreprocHandler.State PARTIAL_REPARSE_STATE = new SpecialStateImpl();
+    static final Collection<APTPreprocHandler> PARTIAL_REPARSE_HANDLERS = new EmptyCollection<APTPreprocHandler>();
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
@@ -479,9 +465,11 @@ public final class FileImpl implements CsmFile,
                 RepositoryUtils.put(this);
                 return;
             }
+            boolean partialReparse = false;
             boolean wasDummy = false;
-            if (handlers == DUMMY_HANDLERS) {
+            if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
                 wasDummy = true;
+                partialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
             long time;
@@ -616,12 +604,9 @@ public final class FileImpl implements CsmFile,
                 RepositoryUtils.put(this);
                 return;
             }
-            boolean wasDummy = false;
-            if (handlers == DUMMY_HANDLERS) {
-                assert false;
-                wasDummy = true;
-                handlers = getPreprocHandlers();
-            }
+            assert handlers != DUMMY_HANDLERS : "dummy handlers can not be on inclusion";
+            assert handlers != PARTIAL_REPARSE_HANDLERS : "dummy reparse handlers can not be on inclusion";
+
             long time;
             State curState;
             APTFile fullAPT = getFileAPT(true);
@@ -1655,7 +1640,7 @@ public final class FileImpl implements CsmFile,
                         if (TRACE_SCHUDULE_PARSING) {
                             System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                         }
-                        boolean added = ParserQueue.instance().shiftToBeParsedNext(this);
+                        boolean added = ParserQueue.instance().addToBeParsedNext(this);
                         if (!added) {
                             return;
                         }
@@ -2064,5 +2049,26 @@ public final class FileImpl implements CsmFile,
     
     static String toYesNo(boolean b) {
         return b ? "yes" : "no"; // NOI18N
+    }
+
+    private static class SpecialStateImpl implements APTPreprocHandler.State {
+
+        public SpecialStateImpl() {
+        }
+
+        @Override
+        public boolean isCleaned() {
+            return true;
+        }
+
+        @Override
+        public boolean isCompileContext() {
+            return false;
+        }
+
+        @Override
+        public boolean isValid() {
+            return false;
+        }
     }
 }
