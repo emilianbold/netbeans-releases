@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -80,8 +82,17 @@ public abstract class TmpLocalFile {
      * @return tmp local file or {@code null} if any error occurs.
      */
     public static TmpLocalFile onDisk() {
+        return onDisk(null);
+    }
+
+    /**
+     * Suitable for big remote files, uses local temp file.
+     * @param extension file extension, can be {@code null}
+     * @return tmp local file or {@code null} if any error occurs.
+     */
+    public static TmpLocalFile onDisk(String extension) {
         try {
-            return new DiskTmpLocalFile();
+            return new DiskTmpLocalFile(extension);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, "Cannot create local tmp file", ex);
         }
@@ -93,6 +104,12 @@ public abstract class TmpLocalFile {
      * @return {@code true} if the tmp file is in memory only
      */
     public abstract boolean isInMemory();
+
+    /**
+     * Return absolute path on disk, if available.
+     * @return absolute path on disk, if available; {@code null} otherwise
+     */
+    public abstract String getAbsolutePath();
 
     /**
      * Get the file output stream, can be {@code null} if any error occurs.
@@ -137,6 +154,11 @@ public abstract class TmpLocalFile {
         }
 
         @Override
+        public String getAbsolutePath() {
+            return null;
+        }
+
+        @Override
         public OutputStream getOutputStream() {
             outputStream.reset();
             return outputStream;
@@ -161,13 +183,14 @@ public abstract class TmpLocalFile {
         private final File file;
 
 
-        public DiskTmpLocalFile() throws IOException {
-            file = File.createTempFile("nb-remote-tmp-file-", null); // NOI18N
+        public DiskTmpLocalFile(String extension) throws IOException {
+            file = File.createTempFile("nb-php-remote-tmp-file-", extension != null ? "." + extension : null); // NOI18N
+            file.deleteOnExit();
         }
 
         @Override
         public void cleanup() {
-            if (!file.delete()) {
+            if (file.isFile() && !file.delete()) {
                 file.deleteOnExit();
             }
         }
@@ -178,9 +201,14 @@ public abstract class TmpLocalFile {
         }
 
         @Override
+        public String getAbsolutePath() {
+            return file.getAbsolutePath();
+        }
+
+        @Override
         public OutputStream getOutputStream() {
             try {
-                return new FileOutputStream(file);
+                return new BufferedOutputStream(new FileOutputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create output stream for local tmp file", ex);
                 return null;
@@ -190,7 +218,7 @@ public abstract class TmpLocalFile {
         @Override
         public InputStream getInputStream() {
             try {
-                return new FileInputStream(file);
+                return new BufferedInputStream(new FileInputStream(file));
             } catch (FileNotFoundException ex) {
                 LOGGER.log(Level.INFO, "Cannot create input stream for local tmp file", ex);
                 return null;
