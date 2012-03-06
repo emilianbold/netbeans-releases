@@ -70,7 +70,7 @@ public final class VariableBreakpoint extends NativeBreakpoint {
 
     @Override
     protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Variable", getVariable());
+	return Catalog.format("Handler_Variable", getVariable()); //NOI18N
     }
 
     @Override
