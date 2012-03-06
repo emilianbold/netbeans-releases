@@ -157,7 +157,7 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                         break;
                 case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
                         try {
-                            FunctionDDImpl<?> fddi = FunctionDDImpl.create(token, getContainingFile(), currentNamespace, !isRenderingLocalContext());
+                            FunctionDDImpl<?> fddi = FunctionDDImpl.create(token, getContainingFile(), null, currentNamespace, !isRenderingLocalContext());
                             declarators.add(fddi);
                         } catch (AstRendererException e) {
                             DiagnosticExceptoins.register(e);
