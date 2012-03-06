@@ -860,13 +860,11 @@ public final class OptionsExportModel {
             OutputStream out = null;
             File targetFile = new File(targetUserdir, relativePath);
             LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
-            FileObject dirFO = ensureParent(targetFile);
+            ensureParent(targetFile);
             if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
-                String s = relativePath.substring(relativePath.indexOf("/") + 1);
-                FileObject fo = FileUtil.createData((dirFO == null) ? FileUtil.getConfigRoot() : dirFO, s);
                 // copy entire file
                 try {
-                    out = fo.getOutputStream();
+                    out = new FileOutputStream(targetFile);
                     copyFile(relativePath, out);
                 } finally {
                     if (out != null) {
@@ -998,19 +996,13 @@ public final class OptionsExportModel {
     }
 
     /** Creates parent of given file, if doesn't exist. */
-    private static FileObject ensureParent(File file) throws IOException {
+    private static void ensureParent(File file) throws IOException {
         final File parent = file.getParentFile();
-        FileObject dirFO = null;
         if (parent != null && !parent.exists()) {
-            String path = parent.getCanonicalPath();
-            path = path.substring(path.indexOf("/config/") + 8);
-            String[] paths = path.split("/");
-            for (int i = 0; i < paths.length; i++) {
-                String p = paths[i];
-                dirFO = FileUtil.createFolder((dirFO == null) ? FileUtil.getConfigRoot() : dirFO, p);
+            if (!parent.mkdirs()) {
+                throw new IOException("Cannot create folder: " + parent.getAbsolutePath());  //NOI18N
             }
         }
-        return dirFO;
     }
 
     /** Returns list of paths from given zip file.
