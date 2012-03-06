@@ -99,14 +99,15 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         if (exprectedReparseCount >= 0) {
             ParseStatistics.getInstance().clear();
             ProjectBase project = getProject();
-            // no need to suspend/resume parser queue, it's not the situation when work from IDE
-//            ParserQueue.instance().suspend();
+            // suspend/resume parser queue is needed to have stable results or reparsing counters,
+            // although it's not the real situation when work from IDE, but we check only logic correctness
+            ParserQueue.instance().suspend();
             for (int i = 0; i < filesToParse.length; i++) {
                 FileImpl fileImpl = findFile(filesToParse[i]);
                 fileImpl.markReparseNeeded(false);
                 DeepReparsingUtils.reparseOnChangedFileForTests(fileImpl, project);
             }
-//            ParserQueue.instance().resume();
+            ParserQueue.instance().resume();
             getProject().waitParse();
             assertParseCount(headerToCheck, exprectedReparseCount);
         }
