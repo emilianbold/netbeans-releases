@@ -162,9 +162,8 @@ abstract class KenaiRepositories {
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
                 BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
-                break;
+                return true;
             }
-            return true;
         }
         return false;
     }
@@ -223,6 +222,10 @@ abstract class KenaiRepositories {
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
             for (KenaiProject kp : kenaiProjects) {
+                if(kp.getType() == null) {
+                    // no bugtracking feature
+                    continue;
+                }
                 if(!reluctantSupports.contains(kp.getType())) {
                     RepositoryImpl repo = getRepository(kp);
                     if (repo != null) {
