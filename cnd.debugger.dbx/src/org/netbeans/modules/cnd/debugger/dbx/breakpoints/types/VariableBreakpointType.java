@@ -50,6 +50,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
 //@BreakpointType.Registration(displayName="#LBL_Variable")
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 public class VariableBreakpointType extends NativeBreakpointType {
 
     // interface BreakpointType

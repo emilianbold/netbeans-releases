@@ -49,6 +49,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.Breakpoint
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 class VariableBreakpointPanel extends BreakpointPanel {
 
     private VariableBreakpoint fb;

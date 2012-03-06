@@ -48,6 +48,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 public final class VariableBreakpoint extends NativeBreakpoint {
 
     public StringProperty variable =
