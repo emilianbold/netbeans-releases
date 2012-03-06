@@ -106,14 +106,16 @@ NetBeans.clearSelection = function() {
     this.repaintGlassPane();
 };
 
-// Determines whether the given value is an array
-NetBeans.isArray = function(value) {
-    return (typeof(value) === 'object') && (value instanceof Array);
-};
+// (object instanceof Element) doesn't work in content scripts
+// in Firefox (because of implicit wrapping by XPCNativeWrapper).
+// Hence, we use this simple check.
+NetBeans.isElement = function(object) {
+    return object.nodeType && (object.nodeType === 1);
+}
 
 // Returns an element that corresponds to the handle
 NetBeans.getElement = function(handle) {
-    if (handle instanceof Element) {
+    if (this.isElement(handle)) {
         return handle;
     }
     //var nearest;
@@ -128,7 +130,7 @@ NetBeans.getElement = function(handle) {
                 var childNodes = parentElement.childNodes;
                 for (var i=0; i<childNodes.length; i++) {
                     var child = childNodes[i];
-                    if (child instanceof Element) {
+                    if (self.isElement(child)) {
                         if (child.getAttribute(self.ATTR_ARTIFICIAL)) { // skip artificial elements
                             continue;
                         }
@@ -175,13 +177,13 @@ NetBeans.getElementHandle = function(element) {
         handle.className = element.className;
     }
     var parent = element.parentNode;
-    if (parent instanceof Element) {
+    if (this.isElement(parent)) {
         handle.parent = this.getElementHandle(parent);
         handle.siblingTagNames = [];
         var childs = parent.childNodes;
         for (var i=0; i<childs.length; i++) {
             var child = childs[i];
-            if (child instanceof Element) {
+            if (this.isElement(child)) {
                 if (child.getAttribute(this.ATTR_ARTIFICIAL)) { // skip artificial elements
                     continue;
                 }
