@@ -1,59 +1,41 @@
-<?php
-
-class Example {
-    
-    public function ifExample ($a, $b) {
-        if (convert($a) > $b) {
-            echo "a is bigger than b";
-        } elseif ($a == $b) {
-            echo $a." is equal to ".$b[0];
-        } else {
-            $result = getText($this->property1, $this->property2) ;
+var engine = {
+    cylinders : 8,
+    power: "22k",
+    getDescription: function () {
+        with (this) {
+            if (enabled) {
+                println ('Cylinders: '
+                    + cylinders + ' with power: ' + power);
+            } else {
+                log();
+            }
         }
-	$result = $a < $b ? $a : $b;
     }
-
-public function forExample() {
-    for ($i = 1; $i <= 10; $i++) {echo 'Item: '; echo $i;}
 }
 
-public function foreachEample() {
-$arr = array(1, 2, 3, 4, "b"=>5, "a"=>6);
-foreach ($arr as &$value) {
-    $value = (int)$value * 2;
-}
-}
-
-public function whileExample() {
-$i = 1;
-        while ($i <= 10) {
-            echo $i++;
-        }
-}
-
-public function doWhileExample($i) {
-do {
-    echo $i--;
-} while ($i > 0);
-}
-
-public function switchExample() {
-switch ($i) {
-    case 0:
-        echo "i equals 0";
-        break;
-    case 1:
-        echo "i equals 1";
-        break;
-}
-}
-public function tryExample() {
+function computeColor() {
     try {
-    echo inverse(5) . "\n";
-} catch (Exception $e) {
-    echo 'Caught exception: '.  $e->getMessage(). "\n";
+        color = 0;
+        for (var a = 0; a < 3; a++) {
+            color += Math.round(Math.random() * 2);
+        }
+    } catch (error) {
+        println (error);
+    }
+    while (color > 100) {
+        color = color / 2;
+    }
 }
 
+var color = computeColor();
+switch (color) {
+    case 0:
+    case 1:
+        code = 'low';
+        break;
+    case 2:
+        code = 'high';
+        break;
+    default:
+        code = undefined
 }
-}
-?>

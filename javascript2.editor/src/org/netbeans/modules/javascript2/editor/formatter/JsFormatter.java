@@ -156,6 +156,29 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceAfterComma());
                             break;
+                        case AFTER_IF_KEYWORD:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeIfParen());
+                            break;
+                        case AFTER_WHILE_KEYWORD:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeWhileParen());
+                            break;
+                        case AFTER_FOR_KEYWORD:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeForParen());
+                            break;
+                        case AFTER_WITH_KEYWORD:
+                            // TODO
+                            break;
+                        case AFTER_SWITCH_KEYWORD:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeSwitchParen());
+                            break;
+                        case AFTER_CATCH_KEYWORD:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeCatchParen());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

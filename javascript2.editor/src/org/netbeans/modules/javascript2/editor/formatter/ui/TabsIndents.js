@@ -1,4 +1,4 @@
-var engine =  {
+var engine = {
     cylinders : 8,
     power: "22k",
     getDescription: function () {

@@ -132,6 +132,30 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_COMMA));
                     break;
+                case KEYWORD_IF:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_IF_KEYWORD));
+                    break;
+                case KEYWORD_WHILE:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_WHILE_KEYWORD));
+                    break;
+                case KEYWORD_FOR:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_FOR_KEYWORD));
+                    break;
+                case KEYWORD_WITH:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_WITH_KEYWORD));
+                    break;
+                case KEYWORD_SWITCH:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SWITCH_KEYWORD));
+                    break;
+                case KEYWORD_CATCH:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_CATCH_KEYWORD));
+                    break;
                 default:
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     break;

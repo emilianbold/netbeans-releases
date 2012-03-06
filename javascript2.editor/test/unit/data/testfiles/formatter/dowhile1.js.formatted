@@ -5,5 +5,5 @@ do {
 do
     a = b + c
 // ee
-while(true)
+while (true)
 

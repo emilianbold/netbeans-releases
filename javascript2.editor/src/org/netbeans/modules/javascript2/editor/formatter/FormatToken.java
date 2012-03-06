@@ -125,14 +125,25 @@ public final class FormatToken {
         AFTER_PROPERTY,
         AFTER_CASE,
 
+        // around binary operator
         BEFORE_BINARY_OPERATOR,
         AFTER_BINARY_OPERATOR,
 
+        // around assignment operator
         BEFORE_ASSIGNMENT_OPERATOR,
         AFTER_ASSIGNMENT_OPERATOR,
 
+        // around comma
         BEFORE_COMMA,
-        AFTER_COMMA
+        AFTER_COMMA,
+
+        // keywords with possible space before parentheses
+        AFTER_IF_KEYWORD,
+        AFTER_WHILE_KEYWORD,
+        AFTER_FOR_KEYWORD,
+        AFTER_WITH_KEYWORD,
+        AFTER_SWITCH_KEYWORD,
+        AFTER_CATCH_KEYWORD
     }
 
 }
