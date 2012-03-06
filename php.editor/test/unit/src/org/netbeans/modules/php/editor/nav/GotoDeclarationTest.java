@@ -354,7 +354,7 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testClassInstantiation/testClassInstantiation.php
         checkDeclaration(getTestPath(), "$mammal = new Mamm^al;", "function ^__construct() {//Mammal");
     }
-    
+
     public void testClassInstantiation_2() throws Exception {
         checkDeclaration(getTestPath(), "class Mammal extends Animal^ {", "abstract class ^Animal");
     }
@@ -558,15 +558,15 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testStaticMethodInvocation/testStaticMethodInvocation.php
         checkDeclaration(getTestPath(), "print Ca^t::kindInfo();", "class ^Cat extends Mammal {");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_01() throws Exception {
         checkDeclaration(getTestPath(), "echo static::kin^dInfo();", "public static function ^kindInfo() {return \"cat is ...\";}");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_02() throws Exception {
         checkDeclaration(getTestPath(), "echo static::getCla^ssDesc(); // navigate to parent", "public static function ^getClassDesc() {return \"Mammal class\";}");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_03() throws Exception {
         checkDeclaration(getTestPath(), "echo static::get^Animal(); // navigate to parent", "public static function ^getAnimal() {");
     }
@@ -579,7 +579,7 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
         checkDeclaration(getTestPath(), "@var $test^Class TestClass", "$^testClass = new TestClass();");
     }
-    
+
     public void testStaticConstant197239_01() throws Exception {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo static::LET^TER22;", "const ^LETTER22 = 'a';");
@@ -589,45 +589,49 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo self::LETT^ER22;", "const ^LETTER22 = 'a';");
     }
-    
+
     public void testStaticConstant197239_03() throws Exception {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo AA::LETT^ER22;", "const ^LETTER22 = 'a';");
     }
-    
+
     public void testMixedTypes200156_01() throws Exception {
         checkDeclaration(getTestPath(), "* @property F^oo|Bar $property", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_02() throws Exception {
         checkDeclaration(getTestPath(), "* @property Foo|B^ar $property", "class ^Bar {");
     }
-    
+
     public void testMixedTypes200156_03() throws Exception {
         checkDeclaration(getTestPath(), "     * @var Fo^o|Bar", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_04() throws Exception {
         checkDeclaration(getTestPath(), "     * @var Foo|Ba^r", "class ^Bar {");
     }
-    
+
     // uncomment when issue #200161 will be fixed
 //    public void testMixedTypes200156_05() throws Exception {
 //        checkDeclaration(getTestPath(), "* @method Fo^o|Bar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Foo {");
 //    }
-//    
+//
 //    public void testMixedTypes200156_06() throws Exception {
 //        checkDeclaration(getTestPath(), "* @method Foo|B^ar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Bar {");
 //    }
-    
+
     public void testMixedTypes200156_07() throws Exception {
         checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(F^oo|Bar $param) a magic method declaration", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_08() throws Exception {
         checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(Foo|B^ar $param) a magic method declaration", "class ^Bar {");
     }
-     
+
+    public void testClassInUseStatement209187() throws Exception {
+        checkDeclaration(getTestPath(), "use \\Foo\\Bar\\Class^Name;", "class ^ClassName {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(
