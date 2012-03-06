@@ -54,6 +54,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Used for downloaded files.
@@ -184,7 +185,7 @@ public abstract class TmpLocalFile {
 
 
         public DiskTmpLocalFile(String extension) throws IOException {
-            file = File.createTempFile("nb-php-remote-tmp-file-", extension != null ? "." + extension : null); // NOI18N
+            file = FileUtil.normalizeFile(File.createTempFile("nb-php-remote-tmp-file-", extension != null ? "." + extension : null)); // NOI18N
             file.deleteOnExit();
         }
 
