@@ -3581,11 +3581,17 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   balanceParensInExpression 
             |   balanceSquaresInExpression 
-                (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>
-                    (balanceParensInExpression)? 
-                    (LITERAL_mutable)?
-                    (trailing_type)? 
-                    compound_statement
+                (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                    (
+                        (
+                            (LPAREN (parameter_list[false])? RPAREN)? 
+                            (LITERAL_mutable)?
+                        )
+                        (trailing_type)?
+                        compound_statement
+                        {#lazy_expression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #lazy_expression);}
+                    )
+                    {#lazy_expression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #lazy_expression);}
                 |
                 )
             |   constant
@@ -3672,6 +3678,19 @@ balanceParensInExpression
                     balanceParensInExpression
                 |
                     balanceSquaresInExpression
+                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                        (
+                            (
+                                (LPAREN (parameter_list[false])? RPAREN)? 
+                                (LITERAL_mutable)?
+                            )
+                            (trailing_type)?
+                            compound_statement
+                            {#balanceParensInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceParensInExpression);}
+                        )
+                        {#balanceParensInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceParensInExpression);}
+                    |
+                    )
                 |
                     ~(SEMICOLON | RCURLY | LCURLY | LPAREN | LSQUARE | RSQUARE)
                 |
@@ -3689,6 +3708,19 @@ balanceSquaresInExpression
                     balanceCurlies
                 |
                     balanceSquaresInExpression
+                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                        (
+                            (
+                                (LPAREN (parameter_list[false])? RPAREN)? 
+                                (LITERAL_mutable)?
+                            )
+                            (trailing_type)?
+                            compound_statement
+                            {#balanceSquaresInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceSquaresInExpression);}
+                        )
+                        {#balanceSquaresInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceSquaresInExpression);}
+                    |
+                    )
                 |
                     balanceParensInExpression
                 |

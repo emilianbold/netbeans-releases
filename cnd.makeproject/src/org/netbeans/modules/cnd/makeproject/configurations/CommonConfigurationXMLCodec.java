@@ -84,6 +84,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  * Change History:
  * V81 - NB 7.2
  *    Standard selection support for C++ compiler
+ *    Standard selection support for C compiler
  * V80 - NB 7.1
  *    Custom configurations
  * V79 - NB 7.0
@@ -676,6 +677,9 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getSixtyfourBits().getModified()) {
             xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
         }
+        if (cCompilerConfiguration.getCStandard().getModified()) {
+            xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandard().getValue()); // NOI18N
+        }        
         if (cCompilerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }

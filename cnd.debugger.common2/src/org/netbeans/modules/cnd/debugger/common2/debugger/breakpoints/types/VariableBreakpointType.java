@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.modelimpl.csm.deep;
+package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 
-import java.util.List;
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
+//@BreakpointType.Registration(displayName="#LBL_Variable")
+// Registered in META-INF! 
+// in case we register using Registration it will create ContextAware instance!
+public class VariableBreakpointType extends NativeBreakpointType {
 
-import org.netbeans.modules.cnd.antlr.collections.AST;
+    // interface BreakpointType
+    @Override
+    public NativeBreakpoint newInstance(int flags) {
+	return new VariableBreakpoint(flags);
+    } 
 
-/**
- * Implements CsmExpressionStatement
- * @author Vladimir Kvashin
- */
-public final class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
-    
-    private final CsmExpression expr;
-    
-    private ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
-        super(ast, file, scope);
-        expr = ExpressionBase.create(ast.getFirstChild(), file, scope);
+    // interface BreakpointType
+    @Override
+    public String getTypeDisplayName() {
+        return Catalog.get("LBL_Variable"); //NOI18N
     }
 
-    public static ExpressionStatementImpl create(AST ast, CsmFile file, CsmScope scope) {
-        return new ExpressionStatementImpl(ast, file, scope);
+    // interface NativeBreakpointType
+    @Override
+    public BreakpointPanel getCustomizer(NativeBreakpoint editable) {
+	if (editable == null)
+	    return new VariableBreakpointPanel();
+	else
+	    return new VariableBreakpointPanel(editable);
     }
     
     @Override
-    public CsmStatement.Kind getKind() {
-        return CsmStatement.Kind.EXPRESSION;
+    public String id() {
+        return "Variable"; //NOI18N
     }
-
-    @Override
-    public CsmExpression getExpression() {
-        return expr;
-    }
-
 }

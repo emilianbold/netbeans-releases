@@ -58,15 +58,40 @@ import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
 public class CCompilerConfiguration extends CCCCompilerConfiguration {
+    
+    public static final int STANDARD_DEFAULT = 0;
+    public static final int STANDARD_C89 = 1;
+    public static final int STANDARD_C99 = 2;
+    private static final String[] STANDARD_NAMES = {
+        getString("STANDARD_DEFAULT"),
+        getString("STANDARD_C89"),
+        getString("STANDARD_C99"),};
+    private IntConfiguration cStandard;        
+    
     // Constructors
     public CCompilerConfiguration(String baseDir, CCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master, owner);
+        cStandard = new IntConfiguration(null, STANDARD_DEFAULT, STANDARD_NAMES, null);
     }
     
+    public IntConfiguration getCStandard() {
+        return cStandard;
+    }    
+    
+    public void setCStandard(IntConfiguration cStandard) {
+        this.cStandard = cStandard;
+    }
+
+    @Override
+    public boolean getModified() {
+        return super.getModified() || getCStandard().getModified();
+    }
+            
     // Clone and assign
     public void assign(CCompilerConfiguration conf) {
         // From XCompiler
         super.assign(conf);
+        getCStandard().assign(conf.getCStandard());
     }
     
     @Override
@@ -91,6 +116,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         clone.setPreprocessorConfiguration(getPreprocessorConfiguration().clone());
         clone.setInheritPreprocessor(getInheritPreprocessor().clone());
         clone.setUseLinkerLibraries(getUseLinkerLibraries().clone());
+        // From CCompiler
+        clone.setCStandard(getCStandard().clone());
         return clone;
     }
     
@@ -110,6 +137,7 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         options += compiler.getLanguageExtOptions(getLanguageExt().getValue()) + " "; // NOI18N
         //options += compiler.getStripOption(getStrip().getValue()) + " "; // NOI18N
         options += compiler.getSixtyfourBitsOption(getSixtyfourBits().getValue()) + " "; // NOI18N
+        options += compiler.getCStandardOptions(getCStandard().getValue()) + " "; // NOI18N              
         if (getDevelopmentMode().getValue() == DEVELOPMENT_MODE_TEST) {
             options += compiler.getDevelopmentModeOptions(DEVELOPMENT_MODE_TEST);
         }
@@ -208,10 +236,13 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         AbstractCompiler cCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
         
+        IntNodeProp standardProp = new IntNodeProp(getCStandard(), true, "CStandard", getString("CStandardTxt"), getString("CStandardHint"));  // NOI18N
         Sheet.Set set0 = getSet();
         sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {
-            sheet.put(getBasicSet());
+            Sheet.Set bset = getBasicSet();
+            sheet.put(bset);
+            bset.put(standardProp);
             if (compilerSet != null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
@@ -259,6 +290,8 @@ public class CCompilerConfiguration extends CCCCompilerConfiguration {
                     }
                 }
             }
+        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item == null && folder == null) {
+            set0.put(standardProp);
         }
         
         return sheet;
