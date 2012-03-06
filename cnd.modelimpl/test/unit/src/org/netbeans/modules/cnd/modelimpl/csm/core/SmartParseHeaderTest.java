@@ -63,6 +63,9 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
         System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
         System.setProperty("cnd.modelimpl.parser.threads", "1");
         System.setProperty("cnd.cache.file.state","false");
+//        System.setProperty("cnd.trace.schedule.parsing","true");
+//        System.setProperty("cnd.parser.queue.trace","true");
+//        System.setProperty("cnd.parser.queue.trace.poll","true");
         ParseStatistics.getInstance().setEnabled(true);
         super.setUp();
     }
@@ -101,7 +104,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
             for (int i = 0; i < filesToParse.length; i++) {
                 FileImpl fileImpl = findFile(filesToParse[i]);
                 fileImpl.markReparseNeeded(false);
-                DeepReparsingUtils.reparseOnChangedFile(fileImpl, project);
+                DeepReparsingUtils.reparseOnChangedFileForTests(fileImpl, project);
             }
             ParserQueue.instance().resume();
             getProject().waitParse();

@@ -565,7 +565,6 @@ public final class FileImpl implements CsmFile,
                                     } // if not, someone marked it with new state
                                 }
                                 postParseNotify();
-                                stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
@@ -595,12 +594,17 @@ public final class FileImpl implements CsmFile,
             }            
         } finally {
             if (inEnsureParsed.decrementAndGet() != 0) {
-                assert false : "broken state in file " + getAbsolutePath() + parsingState + state; 
+                CndUtils.assertTrueInConsole(false, "broken state in file " + getAbsolutePath() + parsingState + state);
+            }
+            // all exist points must have state change notifcation
+            synchronized (stateLock) {
+                stateLock.notifyAll();
             }
         }
     }
 
     private void ensureParsedOnInclusion(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
+        try {
             CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
@@ -674,7 +678,13 @@ public final class FileImpl implements CsmFile,
                     state = State.INITIAL;
                 }
                 RepositoryUtils.put(this);
-            }            
+            }
+        } finally {
+            // all exist points must have state change notifcation
+            synchronized (stateLock) {
+                stateLock.notifyAll();
+            }
+        }
     }
 
     private void postParse() {
@@ -1645,8 +1655,7 @@ public final class FileImpl implements CsmFile,
                         if (TRACE_SCHUDULE_PARSING) {
                             System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                         }
-                        boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
-                                ParserQueue.Position.IMMEDIATE, false, ParserQueue.FileAction.NOTHING);
+                        boolean added = ParserQueue.instance().shiftToBeParsedNext(this);
                         if (!added) {
                             return;
                         }

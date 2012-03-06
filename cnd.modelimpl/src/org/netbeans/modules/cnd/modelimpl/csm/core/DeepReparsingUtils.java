@@ -95,8 +95,7 @@ public final class DeepReparsingUtils {
         }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
-        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+        ParserQueue.instance().shiftToBeParsedNext(fileImpl);
     }
 
     /**
@@ -122,7 +121,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
+    public static void tryPartialReparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
         if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
             LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             reparseOnlyOneFile(project, fileImpl);
@@ -131,7 +130,7 @@ public final class DeepReparsingUtils {
                 reparseOnChangedFileImpl(fileImpl, project);
                 return;
             }
-            RequestProcessor.Task task = PARTIAL_RP.post(new Runnable() {
+            PARTIAL_RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -155,7 +154,9 @@ public final class DeepReparsingUtils {
                                 }
                                 reparseOnChangedFileImpl(fileImpl, project);
                             } else {
-                                LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
+                                if (TRACE) {
+                                    LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
+                                }
                             }
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
@@ -165,8 +166,14 @@ public final class DeepReparsingUtils {
                     }
                 }
             });
-            task.waitFinished();
         }
+    }
+
+    /**
+     * for tests only
+     */
+    /*package*/static void reparseOnChangedFileForTests(final FileImpl fileImpl, final ProjectBase project) {
+        reparseOnChangedFileImpl(fileImpl, project);
     }
 
     private static void reparseOnChangedFileImpl(final FileImpl fileImpl, final ProjectBase project) {
