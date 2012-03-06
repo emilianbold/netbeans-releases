@@ -141,4 +141,9 @@ public final class APTTestToken extends TokenImpl implements APTToken {
     public void setEndLine(int l) {
         // do nothin
     }
+    
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }
 }

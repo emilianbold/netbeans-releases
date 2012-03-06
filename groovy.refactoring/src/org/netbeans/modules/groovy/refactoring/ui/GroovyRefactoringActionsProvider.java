@@ -55,7 +55,7 @@ import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
-import org.netbeans.modules.groovy.refactoring.Utils;
+import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
@@ -96,11 +96,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
 
         FileObject fo = dob.getPrimaryFile();
 
-        if (isOutsideGroovy(lookup, fo)) {
-            return false;
-        }
-
-        if ((dob!=null) && Utils.isGroovyOrGspFile(fo)) { //NOI18N
+        if ((dob!=null) && GroovyProjectUtil.isGroovyOrGspFile(fo)) {
             return true;
         }
         */
@@ -113,18 +109,9 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         FileObject fileObject = lookup.lookup(FileObject.class);
         if (isFromEditor(ec)) {
-            task = new TextComponentTask(ec, fileObject) {
-                @Override
-                protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult result) {
-                    return new WhereUsedQueryUI(selectedElement);
-                }
-            };
+            task = new TextComponentTask(ec, fileObject);
         } else {
-            task = new NodeToElementTask(lookup.lookupAll(Node.class), fileObject) {
-                protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult result) {
-                    return new WhereUsedQueryUI(selectedElement);
-                }
-            };
+            task = new NodeToElementTask(lookup.lookupAll(Node.class), fileObject);
         }
         try {
             isFindUsages = true;
@@ -134,8 +121,15 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         }
     }
 
+    /**
+     * GroovyProjectUtil.isGspFile is not implemented yet, so it's useless to call
+     * this method at the moment.
+     *
+     * @deprecated it will always return false at the moment
+     */
+    @Deprecated
     private static boolean isOutsideGroovy(Lookup lookup, FileObject fo) {
-        if (Utils.isGspFile(fo)) {
+        if (GroovyProjectUtil.isGspFile(fo)) {
             // We're attempting to refactor in an RHTML file... If it's in
             // the editor, make sure we're trying to refactoring in a Ruby section;
             // if not, we shouldn't grab it. (JavaScript refactoring won't get
@@ -176,7 +170,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
         return false;
     }
 
-    public static abstract class TextComponentTask extends UserTask implements Runnable {
+    private class TextComponentTask extends UserTask implements Runnable {
         private JTextComponent textC;
         private int caret;
         private int start;
@@ -200,12 +194,10 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             GroovyParserResult cc = AstUtilities.getParseResult(resultIterator.getParserResult());
             ASTNode root = AstUtilities.getRoot(cc);
             if (root == null) {
-                // TODO How do I add some kind of error message?
-                System.out.println("FAILURE - can't refactor uncompileable sources");
                 return;
             }
 
-            BaseDocument doc = Utils.getDocument(cc, fileObject);
+            BaseDocument doc = GroovyProjectUtil.getDocument(cc, fileObject);
             AstPath path = new AstPath(root, caret, doc);
 
             GroovyRefactoringElement ctx = new GroovyRefactoringElement(cc, (ModuleNode) root, path.leaf(), fileObject);
@@ -215,6 +207,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             ui = createRefactoringUI(ctx, start, end, cc);
         }
 
+        @Override
         public final void run() {
             try {
                 SourceUtils.runUserActionTask(fileObject, this);
@@ -223,21 +216,23 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             }
             TopComponent activetc = TopComponent.getRegistry().getActivated();
 
-            if (ui!=null) {
+            if (ui != null) {
                 UI.openRefactoringUI(ui, activetc);
             } else {
                 String key = "ERR_CannotRenameLoc"; // NOI18N
                 if (isFindUsages) {
                     key = "ERR_CannotFindUsages"; // NOI18N
                 }
-                JOptionPane.showMessageDialog(null,NbBundle.getMessage(GroovyRefactoringActionsProvider.class, key));
+                JOptionPane.showMessageDialog(null, NbBundle.getMessage(GroovyRefactoringActionsProvider.class, key));
             }
         }
 
-        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
+        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info) {
+            return new WhereUsedQueryUI(selectedElement);
+        }
     }
 
-    public static abstract class NodeToElementTask extends UserTask implements Runnable {
+    private class NodeToElementTask extends UserTask implements Runnable {
         private Node node;
         private RefactoringUI ui;
         private final FileObject fileObject;
@@ -260,6 +255,7 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             }
         }
 
+        @Override
         public final void run() {
             DataObject o = node.getCookie(DataObject.class);
             try {
@@ -269,7 +265,9 @@ public class GroovyRefactoringActionsProvider extends ActionsImplementationProvi
             }
             UI.openRefactoringUI(ui);
         }
-        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info);
-    }
 
+        protected RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info) {
+            return new WhereUsedQueryUI(selectedElement);
+        }
+    }
 }

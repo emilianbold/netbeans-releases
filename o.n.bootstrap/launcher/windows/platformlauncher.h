@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -69,6 +69,7 @@ class PlatformLauncher {
     static const char *OPT_NB_PLATFORM_HOME;
     static const char *OPT_NB_CLUSTERS;
     static const char *OPT_NB_USERDIR;
+    static const char *OPT_DEFAULT_USERDIR_ROOT;
     static const char *OPT_HTTP_PROXY;
     static const char *OPT_HTTP_NONPROXY;
     static const char *OPT_SOCKS_PROXY;
@@ -100,6 +101,7 @@ private:
     bool parseArgs(int argc, char *argv[]);
     bool initPlatformDir();
     bool processAutoUpdateCL();
+    void deteteNewClustersFile();
     bool checkForNewUpdater(const char *basePath);
     bool shouldAutoUpdate(bool firstStart, const char *basePath);
     bool shouldAutoUpdateClusters(bool firstStart);
@@ -121,6 +123,7 @@ private:
     bool exiting;
     std::string platformDir;
     std::string userDir;
+    std::string defaultUserDirRoot;
     std::string clusters;
     std::string bootclass;
     std::string jdkhome;

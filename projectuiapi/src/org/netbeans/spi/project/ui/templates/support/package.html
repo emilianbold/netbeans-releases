@@ -44,55 +44,39 @@ made subject to such option by the copyright holder.
 
 Support for providing own templates visible in <b>New File...</b> action.
 
-<p>Project types may declare the templates for projects in the folder <code>Templates/Projects</code> on the
-system filesystem using a module XML layer file. Registering project type templates is similar to registering
+<p>Project types may declare the templates for projects using {@link org.netbeans.api.templates.TemplateRegistration}
+with a path as a subfolder of <code>Projects/</code>.
+Registering project type templates is similar to registering
 file templates described below. The wizard for a project can return {@link org.openide.loaders.DataObject}s or
 {@link org.openide.loaders.FileObject}s corresponding to the project directories of created files and/or files
-to be selected in newly created projects. The {@link org.openide.WizardDescriptor} may also have a property
-defined on it called <code>setAsMain</code>, which may be {@link Boolean#TRUE} (the default) or {@link
-Boolean#FALSE}, according to whether the (first returned) new project should be set as the main project or
-not.</p>
+to be selected in newly created projects.
+{@link org.netbeans.spi.project.ui.templates.support.Templates#setDefinesMainProject} may be used.</p>
 
 <p>Each project can also declare own file templates to be exposed it in <b>New File...</b> wizard. This 
 permits users to create new files, which are of types supported by given project type. The project may also
 provide own iterator for project-specific customization of given file type.</p>
 
-<p>The project type has to declare its file templates in the module's layer file
-in folder the <code>Templates</code>. The declaration should look as follows (or <code>@TemplateRegistration</code> may be used):
-<p>
-<code>
-&lt;folder name="Templates"&gt;<br>
-&nbsp;&nbsp;&lt;folder name="JSP_Servlet"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;file name="JSP.jsp" url="templates/JSP.template"&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.core.Bundle"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="template" boolvalue="true"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/core/resources/JSP.html"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="instantiatingIterator" methodvalue="org.netbeans.modules.web.dd.wizards.PageIterator.createJspIterator"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;attr name="templateCategory" stringvalue="web-types"/&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&lt;/file&gt;<br>
-&nbsp;&nbsp;&lt;/folder&gt;<br>
-&lt;/folder&gt;<br>
-</code>
-</p>
-The subfolder of <code>Templates</code> folder specify the folder in which will 
-be this templates present in <i>templates chooser</i> invoked from either <b>New File...</b>
-or <b>New Project...</b> wizard.<br>
-The subfolder should contain a file representing one template and its attributes:
-The <code><b>file</b></code> tag has to have a unique <code><b>name</b></code> to
-recognize in the <code>SystemFileSystem</code> and the <code><b>url</b></code>
-property which links to file pattern of the declared template. <p>
-<p>The mandatory file's attributes are:
-<li><code><b>SystemFileSystem.localizingBundle</b></code> specifies the <code>ResourceBundle</code>
-which contains the localized display name of template</li>
-<li><code><b>template</b></code> which must have value set to <code><b>true</b></code> otherwise the template will be ignored.</li>
-<br>
-The optional attributes are: <br>
-<li><code><b>instantiatingWizardURL</b></code> links to a resource with a template's description</li>
-<li><code><b>instantiatingIterator</b></code> specifies a instance of {@link org.openide.WizardDescriptor.InstantiatingIterator}
-which instantiates the new file in specified target folder.</li>
+<p>File templates may be declared using {@link org.netbeans.api.templates.TemplateRegistration}, e.g.:</p>
+<pre>
+&#64;TemplateRegistration(
+    folder="JSP_Servlet",
+    position=123,
+    displayName="#JSP.template",
+    iconBase="org/netbeans/modules/web/core/resources/jsp.png",
+    description="JSP.html",
+    category="web-types"
+)
+public class JSPIterator implements WizardDescriptor.InstantiatingIterator {
+    // ...
+}
+</pre>
+The <code>folder</code> attribute specifies the folder in which
+this template will be present in the <i>template chooser</i> invoked from either <b>New File...</b>
+or <b>New Project...</b> wizard.
 <blockquote>
 <b>Note:</b> a project type can declare own custom iterator with some project-specific customization,
-it's <b>recommended</b> to use the standardized target chooser exposed in {@link org.netbeans.spi.project.ui.templates.support.Templates#createSimpleTargetChooser(org.netbeans.api.project.Project,org.netbeans.api.project.SourceGroup[]) Templates.createSimpleTargetChooser(...)},
+it's <b>recommended</b> to use the standardized target chooser exposed in
+{@link org.netbeans.spi.project.ui.templates.support.Templates#buildSimpleTargetChooser},
 a similar target chooser offers
 <a href="@org-netbeans-modules-java-project@/org/netbeans/spi/java/project/support/ui/templates/JavaTemplates.html#createPackageChooser(org.netbeans.api.project.Project,%20org.netbeans.api.project.SourceGroup[])"><code>JavaTemplates.createPackageChooser(...)</code></a>
 for Java-oriented projects.
@@ -103,21 +87,30 @@ The last possibility is declaration no iterator, in this case will be used a gen
 useful for simple file types without any specific needs, i.e. <code>properties file</code>.<br>
 For project templates the <code>instantiate()</code> method should return a Set of FileObjects. FileObjects
 representing project directories will automatically be opened in the project and files tab. Other FileObjects 
-(e.g. Java classes created by the wizard) will be opened in the editor area. Path of coresponding nodes will be
+(e.g. Java classes created by the wizard) will be opened in the editor area. Path of corresponding nodes will be
 expanded in the project or files tab.<br>
 For file templates the <code>instantiate()</code> method should return Set of FileObjects which will then
-automaticaly opened in the editor. Path of coresponding nodes will be
+automatically opened in the editor. Path of corresponding nodes will be
 expanded in the project or files tab.<br>
 </blockquote>
-<li><code><b>templateCategory</b></code> files the template to some category. The template's categories
+<code>category</code> files the template to some category. The template's categories
 helps to filter the templates according to type of project.
-You may specify multiple categories separated by commas, e.g.: <samp>some-type,some-other-type</samp></li>
+You may specify multiple categories separated by commas, e.g.: <samp>some-type,some-other-type</samp>
 <p>
-There are two importatnt interfaces affecting the behavior of the templates. Implementation of these interfaces should
+There is currently no annotation to define template <em>folders</em>;
+they should be defined in the XML layer as subfolders of <code>Templates</code>
+with <code>displayName</code> and <code>position</code> attributes.
+Note that it is possible to set the attribute <code>simple</code> to (boolean) <code>false</code>
+in order to hide templates from the list shown in the standard wizards, while still
+making it possible to use <code>TemplateRegistration</code> and apply templates programmatically.
+To hide templates from the "new" wizards but show them in Template Manager,
+just set a category which is never used (such as <code>invisible</code>).
+<p>
+There are two important interfaces affecting the behavior of the templates. Implementation of these interfaces should
 reside in the project's lookup.
 <p>
 The first one is {@link org.netbeans.spi.project.ui.PrivilegedTemplates}.
-It is used for the initial content of the popup menu of <b>New File...</b>. It simply should return names of file tempolates from system
+It is used for the initial content of the popup menu of <b>New File...</b>. It simply should return names of file templates from system
 filesystem which should be contained in the popup menu. Example implementation follows:
 <pre><code>
 private static final class PrivilegedTemplatesImpl implements PrivilegedTemplates {
@@ -138,7 +131,7 @@ private static final class PrivilegedTemplatesImpl implements PrivilegedTemplate
 </code></pre>
 <p>
 The second interface is {@link org.netbeans.spi.project.ui.RecommendedTemplates},
-which infulences the apperance of templates in the New File wizard according to project types. The implementation of the interface has to return 
+which influences the appearance of templates in the New File wizard according to project types. The implementation of the interface has to return
 array of Strings which corresponds to names of template categories listed in the <code>templateCategory</code> attribute of template files. All templates 
 which list at least one recommended category in the <code>templateCategory</code> attribute will be listed for given project type.<br>
 <b>Note:</b> if no <code>templateCategory</code> is declared then this template will be visible for each project regardless its type.<br>
@@ -168,144 +161,6 @@ private static final class RecommendedTemplatesImpl implements RecommendedTempla
 
 }
 </code></pre>
-</p>
-
-<br>There is a list of template categories and its relations to project's types in matrix:
-
-<table style="text-align: left; width: 100%;" border="1" cellspacing="2" cellpadding="2">
-<tbody>
-<tr>
-<td colspan="2" style="vertical-align: top;"><strong>templateCategory</strong></td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">java-classes</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">java-classes-basic</td>
-<td style="vertical-align: top;">same as java-classes excluding Applet/JApplet</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">java-main-class</td>
-<td style="vertical-align: top;"> (all together could be pooled as generic-java)</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">java-beans</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">java-forms</td>
-</tr>
-<tr>
-<td style="vertical-align: top;">gui-java-application</td>
-<td style="vertical-align: top;"> (all above could be pooled as java)</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">web-types</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">servlet-types</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">XML</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">oasis-XML-catalogs</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">ant-script</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">ant-task</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">junit</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">simple-files</td>
-</td>
-</tr>
-<tr>
-<td colspan="2" style="vertical-align: top;">MIDP</td>
-</td>
-</tr>
-</tbody>
-</table>
-<br>
-<h3><a name="Supported_File_Types_in_Projects"> Supported File Types in Projects Matrix </a></h3>
-
-<p>
-Projects:
-</p>
-<ul>
-<li> <strong>JA</strong> - Java Application
-</li><li> <strong>JL</strong> - Java Library
-</li><li> <strong>JP</strong> - Java Project with Existing Sources
-</li><li> <strong>WA</strong> - Web Application
-</li><li> <strong>WP</strong> - Web Project with Existing Sources
-</li>
-</ul>
-
-<p>
-* - supported file type
-</p>
-
-<table border="1" cellspacing="0" cellpadding="2">
-<tbody><tr><th bgcolor="#99cccc"> <strong>File Type \ Project</strong> </th><th bgcolor="#99cccc"> <strong>JA</strong> </th><th bgcolor="#99cccc"> <strong>JL</strong> </th><th bgcolor="#99cccc"> <strong>JP</strong> </th><th bgcolor="#99cccc"> <strong>WA</strong> </th><th bgcolor="#99cccc"> <strong>WP</strong> </th></tr>
-<tr><td> Folder </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Java Package </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Java Class </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Empty Java File </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Java Interface </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Java Exception </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Java Main Class </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> JApplet Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> JDialog Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> JFrame Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> JInternalFrame Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> JPanel Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Bean Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Applet Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Dialog Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Frame Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Panel Form </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Application </td><td align="center"> * </td><td> &nbsp; </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> MDI Application </td><td align="center"> * </td><td> &nbsp; </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> OK/Cancel Dialog </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><td> Java Bean </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> BeanInfo </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> BeanInfo w/o Icon </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Customizer </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Property Editor </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Simple JUnit TestCase </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td> &nbsp; </td><td> &nbsp; </td></tr>
-<tr><th bgcolor="#99cccc"> <strong>File Type \ Project</strong> </th><th bgcolor="#99cccc"> <strong>JA</strong> </th><th bgcolor="#99cccc"> <strong>JL</strong> </th><th bgcolor="#99cccc"> <strong>JP</strong> </th><th bgcolor="#99cccc"> <strong>WA</strong> </th><th bgcolor="#99cccc"> <strong>WP</strong> </th></tr>
-<tr><td> XML Document </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> DTD Entity </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> XML Schema </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> XSL Stylesheet </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> OASIS XML Catalog </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> XML Parsed Entity </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Cascading Style Sheet </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Empty Ant Script </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Custom Task </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> HTML File </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Properties File </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Text File </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> JSP </td><td> &nbsp; </td><td> &nbsp; </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Servlet </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> HTML </td><td> &nbsp; </td><td> &nbsp; </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Web Module Listener </td><td> &nbsp; </td><td> &nbsp; </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Filter </td><td> &nbsp; </td><td> &nbsp; </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Tag File </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Tag Handler </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr>
-<tr><td> Tag Library Descriptor </td><td> &nbsp; </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td><td align="center"> * </td></tr></tbody>
-</table><br>
-</p>
 
 </body>
 </html>

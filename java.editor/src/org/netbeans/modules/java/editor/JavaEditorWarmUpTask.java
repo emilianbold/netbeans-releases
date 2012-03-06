@@ -46,6 +46,7 @@ package org.netbeans.modules.java.editor;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -63,6 +64,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * "Warm-up" task for editor. Executed after IDE startup, it should
@@ -73,7 +75,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author  Tomas Pavek, Martin Roskanin
  */
-
+@ServiceProvider(service=Runnable.class,path="WarmUp")
 public class JavaEditorWarmUpTask implements Runnable {
     
     /**
@@ -133,6 +135,10 @@ public class JavaEditorWarmUpTask implements Runnable {
     private long startTime;
     
     public @Override void run() {
+        if (GraphicsEnvironment.isHeadless()) {
+            return;
+        }
+        
         switch (status) {
             case STATUS_INIT:
                 startTime = System.currentTimeMillis();

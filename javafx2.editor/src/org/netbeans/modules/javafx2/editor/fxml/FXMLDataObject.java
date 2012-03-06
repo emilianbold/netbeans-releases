@@ -43,17 +43,26 @@
 package org.netbeans.modules.javafx2.editor.fxml;
 
 import java.io.IOException;
+import javax.swing.Action;
+import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
+import org.openide.nodes.Children;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
-import org.openide.nodes.Children;
-import org.openide.util.Lookup;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.Lookup;
 
+
+@MIMEResolver.ExtensionRegistration(
+        extension=JavaFXEditorUtils.FILE_EXTENSION,
+        mimeType=JavaFXEditorUtils.MIME_TYPE,
+        position=8739,
+        displayName="#LBL_FXML_loader_name") // NOI18N
 public class FXMLDataObject extends MultiDataObject {
 
     public FXMLDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
@@ -64,7 +73,24 @@ public class FXMLDataObject extends MultiDataObject {
 
     @Override
     protected Node createNodeDelegate() {
-        return new DataNode(this, Children.LEAF, getLookup());
+        return new DataNode(this, Children.LEAF, getLookup()) {
+            @Override
+            public Action getPreferredAction() {
+                for(Action a : getActions(true)) {
+                    if (a == null) {
+                        continue;
+                    }
+                    if (a.isEnabled()) {
+                        if (a instanceof FXMLOpenAction) {
+                            return a;
+                        } else if (a instanceof FXMLEditAction) {
+                            return a;
+                        }
+                    }
+                }
+                return super.getPreferredAction();
+            }
+        };
     }
 
     @Override

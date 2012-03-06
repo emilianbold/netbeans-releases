@@ -221,9 +221,17 @@ public abstract class CompletionResultItem implements CompletionItem {
                     if ((context != null) && (! context.isSpecialCompletion()) &&
                         (! context.isPrefixBeingUsed(prefix))) {
                         String tns = context.getTargetNamespaceByPrefix(prefix);
-                        doc.insertString(CompletionUtil.getNamespaceInsertionOffset(doc), " " +
-                                XMLConstants.XMLNS_ATTRIBUTE + ":" + prefix + "=\"" +
-                                tns + "\"", null);
+                        
+                        // CC has made a suggestion, so materialize it:
+                        if (tns == null) {
+                            tns = context.getSuggestedNamespace().get(prefix);
+                        }
+                        
+                        if (tns != null) {
+                            doc.insertString(CompletionUtil.getNamespaceInsertionOffset(doc), " " +
+                                    XMLConstants.XMLNS_ATTRIBUTE + ":" + prefix + "=\"" +
+                                    tns + "\"", null);
+                        }
                     }
                 } catch (Exception e) {
                     _logger.log(Level.SEVERE,

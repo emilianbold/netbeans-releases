@@ -76,12 +76,8 @@ import org.netbeans.modules.java.hints.declarative.conditionapi.Matcher;
 import org.netbeans.modules.java.hints.declarative.test.TestTokenId;
 import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,7 +90,7 @@ import org.openide.util.Exceptions;
 public class EvaluationSpanTask extends JavaParserResultTask<Result> {
 
     public EvaluationSpanTask() {
-        super(Phase.RESOLVED);
+        super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     @Override

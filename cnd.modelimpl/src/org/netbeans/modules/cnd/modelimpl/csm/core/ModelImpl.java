@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import java.io.IOException;
 import java.io.PrintWriter;
 import org.netbeans.modules.cnd.api.model.*;

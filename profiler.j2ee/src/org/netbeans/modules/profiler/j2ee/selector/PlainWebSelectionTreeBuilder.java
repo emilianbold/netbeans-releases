@@ -49,15 +49,13 @@ import org.netbeans.modules.profiler.selector.api.nodes.SelectorChildren;
 import java.util.List;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.ProjectNode;
 import org.netbeans.modules.profiler.j2ee.selector.nodes.web.WebProjectChildren;
+import org.netbeans.modules.profiler.selector.api.SelectionTreeBuilderType;
 import org.netbeans.modules.profiler.selector.api.builders.ProjectSelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder;
 import org.netbeans.modules.profiler.selector.api.nodes.SelectorNode;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 
 /**
@@ -77,7 +75,7 @@ public class PlainWebSelectionTreeBuilder extends ProjectSelectionTreeBuilder {
     
     @NbBundle.Messages("PlainWebSelectionTreeBuilder_DisplayName=Web Application View")
     public PlainWebSelectionTreeBuilder(Project project, boolean isPreferred) {
-        super(new Type("web-application", Bundle.PlainWebSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
+        super(new SelectionTreeBuilderType("web-application", Bundle.PlainWebSelectionTreeBuilder_DisplayName()), isPreferred, project); // NOI18N
     }
     
     @Override

@@ -65,6 +65,7 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
         this.argCount = argCount;
     }
     
+    @Override
     public void process(HyperlinkEnv env) {
         String className = new BeanClassFinder(
                 env.getBeanAttributes(), env.getFileObject()).findImplementationClass(false);
@@ -72,6 +73,6 @@ public class JavaMethodHyperlinkProcessor extends HyperlinkProcessor {
             return;
         }
         JavaUtils.openMethodInEditor(env.getFileObject(), className, env.getValueString(), argCount,
-                            publicFlag, staticFlag);
+                publicFlag, staticFlag);
     }
 }

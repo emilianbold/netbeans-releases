@@ -47,13 +47,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.IndexingAwareTestCase;
 import org.netbeans.modules.parsing.api.MyScheduler;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -77,17 +81,21 @@ import org.openide.filesystems.FileUtil;
  *
  * @author hanz
  */
-public class FileModificationTest extends NbTestCase {
+public class FileModificationTest extends IndexingAwareTestCase {
     
     public FileModificationTest (String testName) {
         super (testName);
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.INFO;
     }
 
     /**
      * @throws java.lang.Exception
      */
     public void testFileModification () throws Exception {
-
         // 1) register tasks and parsers
         MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
         final CountDownLatch        latch1 = new CountDownLatch (1);
@@ -184,6 +192,11 @@ public class FileModificationTest extends NbTestCase {
                             }
 
                             public void cancel () {
+                            }
+                            
+                            @Override
+                            public String toString () {
+                                return "BooEmbedingProvider " + i;
                             }
                         },
                         new ParserResultTask () {
@@ -321,10 +334,3 @@ public class FileModificationTest extends NbTestCase {
         assertEquals ("", test.getResult ());
     }
 }
-
-
-
-
-
-
-

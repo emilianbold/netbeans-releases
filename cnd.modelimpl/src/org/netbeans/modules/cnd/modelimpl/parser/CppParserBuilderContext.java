@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.parser;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
@@ -77,6 +78,13 @@ public class CppParserBuilderContext {
         return enumBuilder;
     }
 
+    public ClassBuilder getClassBuilder() {
+        CsmObjectBuilder builder = top();
+        assert builder instanceof ClassBuilder : "top " + top();
+        ClassBuilder classBuilder = (ClassBuilder)builder;        
+        return classBuilder;
+    }
+    
     public NamespaceBuilder getNamespaceBuilder() {
         CsmObjectBuilder builder = top();
         assert builder instanceof NamespaceBuilder;

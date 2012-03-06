@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -71,6 +71,7 @@ const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
 const char *PlatformLauncher::OPT_NB_CLUSTERS = "-Dnetbeans.dirs=";
 const char *PlatformLauncher::OPT_NB_USERDIR = "-Dnetbeans.user=";
+const char *PlatformLauncher::OPT_DEFAULT_USERDIR_ROOT = "-Dnetbeans.default_userdir_root=";
 const char *PlatformLauncher::OPT_HTTP_PROXY = "-Dnetbeans.system_http_proxy=";
 const char *PlatformLauncher::OPT_HTTP_NONPROXY = "-Dnetbeans.system_http_non_proxy_hosts=";
 const char *PlatformLauncher::OPT_SOCKS_PROXY = "-Dnetbeans.system_socks_proxy=";
@@ -121,6 +122,7 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
     }
     jvmLauncher.getJavaPath(jdkhome);
 
+    deteteNewClustersFile();
     prepareOptions();
 
     if (nextAction.empty()) {
@@ -253,6 +255,16 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             }
             userDir = tmp;
             logMsg("User dir: %s", userDir.c_str());
+        } else if (strcmp(ARG_DEFAULT_USER_DIR_ROOT, argv[i]) == 0) {
+            CHECK_ARG;
+            char tmp[MAX_PATH + 1] = {0};
+            strncpy(tmp, argv[++i], MAX_PATH);
+            if (strcmp(tmp, "memory") != 0 && !normalizePath(tmp, MAX_PATH)) {
+                logErr(false, true, "Default User directory path \"%s\" is not valid.", argv[i]);
+                return false;
+            }
+            defaultUserDirRoot = tmp;
+            logMsg("Default Userdir root: %s", defaultUserDirRoot.c_str());
         } else if (strcmp(ARG_NAME_CLUSTERS, argv[i]) == 0) {
             CHECK_ARG;
             clusters = argv[++i];
@@ -346,6 +358,21 @@ bool PlatformLauncher::processAutoUpdateCL() {
     fclose(file);
     delete[] str;
     return true;
+}
+
+void PlatformLauncher::deteteNewClustersFile() {
+    logMsg("deteteNewClustersFile()...");
+    if (userDir.empty()) {
+        logMsg("\tuserdir empty, quiting");
+        return;
+    }
+    string listPath = userDir;
+    listPath += "\\update\\download\\netbeans.dirs";
+
+    if (fileExists(listPath.c_str())) {
+        DeleteFileA(listPath.c_str());
+        logMsg("%s file deleted.", listPath.c_str());
+    }
 }
 
 // check if new updater exists, if exists install it (replace old one) and remove ...\new_updater directory
@@ -541,6 +568,10 @@ void PlatformLauncher::prepareOptions() {
 
     option = OPT_NB_USERDIR;
     option += userDir;
+    javaOptions.push_back(option);
+    
+    option = OPT_DEFAULT_USERDIR_ROOT;
+    option += defaultUserDirRoot;
     javaOptions.push_back(option);
 
     option = OPT_HEAP_DUMP;

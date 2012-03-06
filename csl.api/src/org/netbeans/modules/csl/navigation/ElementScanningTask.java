@@ -66,11 +66,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
@@ -86,7 +82,7 @@ import org.openide.util.ImageUtilities;
  *
  * @author phrebejk
  */
-public final class ElementScanningTask extends ParserResultTask<ParserResult> {
+public final class ElementScanningTask extends IndexingAwareParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
     
@@ -94,6 +90,7 @@ public final class ElementScanningTask extends ParserResultTask<ParserResult> {
     private boolean canceled;
 
     public ElementScanningTask(ClassMemberPanelUI ui) {
+        super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         assert ui != null;
         this.ui = ui;
     }

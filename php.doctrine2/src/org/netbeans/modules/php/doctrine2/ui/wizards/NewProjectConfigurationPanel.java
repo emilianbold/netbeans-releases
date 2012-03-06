@@ -96,13 +96,8 @@ public class NewProjectConfigurationPanel extends JPanel implements ChangeListen
         changeSupport.removeChangeListener(listener);
     }
 
-    @NbBundle.Messages("NewProjectConfigurationPanel.script.prefix=Doctrine2 script: {0}")
     public String getErrorMessage() {
-        String error = Doctrine2OptionsPanelController.validateScript(Doctrine2Options.getInstance().getScript());
-        if (error == null) {
-            return null;
-        }
-        return Bundle.NewProjectConfigurationPanel_script_prefix(error);
+        return Doctrine2OptionsPanelController.validateScript(Doctrine2Options.getInstance().getScript());
     }
 
     private void init() {

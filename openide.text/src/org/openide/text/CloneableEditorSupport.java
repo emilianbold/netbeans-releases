@@ -2175,29 +2175,57 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** Clears all data from memory.
     */
     private void closeDocument() {
-        boolean fireEvent = false;
+        final boolean fireEvent[] = new boolean[] { false };
         StyledDocument d = null;
         try {
+            // Nested method PositionRef.Manager.processPositions() of doCloseDocument()
+            // first locks document and the syncs on support.getLock()
+            // so first only obtain document instance then read-lock it and call doCloseDocument().
             synchronized (getLock()) {
-                while (true) {
-                    switch (documentStatus) {
+                switch (documentStatus) {
                     case DOCUMENT_NO:
-                        return;
-                        
+                        return; // Already closed
+
                     case DOCUMENT_LOADING:
                     case DOCUMENT_RELOADING:
-                    // let it flow to default:
-                    //                        openDocumentImpl();
-                    //                        break; // try to close again
                     default:
                         d = getDoc();
-                        fireEvent = doCloseDocument();
-                        return;
-                    }
+                        break;
                 }
             }
+
+            
+            if (d != null) {
+                final StyledDocument doc = d;
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (getLock()) {
+                            switch (documentStatus) {
+                                case DOCUMENT_NO:
+                                    break;
+
+                                case DOCUMENT_LOADING:
+                                case DOCUMENT_RELOADING:
+                                // let it flow to default:
+                                //                        openDocumentImpl();
+                                //                        break; // try to close again
+                                default:
+                                    Document currentDoc = getDoc();
+                                    if (currentDoc == doc) {
+                                        fireEvent[0] = doCloseDocument();
+                                    } // else: probably best is to ignore the close request in such situation
+                                    break;
+                            }
+                        }
+                    }
+                });
+ 
+            } else { // d == null => nothing to read-lock
+                fireEvent[0] = doCloseDocument();
+            }
         } finally {
-            if (fireEvent) {
+            if (fireEvent[0]) {
                 fireDocumentChange(d, true);
             }
         }
@@ -2868,25 +2896,28 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     //   clash in-between and we're safe for potential reload.
                     SwingUtilities.invokeLater(
                         new Runnable() {
-                            boolean inWriteAccess;
+                            private boolean inRunAtomic;
 
                             public void run() {
-                                if (!inWriteAccess) {
-                                    inWriteAccess = true;
+                                if (!inRunAtomic) {
+                                    inRunAtomic = true;
 
                                     StyledDocument sd = getDoc();
-
                                     if (sd == null) {
                                         return;
                                     }
 
                                     // #57104 - avoid notifyModified() which takes file lock
                                     documentReloading = true;
-                                    NbDocument.runAtomic(sd, this);
-                                    documentReloading = false; // #57104
+                                    try {
+                                        NbDocument.runAtomic(sd, this);
+                                    } finally {
+                                        documentReloading = false; // #57104
+                                    }
 
                                     return;
                                 }
+
                                 ERR.fine("checkReload starting"); // NOI18N
                                 boolean noAsk = time == null || !isModified();
                                 ERR.fine("checkReload noAsk: " + noAsk);
@@ -2894,6 +2925,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             }
                         }
                     );
+
                     ERR.fine("reload task posted"); // NOI18N
                 }
             }
@@ -3027,9 +3059,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         private boolean checkModificationAllowed(int offset) throws BadLocationException {
             boolean alreadyModified = isAlreadyModified();
             if (!callNotifyModified()) {
-                throw new BadLocationException("Modification not allowed", offset); // NOI18N
+                modificationNotAllowed(offset);
             }
             return alreadyModified;
+        }
+        
+        private void modificationNotAllowed(int offset) throws BadLocationException {
+            throw new BadLocationException("Modification not allowed", offset); // NOI18N
         }
 
     }

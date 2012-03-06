@@ -43,6 +43,8 @@
 package org.netbeans.modules.bugzilla.issue;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,7 +83,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
@@ -112,7 +114,7 @@ import org.openide.util.RequestProcessor;
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
+public class BugzillaIssue extends IssueProvider implements IssueTable.NodeProvider {
 
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
@@ -127,6 +129,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
 
     private IssueController controller;
     private IssueNode node;
+    private Node[] context;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
     static final String LABEL_NAME_SEVERITY     = "bugzilla.issue.severity";    // NOI18N
@@ -148,7 +151,7 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     static final String LABEL_NAME_WHITEBOARD   = "bugzilla.issue.whiteboard";  // NOI18N
 
     /**
-     * Issue wasn't seen yet
+     * IssueProvider wasn't seen yet
      */
     static final int FIELD_STATUS_IRELEVANT = -1;
 
@@ -173,13 +176,33 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     private Map<String, TaskOperation> availableOperations;
 
     private static final RequestProcessor parallelRP = new RequestProcessor("BugzillaIssue", 5); //NOI18N
+    private final PropertyChangeSupport support;
 
     public BugzillaIssue(TaskData data, BugzillaRepository repo) {
         super(repo);
         this.data = data;
         this.repository = repo;
+        support = new PropertyChangeSupport(this);
     }
 
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    /**
+     * Notify listeners on this issue that its data were changed
+     */
+    protected void fireDataChanged() {
+        support.firePropertyChange(EVENT_ISSUE_REFRESHED, null, null);
+    }
+
+    
     @Override
     public boolean isNew() {
         return data == null || data.isNew();
@@ -352,8 +375,12 @@ public class BugzillaIssue extends Issue implements IssueTable.NodeProvider {
     }
 
     @Override
-    public Node[] getSelection() {
-        return super.getSelection();
+    public void setContext(Node[] nodes) {
+        this.context = nodes;
+    }
+    
+    public Node[] getContext() {
+        return context;
     }
 
     public Map<String, String> getAttributes() {

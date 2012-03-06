@@ -64,6 +64,7 @@ import org.openide.util.lookup.ProxyLookup;
 @MimeRegistration(mimeType=POMDataObject.SETTINGS_MIME_TYPE, service=CodeGeneratorContextProvider.class)
 public class SettingsContextProvider implements CodeGeneratorContextProvider {
 
+    @Override
     public void runTaskWithinContext(Lookup context, Task task) {
         JTextComponent component = context.lookup(JTextComponent.class);
         if (component != null) {

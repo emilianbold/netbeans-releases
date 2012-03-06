@@ -71,7 +71,12 @@ public final class DummyParameterImpl extends VariableImpl<CsmParameter> impleme
     protected boolean registerInProject() {
         return false;
     }
-    
+
+    @Override
+    protected boolean unregisterInProject() {
+        return false;
+    }
+
     @Override
     public boolean isVarArgs() {
         return false;

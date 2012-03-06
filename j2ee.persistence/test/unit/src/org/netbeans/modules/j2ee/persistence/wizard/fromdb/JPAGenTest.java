@@ -106,7 +106,7 @@ public class JPAGenTest extends SourceTestSupport{
         EntityClass user = getUserEntity();
         
         EntityClass product = new EntityClass( null, null ,"PRODUCT", 
-                getWorkDirFO(), packageName, "Product", UpdateType.NEW, null);
+                getWorkDirFO(), packageName, "Product", UpdateType.NEW, false, null);
         product.usePkField(true);
         
         EntityMemberImpl description = new EntityMemberImpl();
@@ -207,7 +207,7 @@ public class JPAGenTest extends SourceTestSupport{
     
     private EntityClass getUserEntity() throws IOException{
         EntityClass user = new EntityClass( null, null, 
-                "USER", getWorkDirFO(), packageName, "User", UpdateType.NEW, null);
+                "USER", getWorkDirFO(), packageName, "User", UpdateType.NEW, false, null);
         user.usePkField(true);
         
         EntityMemberImpl name = new EntityMemberImpl();

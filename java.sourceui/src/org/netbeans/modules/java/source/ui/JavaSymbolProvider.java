@@ -77,10 +77,13 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
@@ -188,59 +191,69 @@ public class JavaSymbolProvider implements SymbolProvider {
                     }
                     LOGGER.log(Level.FINE, "-------------------------"); //NOI18N
                 }
-                
-                for (URL url : rootUrls) {
-                    if (canceled) {
-                        return;
-                    }
-                    final FileObject root = URLMapper.findFileObject(url);
-                    if (root == null) {
-                        continue;
-                    }
+                //Perform all queries in single op
+                IndexManager.priorityAccess(new IndexManager.Action<Void>() {
+                    @Override
+                    public Void run() throws IOException, InterruptedException {
+                        for (URL url : rootUrls) {
+                            if (canceled) {
+                                return null;
+                            }
+                            final FileObject root = URLMapper.findFileObject(url);
+                            if (root == null) {
+                                continue;
+                            }
 
-                    final Project project = FileOwnerQuery.getOwner(root);
-                    final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL(), true);
-                    if (impl != null) {
-                        final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
-                        for (String currentIdent : ident) {
-                            impl.getDeclaredElements(currentIdent, kind, DocumentUtil.elementHandleConvertor(),r);
-                        }
-                        if (!r.isEmpty()) {
-                            //final ClasspathInfo cpInfo = ClasspathInfo.create(root);
-                            final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
-                            final JavaSource js = JavaSource.create(cpInfo);
-                            js.runUserActionTask(new Task<CompilationController>() {
-                                public void run (final CompilationController controller) {
-                                    for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
-                                        final ElementHandle<TypeElement> owner = p.getKey();
-                                        final TypeElement te = owner.resolve(controller);
-                                        final Set<String> idents = p.getValue();
-                                        if (te != null) {
-                                            if (idents.contains(getSimpleName(te))) {
-                                                result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), owner, ElementHandle.create(te), project, root));
-                                            }
-                                            for (Element ne : te.getEnclosedElements()) {
-                                                if (idents.contains(getSimpleName(ne))) {
-                                                    result.addResult(new JavaSymbolDescriptor(getDisplayName(ne), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
+                            final Project project = FileOwnerQuery.getOwner(root);
+                            final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL(), true);
+                            if (impl != null) {
+                                final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
+                                for (String currentIdent : ident) {
+                                    impl.getDeclaredElements(currentIdent, kind, DocumentUtil.elementHandleConvertor(),r);
+                                }
+                                if (!r.isEmpty()) {
+                                    //Needs FileManagerTransaction as it creates CPI with backgroundCompilation == true
+                                    TransactionContext.beginTrans().register(FileManagerTransaction.class, FileManagerTransaction.read());
+                                    try {
+                                        final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
+                                        final JavaSource js = JavaSource.create(cpInfo);
+                                        js.runUserActionTask(new Task<CompilationController>() {
+                                            public void run (final CompilationController controller) {
+                                                for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
+                                                    final ElementHandle<TypeElement> owner = p.getKey();
+                                                    final TypeElement te = owner.resolve(controller);
+                                                    final Set<String> idents = p.getValue();
+                                                    if (te != null) {
+                                                        if (idents.contains(getSimpleName(te))) {
+                                                            result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), owner, ElementHandle.create(te), project, root));
+                                                        }
+                                                        for (Element ne : te.getEnclosedElements()) {
+                                                            if (idents.contains(getSimpleName(ne))) {
+                                                                result.addResult(new JavaSymbolDescriptor(getDisplayName(ne), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
-                                        }
-                                    }
-                                }
-                                
-                                private String getSimpleName (final Element element) {
-                                    String result = element.getSimpleName().toString();
-                                    if (!caseSensitive) {
-                                        result = result.toLowerCase();
-                                    }
-                                    return result;
-                                }
-                            },true);
-                        }                    
 
+                                            private String getSimpleName (final Element element) {
+                                                String result = element.getSimpleName().toString();
+                                                if (!caseSensitive) {
+                                                    result = result.toLowerCase();
+                                                }
+                                                return result;
+                                            }
+                                        },true);
+                                    } finally {
+                                        TransactionContext.get().commit();
+                                    }
+                                }
+
+                            }
+                        }
+                        return null;
                     }
-                }
-
+                });
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }

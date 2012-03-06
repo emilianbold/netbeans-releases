@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.io.StringWriter;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -56,7 +57,9 @@ import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.SftpIOException;
 import org.netbeans.modules.remote.impl.RemoteLogger;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Utilities;
 
 /**
@@ -258,20 +261,27 @@ public class RemoteFileSystemUtils {
         return absPath; // TODO: implement! XXX:rfs XXX:fullRemote 
     }
     
-    public static FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
+    public static FileObject getCanonicalFileObject(FileObject fo) throws IOException {
+        if (fo instanceof RemoteFileObject) {
+            return getCanonicalFileObject(((RemoteFileObject) fo).getImplementor()).getOwnerFileObject();
+        }
+        return fo;
+    }
+
+    public static RemoteFileObjectBase getCanonicalFileObject(RemoteFileObjectBase fileObject) throws IOException {
         int level = 0;
         while (fileObject instanceof RemoteLinkBase) {
             if (++level > MAXSYMLINKS) {
                 throw new IOException("Number of symbolic links encountered during path name traversal exceeds MAXSYMLINKS"); //NOI18N
             }
-            FileObject delegate = ((RemoteLinkBase) fileObject).getDelegate();
+            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getDelegate();
             if (delegate == null) {
                 throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
             } else {
                 fileObject = delegate;
             }
         }
-        return fileObject;        
+        return fileObject;
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {
@@ -283,7 +293,7 @@ public class RemoteFileSystemUtils {
         } else {
             RemoteLogger.assertTrueInConsole(parent instanceof RemoteLinkBase, 
                     "Unexpected parent class, should be RemoteLinkBase: " + parent.getClass().getName()); //NOI18N
-            FileObject canonical = getCanonicalFileObject(parent);
+            RemoteFileObjectBase canonical = getCanonicalFileObject(parent);
             if (canonical instanceof RemoteDirectory) {
                 return (RemoteDirectory) canonical;
             } else {
@@ -351,4 +361,65 @@ public class RemoteFileSystemUtils {
         return false;
     }
     
+    // <editor-fold desc="Copy-pastes from FileObject and/or FileUtil">
+
+   /** Copy-paste from FileObject.copy */
+    public static FileObject copy(FileObject source, FileObject target, String name, String ext) throws IOException {
+        if (source.isFolder()) {
+            FileObject peer = target.createFolder(name);
+            FileUtil.copyAttributes(source, peer);
+            for (FileObject fo : source.getChildren()) {
+                fo.copy(peer, fo.getName(), fo.getExt());
+            }
+            return peer;
+        }
+
+        FileObject dest = RemoteFileSystemUtils.copyFileImpl(source, target, name, ext);
+
+        return dest;
+    }
+
+    /** Copies file to the selected folder.
+     * This implementation simply copies the file by stream content.
+    * @param source source file object
+    * @param destFolder destination folder
+    * @param newName file name (without extension) of destination file
+    * @param newExt extension of destination file
+    * @return the created file object in the destination folder
+    * @exception IOException if <code>destFolder</code> is not a folder or does not exist; the destination file already exists; or
+    *      another critical error occurs during copying
+    */
+    static FileObject copyFileImpl(FileObject source, FileObject destFolder, String newName, String newExt)
+    throws IOException {
+        FileObject dest = destFolder.createData(newName, newExt);
+
+        FileLock lock = null;
+        InputStream bufIn = null;
+        OutputStream bufOut = null;
+
+        try {
+            lock = dest.lock();
+            bufIn = source.getInputStream();
+            bufOut = dest.getOutputStream(lock);
+
+            FileUtil.copy(bufIn, bufOut);
+            FileUtil.copyAttributes(source, dest);
+        } finally {
+            if (bufIn != null) {
+                bufIn.close();
+            }
+
+            if (bufOut != null) {
+                bufOut.close();
+            }
+
+            if (lock != null) {
+                lock.releaseLock();
+            }
+        }
+
+        return dest;
+    }
+    
+    // <editor-fold>
 }

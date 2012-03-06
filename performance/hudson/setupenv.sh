@@ -53,9 +53,9 @@ cd "$performance"
 rm -rf build/test/unit
 rm -rf build/test/qa-functional
 
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
-ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -Drepeat=3 -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true -Drepeat=1 -Dorg.netbeans.editor.linewrap=true
+ant test-unit -Dsuite.dir=test -Dtest.includes=**/MeasureScanningTest* -Dnetbeans.dest.dir=$netbeans_dest -DBrokenReferencesSupport.suppressBrokenRefAlert=true -Dnetbeans.keyring.no.master=true -J-DSuspendSupport.disabled=true-Drepeat=3 -Dorg.netbeans.editor.linewrap=true
 
 
 cp -R build/test/unit/work/ "$WORKSPACE"/scanning

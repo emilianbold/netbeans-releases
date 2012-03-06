@@ -43,26 +43,16 @@ package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.logging.Level;
-import org.netbeans.modules.editor.NbEditorUtilities;
+import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.editor.BaseAction;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
@@ -71,7 +61,13 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -79,7 +75,7 @@ import org.openide.util.Exceptions;
  */
 public class FixImportsAction extends BaseAction implements Runnable {
 
-    private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
+    private static final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
     Document doc = null;
     private FixImportsHelper helper = new FixImportsHelper();
 
@@ -94,6 +90,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
         return true;
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt, JTextComponent comp) {
         LOG.log(Level.FINEST, "actionPerformed(final JTextComponent comp)");
 
@@ -105,6 +102,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
         }
     }
 
+    @Override
     public void run() {
         DataObject dob = NbEditorUtilities.getDataObject(doc);
 
@@ -143,7 +141,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
                             if (error instanceof SyntaxErrorMessage) {
                                 SyntaxException se = ((SyntaxErrorMessage) error).getCause();
                                 if (se != null) {
-                                    String missingClassName = helper.getMissingClassName(se.getMessage());
+                                    String missingClassName = FixImportsHelper.getMissingClassName(se.getMessage());
 
                                     if (missingClassName != null) {
                                         if (!missingNames.contains(missingClassName)) {
@@ -157,43 +155,6 @@ public class FixImportsAction extends BaseAction implements Runnable {
                 }
             });
 
-//            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-//                public void run(GroovyParserResult result) throws Exception {
-//                    if (result != null) {
-//                        ErrorCollector errorCollector = result.getErrorCollector();
-//                        if (errorCollector == null) {
-//                            LOG.log(Level.FINEST, "Could not get error collector");
-//                            return;
-//                        }
-//                        List errList = errorCollector.getErrors();
-//
-//                        if (errList == null) {
-//                            LOG.log(Level.FINEST, "Could not get list of errors");
-//                            return;
-//                        }
-//
-//                        // loop over the list of errors, remove duplicates and
-//                        // populate list of missing imports.
-//
-//                        for (Object error : errList) {
-//                            if (error instanceof SyntaxErrorMessage) {
-//                                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
-//                                if (se != null) {
-//                                    String missingClassName = helper.getMissingClassName(se.getMessage());
-//
-//                                    if (missingClassName != null) {
-//                                        if (!missingNames.contains(missingClassName)) {
-//                                            missingNames.add(missingClassName);
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                public void cancel() {}
-//            });
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -216,7 +177,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
             if (size == 1) {
                 helper.doImport(fo, importCandidates.get(0).getFqnName());
             } else {
-                LOG.log(Level.FINEST, "Adding to multipleCandidates: " + name);
+                LOG.log(Level.FINEST, "Adding to multipleCandidates: {0}", name);
                 multipleCandidates.put(name, importCandidates);
             }
         }
@@ -227,18 +188,16 @@ public class FixImportsAction extends BaseAction implements Runnable {
         List<String> listToFix = null;
 
         if (!multipleCandidates.isEmpty()) {
-            LOG.log(Level.FINEST, "multipleCandidates.size(): " + multipleCandidates.size());
+            LOG.log(Level.FINEST, "multipleCandidates.size(): {0}", multipleCandidates.size());
             listToFix = presentChooser(multipleCandidates);
         }
 
         if (listToFix != null && !listToFix.isEmpty()) {
-            LOG.log(Level.FINEST, "listToFix.size(): " + listToFix.size());
+            LOG.log(Level.FINEST, "listToFix.size(): {0}", listToFix.size());
             for (String fqn : listToFix) {
                 helper.doImport(fo, fqn);
             }
         }
-
-        return;
     }
 
     private List<String> presentChooser(Map<String, List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
@@ -258,7 +217,6 @@ public class FixImportsAction extends BaseAction implements Runnable {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             result = panel.getSelections();
         }
-
         return result;
     }
 }

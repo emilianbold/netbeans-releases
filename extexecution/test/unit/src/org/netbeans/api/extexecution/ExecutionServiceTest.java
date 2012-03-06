@@ -68,6 +68,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.extexecution.InputOutputManager;
 import org.netbeans.api.extexecution.input.TestInputUtils;
 import org.netbeans.api.extexecution.input.TestLineProcessor;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
@@ -278,6 +279,7 @@ public class ExecutionServiceTest extends NbTestCase {
         assertTrue(postRunnable.executed);
     }
 
+    @RandomlyFails // NB-Core-Build #7910: second assertNull
     public void testIOHandling() throws InterruptedException, InvocationTargetException, ExecutionException {
         TestProcess process = new TestProcess(0);
         TestCallable callable = new TestCallable();

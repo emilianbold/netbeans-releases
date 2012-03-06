@@ -153,6 +153,7 @@ public class DependenciesNode extends AbstractNode {
             this.type = type;
         }
         
+        @Override
         protected Node[] createNodes(DependencyWrapper wr) {
             Artifact art = wr.getArtifact();
             if (art.getFile() == null) { // #140253
@@ -167,6 +168,7 @@ public class DependenciesNode extends AbstractNode {
             return getNode();
         }
         
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (NbMavenProjectImpl.PROP_PROJECT.equals(evt.getPropertyName())) {
                 //was refreshed by the NodeList already..
@@ -319,6 +321,7 @@ public class DependenciesNode extends AbstractNode {
         })
         @Override public void actionPerformed(ActionEvent evnt) {
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     Node[] nds = getChildren().getNodes();
                     ProgressContributor[] contribs = new ProgressContributor[nds.length];
@@ -364,6 +367,7 @@ public class DependenciesNode extends AbstractNode {
             project = prj;
         }
         
+        @Override
         public void actionPerformed(ActionEvent evnt) {
             setEnabled(false);
             project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(false);
@@ -372,6 +376,7 @@ public class DependenciesNode extends AbstractNode {
     
     private static class DependenciesComparator implements Comparator<DependencyWrapper> {
 
+        @Override
         public int compare(DependencyWrapper art1, DependencyWrapper art2) {
             boolean transitive1 = art1.getArtifact().getDependencyTrail().size() > 2;
             boolean transitive2 = art2.getArtifact().getDependencyTrail().size() > 2;
@@ -406,7 +411,7 @@ public class DependenciesNode extends AbstractNode {
      * copied from apisupport/project
      */
     public static Image getTreeFolderIcon(boolean opened) {
-        Image base = null;
+        Image base;
         Icon baseIcon = UIManager.getIcon(opened ? OPENED_ICON_KEY_UIMANAGER : ICON_KEY_UIMANAGER); // #70263
         if (baseIcon != null) {
             base = ImageUtilities.icon2Image(baseIcon);

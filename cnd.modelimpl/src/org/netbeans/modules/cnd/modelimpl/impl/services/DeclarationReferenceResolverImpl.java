@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
-import org.netbeans.modules.cnd.modelimpl.csm.core.FileComponentReferences;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 
 /**

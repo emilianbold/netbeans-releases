@@ -71,6 +71,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
@@ -166,7 +167,6 @@ public class ToStringGenerator implements CodeGenerator {
                             org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                         } else {
                             ClassTree cls = (ClassTree) path.getLeaf();
-                            int idx = GeneratorUtils.findClassMemberIndex(copy, cls, caretOffset);
                             ArrayList<VariableElement> fields = new ArrayList<VariableElement>();
                             for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
                                 VariableElement field = (VariableElement) elementHandle.resolve(copy);
@@ -175,11 +175,7 @@ public class ToStringGenerator implements CodeGenerator {
                                 fields.add(field);
                             }
                             MethodTree mth = createToStringMethod(copy, fields, cls.getSimpleName().toString());
-                            if (idx >= 0) {
-                                cls = copy.getTreeMaker().insertClassMember(cls, idx, mth);
-                            } else {
-                                cls = copy.getTreeMaker().addClassMember(cls, mth);
-                            }
+                            cls = GeneratorUtilities.get(copy).insertClassMember(cls, mth);
                             copy.rewrite(path.getLeaf(), cls);
                         }
                     }

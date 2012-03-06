@@ -53,7 +53,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
@@ -163,7 +163,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
         assertTrue(schedulingHandler.isDone());
         assertTrue(refreshHandler.isDone());
 
-        Issue[] issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        IssueProvider[] issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, issues.length);
     }
 
@@ -174,7 +174,7 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
     private KenaiRepository getKenaiRepository() throws IOException {
         KenaiProject kp = KenaiUtil.getKenaiProject("https://testjava.net", "nb-jnet-test");
         // even if the actually used repository is different, it should have no effect on the result
-        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD, "product=" + TEST_PROJECT, TEST_PROJECT);
+        return new KenaiRepository(kp, REPO_NAME, REPO_URL, REPO_HOST, REPO_USER, REPO_PASSWD.toCharArray(), "product=" + TEST_PROJECT, TEST_PROJECT);
     }
 
 

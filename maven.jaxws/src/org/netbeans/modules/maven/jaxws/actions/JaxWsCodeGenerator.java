@@ -55,6 +55,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
@@ -69,6 +70,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -84,6 +86,7 @@ import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 
@@ -444,8 +447,13 @@ public class JaxWsCodeGenerator {
 
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(Phase.ELEMENTS_RESOLVED);
-                if (!isEnum(controller, type)) {
-                    if (hasNoArgConstructor(controller, type)) {
+                TypeElement typeElement = SourceUtils.getPublicTopLevelElement(
+                        controller);
+                if ( typeElement == null ){
+                    return;
+                }
+                if (!isEnum(controller, typeElement)) {
+                    if (hasNoArgConstructor(controller, typeElement)) {
                         result.setResult("new " + type + "();");//NOI18N
                     }
                 }
@@ -461,16 +469,18 @@ public class JaxWsCodeGenerator {
         }
     }
 
-    private static boolean isEnum(CompilationController controller, String type) {
-        TypeElement classEl = controller.getElements().getTypeElement(getCanonicalClassName(type));
+    private static boolean isEnum(CompilationController controller, 
+            TypeElement classEl) 
+    {
         if (classEl != null) {
             return classEl.getKind() == ElementKind.ENUM;
         }
         return false;
     }
 
-    private static boolean hasNoArgConstructor(CompilationController controller, String type) {
-        TypeElement classEl = controller.getElements().getTypeElement(getCanonicalClassName(type));
+    private static boolean hasNoArgConstructor(CompilationController controller, 
+            TypeElement classEl) 
+    {
         if (classEl != null) {
             List<ExecutableElement> constructors = ElementFilter.constructorsIn(classEl.getEnclosedElements());
             for (ExecutableElement c : constructors) {
@@ -646,18 +656,56 @@ public class JaxWsCodeGenerator {
         // including code to java class
         final FileObject targetFo = NbEditorUtilities.getFileObject(document);
 
-        JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        final JavaSource targetSource = JavaSource.forFileObject(targetFo);
         String respType = responseType;
         final String[] argumentInitPart = {argumentInitializationPart};
         final String[] argumentDeclPart = {argumentDeclarationPart};
         final String[] serviceFName = {serviceFieldName};
 
         try {
-            CompilerTask task = new CompilerTask(serviceJavaName, 
+            final CompilerTask task = new CompilerTask(serviceJavaName, 
                     serviceFName,
                     argumentDeclPart, 
                     argumentInitPart);
-            targetSource.runUserActionTask(task, true);
+            final Runnable runnable = new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        targetSource.runUserActionTask(task, true);
+                    }
+                    catch (IOException ex) {
+                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.FINE,
+                            "cannot parse " + serviceJavaName + " class", ex); // NOI18N
+
+                    }
+                }
+            };
+            final String title = NbBundle.getMessage(JaxWsCodeGenerator.class, 
+                    "LBL_ParseWsClass");            // NOI18N
+            if ( SwingUtilities.isEventDispatchThread() ){
+                ScanDialog.runWhenScanFinished( runnable, title);
+            }
+            else {
+                try {
+                    SwingUtilities.invokeAndWait( new Runnable() {
+                    
+                        @Override
+                        public void run() {
+                            ScanDialog.runWhenScanFinished( runnable, title);                        
+                        }
+                    });
+                }
+                catch ( InvocationTargetException e ){
+                    Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.WARNING, null, e );
+                }
+                catch( InterruptedException e ){
+                    Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.WARNING, null, e );
+                }
+            }
 
             // create & format inserted text
 //            IndentEngine eng = IndentEngine.find(document);
@@ -697,7 +745,8 @@ public class JaxWsCodeGenerator {
             }
 
             // @insert WebServiceRef injection
-            if (!task.containsWsRefInjection()) {             
+            if (!task.containsWsRefInjection()) {        
+                // scan should be finished already due previous scan task
                 InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
                 targetSource.runModificationTask(modificationTask).commit();
             }
@@ -751,13 +800,16 @@ public class JaxWsCodeGenerator {
         private final String[] argumentDeclPart;
         private final String[] argumentInitPart;
 
-        public CompilerTask(String serviceJavaName, String[] serviceFName, String[] argumentDeclPart, String[] argumentInitPart) {
+        public CompilerTask(String serviceJavaName, String[] serviceFName, 
+                String[] argumentDeclPart, String[] argumentInitPart) 
+        {
             this.serviceJavaName = serviceJavaName;
             this.argumentInitPart = argumentInitPart;
             this.argumentDeclPart = argumentDeclPart;
             this.serviceFName = serviceFName;
         }
 
+        @Override
         public void run(CompilationController controller) throws IOException {
             controller.toPhase(Phase.ELEMENTS_RESOLVED);
             CompilationUnitTree cut = controller.getCompilationUnit();
@@ -1156,21 +1208,49 @@ public class JaxWsCodeGenerator {
             final String[] argumentDeclPart = {argumentDeclarationPart};
             final String[] serviceFName = {serviceFieldName};
 
-            RequestProcessor rp = new RequestProcessor(JaxWsCodeGenerator.class.getName());
             //try {
             final CompilerTask task = new CompilerTask(serviceJavaName, serviceFName,
                     argumentDeclPart, argumentInitPart);
-            rp.post(new Runnable() {
+            final Runnable runnable = new Runnable() {
 
+                @Override
                 public void run() {
                     try {
-                        targetSource.runUserActionTask(task, true);
-                    } catch (IOException ex) {
-                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(Level.FINE, "cannot parse " + serviceJavaName + " class", ex); //NOI18N
+                        targetSource.runWhenScanFinished(task, true);
+                    }
+                    catch (IOException ex) {
+                        Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.FINE,
+                            "cannot parse " + serviceJavaName + " class", ex); // NOI18N
 
                     }
                 }
-            });
+            };
+            final String title = NbBundle.getMessage(JaxWsCodeGenerator.class, 
+                    "LBL_ParseWsClass");            // NOI18N
+            if ( SwingUtilities.isEventDispatchThread() ){
+                ScanDialog.runWhenScanFinished( runnable, title);
+            }
+            else {
+                try {
+                    SwingUtilities.invokeAndWait( new Runnable() {
+                    
+                        @Override
+                        public void run() {
+                            ScanDialog.runWhenScanFinished( runnable, title);                        
+                        }
+                    });
+                }
+                catch ( InvocationTargetException e ){
+                    Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.WARNING, null, e );
+                }
+                catch( InterruptedException e ){
+                    Logger.getLogger(JaxWsCodeGenerator.class.getName()).log(
+                            Level.WARNING, null, e );
+                }
+            }
+            
 
             // create the inserted text
             String javaInvocationBody = task.getJavaInvocationBody(

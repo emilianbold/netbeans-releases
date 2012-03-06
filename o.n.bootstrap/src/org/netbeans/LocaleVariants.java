@@ -72,7 +72,7 @@ final class LocaleVariants implements Stamps.Updater {
             String locale = is.readUTF();
             mapLocale = Locale.getDefault().toString().equals(locale) ? Locale.getDefault() : null;
             for (;;) {
-                String file = is.readUTF();
+                String file = Stamps.readRelativePath(is);
                 if (file.length() == 0) {
                     break;
                 }
@@ -100,13 +100,13 @@ final class LocaleVariants implements Stamps.Updater {
         synchronized (map) {
             os.writeUTF(mapLocale.toString());
             for (Map.Entry<File, List<FileWithSuffix>> entry : map.entrySet()) {
-                os.writeUTF(entry.getKey().getPath());
+                Stamps.writeRelativePath(entry.getKey().getPath(), os);
                 for (FileWithSuffix fws : entry.getValue()) {
                     fws.write(os);
                 }
-                os.writeUTF("");
+                Stamps.writeRelativePath("", os);
             }
-            os.writeUTF("");
+            Stamps.writeRelativePath("", os);
         }
     }
 
@@ -131,6 +131,7 @@ final class LocaleVariants implements Stamps.Updater {
         return l;
     }
 
+
     static final class FileWithSuffix {
         public final File file;
         public final String suffix;
@@ -140,7 +141,7 @@ final class LocaleVariants implements Stamps.Updater {
         }
 
         static FileWithSuffix read(DataInputStream is) throws IOException {
-            String path = is.readUTF();
+            String path = Stamps.readRelativePath(is);
             if (path.length() == 0) {
                 return null;
             }
@@ -149,7 +150,7 @@ final class LocaleVariants implements Stamps.Updater {
         }
 
         void write(DataOutputStream os) throws IOException {
-            os.writeUTF(file.getPath());
+            Stamps.writeRelativePath(file.getPath(), os);
             os.writeUTF(suffix);
         }
     }

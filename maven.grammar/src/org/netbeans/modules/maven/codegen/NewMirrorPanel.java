@@ -98,12 +98,15 @@ public class NewMirrorPanel extends javax.swing.JPanel {
         initComponents();
         this.model = model;
         txtId.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 checkId();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 checkId();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 checkId();
             }
@@ -135,12 +138,15 @@ public class NewMirrorPanel extends javax.swing.JPanel {
         if (cmp instanceof JTextField) {
             JTextField fld = (JTextField)cmp;
             fld.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent e) {
                     checkCentral();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent e) {
                     checkCentral();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent e) {
                     checkCentral();
                 }
@@ -153,6 +159,7 @@ public class NewMirrorPanel extends javax.swing.JPanel {
 
         btnLink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         btnLink.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 try {
                     URL link = new URL("http://maven.apache.org/guides/mini/guide-mirror-settings.html"); //NOI18N

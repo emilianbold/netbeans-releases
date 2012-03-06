@@ -44,6 +44,17 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
+import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerNamespace;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionInstantiation;

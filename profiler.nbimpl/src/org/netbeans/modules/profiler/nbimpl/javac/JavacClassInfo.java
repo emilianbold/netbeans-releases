@@ -42,9 +42,11 @@
 package org.netbeans.modules.profiler.nbimpl.javac;
 
 import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -78,7 +80,7 @@ public class JavacClassInfo extends SourceClassInfo {
     private ElementHandle<TypeElement> handle;
     private FileObject src;
     private ClasspathInfo cpInfo;
-    private JavaSource source;
+    private Reference<JavaSource> sourceRef;
 
     private JavacClassInfo(ElementHandle<TypeElement> eh) {
         super(getSimpleName(eh.getBinaryName()), eh.getBinaryName(), eh.getBinaryName().replace('.', '/')); // NOI18N
@@ -95,7 +97,7 @@ public class JavacClassInfo extends SourceClassInfo {
         this(eh);
         
         this.cpInfo = cc.getClasspathInfo();
-        source = cc.getJavaSource();
+        sourceRef = new SoftReference<JavaSource>(cc.getJavaSource());
     }
 
     @Override
@@ -123,7 +125,7 @@ public class JavacClassInfo extends SourceClassInfo {
         final Set<SourceClassInfo>[] rslt = new Set[]{Collections.EMPTY_SET};
         if (handle != null) {
             try {
-                getSource(true).runUserActionTask(new Task<CompilationController>() {
+                getSource(true).runWhenScanFinished(new Task<CompilationController>() {
                     @Override
                     public void run(CompilationController cc) throws Exception {
                         rslt[0] = getSubclasses(cc);
@@ -274,7 +276,7 @@ public class JavacClassInfo extends SourceClassInfo {
         return rslt[0];
     }
     
-    final Set<SourceMethodInfo> getMethods(final CompilationController cc, final boolean all) {
+    private Set<SourceMethodInfo> getMethods(final CompilationController cc, final boolean all) {
         final Set<SourceMethodInfo> mis = new HashSet<SourceMethodInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
@@ -295,7 +297,7 @@ public class JavacClassInfo extends SourceClassInfo {
         return mis;
     }
     
-    final Set<SourceClassInfo> getSubclasses(final CompilationController cc) {
+    private Set<SourceClassInfo> getSubclasses(final CompilationController cc) {
         final Set<SourceClassInfo> subs = new HashSet<SourceClassInfo>();
         TypeElement te = handle.resolve(cc);
         if (te != null) {
@@ -304,23 +306,6 @@ public class JavacClassInfo extends SourceClassInfo {
             }
         }
         return subs;
-    }
-    
-    final Set<SourceClassInfo> getSuperclasses(final CompilationController cc) {
-        final Set<SourceClassInfo> sups = new HashSet<SourceClassInfo>();
-        TypeElement te = handle.resolve(cc);
-        if (te != null) {
-            collectSuperclass(cc, te, sups);
-        }
-        return sups;
-    }
-    
-    private void collectSuperclass(final CompilationController cc, final TypeElement te, Set<SourceClassInfo> superClasses) {
-        TypeElement sType = (TypeElement)cc.getTypes().asElement(te.getSuperclass());
-        if (sType != null) {//
-            superClasses.add(new JavacClassInfo(ElementHandle.create(sType), cc));
-            collectSuperclass(cc, sType, superClasses);
-        }
     }
     
     private static String getSimpleName(String qualName) {
@@ -435,7 +420,7 @@ public class JavacClassInfo extends SourceClassInfo {
     }
     
     private synchronized JavaSource getSource(boolean allowSourceLess) {
-        JavaSource jSrc = source;
+        JavaSource jSrc = sourceRef != null ? sourceRef.get() : null;
         if (jSrc == null || (!allowSourceLess && jSrc.getFileObjects().isEmpty())) {
             FileObject f = getFile();
             if (f.getExt().toLowerCase().equals("java") || f.getExt().toLowerCase().equals("class")) { // NOI18N
@@ -443,8 +428,8 @@ public class JavacClassInfo extends SourceClassInfo {
             } else if (cpInfo != null) {
                 jSrc = JavaSource.create(cpInfo);
             }
-            source = jSrc;
+            sourceRef = new SoftReference(jSrc);
         }
-        return source;
+        return jSrc;
     }
 }

@@ -48,6 +48,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.JavaSource.Priority;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -58,7 +59,7 @@ import org.openide.filesystems.FileObject;
 public class IntroduceHintFactory extends SelectionAwareJavaSourceTaskFactory {
 
     public IntroduceHintFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL);
+        super(Phase.RESOLVED, Priority.BELOW_NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
     
     protected CancellableTask<CompilationInfo> createTask(FileObject file) {

@@ -52,7 +52,7 @@ import org.openide.util.Mutex;
 /**
  * Run configuration for SCRIPT.
  */
-public final class RunConfigScript extends RunConfig<RunConfigScript> {
+public final class RunConfigScript extends BaseRunConfig<RunConfigScript> {
 
     private boolean useDefaultInterpreter;
     private String interpreter;

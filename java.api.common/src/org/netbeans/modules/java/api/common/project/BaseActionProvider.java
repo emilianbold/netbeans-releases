@@ -59,6 +59,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -83,9 +84,11 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -139,6 +142,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.util.lookup.Lookups;
 
 /** Action provider which was originally written for J2SE project and later
  * refactored here so that other EE project types requiring handling of Java
@@ -301,6 +305,10 @@ public abstract class BaseActionProvider implements ActionProvider {
         }
     }
 
+    private JavaPlatform getActivePlatform() {
+        return CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active"));
+    }
+
     private void modification(FileObject f) {
         if (!allowsFileChangesTracking()) {
             return;
@@ -434,7 +442,7 @@ public abstract class BaseActionProvider implements ActionProvider {
                     copyMultiValue(ProjectProperties.RUN_JVM_ARGS, execProperties);
                     prepareWorkDir(execProperties);
 
-                    execProperties.put(JavaRunner.PROP_PLATFORM, CommonProjectUtils.getActivePlatform(evaluator.getProperty("platform.active")));
+                    execProperties.put(JavaRunner.PROP_PLATFORM, getActivePlatform());
                     execProperties.put(JavaRunner.PROP_PROJECT_NAME, ProjectUtils.getInformation(project).getDisplayName());
                     String runtimeEnc = evaluator.getProperty(ProjectProperties.RUNTIME_ENCODING);
                     if (runtimeEnc != null) {
@@ -510,6 +518,13 @@ public abstract class BaseActionProvider implements ActionProvider {
                         return;
                     }
                 }
+                StringBuilder b = new StringBuilder();
+                for (String arg : runJvmargsIde()) {
+                    b.append(' ').append(arg);
+                }
+                if (b.length() > 0) {
+                    p.put(ProjectProperties.RUN_JVM_ARGS_IDE, b.toString());
+                }
                 if (targetNames.length == 0) {
                     targetNames = null;
                 }
@@ -566,6 +581,32 @@ public abstract class BaseActionProvider implements ActionProvider {
                     ErrorManager.getDefault().notify(e);
                 }
             }
+
+            private List<String> runJvmargsIde() {
+                StartupExtender.StartMode mode;
+                if (command.equals(COMMAND_RUN) || command.equals(COMMAND_RUN_SINGLE)) {
+                    mode = StartupExtender.StartMode.NORMAL;
+                } else if (command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_DEBUG_STEP_INTO)) {
+                    mode = StartupExtender.StartMode.DEBUG;
+                } else if (command.equals("profile")) {
+                    mode = StartupExtender.StartMode.PROFILE;
+                } else if (command.equals(COMMAND_TEST) || command.equals(COMMAND_TEST_SINGLE)) {
+                    mode = StartupExtender.StartMode.TEST_NORMAL;
+                } else if (command.equals(COMMAND_DEBUG_TEST_SINGLE)) {
+                    mode = StartupExtender.StartMode.TEST_DEBUG;
+                } else if (command.equals("profile-test-single")) {
+                    mode = StartupExtender.StartMode.TEST_PROFILE;
+                } else {
+                    return Collections.emptyList();
+                }
+                List<String> args = new ArrayList<String>();
+                JavaPlatform p = getActivePlatform();
+                for (StartupExtender group : StartupExtender.getExtenders(Lookups.fixed(project, p != null ? p : JavaPlatformManager.getDefault().getDefaultPlatform()), mode)) {
+                    args.addAll(group.getArguments());
+                }
+                return args;
+            }
+
         }
         final Action action = new Action();
 
@@ -623,8 +664,7 @@ public abstract class BaseActionProvider implements ActionProvider {
      */
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (Arrays.asList(getPlatformSensitiveActions()).contains(command)) {
-            final String activePlatformId = this.evaluator.getProperty("platform.active");  //NOI18N
-            if (CommonProjectUtils.getActivePlatform (activePlatformId) == null) {
+            if (getActivePlatform() == null) {
                 showPlatformWarning ();
                 return null;
             }

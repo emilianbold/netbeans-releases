@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "TakeSnapshotProfilingPointFactory_PpType=Take Snapshot",
     "TakeSnapshotProfilingPointFactory_PpDescr=Takes snapshot of currently collected profiling results similarly to Take Snapshot action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Reset Results Profiling Point or by setting appropriate flag.",
+    "TakeSnapshotProfilingPointFactory_PpHint=", // #207680 Do not remove, custom brandings may provide wizard hint here!!!
 //# Take Snapshot at Anagrams.java:32
     "TakeSnapshotProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
@@ -73,6 +74,10 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
 
     public String getDescription() {
         return Bundle.TakeSnapshotProfilingPointFactory_PpDescr();
+    }
+    
+    public String getHint() {
+        return Bundle.TakeSnapshotProfilingPointFactory_PpHint();
     }
 
     public Icon getIcon() {

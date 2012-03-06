@@ -312,7 +312,9 @@ public class ProjectUtilitiesTest extends NbTestCase {
         assertNotNull(ProjectUtilities.canUseFileName(d, null, "bar", "java", false, true));
         assertNotNull(ProjectUtilities.canUseFileName(d, null, "bar.java", "java", false, true));
         assertNull(ProjectUtilities.canUseFileName(d, null, "bar.java", "java", false, false));
-
+        String err = ProjectUtilities.canUseFileName(d, null, "<a href='whatever'>HTML\njunk!</a>", "html", false, false);
+        assertNotNull(err);
+        assertTrue(err, err.contains("&lt;a href='whatever'>HTML junk!&lt;…"));
     }
     
     public void testNavigatorIsNotClosed() throws Exception {

@@ -52,6 +52,34 @@ made subject to such option by the copyright holder.
     <apidef name="general">OSGi Related Behavior</apidef>
 </apidefs>
 <changes>
+    <change id="osgi-4.3">
+      <api name="general"/>
+      <summary>Updated to OSGi 4.3</summary>
+      <version major="1" minor="15"/>
+      <date day="17" month="2" year="2012"/>
+      <author login="jtulach"/>
+      <compatibility addition="yes" binary="incompatible" source="incompatible" semantic="incompatible">
+          <p>
+          The OSGi specification considers adding new methods to interfaces
+          compatible. That has happened and it is not compatible 
+          according to NetBeans API principles,
+          thus making incompatible, in spite the incompatibility is only in
+          the imported <em>standard</em> API.
+          </p>
+          <p>
+          Some incompatibilities were reported between Equinox 3.6 and 3.7.1
+          (which has also been upgraded). These include bug <b>208616</b>.
+          All known issues with Felix 4.0.2 were mitigated.
+          </p>
+      </compatibility>
+      <description>
+          OSGi specification bundle with NetBeans has been upgraded to 
+          version 4.3. Both containers were upgraded too. Felix to version
+          4.0.2 and Equinox to 3.7.1.
+     </description>
+      <issue number="207199"/>
+      <issue number="208616"/>
+    </change>
     <change id="is.archive.active">
       <api name="spi"/>
       <summary>Is archive active?</summary>

@@ -1,61 +1,59 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of parent file are subject to the terms of either the GNU
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use parent file except in compliance with the
+ * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include parent License Header
+ * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates parent
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the GPL Version 2 section of the License file that
- * accompanied parent code. If applicable, add the following below the
+ * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of parent file to be governed by only the CDDL
+ * 
+ * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include parent software in parent distribution
+ * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
- * your version of parent file under either the CDDL, the GPL Version 2 or
+ * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.db.dataview.table;
 
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Font;
+import java.sql.Blob;
+import java.sql.Clob;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
-import org.jdesktop.swingx.renderer.ComponentProvider;
-import org.jdesktop.swingx.renderer.DefaultTableRenderer;
-import org.jdesktop.swingx.renderer.FormatStringValue;
-import org.jdesktop.swingx.renderer.JRendererCheckBox;
-import org.jdesktop.swingx.renderer.StringValue;
+import org.jdesktop.swingx.renderer.*;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.TimeType;
 import org.netbeans.modules.db.dataview.util.TimestampType;
@@ -90,6 +88,8 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
     private final TableCellRenderer NUMNBER_RENDERER = new NumberObjectCellRenderer();
     private final TableCellRenderer BOOLEAN_RENDERER = new BooleanCellRenderer();
     private final TableCellRenderer CELL_FOCUS_RENDERER = new CellFocusCustomRenderer();
+    private final TableCellRenderer BLOB_RENDERER = new BlobCellRenderer();
+    private final TableCellRenderer CLOB_RENDERER = new ClobCellRenderer();
 
     public ResultSetCellRenderer() {
         super(new StringValue() {
@@ -120,12 +120,17 @@ public class ResultSetCellRenderer extends DefaultTableRenderer {
         } else if (value instanceof Number) {
             return NUMNBER_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         } else if (DataViewUtils.isSQLConstantString(value)) {
-            return DEFAULT_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            Component c = DEFAULT_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setTableCellToolTip(c, value);
+            return c;            
         } else if (value instanceof Boolean) {
             return BOOLEAN_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        } else if (value instanceof Blob) {
+            return BLOB_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        } else if (value instanceof Clob) {
+            return CLOB_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         } else {
              Component c = CELL_FOCUS_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            //c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setTableCellToolTip(c, value);
             return c;
         }
@@ -200,5 +205,55 @@ class SQLConstantsCellRenderer extends CellFocusCustomRenderer {
         }
 
         return c;
+    }
+}
+
+class BlobCellRenderer extends SQLConstantsCellRenderer {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (!(value instanceof Blob)) {
+            throw new IllegalArgumentException("BlobCellRenderer can only be used for Blobs");
+        }
+        try {
+            Long size = ((Blob) value).length();
+            StringBuilder stringValue = new StringBuilder();
+            stringValue.append("<BLOB ");
+            if(size < 1000) {
+                stringValue.append(String.format("%1$d bytes", size));
+            } else if ( size < 1000000) {
+                stringValue.append(String.format("%1$d kB", size / 1000));
+            } else {
+                stringValue.append(String.format("%1$d MB", size / 1000000));
+            }
+            stringValue.append(">");
+            return super.getTableCellRendererComponent(table, stringValue.toString(), isSelected, hasFocus, row, column);
+        } catch (SQLException ex) {
+            return super.getTableCellRendererComponent(table, "<BLOB of unkown size>", isSelected, hasFocus, row, column);
+        }
+    }
+}
+
+class ClobCellRenderer extends SQLConstantsCellRenderer {
+    @Override
+    public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+        if (!(value instanceof Clob)) {
+            throw new IllegalArgumentException("ClobCellRenderer can only be used for Blobs");
+        }
+        try {
+            Long size = ((Clob) value).length();
+            StringBuilder stringValue = new StringBuilder();
+            stringValue.append("<CLOB ");
+            if(size < 1000) {
+                stringValue.append(String.format("%1$d Chars", size));
+            } else if ( size < 1000000) {
+                stringValue.append(String.format("%1$d kChars", size / 1000));
+            } else {
+                stringValue.append(String.format("%1$d MChars", size / 1000000));
+            }
+            stringValue.append(">");
+            return super.getTableCellRendererComponent(table, stringValue.toString(), isSelected, hasFocus, row, column);
+        } catch (SQLException ex) {
+            return super.getTableCellRendererComponent(table, "<CLOB of unkown size>", isSelected, hasFocus, row, column);
+        }
     }
 }

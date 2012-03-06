@@ -47,10 +47,17 @@ package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.ejb.action;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizerFactory;
 import org.netbeans.modules.j2ee.common.method.MethodCustomizer;
@@ -134,25 +141,41 @@ public class AddBusinessMethodStrategy extends AbstractAddMethodStrategy {
 
     public boolean supportsEjb(FileObject fileObject, final String className) {
 
-        boolean isEntityOrSession = false;
+        final AtomicBoolean isEntityOrSession = new AtomicBoolean(false);
 
         EjbJar ejbModule = getEjbModule(fileObject);
         if (ejbModule != null) {
-            MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
             try {
-                isEntityOrSession = metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
-                    public Boolean run(EjbJarMetadata metadata) throws Exception {
-                        Ejb ejb = metadata.findByEjbClass(className);
-                        return ejb instanceof Entity || ejb instanceof Session;
-                    }
-                });
+                MetadataModel<EjbJarMetadata> metadataModel = ejbModule.getMetadataModel();
+                if (metadataModel.isReady()) {
+                    isEntityOrSession.set(metadataModel.runReadAction(new MetadataModelAction<EjbJarMetadata, Boolean>() {
+                        @Override
+                        public Boolean run(EjbJarMetadata metadata) throws Exception {
+                            Ejb ejb = metadata.findByEjbClass(className);
+                            return ejb instanceof Entity || ejb instanceof Session;
+                        }
+                    }));
+                } else {
+                    JavaSource javaSource = JavaSource.forFileObject(fileObject);
+                    javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
+                        public void run(CompilationController cc) throws Exception {
+                            cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                            TypeElement te = cc.getElements().getTypeElement(className);
+                            if (te == null) {
+                                return;
+                            }
+
+                            isEntityOrSession.set(AddBusinessMethodStrategy.isEntity(cc, te)
+                                    || AddBusinessMethodStrategy.isSession(cc, te));
+                        }
+                    }, true);
+                }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);
             }
         }
-
-        return isEntityOrSession;
-
+        return isEntityOrSession.get();
     }
 
 }

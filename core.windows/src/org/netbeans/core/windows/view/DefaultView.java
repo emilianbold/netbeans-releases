@@ -482,6 +482,24 @@ class DefaultView implements View, Controller, WindowDnDManager.ViewAccessor {
                     Logger.getLogger(DefaultView.class.getName()).fine(
                         "Could not find mode " + viewEvent.getSource());
                 }
+            } else if (changeType == View.TOPCOMPONENT_SHOW_BUSY || changeType == View.TOPCOMPONENT_HIDE_BUSY ) {
+                if (DEBUG) {
+                    debugLog("Top component show/hide busy"); //NOI18N
+                }
+                ModeView modeView = hierarchy.getModeViewForAccessor(wsa.findModeAccessor((String)viewEvent.getSource())); // XXX
+                if (modeView != null) {
+                    TopComponent tc = (TopComponent) viewEvent.getNewValue();
+                    if (tc == null) {
+                        throw new NullPointerException ("Top component is null for make busy request"); //NOI18N
+                    }
+                    //make sure the TC is still opened in the given mode container
+                    if( modeView.getTopComponents().contains( tc ) ) {
+                        modeView.makeBusy(tc, changeType == View.TOPCOMPONENT_SHOW_BUSY);
+                    }
+                } else {
+                    Logger.getLogger(DefaultView.class.getName()).fine(
+                        "Could not find mode " + viewEvent.getSource());
+                }
             } else if (changeType == View.CHANGE_MAXIMIZE_TOPCOMPONENT_SLIDE_IN) {
                 if (DEBUG) {
                     debugLog("Slided-in top component toggle maximize"); //NOI18N

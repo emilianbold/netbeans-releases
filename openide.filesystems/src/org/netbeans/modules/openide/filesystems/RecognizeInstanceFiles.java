@@ -284,7 +284,7 @@ public final class RecognizeInstanceFiles extends NamedServicesProvider {
             try {
                 return Class.forName(clazz, false, loader());
             } catch (ClassNotFoundException ex) {
-                LOG.log(Level.INFO, ex.getMessage(), ex);
+                LOG.log(Level.FINE, ex.getMessage(), ex);
                 return null;
             }
         }

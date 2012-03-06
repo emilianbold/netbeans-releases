@@ -1,0 +1,16 @@
+<?php
+
+// it IS used - in PHPDoc
+use Foo\Bar\Baz\Def;
+
+class |>CLASS:ClassName<| {
+
+    /**
+     * @return Def
+     */
+    function |>METHOD:functionName<|() {
+    }
+
+}
+
+?>

@@ -70,6 +70,7 @@ import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -510,6 +511,12 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
         protected String getActionName () {
             return BaseKit.formatAction;
         }
+
+        @Override
+        protected Action getGlobalKitAction() {
+            return FileUtil.getConfigObject("Editors/private/GlobalFormatAction.instance", Action.class);
+        }
+
     } // end of FormatAction
     
     /** Shift Left action in Source main menu, wrapper for BaseKit.shiftLineLeftAction

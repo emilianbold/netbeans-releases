@@ -124,7 +124,7 @@ made subject to such option by the copyright holder.
         <description>
             <p>
                 New branding key for applications built on top of NetBeans
-                Platform to <a href="@TOP@architecture-summary.html#property-USE_MNEMONICS">
+                Platform to <a href="@TOP@architecture-summary.html#branding-USE_MNEMONICS">
                 turn mnemonics in popup menus on</a>. 
             </p>
         </description>

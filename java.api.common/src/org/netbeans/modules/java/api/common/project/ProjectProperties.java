@@ -127,6 +127,7 @@ public final class ProjectProperties {
     public static final String EXCLUDES = "excludes"; // NOI18N
 
     public static final String RUN_JVM_ARGS = "run.jvmargs"; // NOI18N
+    static final String RUN_JVM_ARGS_IDE = "run.jvmargs.ide"; // NOI18N
     public static final String RUNTIME_ENCODING="runtime.encoding"; //NOI18N
     public static final String BUILD_DIR = "build.dir"; // NOI18N
     public static final String MAIN_CLASS = "main.class"; // NOI18N

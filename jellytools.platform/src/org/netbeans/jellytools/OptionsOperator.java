@@ -382,6 +382,12 @@ public class OptionsOperator extends NbDialogOperator {
         selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.editor.Bundle",
                                                "CTL_Editor"));
     }
+    
+    /** Selects Java category. */
+    public void selectJava() {
+        selectCategory(Bundle.getStringTrimmed("org.netbeans.modules.options.java.resources.Bundle",
+                                               "OptionsCategory_Name_Java"));
+    }
 
     /** Selects Fonts & Colors category. */
     public void selectFontAndColors() {

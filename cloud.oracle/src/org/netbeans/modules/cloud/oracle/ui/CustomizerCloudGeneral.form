@@ -38,7 +38,7 @@
                   <Component id="adminUrlField" alignment="0" max="32767" attributes="0"/>
                   <Component id="instanceUrlField" alignment="0" max="32767" attributes="0"/>
                   <Component id="serviceInstanceField" alignment="0" max="32767" attributes="0"/>
-                  <Component id="identityDomainField" alignment="0" pref="280" max="32767" attributes="0"/>
+                  <Component id="identityDomainField" alignment="0" pref="284" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
                           <Component id="usernameField" pref="150" max="32767" attributes="1"/>

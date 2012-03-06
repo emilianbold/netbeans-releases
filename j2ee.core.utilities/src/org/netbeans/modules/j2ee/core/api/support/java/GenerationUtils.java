@@ -235,7 +235,12 @@ public final class GenerationUtils {
         if (typeTree == null) {
             // XXX does not handle imports; temporary until issue 102149 is fixed
             TypeMirror typeMirror = copy.getTreeUtilities().parseType(typeName, scope);
-            typeTree = make.Type(typeMirror);
+            if ( typeMirror == null || typeMirror.getKind() == TypeKind.ERROR ){
+                typeTree = getTreeMaker().QualIdent( typeName );
+            }
+            else {
+                typeTree = make.Type(typeMirror);
+            }
         }
         return typeTree;
     }
@@ -733,6 +738,9 @@ public final class GenerationUtils {
 
     private ExpressionTree createQualIdent(String typeName) {
         ExpressionTree qualIdent = tryCreateQualIdent(typeName);
+        if ( qualIdent == null ){
+            qualIdent = getTreeMaker().QualIdent( typeName );
+        }
         if (qualIdent == null) {
             throw new IllegalArgumentException("Cannot create a QualIdent for " + typeName); // NOI18N
         }

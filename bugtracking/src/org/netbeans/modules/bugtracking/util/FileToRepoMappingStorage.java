@@ -51,11 +51,12 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.NbPreferences;
 import static java.lang.Boolean.FALSE;
 import static java.lang.Boolean.TRUE;
 import static java.util.logging.Level.WARNING;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 
 /**
  * Stores mappings between {@code File}s and bugtracking repositories.
@@ -79,12 +80,12 @@ class FileToRepoMappingStorage {
         return instance;
     }
 
-    public void setFirmAssociation(File file, Repository repository) {
+    public void setFirmAssociation(File file, RepositoryProvider repository) {
         setAssociation(file, repository, true);
     }
 
-    public boolean setLooseAssociation(File file, Repository repository) {
-        Repository firmlyAssociated = getFirmlyAssociatedRepository(file);
+    public boolean setLooseAssociation(File file, RepositoryProvider repository) {
+        RepositoryProvider firmlyAssociated = getFirmlyAssociatedRepository(file);
         if (firmlyAssociated == null) {
             setAssociation(file, repository, false);
             return true;
@@ -93,15 +94,15 @@ class FileToRepoMappingStorage {
         }
     }
 
-    public Repository getRepository(File file) {
+    public RepositoryProvider getRepository(File file) {
         return getAssociatedRepository(file, null);
     }
 
-    public Repository getFirmlyAssociatedRepository(File file) {
+    public RepositoryProvider getFirmlyAssociatedRepository(File file) {
         return getAssociatedRepository(file, FIRM_ASSOCIATION);
     }
 
-    public Repository getLooselyAssociatedRepository(File file) {
+    public RepositoryProvider getLooselyAssociatedRepository(File file) {
         return getAssociatedRepository(file, LOOSE_ASSOCIATION);
     }
 
@@ -124,7 +125,7 @@ class FileToRepoMappingStorage {
         return associatedUrls;
     }
 
-    private Repository getAssociatedRepository(File file, Boolean reqAssociationType) {
+    private RepositoryProvider getAssociatedRepository(File file, Boolean reqAssociationType) {
         String key = getPath(file);
         if (key == null) {
             return null;
@@ -157,10 +158,10 @@ class FileToRepoMappingStorage {
                        : null;
     }
 
-    private Repository getRepositoryByUrl(String requestedUrl) {
-        Repository[] repositories = BugtrackingManager.getInstance().getRepositories();
-        for (Repository repository : repositories) {
-            String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+    private RepositoryProvider getRepositoryByUrl(String requestedUrl) {
+        RepositoryProvider[] repositories = RepositoryRegistry.getInstance().getRepositories();
+        for (RepositoryProvider repository : repositories) {
+            String repositoryUrl = cutTrailingSlashes(repository.getInfo().getUrl());
             if (repositoryUrl.equals(requestedUrl)) {
                 return repository;
             }
@@ -169,13 +170,13 @@ class FileToRepoMappingStorage {
         return null;
     }
 
-    private void setAssociation(File file, Repository repository, boolean firm) {
+    private void setAssociation(File file, RepositoryProvider repository, boolean firm) {
         String key = getPath(file);
         if (key == null) {
             return;
         }
 
-        String repositoryUrl = cutTrailingSlashes(repository.getUrl());
+        String repositoryUrl = cutTrailingSlashes(repository.getInfo().getUrl());
         String value = new StringBuilder(1 + repositoryUrl.length())
                 .append(firm ? '!' : '?')
                 .append(repositoryUrl)

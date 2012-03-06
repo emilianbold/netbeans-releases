@@ -67,10 +67,11 @@ import javax.swing.undo.CannotUndoException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.SPIAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.search.FindSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.RepositoryComboRenderer;
@@ -92,8 +93,8 @@ import org.openide.windows.TopComponent;
 public final class IssueTopComponent extends TopComponent implements PropertyChangeListener {
     /** Set of opened {@code IssueTopComponent}s. */
     private static Set<IssueTopComponent> openIssues = new HashSet<IssueTopComponent>();
-    /** Issue displayed by this top-component. */
-    private Issue issue;
+    /** IssueProvider displayed by this top-component. */
+    private IssueProvider issue;
     private RequestProcessor rp = new RequestProcessor("Bugtracking issue", 1, true); // NOI18N
     private Task prepareTask;
     private RepositoryComboSupport rs;
@@ -105,10 +106,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      */
     public IssueTopComponent() {
         initComponents();
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-        for (BugtrackingConnector c : connectors) {
-            c.addPropertyChangeListener(this);
-        }
+        RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         preparingLabel.setVisible(false);
         newButton.addActionListener(new ActionListener() {
             @Override
@@ -134,15 +132,15 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return issue displayed by this top-component.
      */
-    public Issue getIssue() {
+    public IssueProvider getIssue() {
         return issue;
     }
 
-    public void initNewIssue(Repository toSelect, Node[] context) {
+    public void initNewIssue(RepositoryProvider toSelect, Node[] context) {
         initNewIssue(toSelect, false, context);
     }
 
-    public void initNewIssue(Repository defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
+    public void initNewIssue(RepositoryProvider defaultRepository, boolean suggestedSelectionOnly, Node[] context) {
         BugtrackingUtil.logBugtrackingUsage(defaultRepository, "ISSUE_EDIT"); // NOI18N
         this.context = context;
 
@@ -201,7 +199,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @param issue displayed by this top-component.
      */
-    public void setIssue(Issue issue) {
+    public void setIssue(IssueProvider issue) {
         assert (this.issue == null);
         BugtrackingUtil.logBugtrackingUsage(issue.getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
@@ -315,7 +313,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     }// </editor-fold>//GEN-END:initComponents
 
     private void onNewClick() {
-        Repository repo = BugtrackingUtil.createRepository();
+        RepositoryProvider repo = BugtrackingUtil.createRepository();
         if(repo != null) {
             repositoryComboBox.addItem(repo);
             repositoryComboBox.setSelectedItem(repo);
@@ -343,7 +341,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                 try {
                     handle.start();
                     preparingLabel.setVisible(true);
-                    Repository repo = getRepository();
+                    RepositoryProvider repo = getRepository();
                     if (repo == null) {
                         return;
                     }
@@ -357,7 +355,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    IssueAccessor.getInstance().setSelection(issue, context);
+                    SPIAccessor.IMPL.setSelection(issue, context);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -381,12 +379,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         });
     }
 
-    private Repository getRepository() {
+    private RepositoryProvider getRepository() {
         Object item = repositoryComboBox.getSelectedItem();
-        if (item == null || !(item instanceof Repository)) {
+        if (item == null || !(item instanceof RepositoryProvider)) {
             return null;
         }
-        return (Repository) item;
+        return (RepositoryProvider) item;
     }
 
     private void focusFirstEnabledComponent() {
@@ -443,7 +441,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      * @param issue issue for which the top-component should be found.
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(Issue issue) {
+    public static synchronized IssueTopComponent find(IssueProvider issue) {
         return find(issue, true);
     }
 
@@ -455,7 +453,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @return top-component that should display the given issue.
      */
-    public static synchronized IssueTopComponent find(Issue issue, boolean forceCreate) {
+    public static synchronized IssueTopComponent find(IssueProvider issue, boolean forceCreate) {
         for (IssueTopComponent tc : openIssues) {
             if (issue.equals(tc.getIssue())) {
                 return tc;
@@ -478,7 +476,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
     public static synchronized IssueTopComponent find(String issueId) {
         assert issueId != null;
         for (IssueTopComponent tc : openIssues) {
-            Issue i = tc.getIssue();
+            IssueProvider i = tc.getIssue();
             if(i == null) continue;
             if (issueId.equals(i.getID())) {
                 return tc;
@@ -505,10 +503,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(Issue.EVENT_ISSUE_DATA_CHANGED)) {
+        if(evt.getPropertyName().equals(IssueProvider.EVENT_ISSUE_REFRESHED)) {
             repoPanel.setVisible(false);
             setNameAndTooltip();
-        } else if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+        } else if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             if(!repositoryComboBox.isEnabled()) {
                 // well, looks like there shuold be only one repository available
                 return;

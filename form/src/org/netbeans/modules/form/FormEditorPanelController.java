@@ -46,6 +46,7 @@ package org.netbeans.modules.form;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -56,6 +57,12 @@ import org.openide.util.Lookup;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.SubRegistration(
+    location=JavaOptions.JAVA,
+    id="FormEditor",
+    displayName="#Form_Editor",
+    keywords="#KW_FormOptions",
+    keywordsCategory=JavaOptions.JAVA + "/FormEditor")
 public final class FormEditorPanelController extends OptionsPanelController {
 
     private FormEditorCustomizer customizer = new FormEditorCustomizer ();

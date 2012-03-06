@@ -82,7 +82,7 @@ import org.openide.filesystems.FileObject;
  */
 public class CssCompletion implements CodeCompletionHandler {
 
-    private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face"}); //NOI18N
+    private static final Collection<String> AT_RULES = Arrays.asList(new String[]{"@media", "@page", "@import", "@charset", "@font-face", "@namespace"}); //NOI18N
     private static char firstPrefixChar; //read getPrefix() comment!
     private static final String EMPTY_STRING = ""; //NOI18N
     private static final String UNIVERSAL_SELECTOR = "*"; //NOI18N
@@ -504,12 +504,13 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         Token<CssTokenId> t = ts.token();
 
-
-        switch (t.id().getTokenCategory()) {
-            case KEYWORDS:
-            case OPERATORS:
-            case BRACES:
-                return EMPTY_STRING;
+        if(t.id() != CssTokenId.GENERIC_AT_RULE) {
+            switch (t.id().getTokenCategory()) {
+                case KEYWORDS:
+                case OPERATORS:
+                case BRACES:
+                    return EMPTY_STRING;
+            }
         }
 
 
@@ -828,13 +829,21 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private void completeKeywords(CompletionContext completionContext, List<CompletionProposal> completionProposals, boolean tokenFound) {
         NodeType nodeType = completionContext.getActiveNode().type();
-        if (nodeType == NodeType.imports || nodeType == NodeType.media || nodeType == NodeType.page || nodeType == NodeType.charSet/*
+        if (nodeType == NodeType.imports 
+                || nodeType == NodeType.media 
+                || nodeType == NodeType.page 
+                || nodeType == NodeType.charSet
+                || nodeType == NodeType.generic_at_rule/*
                  * || nodeType == NodeType.JJTFONTFACERULE
                  */) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
                 TokenId id = completionContext.getTokenSequence().token().id();
-                if (id == CssTokenId.IMPORT_SYM || id == CssTokenId.MEDIA_SYM || id == CssTokenId.PAGE_SYM || id == CssTokenId.CHARSET_SYM /*
+                if (id == CssTokenId.IMPORT_SYM 
+                        || id == CssTokenId.MEDIA_SYM 
+                        || id == CssTokenId.PAGE_SYM 
+                        || id == CssTokenId.CHARSET_SYM
+                        || id == CssTokenId.GENERIC_AT_RULE/*
                          * || id == CssTokenId.FONT_FACE_SYM
                          */
                         || id == CssTokenId.ERROR) {

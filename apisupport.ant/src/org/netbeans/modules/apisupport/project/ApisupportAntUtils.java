@@ -71,6 +71,7 @@ import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -202,7 +203,9 @@ public class ApisupportAntUtils {
             return null;
         }
         String src = p.evaluator().getProperty("src.dir"); // NOI18N
-        assert src != null : "Cannot evaluate src.dir property for " + p;
+        if (src == null) {
+            return null;
+        }
         File srcF = FileUtil.normalizeFile(new File(projectDir, src));
         FileObject sourceDir = FileUtil.toFileObject(srcF);
         FileObject manifestFO = FileUtil.toFileObject(FileUtil.normalizeFile(new File(projectDir, "manifest.mf"))); // NOI18N
@@ -339,8 +342,8 @@ public class ApisupportAntUtils {
      *         (e.g. when such dependency already exists)
      */
     public static boolean addDependency(final NbModuleProject target,
-            final String codeNameBase, final String releaseVersion,
-            final SpecificationVersion version, final boolean useInCompiler) throws IOException {
+            final String codeNameBase, final @NullAllowed String releaseVersion,
+            final @NullAllowed SpecificationVersion version, final boolean useInCompiler) throws IOException {
         ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
         if (me == null) { // ignore semi-silently (#72611)
             Util.err.log(ErrorManager.INFORMATIONAL, "Trying to add " + codeNameBase + // NOI18N

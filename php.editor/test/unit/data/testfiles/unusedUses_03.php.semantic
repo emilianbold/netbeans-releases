@@ -1,0 +1,17 @@
+<?php
+
+namespace Datagrid {
+    class |>CLASS:Datagrid<| {}
+    class |>CLASS:Action<| {}
+}
+
+namespace AdminModule {
+    use |>UNUSED:\DataGrid\DataGrid<|,
+        \DataGrid\Action;
+    class |>CLASS:Presenter<| extends Action {
+
+    }
+    
+}
+
+?>
