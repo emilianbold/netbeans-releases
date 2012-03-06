@@ -68,7 +68,9 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " comment ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "comment");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -78,7 +80,7 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "comment");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "comment");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -88,7 +90,10 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " \n\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -98,9 +103,9 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "   ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "@");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "  ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, "   ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.AT, "@");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, "  ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -110,9 +115,9 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@p");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -122,11 +127,13 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " \n ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "*");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.ASTERISK, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -136,10 +143,12 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " \n ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.ASTERISK, "*");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -149,10 +158,12 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " \n ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "*");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "@");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.ASTERISK, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.AT, "@");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -187,9 +198,11 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_SHARED_BEGIN, "/**#@+");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "\n");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "*");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " anyTags\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.ASTERISK, "*");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "anyTags");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -200,7 +213,8 @@ public class JsDocLexerTest extends NbTestCase {
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_SHARED_BEGIN, "/**#@+");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@class");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " cokoliv");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "cokoliv");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -210,11 +224,14 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_SHARED_BEGIN, "/**#@+");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " \n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@private");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "\n ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@final");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -227,14 +244,15 @@ public class JsDocLexerTest extends NbTestCase {
     }
 
     @SuppressWarnings("unchecked")
-    public void testSharedTagComment05() {
+    public void testNotSharedEndTagComment05() {
         String text = "/**#@- */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "#");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "@");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "- ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "#");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.AT, "@");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "-");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -268,7 +286,15 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " getColor: function () {}, ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "getColor:");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "function");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "()");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_LEFT_CURLY, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.BRACKET_RIGHT_CURLY, "}");
     }
 
     @SuppressWarnings("unchecked")
@@ -277,15 +303,11 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "b");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "text");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "/b");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<b>");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "text");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "</b>");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -295,15 +317,11 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "a href=\"mailto:marfous@netbeans.org\"");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, "href");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "/a");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, ">");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<a href=\"mailto:marfous@netbeans.org\">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "href");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "</a>");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 
@@ -313,9 +331,40 @@ public class JsDocLexerTest extends NbTestCase {
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
         TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_BLOCK, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "<a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testHtmlComment04() {
+        String text = "/** < ";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.HTML, "< ");
+    }
+
+    @SuppressWarnings("unchecked")
+    public void testCommentWithString() {
+        String text = "/** @param ident \"cokoliv\" \n @param */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocTokenId.language());
+        TokenSequence<?extends JsDocTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.OTHER, "ident");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING_BEGIN, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING, "cokoliv");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.STRING_END, "\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.EOL, "\n");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.KEYWORD, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocTokenId.COMMENT_END, "*/");
     }
 }

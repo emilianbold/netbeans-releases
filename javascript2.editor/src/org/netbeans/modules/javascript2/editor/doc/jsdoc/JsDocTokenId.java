@@ -60,24 +60,45 @@ public enum JsDocTokenId implements TokenId {
 
     // IMPORTANT - Categories of JavaScript tokenIds should be shared across
     //  all JavaScript documentation tools to preserve coloring settings.
-    KEYWORD("COMMENT_KEYWORD"), //NOI18N
-    COMMENT_START("COMMENT"), //NOI18N
-    COMMENT_BLOCK("COMMENT"), //NOI18N
-    COMMENT_NOCODE_BEGIN("COMMENT_NOCODE"), //NOI18N
-    COMMENT_NOCODE_END("COMMENT_NOCODE"), //NOI18N
-    COMMENT_LINE("COMMENT"), //NOI18N
-    COMMENT_END("COMMENT"), //NOI18N
-    COMMENT_CODE("COMMENT"), //NOI18N
-    COMMENT_SHARED_END("COMMENT"), //NOI18N
-    COMMENT_SHARED_BEGIN("COMMENT"), //NOI18N
-    UNKNOWN("UNKNOWN"), //NOI18N
-    HTML("COMMENT_HTML"); //NOI18N
+    COMMENT_NOCODE_BEGIN("/**#nocode+*/", "COMMENT_NOCODE"), //NOI18N
+    COMMENT_NOCODE_END("/**#nocode-*/", "COMMENT_NOCODE"), //NOI18N
+    COMMENT_SHARED_END("/**#@-*/", "COMMENT"), //NOI18N
+    COMMENT_SHARED_BEGIN("/**#@+", "COMMENT"), //NOI18N
+
+    COMMENT_START(null, "COMMENT"), //NOI18N
+    COMMENT_END(null, "COMMENT"), //NOI18N
+    KEYWORD(null, "COMMENT_KEYWORD"), //NOI18N
+    OTHER(null, "COMMENT"), //NOI18N
+    WHITESPACE(null, "COMMENT"), //NOI18N
+    EOL(null, "COMMENT"), //NOI18N
+    HTML(null, "COMMENT_HTML"), //NOI18N
+    UNKNOWN(null, "COMMENT"), //NOI18N
+
+    STRING(null, "COMMENT"), //NOI18N
+    STRING_END(null, "COMMENT"), //NOI18N
+    STRING_BEGIN(null, "COMMENT"), //NOI18N
+
+    BRACKET_LEFT_BRACKET("[", "COMMENT"), //NOI18N
+    BRACKET_RIGHT_BRACKET("]", "COMMENT"), //NOI18N
+    BRACKET_LEFT_CURLY("{", "COMMENT"), //NOI18N
+    BRACKET_RIGHT_CURLY("}", "COMMENT"), //NOI18N
+
+    ASSIGNMENT("=", "COMMENT"), //NOI18N
+    AT("@", "COMMENT"), //NOI18N
+    ASTERISK("*", "COMMENT"); //NOI18N
 
     public static final String JSDOC_MIME_TYPE = "text/javascript-comment"; //NOI18N
+
+    private final String fixedText;
     private final String primaryCategory;
 
-    JsDocTokenId(String primaryCategory) {
+    JsDocTokenId(String fixedText, String primaryCategory) {
+        this.fixedText = fixedText;
         this.primaryCategory = primaryCategory;
+    }
+
+    public String fixedText() {
+        return fixedText;
     }
 
     @Override

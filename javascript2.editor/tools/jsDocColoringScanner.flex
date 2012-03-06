@@ -36,7 +36,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.doclets;
+package org.netbeans.modules.javascript2.editor.doc.jsdoc;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -50,11 +50,6 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %unicode
 %caseless
 %char
-
-%state JSDOC
-%state HTML
-%state STAR
-%state AT
 
 %{
     private LexerInput input;
@@ -135,32 +130,35 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
+/* states */
+%state JSDOC
+%state STAR
+%state AT
+%state STRING
+%state STRINGEND
+%state SSTRING
+%state SSTRINGEND
+
 /* base structural elements */
 LineTerminator = \r|\n|\r\n
 InputCharacter = [^\r\n]
-WhiteSpace = {LineTerminator} | [ \t\f]
+WhiteSpace = [ \t\f]+
+
+/* string and character literals */
+StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 
 /* comment types */
 DocumentationComment = "/**"
-CommentEnd = ["*"]? + "/"
-/* TODO - can be removed once jsDoc will be embedded from general doc lexer */
-TraditionalComment = "/*" [^*] ~"*/" | "/*" "*"+ "/"
-EndOfLineComment = "//" {InputCharacter}* {LineTerminator}
+CommentEnd = ["*"]+ + "/"
 
+AnyChar=(.|[\n])
+Identifier=[[:letter:][:digit:]]+
 
-ANY_CHAR=(.|[\n])
-IDENTIFIER=[[:letter:][:digit:]]+
-
+HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 
 %%
 
 <YYINITIAL> {
-
-    /* TODO - can be removed once jsDoc will be embedded from general doc lexer */
-    /*
-    {TraditionalComment}            { return JsDocTokenId.COMMENT_CODE; }
-    {EndOfLineComment}              { return JsDocTokenId.COMMENT_LINE; }
-    */
 
     /* No code comments */
     "/**#nocode+*/"                 { return JsDocTokenId.COMMENT_NOCODE_BEGIN; }
@@ -175,40 +173,71 @@ IDENTIFIER=[[:letter:][:digit:]]+
     "*/"                            { return JsDocTokenId.COMMENT_END; }
 
     /* Error fallback */
-    {ANY_CHAR}                      { }
-    <<EOF>>                         {
-        if (input.readLength() > 0) {
-            // backup eof
-            input.backup(1);
-            //and return the text as error token
-            //System.err.println("Illegal character <"+ yytext()+">");
-            return JsDocTokenId.UNKNOWN;
-        } else {
-            return null;
-        }
-    }
+    {AnyChar}                      { }
 }
 
 <JSDOC> {
+    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
+    {WhiteSpace}                    { return JsDocTokenId.WHITESPACE; }
+    {LineTerminator}                { return JsDocTokenId.EOL; }
+    {HtmlString}                    { return JsDocTokenId.HTML; }
+
     "@"                             { yybegin(AT); yypushback(1); }
-    "*"                             { yybegin(STAR); yypushback(1); }    "<"                             { yybegin(HTML); return JsDocTokenId.HTML; }
-    [^@*<]*                         { return JsDocTokenId.COMMENT_BLOCK; }
+    "*"                             { return JsDocTokenId.ASTERISK; }
+    "{"                             { return JsDocTokenId.BRACKET_LEFT_CURLY; }
+    "}"                             { return JsDocTokenId.BRACKET_RIGHT_CURLY; }
+    "["                             { return JsDocTokenId.BRACKET_LEFT_BRACKET; }
+    "]"                             { return JsDocTokenId.BRACKET_RIGHT_BRACKET; }
+    "="                             { return JsDocTokenId.ASSIGNMENT; }
+
+    \"                              { yybegin(STRING); return JsDocTokenId.STRING_BEGIN; }
+
+    ~({WhiteSpace}|{LineTerminator}|"*"|"@"|"<"|"{"|"}"|"\"")  { yypushback(1); return JsDocTokenId.OTHER; }
 }
 
-<HTML> {
-    ">"                             { yybegin(JSDOC); return JsDocTokenId.HTML; }
-    "*/"                            { yybegin(JSDOC); return JsDocTokenId.COMMENT_END; }
-    [^>] ~("*" | ">")               { yypushback(1); return JsDocTokenId.HTML; }
-    {ANY_CHAR}                      { return JsDocTokenId.HTML; }
+<STRING> {
+    \"                              {
+                                        yypushback(1);
+                                        yybegin(STRINGEND);
+                                        if (tokenLength - 1 > 0) {
+                                            return JsDocTokenId.STRING;
+                                        }
+                                    }
+
+    {StringCharacter}+              { }
+
+    /* escape sequences */
+
+    \\.                             { }
+    {LineTerminator}                {
+                                        yypushback(1);
+                                        yybegin(JSDOC);
+                                        if (tokenLength - 1 > 0) {
+                                            return JsDocTokenId.UNKNOWN;
+                                        }
+                                    }
 }
 
-<STAR> {
-    {CommentEnd}                    { yybegin(YYINITIAL); return JsDocTokenId.COMMENT_END; }
-    "@"                             { yybegin(JSDOC); yypushback(1); return JsDocTokenId.COMMENT_BLOCK; }
-    {ANY_CHAR}                      { yybegin(JSDOC); return JsDocTokenId.COMMENT_BLOCK; }
+<STRINGEND> {
+    \"                              {
+                                        yybegin(JSDOC);
+                                        return JsDocTokenId.STRING_END;
+                                    }
 }
 
 <AT> {
-    "@"{IDENTIFIER}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }
-    {ANY_CHAR}                      { yybegin(JSDOC); return JsDocTokenId.COMMENT_BLOCK; }
+    "@"{Identifier}                 { yybegin(JSDOC); return JsDocTokenId.KEYWORD; }
+    {AnyChar}                       { yybegin(JSDOC); return JsDocTokenId.AT; }
+}
+
+<<EOF>> {
+    if (input.readLength() > 0) {
+        // backup eof
+        input.backup(1);
+        //and return the text as error token
+        //System.err.println("Illegal character <"+ yytext()+">");
+        return JsDocTokenId.UNKNOWN;
+    } else {
+        return null;
+    }
 }

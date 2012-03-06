@@ -40,7 +40,7 @@
     </target>
     <target name="-patch-jsdoc-lexer">
         <patch patchfile="tools/lexer-jsdoc.patch"
-               dir="src/org/netbeans/modules/javascript2/editor/doclets"/>
+               dir="src/org/netbeans/modules/javascript2/editor/doc/jsdoc"/>
     </target>
     <target name="gen-jsdoc-lexer" depends="-gen-jsdoc-lexer,-patch-jsdoc-lexer"/>
 
