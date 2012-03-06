@@ -50,6 +50,9 @@ made subject to such option by the copyright holder.
     <target name="all" description="Run all tests">
         <subant genericantfile="all-tests.xml" buildpath="${test.types}">
             <property name="test.required.modules" value="${test.required.modules}"/>
+            <!-- #208907 - Enforce order of test execution in an implicit suite to prevent
+            failures caused by the unpredictable results of Class.getDeclaredMethods. -->
+            <property name="test-sys-prop.NbTestCase.order" value="a-z"/>
         </subant>
     </target>
     <target name="merge-results" description="Merge results for unit and qa-functional test into one dir">

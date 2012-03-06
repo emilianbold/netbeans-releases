@@ -149,7 +149,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         int startOffset = node.getStartOffset();
         if (nsNameLength > 0) {
             startOffset += nsNameLength;
-            if (namespaceName.getSegments().size() > 0) {
+            if (namespaceName.getSegments().size() > 0 && !namespaceName.isDefaultNamespace()) {
                 startOffset += 1;
             }
         }

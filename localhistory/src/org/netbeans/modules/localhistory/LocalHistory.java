@@ -85,7 +85,7 @@ import org.openide.windows.WindowManager;
 public class LocalHistory {    
       
     private static LocalHistory instance;
-    private VCSInterceptor vcsInterceptor;
+    private LocalHistoryVCSInterceptor vcsInterceptor;
     private VCSAnnotator vcsAnnotator;
     private VCSHistoryProvider vcsHistoryProvider;
     private LocalHistoryStore store;
@@ -207,7 +207,7 @@ public class LocalHistory {
         return instance;
     }
     
-    VCSInterceptor getVCSInterceptor() {
+    LocalHistoryVCSInterceptor getVCSInterceptor() {
         if(vcsInterceptor == null) {
             vcsInterceptor = new LocalHistoryVCSInterceptor();
         }
