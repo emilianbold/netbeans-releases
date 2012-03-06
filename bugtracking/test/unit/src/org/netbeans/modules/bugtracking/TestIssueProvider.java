@@ -85,11 +85,6 @@ public class TestIssueProvider extends IssueProvider<TestIssue> {
     }
 
     @Override
-    public TestIssue createFor(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void addComment(TestIssue data, String comment, boolean closeAsFixed) {
         data.addComment(comment, closeAsFixed);
     }

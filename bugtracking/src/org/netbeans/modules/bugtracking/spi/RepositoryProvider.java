@@ -75,8 +75,6 @@ public abstract class RepositoryProvider<R, Q, I> {
      *
      * @param id
      * @return
-     * @deprecated only kenai and nbbugzilla related. will be removed. 
-     * XXX move out to kenaisupport
      */
     public abstract I getIssue(R r, String id);
 

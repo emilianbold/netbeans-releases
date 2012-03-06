@@ -82,11 +82,6 @@ public class BugzillaIssueProvider extends IssueProvider<BugzillaIssue> {
     }
 
     @Override
-    public BugzillaIssue createFor(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void addComment(BugzillaIssue data, String comment, boolean closeAsFixed) {
         data.addComment(comment, closeAsFixed);
     }

@@ -551,11 +551,6 @@ public class CacheTest extends NbTestCase {
         }
 
         @Override
-        public CTestIssue createFor(String id) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public void addComment(CTestIssue data, String comment, boolean closeAsFixed) {
             data.addComment(comment, closeAsFixed);
         }

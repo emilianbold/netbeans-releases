@@ -46,7 +46,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Level;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
@@ -162,7 +161,7 @@ public class RepositoryImpl<R, Q, I> {
      * @return
      */
     public IssueImpl getIssueImpl(String id) {
-        return getIssue(issueProvider.createFor(id)); // XXX API cache me
+        return getIssue(repositoryProvider.getIssue(r, id));
     }
     
     R getData() {

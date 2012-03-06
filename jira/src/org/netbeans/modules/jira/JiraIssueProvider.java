@@ -81,11 +81,6 @@ public class JiraIssueProvider extends IssueProvider<NbJiraIssue> {
     }
 
     @Override
-    public NbJiraIssue createFor(String id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public void addComment(NbJiraIssue data, String comment, boolean closeAsFixed) {
         data.addComment(comment, closeAsFixed);
     }

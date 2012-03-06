@@ -99,8 +99,6 @@ public abstract class IssueProvider<I> {
      */
     public abstract boolean refresh(I data);
 
-    public abstract I createFor(String id);
-    
     /**
      * Add a comment to this issue and close it as fixed eventually.
      * 
