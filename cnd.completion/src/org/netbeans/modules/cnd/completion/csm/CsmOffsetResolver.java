@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
+import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
@@ -192,14 +193,14 @@ public class CsmOffsetResolver {
             CsmExpression initialValue = ((CsmVariable)lastObj).getInitialValue();
             if(initialValue != null) {
                 for (CsmStatement csmStatement : initialValue.getLambdas()) {
-                    CsmCompoundStatement body = (CsmCompoundStatement)csmStatement;
-                    if ((!CsmOffsetUtilities.sameOffsets(lastObj, body) || body.getStartOffset() != body.getEndOffset()) && CsmOffsetUtilities.isInObject(body, offset)) {
+                    CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
+                    if ((!CsmOffsetUtilities.sameOffsets(lastObj, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
                         last = null;
                         // offset is in body, try to find inners statement
-                        if (CsmStatementResolver.findInnerObject(body, offset, context)) {
+                        if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
                             // if found exact object => return it, otherwise return last found scope
                             CsmObject found = context.getLastObject();
-                            if (!CsmOffsetUtilities.sameOffsets(body, found)) {
+                            if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
                                 lastObj = last = found;
                             }
                         }

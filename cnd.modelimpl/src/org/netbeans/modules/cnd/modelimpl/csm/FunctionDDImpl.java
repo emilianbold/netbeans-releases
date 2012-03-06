@@ -91,6 +91,9 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
         CharSequence name = QualifiedNameCache.getManager().getString(nameHolder.getName());
+        if (name.length() == 0 && !global) {
+            name = QualifiedNameCache.getManager().getString("lambda"); // NOI18N
+        }        
         if (name.length() == 0) {
             throw new AstRendererException((FileImpl) file, startOffset, "Empty function name."); // NOI18N
         }

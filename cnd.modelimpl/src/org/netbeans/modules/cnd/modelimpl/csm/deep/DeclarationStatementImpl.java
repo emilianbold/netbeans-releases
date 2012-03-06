@@ -155,6 +155,14 @@ public final class DeclarationStatementImpl extends StatementBase implements Csm
                             render(token.getFirstChild(), currentNamespace, container);
                         }
                         break;
+                case CPPTokenTypes.CSM_FUNCTION_DEFINITION:
+                        try {
+                            FunctionDDImpl<?> fddi = FunctionDDImpl.create(token, getContainingFile(), currentNamespace, !isRenderingLocalContext());
+                            declarators.add(fddi);
+                        } catch (AstRendererException e) {
+                            DiagnosticExceptoins.register(e);
+                        }
+                        break;
                     case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
                         declarators.add(NamespaceAliasImpl.create(token, getContainingFile(), null, !isRenderingLocalContext()));
                         break;
