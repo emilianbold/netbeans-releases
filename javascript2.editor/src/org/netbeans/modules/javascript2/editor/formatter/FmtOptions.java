@@ -145,7 +145,7 @@ public class FmtOptions {
     public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
     public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
     public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
-    public static final String spaceBeforeArrayDeclParen = "spaceBeforeArrayDeclParen"; //NOI18N
+    public static final String spaceBeforeWithParen = "spaceBeforeWithParen"; //NOI18N
 
     public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
     public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
@@ -320,7 +320,7 @@ public class FmtOptions {
             { spaceBeforeWhileParen, TRUE},
             { spaceBeforeCatchParen, TRUE},
             { spaceBeforeSwitchParen, TRUE},
-	    { spaceBeforeArrayDeclParen, FALSE},
+            { spaceBeforeWithParen, TRUE},
             { spaceAroundUnaryOps, FALSE},
             { spaceAroundBinaryOps, TRUE},
             { spaceAroundTernaryOps, TRUE},

@@ -169,7 +169,8 @@ public class JsFormatter implements Formatter {
                                     !CodeStyle.get(doc).spaceBeforeForParen());
                             break;
                         case AFTER_WITH_KEYWORD:
-                            // TODO
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeWithParen());
                             break;
                         case AFTER_SWITCH_KEYWORD:
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,

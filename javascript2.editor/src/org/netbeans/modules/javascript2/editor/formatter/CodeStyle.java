@@ -289,8 +289,8 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeSwitchParen, getDefaultAsBoolean(spaceBeforeSwitchParen));
     }
 
-    public boolean spaceBeforeArrayDeclParen() {
-        return preferences.getBoolean(spaceBeforeArrayDeclParen, getDefaultAsBoolean(spaceBeforeArrayDeclParen));
+    public boolean spaceBeforeWithParen() {
+        return preferences.getBoolean(spaceBeforeWithParen, getDefaultAsBoolean(spaceBeforeWithParen));
     }
 
     public boolean spaceAroundUnaryOps() {

@@ -4,7 +4,7 @@ with (a) {
     test_ext()
 }
 
-with(a)
+with (a)
 // comment
     // one statement
     doOneThing();
