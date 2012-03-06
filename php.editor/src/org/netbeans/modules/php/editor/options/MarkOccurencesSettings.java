@@ -55,7 +55,8 @@ public class MarkOccurencesSettings {
     private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
 
     public static String ON_OFF = "OnOff"; // NOI18N
-    
+    public static String KEEP_MARKS = "KeepMarks"; // NOI18N
+
     private MarkOccurencesSettings() {
     }
 
