@@ -60,31 +60,31 @@ class APIAccessorImpl extends APIAccessor {
 
     @Override
     public Repository createRepository(RepositoryImpl impl) {
-        return new Repository(impl);
+        return impl != null ? new Repository(impl) : null;
     }
 
     @Override
     public Query createQuery(QueryImpl impl) {
-        return new Query(impl);
+        return impl != null ? new Query(impl) : null;
     }
 
     @Override
     public Issue createIssue(IssueImpl impl) {
-        return new Issue(impl);
+        return impl != null ? new Issue(impl) : null;
     }
 
     @Override
     public RepositoryImpl getImpl(Repository repository) {
-        return repository.getImpl();
+        return repository != null ? repository.getImpl() : null;
     }
 
     @Override
     public QueryImpl getImpl(Query query) {
-        return query.getImpl();
+        return query != null ? query.getImpl() : null;
     }
 
     @Override
     public IssueImpl getImpl(Issue issue) {
-        return issue.getImpl();
+        return issue != null ? issue.getImpl() : null;
     }
 }

@@ -290,6 +290,9 @@ public class RepositoryImpl<R, Q, I> {
     }
 
     public synchronized IssueImpl getIssue(I i) {
+        if(i == null) {
+            return null;
+        }        
         IssueImpl issue = issueMap.get(i);
         if(issue == null) {
             issue = new IssueImpl(RepositoryImpl.this, issueProvider, i);
@@ -299,6 +302,9 @@ public class RepositoryImpl<R, Q, I> {
     }
 
     public QueryImpl getQuery(Q q) {
+        if(q == null) {
+            return null;
+        }
         QueryImpl query = queryMap.get(q);
         if(query == null) {
             query = new QueryImpl(RepositoryImpl.this, queryProvider, issueProvider, q);
