@@ -48,6 +48,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.*;
 import java.net.*;
+
 import javax.swing.*;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -174,8 +175,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     }
     
     @Override
-    protected BrowserId getPluginId(){
-        BrowserId id = super.getPluginId();
+    protected BrowserId getPluginId(URL url){
+        BrowserId id = super.getPluginId(url);
         if ( id != null ){
             return id;
         }
