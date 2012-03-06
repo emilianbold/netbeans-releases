@@ -632,6 +632,22 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "use \\Foo\\Bar\\Class^Name;", "class ^ClassName {");
     }
 
+    public void testQualifiedClassInPhpDoc_01() throws Exception {
+        checkDeclaration(getTestPath(), "* @param B\\B^ag $param", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_02() throws Exception {
+        checkDeclaration(getTestPath(), "function functionName1(B\\B^ag $param) {", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_03() throws Exception {
+        checkDeclaration(getTestPath(), "* @return B\\B^ag", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_04() throws Exception {
+        checkDeclaration(getTestPath(), "return new B\\B^ag();", "class ^Bag {}");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(
