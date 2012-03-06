@@ -54,7 +54,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
  * @author Tomas Stupka
  */
 public final class Repository {
-        /**
+    /**
      * A query from this repository was saved or removed
      */
     public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
@@ -80,34 +80,73 @@ public final class Repository {
         this.impl = impl;
     }
 
+    /**
+     * Returns the icon for this repository
+     * 
+     * @return 
+     */
     public Image getIcon() {
         return impl.getIcon();
     }
 
+    /**
+     * Returns the display name for this repository
+     * @return 
+     */
     public String getDisplayName() {
         return impl.getDisplayName();
     }
 
+    /**
+     * Returns the tooltip describing this repository
+     * 
+     * @return 
+     */
     public String getTooltip() {
         return impl.getTooltip();
     }
 
+    /**
+     * Returns a unique id assotiated with this repository
+     * 
+     * @return 
+     */
     public String getId() {
         return impl.getId();
     }
 
+    /**
+     * Returns this repository url
+     * 
+     * @return 
+     */
     public String getUrl() {
         return impl.getUrl();
     }
 
+    /**
+     * Creates a new, not yet saved and named query.  
+     * 
+     * @return 
+     */
     public QueryImpl createNewQuery() {
         return impl.createNewQuery();
     }
 
+    /**
+     * Creates a new, not yet submitted issue
+     * 
+     * @return 
+     */
     public IssueImpl createNewIssue() {
         return impl.createNewIssue();
     }
 
+    /**
+     * Returns a list of all saved queries for this repository
+     * 
+     * @return 
+     */
     public Collection<Query> getQueries() {
         Collection<QueryImpl> c = impl.getQueries();
         Collection<Query> ret = new ArrayList<Query>();
@@ -117,24 +156,42 @@ public final class Repository {
         return ret;
     }
 
+    /**
+     * Removes this repository
+     */
     public void remove() {
         impl.remove();
     }
 
-    <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {
-        return (RepositoryImpl<R, Q, I>) impl;
+    /**
+     * Registers a PropertyChangeListener 
+     * 
+     * @param listener 
+     */
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        impl.addPropertyChangeListener(listener);
     }
-
+    
+    /**
+     * Unregisters a PropertyChangeListener 
+     * 
+     * @param listener 
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         impl.removePropertyChangeListener(listener);
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        impl.addPropertyChangeListener(listener);
-    }
-
+    /**
+     * Returns the issue with the given id or null in case such doens't exist.
+     * 
+     * @param id
+     * @return 
+     */
     public Issue getIssue(String id) {
         return impl.getIssueImpl(id).getIssue();
     }
     
+    <R, Q, I> RepositoryImpl<R, Q, I> getImpl() {
+        return (RepositoryImpl<R, Q, I>) impl;
+    }
 }
