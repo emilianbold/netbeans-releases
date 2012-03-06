@@ -157,9 +157,4 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="1250"/>
         </folder>
     </folder>
-    <folder name="org-netbeans-api-project-libraries">
-        <folder name="Libraries">
-            <file name="TestNG-lib.xml" url="TestNG-lib.xml"/>
-        </folder>
-    </folder>
 </filesystem>
