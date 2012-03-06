@@ -73,6 +73,14 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.returnTypes = new HashSet<TypeUsage>();
         setDeclared(true);
         this.areReturnTypesResolved = false;
+        if (scope != null && parentObject != null) {
+            // creating arguments variable
+            JsObjectImpl arguments = new JsObjectImpl(this, 
+                    new IdentifierImpl("arguments", new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 
+                    name.getOffsetRange(),  true, EnumSet.of(Modifier.PRIVATE)); // NOI8N
+            arguments.addAssignment(new TypeUsageImpl("Arguments", getOffset(), true), getOffset());    // NOI18N
+            this.addProperty(arguments.getName(), arguments);
+        }
     }
     
     public static JsFunctionImpl createGlobal(FileObject file) {

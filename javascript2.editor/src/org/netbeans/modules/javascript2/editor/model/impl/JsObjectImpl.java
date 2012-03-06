@@ -69,14 +69,18 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
     }
     
-    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
-        super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, EnumSet.of(Modifier.PUBLIC));
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared, Set<Modifier> modifiers) {
+        super((parent != null ? parent.getFileObject() : null), name.getName(), isDeclared,  offsetRange, modifiers);
         this.properties = new HashMap<String, JsObject>();
         this.declarationName = name;
         this.parent = parent;
         this.occurrences = new ArrayList<Occurrence>();
         this.assignments = new HashMap<Integer, Collection<TypeUsage>>();
         this.hasName = name.getOffsetRange().getStart() != name.getOffsetRange().getEnd();
+    }
+    
+    public JsObjectImpl(JsObject parent, Identifier name, OffsetRange offsetRange, boolean isDeclared) {
+        this(parent, name, offsetRange, isDeclared, EnumSet.of(Modifier.PUBLIC));
     }
   
     protected JsObjectImpl(JsObject parent, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
@@ -101,6 +105,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return Kind.FILE;
         }
         if (isDeclared()) {
+            if ("arguments".equals(getName())) {
+                // special variable object of every function
+                return Kind.VARIABLE;
+            }
             if (!getAssignmentForOffset(getDeclarationName().getOffsetRange().getEnd()).isEmpty()
                 && hasOnlyVirtualProperties()) {
                 if (getParent().getParent() == null || getModifiers().contains(Modifier.PRIVATE)) {
