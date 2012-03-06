@@ -165,7 +165,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
             }
          // Mac
         } else if (Utilities.isMac()) {
-            params += "-a chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
+            params += "-b com.google.chrome {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}"; // NOI18N
             retValue = new NbProcessDescriptor ("/usr/bin/open", params, // NOI18N
                     ExtWebBrowser.UnixBrowserFormat.getHint());
             return retValue;

@@ -51,6 +51,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -109,16 +110,7 @@ public final class Utils {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(new FileReader(file));
-            String line;
-            StringBuilder builder = new StringBuilder();
-            do {
-                line = reader.readLine();
-                if ( line != null ){
-                    builder.append( line );
-                }
-            }
-            while ( line != null );
-            return builder.toString();
+            return read(reader);
         }
         catch ( IOException e ){
             Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
@@ -212,6 +204,57 @@ public final class Utils {
         folder.delete();
     }
     
+    public static String readZip( File zipFile , String requiredName ){
+        ZipFile zip = null;
+        try {
+            zip = new ZipFile(zipFile);
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                String fileName = entry.getName();
+                if ( fileName.equals(requiredName)){
+                    return readStream(zip.getInputStream(entry));
+                }
+            }
+        }
+        catch( IOException ex ){
+            Logger.getLogger(Utils.class.getCanonicalName()).
+                log(Level.INFO, null , ex);
+        }
+        finally {
+            try {
+                if ( zip!= null ){
+                    zip.close();
+                }
+            }
+            catch( IOException ex ){
+                Logger.getLogger(Utils.class.getCanonicalName()).
+                    log(Level.INFO, null , ex);
+            }
+        }      
+        return null;
+    }
+    
+    public static String readStream( InputStream inputStream )
+            throws IOException
+    {
+        BufferedReader reader = new BufferedReader(new InputStreamReader( inputStream ));
+        return read( reader );
+    }
+    
+    private static String read( BufferedReader reader ) throws IOException {
+        String line;
+        StringBuilder builder = new StringBuilder();
+        do {
+            line = reader.readLine();
+            if (line != null) {
+                builder.append(line);
+            }
+        }
+        while (line != null);
+        return builder.toString();
+    }
+
     public static Document parseZipXml( File zipFile , String requiredName , 
             DocumentBuilder builder) throws SAXException
     {

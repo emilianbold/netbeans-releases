@@ -191,7 +191,15 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
          */
         @Override
         protected String getCurrentPluginVersion(){
-            return CURRENT_VERSION;
+            File extensionFile = InstalledFileLocator.getDefault().locate(
+                    EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            String content = Utils.readZip( extensionFile, "manifest.json");    // NOI18N
+            int index = content.indexOf(VERSION);
+            if ( index == -1){
+                return null;
+            }
+            index = content.indexOf(',',index);
+            return getValue(content, 0, index , VERSION);
         }
         
         private String getValue(String content, int start , int end , String key){

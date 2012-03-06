@@ -49,7 +49,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -280,7 +279,9 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
          */
         @Override
         protected String getCurrentPluginVersion(){
-            return CURRENT_VERSION;
+            File extensionFile = InstalledFileLocator.getDefault().locate(
+                    EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
+            return getVersion(extensionFile);
         }
         
         private boolean installExtension(File extensionDir, File extensionFile) {      
