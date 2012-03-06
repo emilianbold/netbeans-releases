@@ -180,6 +180,8 @@ public final class ToolchainManager {
 
         String[] getCppStandardFlags();
 
+        String[] getCStandardFlags();
+
         String[] getLibraryFlags();
 
         String getOutputObjectFileFlags();

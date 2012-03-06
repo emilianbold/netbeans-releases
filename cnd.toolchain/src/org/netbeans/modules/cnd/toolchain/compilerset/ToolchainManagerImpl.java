@@ -607,6 +607,7 @@ public final class ToolchainManagerImpl {
         writeStandard(doc, element, compiler);
         writeLanguageExtension(doc, element, compiler);
         writeCppStandard(doc, element, compiler);
+        writeCStandard(doc, element, compiler);
         writeLibrary(doc, element, compiler);
         if (compiler.getOutputObjectFileFlags() != null) {
             e = doc.createElement("output_object_file"); // NOI18N
@@ -788,6 +789,29 @@ public final class ToolchainManagerImpl {
         element.appendChild(e);
         Element c;
         String[] names = new String[]{"default", "cpp11"}; // NOI18N
+        for (int i = 0; i < flags.length; i++) {
+            c = doc.createElement(names[i]);
+            c.setAttribute("flags", flags[i]); // NOI18N
+            if (def == i) {
+                c.setAttribute("default", "true"); // NOI18N
+            }
+            e.appendChild(c);
+        }
+    }
+
+    private void writeCStandard(Document doc, Element element, CompilerDescriptor compiler) {
+        String[] flags = compiler.getCStandardFlags();
+        if (flags == null) {
+            return;
+        }
+        int def = 0;
+        if (compiler instanceof CompilerDescriptorImpl) {
+            def = ((CompilerDescriptorImpl) compiler).tool.cStandard.default_selection;
+        }
+        Element e = doc.createElement("c_standard"); // NOI18N
+        element.appendChild(e);
+        Element c;
+        String[] names = new String[]{"default", "c89", "c99"}; // NOI18N
         for (int i = 0; i < flags.length; i++) {
             c = doc.createElement(names[i]);
             c.setAttribute("flags", flags[i]); // NOI18N
@@ -1117,6 +1141,7 @@ public final class ToolchainManagerImpl {
         Standard standard = new Standard();
         LanguageExtension languageExtension = new LanguageExtension();
         CppStandard cppStandard = new CppStandard();
+        CStandard cStandard = new CStandard();
         Library library = new Library();
 
         public boolean isValid() {
@@ -1330,6 +1355,28 @@ public final class ToolchainManagerImpl {
         public String[] values() {
             if (isValid()) {
                 return new String[]{cppDefault, cpp11};
+            }
+            return null;
+        }
+    }
+
+    /**
+     * class package-local for testing only
+     */
+    static final class CStandard {
+
+        String cDefault;
+        String c89;
+        String c99;
+        int default_selection = 0;
+
+        public boolean isValid() {
+            return cDefault != null && c89 != null && c99 != null;
+        }
+
+        public String[] values() {
+            if (isValid()) {
+                return new String[]{cDefault, c89, c99};
             }
             return null;
         }
@@ -1804,6 +1851,24 @@ public final class ToolchainManagerImpl {
                     st.cpp11 = flags;
                     if (isDefault) {
                         st.default_selection = 1;
+                    }
+                }
+            } else if (path.indexOf(".c_standard.") > 0) { // NOI18N
+                CStandard st = c.cStandard;
+                if (path.endsWith(".default")) { // NOI18N
+                    st.cDefault = flags;
+                    if (isDefault) {
+                        st.default_selection = 0;
+                    }
+                } else if (path.endsWith(".c89")) { // NOI18N
+                    st.c89 = flags;
+                    if (isDefault) {
+                        st.default_selection = 1;
+                    }
+                } else if (path.endsWith(".c99")) { // NOI18N
+                    st.c99 = flags;
+                    if (isDefault) {
+                        st.default_selection = 2;
                     }
                 }
             } else if (path.endsWith(".strip")) { // NOI18N
@@ -2293,6 +2358,11 @@ public final class ToolchainManagerImpl {
         @Override
         public String[] getCppStandardFlags() {
             return tool.cppStandard.values();
+        }
+
+        @Override
+        public String[] getCStandardFlags() {
+            return tool.cStandard.values();
         }
 
         @Override

@@ -108,10 +108,10 @@ public abstract class AbstractCompiler extends Tool {
     }
 
     public String getCStandardOptions(int value) {
-        // TODO this should be implemented
-        // if (value == 0) return "";
-        // if (value == 1) return "-std=c89";
-        // if (value == 2) return "-std=c99";
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getCStandardFlags() != null && compiler.getCStandardFlags().length > value){
+            return compiler.getCStandardFlags()[value];
+        }
         return ""; //NOI18N
     }
     
