@@ -106,11 +106,6 @@ NetBeans.clearSelection = function() {
     this.repaintGlassPane();
 };
 
-// Determines whether the given value is an array
-NetBeans.isArray = function(value) {
-    return (typeof(value) === 'object') && (value instanceof Array);
-};
-
 // Returns an element that corresponds to the handle
 NetBeans.getElement = function(handle) {
     if (handle instanceof Element) {
