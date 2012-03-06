@@ -63,17 +63,17 @@ class HgSearchForm extends JPanel implements ChangeListener {
     static final String PROP_USABLE = "usable";
     private ScopeComboBox scopeController;
     private FileNameComboBox fileNameController;
-    private ScopeSettingsPanel scopeSettinsController;
+    private ScopeSettingsPanel scopeSettingsController;
 
     HgSearchForm() {
         initComponents();
-        scopeController = ComponentFactory.createScopeComboBox(fileCombo, null);
+        scopeController = ComponentFactory.createScopeComboBox(scopeCombo, null);
         fileNameController = ComponentFactory.createFileNameComboBox(fileCombo);
-        scopeSettinsController = ComponentFactory.createScopeSettingsPanel(
+        scopeSettingsController = ComponentFactory.createScopeSettingsPanel(
                 scopePanel, false, fileNameController);
         scopeController.addChangeListener(this);
         fileNameController.addChangeListener(this);
-        scopeSettinsController.addChangeListener(this);
+        scopeSettingsController.addChangeListener(this);
         patternField.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) {
                 stateChanged(null);
