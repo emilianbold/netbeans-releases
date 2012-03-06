@@ -67,22 +67,22 @@ LDLIBSOPTIONS=app64.res
 ${OBJECTDIR}/applauncher.o: applauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/applauncher.o applauncher.cpp
+	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/applauncher.o applauncher.cpp
 
 ${OBJECTDIR}/_ext/493252820/utilsfuncs.o: ../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/493252820
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/493252820/utilsfuncs.o ../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
+	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/493252820/utilsfuncs.o ../../o.n.bootstrap/launcher/windows/utilsfuncs.cpp
 
 ${OBJECTDIR}/_ext/216238457/nblauncher.o: ../../ide/launcher/windows/nblauncher.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/216238457
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/216238457/nblauncher.o ../../ide/launcher/windows/nblauncher.cpp
+	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/216238457/nblauncher.o ../../ide/launcher/windows/nblauncher.cpp
 
 ${OBJECTDIR}/app.o: app.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/app.o app.cpp
+	$(COMPILE.cc) -O2 -DNBEXEC_DLL=\"/lib/nbexec64.dll\" -MMD -MP -MF $@.d -o ${OBJECTDIR}/app.o app.cpp
 
 # Subprojects
 .build-subprojects:

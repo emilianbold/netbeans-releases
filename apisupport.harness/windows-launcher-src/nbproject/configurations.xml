@@ -71,7 +71,7 @@
           <architecture>2</architecture>
           <commandLine>-mno-cygwin -static-libgcc -static-libstdc++</commandLine>
           <preprocessorList>
-            <Elem>NBEXEC_DLL="/lib/nbexec.dll"</Elem>
+            <Elem>NBEXEC_DLL="/lib/nbexec64.dll"</Elem>
           </preprocessorList>
         </ccTool>
         <fortranCompilerTool>
