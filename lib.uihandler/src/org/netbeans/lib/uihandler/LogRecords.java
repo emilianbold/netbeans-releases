@@ -140,10 +140,10 @@ public final class LogRecords {
             p = f.newSAXParser();
         } catch (ParserConfigurationException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            throw new IOException(ex);
         } catch (SAXException ex) {
             LOG.log(Level.SEVERE, null, ex);
-            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            throw new IOException(ex);
         }
         
         Parser parser = new Parser(h);
@@ -151,14 +151,15 @@ public final class LogRecords {
             p.parse(is, parser);
         } catch (SAXException ex) {
             LOG.log(Level.WARNING, null, ex);
-            throw (IOException)new IOException(ex.getMessage()).initCause(ex);
+            throw new IOException(ex);
         } catch (InternalError error){
             LOG.log(Level.WARNING, "Input file corruption", error);
-            throw (IOException)new IOException(error.getMessage()).initCause(error);
+            throw new IOException(error);
         } catch (IOException ex) {
             throw ex;
         } catch (RuntimeException ex) {
             LOG.log(Level.WARNING, "Input file corruption", ex);
+            throw new IOException(ex);
         }
     }   
 

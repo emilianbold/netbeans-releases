@@ -137,6 +137,12 @@ public class UsedNamesComputer {
         }
 
         @Override
+        public void visit(Program node) {
+            scan(node.getStatements());
+            scan(node.getComments());
+        }
+
+        @Override
         public void visit(NamespaceDeclaration node) {
             scan(node.getBody());
         }
@@ -148,6 +154,14 @@ public class UsedNamesComputer {
 
         @Override
         public void visit(NamespaceName node) {
+            UsedNamespaceName usedName = new UsedNamespaceName(node);
+            if (!specialNames.contains(usedName.getName())) {
+                processUsedName(usedName);
+            }
+        }
+
+        @Override
+        public void visit(PHPDocTypeNode node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
             if (!specialNames.contains(usedName.getName())) {
                 processUsedName(usedName);
