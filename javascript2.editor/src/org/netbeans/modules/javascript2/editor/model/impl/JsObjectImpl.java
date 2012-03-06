@@ -101,6 +101,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return Kind.FILE;
         }
         if (isDeclared()) {
+            if ("arguments".equals(getName())) {
+                // special property of every function
+                return Kind.PROPERTY;
+            }
             if (!getAssignmentForOffset(getDeclarationName().getOffsetRange().getEnd()).isEmpty()
                 && hasOnlyVirtualProperties()) {
                 if (getParent().getParent() == null || getModifiers().contains(Modifier.PRIVATE)) {
