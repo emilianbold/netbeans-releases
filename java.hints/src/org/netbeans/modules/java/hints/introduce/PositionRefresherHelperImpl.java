@@ -45,26 +45,22 @@ import java.util.EnumMap;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.hints.introduce.PositionRefresherHelperImpl.DocumentVersionImpl;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
-import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author lahvac
  */
-@MimeRegistrations({
-    @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class),
-    @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelperImpl.class)
-})
+@MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class)
 public class PositionRefresherHelperImpl extends PositionRefresherHelper<DocumentVersionImpl> {
     public PositionRefresherHelperImpl() {
         super(IntroduceHint.class.getName());

@@ -136,6 +136,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -354,6 +355,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Document doc = info.getSnapshot().getSource().getDocument(false);
 
             if (doc != null) {
+                MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
                 MimeLookup.getLookup("text/x-java").lookup(PositionRefresherHelperImpl.class).setVersion(doc, selection[0], selection[1]);
             }
         }
