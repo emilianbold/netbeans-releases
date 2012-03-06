@@ -48,17 +48,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import org.netbeans.modules.bugzilla.query.*;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.logging.Level;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -162,9 +162,8 @@ public class KenaiQueryRefreshTest extends NbTestCase implements TestConstants, 
 
         assertTrue(schedulingHandler.isDone());
         assertTrue(refreshHandler.isDone());
-
-        IssueProvider[] issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
-        assertEquals(1, issues.length);
+        Collection<BugzillaIssue> issues = q.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        assertEquals(1, issues.size());
     }
 
     private BugzillaRepository getRepository() {

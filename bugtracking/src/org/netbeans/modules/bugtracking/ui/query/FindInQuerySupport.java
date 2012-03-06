@@ -46,7 +46,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.openide.util.actions.CallbackSystemAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
@@ -57,7 +57,7 @@ import org.openide.windows.TopComponent;
  */
 class FindInQuerySupport {
     private IssueTable table;
-    private QueryProvider query;
+    private QueryImpl query;
     private FindInQueryBar bar;
 
     private FindInQuerySupport(TopComponent tc) {
@@ -72,7 +72,7 @@ class FindInQuerySupport {
         return new FindInQuerySupport(tc);
     }
 
-    void setQuery(QueryProvider query) {
+    void setQuery(QueryImpl query) {
         this.query = query;
     }
 

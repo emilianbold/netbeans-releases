@@ -45,11 +45,13 @@ package org.netbeans.modules.bugtracking.util;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
 
@@ -123,25 +125,25 @@ public class BugtrackingUtilTest {
 
     @Test
     public void testIsNbRepositoryRepo() {
-        assertFalse(BugtrackingUtil.isNbRepository(new TestRepository("enembenem")));
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository("enembenem")).getUrl()));
         assertTrue(BugtrackingUtil.isNbRepository("https://netbeans.org/bugzilla"));        
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryNullRepo() {
-        RepositoryProvider repo = null;
-        assertFalse(BugtrackingUtil.isNbRepository(repo));
+        BUTestRepository repo = null;
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, repo).getUrl()));
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryRepoNullUrl() {
-        assertFalse(BugtrackingUtil.isNbRepository(new TestRepository(null)));
+        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(null, new BUTestRepository(null)).getUrl()));
     }
 
-    private class TestRepository extends RepositoryProvider {
+    private class BUTestRepository extends TestRepository {
         private final String url;
         private RepositoryInfo info;
-        public TestRepository(String url) {
+        public BUTestRepository(String url) {
             this.url = url;
             this.info = new RepositoryInfo(null, null, url, null,null,null,null,null,null);
         }
@@ -152,19 +154,19 @@ public class BugtrackingUtilTest {
         @Override
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public IssueProvider getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public QueryProvider createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public IssueProvider createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue createIssue() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public QueryProvider[] getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
+        public Collection<TestQuery> getQueries() { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
-        public IssueProvider[] simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
+        public Collection<TestIssue> simpleSearch(String criteria) { throw new UnsupportedOperationException("Not supported yet."); }
         @Override
         public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
 

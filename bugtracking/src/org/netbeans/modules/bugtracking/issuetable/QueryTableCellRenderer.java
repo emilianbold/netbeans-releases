@@ -59,10 +59,12 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.openide.util.ImageUtilities;
@@ -76,7 +78,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     public static final String PROPERTY_FORMAT = "format";                      // NOI18N
     public static final String PROPERTY_HIGHLIGHT_PATTERN = "highlightPattern"; // NOI18N
 
-    private QueryProvider query;
+    private QueryImpl query;
     private IssueTable issueTable;
 
     private static final int VISIBLE_START_CHARS = 0;
@@ -99,8 +101,8 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final Color modifiedHighlightColor       = new Color(0x0000ff);
     private static final Color obsoleteHighlightColor       = new Color(0x999999);
 
-    public QueryTableCellRenderer(QueryProvider query, IssueTable issueTable) {
-        this.query = query;
+    public QueryTableCellRenderer(Query query, IssueTable issueTable) {
+        this.query = APIAccessor.IMPL.getImpl(query);
         this.issueTable = issueTable;
     }
 
@@ -128,7 +130,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         } 
 
         if(value instanceof IssueNode.IssueProperty) {
-            style = getCellStyle(table, query, issueTable, (IssueProperty)value, isSelected, row);
+            style = getCellStyle(table, query.getQuery(), issueTable, (IssueProperty)value, isSelected, row);
         }
         setStyleProperties(renderer, style);
         return renderer;
@@ -292,18 +294,19 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    public static TableCellStyle getCellStyle(JTable table, QueryProvider query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
+    public static TableCellStyle getCellStyle(JTable table, Query query, IssueTable issueTable, IssueProperty p, boolean isSelected, int row) {
+        QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
         TableCellStyle style = getDefaultCellStyle(table, issueTable, p, isSelected, row);
         try {
             // set text format and background depending on selection and issue status
             int status = -2;
-            IssueProvider issue = p.getIssue();
-            if(!query.contains(issue)) {
+            IssueImpl issue = APIAccessor.IMPL.getImpl(p.getIssue());
+            if(!queryImpl.contains(issue.getID())) {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
             } else {
-                status = query.getIssueStatus(issue);
+                status = IssueCacheUtils.getStatus(issue);
                 if(!IssueCacheUtils.wasSeen(issue)) {
                     switch(status) {
                         case IssueCache.ISSUE_STATUS_NEW :
@@ -326,12 +329,12 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>");                                                // NOI18N
                 sb.append(s);
-                if(!query.contains(issue)) {
+                if(!queryImpl.contains(issue.getID())) {
                     sb.append("<br>").append(issueObsoleteFormat.format(new Object[] { labelObsolete }, new StringBuffer(), null)); // NOI18N
                     sb.append(msgObsolete);
                 } else {
                     if(status == -2) {
-                        status = query.getIssueStatus(issue);
+                        status = IssueCacheUtils.getStatus(issue);
                     }
                     switch(status) {
                         case IssueCache.ISSUE_STATUS_NEW :

@@ -45,6 +45,7 @@ package org.netbeans.modules.jira.query;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import java.util.Collection;
 import javax.swing.ListModel;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.netbeans.modules.jira.*;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
@@ -94,14 +96,14 @@ public class QueryRefreshTest extends NbTestCase {
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter(summary, true, true, true, true));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
-        assertEquals(0,jq.getIssues().length);
+        assertEquals(0,jq.getIssues().size());
 
         LogHandler lh = new LogHandler("scheduling query", LogHandler.Compare.STARTS_WITH);
         Jira.getInstance().getRequestProcessor().post(new Runnable() {
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 NbJiraIssue.getColumnDescriptors(JiraTestUtil.getRepository());
-                QueryAction.openQuery(jq, null);
+                JiraUtils.openQuery(jq);
             }
         }).waitFinished();
         assertFalse(lh.isDone());    // but this one wasn't yet
@@ -116,11 +118,11 @@ public class QueryRefreshTest extends NbTestCase {
         fd.setContentFilter(new ContentFilter(summary, true, false, false, false));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, true, true);
 //        selectTestProject(jq);
-        assertEquals(0, jq.getIssues().length);
+        assertEquals(0, jq.getIssues().size());
         jq.refresh(); // refresh the query - so it won't be refreshed via first time open
-
-        IssueProvider[] issues = jq.getIssues();
-        assertEquals(0, issues.length);
+        
+        Collection<NbJiraIssue> issues = jq.getIssues();
+        assertEquals(0, issues.size());
 
         RepositoryResponse rr = JiraTestUtil.createIssue(summary, "desc", "Bug");
         assertNotNull(rr.getTaskId());
@@ -134,7 +136,7 @@ public class QueryRefreshTest extends NbTestCase {
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 NbJiraIssue.getColumnDescriptors(JiraTestUtil.getRepository());
-                QueryAction.openQuery(jq, null);
+                JiraUtils.openQuery(jq);
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();
@@ -144,7 +146,7 @@ public class QueryRefreshTest extends NbTestCase {
         assertTrue(refreshHandler.isDone());
 
         issues = jq.getIssues();
-        assertEquals(1, issues.length);
+        assertEquals(1, issues.size());
     }
 
     public void testKenaiQueryNoAutoRefresh() throws Throwable {

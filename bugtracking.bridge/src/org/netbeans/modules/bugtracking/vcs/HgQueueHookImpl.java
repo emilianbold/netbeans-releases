@@ -53,10 +53,11 @@ import java.util.Date;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
@@ -83,7 +84,7 @@ public class HgQueueHookImpl extends HgQueueHook {
     private final String name;
     private static final String HOOK_NAME = "HG"; //NOI18N
     private final VCSHooksConfig globalConfig;
-    private static final Set<IssueProvider> cachedIssues = new WeakSet<IssueProvider>();
+    private static final Set<Issue> cachedIssues = new WeakSet<Issue>();
     private Format issueMessageTemplate;
 
     public HgQueueHookImpl() {
@@ -99,14 +100,12 @@ public class HgQueueHookImpl extends HgQueueHook {
 
     @Override
     public HgQueueHookContext beforePatchRefresh (HgQueueHookContext context) throws IOException {
-        RepositoryProvider selectedRepository = getSelectedRepository();
+        Repository selectedRepository = getSelectedRepository();
         File[] files = context.getFiles();
         if(files.length == 0) {
 
             if (selectedRepository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
-                        selectedRepository);
+                OwnerUtils.setLooseAssociation(selectedRepository, true);
             }
 
             HookImpl.LOG.warning("calling beforePatchRefresh for zero files"); //NOI18N
@@ -114,7 +113,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         }
 
         if (selectedRepository != null) {
-            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+            OwnerUtils.setFirmAssociations(
                     files,
                     selectedRepository);
         }
@@ -125,7 +124,7 @@ public class HgQueueHookImpl extends HgQueueHook {
             String formatString = format.getFormat();
             formatString = HookUtils.prepareFormatString(formatString, SUPPORTED_ISSUE_INFO_VARIABLES);
             
-            IssueProvider issue = getIssue();
+            Issue issue = getIssue();
             if (issue == null) {
                 HookImpl.LOG.log(Level.FINE, " no issue set for {0}", file);             // NOI18N
                 return null;
@@ -169,7 +168,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         File file = files[0];
         HookImpl.LOG.log(Level.FINE, "afterPatchRefresh start for {0}", file);              // NOI18N
 
-        IssueProvider issue = getIssue();
+        Issue issue = getIssue();
         if (issue == null) {
             HookImpl.LOG.log(Level.FINE, " no issue set for {0}", file);                 // NOI18N
             return;
@@ -227,12 +226,12 @@ public class HgQueueHookImpl extends HgQueueHook {
         File file = files[0];
         HookImpl.LOG.log(Level.FINE, "afterPatchFinish start for {0}", file);              // NOI18N
 
-        RepositoryProvider repository = BugtrackingOwnerSupport.getInstance().getRepository(file, op.getIssueID(), true);
+        Repository repository = OwnerUtils.getRepository(file, op.getIssueID(), true);
         if (repository == null) {
             HookImpl.LOG.log(Level.FINE, " no issue repository for {0}:{1}", new Object[] { op.getIssueID(), file }); //NOI18N
             return;
         }
-        IssueProvider issue = getIssue(repository, op.getIssueID());
+        Issue issue = getIssue(repository, op.getIssueID());
         if (issue == null) {
             HookImpl.LOG.log(Level.FINE, " no issue found for {0}", op.getIssueID());                 // NOI18N
             return;
@@ -300,17 +299,17 @@ public class HgQueueHookImpl extends HgQueueHook {
                     RequestProcessor.getDefault().post(new Runnable() {
                         @Override
                         public void run () {
-                            IssueProvider issue = null;
-                            RepositoryProvider repository = null;
+                            Issue issue = null;
+                            Repository repository = null;
                             try {
-                                repository = BugtrackingOwnerSupport.getInstance().getRepository(referenceFile, issueId, false);
+                                repository = OwnerUtils.getRepository(referenceFile, issueId, false);
                                 if (repository == null) {
                                     issue = null;
                                 } else {
                                     issue = getIssue(repository, issueId);
                                 }
                             } finally {
-                                final IssueProvider fIssue = issue;
+                                final Issue fIssue = issue;
                                 EventQueue.invokeLater(new Runnable() {
                                     @Override
                                     public void run () {
@@ -367,12 +366,12 @@ public class HgQueueHookImpl extends HgQueueHook {
         return (panel != null) && panel.commitRadioButton.isSelected();
     }
 
-    private RepositoryProvider getSelectedRepository() {
-        IssueProvider issue = getIssue();
+    private Repository getSelectedRepository() {
+        Issue issue = getIssue();
         return (issue == null) ? null : issue.getRepository();
     }
 
-    private IssueProvider getIssue() {
+    private Issue getIssue() {
         return (panel != null) ? panel.getIssue() : null;
     }
 
@@ -380,16 +379,16 @@ public class HgQueueHookImpl extends HgQueueHook {
         config.clearFinishPatchAction(patchId);
     }
 
-    private IssueProvider getIssue (RepositoryProvider repository, String issueID) {
+    private Issue getIssue (Repository repository, String issueID) {
         // we can get issue only via repository.getIssue which access the server, so we need to cache issues
         synchronized (cachedIssues) {
-            for (IssueProvider issue : cachedIssues) {
+            for (Issue issue : cachedIssues) {
                 if (repository.equals(issue.getRepository()) && issueID.equals(issue.getID())) {
                     return issue;
                 }
             }
         }
-        IssueProvider issue = repository.getIssue(issueID);
+        Issue issue = repository.getIssue(issueID);
         if (issue != null) {
             synchronized (cachedIssues) {
                 cachedIssues.add(issue);
@@ -398,7 +397,7 @@ public class HgQueueHookImpl extends HgQueueHook {
         return issue;
     }
 
-    private void cacheIssue (IssueProvider issue) {
+    private void cacheIssue (Issue issue) {
         synchronized (cachedIssues) {
             cachedIssues.add(issue);
         }
