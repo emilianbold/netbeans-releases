@@ -65,10 +65,16 @@ public class BorderSingleEdgeStyle extends NodeModel implements Box<BoxEdgeBorde
     @Override
     public BoxEdgeBorder getEdge(Edge edge) {
         if(this.edge == edge) {
-            return new BoxEdgeBorderImpl(null, borderStyleItem, null);
+            return new BoxEdgeBorderImpl.StyleOnly(borderStyleItem);
         }
         return null;
         
     }
+
+    @Override
+    public boolean isValid() {
+        return borderStyleItem != null;
+    }
+    
     
 }

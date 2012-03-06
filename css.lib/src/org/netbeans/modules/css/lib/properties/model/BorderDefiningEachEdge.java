@@ -39,55 +39,42 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
-import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
-import org.netbeans.modules.css.lib.properties.model.Color;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 /**
- * Representation of border edge.
- * 
- * If isDefiningXXX returns true and getXXX() null it means that this 
- * BoxEdgeBorder clears the XXX property value.
  *
  * @author marekfukala
  */
-public interface BoxEdgeBorder extends PrintableModel {
+public abstract class BorderDefiningEachEdge extends NodeModel implements Box<BoxEdgeBorder> {
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningColor();
+    public BorderWidthItem borderWidthItem;
+    public BorderStyleItem borderStyleItem;
+    public Color color;
 
-    /**
-     * If isDefiningColor returns true and getColor() null it means that this 
-     * BoxEdgeBorder clears the color value
-     * 
-     * @return instance of Color or null if the value is not defined
-     */
-    public Color getColor();
+    public BorderDefiningEachEdge(Node node) {
+        super(node);
+    }
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningWidth();
+    protected abstract Edge getDefiningEdge();
+    
+    @Override
+    public BoxEdgeBorder getEdge(Edge edge) {
+        return edge == getDefiningEdge()
+                ? new BoxEdgeBorderImpl(true, color, true, borderStyleItem, true, borderWidthItem)
+                : null;
 
-    /**
-     * @return instance BorderWidthItem of Width or null if the value is not defined
-     */
-    public BorderWidthItem getWidth();
+    }
+    
+    @Override
+    public boolean isValid() {
+        //at least one value must be defined
+        return color != null || borderWidthItem != null || borderStyleItem != null;
+    }
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningStyle();
-
-    /**
-     * @return instance of BorderStyleItem or null if the value is not defined
-     */
-    public BorderStyleItem getStyle();
 }

@@ -51,21 +51,15 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class BorderLeft extends NodeModel implements Box<BoxEdgeBorder> {
-
-    public BorderWidthItem borderWidthItem;
-    public BorderStyleItem borderStyleItem;
-    public Color color;
+public class BorderLeft extends BorderDefiningEachEdge implements Box<BoxEdgeBorder> {
 
     public BorderLeft(Node node) {
         super(node);
     }
 
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        return edge == Edge.LEFT
-                ? new BoxEdgeBorderImpl(color, borderStyleItem, borderWidthItem)
-                : null;
-
+    protected Edge getDefiningEdge() {
+        return Edge.LEFT;
     }
+
 }

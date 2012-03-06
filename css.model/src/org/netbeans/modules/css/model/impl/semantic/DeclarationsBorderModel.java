@@ -1,0 +1,242 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ *
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common
+ * Development and Distribution License("CDDL") (collectively, the
+ * "License"). You may not use this file except in compliance with the
+ * License. You can obtain a copy of the License at
+ * http://www.netbeans.org/cddl-gplv2.html
+ * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ * specific language governing permissions and limitations under the
+ * License.  When distributing the software, include this License Header
+ * Notice in each file and include the License file at
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
+ * particular file as subject to the "Classpath" exception as provided
+ * by Oracle in the GPL Version 2 section of the License file that
+ * accompanied this code. If applicable, add the following below the
+ * License Header, with the fields enclosed by brackets [] replaced by
+ * your own identifying information:
+ * "Portions Copyrighted [year] [name of copyright owner]"
+ *
+ * If you wish your version of this file to be governed by only the CDDL
+ * or only the GPL Version 2, indicate your decision by adding
+ * "[Contributor] elects to include this software in this distribution
+ * under the [CDDL or GPL Version 2] license." If you do not indicate a
+ * single choice of license, a recipient has the option to distribute
+ * your version of this file under either the CDDL, the GPL Version 2 or
+ * to extend the choice of license to its licensees as provided above.
+ * However, if you add GPL Version 2 code and therefore, elected the GPL
+ * Version 2 license, then the option applies only if the new code is
+ * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ */
+package org.netbeans.modules.css.model.impl.semantic;
+
+import org.netbeans.modules.css.lib.api.properties.model.BorderCascadedBox;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumMap;
+import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.model.api.*;
+import org.openide.util.NbBundle;
+
+/**
+ *
+ * @author marekfukala
+ */
+@NbBundle.Messages({
+    "CTL_BorderDisplayName=Border", // NOI18N
+    "CTL_BorderDescription=Border Box Model", // NOI18N
+    "CTL_BorderCategory=Box" //NOI18N
+})
+public class DeclarationsBorderModel implements EditableBox<BoxEdgeBorder> {
+
+    private static final String MODEL_NAME = "border"; //NOI18N
+    private Model model;
+    private Declarations declarations;
+    private final CascadedBox<BoxEdgeBorder> cascadedBox = new BorderCascadedBox();
+    private final Collection<Declaration> involved = new ArrayList<Declaration>();
+    private final SemanticModelListenerSupport LISTENERS = new SemanticModelListenerSupport();
+    
+    public DeclarationsBorderModel(Model model, Declarations element) {
+        this.model = model;
+        this.declarations = element;
+        updateModel();
+    }
+
+    protected PropertyModelId getPropertyModelId() {
+        return PropertyModelId.BORDER;
+    }
+
+    private void updateModel() {
+        for (Declaration declaration : declarations.getDeclarations()) {
+            ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(getPropertyModelId());
+            declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
+            Box<BoxEdgeBorder> boxModel = (Box<BoxEdgeBorder>) modelvisitor.getModel();
+            if (boxModel != null) {
+                if(boxModel.isValid()) {
+                    cascadedBox.addBox(boxModel);
+                    involved.add(declaration);
+                }
+            }
+        }
+
+        LISTENERS.fireModelChanged();
+
+    }
+
+    @Override
+    public void setEdge(Edge edge, BoxEdgeBorder value) {
+//        BoxEdgeSize current = getEdge(edge);
+//        if (current == null && value == null || current != null && current.equals(value)) {
+//            return; //no change
+//        }
+//
+//        //merge the original Box with the new edge setting
+//        EnumMap<Edge, BoxEdgeSize> map = new EnumMap<Edge, BoxEdgeSize>(Edge.class);
+//        map.put(Edge.TOP, getEdge(Edge.TOP));
+//        map.put(Edge.BOTTOM, getEdge(Edge.BOTTOM));
+//        map.put(Edge.LEFT, getEdge(Edge.LEFT));
+//        map.put(Edge.RIGHT, getEdge(Edge.RIGHT));
+//        map.put(edge, value);
+//
+//        //remove the existing declarations
+//        for (Declaration d : involved) {
+//            declarations.removeDeclaration(d);
+//        }
+//
+//        ElementFactory f = model.getElementFactory();
+//        Property p = f.createProperty(getPropertyModelId().getBasePropertyName()); //NOI18N
+//
+//        //TODO remove the hardcoding - make the algorithm generic
+//
+//        BoxEdgeSize t = map.get(Edge.TOP);
+//        BoxEdgeSize r = map.get(Edge.RIGHT);
+//        BoxEdgeSize b = map.get(Edge.BOTTOM);
+//        BoxEdgeSize l = map.get(Edge.LEFT);
+//
+//        if (t == null || r == null || b == null || l == null) {
+//            //use single properties
+//            for (Edge e : Edge.values()) {
+//                BoxEdgeSize mw = map.get(e);
+//                if (mw != null) {
+//                    CharSequence propVal = mw.getTextRepresentation();
+//                    Expression expr = f.createExpression(propVal);
+//                    PropertyValue pv = f.createPropertyValue(expr);
+//
+//                    String propertyName = String.format("%s-%s", getPropertyModelId().getBasePropertyName(), e.name().toLowerCase()); //NOI18N
+//                    Property prop = f.createProperty(propertyName);
+//                    Declaration newD = f.createDeclaration(prop, pv, false);
+//
+//                    declarations.addDeclaration(newD);
+//
+//                }
+//            }
+//
+//        } else {
+//
+//            StringBuilder sb = new StringBuilder();
+//            //all edges defined use aggregated notation
+//            if (t.equals(b)) {
+//                if (l.equals(r)) {
+//                    if (t.equals(l)) {
+//                        //TRBL
+//                        sb.append(t.getTextRepresentation());
+//                    } else {
+//                        //TB LT
+//                        sb.append(t.getTextRepresentation());
+//                        sb.append(" ");
+//                        sb.append(l.getTextRepresentation());
+//                    }
+//                } else {
+//                    //TB L R - no such perm.
+//                    sb.append(t.getTextRepresentation());
+//                    sb.append(" ");
+//                    sb.append(r.getTextRepresentation());
+//                    sb.append(" ");
+//                    sb.append(b.getTextRepresentation());
+//                    sb.append(" ");
+//                    sb.append(l.getTextRepresentation());
+//
+//                }
+//            } else if (l.equals(r)) {
+//                //T LR B
+//                sb.append(t.getTextRepresentation());
+//                sb.append(" ");
+//                sb.append(l.getTextRepresentation());
+//                sb.append(" ");
+//                sb.append(b.getTextRepresentation());
+//            } else {
+//                //T R B L
+//                sb.append(t.getTextRepresentation());
+//                sb.append(" ");
+//                sb.append(r.getTextRepresentation());
+//                sb.append(" ");
+//                sb.append(b.getTextRepresentation());
+//                sb.append(" ");
+//                sb.append(l.getTextRepresentation());
+//            }
+//
+//            Expression e = f.createExpression(sb);
+//            PropertyValue pv = f.createPropertyValue(e);
+//
+//            Declaration newD = f.createDeclaration(p, pv, false);
+//
+//            declarations.addDeclaration(newD);
+//        }
+//
+//        updateModel();
+    }
+
+    @Override
+    public BoxEdgeBorder getEdge(Edge edge) {
+        return cascadedBox.getEdge(edge);
+    }
+
+    @Override
+    public void addListener(SemanticModelListener listener) {
+        LISTENERS.add(listener);
+    }
+
+    @Override
+    public void removeListener(SemanticModelListener listener) {
+        LISTENERS.remove(listener);
+    }
+
+    @Override
+    public String getName() {
+        return MODEL_NAME;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Bundle.CTL_BorderDisplayName();
+    }
+
+    @Override
+    public String getDescription() {
+        return Bundle.CTL_BorderDescription();
+    }
+
+    @Override
+    public String getCategoryName() {
+        return Bundle.CTL_BorderCategory();
+    }
+
+    @Override
+    public boolean isValid() {
+        //since all the invalid boxes are excluded from the cascaded box 
+        //the generated cascaded box is always valid if there's at least one item there
+        return !cascadedBox.getBoxes().isEmpty();
+    }
+}

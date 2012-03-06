@@ -53,7 +53,7 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class BorderWidth extends NodeModel implements Box<BoxEdgeBorder>{
+public class BorderWidth extends NodeModel implements Box<BoxEdgeBorder> {
 
     List<BorderWidthItem> models = new ArrayList<BorderWidthItem>();
 
@@ -81,6 +81,11 @@ public class BorderWidth extends NodeModel implements Box<BoxEdgeBorder>{
         int values = models.size();
         int index = BoxPropertySupport.getParameterIndex(values, edge);
         BorderWidthItem bwi = models.get(index);
-        return new BoxEdgeBorderImpl(null, null, bwi);
+        return new BoxEdgeBorderImpl.WidthOnly(bwi);
+    }
+
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
     }
 }

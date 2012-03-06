@@ -42,6 +42,8 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.openide.util.lookup.ServiceProvider;
@@ -53,7 +55,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CustomModelFactory.class)
 public class BorderSingleEdgeModelFactory implements CustomModelFactory {
 
-    private static final String BORDER_PREFIX = "border-"; //NOI18N
+    private static final Pattern PATTERN = Pattern.compile("border-(\\w*)-(\\w*)");
     
     private Map<String, Edge> EDGE_NAMES = new HashMap<String, Edge>();
 
@@ -67,28 +69,22 @@ public class BorderSingleEdgeModelFactory implements CustomModelFactory {
     public NodeModel createModel(Node node) {
         String nodeName = node.name().toLowerCase(Locale.ENGLISH);
 
-        if (nodeName.startsWith(BORDER_PREFIX)) {
-            int secondDashIndex = nodeName.lastIndexOf('-'); //e.g. in border-top"-"color
-            if (secondDashIndex == -1) {
-                return null;
-            }
-
-            String edgeName = nodeName.substring(BORDER_PREFIX.length(), secondDashIndex);
+        Matcher matcher = PATTERN.matcher(nodeName);
+        if(matcher.find()) {
+            String edgeName = matcher.group(1);
             Edge edge = EDGE_NAMES.get(edgeName);
             if (edge == null) {
                 return null;
             }
 
-            String typeName = nodeName.substring(secondDashIndex + 1);
+            String typeName = matcher.group(2);
             if("color".equals(typeName)) {
                 return new BorderSingleEdgeColor(edge, node);
             } else if("style".equals(typeName)) {
-                
+                return new BorderSingleEdgeStyle(edge, node);
             } else if("width".equals(typeName)) {
-                
+                return new BorderSingleEdgeWidth(edge, node);
             }
-
-
 
         }
 

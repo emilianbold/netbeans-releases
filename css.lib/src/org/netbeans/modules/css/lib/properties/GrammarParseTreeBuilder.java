@@ -43,7 +43,9 @@ package org.netbeans.modules.css.lib.properties;
 
 import org.netbeans.modules.css.lib.api.properties.GrammarResolverListener;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node.AbstractNode;
 import org.netbeans.modules.css.lib.api.properties.*;
@@ -129,7 +131,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
             root = node;
         }
 
-        Entry e = new Entry(group, node, new HashMap<GrammarElement, AbstractNode>());
+        Entry e = new Entry(group, node);
         stack.push(e);
     }
 
@@ -145,24 +147,18 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
 
     @Override
     public void entering(ValueGrammarElement element) {
-        if (DEBUG) {
-            System.out.println(String.format("%s%s", getIndent(), element));
-            indent++;
-        }
-
         Node.AbstractNode node = new Node.ResolvedTokenNode();
         if (root == null) {
             root = node;
         }
-        Entry e = new Entry(element, node, new HashMap<GrammarElement, AbstractNode>());
+        Entry e = new Entry(element, node);
         stack.push(e);
     }
 
     @Override
     public void accepted(ValueGrammarElement value, ResolvedToken resolvedToken) {
         if (DEBUG) {
-            indent--;
-            System.out.println(String.format("%s* %s", getIndent(), value));
+            System.out.println(String.format("%s * '%s' token accepted", getIndent(), value));
         }
 
         Entry pop = stack.pop();
@@ -179,8 +175,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
     @Override
     public void rejected(ValueGrammarElement value) {
         if (DEBUG) {
-            indent--;
-            System.out.println(String.format("%s- %s", getIndent(), value));
+            //System.out.println(String.format("%s- %s", getIndent(), value));
         }
 
         stack.pop();
@@ -195,19 +190,23 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
         }
 
         if (DEBUG) {
-            System.out.println(String.format("%schoosen branch %s", getIndent(), element));
+            System.out.println(String.format("%s group %s: choosen branch %s", getIndent(), base, element));
         }
 
         Entry peek = stack.peek();
         Node.GrammarElementNode group = (Node.GrammarElementNode) peek.node;
 
+        peek.choosenBranches.add(element);
+        
         //remove all children except the choosen one
         for (GrammarElement key : peek.childrenMap.keySet()) {
             Node.AbstractNode node = peek.childrenMap.get(key);
-            if (key != element) { //identity check is OK
+            if(!peek.choosenBranches.contains(key)) {
                 group.removeChild(node);
             }
         }
+        
+        peek.childrenMap.clear();
     }
 
     @Override
@@ -236,14 +235,18 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
 
     private static class Entry {
 
-        public GrammarElement grammarElement;
-        public Node.AbstractNode node;
-        public Map<GrammarElement, Node.AbstractNode> childrenMap;
+        public final GrammarElement grammarElement;
+        public final Node.AbstractNode node;
+        public final Map<GrammarElement, Node.AbstractNode> childrenMap;
+        public final Set<GrammarElement> choosenBranches;
 
-        public Entry(GrammarElement grammarElement, AbstractNode node, Map<GrammarElement, AbstractNode> childrenMap) {
+        public Entry(GrammarElement grammarElement, 
+                AbstractNode node) {
             this.grammarElement = grammarElement;
             this.node = node;
-            this.childrenMap = childrenMap;
+            this.childrenMap = new HashMap<GrammarElement, AbstractNode>();
+            this.choosenBranches = new HashSet<GrammarElement>();
         }
+        
     }
 }

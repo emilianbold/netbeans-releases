@@ -42,10 +42,11 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.Utils;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyModel;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
@@ -74,5 +75,35 @@ public class BorderTestBase extends CssTestBase {
         e = box.getEdge(Edge.LEFT);
         assertEquals(left, e == null ? null : e.asText());
 
+    }
+
+    protected void assertBox(String propertyName, CharSequence value, String trbl) {
+        assertBox(propertyName, value, trbl, trbl, trbl, trbl);
+    }
+    
+    protected void assertBox(String propertyName, CharSequence value, String top, String right, String bottom, String left) {
+        PropertyModel model = Properties.getPropertyModel(propertyName);
+        ResolvedProperty val = new ResolvedProperty(model, value);
+
+        Node root = val.getParseTree();
+        if(isDebugMode()) {
+            dumpTree(root);
+        }
+        
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
+        root.accept(modelvisitor);
+
+        Box<BoxEdgeBorder> bsem = (Box<BoxEdgeBorder>) modelvisitor.getModel();
+        assertNotNull(bsem);
+
+        if(isDebugMode()) {
+            dumpBox(bsem);
+        }
+        assertBox(bsem, top, right, bottom, left);
+    }
+    
+    
+    protected boolean isDebugMode() {
+        return false;
     }
 }

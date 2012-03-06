@@ -175,6 +175,11 @@ public class NodeModel implements SemanticModel, PrintableModel {
     public String getCategoryName() {
         return null;
     }
+
+    @Override
+    public boolean isValid() {
+        return true;
+    }
     
     
 

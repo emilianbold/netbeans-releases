@@ -66,22 +66,31 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
         this.declarations = element;
         updateModel();
     }
-    
+
     protected abstract PropertyModelId getPropertyModelId();
-    
+
     private void updateModel() {
         for (Declaration declaration : declarations.getDeclarations()) {
             ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(getPropertyModelId());
             declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
             Box<BoxEdgeSize> model = (Box<BoxEdgeSize>) modelvisitor.getModel();
             if (model != null) {
-                cascadedBox.addBox(model);
-                involved.add(declaration);
+                if (model.isValid()) {
+                    cascadedBox.addBox(model);
+                    involved.add(declaration);
+                }
             }
         }
 
         LISTENERS.fireModelChanged();
 
+    }
+
+    @Override
+    public boolean isValid() {
+        //since all the invalid boxes are excluded from the cascaded box 
+        //the generated cascaded box is always valid if there's at least one item there
+        return !cascadedBox.getBoxes().isEmpty();
     }
 
     @Override
@@ -116,22 +125,22 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
 
         if (t == null || r == null || b == null || l == null) {
             //use single properties
-            for(Edge e : Edge.values()) {
+            for (Edge e : Edge.values()) {
                 BoxEdgeSize mw = map.get(e);
-                if(mw != null) {
+                if (mw != null) {
                     CharSequence propVal = mw.getTextRepresentation();
                     Expression expr = f.createExpression(propVal);
                     PropertyValue pv = f.createPropertyValue(expr);
-                    
+
                     String propertyName = String.format("%s-%s", getPropertyModelId().getBasePropertyName(), e.name().toLowerCase()); //NOI18N
                     Property prop = f.createProperty(propertyName);
                     Declaration newD = f.createDeclaration(prop, pv, false);
-                    
+
                     declarations.addDeclaration(newD);
-                    
+
                 }
             }
-            
+
         } else {
 
             StringBuilder sb = new StringBuilder();
@@ -206,5 +215,4 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
     public String getName() {
         return MODEL_NAME;
     }
-
 }

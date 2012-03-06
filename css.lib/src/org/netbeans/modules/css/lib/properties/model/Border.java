@@ -41,14 +41,11 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.*;
+import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 
 
@@ -69,7 +66,14 @@ public class Border extends NodeModel implements Box<BoxEdgeBorder> {
     @Override
     public BoxEdgeBorder getEdge(Edge edge) {
         //all edges the same
-        return new BoxEdgeBorderImpl(color, borderStyleItem, borderWidthItem);
+        return new BoxEdgeBorderImpl(true, color, true, borderStyleItem, true, borderWidthItem);
     }
 
+    @Override
+    public boolean isValid() {
+        //at least one value must be defined
+        return color != null || borderWidthItem != null || borderStyleItem != null;
+    }
+
+    
 }

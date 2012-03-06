@@ -45,6 +45,8 @@ import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
 import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 
@@ -58,21 +60,25 @@ public class BorderSingleEdgeModelTest extends BorderTestBase {
         super(name);
     }
 
-    public void testBorderTopColor() {
-        PropertyModel model = Properties.getPropertyModel("border-top-color");
-        ResolvedProperty val = new ResolvedProperty(model, "red");
-
-        Node root = val.getParseTree();
-        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderSingleEdgeColor bsem = (BorderSingleEdgeColor) modelvisitor.getModel();
-        assertNotNull(bsem);
-
-        dumpBox(bsem);
-        
+    public void testBorderXXXColor() {
+        assertBox("border-top-color", "red", "red", null, null, null);
+        assertBox("border-right-color", "yellow", null, "yellow", null, null);
+        assertBox("border-bottom-color", "blue", null, null, "blue", null);
+        assertBox("border-left-color", "green", null, null, null, "green");
+    }
+    
+    public void testBorderXXXStyle() {
+        assertBox("border-top-style", "dotted", "dotted", null, null, null);
+        assertBox("border-right-style", "dashed", null, "dashed", null, null);
+        assertBox("border-bottom-style", "none", null, null, "none", null);
+        assertBox("border-left-style", "solid", null, null, null, "solid");
+    }
+    
+    public void testBorderXXXWidth() {
+        assertBox("border-top-width", "2px", "2px", null, null, null);
+        assertBox("border-right-width", "thick", null, "thick", null, null);
+        assertBox("border-bottom-width", "5cm", null, null, "5cm", null);
+        assertBox("border-left-width", "thin", null, null, null, "thin");
     }
     
    

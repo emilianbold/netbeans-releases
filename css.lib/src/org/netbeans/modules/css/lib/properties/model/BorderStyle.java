@@ -81,7 +81,11 @@ public class BorderStyle extends NodeModel implements Box<BoxEdgeBorder> {
         int values = models.size();
         int index = BoxPropertySupport.getParameterIndex(values, edge);
         BorderStyleItem bsi = models.get(index);
-        return new BoxEdgeBorderImpl(null, bsi, null);
+        return new BoxEdgeBorderImpl.StyleOnly(bsi);
     }
-    
+
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
+    }
 }

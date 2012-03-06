@@ -39,55 +39,28 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
-
-import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
-import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
-import org.netbeans.modules.css.lib.properties.model.Color;
+package org.netbeans.modules.css.lib.properties.model;
 
 /**
- * Representation of border edge.
- * 
- * If isDefiningXXX returns true and getXXX() null it means that this 
- * BoxEdgeBorder clears the XXX property value.
  *
  * @author marekfukala
  */
-public interface BoxEdgeBorder extends PrintableModel {
+public class BorderTest extends BorderTestBase {
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningColor();
+    public BorderTest(String name) {
+        super(name);
+    }
 
-    /**
-     * If isDefiningColor returns true and getColor() null it means that this 
-     * BoxEdgeBorder clears the color value
-     * 
-     * @return instance of Color or null if the value is not defined
-     */
-    public Color getColor();
+//    @Override
+//    protected boolean isDebugMode() {
+//        return true;
+//    }
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningWidth();
-
-    /**
-     * @return instance BorderWidthItem of Width or null if the value is not defined
-     */
-    public BorderWidthItem getWidth();
-
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningStyle();
-
-    /**
-     * @return instance of BorderStyleItem or null if the value is not defined
-     */
-    public BorderStyleItem getStyle();
+    public void testBorder() {
+       assertBox("border", "red solid", "red solid"); //color - width - style
+       assertBox("border", "red solid 2px", "red 2px solid");
+       assertBox("border", "dashed 1cm green", "green 1cm dashed");
+       assertBox("border", "2cm", "2cm");
+    }
+    
 }
