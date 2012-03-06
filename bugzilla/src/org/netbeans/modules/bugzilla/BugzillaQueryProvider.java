@@ -110,10 +110,8 @@ public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, Bug
     
     @Override
     public void setFilter(BugzillaQuery query, Filter filter) {
-        if(query instanceof KenaiQuery) { 
-            BugzillaQuery bq = (BugzillaQuery) query;
-            bq.getController().selectFilter(filter);
-        }
+        BugzillaQuery bq = (BugzillaQuery) query;
+        bq.getController().selectFilter(filter);
     }
 
     @Override
