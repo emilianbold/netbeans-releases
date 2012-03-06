@@ -163,7 +163,7 @@ public final class ParserQueue {
             }
             Collection<APTPreprocHandler.State> states = (Collection<APTPreprocHandler.State>) this.ppState;
             for (APTPreprocHandler.State state : ppStates) {
-                if (state != FileImpl.DUMMY_STATE) {
+                if (state != FileImpl.DUMMY_STATE && state != FileImpl.PARTIAL_REPARSE_STATE) {
                     if (!states.contains(state)) {
                         states.add(state);
                     } else {
@@ -376,17 +376,31 @@ public final class ParserQueue {
      * otherwise moves it there
      */
     public void add(FileImpl file, Collection<APTPreprocHandler> ppHandlers, Position position) {
+        assert ppHandlers != FileImpl.DUMMY_HANDLERS : "dummy handlers can not be added directly (only through shiftToBeParsedNext)";
+        assert ppHandlers != FileImpl.PARTIAL_REPARSE_HANDLERS : "partial reparse handlers can not be added directly (only through addForPartialReparse)";
         Collection<APTPreprocHandler.State> ppStates = new ArrayList<APTPreprocHandler.State>(ppHandlers.size());
-        if (ppHandlers == FileImpl.DUMMY_HANDLERS) {
-            ppStates = Collections.singleton(FileImpl.DUMMY_STATE);
-        } else {
-            for (APTPreprocHandler handler : ppHandlers) {
-                ppStates.add(handler.getState());
-            }
+        for (APTPreprocHandler handler : ppHandlers) {
+            ppStates.add(handler.getState());
         }
         add(file, ppStates, position, true, FileAction.NOTHING);
     }
-    
+
+    /**
+     * @param file
+     * @return true if file was successfully added and placed in the head of parse queue
+     */
+    boolean addToBeParsedNext(FileImpl file) {
+        return add(file, Collections.singleton(FileImpl.DUMMY_STATE), Position.IMMEDIATE, false, FileAction.NOTHING);
+    }
+
+    /**
+     * @param file
+     * @return true if file was successfully added to queue 
+     */
+    boolean addForPartialReparse(FileImpl file) {
+        return add(file, Collections.singleton(FileImpl.PARTIAL_REPARSE_STATE), Position.HEAD, false, FileAction.NOTHING);
+    }
+
     /**
      * If file isn't yet enqueued, places it at the beginning of the queue,
      * otherwise moves it there

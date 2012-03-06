@@ -762,6 +762,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             int val = new Integer(currentText).intValue();
             if (currentCCCompilerConfiguration != null) {
                 currentCCCompilerConfiguration.getCppStandard().setValue(val);
+            } else if (currentCCompilerConfiguration != null) {
+                currentCCompilerConfiguration.getCStandard().setValue(val);
             }            
         } else if (element.equals(INHERIT_INC_VALUES_ELEMENT)) {
             boolean ds = currentText.equals(TRUE_VALUE);

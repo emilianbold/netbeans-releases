@@ -269,7 +269,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
                 }
                 lastInitAst = tok;
                 
-                if(tok.getType() == CPPTokenTypes.CSM_COMPOUND_STATEMENT) {
+                if(tok.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
                     lambdas.add(AstRenderer.renderStatement(tok, getContainingFile(), scope));
                 }
                 

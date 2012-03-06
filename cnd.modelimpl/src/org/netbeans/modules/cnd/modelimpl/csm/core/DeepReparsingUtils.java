@@ -50,7 +50,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -62,26 +61,22 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * Reparse dependant files.
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false; // CndUtils.isDebugMode();
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
-    private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
-    private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
+    private static final boolean TRACE = LOG.isLoggable(Level.FINE);
+//    private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
+//    private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
     
     private DeepReparsingUtils() {
     }
@@ -96,8 +91,7 @@ public final class DeepReparsingUtils {
         }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
-        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+        ParserQueue.instance().addToBeParsedNext(fileImpl);
     }
 
     /**
@@ -123,7 +117,7 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
+    public static void tryPartialReparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
         if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
             LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             reparseOnlyOneFile(project, fileImpl);
@@ -132,42 +126,53 @@ public final class DeepReparsingUtils {
                 reparseOnChangedFileImpl(fileImpl, project);
                 return;
             }
-            RequestProcessor.Task task = PARTIAL_RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        int val = nrPartialTasks.incrementAndGet();
-                        if (val > 10) {
-                            LOG.log(Level.INFO, "there are {0} pending partial check task", val);
-                        }
-                        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
-                        fileImpl.markReparseNeeded(false);
-                        FileContentSignature prevSig = fileImpl.getSignature();
-                        try {
-                            // wait file parse
-                            fileImpl.scheduleParsing(true);
-                            // compare signatures
-                            FileContentSignature newSig = fileImpl.getSignature();
-                            boolean sigCheckResult = newSig.equals(prevSig);
-                            if (!sigCheckResult) {
-                                if (TRACE) {
-                                    CharSequence diff = FileContentSignature.testDifference(prevSig, newSig);
-                                    LOG.log(Level.INFO, "check signatures for {0} : \n{1}", new Object[]{fileImpl.getAbsolutePath(), diff});
-                                }
-                                reparseOnChangedFileImpl(fileImpl, project);
-                            } else {
-                                LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
-                            }
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    } finally {
-                        nrPartialTasks.decrementAndGet();
-                    }
-                }
-            });
-            task.waitFinished();
+            project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+            fileImpl.markReparseNeeded(false);
+            ParserQueue.instance().addForPartialReparse(fileImpl);
+//            PARTIAL_RP.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        int val = nrPartialTasks.incrementAndGet();
+//                        if (val > 10) {
+//                            LOG.log(Level.INFO, "there are {0} pending partial check task", val);
+//                        }
+//                        FileContentSignature prevSig = fileImpl.getSignature();
+//                        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+//                        fileImpl.markReparseNeeded(false);
+//                        try {
+//                            // wait file parse
+//                            fileImpl.scheduleParsing(true);
+//                            // compare signatures
+//                            FileContentSignature newSig = fileImpl.getSignature();
+//                            boolean sigCheckResult = newSig.equals(prevSig);
+//                            if (!sigCheckResult) {
+//                                if (TRACE) {
+//                                    CharSequence diff = FileContentSignature.testDifference(prevSig, newSig);
+//                                    LOG.log(Level.INFO, "check signatures for {0} : \n{1}", new Object[]{fileImpl.getAbsolutePath(), diff});
+//                                }
+//                                reparseOnChangedFileImpl(fileImpl, project);
+//                            } else {
+//                                if (TRACE) {
+//                                    LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
+//                                }
+//                            }
+//                        } catch (InterruptedException ex) {
+//                            Exceptions.printStackTrace(ex);
+//                        }
+//                    } finally {
+//                        nrPartialTasks.decrementAndGet();
+//                    }
+//                }
+//            });
         }
+    }
+
+    /**
+     * for tests only
+     */
+    /*package*/static void reparseOnChangedFileForTests(final FileImpl fileImpl, final ProjectBase project) {
+        reparseOnChangedFileImpl(fileImpl, project);
     }
 
     private static void reparseOnChangedFileImpl(final FileImpl fileImpl, final ProjectBase project) {
