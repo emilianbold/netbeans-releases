@@ -75,8 +75,8 @@ abstract class ComponentController<T extends JComponent> {
      * @param listener the
      * <code>ChangeListener</code> to be added.
      */
-    public final void addChangeListener(@NonNull ChangeListener l) {
-        changeSupport.addChangeListener(l);
+    public final void addChangeListener(@NonNull ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
     }
 
     /**
@@ -90,8 +90,8 @@ abstract class ComponentController<T extends JComponent> {
      * @param listener the
      * <code>ChangeListener</code> to be removed.
      */
-    public final void removeChangeListener(@NonNull ChangeListener l) {
-        changeSupport.removeChangeListener(l);
+    public final void removeChangeListener(@NonNull ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     /**

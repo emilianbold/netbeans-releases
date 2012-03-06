@@ -238,8 +238,8 @@ public abstract class SearchProvider {
          * @param listener the <code>ChangeListener</code> to be removed.
          */
         public final void removeChangeListener(
-                @NullAllowed ChangeListener changeListener) {
-            changeSupport.removeChangeListener(changeListener);
+                @NullAllowed ChangeListener listener) {
+            changeSupport.removeChangeListener(listener);
         }
 
         /**

@@ -67,7 +67,7 @@ import org.openide.util.Exceptions;
 /**
  * Component controller for specifying file name pattern.
  *
- * Use {@link ComponentFactory} to create instances of this class.
+ * Use {@link ComponentUtils} to create instances of this class.
  *
  * @author jhavlin
  */

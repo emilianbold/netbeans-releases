@@ -59,7 +59,7 @@ import org.openide.util.WeakListeners;
 /**
  * Component controller for selecting search scope.
  *
- * Use {@link ComponentFactory} to create instances of this class.
+ * Use {@link ComponentUtils} to create instances of this class.
  *
  * @author jhavlin
  */

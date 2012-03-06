@@ -61,7 +61,7 @@ import org.netbeans.modules.search.ui.UiUtils;
 /**
  * Component controller for setting search scope options.
  *
- * Use {@link ComponentFactory} to create instances of this class.
+ * Use {@link ComponentUtils} to create instances of this class.
  *
  * @author jhavlin
  */
@@ -290,7 +290,7 @@ public final class ScopeOptionsController extends ComponentController<JPanel> {
     }
 
     /**
-     * @return True if searching in archives is enabled, false otherwise.
+     * Enable/disable searching in archives.
      */
     public void setSearchInArchives(boolean searchInArchives) {
         if (chkArchives == null) {

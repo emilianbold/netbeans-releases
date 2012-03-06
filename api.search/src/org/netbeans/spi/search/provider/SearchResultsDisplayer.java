@@ -92,8 +92,6 @@ public abstract class SearchResultsDisplayer<T> {
      * @param helper Helper that returns nodes for matching objects.
      * @param searchComposition Search composition of the displayer is created
      * for.
-     * @param providerClass Class of search provider. Can be null, but is needed
-     * for modification of search criteria.
      * @param presenter Presenter that can be shown to modify search criteria.
      * @param title Title that will be shown in the tab of search results
      * window.
