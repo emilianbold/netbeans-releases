@@ -228,6 +228,10 @@ public final class DiffPanel extends JPanel {
         return "content/unknown"; // NOI18N
     }
 
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "DiffPanel.error.cannotDownload=File {0} cannot be downloaded."
+    })
     StreamSource getRemoteStreamSource(String name, String mimeType) {
         TransferFile transferFile = syncItem.getRemoteTransferFile();
         if (transferFile == null) {
@@ -237,6 +241,8 @@ public final class DiffPanel extends JPanel {
         try {
             if (remoteClient.downloadTemporary(remoteTmpFile, transferFile)) {
                 return new TmpLocalFileStreamSource(name, remoteTmpFile, mimeType, charsetName, true);
+            } else {
+                showError(Bundle.DiffPanel_error_cannotDownload(name));
             }
         } catch (RemoteException ex) {
             LOGGER.log(Level.INFO, null, ex);
