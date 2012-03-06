@@ -58,10 +58,27 @@ public class InnerToOutterTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test208791() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/A.java", "package t; public class A { class B { public String outer; } class F extends B { B b; } }"));
+        performInnerToOuterTest("2outer", new Problem(true, "ERR_InvalidIdentifier"));
+    }
+    public void test208791a() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/A.java", "package t; public class A { class B { public String outer; } class F extends B { B b; } }"));
+        performInnerToOuterTest("", new Problem(true, "ERR_EmptyReferenceName"));
+    }
+    public void test208791b() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/A.java", "package t; public class A { class B { public String outer; } class F extends B { B b; } }"));
+        performInnerToOuterTest("outer", new Problem(false, "WRN_OuterNameAlreadyUsed"));
+    }
+    public void test208791c() throws Exception {
+        writeFilesAndWaitForScan(src, new File("t/A.java", "package t; public class A { class B { public String outer; } class F extends B { B b; } }"));
+        performInnerToOuterTest("b", new Problem(true, "ERR_OuterNameAlreadyUsed"));
+    }
+    
     public void test196955() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { class B { } class F { B b; } }"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { class B { } }"));
@@ -70,16 +87,16 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test178451() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; public static class F { } }"));
-        performInnerToOuterTest(false);
+        performInnerToOuterTest(null);
         verifyContent(src,
-                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */\n\npublic class F { }\n"),//TODO: why outer reference?
+                      new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */\n\npublic class F { }\n"),
                       new File("t/A.java", "@A(foo=A.FOO) package t; public @interface A { public String foo(); public static final String FOO = \"foo\"; }"));
     }
 
     public void test138204a() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
@@ -88,7 +105,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test195947() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } static class F { } }")); 
-        performInnerToOuterTest(false);
+        performInnerToOuterTest(null);
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { }\n"),
                       new File("t/A.java", "package t; public class A { private final int foo; public A() { this.foo = 0; } }"));
@@ -98,7 +115,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test138204b() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { static class S { private static void f() {} } private class F { private void t() { A.S.f(); t();} } }"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f();  t(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { static class S { private static void f() {} } }"));
@@ -107,7 +124,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test138204c() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } private class F { private void t() {S.f();} } }"));
-        performInnerToOuterTest(true, new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
+        performInnerToOuterTest("outer", new Problem(false, "WRN_InnerToOuterRefToPrivate/t.A.S"));
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { private final A outer; F(final A outer) { this.outer = outer; }\n private void t() { A.S.f(); } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { private static class S { private static void f() {} } }"));
@@ -116,7 +133,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test180364() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { int i; static class F extends A { private void t() { i = 0; } } }"));
-        performInnerToOuterTest(false);
+        performInnerToOuterTest(null);
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F extends A {  private void t() { i = 0; } }\n"),//TODO: why outer reference?
                       new File("t/A.java", "package t; public class A { int i; }"));
@@ -173,7 +190,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                                           "    }\n" +
                                           "\n" +
                                           "}\n"));
-        performInnerToOuterTest(false);
+        performInnerToOuterTest(null);
         verifyContent(src,
                                  new File("t/A.java",
                                           "package t;\n" +
@@ -235,7 +252,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test187766() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { int i; public enum F { A, B, C; } }"));
-        performInnerToOuterTest(false);
+        performInnerToOuterTest(null);
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ public enum F {  A, B, C }\n"),
                       new File("t/A.java", "package t; public class A { int i; }"));
@@ -322,7 +339,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
                 + "\n"
                 + "    }\n"
                 + "}\n"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                 new File("t/StartAsNested.java", "/* * Refactoring License */ package t; /** * * @author junit */\n"
                 + "\n"
@@ -407,7 +424,7 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test177996() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = t.new Inner(); } class Inner { }}"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/Inner.java", "/* * Refactoring License */ package t; /** * * @author junit */ class Inner { private final A outer; Inner(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { public void t() { A t = new A(); Inner inner = new Inner(t); }}"));
@@ -416,13 +433,13 @@ public class InnerToOutterTest extends RefactoringTestBase {
     public void test206086() throws Exception {
         writeFilesAndWaitForScan(src,
                                  new File("t/A.java", "package t; public class A { class B { } class F { /** jdoc */ B b; } }"));
-        performInnerToOuterTest(true);
+        performInnerToOuterTest("outer");
         verifyContent(src,
                       new File("t/F.java", "/* * Refactoring License */ package t; /** * * @author junit */ class F { /** jdoc */ A.B b; private final A outer; F(final A outer) { this.outer = outer; } } "),
                       new File("t/A.java", "package t; public class A { class B { } }"));
     }
 
-    private void performInnerToOuterTest(boolean generateOuter, Problem... expectedProblems) throws Exception {
+    private void performInnerToOuterTest(String generateOuter, Problem... expectedProblems) throws Exception {
         final InnerToOuterRefactoring[] r = new InnerToOuterRefactoring[1];
 
         JavaSource.forFileObject(src.getFileObject("t/A.java")).runUserActionTask(new Task<CompilationController>() {
@@ -441,13 +458,12 @@ public class InnerToOutterTest extends RefactoringTestBase {
         }, true);
 
         r[0].setClassName("F");
-        r[0].setReferenceName(null);
+        r[0].setReferenceName(generateOuter);
 
         RefactoringSession rs = RefactoringSession.create("Session");
         List<Problem> problems = new LinkedList<Problem>();
 
         addAllProblems(problems, r[0].preCheck());
-        if (!generateOuter) r[0].setReferenceName(null);
         addAllProblems(problems, r[0].prepare(rs));
         addAllProblems(problems, rs.doRefactoring(true));
 
