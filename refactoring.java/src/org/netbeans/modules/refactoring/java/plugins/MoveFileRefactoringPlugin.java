@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -77,7 +78,7 @@ import org.openide.util.NbBundle;
  * <li>Rename package</li>
  * </ul>
  */
-public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
+public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
 
     private Map packagePostfix = new HashMap();
     final AbstractRefactoring refactoring;
@@ -92,12 +93,12 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
     /** collection of packages that will change its name */
     Set<String> packageNames;
     
-    public MoveRefactoringPlugin(MoveRefactoring move) {
+    public MoveFileRefactoringPlugin(MoveRefactoring move) {
         this(move, false);
         setup(move.getRefactoringSource().lookupAll(FileObject.class), "", true); // NOI18N
     }
     
-    public MoveRefactoringPlugin(RenameRefactoring rename) {
+    public MoveFileRefactoringPlugin(RenameRefactoring rename) {
         this(rename, true);
         FileObject fo = rename.getRefactoringSource().lookup(FileObject.class);
         if (fo!=null) {
@@ -107,7 +108,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         }
     }
     
-    private MoveRefactoringPlugin(AbstractRefactoring refactoring, boolean isRenameRefactoring) {
+    private MoveFileRefactoringPlugin(AbstractRefactoring refactoring, boolean isRenameRefactoring) {
         this.refactoring = refactoring;
         if (refactoring == null) throw new NullPointerException ();
         this.isRenameRefactoring = isRenameRefactoring;
@@ -121,7 +122,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
         for (FileObject file:filesToMove) {
             if (!RefactoringUtils.isFileInOpenProject(file)) {
                 preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
-                        MoveRefactoringPlugin.class,
+                        MoveFileRefactoringPlugin.class,
                         "ERR_ProjectNotOpened",
                         FileUtil.getFileDisplayName(file)));
             }
@@ -175,7 +176,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                     
                     String pkgName = null;
                     if ((targetF!=null && !targetF.canWrite())) {
-                        return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_PackageIsReadOnly")).format( // NOI18N
+                        return new Problem(true, new MessageFormat(NbBundle.getMessage(MoveFileRefactoringPlugin.class,"ERR_PackageIsReadOnly")).format( // NOI18N
                                 new Object[] {targetPackageName}
                         ));
                     }
@@ -203,7 +204,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                         for (int x = 0; x < children.length; x++) {
                             if (children[x].getName().equals(fileName) && "java".equals(children[x].getExt()) && !children[x].equals(f) && !children[x].isVirtual()) { //NOI18N
                                 return new Problem(true, new MessageFormat(
-                                        NbBundle.getMessage(MoveRefactoringPlugin.class,"ERR_ClassToMoveClashes")).format(new Object[] {fileName} // NOI18N
+                                        NbBundle.getMessage(MoveFileRefactoringPlugin.class,"ERR_ClassToMoveClashes")).format(new Object[] {fileName} // NOI18N
                                 ));
                             }
                         } // for
@@ -255,7 +256,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
                                 assert targetProject!=null;
                                 String sourceName = ProjectUtils.getInformation(sourceProject).getDisplayName();
                                 String targetName = ProjectUtils.getInformation(targetProject).getDisplayName();
-                                return createProblem(null, false, NbBundle.getMessage(MoveRefactoringPlugin.class, "ERR_MissingProjectDeps", sourceName, targetName));
+                                return createProblem(null, false, NbBundle.getMessage(MoveFileRefactoringPlugin.class, "ERR_MissingProjectDeps", sourceName, targetName));
                             }
                         }
                     }
@@ -332,7 +333,7 @@ public class MoveRefactoringPlugin extends JavaRefactoringPlugin {
             ClassPath cp = ClassPath.getClassPath(folders.get(0), ClassPath.SOURCE);
             if (cp == null) {
                 return new Problem(true, NbBundle.getMessage(
-                        MoveRefactoringPlugin.class,
+                        MoveFileRefactoringPlugin.class,
                         "ERR_ClasspathNotFound",
                         folders.get(0)));
             }

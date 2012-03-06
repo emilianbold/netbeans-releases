@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.api.toolchain;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -108,10 +107,19 @@ public abstract class AbstractCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getCStandardOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getCStandardFlags() != null && compiler.getCStandardFlags().length > value){
+            return compiler.getCStandardFlags()[value];
+        }
+        return ""; //NOI18N
+    }
+    
     public String getCppStandardOptions(int value) {
-        // TODO this should be implemented
-        // if (value == 0) return ""
-        // if (value == 1) return "-std=c++11"
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getCppStandardFlags() != null && compiler.getCppStandardFlags().length > value){
+            return compiler.getCppStandardFlags()[value];
+        }
         return ""; //NOI18N
     }
     
