@@ -47,7 +47,7 @@ import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.ui.ScopeSettingsPanel;
+import org.netbeans.api.search.ui.ScopeOptionsController;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.openide.util.Parameters;
 
@@ -57,7 +57,7 @@ import org.openide.util.Parameters;
  * It is used to specify which files should be iterated by {@link SearchInfo}.
  *
  * <div class="nonnormative">It can be initialized with values specified in UI
- * component {@link ScopeSettingsPanel} </div>
+ * component {@link ScopeOptionsController} </div>
  *
  * @author jhavlin
  */

@@ -50,10 +50,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.ui.ComponentFactory;
-import org.netbeans.api.search.ui.FileNameComboBox;
-import org.netbeans.api.search.ui.ScopeComboBox;
-import org.netbeans.api.search.ui.ScopeSettingsPanel;
+import org.netbeans.api.search.ui.ComponentUtils;
+import org.netbeans.api.search.ui.FileNameController;
+import org.netbeans.api.search.ui.ScopeController;
+import org.netbeans.api.search.ui.ScopeOptionsController;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.openide.filesystems.FileUtil;
@@ -61,19 +61,19 @@ import org.openide.filesystems.FileUtil;
 class HgSearchForm extends JPanel implements ChangeListener {
 
     static final String PROP_USABLE = "usable";
-    private ScopeComboBox scopeController;
-    private FileNameComboBox fileNameController;
-    private ScopeSettingsPanel scopeSettingsController;
+    private ScopeController scopeController;
+    private FileNameController fileNameController;
+    private ScopeOptionsController scopeOptionsController;
 
     HgSearchForm() {
         initComponents();
-        scopeController = ComponentFactory.createScopeComboBox(scopeCombo, null);
-        fileNameController = ComponentFactory.createFileNameComboBox(fileCombo);
-        scopeSettingsController = ComponentFactory.createScopeSettingsPanel(
+        scopeController = ComponentUtils.adjustComboForScope(scopeCombo, null);
+        fileNameController = ComponentUtils.adjustComboForFileName(fileCombo);
+        scopeOptionsController = ComponentUtils.adjustPanelForOptions(
                 scopePanel, false, fileNameController);
         scopeController.addChangeListener(this);
         fileNameController.addChangeListener(this);
-        scopeSettingsController.addChangeListener(this);
+        scopeOptionsController.addChangeListener(this);
         patternField.getDocument().addDocumentListener(new DocumentListener() {
             @Override public void insertUpdate(DocumentEvent e) {
                 stateChanged(null);

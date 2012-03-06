@@ -56,7 +56,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.search.RegexpUtil;
-import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.ListComboBoxModel;
@@ -72,7 +71,7 @@ import org.openide.util.Exceptions;
  *
  * @author jhavlin
  */
-public final class FileNameComboBox extends ComponentController<JComboBox> {
+public final class FileNameController extends ComponentController<JComboBox> {
 
     private FileNamePatternWatcher fileNamePatternWatcher;
     private JTextComponent fileNamePatternEditor;
@@ -87,7 +86,7 @@ public final class FileNameComboBox extends ComponentController<JComboBox> {
     private boolean patternValid;
     private Color defaultColor;
 
-    FileNameComboBox(JComboBox jComboBox) {
+    FileNameController(JComboBox jComboBox) {
         super(jComboBox);
         init();
     }

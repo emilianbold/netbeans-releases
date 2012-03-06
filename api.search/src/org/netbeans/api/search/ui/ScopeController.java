@@ -63,22 +63,22 @@ import org.openide.util.WeakListeners;
  *
  * @author jhavlin
  */
-public final class ScopeComboBox extends ComponentController<JComboBox> {
+public final class ScopeController extends ComponentController<JComboBox> {
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    ScopeComboBox.SearchScopeChangeListener searchScopeChangeListener;
+    ScopeController.SearchScopeChangeListener searchScopeChangeListener;
     Lookup.Result lookupResult;
     private SearchScopeDefinition selectedSearchScope;
-    private ScopeComboBox.ManualSelectionListener manualSelectionListener;
+    private ScopeController.ManualSelectionListener manualSelectionListener;
     private String manuallySelectedId = null;
     SearchScopeList scopeList;
 
-    ScopeComboBox(JComboBox jComboBox, String prefferedId,
+    ScopeController(JComboBox jComboBox, String prefferedId,
             SearchScopeDefinition... extraSearchScopes) {
         super(jComboBox);
         scopeList = new SearchScopeList(extraSearchScopes);
-        manualSelectionListener = new ScopeComboBox.ManualSelectionListener();
-        searchScopeChangeListener = new ScopeComboBox.SearchScopeChangeListener();
+        manualSelectionListener = new ScopeController.ManualSelectionListener();
+        searchScopeChangeListener = new ScopeController.SearchScopeChangeListener();
         scopeList.addChangeListener(
                 WeakListeners.change(searchScopeChangeListener,
                 scopeList));

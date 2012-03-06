@@ -62,10 +62,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.provider.SearchInfo;
-import org.netbeans.api.search.ui.ComponentFactory;
-import org.netbeans.api.search.ui.FileNameComboBox;
-import org.netbeans.api.search.ui.ScopeComboBox;
-import org.netbeans.api.search.ui.ScopeSettingsPanel;
+import org.netbeans.api.search.ui.ComponentUtils;
+import org.netbeans.api.search.ui.FileNameController;
+import org.netbeans.api.search.ui.ScopeController;
+import org.netbeans.api.search.ui.ScopeOptionsController;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
@@ -183,12 +183,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         }
 
         lblScope = new JLabel();
-        cboxScope = ComponentFactory.createScopeComboBox(new JComboBox(),
+        cboxScope = ComponentUtils.adjustComboForScope(new JComboBox(),
                 preferredSearchScopeType, extraSearchScopes);
         lblScope.setLabelFor(cboxScope.getComponent());
 
         lblFileNamePattern = new JLabel();
-        cboxFileNamePattern = ComponentFactory.createFileNameComboBox(
+        cboxFileNamePattern = ComponentUtils.adjustComboForFileName(
                 new JComboBox());
         lblFileNamePattern.setLabelFor(cboxFileNamePattern.getComponent());
         
@@ -260,7 +260,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     }
 
     private void initScopeOptionsRow(boolean searchAndReplace) {
-        this.scopeSettingsPanel = ComponentFactory.createScopeSettingsPanel(
+        this.scopeSettingsPanel = ComponentUtils.adjustPanelForOptions(
                 new JPanel(), searchAndReplace, cboxFileNamePattern);
         formPanel.addRow(new JLabel(), scopeSettingsPanel.getComponent());
     }
@@ -723,7 +723,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
 
     private JComboBox cboxTextToFind;
     private JComboBox cboxReplacement;
-    private FileNameComboBox cboxFileNamePattern;
+    private FileNameController cboxFileNamePattern;
     private JCheckBox chkWholeWords;
     private JCheckBox chkCaseSensitive;
     private JCheckBox chkRegexp;
@@ -733,14 +733,14 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
     protected SearchFormPanel formPanel;
     private JButton btnTestTextToFind;
     private JLabel lblTextToFind;
-    private ScopeComboBox cboxScope;
+    private ScopeController cboxScope;
     private JLabel lblFileNamePattern;    
     private JLabel lblScope;
     private JLabel lblReplacement;
     private Color errorTextColor, defaultTextColor;
     private boolean invalidTextPattern = false;
     private boolean invalidReplacePattern = false;
-    private ScopeSettingsPanel scopeSettingsPanel;
+    private ScopeOptionsController scopeSettingsPanel;
 
     /**
      * Form panel to which rows can be added.

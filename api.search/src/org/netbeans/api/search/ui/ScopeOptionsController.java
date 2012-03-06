@@ -65,9 +65,9 @@ import org.netbeans.modules.search.ui.UiUtils;
  *
  * @author jhavlin
  */
-public final class ScopeSettingsPanel extends ComponentController<JPanel> {
+public final class ScopeOptionsController extends ComponentController<JPanel> {
 
-    private FileNameComboBox fileNameComboBox;
+    private FileNameController fileNameComboBox;
     private boolean replacing;
     protected JPanel ignoreListOptionPanel;
     private JButton btnEditIgnoreList;
@@ -86,8 +86,8 @@ public final class ScopeSettingsPanel extends ComponentController<JPanel> {
      * regular-expression check box in the panel.
      * @param replacing Replace mode flag.
      */
-    ScopeSettingsPanel(JPanel component,
-            FileNameComboBox fileNameComboBox, boolean replacing) {
+    ScopeOptionsController(JPanel component,
+            FileNameController fileNameComboBox, boolean replacing) {
         super(component);
         this.fileNameComboBox = fileNameComboBox;
         this.replacing = replacing;
