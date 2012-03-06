@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
@@ -178,13 +179,39 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/prototype.js",new IndentPrefs(4, 4));
     }
 
-    public void testInitialIndentation1() throws Exception {
+    public void testTabsIndents1Normal() throws Exception {
+        reformatFileContents("testfiles/formatter/tabsIndents1.js",
+                Collections.<String, Object>emptyMap(), ".normal.formatted");
+    }
+
+    public void testTabsIndents1Indented() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
         options.put(FmtOptions.initialIndent, 4);
-        reformatFileContents("testfiles/formatter/initialIndentation1.js", options);
+        reformatFileContents("testfiles/formatter/tabsIndents1.js",
+                options, ".indented.formatted");
+    }
+
+    public void testSpaces1Enabled() throws Exception {
+        reformatFileContents("testfiles/formatter/spaces1.js",
+                Collections.<String, Object>emptyMap(), ".enabled.formatted");
+    }
+
+    public void testSpaces1Disabled() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeIfParen, false);
+        options.put(FmtOptions.spaceBeforeWhileParen, false);
+        options.put(FmtOptions.spaceBeforeForParen, false);
+        options.put(FmtOptions.spaceBeforeWithParen, false);
+        options.put(FmtOptions.spaceBeforeSwitchParen, false);
+        options.put(FmtOptions.spaceBeforeCatchParen, false);
+        reformatFileContents("testfiles/formatter/spaces1.js", options, ".disabled.formatted");
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
+        reformatFileContents(file, options, null);
+    }
+
+    protected void reformatFileContents(String file, Map<String, Object> options, String suffix) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -236,6 +263,10 @@ public class JsFormatterTest extends JsTestBase {
             }
         }
         String after = doc.getText(0, doc.getLength());
-        assertDescriptionMatches(file, after, false, ".formatted");
+        String realSuffix = ".formatted";
+        if (suffix != null) {
+            realSuffix = suffix;
+        }
+        assertDescriptionMatches(file, after, false, realSuffix);
     }
 }
