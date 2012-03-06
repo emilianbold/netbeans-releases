@@ -45,10 +45,10 @@ package org.netbeans.modules.maven.junit;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.output.ContextOutputProcessorFactory;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
-import org.netbeans.api.project.Project;
 
 /**
  *
@@ -61,10 +61,12 @@ public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactor
     public JUnitOutputProcessorFactory() {
     }
 
+    @Override
     public Set<OutputProcessor> createProcessorsSet(Project project) {
         return Collections.<OutputProcessor>emptySet();
     }
 
+    @Override
     public Set<OutputProcessor> createProcessorsSet(Project project, RunConfig config) {
         if (config.getGoals().contains("test") || config.getGoals().contains("surefire:test")) { //NOI18N
             Set<OutputProcessor> toReturn = new HashSet<OutputProcessor>();
