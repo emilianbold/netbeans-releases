@@ -351,6 +351,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     private void onModeChange() {
         diffView.modeChanged();
+        if(masterView != null) {
+            masterView.requestActive();
+        }
     }
                 
     @Override
