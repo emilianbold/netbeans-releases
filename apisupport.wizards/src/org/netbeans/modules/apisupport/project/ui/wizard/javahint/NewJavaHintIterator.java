@@ -72,7 +72,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
     }
 
     @Override
-    public Set instantiate() throws IOException {
+    public Set<?> instantiate() throws IOException {
         CreatedModifiedFiles cmf = data.getCreatedModifiedFiles();
         cmf.run();
         return getCreatedFiles(cmf, data.getProject());
@@ -91,6 +91,9 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         String className = model.getClassName();
         FileObject hintTemplate = CreatedModifiedFiles.getTemplate("javaHint.java"); // NOI18N
         assert hintTemplate != null;
+
+        // XXX better to add a package selector to JavaHintPanel
+        model.setPackageName(model.getModuleInfo().getCodeNameBase());
 
         String hintPath = model.getDefaultPackagePath(className + ".java", false); // NOI18N
 
@@ -135,7 +138,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         private boolean doFix;
         private String fixText;
 
-        public DataModel(WizardDescriptor wiz) {
+        DataModel(WizardDescriptor wiz) {
             super(wiz);
         }
 
