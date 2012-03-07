@@ -59,6 +59,7 @@ import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
+import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -151,6 +152,7 @@ public class SrcNode extends FilterNode {
         if (!isTest) {
             actions.add(FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null));
             actions.add(FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null));
+            actions.add(FileSensitiveActions.fileCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null));
             actions.add(null);
         }
         actions.add(SystemAction.get(FileSystemAction.class));
@@ -175,7 +177,8 @@ public class SrcNode extends FilterNode {
     static final Action[] COMMON_ACTIONS = new Action[]{
         null,
         FileSensitiveActions.fileCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
-        FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null)
+        FileSensitiveActions.fileCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null),
+        FileSensitiveActions.fileCommandAction(SyncCommand.ID, SyncCommand.DISPLAY_NAME, null),
     };
 
     public static Action createDownloadAction() {
@@ -183,6 +186,9 @@ public class SrcNode extends FilterNode {
     }
     public static Action createUploadAction() {
         return COMMON_ACTIONS[2];
+    }
+    public static Action createSynchronizeAction() {
+        return COMMON_ACTIONS[3];
     }
 
     public static Lookup extendLookupWithSearchInfo(Lookup originalLookup, PhpProject project, FileObject folder) {
@@ -298,7 +304,10 @@ public class SrcNode extends FilterNode {
                     ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null)
                 };
             }
-            return COMMON_ACTIONS;
+            // remove sync action
+            Action[] actions = new Action[COMMON_ACTIONS.length - 1];
+            System.arraycopy(COMMON_ACTIONS, 0, actions, 0, COMMON_ACTIONS.length - 1);
+            return actions;
         }
 
     }
