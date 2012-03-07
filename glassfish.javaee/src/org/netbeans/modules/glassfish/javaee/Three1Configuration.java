@@ -87,7 +87,7 @@ public class Three1Configuration extends Hk2Configuration implements DeploymentC
     // ------------------------------------------------------------------------
     @Override
     public Set<Datasource> getDatasources() throws org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException {
-        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory(),"glassfish-resources");
+        return Hk2DatasourceManager.getDatasources(module.getResourceDirectory());
     }
 
     @Override

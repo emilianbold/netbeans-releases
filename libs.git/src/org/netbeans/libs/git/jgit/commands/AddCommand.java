@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,13 +54,17 @@ import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.CoreConfig;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectInserter;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
+import org.eclipse.jgit.treewalk.WorkingTreeOptions;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.util.IO;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
@@ -97,6 +102,7 @@ public class AddCommand extends GitCommand {
         try {
             DirCache cache = null;
             ObjectInserter inserter = repository.newObjectInserter();
+            ObjectReader or = repository.newObjectReader();
             try {
                 cache = repository.lockDirCache();
                 DirCacheBuilder builder = cache.builder();
@@ -110,6 +116,8 @@ public class AddCommand extends GitCommand {
                 treeWalk.addTree(new DirCacheBuildIterator(builder));
                 treeWalk.addTree(new FileTreeIterator(repository));
                 String lastAddedFile = null;
+                WorkingTreeOptions opt = repository.getConfig().get(WorkingTreeOptions.KEY);
+                boolean autocrlf = opt.getAutoCRLF() != CoreConfig.AutoCRLF.FALSE;
                 boolean checkExecutable = Utils.checkExecutable(repository);
                 while (treeWalk.next() && !monitor.isCanceled()) {
                     String path = treeWalk.getPathString();
@@ -120,9 +128,7 @@ public class AddCommand extends GitCommand {
                     } else if (!(path.equals(lastAddedFile))) {
                         if (f != null) { // the file exists
                             File file = new File(repository.getWorkTree().getAbsolutePath() + File.separator + path);
-                            long sz = f.getEntryLength();
                             DirCacheEntry entry = new DirCacheEntry(path);
-                            entry.setLength(sz);
                             entry.setLastModified(f.getEntryLastModified());
                             int fm = f.getEntryFileMode().getBits();
                             if (!checkExecutable) {
@@ -131,7 +137,13 @@ public class AddCommand extends GitCommand {
                             entry.setFileMode(FileMode.fromBits(fm));
                             InputStream in = f.openEntryStream();
                             try {
-                                entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
+                                long sz = f.getEntryLength();
+                                if (autocrlf) {
+                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, IO.readWholeStream(in, (int) sz).array()));
+                                } else {
+                                    entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, sz, in));
+                                }
+                                entry.setLength(or.getObjectSize(entry.getObjectId(), Constants.OBJ_BLOB));
                             } finally {
                                 in.close();
                             }
@@ -153,6 +165,7 @@ public class AddCommand extends GitCommand {
                 }
             } finally {
                 inserter.release();
+                or.release();
                 if (cache != null ) {
                     cache.unlock();
                 }
