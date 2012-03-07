@@ -1000,6 +1000,17 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         return displayName;
     }
     
+    /**
+     * Short version of TopComponent's name that doesn't include the name of
+     * activated Node.
+     * @return Short version of TopComponent's display name. The default implementation
+     * returns null.
+     * @since 6.52
+     */
+    public String getShortName() {
+        return null;
+    }
+
     /** Sets localized html display name of this <code>TopComponent</code>.
      * Hmtl name usually contains basic html tags for text coloring and style.
      * Html name may be null if not needed.
@@ -1033,7 +1044,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
-    
+
 
     /** Sets toolTip for this <code>TopComponent</code>, adds notification
      * about the change to its <code>WindowManager.TopComponentManager</code>. */
