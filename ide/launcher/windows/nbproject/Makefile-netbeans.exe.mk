@@ -14,11 +14,11 @@ GREP=grep
 NM=nm
 CCADMIN=CCadmin
 RANLIB=ranlib
-CC=gcc.exe
-CCC=g++.exe
-CXX=g++.exe
+CC=gcc
+CCC=g++
+CXX=g++
 FC=gfortran
-AS=as.exe
+AS=as
 
 # Macros
 CND_PLATFORM=Cygwin-Windows
