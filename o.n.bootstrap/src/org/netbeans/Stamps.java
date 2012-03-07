@@ -74,6 +74,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -91,6 +93,7 @@ public final class Stamps {
     private static File moduleNewestFile;
     private static String[] dirs;
     private static File[] fallbackCache;
+    private static boolean populated;
 
     private Worker worker = new Worker();
 
@@ -180,6 +183,8 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
+        checkPopuplateCache();
+        
         synchronized (this) {
             if (worker.isProcessing(cache)) {
                 LOG.log(Level.FINE, "Worker processing when asking for {0}", cache); // NOI18N
@@ -564,6 +569,53 @@ public final class Stamps {
             return null;
         }
         return new File(fallbackCache[0], cache);
+    }
+    
+    static void checkPopuplateCache() {
+        if (populated) {
+            return;
+        }
+        populated = true;
+        
+        File cache = Places.getCacheDirectory();
+        String[] children = cache.list();
+        if (children != null && children.length > 0) {
+            return;
+        }
+        InputStream is = Stamps.getModulesJARs().asStream("populate.zip"); // NOI18N
+        if (is == null) {
+            return;
+        }
+        ZipInputStream zip = null;
+        FileOutputStream os = null;
+        try {
+            byte[] arr = new byte[4096];
+            LOG.log(Level.FINE, "Found populate.zip about to extract it into {0}", cache);
+            zip = new ZipInputStream(is);
+            for (;;) {
+                ZipEntry en = zip.getNextEntry();
+                if (en == null) {
+                    break;
+                }
+                if (en.isDirectory()) {
+                    continue;
+                }
+                File f = new File(cache, en.getName().replace('/', File.separatorChar));
+                f.getParentFile().mkdirs();
+                os = new FileOutputStream(f);
+                for (;;) {
+                    int len = zip.read(arr);
+                    if (len == -1) {
+                        break;
+                    }
+                    os.write(arr, 0, len);
+                }
+                os.close();
+            }
+            zip.close();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Failed to populate {0}", cache);
+        }
     }
 
     /** A callback interface to flush content of some cache at a suitable
