@@ -43,13 +43,16 @@ package org.netbeans.modules.php.project.ui.actions;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.sync.SyncController;
 import org.netbeans.modules.php.project.connections.sync.SyncController.SyncResult;
 import org.netbeans.modules.php.project.connections.sync.SyncController.SyncResultProcessor;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -82,24 +85,33 @@ public class SyncCommand extends RemoteCommand implements Displayable {
 
     @Override
     public boolean isFileSensitive() {
-        return false;
+        return true;
     }
 
     @Override
     protected Runnable getContextRunnable(Lookup context) {
+        final FileObject[] files = CommandUtils.filesForContext(context, ProjectPropertiesSupport.getSourcesDirectory(getProject()));
         return new Runnable() {
             @Override
             public void run() {
-                synchronize();
+                synchronize(files);
             }
         };
     }
 
-    void synchronize() {
+    void synchronize(FileObject[] files) {
         RemoteConfiguration remoteConfiguration = RunConfigRemote.forProject(getProject()).getRemoteConfiguration();
         InputOutput remoteLog = getRemoteLog(remoteConfiguration.getDisplayName());
         RemoteClient remoteClient = getRemoteClient(remoteLog);
-        new SyncController(getProject(), remoteClient, remoteConfiguration).synchronize(new PrintSyncResultProcessor(remoteLog));
+        SyncController syncController;
+        if (files == null) {
+            // whole project
+            syncController = SyncController.forProject(getProject(), remoteClient, remoteConfiguration);
+        } else {
+            // just one file
+            syncController = SyncController.forFiles(files, getProject(), remoteClient, remoteConfiguration);
+        }
+        syncController.synchronize(new PrintSyncResultProcessor(remoteLog));
     }
 
     //~ Inner classes
