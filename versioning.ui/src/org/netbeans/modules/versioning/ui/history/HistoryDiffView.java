@@ -283,7 +283,7 @@ public class HistoryDiffView implements PropertyChangeListener {
         String title1;
         if(file.exists()) {
             if(entry.isLocalHistory()) {
-                title1 = "<html>" + NbBundle.getMessage(HistoryDiffView.class, "LBL_Diff_LocallyModified") + " (<b>" + RevisionNode.getFormatedDate(entry) + "</b>)</html>"; // NOI18N
+                title1 = "<html>" + file.getName() + " (<b>" + RevisionNode.getFormatedDate(entry) + "</b>)</html>"; // NOI18N
             } else {
                 title1 = "<html>" + file.getName() + " (<b>" + entry.getRevisionShort() + "</b>)</html>"; // NOI18N
             } 
