@@ -268,6 +268,18 @@ public abstract class TransferFile {
         return baseRemoteDirectoryPath;
     }
 
+    public final String getLocalAbsolutePath() {
+        return resolveLocalFile().getAbsolutePath();
+    }
+
+    public final String getRemoteAbsolutePath() {
+        String remotePath = getRemotePath();
+        if (remotePath == REMOTE_PROJECT_ROOT) {
+            return baseRemoteDirectoryPath;
+        }
+        return baseRemoteDirectoryPath + REMOTE_PATH_SEPARATOR + remotePath;
+    }
+
     /**
      * Return {@code true} if the remote file does not have parent remote file.
      * @return {@code true} if the remote file does not have parent remote file
