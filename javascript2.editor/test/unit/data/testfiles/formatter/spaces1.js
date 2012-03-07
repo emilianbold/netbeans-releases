@@ -1,12 +1,12 @@
-var engine  = {
+var engine = {
     cylinders : 8,
     power: "22k",
     getDescription: function () {
-        with  (this) {
-            if (enabled) {
+        with(this) {
+            if(enabled) {
                 println ('Cylinders: '
                     + cylinders + ' with power: ' + power);
-            } else {
+            }   else {
                 log();
             }
         }
@@ -16,19 +16,23 @@ var engine  = {
 function computeColor() {
     try {
         color = 0;
-        for(var a = 0; a < 3; a++) {
+        for   (var a = 0; a < 3; a++) {
             color += Math.round(Math.random() * 2);
         }
-    }  catch(error) {
+    }catch (error) {
         println (error);
+    }  finally {
+        log();
     }
     while(color > 100) {
-        color = color / 2;
+        do {
+            color = color / 2;
+        }   while (isOk());
     }
 }
 
 var color = computeColor();
-switch    (color) {
+switch   (color) {
     case 0:
     case 1:
         code = 'low';

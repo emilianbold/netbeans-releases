@@ -21,9 +21,13 @@ function computeColor() {
         }
     } catch(error) {
         println (error);
+    } finally {
+        log();
     }
     while(color > 100) {
-        color = color / 2;
+        do {
+            color = color / 2;
+        } while(isOk());
     }
 }
 
