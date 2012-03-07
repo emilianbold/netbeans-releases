@@ -197,6 +197,11 @@ public final class NbSheet extends TopComponent {
         }
         return sharedSheet;
     }
+
+    @Override
+    public String getShortName() {
+        return NbBundle.getMessage(NbSheet.class, "CTL_PropertiesWindow"); //NOI18N
+    }
     
     /** Overriden to explicitely set persistence type of NbSheet
      * to PERSISTENCE_ALWAYS */
