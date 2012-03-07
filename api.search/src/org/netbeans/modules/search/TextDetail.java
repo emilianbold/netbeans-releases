@@ -66,6 +66,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.xml.XMLUtil;
@@ -79,11 +80,11 @@ import org.openide.xml.XMLUtil;
 public final class TextDetail {
 
     /** Property name which indicates this detail to show. */
-    static final int DH_SHOW = 1;
+    public static final int DH_SHOW = 1;
     /** Property name which indicates this detail to go to. */
-    static final int DH_GOTO = 2;
+    public static final int DH_GOTO = 2;
     /** Property name which indicates this detail to hide. */
-    static final int DH_HIDE = 3;
+    public static final int DH_HIDE = 3;
     
     /** Data object. */
     private DataObject dobj;
@@ -123,7 +124,7 @@ public final class TextDetail {
      * @see #DH_GOTO 
      * @see #DH_SHOW 
      * @see #DH_HIDE */
-    void showDetail(int how) {
+    public void showDetail(int how) {
         prepareLine();
         if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
@@ -359,7 +360,7 @@ public final class TextDetail {
          * @param txtDetail  information to be represented by this node
          */
         public DetailNode(TextDetail txtDetail) {
-            super(Children.LEAF);
+            super(Children.LEAF, Lookups.singleton(txtDetail));
             
             this.txtDetail = txtDetail;
             

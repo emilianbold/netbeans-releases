@@ -44,6 +44,7 @@ package org.netbeans.modules.search.ui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
 import org.netbeans.api.search.SearchControl;
@@ -160,10 +161,16 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         btnStop.setIcon(ImageUtilities.loadImageIcon(STOP_ICON, true));
 
         toolBar.add(btnModifySearch);
+
+        for (AbstractButton b : createButtons()) {
+            sizeButton(b);
+            toolBar.add(b);
+        }
+
         toolBar.add(btnStop);
     }
 
-    protected void sizeButton(JButton button) {
+    protected void sizeButton(AbstractButton button) {
         Dimension dim = new Dimension(24, 24);
         button.setMinimumSize(dim);
         button.setMaximumSize(dim);
@@ -196,6 +203,14 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
                 SearchControl.openFindDialog(searchProviderPresenter);
             }
         }
+    }
+
+    /**
+     * Create custom set of buttons that will be resized and placed between
+     * "Refresh" and "Stop" buttons.
+     */
+    protected AbstractButton[] createButtons() {
+        return new AbstractButton[] {};
     }
 
     private OutlineView createOutlineView() {

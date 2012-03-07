@@ -41,13 +41,23 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
+import javax.swing.AbstractButton;
+import javax.swing.JButton;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
+import org.netbeans.modules.search.TextDetail;
 import org.netbeans.swing.outline.Outline;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -55,8 +65,14 @@ import org.openide.nodes.Node;
  */
 public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
+    private static final String NEXT_ICON =
+            "org/netbeans/modules/search/res/next.png";                 //NOI18N
+    private static final String PREV_ICON =
+            "org/netbeans/modules/search/res/prev.png";                 //NOI18N
     private ResultModel resultModel;
     private ResultsNode resultsNode;
+    private JButton nextButton;
+    private JButton prevButton;
 
     public BasicSearchResultsPanel(ResultModel resultModel,
             BasicComposition composition) {
@@ -65,7 +81,24 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
         this.resultsNode = new ResultsNode();
         getExplorerManager().setRootContext(resultsNode);
         this.resultModel = resultModel;
+        setOutlineColumns(resultModel);
+        initSelectionListeners();
+    }
 
+    private void initSelectionListeners() {
+        getExplorerManager().addPropertyChangeListener(
+                new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange(PropertyChangeEvent evt) {
+                        if (evt.getPropertyName().equals(
+                                "selectedNodes")) {                     //NOI18N
+                            updateShiftButtons();
+                        }
+                    }
+                });
+    }
+
+    private void setOutlineColumns(ResultModel resultModel) {
         if (resultModel.canHaveDetails()) {
             getOutlineView().addPropertyColumn(
                     "detailsCount", UiUtils.getText( //NOI18N
@@ -102,6 +135,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
     public void update() {
         resultsNode.update();
+        updateShiftButtons();
     }
 
     /**
@@ -150,5 +184,138 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
         private synchronized void update() {
             setKeys(resultModel.getMatchingObjects());
         }
+    }
+
+    private void updateShiftButtons() {
+        prevButton.setEnabled(findShifNode(-1) != null);
+        nextButton.setEnabled(findShifNode(1) != null);
+    }
+
+    @Override
+    protected AbstractButton[] createButtons() {
+        prevButton = new JButton();
+        prevButton.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
+        prevButton.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_PREV_MATCH"));                             //NOI18N
+        prevButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                shift(-1);
+            }
+        });
+        nextButton = new JButton();
+        nextButton.setIcon(ImageUtilities.loadImageIcon(NEXT_ICON, true));
+        nextButton.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_NEXT_MATCH"));                             //NOI18N
+        nextButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                shift(1);
+            }
+        });
+        return new AbstractButton[]{prevButton, nextButton};
+    }
+
+    private void shift(int direction) {
+
+        Node next = findShifNode(direction);
+        if (next == null) {
+            return;
+        }
+        try {
+            getExplorerManager().setSelectedNodes(new Node[]{next});
+            TextDetail textDetail = next.getLookup().lookup(
+                    TextDetail.class);
+            if (textDetail != null) {
+                textDetail.showDetail(TextDetail.DH_GOTO);
+            }
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private Node findShifNode(int direction) {
+        Node[] selected = getExplorerManager().getSelectedNodes();
+        Node n = null;
+        if (selected == null || selected.length == 0) {
+            n = getExplorerManager().getRootContext();
+        } else if (selected.length == 1) {
+            n = selected[0];
+        }
+        return n == null ? null : findTextDetailNode(n, direction);
+    }
+
+    static Node findTextDetailNode(Node fromNode, int direction) {
+        return findUp(fromNode, direction,
+                isTextDetailNode(fromNode) || direction < 0 ? direction : 0);
+    }
+
+    /**
+     * Start finding for next or previous occurance, from a node or its previous
+     * or next sibling of node {@code node}
+     *
+     * @param node reference node
+     * @param offset 0 to start from node {@code node}, 1 to start from its next
+     * sibling, -1 to start from its previous sibling.
+     * @param dir Direction: 1 for next, -1 for previous.
+     */
+    static Node findUp(Node node, int dir, int offset) {
+        if (node == null) {
+            return null;
+        }
+        Node parent = node.getParentNode();
+        Node[] siblings;
+        if (parent == null) {
+            siblings = new Node[]{node};
+        } else {
+            siblings = parent.getChildren().getNodes(true);
+        }
+        int nodeIndex = findChildIndex(node, siblings);
+        if (nodeIndex + offset < 0 || nodeIndex + offset >= siblings.length) {
+            return findUp(parent, dir, dir);
+        }
+        for (int i = nodeIndex + offset;
+                i >= 0 && i < siblings.length; i += dir) {
+            Node found = findDown(siblings[i], siblings, i, dir);
+            return found;
+        }
+        return findUp(parent, dir, offset);
+    }
+
+    /**
+     * Find Depth-first search to find TextDetail node in the subtree.
+     */
+    private static Node findDown(Node node, Node[] siblings, int nodeIndex,
+            int dir) {
+
+        Node[] children = node.getChildren().getNodes(true);
+        for (int i = dir > 0 ? 0 : children.length - 1;
+                i >= 0 && i < children.length; i += dir) {
+            Node found = findDown(children[i], children, i, dir);
+            if (found != null) {
+                return found;
+            }
+        }
+        for (int i = nodeIndex; i >= 0 && i < siblings.length; i += dir) {
+            if (isTextDetailNode(siblings[i])) {
+                return siblings[i];
+            }
+        }
+        return null;
+    }
+
+    private static boolean isTextDetailNode(Node n) {
+        return n.getLookup().lookup(TextDetail.class) != null;
+    }
+
+    private static int findChildIndex(Node selectedNode, Node[] siblings) {
+        int pos = -1;
+        for (int i = 0; i < siblings.length; i++) {
+            if (siblings[i] == selectedNode) {
+                pos = i;
+                break;
+            }
+        }
+        return pos;
     }
 }
