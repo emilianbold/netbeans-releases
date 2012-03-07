@@ -50,6 +50,20 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="topcomponent.subcomponents">
+    <api name="winsys"/>
+    <summary>Added method TopComponent.getSubComponents.</summary>
+    <version major="6" minor="52"/>
+    <date day="7" month="3" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new method can be used to access for example inner tabs in a
+        multiview window.</p>
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="209051"/>
+</change>
 <change id="topcomponent.shortname">
     <api name="winsys"/>
     <summary>Added method TopComponent.getShortName()</summary>
