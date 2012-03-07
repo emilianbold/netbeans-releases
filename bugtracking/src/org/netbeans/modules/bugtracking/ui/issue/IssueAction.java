@@ -153,7 +153,7 @@ public class IssueAction extends SystemAction {
 
     public static void openIssueIntern(final RepositoryProvider repositoryParam, final File file, final String issueId) {
         assert issueId != null;
-        assert repositoryParam != null && file == null || repositoryParam == null && file != null;
+        assert file == null || repositoryParam == null && file != null;
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
