@@ -208,6 +208,10 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.spaceBeforeWithParen, false);
         options.put(FmtOptions.spaceBeforeSwitchParen, false);
         options.put(FmtOptions.spaceBeforeCatchParen, false);
+        options.put(FmtOptions.spaceBeforeWhile, false);
+        options.put(FmtOptions.spaceBeforeElse, false);
+        options.put(FmtOptions.spaceBeforeCatch, false);
+        options.put(FmtOptions.spaceBeforeFinally, false);
         reformatFileContents("testfiles/formatter/spaces1.js", options, ".disabled.formatted");
     }
 

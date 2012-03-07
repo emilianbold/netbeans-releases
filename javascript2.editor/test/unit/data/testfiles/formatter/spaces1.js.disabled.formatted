@@ -6,7 +6,7 @@ var engine = {
             if(enabled) {
                 println ('Cylinders: '
                         + cylinders + ' with power: ' + power);
-            } else {
+            }else {
                 log();
             }
         }
@@ -19,15 +19,15 @@ function computeColor() {
         for(var a = 0; a < 3; a++) {
             color += Math.round(Math.random() * 2);
         }
-    } catch(error) {
+    }catch(error) {
         println (error);
-    } finally {
+    }finally {
         log();
     }
     while(color > 100) {
         do {
             color = color / 2;
-        } while(isOk());
+        }while(isOk());
     }
 }
 
