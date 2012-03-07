@@ -227,6 +227,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         data.setDisplayName(displayName.getText());
         data.setDescription(description.getText());
         data.setDoFix(automaticFix.isSelected());
+        data.setWarningMessage(warningMessage.getText());
         data.setFixText(fixDisplayName.getText());
 
         NewJavaHintIterator.generateFileChanges(data);
@@ -240,6 +241,7 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         displayName.setText(data.getDisplayName());
         description.setText(data.getDescription());
         automaticFix.setSelected(data.isDoFix());
+        warningMessage.setText(data.getWarningMessage());
         fixDisplayName.setText(data.getFixText());
     }
 
