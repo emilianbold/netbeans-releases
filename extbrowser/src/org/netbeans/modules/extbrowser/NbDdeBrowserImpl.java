@@ -177,7 +177,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     @Override
     protected BrowserId getPluginId(URL url){
         BrowserId id = super.getPluginId(url);
-        if ( id != null ){
+        if (id != BrowserId.UNKNOWN && id != BrowserId.OTHER){
             return id;
         }
         String ddeServer = realDDEServer();
@@ -187,7 +187,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
         else if ( ExtWebBrowser.CHROME.equals( ddeServer)){
             return BrowserId.CHROME;
         }
-        return null;
+        return BrowserId.UNKNOWN;
     }
     
     /** Finds the name of DDE server. 

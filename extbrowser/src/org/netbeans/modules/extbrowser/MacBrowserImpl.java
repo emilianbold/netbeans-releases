@@ -115,7 +115,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     @Override
     protected BrowserId getPluginId( URL url ) {
         BrowserId pluginId = super.getPluginId(url);
-        if ( pluginId != null ){
+        if (pluginId != BrowserId.UNKNOWN && pluginId != BrowserId.OTHER){
             return pluginId;
         }
         String protocol = url.getProtocol();
@@ -137,10 +137,13 @@ public class MacBrowserImpl extends ExtBrowserImpl {
             }
         }
         if ( pluginId == null ){
-            return parseDefaultApps( defaultApps , "LSHandlerContentType",    
+            pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",    
                     "public.url" );                                             // NOI18N
-        }
-        else {
+            if (pluginId == null) {
+                pluginId = BrowserId.UNKNOWN;
+            }
+            return pluginId;
+        } else {
             return pluginId;
         }
     }
