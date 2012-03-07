@@ -117,37 +117,37 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
             }
         }
         
-        AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
-        if (extender != null) {
-            String ID = "test-ng-1.0"; //NOI18N
-            Extension extension = extender.getExtension(ID);
-            if (extension == null) {
-                LOGGER.log(Level.FINER, "Extensible targets: {0}", extender.getExtensibleTargets());
-                try {
-                    // create testng-build.xml
-                    FileObject testng = p.getProjectDirectory().getFileObject("nbproject").createData("testng-impl", "xml"); //NOI18N
-                    InputStream is = AntTestNGSupport.class.getResourceAsStream("testng-build.xml"); //NOI18N
-                    FileLock lock = testng.lock();
-                    OutputStream os = testng.getOutputStream(lock);
-                    try {
-                        FileUtil.copy(is, os);
-                    } finally {
-                        if (is != null) {
-                            is.close();
-                        }
-                        if (os != null) {
-                            os.close();
-                        }
-                        lock.releaseLock();
-                    }
-                    extension = extender.addExtension(ID, testng);
-                    extension.addDependency("-pre-pre-compile", "-reinit-tasks"); //NOI18N
-                    ProjectManager.getDefault().saveProject(p);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.SEVERE, null, ex);
-                }
-            }
-        }
+//        AntBuildExtender extender = p.getLookup().lookup(AntBuildExtender.class);
+//        if (extender != null) {
+//            String ID = "test-ng-1.0"; //NOI18N
+//            Extension extension = extender.getExtension(ID);
+//            if (extension == null) {
+//                LOGGER.log(Level.FINER, "Extensible targets: {0}", extender.getExtensibleTargets());
+//                try {
+//                    // create testng-build.xml
+//                    FileObject testng = p.getProjectDirectory().getFileObject("nbproject").createData("testng-impl", "xml"); //NOI18N
+//                    InputStream is = AntTestNGSupport.class.getResourceAsStream("testng-build.xml"); //NOI18N
+//                    FileLock lock = testng.lock();
+//                    OutputStream os = testng.getOutputStream(lock);
+//                    try {
+//                        FileUtil.copy(is, os);
+//                    } finally {
+//                        if (is != null) {
+//                            is.close();
+//                        }
+//                        if (os != null) {
+//                            os.close();
+//                        }
+//                        lock.releaseLock();
+//                    }
+//                    extension = extender.addExtension(ID, testng);
+//                    extension.addDependency("-pre-pre-compile", "-reinit-tasks"); //NOI18N
+//                    ProjectManager.getDefault().saveProject(p);
+//                } catch (IOException ex) {
+//                    LOGGER.log(Level.SEVERE, null, ex);
+//                }
+//            }
+//        }
     }
 
     @Override
