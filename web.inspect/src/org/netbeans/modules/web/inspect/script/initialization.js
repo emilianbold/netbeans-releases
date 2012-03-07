@@ -632,7 +632,7 @@ NetBeans.insertGlassPane = function() {
     canvas.style.top = 0;
     canvas.style.left = 0;
     canvas.style.zIndex = zIndex;
-    canvas.onclick = function(event) {
+    canvas.addEventListener('click', function(event) {
         var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
         canvas.style.visibility = 'hidden';
         var element = document.elementFromPoint(event.clientX, event.clientY);
@@ -647,7 +647,7 @@ NetBeans.insertGlassPane = function() {
             selection: handle
         });
         self.selectElements([element]);
-    }
+    });
     document.body.appendChild(canvas);
     
     // Selection Mode checkbox
@@ -661,14 +661,14 @@ NetBeans.insertGlassPane = function() {
     selectionMode.type = 'checkbox';
     selectionMode.setAttribute(this.ATTR_ARTIFICIAL, true);
     selectionMode.setAttribute('checked', true);
-    selectionMode.onclick = this.switchSelectionMode;
+    selectionMode.addEventListener('click', this.switchSelectionMode);
     toolbox.appendChild(selectionMode);
     var selectionText = document.createTextNode('Selection Mode');
     toolbox.appendChild(selectionText);
     document.body.appendChild(toolbox);
 
-    window.onscroll=this.repaintGlassPane;
-    document.body.onresize=this.repaintGlassPane;
+    window.addEventListener('scroll', this.repaintGlassPane);
+    window.addEventListener('resize', this.repaintGlassPane);
     this.repaintGlassPane();
 }
 
