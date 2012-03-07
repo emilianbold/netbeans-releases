@@ -160,4 +160,17 @@ public final class RemoteUtils {
         return parent;
     }
 
+    /**
+     * Get name of the file for the given path.
+     * @param path file path
+     * @return name of the file for the given path
+     */
+    public static String getName(String path) {
+        if (path.equals(TransferFile.REMOTE_PATH_SEPARATOR)) {
+            return TransferFile.REMOTE_PATH_SEPARATOR;
+        }
+        List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
+        return parts.get(parts.size() - 1);
+    }
+
 }

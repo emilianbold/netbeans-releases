@@ -68,7 +68,6 @@ public class RemoteUtilsTest extends NbTestCase {
     }
 
     public void testParentPathForFiles() {
-        assertEquals(null, RemoteUtils.getParentPath("/"));
         assertEquals(null, RemoteUtils.getParentPath("a"));
         assertEquals("a", RemoteUtils.getParentPath("a/b"));
         assertEquals("a/b", RemoteUtils.getParentPath("a/b/c"));
@@ -85,6 +84,25 @@ public class RemoteUtilsTest extends NbTestCase {
         assertEquals("/", RemoteUtils.getParentPath("/a/"));
         assertEquals("/a", RemoteUtils.getParentPath("/a/b/"));
         assertEquals("/a/b", RemoteUtils.getParentPath("/a/b/c/"));
+    }
+
+    public void testNameForFiles() {
+        assertEquals("a", RemoteUtils.getName("a"));
+        assertEquals("b", RemoteUtils.getName("a/b"));
+        assertEquals("c", RemoteUtils.getName("a/b/c"));
+        assertEquals("a", RemoteUtils.getName("/a"));
+        assertEquals("b", RemoteUtils.getName("/a/b"));
+        assertEquals("c", RemoteUtils.getName("/a/b/c"));
+    }
+
+    public void testNameForFolders() {
+        assertEquals("/", RemoteUtils.getName("/"));
+        assertEquals("a", RemoteUtils.getName("a/"));
+        assertEquals("b", RemoteUtils.getName("a/b/"));
+        assertEquals("c", RemoteUtils.getName("a/b/c/"));
+        assertEquals("a", RemoteUtils.getName("/a/"));
+        assertEquals("b", RemoteUtils.getName("/a/b/"));
+        assertEquals("c", RemoteUtils.getName("/a/b/c/"));
     }
 
 }
