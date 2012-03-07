@@ -592,18 +592,20 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 break;
             }
 
-            if (!files.add(file)) {
+            // since we have _local_ transfer file, try to get remote transfer file
+            TransferFile remoteFile = convertFromLocalTransferFile(file);
+            if (!files.add(remoteFile)) {
                 LOGGER.log(Level.FINE, "File {0} already in queue", file);
 
                 // file already in set => remove the file from set and add this one (the previous can be root but apparently it is not)
-                files.remove(file);
-                files.add(file);
+                files.remove(remoteFile);
+                files.add(remoteFile);
             }
 
-            if (file.isDirectory()) {
+            if (remoteFile.isDirectory()) {
                 try {
-                    if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
-                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRemotePath());
+                    if (!cdBaseRemoteDirectory(remoteFile.getRemotePath(), false)) {
+                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", remoteFile.getRemotePath());
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
@@ -612,15 +614,15 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                         remoteFiles = remoteClient.listFiles();
                     }
                     for (RemoteFile child : remoteFiles) {
-                        if (isVisible(getLocalFile(baseLocalDir, file, child))) {
+                        if (isVisible(getLocalFile(baseLocalDir, remoteFile, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            files.add(TransferFile.fromRemoteFile(file, child, this, baseLocalAbsolutePath));
+                            files.add(TransferFile.fromRemoteFile(remoteFile, child, this, baseLocalAbsolutePath));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
                     }
                 } catch (RemoteException exc) {
-                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRemotePath());
+                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", remoteFile.getRemotePath());
                     // XXX maybe return somehow ignored files as well?
                 }
             }
@@ -629,6 +631,18 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             LOGGER.log(Level.FINE, "Prepared for download: {0}", files);
         }
         return files;
+    }
+
+    private TransferFile convertFromLocalTransferFile(TransferFile localFile) throws RemoteException {
+        RemoteFile remoteFile = remoteClient.listFile(localFile.getRemoteAbsolutePath());
+        if (remoteFile != null) {
+            // remote file found
+            LOGGER.log(Level.FINE, "Remote file {0} found => adding", localFile.getRemotePath());
+            return TransferFile.fromRemoteFile(localFile.hasParent() ? localFile.getParent() : null, remoteFile, this, localFile.getBaseLocalDirectoryPath());
+        }
+        // remote file not found => add what we have
+        LOGGER.log(Level.FINE, "Remote file {0} not found => adding local transfer file", localFile.getRemotePath());
+        return localFile;
     }
 
     public TransferInfo download(Set<TransferFile> filesToDownload) throws RemoteException {
