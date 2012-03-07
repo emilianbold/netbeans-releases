@@ -145,6 +145,9 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
     public void update() {
         resultsNode.update();
+        if (details && !expandButton.isEnabled()) {
+            expandButton.setEnabled(resultModel.size() > 0);
+        }
         updateShiftButtons();
     }
 
@@ -209,6 +212,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             return new AbstractButton[] {};
         }
         prevButton = new JButton();
+        prevButton.setEnabled(false);
         prevButton.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
         prevButton.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_PREV_MATCH"));                             //NOI18N
@@ -219,6 +223,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             }
         });
         nextButton = new JButton();
+        nextButton.setEnabled(false);
         nextButton.setIcon(ImageUtilities.loadImageIcon(NEXT_ICON, true));
         nextButton.setToolTipText(UiUtils.getText(
                 "TEXT_BUTTON_NEXT_MATCH"));                             //NOI18N
@@ -229,6 +234,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             }
         });
         expandButton = new JToggleButton();
+        expandButton.setEnabled(false);
         expandButton.setIcon(ImageUtilities.loadImageIcon(EXPAND_ICON, true));
         expandButton.setSelectedIcon(ImageUtilities.loadImageIcon(
                 COLLAPSE_ICON, true));
