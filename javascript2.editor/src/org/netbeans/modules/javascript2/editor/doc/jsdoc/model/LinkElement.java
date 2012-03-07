@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.el.NamePath;
-
 /**
  * Represents jsDoc elements which points to fields, methods, classes.
  * <p>
