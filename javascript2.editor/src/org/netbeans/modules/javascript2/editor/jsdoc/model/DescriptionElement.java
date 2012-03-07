@@ -39,33 +39,42 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc.model;
+
+import org.openide.util.Parameters;
 
 /**
- * Represents specific comment type for jsDoc documentation tool.
+ * Represents jsDoc elements with description text.
  * <p>
- * //   single line type
- * /*   traditional type <star>/
- * /**  documentation type <star>/
+ * <i>Examples:</i> @author Jackie Chan, @fileOverview about this file, ...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public enum JsDocCommentType {
+public class DescriptionElement extends JsDocElementImpl {
 
-    DOC_COMMON("common"), //NOI18N
-    DOC_NO_CODE_START("noCodeStart"), //NOI18N
-    DOC_NO_CODE_END("noCodeEnd"), //NOI18N
-    DOC_SHARED_TAG_START("sharedTagStart"), //NOI18N
-    DOC_SHARED_TAG_END("sharedTagEnd"); //NOI18N
+    private final String description;
 
-    private final String value;
-
-    private JsDocCommentType(String textValue) {
-        this.value = textValue;
+    private DescriptionElement(Type type, String description) {
+        super(type);
+        this.description = description;
     }
 
-    @Override
-    public String toString() {
-        return value;
+    /**
+     * Creates new {@code DescriptionElement}.
+     *
+     * @param type {@code DescriptionElement} type, never null
+     * @param description description of the element, never null
+     */
+    public static DescriptionElement create(Type type, String description) {
+        return new DescriptionElement(type, description);
     }
+
+    /**
+     * Gets description of the element.
+     * @return description
+     */
+    public String getDescription() {
+        return description;
+    }
+
 }

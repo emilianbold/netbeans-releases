@@ -39,64 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
-
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
-import org.netbeans.spi.lexer.TokenFactory;
+package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 /**
- * Base JsDoc Lexer class.
+ * Represents jsDoc elements which points to fields, methods, classes.
  * <p>
- * <i>Created on base of {@link JsLexer}</i>
+ * <i>Examples:</i> @memberOf MyClass, ...
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-class JsDocLexer implements Lexer<JsDocTokenId> {
+public class LinkElement extends JsDocElementImpl {
 
-    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
+    private final NamePath linkedPath;
 
-    private final JsDocColoringLexer coloringLexer;
-
-    private TokenFactory<JsDocTokenId> tokenFactory;
-
-    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
-        coloringLexer = new JsDocColoringLexer(info);
-        tokenFactory = info.tokenFactory();
+    private LinkElement(Type type, NamePath linkedPath) {
+        super(type);
+        this.linkedPath = linkedPath;
     }
 
-    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
-        synchronized(JsDocLexer.class) {
-            return new JsDocLexer(info);
-        }
+    public static LinkElement create(Type type, NamePath linkedPath) {
+        return new LinkElement(type, linkedPath);
     }
 
-    @Override
-    public Token<JsDocTokenId> nextToken() {
-        try {
-            JsDocTokenId tokenId = coloringLexer.nextToken();
-//            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
-            Token<JsDocTokenId> token = null;
-            if (tokenId != null) {
-                token = tokenFactory.createToken(tokenId);
-            }
-            return token;
-        } catch (IOException ex) {
-            Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
+    /**
+     * Gets the name path of this linker element.
+     * @return name path
+     */
+    public NamePath getLinkedPath() {
+        return linkedPath;
     }
 
-    @Override
-    public Object state() {
-        return coloringLexer.getState();
-    }
-
-    @Override
-    public void release() {
-    }
 }

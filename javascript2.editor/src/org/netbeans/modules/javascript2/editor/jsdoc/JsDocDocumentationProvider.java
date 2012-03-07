@@ -39,8 +39,13 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.UnnamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import com.oracle.nashorn.ir.Node;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,7 +54,6 @@ import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.*;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;

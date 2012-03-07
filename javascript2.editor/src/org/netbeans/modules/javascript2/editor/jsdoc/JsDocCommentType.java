@@ -39,26 +39,33 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 /**
+ * Represents specific comment type for jsDoc documentation tool.
+ * <p>
+ * //   single line type
+ * /*   traditional type <star>/
+ * /**  documentation type <star>/
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class NamePath {
+public enum JsDocCommentType {
 
-    private final String namePath;
+    DOC_COMMON("common"), //NOI18N
+    DOC_NO_CODE_START("noCodeStart"), //NOI18N
+    DOC_NO_CODE_END("noCodeEnd"), //NOI18N
+    DOC_SHARED_TAG_START("sharedTagStart"), //NOI18N
+    DOC_SHARED_TAG_END("sharedTagEnd"); //NOI18N
 
-    public NamePath(String namePath) {
-        this.namePath = namePath;
-    }
+    private final String value;
 
-    public String getNamePath() {
-        return namePath;
+    private JsDocCommentType(String textValue) {
+        this.value = textValue;
     }
 
     @Override
     public String toString() {
-        return namePath;
+        return value;
     }
 }

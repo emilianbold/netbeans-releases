@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocDocumentationProvider;
+import org.netbeans.modules.javascript2.editor.jsdoc.JsDocDocumentationProvider;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**

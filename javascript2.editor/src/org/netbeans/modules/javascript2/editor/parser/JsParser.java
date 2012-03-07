@@ -42,7 +42,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocParser;
+import org.netbeans.modules.javascript2.editor.jsdoc.JsDocParser;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Task;

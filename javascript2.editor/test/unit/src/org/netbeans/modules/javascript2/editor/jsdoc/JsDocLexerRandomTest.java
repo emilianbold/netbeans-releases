@@ -42,9 +42,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.JsDocTokenId;
 import junit.framework.TestCase;
 import org.netbeans.lib.lexer.test.*;
 

@@ -38,7 +38,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;

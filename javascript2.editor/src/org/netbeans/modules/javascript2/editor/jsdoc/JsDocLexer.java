@@ -39,37 +39,64 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
+import org.netbeans.spi.lexer.Lexer;
+import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.spi.lexer.TokenFactory;
 
 /**
- * Represents jsDoc elements with declaration purpose.
+ * Base JsDoc Lexer class.
  * <p>
- * <i>Examples:</i> @extends otherClass, @type typeClass, ...
- *
+ * <i>Created on base of {@link JsLexer}</i>
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class DeclarationElement extends JsDocElementImpl {
+class JsDocLexer implements Lexer<JsDocTokenId> {
 
-    private final org.netbeans.modules.javascript2.editor.model.Type declaredType;
+    private static final Logger LOGGER = Logger.getLogger(JsDocLexer.class.getName());
 
-    private DeclarationElement(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
-        super(type);
-        this.declaredType = declaredType;
+    private final JsDocColoringLexer coloringLexer;
+
+    private TokenFactory<JsDocTokenId> tokenFactory;
+
+    private JsDocLexer(LexerRestartInfo<JsDocTokenId> info) {
+        coloringLexer = new JsDocColoringLexer(info);
+        tokenFactory = info.tokenFactory();
     }
 
-    /**
-     * Creates new {@code DeclarationElement}.
-     */
-    public static DeclarationElement create(Type type, org.netbeans.modules.javascript2.editor.model.Type declaredType) {
-        return new DeclarationElement(type, declaredType);
+    public static JsDocLexer create(LexerRestartInfo<JsDocTokenId> info) {
+        synchronized(JsDocLexer.class) {
+            return new JsDocLexer(info);
+        }
     }
 
-    /**
-     * Gets the type declared by this element.
-     * @return declared type
-     */
-    public org.netbeans.modules.javascript2.editor.model.Type getDeclaredType() {
-        return declaredType;
+    @Override
+    public Token<JsDocTokenId> nextToken() {
+        try {
+            JsDocTokenId tokenId = coloringLexer.nextToken();
+//            LOGGER.log(Level.FINEST, "Lexed token is {0}", tokenId);
+            Token<JsDocTokenId> token = null;
+            if (tokenId != null) {
+                token = tokenFactory.createToken(tokenId);
+            }
+            return token;
+        } catch (IOException ex) {
+            Logger.getLogger(JsLexer.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public Object state() {
+        return coloringLexer.getState();
+    }
+
+    @Override
+    public void release() {
     }
 }

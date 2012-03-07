@@ -39,34 +39,32 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.jsdoc.model;
+
+import java.util.List;
 
 /**
- * Represents jsDoc elements which points to fields, methods, classes.
+ * Represents parameter element which does not need any parameter name.
  * <p>
- * <i>Examples:</i> @memberOf MyClass, ...
+ * <i>Examples:</i> @throws {MyError} my description,...
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class LinkElement extends JsDocElementImpl {
+public class UnnamedParameterElement extends ParameterElement {
 
-    private final NamePath linkedPath;
-
-    private LinkElement(Type type, NamePath linkedPath) {
-        super(type);
-        this.linkedPath = linkedPath;
+    private UnnamedParameterElement(Type type,
+            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+        super(type, paramTypes, paramDescription);
     }
 
-    public static LinkElement create(Type type, NamePath linkedPath) {
-        return new LinkElement(type, linkedPath);
-    }
-
-    /**
-     * Gets the name path of this linker element.
-     * @return name path
+    /** Creates unnamed parameter element.
+     * @param type type of the element
+     * @param paramTypes type of the parameter
+     * @param paramDescription description of the parameter
      */
-    public NamePath getLinkedPath() {
-        return linkedPath;
+    public static UnnamedParameterElement create(Type type,
+            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
+        return new UnnamedParameterElement(type, paramTypes, paramDescription);
     }
 
 }

@@ -39,12 +39,12 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import java.util.Map.Entry;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
 
 /**

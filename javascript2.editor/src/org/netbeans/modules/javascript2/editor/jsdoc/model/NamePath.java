@@ -39,44 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 /**
- * Represents jsDoc elements which assigns foreign member field.
- * <p>
- * <i>Examples:</i> @borrows otherMemberName as thisMemberName
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class AssignElement extends JsDocElementImpl {
+public class NamePath {
 
-    private final NamePath otherMemberName;
-    private final NamePath thisMemberName;
+    private final String namePath;
 
-    private AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
-        super(type);
-        this.otherMemberName = otherMemberName;
-        this.thisMemberName = thisMemberName;
+    public NamePath(String namePath) {
+        this.namePath = namePath;
     }
 
-    public static AssignElement create(Type type, NamePath otherMemberName, NamePath thisMemberName) {
-        return new AssignElement(type, otherMemberName, thisMemberName);
+    public String getNamePath() {
+        return namePath;
     }
 
-    /**
-     * Gets other member name path.
-     * @return other member name path
-     */
-    public NamePath getOtherMemberName() {
-        return otherMemberName;
+    @Override
+    public String toString() {
+        return namePath;
     }
-
-    /**
-     * Gets this member name path.
-     * @return this member name path
-     */
-    public NamePath getThisMemberName() {
-        return thisMemberName;
-    }
-
 }

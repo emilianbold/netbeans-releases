@@ -39,32 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
-
-import java.util.List;
+package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 /**
- * Represents parameter element which does not need any parameter name.
+ * Represents jsDoc elements which assigns foreign member field.
  * <p>
- * <i>Examples:</i> @throws {MyError} my description,...
+ * <i>Examples:</i> @borrows otherMemberName as thisMemberName
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class UnnamedParameterElement extends ParameterElement {
+public class AssignElement extends JsDocElementImpl {
 
-    private UnnamedParameterElement(Type type,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        super(type, paramTypes, paramDescription);
+    private final NamePath otherMemberName;
+    private final NamePath thisMemberName;
+
+    private AssignElement(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+        super(type);
+        this.otherMemberName = otherMemberName;
+        this.thisMemberName = thisMemberName;
     }
 
-    /** Creates unnamed parameter element.
-     * @param type type of the element
-     * @param paramTypes type of the parameter
-     * @param paramDescription description of the parameter
+    public static AssignElement create(Type type, NamePath otherMemberName, NamePath thisMemberName) {
+        return new AssignElement(type, otherMemberName, thisMemberName);
+    }
+
+    /**
+     * Gets other member name path.
+     * @return other member name path
      */
-    public static UnnamedParameterElement create(Type type,
-            List<org.netbeans.modules.javascript2.editor.model.Type> paramTypes, String paramDescription) {
-        return new UnnamedParameterElement(type, paramTypes, paramDescription);
+    public NamePath getOtherMemberName() {
+        return otherMemberName;
+    }
+
+    /**
+     * Gets this member name path.
+     * @return this member name path
+     */
+    public NamePath getThisMemberName() {
+        return thisMemberName;
     }
 
 }

@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -47,10 +47,10 @@ import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.DescriptionElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElement.Type;
-import org.netbeans.modules.javascript2.editor.doc.jsdoc.model.JsDocElementUtils;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;

@@ -39,28 +39,65 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.jsdoc.model;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
+import com.oracle.nashorn.ir.FunctionNode;
+import com.oracle.nashorn.ir.Node;
+import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Source;
 
 /**
- * Represents simple jsDoc elements without any additional property.
- * <p>
- * <i>Examples:</i> @private, @public, @event, @ignore, ...
+ * Base of class for JsDoc unit tests.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class SimpleElement extends JsDocElementImpl {
+public abstract class JsDocTestBase extends JsTestBase {
 
-    private SimpleElement(Type type) {
-        super(type);
+    public JsDocTestBase(String testName) {
+        super(testName);
     }
 
     /**
-     * Creates new {@code SimpleElement}.
-     * @param type {@code SimpleElement} type, never null
+     * Gets {@code DocumentationProvider} for given parse result.
+     * @param parserResult parser result of the JS file
+     * @return {@code JsDocDocumentationProvider}
      */
-    public static SimpleElement create(Type type) {
-        return new SimpleElement(type);
+    public static JsDocDocumentationProvider getDocumentationProvider(JsParserResult parserResult) {
+        return new JsDocDocumentationProvider(parserResult);
+    }
+
+    /**
+     * Gets node for given offset.
+     * @param parserResult parser result of the JS file
+     * @param offset offset of examined node
+     * @return {@code Node} which correspond to given offset
+     */
+    public static Node getNodeForOffset(JsParserResult parserResult, int offset) {
+        Node nearestNode = null;
+        int nearestNodeDistance = Integer.MAX_VALUE;
+        FunctionNode root = parserResult.getRoot();
+        OffsetVisitor offsetVisitor = new OffsetVisitor(offset);
+        root.accept(offsetVisitor);
+        for (Node node : offsetVisitor.getNodes()) {
+            if (offset - node.getStart()  < nearestNodeDistance) {
+                nearestNodeDistance = offset - node.getStart();
+                nearestNode = node;
+            }
+        }
+        return nearestNode;
+    }
+
+
+    /**
+     * Return the offset of the given position, indicated by ^ in the line fragment
+     * from the text got from given Source.
+     * @param source source for counting the offset
+     * @param caretLine line
+     * @return offset of ^ in the given source
+     */
+    public static int getCaretOffset(Source source, String caretLine) {
+        return getCaretOffset(source.createSnapshot().getText().toString(), caretLine);
     }
 
 }
