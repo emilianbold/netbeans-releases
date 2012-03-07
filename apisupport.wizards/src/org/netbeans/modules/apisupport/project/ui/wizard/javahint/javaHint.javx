@@ -21,7 +21,6 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 </#if>
 import org.netbeans.spi.java.hints.TriggerPattern;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 @Hint(displayName="DN_${PACKAGE_NAME}.${CLASS_NAME}",
@@ -35,12 +34,11 @@ public class ${CLASS_NAME} {
                     constraints = @ConstraintVariableType(variable = "$str", type = "java.lang.String"))
     @Messages("ERR_${PACKAGE_NAME}.${CLASS_NAME}=${WARNING_MESSAGE}")
     public static ErrorDescription computeWarning(HintContext ctx) {
-        String warningDisplayName = NbBundle.getMessage(${CLASS_NAME}.class, Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
 <#if GENERATE_FIX??>
         Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warningDisplayName, fix);
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}(), fix);
 <#else>
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), warningDisplayName);
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
 </#if>
     }
 
@@ -54,7 +52,7 @@ public class ${CLASS_NAME} {
         @Override
         @Messages("FIX_${PACKAGE_NAME}.${CLASS_NAME}=${FIX_MESSAGE}")
         protected String getText() {
-            return NbBundle.getMessage(${CLASS_NAME}.class, Bundle.FIX_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
+            return Bundle.FIX_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}();
         }
 
         @Override
