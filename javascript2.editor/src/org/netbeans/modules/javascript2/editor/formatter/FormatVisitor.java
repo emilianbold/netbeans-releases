@@ -71,6 +71,9 @@ public class FormatVisitor extends NodeVisitor {
                 || block.getStart() < block.getFinish())) {
 
             if (caseNodes.contains(block)) {
+                // if the block is real block it is reused down the ast tree
+                // so we need to remove it to be handled normally later
+                caseNodes.remove(block);
                 handleCaseBlock(block);
             } else if (isScript(block)){
                 handleBlockContent(block);
