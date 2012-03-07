@@ -73,7 +73,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         this.returnTypes = new HashSet<TypeUsage>();
         setDeclared(true);
         this.areReturnTypesResolved = false;
-        if (scope != null && parentObject != null) {
+        if (parentObject != null) {
             // creating arguments variable
             JsObjectImpl arguments = new JsObjectImpl(this, 
                     new IdentifierImpl("arguments", new OffsetRange(name.getOffsetRange().getStart(), name.getOffsetRange().getStart())), 

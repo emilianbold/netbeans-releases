@@ -19,3 +19,4 @@ METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
 FIELD      constructor                     [PUBLIC]   stub_core_Object.js
 FIELD      prototype                       [PUBLIC]   stub_core_Object.js
 FIELD      version                         [PUBLIC]   methodChainSimple.js
+VARIABLE   arguments                       [PUBLIC]   methodChainSimple.js

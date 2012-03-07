@@ -4,6 +4,7 @@ Code completion result for source line:
 ------------------------------------
 CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
 CLASS      jQuery                          [PUBLIC]   jQueryFragment01.js
+VARIABLE   arguments                       [PRIVATE]  jQueryFragment01.js
 VARIABLE   functionVar                     [PRIVATE]  jQueryFragment01.js
 VARIABLE   globalProperty                  [PUBLIC]   jQueryFragment01.js
 KEYWORD    break                                      null

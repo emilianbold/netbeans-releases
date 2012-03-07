@@ -91,7 +91,9 @@ public class IndexedElement extends JsElementImpl {
         elementDocument.addPair(JsIndex.FIELD_IS_DECLARED, (object.isDeclared() ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         for (JsObject property : object.getProperties().values()) {
-            elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+            }
         }
         StringBuilder sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {

@@ -487,7 +487,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             
             // add as last type Object
             for (IndexedElement indexedElement : jsIndex.getProperties("Object")) {
-                if (startsWith(indexedElement.getName(), request.prefix)) {
+                if (startsWith(indexedElement.getName(), request.prefix)
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
                     addedProperties.put(indexedElement.getName(), indexedElement);
                 }
             }
@@ -601,6 +602,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         for (JsObject property : jsObject.getProperties().values()) {
             String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                    && !property.getModifiers().contains(Modifier.PRIVATE)
                     && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 JsElement element = addedProperties.get(propertyName);

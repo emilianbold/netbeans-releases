@@ -43,3 +43,4 @@ METHOD     watch(prop, handler): undefine  [PUBLIC]   stub_core_Object.js
 FIELD      constructor                     [PUBLIC]   stub_core_Object.js
 FIELD      length                          [PUBLIC]   stub_core_String.js
 FIELD      prototype                       [PUBLIC]   stub_core_Object.js
+VARIABLE   arguments                       [PUBLIC]   methodChainSimple.js
