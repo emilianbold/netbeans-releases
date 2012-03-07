@@ -51,12 +51,14 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardItera
 import org.netbeans.modules.apisupport.project.ui.wizard.common.CreatedModifiedFiles;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-@TemplateRegistration(folder = UIUtil.TEMPLATE_FOLDER, position = 1500, displayName = "#Templates/NetBeansModuleDevelopment/javaHint", iconBase = "org/netbeans/modules/apisupport/project/ui/wizard/javahint/suggestion.png", description = "javaHint.html", category = UIUtil.TEMPLATE_CATEGORY)
+@TemplateRegistration(folder=UIUtil.TEMPLATE_FOLDER, position=1500, displayName="#template_hint", iconBase="org/netbeans/modules/apisupport/project/ui/wizard/javahint/suggestion.png", description="javaHint.html", category=UIUtil.TEMPLATE_CATEGORY)
+@Messages("template_hint=Java Hint")
 public class NewJavaHintIterator extends BasicWizardIterator {
 
     private DataModel data;
