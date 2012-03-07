@@ -41,21 +41,13 @@
  */
 package org.netbeans.modules.search.ui;
 
-import java.awt.event.ActionEvent;
-import java.util.List;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
-import org.netbeans.modules.search.TextDetail;
 import org.netbeans.swing.outline.Outline;
-import org.openide.cookies.LineCookie;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.text.Line;
 
 /**
  *
@@ -74,12 +66,38 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
         getExplorerManager().setRootContext(resultsNode);
         this.resultModel = resultModel;
 
-        getOutlineView().addPropertyColumn("detailsCount", "detailsCount");
-        getOutlineView().addPropertyColumn("path", "path");
-        getOutlineView().addPropertyColumn("size", "size");
-        getOutlineView().addPropertyColumn("lastModified", "lastModified");
+        if (resultModel.canHaveDetails()) {
+            getOutlineView().addPropertyColumn(
+                    "detailsCount", UiUtils.getText( //NOI18N
+                    "BasicSearchResultsPanel.outline.detailsCount"));   //NOI18N
+        }
+        getOutlineView().addPropertyColumn("path", UiUtils.getText(
+                "BasicSearchResultsPanel.outline.path"));               //NOI18N
+        getOutlineView().addPropertyColumn("size", UiUtils.getText(
+                "BasicSearchResultsPanel.outline.size"));               //NOI18N
+        getOutlineView().addPropertyColumn("lastModified", UiUtils.getText(
+                "BasicSearchResultsPanel.outline.lastModified"));       //NOI18N
         getOutlineView().getOutline().setAutoResizeMode(
-        Outline.AUTO_RESIZE_ALL_COLUMNS);
+                Outline.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        if (resultModel.canHaveDetails()) {
+            sizeColumn(0, 80, 10000); // file name, matching lines
+            sizeColumn(1, 20, 500); // details count
+            sizeColumn(2, 40, 5000); // path
+            sizeColumn(3, 20, 500); // size
+            sizeColumn(4, 20, 500); // last modified
+        } else {
+            sizeColumn(0, 80, 2000); // file name, matching lines
+            sizeColumn(1, 40, 5000); // path
+            sizeColumn(2, 20, 500); // size
+            sizeColumn(3, 20, 500); // last modified
+        }
+    }
+
+    private void sizeColumn(int index, int min, int max) {
+        Object id = getOutlineView().getOutline().getColumnModel().getColumn(
+                index).getIdentifier();
+        getOutlineView().getOutline().getColumn(id).setMinWidth(min);
+        getOutlineView().getOutline().getColumn(id).setMaxWidth(max);
     }
 
     public void update() {
@@ -123,8 +141,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
                     || key.getTextDetails().isEmpty()) {
                 children = Children.LEAF;
             } else {
-                children = new MatchesChildren(key.getTextDetails(),
-                        key.getDataObject());
+                children = key.getDetailsChildren();
             }
             Node n = new MatchingObjectNode(delegate, children, key);
             return new Node[]{n};
@@ -132,56 +149,6 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
         private synchronized void update() {
             setKeys(resultModel.getMatchingObjects());
-        }
-    }
-
-    private class MatchesChildren
-            extends Children.Keys<TextDetail> {
-
-        private DataObject dataObject;
-
-        public MatchesChildren(List<TextDetail> matches,
-                DataObject dataObject) {
-
-            this.dataObject = dataObject;
-            setKeys(matches);
-        }
-
-        @Override
-        protected Node[] createNodes(final TextDetail key) {
-
-            final Action openAction = new AbstractAction("Open") {      //NOI18N
-
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    LineCookie lc = dataObject.getLookup().lookup(
-                            LineCookie.class);
-                    if (lc != null) {
-                        Line l = lc.getLineSet().getOriginal(
-                                key.getLine() - 1); // counted from zero
-                        l.show(Line.ShowOpenType.OPEN,
-                                Line.ShowVisibilityType.FOCUS);
-                    }
-                }
-            };
-
-            AbstractNode n = new AbstractNode(LEAF) {
-
-                @Override
-                public Action[] getActions(boolean context) {
-                    return new Action[]{openAction};
-                }
-
-                @Override
-                public Action getPreferredAction() {
-                    return openAction;
-                }
-            };
-
-            n.setDisplayName(key.getLineText() + "[" //NOI18N
-                    + key.getLine() + ":" + key.getColumn() + "]");
-
-            return new Node[]{n};
         }
     }
 }

@@ -171,7 +171,7 @@ public final class BasicSearchCriteria {
         if (pattern == null || pattern.equals("")) {
             textPattern = null;
             textPatternSpecified = false;
-            textPatternValid = true;
+            textPatternValid = false;
         } else {
             textPatternSpecified = true;
             updateTextPattern();

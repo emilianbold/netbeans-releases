@@ -95,7 +95,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
 
         jPanel1 = new javax.swing.JPanel();
         toolBar = new javax.swing.JToolBar();
-        outline = new OutlineView("Files");
+        outline = createOutlineView();
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -196,5 +196,10 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
                 SearchControl.openFindDialog(searchProviderPresenter);
             }
         }
+    }
+
+    private OutlineView createOutlineView() {
+        return new OutlineView(UiUtils.getText(
+                "BasicSearchResultsPanel.outline.nodes"));              //NOI18N
     }
 }

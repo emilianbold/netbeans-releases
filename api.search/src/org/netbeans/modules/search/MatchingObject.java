@@ -71,6 +71,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
@@ -460,6 +461,10 @@ public final class MatchingObject
         }
 
         return detailNodes.toArray(new Node[detailNodes.size()]);
+    }
+
+    public Children getDetailsChildren() {
+        return new DetailsChildren();
     }
 
     /**
@@ -917,6 +922,18 @@ public final class MatchingObject
 
         public void setTextDetails(List<TextDetail> textDetails) {
             this.textDetails = textDetails;
+        }
+    }
+
+    private class DetailsChildren extends Children.Keys<TextDetail> {
+
+        public DetailsChildren() {
+            setKeys(getTextDetails());
+        }
+
+        @Override
+        protected Node[] createNodes(TextDetail key) {
+            return new Node[]{new TextDetail.DetailNode(key)};
         }
     }
 }
