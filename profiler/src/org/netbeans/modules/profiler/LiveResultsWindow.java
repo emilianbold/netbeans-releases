@@ -504,7 +504,7 @@ public final class LiveResultsWindow extends TopComponent
         getAccessibleContext().setAccessibleDescription(LIVE_RESULTS_ACCESS_DESCR);
         //        setBorder(new EmptyBorder(5, 5, 5, 5));
         setLayout(new BorderLayout());
-
+        setOpaque(false);
         memoryActionsHandler = new MemoryActionsHandler();
         historyActionsHandler = new HistoryActionsHandler();
         cpuActionsHandler = new CPUActionsHandler();
@@ -526,15 +526,16 @@ public final class LiveResultsWindow extends TopComponent
         noResultsLabel.setIcon(Icons.getIcon(ProfilerIcons.MONITORING_32));
         noResultsLabel.setIconTextGap(10);
         noResultsLabel.setEnabled(false);
+        noResultsLabel.setOpaque(false);
         noResultsPanel.add(noResultsLabel, BorderLayout.NORTH);
-
+        noResultsPanel.setOpaque(false);
         currentDisplay = null;
         currentDisplayComponent = noResultsPanel;
         add(noResultsPanel, BorderLayout.CENTER);
 
         //*************
         memoryTabPanel = new JPanel(new java.awt.BorderLayout());
-
+        memoryTabPanel.setOpaque(false);
         tabs = new JTabbedPane();
         // Fix for Issue 115062 (CTRL-PageUp/PageDown should move between snapshot tabs)
         tabs.getActionMap().getParent().remove("navigatePageUp"); // NOI18N
@@ -559,6 +560,9 @@ public final class LiveResultsWindow extends TopComponent
                             toolBar.remove(b);
                         graphButtonsSeparator.setVisible(false);
                     }
+                    toolBar.invalidate();
+                    toolBar.validate();
+                    toolBar.repaint();
                 }
             }
         });
@@ -591,7 +595,7 @@ public final class LiveResultsWindow extends TopComponent
         if (hasDefault()) {
             CommonUtils.runInEventDispatchThread(new Runnable() {
                     public void run() {
-                        if (defaultLiveInstance.isOpened()) {
+                        if (defaultLiveInstance.isShowing()) {
                             defaultLiveInstance.close();
                         }
                     }
@@ -1057,7 +1061,7 @@ public final class LiveResultsWindow extends TopComponent
                         return;
                     }
 
-                    if (!isProfiling() || !isOpened()) {
+                    if (!isProfiling() || !isShowing()) {
                         return;
                     }
 
@@ -1112,7 +1116,7 @@ public final class LiveResultsWindow extends TopComponent
     }
 
     private void updateResultsDisplay() {
-        if (!isOpened()) {
+        if (!isShowing()) {
             return; // do nothing if i'm closed
         }
 

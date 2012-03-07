@@ -407,7 +407,9 @@ public abstract class LivenessResultsPanel extends MemoryResultsPanel {
                 });
 
             resTableModel.setRealColumnVisibility(7, false);
-
+            resTableModel.setRealColumnVisibility(4, false);
+            resTableModel.setRealColumnVisibility(5, false);
+            
             resTable = new JExtendedTable(resTableModel) {
                     public void doLayout() {
                         int columnsWidthsSum = 0;
