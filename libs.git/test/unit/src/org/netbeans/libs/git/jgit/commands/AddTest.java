@@ -42,6 +42,7 @@
 
 package org.netbeans.libs.git.jgit.commands;
 
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -55,15 +56,19 @@ import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.WorkingTreeIterator;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.progress.ProgressMonitor;
 
 /**
  *
@@ -345,6 +350,66 @@ public class AddTest extends AbstractGitTestCase {
         statuses = clientNested.getStatus(new File[] { nested }, NULL_PROGRESS_MONITOR);
         assertEquals(1, statuses.size());
         assertStatus(statuses, nested, f2, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false);
+    }
+    
+    public void testAddMixedLineEndings () throws Exception {
+        File f = new File(workDir, "f");
+        String content = "";
+        for (int i = 0; i < 10000; ++i) {
+            content += i + "\r\n";
+        }
+        write(f, content);
+        File[] files = new File[] { f };
+        GitClient client = getClient(workDir);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        client.commit(files, "commit", null, null, NULL_PROGRESS_MONITOR);
+        
+        Map<File, GitStatus> statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+        
+        // lets turn autocrlf on
+        StoredConfig cfg = repository.getConfig();
+        cfg.setString(ConfigConstants.CONFIG_CORE_SECTION, null, ConfigConstants.CONFIG_KEY_AUTOCRLF, "true");
+        cfg.save();
+        
+        // when this starts failing, remove the work around
+        ObjectInserter inserter = repository.newObjectInserter();
+        TreeWalk treeWalk = new TreeWalk(repository);
+        treeWalk.setFilter(PathFilterGroup.createFromStrings("f"));
+        treeWalk.setRecursive(true);
+        treeWalk.reset();
+        treeWalk.addTree(new FileTreeIterator(repository));
+        while (treeWalk.next()) {
+            String path = treeWalk.getPathString();
+            assertEquals("f", path);
+            WorkingTreeIterator fit = treeWalk.getTree(0, WorkingTreeIterator.class);
+            InputStream in = fit.openEntryStream();
+            try {
+                inserter.insert(Constants.OBJ_BLOB, fit.getEntryLength(), in);
+                fail("this should fail, remove the work around");
+            } catch (EOFException ex) {
+                assertEquals("Input did not match supplied length. 10000 bytes are missing.", ex.getMessage());
+            } finally {
+                in.close();
+                inserter.release();
+            }
+            break;
+        }
+        
+        // no err should occur
+        write(f, content + "hello");
+        statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false);
+        client.add(files, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false);
+        client.commit(files, "message", null, null, NULL_PROGRESS_MONITOR);
+        statuses = client.getStatus(files, NULL_PROGRESS_MONITOR);
+        assertEquals(1, statuses.size());
+        assertStatus(statuses, workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
     }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {

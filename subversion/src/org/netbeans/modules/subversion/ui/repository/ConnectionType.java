@@ -462,6 +462,7 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
     static class SvnSSHSvnKit extends ConnectionType {
         
         private final SvnSSHSvnKitPanel panel = new SvnSSHSvnKitPanel();
+        private boolean portNumberValid;
         
         public SvnSSHSvnKit(Repository repository) {
             super(repository);
@@ -600,14 +601,14 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             if (rc != null) {
                 rc.setUsername(panel.txtUserName.getText());
             }
-            repository.setValid(true, "");
+            validateConnection();
         }
 
         private void onPasswordChange (RepositoryConnection rc) {
             if (rc != null) {
                 rc.setPassword(panel.txtPassword.getPassword());
             }
-            repository.setValid(true, "");
+            validateConnection();
         }
 
         private void onPortNumberChange (RepositoryConnection rc) {
@@ -615,18 +616,15 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
             int portNumber = -1;
             try {
                 portNumber = Integer.parseInt(panel.txtPort.getText());
-                valid = portNumber > 0;
+                valid = portNumber > 0 && portNumber <= 65535;
             } catch (NumberFormatException ex) {
                 valid = false;
             }
             if (rc != null && valid) {
                 rc.setSshPortNumber(portNumber);
             }
-            if (valid) {
-                repository.setValid(true, "");
-            } else {
-                repository.setValid(false, "Invalid port number");
-            }
+            portNumberValid = valid;
+            validateConnection();
         }
 
         private void onCertPasswordChange (RepositoryConnection rc) {
@@ -653,6 +651,19 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
                 portNumber = Integer.parseInt(panel.txtPort.getText());
             } catch (NumberFormatException ex) { }
             editedrc.setSshPortNumber(portNumber);
+        }
+
+        private void validateConnection () {
+            if (portNumberValid) {
+                repository.setValid(true, "");
+            } else {
+                repository.setValid(false, NbBundle.getMessage(ConnectionType.class, "MSG_ConnectionType.invalidPort")); //NOI18N
+            }
+        }
+
+        @Override
+        boolean isValid (RepositoryConnection rc) {
+            return super.isValid(rc) && portNumberValid;
         }
     }
 }

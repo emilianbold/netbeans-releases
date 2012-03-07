@@ -122,7 +122,7 @@ bool PlatformLauncher::start(char* argv[], int argc, DWORD *retCode) {
     }
     jvmLauncher.getJavaPath(jdkhome);
 
-    deteteNewClustersFile();
+    deleteNewClustersFile();
     prepareOptions();
 
     if (nextAction.empty()) {
@@ -360,8 +360,8 @@ bool PlatformLauncher::processAutoUpdateCL() {
     return true;
 }
 
-void PlatformLauncher::deteteNewClustersFile() {
-    logMsg("deteteNewClustersFile()...");
+void PlatformLauncher::deleteNewClustersFile() {
+    logMsg("deleteNewClustersFile()...");
     if (userDir.empty()) {
         logMsg("\tuserdir empty, quiting");
         return;

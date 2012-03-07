@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Action;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * Action for execution of an arbitrary command using a project's
@@ -60,16 +59,16 @@ final class TestMethodNodeAction implements Action {
     private final ActionProvider actionProvider;
     private final Lookup context;
     private final String command;
-    private final String bundleKey;
+    private final String name;
 
     public TestMethodNodeAction(ActionProvider actionProvider,
                                 Lookup context,
                                 String command,
-                                String nameBundleKey) {
+                                String name) {
         this.actionProvider = actionProvider;
         this.context = context;
         this.command = command;
-        this.bundleKey = nameBundleKey;
+        this.name = name;
     }
 
     public void actionPerformed(ActionEvent ev) {
@@ -82,7 +81,7 @@ final class TestMethodNodeAction implements Action {
         }
 
         if (key.equals(Action.NAME)) {
-            return NbBundle.getMessage(getClass(), bundleKey);
+            return name;
         } else if (key.equals(Action.ACTION_COMMAND_KEY)) {
             return command;
         } else {
