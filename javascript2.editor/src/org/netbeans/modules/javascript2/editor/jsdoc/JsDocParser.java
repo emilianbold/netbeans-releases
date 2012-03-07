@@ -91,7 +91,7 @@ public class JsDocParser {
                     blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange, commentType, Collections.<JsDocElement>emptyList()));
                     continue;
                 } else {
-                    blocks.put(offsetRange.getEnd(), parseCommentBlock(token.toString(), offsetRange, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
+                    blocks.put(offsetRange.getEnd(), parseCommentBlock(tokenSequence, offsetRange, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
                     continue;
                 }
             }
@@ -137,35 +137,56 @@ public class JsDocParser {
         return strips.toArray(new CommentStrip[strips.size()]);
     }
 
-    private static JsDocBlock parseCommentBlock(String block, OffsetRange range, boolean sharedTag) {
-        String commentText = block;
-        List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
-        CommentStrip[] commentStrips = getCleanedCommentStrips(commentText, range.getStart());
-        boolean afterDescription = false;
-        for (CommentStrip commentStrip : commentStrips) {
-            String stripeText = commentStrip.getStrip();
+    private static boolean isTextToken(Token<? extends JsDocTokenId> token) {
+        return (token.id() != JsDocTokenId.ASTERISK && token.id() != JsDocTokenId.COMMENT_SHARED_BEGIN
+                && token.id() != JsDocTokenId.COMMENT_START);
+    }
 
-            //TODO - clean shared tag comments
-            if (!stripeText.startsWith("@")) { //NOI18N
-                if (!afterDescription) {
-                    //TODO - distinguish description and inline comments
-                    jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, stripeText));
-                }
-            } else {
-                Type type;
-                int firstSpace = stripeText.indexOf(" "); //NOI18N
-                if (firstSpace == -1) {
-                    type = Type.fromString(stripeText);
-                    jsDocElements.add(JsDocElementUtils.createElementForType(type, "", -1));
-                } else {
-                    type = Type.fromString(stripeText.substring(0, firstSpace));
-                    String tagDescription = stripeText.substring(firstSpace).trim();
-                    int offset = commentStrip.getOffset() + stripeText.length() - tagDescription.length();
-                    jsDocElements.add(JsDocElementUtils.createElementForType(type, tagDescription, offset));
-                }
+    private static JsDocBlock parseCommentBlock(TokenSequence ts, OffsetRange range, boolean sharedTag) {
+        List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
+
+        TokenSequence ets = ts.embedded();
+        Token<? extends JsDocTokenId> token;
+        Type type = null;
+        boolean afterDescription = false;
+        StringBuilder sb = new StringBuilder();
+        int offset = ts.offset();
+        while (ets.moveNext() && (token = ets.token()) != null) {
+            if (!isTextToken(token)) {
+                continue;
             }
-            // after description is after first sentence or after any keyword
-            afterDescription = true;
+
+            if (token.id() == JsDocTokenId.KEYWORD || token.id() == JsDocTokenId.COMMENT_END) {
+
+                if (sb.toString().trim().isEmpty()) {
+                    // simple tag
+                    if (type != null) {
+                        jsDocElements.add(JsDocElementUtils.createElementForType(type, "", -1));
+                    }
+                } else {
+                    // store first description
+                    if (!afterDescription) {
+                        //TODO - distinguish description and inline comments
+                        jsDocElements.add(DescriptionElement.create(Type.CONTEXT_SENSITIVE, sb.toString().trim()));
+                    } else {
+                        jsDocElements.add(JsDocElementUtils.createElementForType(type, sb.toString().trim(), offset));
+                    }
+                    sb = new StringBuilder();
+                }
+
+                while (ets.moveNext() && ets.token().id() == JsDocTokenId.WHITESPACE) {
+                    continue;
+                }
+
+                offset = ets.offset();
+                if (token.id() != JsDocTokenId.COMMENT_END) {
+                    ets.movePrevious();
+                }
+                afterDescription = true;
+                type = Type.fromString(token.text().toString());
+            } else {
+                sb.append(token.text());
+            }
         }
 
         return new JsDocBlock(
