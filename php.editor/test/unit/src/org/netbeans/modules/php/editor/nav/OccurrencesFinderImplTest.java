@@ -489,6 +489,42 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
     }
 
+    public void testIssue209187_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue209187_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue209187_03() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
+    public void testIssue208826_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Mo^del {}", true);
+    }
+
+    public void testIssue208826_02() throws Exception {
+        checkOccurrences(getTestPath(), "* @var \\Mo^del", true);
+    }
+
+    public void testIssue208826_03() throws Exception {
+        checkOccurrences(getTestPath(), "* @return \\Mo^del", true);
+    }
+
+    public void testIssue208826_04() throws Exception {
+        checkOccurrences(getTestPath(), "class B^ag {}", true);
+    }
+
+    public void testIssue208826_05() throws Exception {
+        checkOccurrences(getTestPath(), "* @param B\\B^ag $param", true);
+    }
+
+    public void testIssue208826_06() throws Exception {
+        checkOccurrences(getTestPath(), "function functionName1(B\\B^ag $param) {", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

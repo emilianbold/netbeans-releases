@@ -172,7 +172,6 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
     private class AddImportFix implements HintFix {
 
-        String HINT_PREFIX = NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription"); // NOI18N
         FileObject fo;
         String fqn;
 
@@ -183,7 +182,7 @@ public class ClassNotFoundRule extends GroovyErrorRule {
 
         @Override
         public String getDescription() {
-            return HINT_PREFIX + " " + fqn;
+            return NbBundle.getMessage(ClassNotFoundRule.class, "ClassNotFoundRuleHintDescription", fqn); // NOI18N
         }
 
         @Override

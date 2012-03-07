@@ -18,5 +18,33 @@ use What\MyClass;
 use Faces\IFace;
 
 class Foo2 extends MyClass implements IFace {}
+
+
+// it IS used - in PHPDoc
+use Foo\Bar\Baz\Def;
+
+class ClassName {
+
+    /**
+     * @return Def
+     */
+    function functionName() {
+    }
+
+}
+
+// it IS NOT used
+use Foo\Bar\Baz\Dex;
+
+class ClassName1 {
+
+    /**
+     * @return Baz\Dex
+     */
+    function functionName() {
+    }
+
+}
+
 //END
 ?>

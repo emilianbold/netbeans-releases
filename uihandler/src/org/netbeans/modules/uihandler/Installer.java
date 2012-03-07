@@ -54,6 +54,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -67,6 +68,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -170,6 +172,7 @@ public class Installer extends ModuleInstall implements Runnable {
     private static OutputStream logStreamMetrics;
     private static int logsSize;
     private static int logsSizeMetrics;
+    private static long logsFirstDateMetric;
     private static URL hintURL;
     private static Object[] selectedExcParams;
 
@@ -264,6 +267,7 @@ public class Installer extends ModuleInstall implements Runnable {
         all.addHandler(handler);
         logsSize = prefs.getInt("count", 0);
         logsSizeMetrics = prefs.getInt("countMetrics", 0);
+        logsFirstDateMetric = prefs.getLong("firstDateMetric", -1);
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", false); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
@@ -511,18 +515,36 @@ public class Installer extends ModuleInstall implements Runnable {
         userData.setLoggerName(logger.getName());
         return userData;
     }
+    
+    private static boolean uploadMetricsTest() {
+        if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
+            return true;
+        }
+        int daysSinceFirstMetric = (int) ((System.currentTimeMillis() - logsFirstDateMetric)/(1000*60*60*24));
+        if (daysSinceFirstMetric > MetricsHandler.MAX_DAYS) {
+            return true;
+        }
+        return false;
+    }
 
     static void writeOutMetrics (LogRecord r) {
         try {
+            boolean upload;
             synchronized (METRICS_LOG_LOCK) {
                 LogRecords.write(logStreamMetrics(), r);
-            }
-            logsSizeMetrics++;
-            if (preferencesWritable) {
-                prefs.putInt("countMetrics", logsSizeMetrics);
-            }
-            if (logsSizeMetrics >= MetricsHandler.MAX_LOGS) {
-                synchronized (METRICS_LOG_LOCK) {
+                logsSizeMetrics++;
+                boolean firstDateMetric = logsFirstDateMetric < 0;
+                if (firstDateMetric) {
+                    logsFirstDateMetric = System.currentTimeMillis();
+                }
+                if (preferencesWritable) {
+                    prefs.putInt("countMetrics", logsSizeMetrics);
+                    if (firstDateMetric) {
+                        prefs.putLong("firstDateMetric", logsFirstDateMetric);
+                    }
+                }
+                upload = uploadMetricsTest();
+                if (upload) {
                     MetricsHandler.waitFlushed();
                     closeLogStreamMetrics();
                     File f = logFileMetrics(0);
@@ -552,10 +574,14 @@ public class Installer extends ModuleInstall implements Runnable {
                         }
                     }
                     logsSizeMetrics = 0;
+                    logsFirstDateMetric = System.currentTimeMillis();
                     if (preferencesWritable) {
                         prefs.putInt("countMetrics", logsSizeMetrics);
+                        prefs.putLong("dateFirstMetric", logsFirstDateMetric);
                     }
                 }
+            }
+            if (upload) {
                 //Task to upload metrics data
                 class Auto implements Runnable {
                     @Override
@@ -694,21 +720,53 @@ public class Installer extends ModuleInstall implements Runnable {
             scan(f, handler);
         }
     }
+    
+    private static String reportFileContent(File f) {
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new InputStreamReader(new FileInputStream(f), "UTF-8"));
+            StringWriter sw = new StringWriter();
+            String line;
+            while ((line = br.readLine()) != null) {
+                sw.write(line);
+                sw.write('\n');
+            }
+            sw.close();
+            return sw.toString();
+        } catch (IOException ioex) {
+            return ioex.toString();
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {}
+            }
+        }
+    }
 
+    private static boolean fileContentReported;
+    
     private static void scan(File f, Handler handler){
         InputStream is = null;
         try {
             is = new FileInputStream(f);
             LogRecords.scan(is, handler);
         } catch (IOException ex) {
-            LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
+            LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
+            if (!fileContentReported) {
+                try {
+                    LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f));
+                } finally {
+                    fileContentReported = true;
+                }
+            }
         } finally {
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will submitted", ex);
+                LOG.log(Level.INFO, "Broken uilogs file, not all UI actions will be submitted", ex);
             }
         }
     }
@@ -766,7 +824,16 @@ public class Installer extends ModuleInstall implements Runnable {
                     is = new FileInputStream(f1);
                     LogRecords.scan(is, hndlr);
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Exceptions.printStackTrace(
+                        Exceptions.attachMessage(ex, "Broken metrics log file, not all metrics data will be submitted")
+                    );
+                    if (!fileContentReported) {
+                        try {
+                            LOG.log(Level.INFO, "Problematic file content = "+reportFileContent(f1));
+                        } finally {
+                            fileContentReported = true;
+                        }
+                    }
                 } finally {
                     try {
                         if (is != null) {

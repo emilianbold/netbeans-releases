@@ -393,6 +393,8 @@ bool NbLauncher::findCacheDir(const char *str) {
         defCacheDirRoot.erase(defCacheDirRoot.rfind('\\'));
         logMsg("Default Cachedir Root: %s", defCacheDirRoot.c_str());
         cacheDir = defCacheDirRoot + (str + strlen(DEFAULT_CACHEDIR_ROOT_TOKEN));
+    } else {
+        cacheDir = str;
     }
     return true;
 }

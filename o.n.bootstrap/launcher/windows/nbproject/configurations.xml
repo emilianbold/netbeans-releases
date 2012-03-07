@@ -52,8 +52,8 @@
           <stripSymbols>true</stripSymbols>
           <architecture>1</architecture>
           <incDir>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include</pElem>
-            <pElem>C:/Program Files/Java/jdk1.6.0_30/include/win32</pElem>
+            <pElem>C:/Program Files/Java/jdk1.7.0_04/include</pElem>
+            <pElem>C:/Program Files/Java/jdk1.7.0_04/include/win32</pElem>
           </incDir>
           <commandLine>-s -mno-cygwin</commandLine>
           <warningLevel>2</warningLevel>
