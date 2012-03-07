@@ -162,15 +162,11 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 36, 12, 0);
         add(jLabel5, gridBagConstraints);
-
-        className.setText(org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.className.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(className, gridBagConstraints);
-
-        displayName.setText(org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.displayName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -179,8 +175,6 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(displayName, gridBagConstraints);
-
-        warningMessage.setText(org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.warningMessage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -189,8 +183,6 @@ public class JavaHintPanel extends BasicWizardIterator.Panel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 12);
         add(warningMessage, gridBagConstraints);
-
-        fixDisplayName.setText(org.openide.util.NbBundle.getMessage(JavaHintPanel.class, "JavaHintPanel.fixDisplayName.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
