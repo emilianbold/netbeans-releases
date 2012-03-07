@@ -52,5 +52,10 @@ package org.netbeans.modules.web.plugins;
 public enum BrowserId {
 
     FIREFOX,
-    CHROME
+    MOZILLA,
+    CHROME,
+    SAFARI,
+    IE,
+    OTHER,
+    UNKNOWN
 }
