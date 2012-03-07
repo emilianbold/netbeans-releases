@@ -59,13 +59,13 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Stupka
  */
-public class JiraIssueNode extends IssueNode {
-    public JiraIssueNode(IssueProvider issue) {
-        super(issue);
+public class JiraIssueNode extends IssueNode<NbJiraIssue> {
+    public JiraIssueNode(NbJiraIssue issue) {
+        super(JiraUtils.getRepository(issue.getRepository()), issue);
     }
 
     NbJiraIssue getNbJiraIssue() {
-        return (NbJiraIssue) super.getIssue();
+        return getIssueData();
     }
 
     @Override
@@ -96,7 +96,7 @@ public class JiraIssueNode extends IssueNode {
         super.fireDataChanged();
     }
 
-    private class KeyProperty extends IssueNode.IssueProperty<String> {
+    private class KeyProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         public KeyProperty() {
             super(NbJiraIssue.LABEL_NAME_ID,
                   String.class,
@@ -163,7 +163,7 @@ public class JiraIssueNode extends IssueNode {
         }
     }
 
-    private class StatusProperty extends IssueProperty<String> {
+    private class StatusProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         public StatusProperty() {
             super(NbJiraIssue.LABEL_NAME_STATUS,
                   String.class,
@@ -176,15 +176,15 @@ public class JiraIssueNode extends IssueNode {
             return status != null ? status.getName() : "";                      // NOI18N
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             String s1 = getNbJiraIssue().getFieldValue(IssueField.STATUS);
-            String s2 = ((NbJiraIssue)p.getIssue()).getFieldValue(IssueField.STATUS);
+            String s2 = p.getIssueData().getFieldValue(IssueField.STATUS);
             return s1.compareTo(s2);
         }
     }
 
-    private class TypeProperty extends IssueNode.IssueProperty<String> {
+    private class TypeProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         public TypeProperty() {
             super(NbJiraIssue.LABEL_NAME_TYPE,
                   String.class,
@@ -201,15 +201,15 @@ public class JiraIssueNode extends IssueNode {
             return super.getValue(attributeName);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             String s1 = getNbJiraIssue().getType().getName();
-            String s2 = ((NbJiraIssue)p.getIssue()).getType().getName();
+            String s2 = p.getIssueData().getType().getName();
             return s1.compareTo(s2);
         }
     }
 
-    private class ResolutionProperty extends IssueProperty<String> {
+    private class ResolutionProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         public ResolutionProperty() {
             super(NbJiraIssue.LABEL_NAME_RESOLUTION,
                   String.class,
@@ -226,11 +226,11 @@ public class JiraIssueNode extends IssueNode {
             return super.getValue(attributeName);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             Resolution resolution = getNbJiraIssue().getResolution();
             String s1 = (resolution == null) ? "" : resolution.getName(); // NOI18N
-            resolution = ((NbJiraIssue)p.getIssue()).getResolution();
+            resolution = p.getIssueData().getResolution();
             String s2 = (resolution == null) ? "" : resolution.getName(); // NOI18N
             return s1.compareTo(s2);
         }
@@ -278,7 +278,7 @@ public class JiraIssueNode extends IssueNode {
         }
     }
 
-    private class DateFieldProperty extends IssueProperty<String> {
+    private class DateFieldProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         private final IssueField field;
         public DateFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {
             super(fieldLabel,
@@ -293,15 +293,15 @@ public class JiraIssueNode extends IssueNode {
             return JiraUtils.dateByMillis(value, true);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             Date d1 = JiraUtils.dateByMillis(getNbJiraIssue().getFieldValue(field));
-            Date d2 = JiraUtils.dateByMillis(((NbJiraIssue)p.getIssue()).getFieldValue(field));
+            Date d2 = JiraUtils.dateByMillis(p.getIssueData().getFieldValue(field));
             return d1.compareTo(d2);
         }
     }
 
-    public class MultiValueFieldProperty extends IssueProperty<String> {
+    public class MultiValueFieldProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         private final IssueField field;
         public MultiValueFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {
             super(fieldLabel,
@@ -316,16 +316,16 @@ public class JiraIssueNode extends IssueNode {
             return getNbJiraIssue().getFieldDisplayValue(field);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             // XXX sorted?
             String s1 = getNbJiraIssue().getFieldDisplayValue(field);
-            String s2 = ((NbJiraIssue)p.getIssue()).getFieldDisplayValue(field);
+            String s2 = p.getIssueData().getFieldDisplayValue(field);
             return s1.compareTo(s2);
         }
     }
 
-    private class WorkLogFieldProperty extends IssueProperty<String> {
+    private class WorkLogFieldProperty extends IssueNode<NbJiraIssue>.IssueProperty<String> {
         private final IssueField field;
         public WorkLogFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {
             super(fieldLabel,
@@ -343,10 +343,10 @@ public class JiraIssueNode extends IssueNode {
             return JiraUtils.getWorkLogText(toInt(value), daysPerWeek, hoursPerDay, true);
         }
         @Override
-        public int compareTo(IssueProperty p) {
+        public int compareTo(IssueNode<NbJiraIssue>.IssueProperty<String> p) {
             if(p == null) return 1;
             Integer i1 = toInt(getNbJiraIssue().getFieldValue(field));
-            Integer i2 = toInt(((NbJiraIssue)p.getIssue()).getFieldValue(field));
+            Integer i2 = toInt(p.getIssueData().getFieldValue(field));
             return i1.compareTo(i2);
         }
 

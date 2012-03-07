@@ -52,10 +52,10 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -78,6 +78,10 @@ public class ControllerTest extends NbTestCase implements TestConstants {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector        
+        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
     }
 

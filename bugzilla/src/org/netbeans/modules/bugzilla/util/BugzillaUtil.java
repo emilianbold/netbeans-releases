@@ -48,12 +48,18 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.GetTaskDataCommand;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
+import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -104,7 +110,7 @@ public class BugzillaUtil {
      * @return
      */
     public static TaskData getTaskData(final BugzillaRepository repository, final String id, boolean handleExceptions) {
-        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository.getTaskRepository());
+        GetTaskDataCommand cmd = new GetTaskDataCommand(id, repository);
         repository.getExecutor().execute(cmd, handleExceptions);
         if(cmd.hasFailed() && Bugzilla.LOG.isLoggable(Level.FINE)) {
             Bugzilla.LOG.log(Level.FINE, cmd.getErrorMessage());
@@ -161,8 +167,8 @@ public class BugzillaUtil {
      * @param repo
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
-    public static boolean isNbRepository(RepositoryProvider repo) {
-        return BugtrackingUtil.isNbRepository(repo);
+    public static boolean isNbRepository(BugzillaRepository repo) {
+        return BugtrackingUtil.isNbRepository(repo.getUrl());
     }
 
     public static boolean showQAContact(BugzillaRepository repo) {
@@ -177,4 +183,33 @@ public class BugzillaUtil {
         return isNbRepository(repo);
     }
 
+    public static Repository getRepository(BugzillaRepository bugzillaRepository) {
+        Repository repository = Bugzilla.getInstance().getBugtrackingFactory().getRepository(BugzillaConnector.ID, bugzillaRepository.getID());
+        if(repository == null) {
+            repository = Bugzilla.getInstance().getBugtrackingFactory().createRepository(
+                    bugzillaRepository, 
+                    Bugzilla.getInstance().getRepositoryProvider(), 
+                    Bugzilla.getInstance().getQueryProvider(),
+                    Bugzilla.getInstance().getIssueProvider());
+        }
+        return repository;
+    }
+    
+    public static Issue getIssue(BugzillaIssue bugzillaIssue) {
+        return Bugzilla.getInstance().getBugtrackingFactory().getIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
+    }
+
+    public static void openIssue(BugzillaIssue bugzillaIssue) {
+        Issue issue = Bugzilla.getInstance().getBugtrackingFactory().getIssue(getRepository(bugzillaIssue.getRepository()), bugzillaIssue);
+        issue.open();
+    }
+    
+    public static Query getQuery(BugzillaQuery bugzillaQuery) {
+        return Bugzilla.getInstance().getBugtrackingFactory().getQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+    }
+
+    public static void openQuery(BugzillaQuery bugzillaQuery) {
+        getQuery(bugzillaQuery).open(false);
+    }
+    
 }
