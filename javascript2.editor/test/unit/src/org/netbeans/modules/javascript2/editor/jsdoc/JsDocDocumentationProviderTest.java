@@ -258,7 +258,7 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
     public void testDocumentationDescriptionExamples() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
-        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Create a new Hexagon instance.</p><b>Examples:</b><br><p>var h = new Hexagon(2);</p><p>if (hasHex) { hex   = new Hexagon(5); color = hex.getColor(); }</p>");
+        checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Create a new Hexagon instance.</p><b>Examples:</b><br><p>var h = new Hexagon(2);</p><p>if (hasHex) {\n      hex   = new Hexagon(5);\n      color = hex.getColor();\n  }</p>");
     }
 
     private static class FakeDocParameter implements DocParameter {
