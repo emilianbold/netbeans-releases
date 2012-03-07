@@ -378,6 +378,7 @@
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.web.client.tools.impl</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.javascript.editing</package>
                 <package>org.netbeans.modules.javascript.editing.embedding</package>
                 <package>org.netbeans.modules.javascript.editing.lexer</package>
