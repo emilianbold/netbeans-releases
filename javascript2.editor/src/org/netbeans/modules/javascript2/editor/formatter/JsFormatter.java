@@ -313,9 +313,10 @@ public class JsFormatter implements Formatter {
         FormatToken start = null;
         boolean containsEol = false;
 
-        for (int i = index - 1; i >= 0; i--) {
-            FormatToken current = tokens.get(i);
-            if (current != null && !current.isVirtual()) {
+        for (FormatToken current = tokens.get(index).previous(); current != null;
+                current = current.previous()) {
+
+            if (!current.isVirtual()) {
                 if(current.getKind() != FormatToken.Kind.WHITESPACE
                     && current.getKind() != FormatToken.Kind.EOL) {
                     start = current;
@@ -379,8 +380,9 @@ public class JsFormatter implements Formatter {
 
         // search backwards for important token
         FormatToken result = null;
-        for (int i = index - 1; i >= 0; i--) {
-            FormatToken previous = tokens.get(i);
+        for (FormatToken previous = token.previous(); previous != null;
+                previous = previous.previous()) {
+
             FormatToken.Kind kind = previous.getKind();
             if (kind == FormatToken.Kind.SOURCE_START
                     || kind == FormatToken.Kind.TEXT
