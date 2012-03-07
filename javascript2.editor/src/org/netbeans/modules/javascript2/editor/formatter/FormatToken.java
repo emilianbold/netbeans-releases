@@ -58,6 +58,8 @@ public final class FormatToken {
 
     private FormatToken next;
 
+    private FormatToken previous;
+
     private FormatToken(Kind kind, int offset, CharSequence text) {
         this.kind = kind;
         this.offset = offset;
@@ -95,6 +97,11 @@ public final class FormatToken {
         return next;
     }
 
+    @CheckForNull
+    public FormatToken previous() {
+        return previous;
+    }
+
     public boolean isVirtual() {
         return offset < 0;
     }
@@ -108,6 +115,10 @@ public final class FormatToken {
         this.next = next;
     }
 
+    void setPrevious(FormatToken previous) {
+        this.previous = previous;
+    }
+    
     public static enum Kind {
         SOURCE_START,
         TEXT,
@@ -143,7 +154,13 @@ public final class FormatToken {
         AFTER_FOR_KEYWORD,
         AFTER_WITH_KEYWORD,
         AFTER_SWITCH_KEYWORD,
-        AFTER_CATCH_KEYWORD
+        AFTER_CATCH_KEYWORD,
+
+        // keywords with possible space before
+        BEFORE_WHILE_KEYWORD,
+        BEFORE_ELSE_KEYWORD,
+        BEFORE_CATCH_KEYWORD,
+        BEFORE_FINALLY_KEYWORD
     }
 
 }

@@ -180,6 +180,22 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeCatchParen());
                             break;
+                        case BEFORE_WHILE_KEYWORD:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeWhile());
+                            break;
+                        case BEFORE_ELSE_KEYWORD:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeElse());
+                            break;
+                        case BEFORE_CATCH_KEYWORD:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeCatch());
+                            break;
+                        case BEFORE_FINALLY_KEYWORD:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeFinally());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
