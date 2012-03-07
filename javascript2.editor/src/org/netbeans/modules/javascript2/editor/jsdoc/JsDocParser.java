@@ -45,14 +45,14 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementUtils;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -72,23 +72,28 @@ public class JsDocParser {
     public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
         Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
 
-        List<CommentBlock> commentBlocks = getCommentBlocks(snapshot);
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
+        if (tokenSequence == null || tokenSequence.language() != JsTokenId.language()) {
+            return blocks;
+        }
 
-        for (CommentBlock commentBlock : commentBlocks) {
-            JsDocCommentType commentType = getCommentType(commentBlock.getContent());
-            LOGGER.log(Level.FINEST, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
-                commentBlock.getBeginOffset(), commentBlock.getEndOffset(), commentType, commentBlock.getContent()});
+        Token<? extends JsTokenId> token;
+        while (tokenSequence.moveNext() && (token = tokenSequence.token()) != null) {
+            if (token.id() == JsTokenId.DOC_COMMENT) {
+                JsDocCommentType commentType = getCommentType(token.text());
+                LOGGER.log(Level.FINEST, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
+                    tokenSequence.offset(), tokenSequence.offset() + token.length(), commentType, token.text()});
 
-            if (commentType == JsDocCommentType.DOC_NO_CODE_START
-                    || commentType == JsDocCommentType.DOC_NO_CODE_END
-                    || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
-                blocks.put(commentBlock.getEndOffset(), new JsDocBlock(commentBlock.getBeginOffset(),
-                        commentBlock.getEndOffset(), commentType, Collections.<JsDocElement>emptyList()));
-                continue;
-            } else {
-                blocks.put(commentBlock.getEndOffset(),
-                        parseCommentBlock(commentBlock, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
-                continue;
+                OffsetRange offsetRange = new OffsetRange(tokenSequence.offset(), tokenSequence.offset() + token.length());
+                if (commentType == JsDocCommentType.DOC_NO_CODE_START
+                        || commentType == JsDocCommentType.DOC_NO_CODE_END
+                        || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
+                    blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange.getStart(), offsetRange.getEnd(), commentType, Collections.<JsDocElement>emptyList()));
+                    continue;
+                } else {
+                    blocks.put(offsetRange.getEnd(), parseCommentBlock(token.toString(), offsetRange, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
+                    continue;
+                }
             }
         }
 
@@ -132,10 +137,10 @@ public class JsDocParser {
         return strips.toArray(new CommentStrip[strips.size()]);
     }
 
-    private static JsDocBlock parseCommentBlock(CommentBlock block, boolean sharedTag) {
-        String commentText = block.getContent();
+    private static JsDocBlock parseCommentBlock(String block, OffsetRange range, boolean sharedTag) {
+        String commentText = block;
         List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
-        CommentStrip[] commentStrips = getCleanedCommentStrips(commentText, block.getBeginOffset());
+        CommentStrip[] commentStrips = getCleanedCommentStrips(commentText, range.getStart());
         boolean afterDescription = false;
         for (CommentStrip commentStrip : commentStrips) {
             String stripeText = commentStrip.getStrip();
@@ -164,40 +169,22 @@ public class JsDocParser {
         }
 
         return new JsDocBlock(
-                block.getBeginOffset(),
-                block.getEndOffset(),
+                range.getStart(),
+                range.getEnd(),
                 sharedTag ? JsDocCommentType.DOC_SHARED_TAG_START : JsDocCommentType.DOC_COMMON,
                 jsDocElements);
     }
 
-    private static List<CommentBlock> getCommentBlocks(Snapshot snapshot) {
-        List<CommentBlock> blocks = new LinkedList<CommentBlock>();
-        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
-        if (tokenSequence == null) {
-            return blocks;
-        }
-
-        while (tokenSequence.moveNext()) {
-            Token<? extends JsTokenId> token = tokenSequence.token();
-            if (token.id() == JsTokenId.DOC_COMMENT) {
-                int startOffset = token.offset(snapshot.getTokenHierarchy());
-                int endOffset = startOffset + token.length();
-                blocks.add(new CommentBlock(startOffset, endOffset, token.toString()));
-            }
-        }
-        return blocks;
-    }
-
-    private static JsDocCommentType getCommentType(String commentBlock) {
+    private static JsDocCommentType getCommentType(CharSequence text) {
         //TODO - move that into some constatns holder
-        if (commentBlock.startsWith("/**#")) { //NOI18N
-            if ("/**#nocode+*/".equals(commentBlock)) { //NOI18N
+        if (CharSequenceUtilities.startsWith(text, "/**#")) { //NOI18N
+            if (CharSequenceUtilities.textEquals(text, "/**#nocode+*/")) { //NOI18N
                 return JsDocCommentType.DOC_NO_CODE_START;
-            } else if ("/**#nocode-*/".equals(commentBlock)) {
+            } else if (CharSequenceUtilities.textEquals(text, "/**#nocode-*/")) {
                 return JsDocCommentType.DOC_NO_CODE_END;
-            } else if (commentBlock.startsWith("/**#@+")) { //NOI18N
+            } else if (CharSequenceUtilities.startsWith(text, "/**#@+")) { //NOI18N
                 return JsDocCommentType.DOC_SHARED_TAG_START;
-            } else if ("/**#@-*/".equals(commentBlock)) { //NOI18N
+            } else if (CharSequenceUtilities.textEquals(text, "/**#@-*/")) { //NOI18N
                 return JsDocCommentType.DOC_SHARED_TAG_END;
             }
         }
@@ -209,8 +196,6 @@ public class JsDocParser {
 
         // clean " /** ", " */", " * " on all rows
         cleaned = cleaned.replaceAll("[\\s&&[^\r\n]]*(\\*)+(\\s)*|[/]$|(\\s)*[/*](\\*)+(\\s)*", ""); //NOI18N
-        // less accurate but probably a little bit faster
-//        cleaned = cleaned.replaceAll("^[/]|[/]$|[\\s&&[^\r\n]]*(\\*)+(\\s)*", ""); //NOI18N
 
         // replace enters by spaces
         cleaned = cleaned.replaceAll("\r?\n", " ").trim(); //NOI18N
@@ -236,30 +221,4 @@ public class JsDocParser {
             return strip;
         }
     }
-
-    private static class CommentBlock {
-
-        private final int beginOffset;
-        private final int endOffset;
-        private final String content;
-
-        public CommentBlock(int beginOffset, int endOffset, String content) {
-            this.beginOffset = beginOffset;
-            this.endOffset = endOffset;
-            this.content = content;
-        }
-
-        public int getBeginOffset() {
-            return beginOffset;
-        }
-
-        public String getContent() {
-            return content;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-    }
-
 }
