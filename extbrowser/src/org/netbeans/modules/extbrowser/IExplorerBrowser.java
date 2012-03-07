@@ -45,6 +45,7 @@
 package org.netbeans.modules.extbrowser;
 
 import java.util.logging.Level;
+import org.netbeans.modules.web.plugins.BrowserId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -126,6 +127,11 @@ public class IExplorerBrowser extends ExtWebBrowser {
     
     private void readObject (java.io.ObjectInputStream ois) throws java.io.IOException, ClassNotFoundException {
         ois.defaultReadObject();
+    }
+
+    @Override
+    public BrowserId getBrowserFamilyId() {
+        return BrowserId.IE;
     }
     
     

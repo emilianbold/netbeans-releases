@@ -52,6 +52,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
+import org.netbeans.modules.web.plugins.BrowserId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -173,6 +174,11 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         NbProcessDescriptor p = new NbProcessDescriptor(b, params,
                 ExtWebBrowser.UnixBrowserFormat.getHint());
         return p;
+    }
+
+    @Override
+    public BrowserId getBrowserFamilyId() {
+        return BrowserId.UNKNOWN;
     }
 
     private static final class Jdk6BrowserImpl extends ExtBrowserImpl {

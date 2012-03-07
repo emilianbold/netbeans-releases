@@ -51,6 +51,7 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
+import org.netbeans.modules.web.plugins.BrowserId;
 
 
 public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListener {
@@ -80,7 +81,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
             return Boolean.TRUE;
         }
         
-        return Utilities.getOperatingSystem() != Utilities.OS_SOLARIS;
+        return false;
     }
 
     /** Getter for browser name
@@ -197,6 +198,11 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         }
         
         return retValue;        
+    }
+
+    @Override
+    public BrowserId getBrowserFamilyId() {
+        return BrowserId.CHROME;
     }
 
 }

@@ -47,6 +47,7 @@ package org.netbeans.modules.extbrowser;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.plugins.BrowserId;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -464,6 +465,23 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         init();
     }
 
+    public BrowserId getBrowserFamilyId() {
+        NbProcessDescriptor desc = getBrowserExecutable();
+        if (desc != null) {
+            String p = desc.getProcessName();
+            if (p.contains("chrom")) {
+                return BrowserId.CHROME;
+            }
+            
+            // TODO:
+            
+            // recognize other browser types according to binary name specified by user
+            
+            
+        }
+        return BrowserId.UNKNOWN;
+    }
+    
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.
      */

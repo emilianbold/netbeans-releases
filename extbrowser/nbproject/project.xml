@@ -156,7 +156,9 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javafx2.project</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.extbrowser</package>
+                <package>org.netbeans.modules.extbrowser.spi</package>
             </friend-packages>
         </data>
     </configuration>
