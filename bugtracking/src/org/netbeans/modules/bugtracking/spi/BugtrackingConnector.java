@@ -46,7 +46,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.openide.util.Lookup;
+import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Represents a bugtracking connector.
@@ -54,21 +54,21 @@ import org.openide.util.Lookup;
  * @author Tomas Stupka
  */
 // XXX provide commit hook support instead of addComment() and addAttachent() in Issue
-public abstract class BugtrackingConnector implements Lookup.Provider {
+public abstract class BugtrackingConnector {
 
     /**
      * 
      * @param info
      * @return 
      */
-    public abstract RepositoryProvider createRepository(RepositoryInfo info);  
+    public abstract Repository createRepository(RepositoryInfo info);  
     
     /**
      * Creates a new repository instance.
      * 
      * @return the created repository
      */
-    public abstract RepositoryProvider createRepository();
+    public abstract Repository createRepository();
 
     /**
      * Returns an {@code IssueFinder} for the connector, or {@code null}

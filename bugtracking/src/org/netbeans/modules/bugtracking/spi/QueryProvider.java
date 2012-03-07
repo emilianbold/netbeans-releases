@@ -43,9 +43,7 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import java.util.Collection;
 import org.openide.nodes.Node;
 
 /**
@@ -54,7 +52,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public abstract class QueryProvider {
+public abstract class QueryProvider<Q, I> {
 
     /**
      * queries issue list was changed
@@ -85,94 +83,53 @@ public abstract class QueryProvider {
      * Returns the queries display name
      * @return
      */
-    public abstract String getDisplayName();
+    public abstract String getDisplayName(Q q);
 
     /**
      * Returns the queries toltip
      * @return
      */
-    public abstract String getTooltip();
+    public abstract String getTooltip(Q q);
 
     /**
      * Returns the {@link BugtrackignController} for this query
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
-    public abstract BugtrackingController getController();
-
-    /**
-     *
-     * Returns this queries {@link RepositoryProvider}
-     *
-     * @return {@link RepositoryProvider}
-     */
-    public abstract RepositoryProvider getRepository();
-
-    /**
-     * XXX should this realy be in the spi?
-     * @param query
-     */
-    public static void openNew(RepositoryProvider repository) {
-        QueryAction.openQuery(null, repository);
-    }
+    public abstract BugtrackingController getController(Q q);
 
     /**
      * Returns true if query is saved
      * @return
      */
-    public abstract boolean isSaved();
+    public abstract boolean isSaved(Q q);
 
-    /**
-     * Returns issue given by the last refresh
-     * @return
-     */
-    // XXX used only by kenai - move out from spi
-    public abstract IssueProvider[] getIssues(int includeStatus);
-
-    public IssueProvider[] getIssues() {
-        return getIssues(~0);
-    }
+    public abstract Collection<I> getIssues(Q q);
 
     /**
      * Returns true if the issue does belong to the query
      * @param issue
      * @return
      */
-    public abstract boolean contains(IssueProvider issue);
+    public abstract boolean contains(Q q, String id);
 
-    /**
-     * Returns all issues given by the last refresh for
-     * which applies that their ID or summary contains the
-     * given criteria string
-     * XXX used only by issue table filter - move out from spi
-     *
-     * @param criteria
-     * @return
-     */
-    // XXX Shouldn't be called while running
-    // XXX move to simple search
-
-    public IssueProvider[] getIssues(String criteria) {
-        return BugtrackingUtil.getByIdOrSummary(getIssues(), criteria);
-    }
-
-    /**
-     * 
-     * @param issue
-     * @return 
-     * @deprecated
-     */
-    // XXX used only by issue table - move out from spi    
-    public abstract int getIssueStatus(IssueProvider issue);
+//    /**
+//     * 
+//     * @param issue
+//     * @return 
+//     * @deprecated
+//     */
+//    // XXX used only by issue table - move out from spi    
+//    public abstract int getIssueStatus(Q q, I i);
 
     /*********
      * EVENTS
      *********/
 
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+    public abstract void removePropertyChangeListener(Q q, PropertyChangeListener listener);
 
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public abstract void addPropertyChangeListener(Q q, PropertyChangeListener listener);
 
-    public abstract void setContext(Node[] nodes);
+    public abstract void setContext(Q q, Node[] nodes);
 
 }

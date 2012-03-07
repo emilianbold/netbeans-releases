@@ -42,18 +42,24 @@
 
 package org.netbeans.modules.jira;
 
-import java.util.Collection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.JiraIssueFinder;
+import org.netbeans.modules.jira.kenai.KenaiRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -64,30 +70,29 @@ import org.openide.util.lookup.Lookups;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class JiraConnector extends BugtrackingConnector {
+public class JiraConnector extends KenaiBugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private JiraIssueFinder issueFinder;
     private boolean alreadyLogged = false;
 
     public static final String ID = "org.netbeans.modules.jira";                                     //  NOI18N
-    private static JiraConnector instance;
 
-    public JiraConnector() {
-        instance = this;
-    }
-
-    static JiraConnector getInstance() {
-        return instance;
-    }
+    public JiraConnector() {}
 
     @Override
-    public RepositoryProvider createRepository(RepositoryInfo info) {
-        return new JiraRepository(info);
+    public Repository createRepository(RepositoryInfo info) {
+        JiraRepository jiraRepository = new JiraRepository(info);
+        return Jira.getInstance().getBugtrackingFactory().
+                createRepository(
+                    jiraRepository, 
+                    Jira.getInstance().getRepositoryProvider(), 
+                    Jira.getInstance().getQueryProvider(), 
+                    Jira.getInstance().getIssueProvider());
     }
     
     @Override
-    public RepositoryProvider createRepository() {
+    public Repository createRepository() {
         try {
             Jira.init();
         } catch (Throwable t) {
@@ -97,7 +102,13 @@ public class JiraConnector extends BugtrackingConnector {
             }
             return null;
         }
-        return new JiraRepository();
+        JiraRepository jiraRepository = new JiraRepository();
+        return Jira.getInstance().getBugtrackingFactory().
+                createRepository(
+                    jiraRepository, 
+                    Jira.getInstance().getRepositoryProvider(), 
+                    Jira.getInstance().getQueryProvider(), 
+                    Jira.getInstance().getIssueProvider());
     }
 
     public static String getConnectorName() {
@@ -113,24 +124,45 @@ public class JiraConnector extends BugtrackingConnector {
         return issueFinder;
     }
 
+    /******************************************************************************
+     * Kenai
+     ******************************************************************************/
+    
     @Override
-    public Lookup getLookup() {
-        Jira jira = getJira();
-        if(jira != null) {
-            return Lookups.singleton(jira.getKenaiSupport());
+    public Repository createRepository(KenaiProject project) {
+        if(project == null || project.getType() != BugtrackingType.JIRA) {
+            return null;
         }
-        return Lookup.EMPTY;
+
+        String location = project.getFeatureLocation().toString();
+        final URL loc;
+        try {
+            loc = new URL(project.getWebLocation().toString());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+
+        String host = loc.getHost();
+        int idx = location.indexOf("/browse/");
+        if (idx <= 0) {
+            Jira.LOG.log(Level.WARNING, "can''t get issue tracker url from [{0}, {1}]", new Object[]{project.getName(), location}); // NOI18N
+            return null;
+        }
+        String url = location.substring(0, idx);
+        if (url.startsWith("http:")) { // XXX hack???                   // NOI18N
+            url = "https" + url.substring(4);                           // NOI18N
+        }
+
+        String product = location.substring(idx + "/browse/".length()); // NOI18N
+
+        KenaiRepository repo = new KenaiRepository(project, project.getDisplayName(), url, host, product);
+        return JiraUtils.getRepository(repo);
+        
     }
 
-    private Jira getJira() {
-        try {
-            return Jira.getInstance();
-        } catch (Throwable t) {
-            if(!alreadyLogged) {
-                alreadyLogged = true;
-                LOG.log(Level.SEVERE, null, t);
-            }
-        }
-        return null;
-    }
+    @Override
+    public BugtrackingType getType() {
+        return BugtrackingType.JIRA;
+    }    
 }

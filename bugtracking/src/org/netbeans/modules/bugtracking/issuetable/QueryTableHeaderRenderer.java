@@ -52,7 +52,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.openide.util.ImageUtilities;
 
 class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
@@ -60,11 +60,11 @@ class QueryTableHeaderRenderer extends DefaultTableCellRenderer {
     private JLabel seenCell = new JLabel();
 
     private static Icon seenHeaderIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-header.png")); // NOI18N
-    private final QueryProvider query;
+    private final QueryImpl query;
     private TableCellRenderer delegate;
     private final IssueTable issueTable;
 
-     public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable, QueryProvider query) {
+     public QueryTableHeaderRenderer(TableCellRenderer delegate, IssueTable issueTable, QueryImpl query) {
         super();
         this.query = query;
         this.issueTable = issueTable;
