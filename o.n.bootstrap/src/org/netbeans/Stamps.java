@@ -90,6 +90,7 @@ public final class Stamps {
     private static AtomicLong moduleJARs;
     private static File moduleNewestFile;
     private static String[] dirs;
+    private static File[] fallbackCache;
 
     private Worker worker = new Worker();
 
@@ -104,18 +105,21 @@ public final class Stamps {
         if (args.length == 1 && "reset".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             stamp(false);
             return;
         }
         if (args.length == 1 && "init".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             stamp(true);
             return;
         }
         if (args.length == 1 && "clear".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             return;
         }
     }
@@ -187,7 +191,11 @@ public final class Stamps {
         long last = cacheFile.lastModified();
         if (last <= 0) {
             LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
-            return null;
+            cacheFile = findFallbackCache(cache);
+            if (cacheFile == null || (last = cacheFile.lastModified()) <= 0) {
+                return null;
+            }
+            LOG.log(Level.FINE, "Found fallback cache at {0}", cacheFile);
         }
 
         if (moduleJARs() > last) {
@@ -540,6 +548,22 @@ public final class Stamps {
                 tmpFile.deleteOnExit();
             } // delete now or later
         }
+    }
+
+    private static File findFallbackCache(String cache) {
+        if (fallbackCache == null) {
+            fallbackCache = new File[0];
+            if (dirs().length >= 1) {
+                File fallback = new File(new File(new File(dirs()[0]), "var"), "cache"); // NOI18N
+                if (fallback.isDirectory()) {
+                    fallbackCache = new File[]{ fallback };
+                }
+            }
+        }
+        if (fallbackCache.length == 0) {
+            return null;
+        }
+        return new File(fallbackCache[0], cache);
     }
 
     /** A callback interface to flush content of some cache at a suitable
