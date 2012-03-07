@@ -50,7 +50,6 @@ import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.extbrowser.plugins.DOMInspectionFeatureImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.MessageDispatcherImpl;
@@ -97,7 +96,6 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     private Lookup createLookup() {
         List<Lookup> lookups = new ArrayList<Lookup>();
         lookups.add(Lookups.fixed(
-                    new DOMInspectionFeatureImpl(this),
                     new MessageDispatcherImpl(),
                     new RemoteScriptExecutor(this)
                 ));

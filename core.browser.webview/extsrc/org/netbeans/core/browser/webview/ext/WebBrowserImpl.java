@@ -70,7 +70,7 @@ import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.core.browser.api.WebBrowserEvent;
 import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
-import org.netbeans.modules.web.common.api.browser.PageInspector;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;

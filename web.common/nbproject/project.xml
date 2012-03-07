@@ -24,15 +24,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.core</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>2</release-version>
-                        <specification-version>3.29</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -228,12 +219,6 @@
                 <package>org.netbeans.modules.web.common.taginfo</package>
                 <package>org.netbeans.modules.web.common.websocket</package>
             </friend-packages>
-            <extra-compilation-unit>
-                <package-root>antsrc</package-root>
-                <classpath>${module.classpath}:${ant.jar}:${tools.jar}:${extra.cp}</classpath>
-                <built-to>build/antclasses</built-to>
-                <built-to>${cluster}/ant/nblib/org-netbeans-modules-web-common-ant.jar</built-to>
-            </extra-compilation-unit>
         </data>
     </configuration>
 </project>

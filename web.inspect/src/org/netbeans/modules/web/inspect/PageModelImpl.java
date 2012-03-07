@@ -52,7 +52,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.netbeans.modules.web.common.spi.browser.ScriptExecutor;
+import org.netbeans.modules.web.browser.spi.ScriptExecutor;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;

@@ -48,10 +48,10 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
-import org.netbeans.modules.web.common.api.browser.PageInspector;
-import org.netbeans.modules.web.common.spi.browser.MessageDispatcher;
-import org.netbeans.modules.web.common.spi.browser.MessageDispatcher.MessageListener;
-import org.netbeans.modules.web.common.spi.browser.ScriptExecutor;
+import org.netbeans.modules.web.browser.api.PageInspector;
+import org.netbeans.modules.web.browser.spi.MessageDispatcher;
+import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
+import org.netbeans.modules.web.browser.spi.ScriptExecutor;
 import org.openide.util.Lookup;
 
 /**
