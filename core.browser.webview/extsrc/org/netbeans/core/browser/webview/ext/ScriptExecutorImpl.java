@@ -45,7 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.netbeans.modules.web.common.spi.browser.ScriptExecutor;
+import org.netbeans.modules.web.browser.spi.ScriptExecutor;
 
 /**
  * Script executor for web-browser pane based on {@code WebView}.

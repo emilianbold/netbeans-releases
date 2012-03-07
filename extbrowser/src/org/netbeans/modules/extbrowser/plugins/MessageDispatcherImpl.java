@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.extbrowser.plugins;
 
-import org.netbeans.modules.web.common.spi.browser.MessageDispatcher;
+import org.netbeans.modules.web.browser.spi.MessageDispatcher;
+
 
 /**
  * Implementation of {@code MessageDispatcher} for {@code ExtBrowserImpl}.

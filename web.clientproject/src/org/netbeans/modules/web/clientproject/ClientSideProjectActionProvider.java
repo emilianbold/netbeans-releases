@@ -43,7 +43,7 @@ package org.netbeans.modules.web.clientproject;
 
 import java.net.URISyntaxException;
 import java.net.URL;
-import org.netbeans.modules.web.common.api.browser.BrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;

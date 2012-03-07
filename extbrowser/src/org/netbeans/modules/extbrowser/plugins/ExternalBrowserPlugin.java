@@ -53,7 +53,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
-import org.netbeans.modules.web.common.api.browser.PageInspector;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
 import org.openide.util.Exceptions;
