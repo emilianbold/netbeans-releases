@@ -657,9 +657,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 String user = e.getUsernameShort();
-                if(user.toLowerCase().contains(byUser.toLowerCase())) return true;
+                return user.toLowerCase().contains(byUser.toLowerCase());
             }
-            return false;
+            return true;
         }
         @Override
         public String getDisplayName() {
@@ -679,9 +679,9 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             HistoryEntry e = getEntry(value);
             if(e != null) {
                 String msg = e.getMessage();
-                if(msg.toLowerCase().contains(byMsg.toLowerCase())) return true;
+                return msg.toLowerCase().contains(byMsg.toLowerCase());
             }
-            return false;
+            return true;
         }
         @Override
         public String getDisplayName() {
