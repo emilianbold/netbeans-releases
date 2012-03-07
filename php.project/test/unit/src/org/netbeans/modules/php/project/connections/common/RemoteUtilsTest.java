@@ -67,4 +67,24 @@ public class RemoteUtilsTest extends NbTestCase {
         assertEquals("", RemoteUtils.sanitizeUploadDirectory("", true));
     }
 
+    public void testParentPathForFiles() {
+        assertEquals(null, RemoteUtils.getParentPath("/"));
+        assertEquals(null, RemoteUtils.getParentPath("a"));
+        assertEquals("a", RemoteUtils.getParentPath("a/b"));
+        assertEquals("a/b", RemoteUtils.getParentPath("a/b/c"));
+        assertEquals("/", RemoteUtils.getParentPath("/a"));
+        assertEquals("/a", RemoteUtils.getParentPath("/a/b"));
+        assertEquals("/a/b", RemoteUtils.getParentPath("/a/b/c"));
+    }
+
+    public void testParentPathForFolders() {
+        assertEquals(null, RemoteUtils.getParentPath("/"));
+        assertEquals(null, RemoteUtils.getParentPath("a/"));
+        assertEquals("a", RemoteUtils.getParentPath("a/b/"));
+        assertEquals("a/b", RemoteUtils.getParentPath("a/b/c/"));
+        assertEquals("/", RemoteUtils.getParentPath("/a/"));
+        assertEquals("/a", RemoteUtils.getParentPath("/a/b/"));
+        assertEquals("/a/b", RemoteUtils.getParentPath("/a/b/c/"));
+    }
+
 }
