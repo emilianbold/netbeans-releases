@@ -261,6 +261,10 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeCatch, getDefaultAsBoolean(spaceBeforeCatch));
     }
 
+    public boolean spaceBeforeFinally() {
+        return preferences.getBoolean(spaceBeforeFinally, getDefaultAsBoolean(spaceBeforeFinally));
+    }
+
     public boolean spaceBeforeMethodDeclParen() {
         return preferences.getBoolean(spaceBeforeMethodDeclParen, getDefaultAsBoolean(spaceBeforeMethodDeclParen));
     }

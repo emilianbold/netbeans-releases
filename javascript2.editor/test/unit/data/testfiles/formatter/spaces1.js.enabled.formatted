@@ -19,7 +19,7 @@ function computeColor() {
         for (var a = 0; a < 3; a++) {
             color += Math.round(Math.random() * 2);
         }
-    }  catch (error) {
+    } catch (error) {
         println (error);
     }
     while (color > 100) {

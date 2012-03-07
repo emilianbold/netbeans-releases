@@ -138,6 +138,7 @@ public class FmtOptions {
     public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
     public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
     public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
+    public static final String spaceBeforeFinally = "spaceBeforeFinally"; //NOI18N
     public static final String spaceBeforeMethodDeclParen = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final String spaceBeforeMethodCallParen = "spaceBeforeMethodCallParen"; //NOI18N
     public static final String spaceBeforeIfParen = "spaceBeforeIfParen"; //NOI18N
@@ -313,6 +314,7 @@ public class FmtOptions {
             { spaceBeforeWhile, TRUE},
             { spaceBeforeElse, TRUE},
             { spaceBeforeCatch, TRUE},
+            { spaceBeforeFinally, TRUE},
             { spaceBeforeMethodDeclParen, FALSE},
             { spaceBeforeMethodCallParen, FALSE},
             { spaceBeforeIfParen, TRUE},

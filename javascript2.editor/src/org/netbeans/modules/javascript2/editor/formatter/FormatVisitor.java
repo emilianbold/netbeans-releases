@@ -113,6 +113,11 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(DoWhileNode doWhileNode, boolean onset) {
         if (onset) {
+            FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
+            FormatToken beforeWhile = whileToken.previous();
+            if (beforeWhile != null) {
+                appendToken(beforeWhile, FormatToken.forFormat(FormatToken.Kind.BEFORE_WHILE_KEYWORD));
+            }
             if (handleWhile(doWhileNode)) {
                 return null;
             }
@@ -522,6 +527,10 @@ public class FormatVisitor extends NodeVisitor {
     private static void appendToken(FormatToken previous, FormatToken token) {
         FormatToken original = previous.next();
         previous.setNext(token);
+        token.setPrevious(previous);
         token.setNext(original);
+        if (original != null) {
+            original.setPrevious(token);
+        }
     }
 }

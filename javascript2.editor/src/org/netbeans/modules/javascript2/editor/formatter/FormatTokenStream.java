@@ -137,6 +137,8 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_IF_KEYWORD));
                     break;
                 case KEYWORD_WHILE:
+                    // we do not put before here, we do it in visitor to put it
+                    // only for do while
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_WHILE_KEYWORD));
                     break;
@@ -153,8 +155,17 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SWITCH_KEYWORD));
                     break;
                 case KEYWORD_CATCH:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_CATCH_KEYWORD));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_CATCH_KEYWORD));
+                    break;
+                case KEYWORD_ELSE:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_ELSE_KEYWORD));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    break;
+                case KEYWORD_FINALLY:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_FINALLY_KEYWORD));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     break;
                 default:
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
@@ -187,6 +198,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
             lastToken = token;
         } else {
             lastToken.setNext(token);
+            token.setPrevious(lastToken);
             lastToken = token;
         }
 
