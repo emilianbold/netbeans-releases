@@ -363,6 +363,12 @@ public class RevisionNode extends AbstractNode implements Comparable {
         public String getRendererValue(String value) {
             return value;
         }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+        
     }
 
 }
