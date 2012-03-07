@@ -607,16 +607,17 @@ public class HintTest {
     
     private class TestProxyClassPathProvider implements ClassPathProvider {
 
+        private final ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoot);
+
         public ClassPath findClassPath(FileObject file, String type) {
             try {
             if (ClassPath.BOOT == type) {
+                // XXX simpler to use JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries()
                 return ClassPathSupport.createClassPath(getBootClassPath().toArray(new URL[0]));
             }
 
             if (ClassPath.SOURCE == type) {
-                return ClassPathSupport.createClassPath(new FileObject[] {
-                    sourceRoot
-                });
+                return sourcePath;
             }
 
             if (ClassPath.COMPILE == type) {
