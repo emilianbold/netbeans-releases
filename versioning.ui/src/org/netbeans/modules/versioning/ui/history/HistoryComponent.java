@@ -185,14 +185,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {                            
+                    Node[] newSelection = (Node[]) evt.getNewValue();
                     if(activatedNodes != null) {
                         for (Node n : activatedNodes) {
                             activatedNodesContent.remove(n);
                         }
-                        activatedNodes = (Node[]) evt.getNewValue();
+                        activatedNodes = newSelection;
                         for (Node n : activatedNodes) {
                             activatedNodesContent.add(n);
                         }
+                    }
+                    if(newSelection != null) {
+                        getToolbar().modeCombo.setEnabled(newSelection.length == 1);
+                        getToolbar().modeLabel.setEnabled(newSelection.length == 1);
                     }
                 }   
             }
@@ -224,6 +229,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     
     Filter getSelectedFilter() {
         return (Filter) getToolbar().filterCombo.getSelectedItem();
+    }
+    
+    HistoryEntry getParentEntry(HistoryEntry entry) {
+        return masterView.getParentEntry(entry);
     }
     
     /** This method is called from within the constructor to
@@ -307,7 +316,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                     }
                 };
                 save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_SaveModified(dataObject.getPrimaryFile().getNameExt()));
-                return MultiViewFactory.createUnsafeCloseState("editor", save, null);
+                return MultiViewFactory.createUnsafeCloseState("editor", save, null); // NOI18N
             }
         }    
         return CloseOperationState.STATE_OK;
@@ -340,6 +349,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         getToolbar().containsField.requestFocus();
     }
 
+    private void onModeChange() {
+        diffView.modeChanged();
+    }
+                
     @Override
     public Action[] getActions() {
         return new Action[0]; // XXX
@@ -367,20 +380,27 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public void componentDeactivated() {}
+
+    Node[] getSelectedNodes() {
+        return masterView.getExplorerManager().getSelectedNodes();
+    }
         
     private class Toolbar extends JToolBar implements ActionListener {
         private JButton nextButton;
         private JButton prevButton;
         private JButton refreshButton;
         private JButton settingsButton;
+        private JLabel modeLabel;
         private JLabel filterLabel;
         private JComboBox filterCombo;
+        private JComboBox modeCombo;
         private JLabel containsLabel;
         private JTextField containsField;
         private ShowHistoryAction showHistoryAction;
         private final LinkButton searchHistoryButton;
         private final Separator separator1;
         private final Separator separator2;
+        private final Separator separator3;
         
         private Toolbar(VersioningSystem vs, final VCSFileProxy... files) {
             setBorder(new EmptyBorder(0, 0, 0, 0));
@@ -396,8 +416,18 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             containsField.getDocument().addDocumentListener(new ContainsListener());
             containsField.setVisible(false);
             
+            modeLabel = new JLabel(NbBundle.getMessage(HistoryComponent.class, "LBL_CompareMode"));  // NOI18N
+            modeCombo = new ValueSizedCombo();
+            modeCombo.setModel(new DefaultComboBoxModel(new Object[] {CompareMode.TOCURRENT, CompareMode.TOPARENT}));
+            modeCombo.addItemListener(new ItemListener() {
+                @Override
+                public void itemStateChanged(ItemEvent e) {
+                    onModeChange();
+                }
+            });
+            
             filterLabel = new JLabel(NbBundle.getMessage(HistoryComponent.class, "LBL_Filter"));  // NOI18N
-            filterCombo = new FilterCombo();
+            filterCombo = new ValueSizedCombo();
             filterCombo.setRenderer(new DefaultListCellRenderer() {
                 @Override
                 public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -430,6 +460,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             separator1.setOrientation(SwingConstants.VERTICAL);
             separator2 = new JToolBar.Separator();
             separator2.setOrientation(SwingConstants.VERTICAL);
+            separator3 = new JToolBar.Separator();
+            separator3.setOrientation(SwingConstants.VERTICAL);
             
             setup(vs);
             
@@ -438,6 +470,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             refreshButton.setBorder(new EmptyBorder(0, 0, 0, 0));
             filterLabel.setBorder(new EmptyBorder(0, 15, 0, 5));
             filterCombo.setBorder(new EmptyBorder(0, 5, 0, 5));
+            modeLabel.setBorder(new EmptyBorder(0, 15, 0, 5));
+            modeCombo.setBorder(new EmptyBorder(0, 5, 0, 5));
             containsLabel.setBorder(new EmptyBorder(0, 5, 0, 10));
             settingsButton.setBorder(new EmptyBorder(0, 5, 0, 10));
 
@@ -448,12 +482,15 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             add(separator1);
             
             add(refreshButton); 
+            add(separator2);
             add(filterLabel); 
             add(filterCombo); 
             add(containsLabel); 
             add(containsField); 
+            add(modeLabel); 
+            add(modeCombo); 
             
-            add(separator2);
+            add(separator3);
             
             add(settingsButton);
             
@@ -499,7 +536,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             }
         }
         
-        private class FilterCombo extends JComboBox {
+        private class ValueSizedCombo extends JComboBox {
             @Override
             public Dimension getMinimumSize() {
                 return getPreferredSize();
@@ -512,22 +549,19 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             public Dimension getPreferredSize() {
                 return new Dimension(getComboWidth(), super.getPreferredSize().height);
             }
-            private Filter[] getFilters() {
-                Filter[] ret = new Filter[getModel().getSize()];
+            private Object[] getValues() {
+                Object[] ret = new Object[getModel().getSize()];
                 for (int i = 0; i < ret.length; i++) {
-                    Object e = getModel().getElementAt(i);
-                    if(e instanceof Filter) {
-                        ret[i] = (Filter) e;
-                    }
+                    ret[i] = getModel().getElementAt(i);
                 }
                 return ret;
             }
             private int getComboWidth() {
-                Filter[] filters = getFilters();
+                Object[] values = getValues();
                 FontMetrics fm = getFontMetrics(getFont());
-                int ret = 150; // default min
-                for (Filter filter : filters) {
-                    int width = fm.stringWidth(filter.getDisplayName()) + 50;
+                int ret = 130; // default min
+                for (Object value : values) {
+                    int width = fm.stringWidth(value.toString()) + 60;
                     if(width > 350) {
                         return 350;
                     }
@@ -551,6 +585,10 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 }); 
             }
         }
+    }
+    
+    CompareMode getMode() {
+        return (CompareMode) getToolbar().modeCombo.getSelectedItem();
     }
 
     void disableNavigationButtons() {
@@ -658,7 +696,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }           
     private String getFilteredRendererValue(String value) {
         String contains = getToolbar().containsField.getText();
-        if(contains == null || "".equals(contains)) {
+        if(contains == null || "".equals(contains)) { // NOI18N
             return value;
         }            
         StringBuilder sb = new StringBuilder();
@@ -689,4 +727,18 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             masterView.fireFilterChanged();
         }
     };    
+    
+    public enum CompareMode {
+        TOPARENT(NbBundle.getMessage(HistoryComponent.class, "LBL_DiffToParent")),   // NOI18N
+        TOCURRENT(NbBundle.getMessage(HistoryComponent.class, "LBL_DiffToCurrent")); // NOI18N
+        private final String displayName;
+        private CompareMode(String displayName) {
+            this.displayName = displayName;
+        }
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+        
 }

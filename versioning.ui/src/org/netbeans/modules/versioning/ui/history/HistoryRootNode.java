@@ -102,6 +102,27 @@ public class HistoryRootNode extends AbstractNode {
         addEntries(entries, true);
     }
         
+    synchronized HistoryEntry getPreviousEntry(HistoryEntry entry) {
+        Enumeration<Node> en = getChildren().nodes();
+        boolean hit = false;
+        while(en.hasMoreElements()) {
+            Node n = en.nextElement();
+            HistoryEntry he = n.getLookup().lookup(HistoryEntry.class);
+            if(he != null) {
+                if(!entry.isLocalHistory() && he.isLocalHistory()) {
+                    continue;
+                }
+                if(hit) {
+                    return he;
+                }
+                if(he == entry) {
+                    hit = true;
+                }
+            }
+        }
+        return null;
+    }
+    
     private void addEntries(HistoryEntry[] entries, boolean vcs) {
         // remove previous
         Children children = getChildren();
