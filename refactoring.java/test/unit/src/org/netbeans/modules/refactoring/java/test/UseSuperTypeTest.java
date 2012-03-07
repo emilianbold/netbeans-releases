@@ -61,13 +61,65 @@ public class UseSuperTypeTest extends RefactoringTestBase {
     public UseSuperTypeTest(String name) {
         super(name);
     }
+    
+    public void test174431() throws Exception { // #174431 - [Use Supertype] where possible cannot handle exceptions
+        writeFilesAndWaitForScan(src, new File("t/Main.java", "package t;\n"
+                + "import java.io.IOException;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n"
+                + "public class Main {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        try {\n"
+                + "            a();\n"
+                + "        } catch (FileSystemException ex) {\n"
+                + "            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);\n"
+                + "        } catch (IOException ex) {\n"
+                + "            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);\n"
+                + "        }\n"
+                + "    }\n"
+                + "    private static void a() throws IOException {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/FileSystemException.java", "package t;\n import java.io.IOException;\n"
+                + "/** * * @author lebedkov */\n"
+                + "public class FileSystemException extends IOException {\n"
+                + "    public FileSystemException() {\n"
+                + "    }\n"
+                + "    public FileSystemException(String msg) {\n"
+                + "        super(msg);\n"
+                + "    }\n"
+                + "}\n"));
+        performUseSuperType(src.getFileObject("t/FileSystemException.java"), 0);
+        verifyContent(src, new File("t/Main.java", "package t;\n"
+                + "import java.io.IOException;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n"
+                + "public class Main {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        try {\n"
+                + "            a();\n"
+                + "        } catch (FileSystemException ex) {\n"
+                + "            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);\n"
+                + "        } catch (IOException ex) {\n"
+                + "            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);\n"
+                + "        }\n"
+                + "    }\n"
+                + "    private static void a() throws IOException {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/FileSystemException.java", "package t;\n import java.io.IOException;\n"
+                + "/** * * @author lebedkov */\n"
+                + "public class FileSystemException extends IOException {\n"
+                + "    public FileSystemException() {\n"
+                + "    }\n"
+                + "    public FileSystemException(String msg) {\n"
+                + "        super(msg);\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void test131406() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance; } }"),
@@ -77,7 +129,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Iface getDefault() { return instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Iface instance; static Iface getDefault() { return instance; } }"),
@@ -87,7 +139,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance == null ? new Main() : instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance == null ? new Main() : instance; } }"),
@@ -97,7 +149,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/B.java", "package t; interface B { public B m(); }"),
                 new File("t/C.java", "package t; interface C { public C m(); }"),
                 new File("t/A.java", "package t; class A implements C, B { public A m(){ A a = null; return a; } }"));
-        performUseSuperType(src.getFileObject("t/A.java"));
+        performUseSuperType(src.getFileObject("t/A.java"), 1);
         verifyContent(src,
                 new File("t/B.java", "package t; interface B { public B m(); }"),
                 new File("t/C.java", "package t; interface C { public C m(); }"),
@@ -109,7 +161,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
@@ -119,7 +171,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { public void subMethod(); }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Iface sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
@@ -129,7 +181,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { input.subMethod(); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { input.subMethod(); } }"),
@@ -141,7 +193,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { System.out.println(input.toString()); } public void action(Iface input) { System.out.println(input.toString()); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { System.out.println(input.toString()); } public void action(Iface input) { System.out.println(input.toString()); } }"),
@@ -151,14 +203,14 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Iface input) { System.out.println(input.toString()); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        performUseSuperType(src.getFileObject("u/Main.java"));
+        performUseSuperType(src.getFileObject("u/Main.java"), 1);
         verifyContent(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Iface sub = new Main(); action(sub); } public void subMethod() { } public void action(Iface input) { System.out.println(input.toString()); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
     }
 
-    private void performUseSuperType(FileObject source, Problem... expectedProblems) throws Exception {
+    private void performUseSuperType(FileObject source, final int position, Problem... expectedProblems) throws Exception {
         final UseSuperTypeRefactoring[] r = new UseSuperTypeRefactoring[1];
 
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
@@ -171,7 +223,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 TreePath tp = TreePath.getPath(cut, classTree);
                 r[0] = new UseSuperTypeRefactoring(TreePathHandle.create(tp, parameter));
-                r[0].setTargetSuperType(r[0].getCandidateSuperTypes()[1]);
+                r[0].setTargetSuperType(r[0].getCandidateSuperTypes()[position]);
             }
         }, true);
 
