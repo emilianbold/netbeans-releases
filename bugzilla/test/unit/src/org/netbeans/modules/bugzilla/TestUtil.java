@@ -59,6 +59,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
@@ -170,7 +171,8 @@ public class TestUtil implements TestConstants {
     }
 
     public static BugzillaRepository getRepository(String name, String url, String user, String psswd) {
-        return new BugzillaRepository(name, name, url, user, psswd.toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo(name, BugzillaConnector.ID, url, name, name, user, null, psswd.toCharArray(), null);
+        return new BugzillaRepository(info);
     }
 
     public static void validate(BugzillaRepositoryConnector brc, TaskRepository repository) throws Throwable {

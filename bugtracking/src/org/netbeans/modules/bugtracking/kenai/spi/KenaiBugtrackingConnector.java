@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
+ * Provides Kenai specific functionality to a {@link BugtrackingConnector}
  * 
- * Provides Kenai specific functionality to a {@link BugtrackingController}.<br>
- * To use register your implementation in the {@link BugtrackingConnector}-s and
- * {@link Repositories} lookup.
- * 
- * @author Tomas Stupka
+ * @author tomas
  */
-public abstract class KenaiSupport {
-
+public abstract class KenaiBugtrackingConnector extends BugtrackingConnector {
+    
     public enum BugtrackingType {
         BUGZILLA,
         JIRA
     }
+        
+    /**
+     * Creates a {@link Repository} for the given {@link KenaiProject}
+     *
+     * @param project
+     * @return
+     */
+    public abstract Repository createRepository(KenaiProject project);
     
     /**
      * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
@@ -66,38 +71,9 @@ public abstract class KenaiSupport {
      * @param project
      * @return
      */
-    public abstract RepositoryProvider createRepository(KenaiProject project);
-    
-    /**
-     * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
-     */
-    public RepositoryProvider findNBRepository() {
+    public Repository findNBRepository() {
         return null;
     }
-
-    /**
-     * // XXX what is this!
-     * @param query
-     * @param filter
-     */
-    public abstract void setFilter(QueryProvider query, Filter filter);
-
-    /**
-     * Returns the default "All Issues" query for the given repository
-     * 
-     * @return
-     */
-    public abstract QueryProvider getAllIssuesQuery(RepositoryProvider repository);
-
-    /**
-     * Returns the default "My Issues" query for the given repository
-     *
-     * @return
-     */
-    public abstract QueryProvider getMyIssuesQuery(RepositoryProvider repository);
     
     /**
      * Determines the bugtracking type
@@ -105,22 +81,4 @@ public abstract class KenaiSupport {
      * @return
      */
     public abstract BugtrackingType getType();
-
-    /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
-     *
-     * @param query
-     * @return true if login needed, otherwise false
-     */
-    public abstract boolean needsLogin(QueryProvider query);
-
-    /**
-     * Refreshes the given query
-     * 
-     * @param query
-     * @param synchronously
-     */
-    public abstract void refresh(QueryProvider query, boolean synchronously);
 }

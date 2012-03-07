@@ -43,11 +43,7 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.ui.nodes.RepositoryNode;
-import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -56,41 +52,21 @@ import org.openide.util.Lookup;
  * 
  * @author Tomas Stupka, Jan Stola
  */
-public abstract class RepositoryProvider implements Lookup.Provider {
-
-    private RepositoryNode node;
+public abstract class RepositoryProvider<R, Q, I> {
 
     /**
-     * a query from this repository was saved or removed
+     * Returns the repository info or null in case the repository is new
+     * 
+     * @param r
+     * @return 
      */
-    public final static String EVENT_QUERY_LIST_CHANGED = "bugtracking.repository.queries.changed"; // NOI18N
-
-    /**
-     * RepositoryProvider's attributes have changed, e.g. name, url, etc.
-     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
-     * Old value can be null in case the repository is created.
-     */
-    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
-
-    public abstract RepositoryInfo getInfo();
+    public abstract RepositoryInfo getInfo(R r);
     
     /**
      * Returns the icon for this repository
      * @return
      */
-    public abstract Image getIcon();
-
-    /**
-     * Returns a {@link Node} representing this repository
-     * 
-     * @return
-     */
-    public final Node getNode() {
-        if(node == null) {
-            node = new RepositoryNode(this);
-        }
-        return node;
-    }
+    public abstract Image getIcon(R r);
 
     /**
      * Returns an issue with the given ID
@@ -99,22 +75,20 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      *
      * @param id
      * @return
-     * @deprecated only kenai and nbbugzilla related. will be removed. 
-     * XXX move out to kenaisupport
      */
-    public abstract IssueProvider getIssue(String id);
+    public abstract I getIssue(R r, String id);
 
     /**
      * Removes this repository from its connector
      *
      */
-    public abstract void remove();
+    public abstract void remove(R r);
 
     /**
      * Returns the {@link BugtrackignController} for this repository
      * @return
      */
-    public abstract RepositoryController getController();
+    public abstract RepositoryController getController(R r);
 
     /**
      * Creates a new query instance. Might block for a longer time.
@@ -122,7 +96,7 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      * @return a new QueryProvider instance or null if it's not possible
      * to access the repository.
      */
-    public abstract QueryProvider createQuery(); 
+    public abstract Q createQuery(R r); 
 
     /**
      * Creates a new IssueProvider instance. Might block for a longer time.
@@ -130,14 +104,16 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      * @return return a new IssueProvider instance or null if it's not possible
      * to access the repository.
      */
-    public abstract IssueProvider createIssue();
+    public abstract I createIssue(R r);
 
     /**
      * Returns all saved queries
      * @return
      */
-    public abstract QueryProvider[] getQueries();
+    public abstract Collection<Q> getQueries(R r);
 
+    public abstract Lookup getLookup(R r);
+    
     /**
      * Runs a query against the bugtracking repository to get all issues
      * which applies that their ID or summary contains the given criteria string
@@ -146,10 +122,6 @@ public abstract class RepositoryProvider implements Lookup.Provider {
      *
      * @param criteria
      */
-    public abstract IssueProvider[] simpleSearch(String criteria);
-
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
+    public abstract Collection<I> simpleSearch(R r, String criteria);
 
 }

@@ -48,8 +48,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
  *
@@ -57,15 +57,15 @@ import org.netbeans.modules.jira.Jira;
  */
 public class NamedFiltersCommand extends JiraCommand {
     private NamedFilter[] namedFilters;
-    private final TaskRepository taskRepository;
+    private final JiraRepository repository;
 
-    public NamedFiltersCommand(TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    public NamedFiltersCommand(JiraRepository repository) {
+        this.repository = repository;
     }
 
     @Override
     public void execute() throws JiraException, CoreException, IOException, MalformedURLException {
-        namedFilters = Jira.getInstance().getClient(taskRepository).getNamedFilters(new NullProgressMonitor());
+        namedFilters = Jira.getInstance().getClient(repository.getTaskRepository()).getNamedFilters(new NullProgressMonitor());
     }
 
     public NamedFilter[] getNamedFilters() {

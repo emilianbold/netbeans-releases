@@ -44,7 +44,13 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.Lookup;
 
@@ -52,7 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class HookRepository extends RepositoryProvider {
+public class HookRepository extends TestRepository {
     private RepositoryInfo info = new RepositoryInfo("HookRepository", "HookRepository", "http://url", "HookRepository", "HookRepository", null, null, null, null);
 
     @Override
@@ -60,15 +66,13 @@ public class HookRepository extends RepositoryProvider {
         return info;
     }
 
-    
-    
     @Override
     public Image getIcon() {
         return null;
     }
 
     @Override
-    public IssueProvider getIssue(String id) {
+    public TestIssue getIssue(String id) {
         return HookIssue.instance;
     }
 
@@ -83,23 +87,23 @@ public class HookRepository extends RepositoryProvider {
     }
 
     @Override
-    public QueryProvider createQuery() {
+    public TestQuery createQuery() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public IssueProvider createIssue() {
+    public TestIssue createIssue() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public QueryProvider[] getQueries() {
+    public Collection<TestQuery> getQueries() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public IssueProvider[] simpleSearch(String criteria) {
-        return new IssueProvider[] {HookIssue.instance};
+    public Collection<TestIssue> simpleSearch(String criteria) {
+        return Arrays.asList(new TestIssue[] {HookIssue.instance});
     }
 
     @Override

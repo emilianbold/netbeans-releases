@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.SocketAddress;
@@ -57,10 +56,10 @@ import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.WebUtil;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 
 /**
@@ -106,16 +105,31 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     }
     
     public void testIsLoginHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, "XXX", "XXX".toCharArray(), null, null);
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", "XXX", null , "XXX".toCharArray(), null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "LoginHandler");
 
-        repository = new BugzillaRepository("bgzll", "bgzll", REPO_URL, REPO_USER, "XXX".toCharArray(), null, null);
+        info = new RepositoryInfo("bgzll", BugzillaConnector.ID, REPO_URL, "bgzll", "bgzll", REPO_USER, null , "XXX".toCharArray(), null);
+        repository = new BugzillaRepository(info);
         assertHandler(repository, "LoginHandler");
         
     }
 
     public void testIsNotFoundHandler() throws Throwable {
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "http://crap", null, null, null, null);
+        ProxySelector ps = new ProxySelector() {
+            @Override
+            public List<Proxy> select(URI uri) {
+                return Collections.singletonList(Proxy.NO_PROXY);
+            }
+            @Override
+            public void connectFailed(URI uri, SocketAddress sa, IOException ioe) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        ProxySelector.setDefault(ps); 
+        
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "http://crap", "bgzll", "bgzll", null, null, null , null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "NotFoundHandler");
     }
 
@@ -132,10 +146,12 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
         };
         ProxySelector.setDefault(ps); 
         
-        BugzillaRepository repository = new BugzillaRepository("bgzll", "bgzll", "dil://dil.com", null, null, null, null);
+        RepositoryInfo info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "dil://dil.com", "bgzll", "bgzll", null, null, null , null);
+        BugzillaRepository repository = new BugzillaRepository(info);
         assertHandler(repository, "DefaultHandler");
 
-        repository = new BugzillaRepository("bgzll", "bgzll", "crap", null, null, null, null);
+        info = new RepositoryInfo("bgzll", BugzillaConnector.ID, "crap", "bgzll", "bgzll", null, null, null , null);
+        repository = new BugzillaRepository(info);
         assertHandler(repository, "DefaultHandler");
 
         // XXX need more tests
