@@ -446,6 +446,7 @@ public class HintTest {
             result.addAll(e.getValue());
         }
 
+        Collections.sort(result, ERRORS_COMPARATOR);
         return new HintOutput(result);
     }
 
@@ -670,10 +671,10 @@ public class HintTest {
      */
     public final class HintOutput {
         
-        private final List<ErrorDescription> result;
+        private final List<ErrorDescription> errors;
 
-        private HintOutput(List<ErrorDescription> result) {
-            this.result = result;
+        private HintOutput(List<ErrorDescription> errors) {
+            this.errors = errors;
 
         }
 
@@ -687,17 +688,7 @@ public class HintTest {
          * @throws AssertionError if the given warnings do not match the actual warnings
          */
         public HintOutput assertWarnings(String... warnings) {
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
-            Collections.sort(errors, ERRORS_COMPARATOR);
-            List<String> errorsNames = new LinkedList<String>();
-
-            errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
-
-            for (ErrorDescription e : errors) {
-                errorsNames.add(e.toString());
-            }
-
-            assertTrue("The warnings provided by the hint do not match expected warnings. Provided warnings: " + errorsNames.toString(), Arrays.equals(warnings, errorsNames.toArray(new String[0])));
+            assertEquals("The warnings provided by the hint do not match expected warnings.", Arrays.toString(warnings), errors.toString());
 
             return this;
         }
@@ -713,11 +704,7 @@ public class HintTest {
          */
         public HintOutput assertContainsWarnings(String... warnings) {
             Set<String> goldenSet = new HashSet<String>(Arrays.asList(warnings));
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
-            Collections.sort (errors, ERRORS_COMPARATOR);
             List<String> errorsNames = new LinkedList<String>();
-
-            errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
 
             for (ErrorDescription d : errors) {
                 goldenSet.remove(d.toString());
@@ -740,11 +727,7 @@ public class HintTest {
          */
         public HintOutput assertNotContainsWarnings(String... warnings) {
             Set<String> goldenSet = new HashSet<String>(Arrays.asList(warnings));
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
-            Collections.sort (errors, ERRORS_COMPARATOR);
             List<String> errorsNames = new LinkedList<String>();
-
-            errors = errors != null ? errors : Collections.<ErrorDescription>emptyList();
 
             boolean fail = false;
             for (ErrorDescription d : errors) {
@@ -766,9 +749,6 @@ public class HintTest {
          * @throws AssertionError if the given warning cannot be found
          */
         public HintWarning findWarning(String warning) {
-            List<ErrorDescription> errors = new ArrayList<ErrorDescription>(result);
-            Collections.sort(errors, ERRORS_COMPARATOR);
-
             ErrorDescription toFix = null;
 
             for (ErrorDescription d : errors) {
