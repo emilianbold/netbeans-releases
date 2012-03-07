@@ -410,6 +410,25 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         @Override
         public void actionPerformed(final ActionEvent e, final JTextComponent target) {
+            // Preliminary checks that avoid interpreting e.g. Ctrl+W that would then invoke runAtomic()
+            if ((target != null) && (e != null)) {
+                    // Check whether the modifiers are OK
+                    int mod = e.getModifiers();
+                    boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
+                    // On the mac, norwegian and french keyboards use Alt to do bracket characters.
+                    // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
+                    boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
+                        ((mod & ActionEvent.ALT_MASK) != 0);
+                    if (alt || ctrl) {
+                        return;
+                    }
+                    // Check whether the target is enabled and editable
+                    if (!target.isEditable() || !target.isEnabled()) {
+                        target.getToolkit().beep();
+                        return;
+                    }
+            }
+
             currentTarget = target;
             try {
                 if (!triggerJavaDefaultKeyTypedAction(e, target)) {

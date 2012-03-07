@@ -102,9 +102,7 @@ public class GsfSemanticLayer extends AbstractHighlightsContainer implements Doc
     
     //public void setColorings(final SortedMap<OffsetRange, Coloring> colorings/*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
     void setColorings(final SortedSet<SequenceElement> colorings, final int version /*, final Set<OffsetRange> addedTokens, final Set<OffsetRange> removedTokens*/) {
-        NbDocument.runAtomic((StyledDocument) doc, 
-//        SwingUtilities.invokeLater(
-        /*doc.render(*/new Runnable() {
+        doc.render(new Runnable() {
             public @Override void run() {
                 synchronized (GsfSemanticLayer.this) {
                     GsfSemanticLayer.this.colorings = colorings;
