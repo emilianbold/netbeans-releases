@@ -93,7 +93,7 @@ class ResultViewPanel extends JPanel{
     private static final String REPLACE_ICON =
             "org/netbeans/modules/search/res/replaceChecked.gif"; //NOI18N
     private static final String CUSTOMIZER_ICON =
-            "org/netbeans/modules/search/res/customizeReport.png"; //NOI18N
+            "org/netbeans/modules/search/res/refresh.png"; //NOI18N
     private static final String STOP_ICON =
             "org/netbeans/modules/search/res/stop.png"; //NOI18N
     private static final String SEARCH_ICON =
