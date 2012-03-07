@@ -961,8 +961,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <condition property="run.env.display" value="${env.NBDISPLAY}" else="${env.DISPLAY}">
 	<isset property="env.NBDISPLAY"/>
     </condition>
+    
+    <!-- architecture of jvm on which app will run -->
+    <condition property="jvm.arch.string" value="64" else="">
+      <available file="${nbjdk.home}\jre\lib\amd64" />
+    </condition>        
+    
     <property name="run.args.ide" value=""/>
-    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans.exe" failonerror="yes" dir="${java.io.tmpdir}">
+    <exec osfamily="windows" executable="${netbeans.dest.dir}/bin/netbeans${jvm.arch.string}.exe" failonerror="yes" dir="${java.io.tmpdir}">
       <arg value="--jdkhome"/>
       <arg file="${nbjdk.home}"/>
       <arg value="--userdir"/>

@@ -78,13 +78,9 @@ made subject to such option by the copyright holder.
         </delete>
         
         <!-- architecture of jvm on which app will run -->
-        <exec executable="${run.jdkhome}\bin\java" resultproperty="jvm.arch" failonerror="no">
-        		<arg value="-jar" />
-        		<arg value="${install}\harness\jvmArchitecture.jar" />
-        </exec>
         <condition property="jvm.arch.string" value="64" else="">
-        		<equals arg1="${jvm.arch}" arg2="64" />
-        </condition>
+            <available file="${run.jdkhome}\jre\lib\amd64" />
+        </condition>  
         
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
         <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans${jvm.arch.string}.exe">
@@ -179,7 +175,7 @@ made subject to such option by the copyright holder.
             <os family="mac"/>
         </condition>
         <echo message="${run.exe}" />
-				<exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
+        <exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
             <arg line="${run.args.common}"/>
