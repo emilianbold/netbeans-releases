@@ -141,7 +141,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                                 return;
                             }
                             
-                            refreshDiffPanel(entry1, entry2, file1, file2);
+                            refreshDiffPanel(entry2, entry1, file2, file1);
                             return;
                             
                         default:
@@ -164,7 +164,11 @@ public class HistoryDiffView implements PropertyChangeListener {
                 }
                 
                 if(entry1 != null && entry2 != null && file1 != null && file2 != null) {
-                    refreshDiffPanel(entry1, entry2, file1, file2);
+                    if(entry1.getDateTime().getTime() > entry1.getDateTime().getTime()) {
+                        refreshDiffPanel(entry1, entry2, file1, file2);
+                    } else {
+                        refreshDiffPanel(entry2, entry1, file2, file1);
+                    }
                     selected = true;
                     return;
                 }
