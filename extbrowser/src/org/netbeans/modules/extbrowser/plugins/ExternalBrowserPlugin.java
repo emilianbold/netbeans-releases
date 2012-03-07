@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.ExtBrowserImpl;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.websocket.WebSocketReadHandler;
 import org.netbeans.modules.web.common.websocket.WebSocketServer;
@@ -309,6 +310,7 @@ public final class ExternalBrowserPlugin {
                 if (browserTab == null) {
                     // Tab not opened from the IDE => using a dummy ExtBrowserImpl
                     ExtBrowserImpl impl = new ExtBrowserImpl() {
+                        { extBrowserFactory = new ExtWebBrowser(); }
                         @Override
                         protected void loadURLInBrowser(URL url) {
                             throw new UnsupportedOperationException();
