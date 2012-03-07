@@ -40,58 +40,22 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.plugins;
-
-import java.util.List;
+package org.netbeans.modules.extbrowser.plugins;
 
 
 /**
+ * Ids browser with available plugin 
+ * 
  * @author ads
  *
  */
-public interface ExtensionManagerAccessor {
+public enum BrowserId {
 
-    BrowserExtensionManager getManager();
-    
-    public static abstract class AbstractBrowserExtensionManager 
-        implements BrowserExtensionManager 
-    {
-        protected static final String PLUGIN_MODULE_NAME = 
-            "org.netbeans.modules.web.plugins";             // NOI18N
-        
-        protected abstract String getCurrentPluginVersion();
-        
-        protected boolean isUpdateRequired(String extVersion) {
-            String currentVersion = getCurrentPluginVersion();
-            if (extVersion == null) {
-                return true;
-            }
-            else if (currentVersion == null) {
-                return false;
-            }
-
-            List<Integer> extList = Utils.getVersionParts(extVersion);
-            List<Integer> minList = Utils.getVersionParts(currentVersion);
-
-            for (int i = 0; i < Math.max(extList.size(), minList.size()); i++) {
-                int extValue = i >= extList.size() ? 0 : extList.get(i);
-                int minValue = i >= minList.size() ? 0 : minList.get(i);
-
-                if (extValue < minValue) {
-                    return true;
-                } else if (extValue > minValue) {
-                    return false;
-                }
-            }
-
-            return false;
-        }
-    }
-    
-    static interface BrowserExtensionManager {
-        
-        boolean isInstalled();
-        
-        boolean install( PluginLoader loader );
-    }
+    FIREFOX,
+    MOZILLA,
+    CHROME,
+    SAFARI,
+    IE,
+    OTHER,
+    UNKNOWN
 }

@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.plugins.chrome;
+package org.netbeans.modules.extbrowser.plugins.chrome;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -49,10 +49,11 @@ import java.net.URL;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.PluginLoader;
+import org.netbeans.modules.extbrowser.plugins.Utils;
 
-import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
-import org.netbeans.modules.web.plugins.PluginLoader;
-import org.netbeans.modules.web.plugins.Utils;
+
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.modules.InstalledFileLocator;
@@ -85,8 +86,6 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         private static final String STATE = "\"state\":";                       // NOI18N
         
         private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
-        
-        private static final String CURRENT_VERSION = "0.3.2";                  // NOI18N
         
         private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-chrome-plugin.crx"; // NOI18N
 

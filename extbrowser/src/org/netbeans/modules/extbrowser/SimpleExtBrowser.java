@@ -46,7 +46,7 @@ package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
 import java.util.HashMap;
-import org.netbeans.modules.web.plugins.BrowserId;
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;

@@ -66,8 +66,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
-import org.netbeans.modules.web.plugins.BrowserId;
 import org.openide.util.Exceptions;
 
 

@@ -40,14 +40,14 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.plugins;
+package org.netbeans.modules.extbrowser.plugins;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor.BrowserExtensionManager;
+import org.netbeans.modules.extbrowser.plugins.chrome.ChromeManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.firefox.FFManagerAccessor;
 
-import org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager;
-import org.netbeans.modules.web.plugins.chrome.ChromeManagerAccessor;
-import org.netbeans.modules.web.plugins.firefox.FFManagerAccessor;
 
 
 /**

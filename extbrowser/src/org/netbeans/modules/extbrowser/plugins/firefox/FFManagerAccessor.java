@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.plugins.firefox;
+package org.netbeans.modules.extbrowser.plugins.firefox;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
@@ -65,10 +65,10 @@ import javax.swing.JButton;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
+import org.netbeans.modules.extbrowser.plugins.PluginLoader;
+import org.netbeans.modules.extbrowser.plugins.Utils;
 
-import org.netbeans.modules.web.plugins.ExtensionManagerAccessor;
-import org.netbeans.modules.web.plugins.PluginLoader;
-import org.netbeans.modules.web.plugins.Utils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -125,8 +125,6 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
         private static final String EXTENSION_CACHE = "extensions.cache";           // NOI18N
         
         private static final String EXTENSION_PATH = "modules/ext/netbeans-ros-firefox-plugin.xpi"; // NOI18N
-        
-        private static final String CURRENT_VERSION = "0.1.3";                      // NOI18N
         
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()

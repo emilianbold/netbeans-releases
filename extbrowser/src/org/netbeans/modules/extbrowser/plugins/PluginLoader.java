@@ -40,22 +40,16 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.plugins;
+package org.netbeans.modules.extbrowser.plugins;
+
+import java.net.URL;
 
 
 /**
- * Ids browser with available plugin 
- * 
  * @author ads
  *
  */
-public enum BrowserId {
+public interface PluginLoader {
 
-    FIREFOX,
-    MOZILLA,
-    CHROME,
-    SAFARI,
-    IE,
-    OTHER,
-    UNKNOWN
+    void requestPluginLoad( URL url );
 }

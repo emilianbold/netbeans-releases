@@ -51,7 +51,7 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.web.plugins.BrowserId;
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
 
 
 public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListener {

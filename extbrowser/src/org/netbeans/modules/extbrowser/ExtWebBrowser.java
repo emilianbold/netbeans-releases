@@ -47,7 +47,7 @@ package org.netbeans.modules.extbrowser;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.plugins.BrowserId;
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;

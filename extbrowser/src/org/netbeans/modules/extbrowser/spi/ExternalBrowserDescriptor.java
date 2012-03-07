@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.extbrowser.spi;
 
-import org.netbeans.modules.web.plugins.BrowserId;
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
+
 
 /**
  * Description of external browser based on which 3rd party module can implement

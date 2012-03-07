@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.plugins;
+package org.netbeans.modules.extbrowser;
 
 import java.io.*;
 import java.nio.ByteBuffer;
