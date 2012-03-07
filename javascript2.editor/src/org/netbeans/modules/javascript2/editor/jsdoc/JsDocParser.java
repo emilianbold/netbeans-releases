@@ -88,7 +88,7 @@ public class JsDocParser {
                 if (commentType == JsDocCommentType.DOC_NO_CODE_START
                         || commentType == JsDocCommentType.DOC_NO_CODE_END
                         || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
-                    blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange.getStart(), offsetRange.getEnd(), commentType, Collections.<JsDocElement>emptyList()));
+                    blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange, commentType, Collections.<JsDocElement>emptyList()));
                     continue;
                 } else {
                     blocks.put(offsetRange.getEnd(), parseCommentBlock(token.toString(), offsetRange, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
@@ -169,8 +169,7 @@ public class JsDocParser {
         }
 
         return new JsDocBlock(
-                range.getStart(),
-                range.getEnd(),
+                range,
                 sharedTag ? JsDocCommentType.DOC_SHARED_TAG_START : JsDocCommentType.DOC_COMMON,
                 jsDocElements);
     }

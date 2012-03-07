@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import java.util.*;
 import java.util.Map.Entry;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement.Type;
 import org.netbeans.modules.javascript2.editor.model.JsComment;
@@ -61,13 +62,12 @@ public class JsDocBlock extends JsComment {
     /**
      * Creates new {@code JsDocBlock} with given parameters.
      *
-     * @param startOffset start offset of the comment
-     * @param endOffset end offset of the comment
+     * @param offsetRange offset range of the comment
      * @param type comment {@code JsDocCommentType}
      * @param elements list of tags contained in this block, never {@code null}
      */
-    public JsDocBlock(int startOffset, int endOffset, JsDocCommentType type, List<JsDocElement> elements) {
-        super(startOffset, endOffset);
+    public JsDocBlock(OffsetRange offsetRange, JsDocCommentType type, List<JsDocElement> elements) {
+        super(offsetRange);
         this.type = type;
         initTags(elements);
     }

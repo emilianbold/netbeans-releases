@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model;
 
+import org.netbeans.modules.csl.api.OffsetRange;
+
 /**
  * Base class which represents JavaScript documentation comment.
  *
@@ -48,20 +50,14 @@ package org.netbeans.modules.javascript2.editor.model;
  */
 public class JsComment {
 
-    private final int startOffset;
-    private final int endOffset;
+    private final OffsetRange offsetRange;
 
-    public JsComment(int startOffset, int endOffset) {
-        this.startOffset = startOffset;
-        this.endOffset = endOffset;
+    public JsComment(OffsetRange offsetRange) {
+        this.offsetRange = offsetRange;
     }
 
-    public int getEndOffset() {
-        return endOffset;
-    }
-
-    public int getStartOffset() {
-        return startOffset;
+    public OffsetRange getOffsetRange() {
+        return offsetRange;
     }
 
 }
