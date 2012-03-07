@@ -46,6 +46,7 @@ package org.netbeans.modules.extbrowser;
 
 import java.beans.*;
 import java.util.HashMap;
+import org.netbeans.modules.web.plugins.BrowserId;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
@@ -114,6 +115,11 @@ public class SimpleExtBrowser extends ExtWebBrowser {
      */
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         return new SimpleExtBrowserImpl(this);
+    }
+
+    @Override
+    public BrowserId getBrowserFamilyId() {
+        return BrowserId.UNKNOWN;
     }
         
     /** Default format that can format tags related to execution. Currently this is only the URL.

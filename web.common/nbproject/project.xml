@@ -85,6 +85,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.24</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -206,6 +214,7 @@
                 <friend>org.netbeans.modules.web.flyingsaucer</friend>
                 <friend>org.netbeans.modules.web.indent</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsfapi</friend>

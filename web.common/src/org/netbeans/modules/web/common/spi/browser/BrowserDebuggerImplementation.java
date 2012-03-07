@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,23 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.plugins;
+package org.netbeans.modules.web.common.spi.browser;
 
+import org.netbeans.api.project.Project;
 
 /**
- * Ids browser with available plugin 
- * 
- * @author ads
- *
+ * Each browser capable of debugging must have implementation of this SPI in 
+ * its lookup.
  */
-public enum BrowserId {
+public interface BrowserDebuggerImplementation {
+    
+    /**
+     * Can debugging session be started in this browser? Should return false for example
+     * when browser was not started with debugging port.
+     */
+    boolean isDebuggingEnabled();
 
-    FIREFOX,
-    MOZILLA,
-    CHROME,
-    SAFARI,
-    IE,
-    OTHER,
-    UNKNOWN
+    /**
+     * Start debugging session.
+     */
+    void startDebuggingSession();
+    
+    /**
+     * Stop debugging session.
+     */
+    void stopDebuggingSession();
+
+    /**
+     * Make sure all breakpoints for this project (and all global breakpoints)
+     * are active.
+     */
+    void activateBreakpoints(Project p);
 }

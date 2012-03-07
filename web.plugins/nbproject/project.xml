@@ -81,6 +81,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.extbrowser</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <package>org.netbeans.modules.web.plugins</package>
             </friend-packages>
             <extra-compilation-unit>

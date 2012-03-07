@@ -48,11 +48,15 @@ import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.extbrowser.plugins.DOMInspectionFeatureImpl;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.MessageDispatcherImpl;
 import org.netbeans.modules.extbrowser.plugins.RemoteScriptExecutor;
+import org.netbeans.modules.extbrowser.spi.BrowserLookupProvider;
+import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
 import org.netbeans.modules.web.plugins.BrowserId;
 import org.netbeans.modules.web.plugins.ExtensionManager;
 import org.netbeans.modules.web.plugins.PluginLoader;
@@ -60,6 +64,7 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * The ExtBrowserImpl is generalized external browser.
@@ -87,12 +92,26 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
       */
     public ExtBrowserImpl () {
         pcs = new PropertyChangeSupport (this);
-        // XXX: this should be provided only by browsers which has corresponding plugin installed
-        lookup = Lookups.fixed(
-                new DOMInspectionFeatureImpl(this),
-                new MessageDispatcherImpl(),
-                new RemoteScriptExecutor(this)
-        );
+    }
+    
+    private Lookup createLookup() {
+        List<Lookup> lookups = new ArrayList<Lookup>();
+        lookups.add(Lookups.fixed(
+                    new DOMInspectionFeatureImpl(this),
+                    new MessageDispatcherImpl(),
+                    new RemoteScriptExecutor(this)
+                ));
+        
+        String arg = extBrowserFactory.getBrowserExecutable().getArguments();
+        ExternalBrowserDescriptor desc = new ExternalBrowserDescriptor(extBrowserFactory.getBrowserFamilyId(), arg);
+        for (BrowserLookupProvider prov : Lookup.getDefault().lookupAll(BrowserLookupProvider.class)) {
+            Lookup l = prov.createBrowserLookup(desc);
+            if (l != null) {
+                lookups.add(l);
+            }
+        }
+        
+        return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
     }
     
     /** Dummy implementations */
@@ -159,7 +178,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     final public void setURL(URL url) {
         BrowserTabDescriptor tab = getBrowserTabDescriptor();
         if (tab == null) {
-            BrowserId pluginId = getPluginId( url );
+            BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
             boolean pluginAvailable = ExtensionManager.isInstalled(pluginId);
             if ( !pluginAvailable ){
                 ExtensionManager.installExtension( pluginId, new PluginLoader() {
@@ -181,16 +200,6 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     }
     
     abstract protected void loadURLInBrowser(URL url);
-    
-    protected BrowserId getPluginId(URL url){
-        if ( extBrowserFactory instanceof FirefoxBrowser ){
-            return BrowserId.FIREFOX;
-        }
-        else if ( extBrowserFactory instanceof ChromeBrowser ){
-            return BrowserId.CHROME;
-        }
-        return null;
-    }
     
     /** Returns visual component of html browser.
      *
@@ -216,7 +225,10 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         pcs.removePropertyChangeListener (l);
     }
 
-    public Lookup getLookup() {
+    public final Lookup getLookup() {
+        if (lookup == null) {
+            lookup = createLookup();
+        }
         return lookup;
     }
 
@@ -237,4 +249,5 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     public void urlHasChanged() {
         pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
     }
+
 }

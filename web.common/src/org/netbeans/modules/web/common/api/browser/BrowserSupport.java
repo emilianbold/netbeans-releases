@@ -46,7 +46,10 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.common.spi.browser.BrowserDebuggerImplementation;
 import org.netbeans.modules.web.common.spi.browser.DOMInspectionFeature;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.TopComponent;
 
@@ -69,6 +72,8 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
+    private boolean warnUserDebuggerIsMissing = true;
+    private boolean activeDebuggingSession = false;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -139,7 +144,12 @@ public final class BrowserSupport {
                                     browser = WebBrowsers.getInstance()
                                             .getPreferred();
                                     pane.removeListener(paneListener);
+                                    if (activeDebuggingSession) {
+                                        activeDebuggingSession = false;
+                                        BrowserDebugger.stopDebuggingSession(pane);
+                                    }
                                     pane = null;
+                                    warnUserDebuggerIsMissing = true;
                                 }
                             }
                         }
@@ -157,21 +167,35 @@ public final class BrowserSupport {
     /**
      * Opens URL in a browser pane associated with this BrowserSupport.
      * FileObject param is "context" associated with URL being opened. It can be 
-     * file which is being opened in the browser or project folder in case of URL being result
+     * file which is being opened in the browser or  project folder in case of URL being result
      * of project execution. If browser pane does not support concept of reloading it will simply 
      * open a tab with this URL on each execution.
      * 
      */
     public void load(URL url, FileObject context) {
-        /*Project p = FileOwnerQuery.getOwner(context);
-        if (p != null && p.getProjectDirectory().equals(file)) {
-            // if context fileobject points to a project folder then keep reference just to project:
-            file = null;
-        }*/
-
+        Project p = FileOwnerQuery.getOwner(context);
+        WebBrowserPane wbp = getWebBrowserPane();
+        
+        Boolean b = BrowserDebugger.isDebuggingEnabled(pane);
+        if (Boolean.TRUE.equals(b)) {
+            if (!activeDebuggingSession) {
+                BrowserDebugger.startDebuggingSession(p, pane);
+                activeDebuggingSession = true;
+            }
+        } else {
+            if (warnUserDebuggerIsMissing) {
+                warnUserDebuggerIsMissing = false;
+                if (b == null) {
+                    //DialogDisplayer.getDefault().notify(new DialogDescriptor.Message("this browser does not support debugging. use chrome instead."));
+                } else {
+                    //DialogDisplayer.getDefault().notify(new DialogDescriptor.Message("chrome is not running in debugging mode"));
+                }
+            }
+        }
+        
         file = context;
         currentURL = url;
-        getWebBrowserPane().showURL(url);
+        wbp.showURL(url);
     }
 
     /**
@@ -194,7 +218,7 @@ public final class BrowserSupport {
         return currentURL != null && currentURL.equals(url);
     }
     
-    /**
+         /**
      * Returns URL which was opened in the browser and which was associated with
      * given FileObject. That is calling load(URL, FileObject) creates mapping 
      * between FileObject in IDE side and URL in browser side and this method 
@@ -260,6 +284,10 @@ public final class BrowserSupport {
             if (event instanceof WebBrowserPane.WebBrowserPaneWasClosedEvent) {
                 currentURL = null;
                 file = null;
+                if (activeDebuggingSession) {
+                    activeDebuggingSession = false;
+                    BrowserDebugger.stopDebuggingSession(pane);
+                }
             }
         }
         
