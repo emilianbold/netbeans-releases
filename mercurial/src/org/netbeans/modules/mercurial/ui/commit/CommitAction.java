@@ -434,7 +434,6 @@ public class CommitAction extends ContextAction {
         List<String> excPaths = new ArrayList<String>();
         Map<File, Boolean> locallyModifiedExcluded = new HashMap<File, Boolean>();
         List<String> incPaths = new ArrayList<String>();
-        assert !commitAllFiles || closeBranch;
         if (commitAllFiles && closeBranch) {
             assert rootFiles.size() == 1;
             for (File root : rootFiles.keySet()) {
