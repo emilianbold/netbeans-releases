@@ -48,6 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.ResultModel;
@@ -69,15 +70,24 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             "org/netbeans/modules/search/res/next.png";                 //NOI18N
     private static final String PREV_ICON =
             "org/netbeans/modules/search/res/prev.png";                 //NOI18N
+    private static final String EXPAND_ICON =
+            "org/netbeans/modules/search/res/expandTree.png";           //NOI18N
+    private static final String COLLAPSE_ICON =
+            "org/netbeans/modules/search/res/colapseTree.png";          //NOI18N
     private ResultModel resultModel;
     private ResultsNode resultsNode;
     private JButton nextButton;
     private JButton prevButton;
+    private JToggleButton expandButton;
+    private boolean replacing;
+    private boolean details;
 
     public BasicSearchResultsPanel(ResultModel resultModel,
-            BasicComposition composition) {
+            BasicComposition composition, boolean replacing, boolean details) {
 
         super(composition, composition.getSearchProviderPresenter());
+        this.replacing = replacing;
+        this.details = details;
         this.resultsNode = new ResultsNode();
         getExplorerManager().setRootContext(resultsNode);
         this.resultModel = resultModel;
@@ -99,7 +109,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     }
 
     private void setOutlineColumns(ResultModel resultModel) {
-        if (resultModel.canHaveDetails()) {
+        if (details) {
             getOutlineView().addPropertyColumn(
                     "detailsCount", UiUtils.getText( //NOI18N
                     "BasicSearchResultsPanel.outline.detailsCount"));   //NOI18N
@@ -112,7 +122,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
                 "BasicSearchResultsPanel.outline.lastModified"));       //NOI18N
         getOutlineView().getOutline().setAutoResizeMode(
                 Outline.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
-        if (resultModel.canHaveDetails()) {
+        if (details) {
             sizeColumn(0, 80, 10000); // file name, matching lines
             sizeColumn(1, 20, 500); // details count
             sizeColumn(2, 40, 5000); // path
@@ -187,12 +197,17 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     }
 
     private void updateShiftButtons() {
-        prevButton.setEnabled(findShifNode(-1) != null);
-        nextButton.setEnabled(findShifNode(1) != null);
+        if (details) {
+            prevButton.setEnabled(findShifNode(-1) != null);
+            nextButton.setEnabled(findShifNode(1) != null);
+        }
     }
 
     @Override
     protected AbstractButton[] createButtons() {
+        if (!details) {
+            return new AbstractButton[] {};
+        }
         prevButton = new JButton();
         prevButton.setIcon(ImageUtilities.loadImageIcon(PREV_ICON, true));
         prevButton.setToolTipText(UiUtils.getText(
@@ -213,7 +228,20 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
                 shift(1);
             }
         });
-        return new AbstractButton[]{prevButton, nextButton};
+        expandButton = new JToggleButton();
+        expandButton.setIcon(ImageUtilities.loadImageIcon(EXPAND_ICON, true));
+        expandButton.setSelectedIcon(ImageUtilities.loadImageIcon(
+                COLLAPSE_ICON, true));
+        expandButton.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_EXPAND"));                                 //NOI18N
+        expandButton.setSelected(false);
+        expandButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                toggleExpand(expandButton.isSelected());
+            }
+        });
+         return new AbstractButton[]{prevButton, nextButton, expandButton};
     }
 
     private void shift(int direction) {
@@ -317,5 +345,16 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             }
         }
         return pos;
+    }
+
+    private void toggleExpand(boolean expand) {
+        getOutlineView().expandNode(resultsNode);
+        for (Node n : resultsNode.getChildren().getNodes()) {
+            if (expand) {
+                getOutlineView().expandNode(n);
+            } else {
+                getOutlineView().collapseNode(n);
+            }
+        }
     }
 }

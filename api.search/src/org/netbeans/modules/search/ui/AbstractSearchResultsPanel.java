@@ -44,6 +44,8 @@ package org.netbeans.modules.search.ui;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
@@ -82,7 +84,15 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         this.searchProviderPresenter = searchProviderPresenter;
         initComponents();
         explorerManager = new ExplorerManager();
-        initToolbar();
+        this.addHierarchyListener(new HierarchyListener() {
+            @Override
+            public synchronized void hierarchyChanged(HierarchyEvent e) {
+                if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
+                    removeHierarchyListener(this);
+                    initToolbar();
+                }
+            }
+        });
     }
 
     /**

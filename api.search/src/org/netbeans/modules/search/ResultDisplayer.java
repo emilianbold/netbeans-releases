@@ -76,7 +76,8 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     @Override
     public JComponent getVisualComponent() {
 
-        resultPanel = new BasicSearchResultsPanel(resultModel, composition);
+        resultPanel = new BasicSearchResultsPanel(resultModel, composition,
+                criteria.isSearchAndReplace(), criteria.isFullText());
         return resultPanel;
     }
 
