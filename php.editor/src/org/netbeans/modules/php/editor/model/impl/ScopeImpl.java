@@ -103,6 +103,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
             case VARIABLE:
             case FIELD:
             case USE_STATEMENT:
+            case TRAIT:
                 return true;
         }
         return false;
