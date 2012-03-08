@@ -1926,7 +1926,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final void onFileExternalChange(FileImpl file) {
-        DeepReparsingUtils.tryPartialReparseOnChangedFile(file, this);
+        DeepReparsingUtils.tryPartialReparseOnChangedFile(this, file);
     }
 
     @Override
@@ -2051,6 +2051,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (nativeFileItem != null) {
                         putNativeFileItem(impl.getUID(), nativeFileItem);
                     }
+                    // initial can be null here and due to this we have warnings from ParserThread like:
+                    // SEVERE [org.netbeans.modules.cnd.modelimpl]: Adding a file with an emty preprocessor state set
+                    // TODO: do we need to set up initial value?
+//                    if (initial == null) {
+//                        initial = APTHandlersSupport.createCleanPreprocState(preprocHandler.getState());
+//                    }
                     putFile(impl, initial);
                     // NB: parse only after putting into a map
                     if (scheduleParseIfNeed) {
