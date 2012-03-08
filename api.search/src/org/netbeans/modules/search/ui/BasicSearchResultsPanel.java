@@ -152,7 +152,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
     public void update() {
         resultsNode.update();
-        if (details && !expandButton.isEnabled()) {
+        if (details && expandButton != null && !expandButton.isEnabled()) {
             expandButton.setEnabled(resultModel.size() > 0);
         }
         updateShiftButtons();
@@ -207,7 +207,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     }
 
     private void updateShiftButtons() {
-        if (details) {
+        if (details && prevButton != null && nextButton != null) {
             prevButton.setEnabled(findShifNode(-1) != null);
             nextButton.setEnabled(findShifNode(1) != null);
         }
@@ -388,7 +388,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     @Override
     public void searchFinished() {
         super.searchFinished();
-        if (details && resultModel.size() > 0) {
+        if (details && resultModel.size() > 0 && showDetailsButton != null) {
             showDetailsButton.setEnabled(true);
         }
     }
