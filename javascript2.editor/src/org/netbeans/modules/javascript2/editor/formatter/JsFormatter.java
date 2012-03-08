@@ -99,7 +99,7 @@ public class JsFormatter implements Formatter {
 
                 startTime = System.nanoTime();
                 FormatVisitor visitor = new FormatVisitor(tokenStream,
-                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()));
+                        LexUtilities.getJsTokenSequence(compilationInfo.getSnapshot(), context.startOffset()), context.endOffset());
 
                 FunctionNode root = ((JsParserResult) compilationInfo).getRoot();
                 if (root != null) {
