@@ -75,7 +75,7 @@ import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -1177,8 +1177,8 @@ public class VariousUtils {
     }
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
                 namesProposals.add(proposedName);
@@ -1202,14 +1202,14 @@ public class VariousUtils {
     }
 
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         if (!name.getKind().isFullyQualified()) {
             QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
             if (proposedName != null) {
                 namesProposals.add(proposedName);
             }
-            for (UseElement useElement : declaredUses) {
+            for (UseScope useElement : declaredUses) {
                 final QualifiedName useQName = QualifiedName.create(useElement.getName());
                 proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
                 if (proposedName != null) {
@@ -1274,9 +1274,9 @@ public class VariousUtils {
             namespaces.add(name);
             resolved = true;
         } else {
-            Collection<? extends UseElement> uses = contextNamespace.getDeclaredUses();
+            Collection<? extends UseScope> uses = contextNamespace.getDeclaredUses();
             if (uses.size() > 0) {
-                for(UseElement useDeclaration : contextNamespace.getDeclaredUses()) {
+                for(UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName = null;
@@ -1322,7 +1322,7 @@ public class VariousUtils {
             if (scope != null) {
                 NamespaceScope namespaceScope = (NamespaceScope) scope;
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                for (UseElement useElement : namespaceScope.getDeclaredUses()) {
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
                     if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {
@@ -1350,7 +1350,7 @@ public class VariousUtils {
             if (scope != null) {
                 NamespaceScope namespaceScope = (NamespaceScope) scope;
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                for (UseElement useElement : namespaceScope.getDeclaredUses()) {
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
                     if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {
@@ -1376,9 +1376,9 @@ public class VariousUtils {
                 NamespaceScope namespace = (NamespaceScope) inScope;
                 // needs to count
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                UseElement matchedUseElement = null;
+                UseScope matchedUseElement = null;
                 int lastOffset = -1; // remember offset of the last use declaration, that fits
-                for (UseElement useElement : namespace.getDeclaredUses()) {
+                for (UseScope useElement : namespace.getDeclaredUses()) {
                     if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {

@@ -85,8 +85,8 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         ConstantElementImpl retval = new ConstantElementImpl(this, node);
         return retval;
     }
-    UseElementImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
-        UseElementImpl retval = new UseElementImpl(this, node);
+    UseScopeImpl createUseStatementPart(ASTNodeInfo<UseStatementPart> node) {
+        UseScopeImpl retval = new UseScopeImpl(this, node);
         return retval;
     }
 
@@ -154,7 +154,7 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
         });
     }
 
-    public Collection<? extends UseElement> getDeclaredUses() {
+    public Collection<? extends UseScope> getDeclaredUses() {
         return filter(getElements(), new ElementFilter() {
             public boolean isAccepted(ModelElement element) {
                 return element.getPhpElementKind().equals(PhpElementKind.USE_STATEMENT);

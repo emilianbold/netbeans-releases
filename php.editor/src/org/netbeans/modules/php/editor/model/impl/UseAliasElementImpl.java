@@ -45,7 +45,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.UseAliasElement;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.openide.filesystems.FileObject;
@@ -61,7 +61,7 @@ public class UseAliasElementImpl extends ModelElementImpl implements UseAliasEle
         super(inScope, name, file, offsetRange, PhpElementKind.USE_ALIAS);
     }
 
-    UseAliasElementImpl(final UseElement useElement, final ASTNodeInfo<Expression> nodeInfo) {
+    UseAliasElementImpl(final UseScope useElement, final ASTNodeInfo<Expression> nodeInfo) {
         this(useElement.getInScope(), nodeInfo.getName(), useElement.getInScope().getFile(), nodeInfo.getRange());
     }
 

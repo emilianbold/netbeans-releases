@@ -983,8 +983,8 @@ class OccurenceBuilder {
 
     private Set<PhpElement> getUseAliasesDeclarations(ElementInfo nodeCtxInfo) {
         final Set<PhpElement> aliasDeclarations = new HashSet<PhpElement>();
-        Collection<? extends UseElement> declaredUses = nodeCtxInfo.getNamespaceScope().getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = nodeCtxInfo.getNamespaceScope().getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             UseAliasElement aliasElement = useElement.getAliasElement();
             if (aliasElement != null && aliasElement.getName().equals(nodeCtxInfo.getName())) {
                 aliasDeclarations.add(aliasElement);
