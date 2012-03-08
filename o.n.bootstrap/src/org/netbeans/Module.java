@@ -284,6 +284,18 @@ public abstract class Module extends ModuleInfo {
     public SpecificationVersion getSpecificationVersion() {
         return data().getSpecificationVersion();
     }
+
+    @Override
+    public String getImplementationVersion() {
+        return data.getImplementationVersion();
+    }
+
+    @Override
+    public String getBuildVersion() {
+        return data.getBuildVersion();
+    }
+    
+    
     
     public @Override boolean owns(Class<?> clazz) {
         ClassLoader cl = clazz.getClassLoader();

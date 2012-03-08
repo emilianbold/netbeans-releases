@@ -73,6 +73,8 @@ class ModuleData {
     private final String codeName;
     private final String codeNameBase;
     private final int codeNameRelease;
+    private final String implVersion;
+    private final String buildVersion;
     private final Set<String> friendNames;
     private final SpecificationVersion specVers;
     private final PackageExport[] publicPackages;
@@ -123,6 +125,10 @@ class ModuleData {
             } else {
                 specVers = null;
             }
+            implVersion = attr.getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            String bld = attr.getValue("OpenIDE-Module-Build-Version"); // NOI18N
+            buildVersion = bld == null ? implVersion : bld;
+            
             this.provides = computeProvides(forModule, attr, verifyCNBs);
 
             // Exports
@@ -211,6 +217,8 @@ class ModuleData {
             this.coveredPackages = new HashSet<String>();
             readStrings(dis, coveredPackages);
             this.dependencies = (Dependency[]) dis.readObject();
+            this.implVersion = dis.readUTF();
+            this.buildVersion = dis.readUTF();
             this.friendNames = null;
             this.specVers = null;
             this.publicPackages = null;
@@ -227,6 +235,8 @@ class ModuleData {
         dos.writeInt(codeNameRelease);
         writeStrings(dos, coveredPackages);
         dos.writeObject(dependencies);
+        dos.writeUTF(implVersion);
+        dos.writeUTF(buildVersion);
     }
 
     private String[] computeProvides(Module forModule, Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
@@ -367,5 +377,13 @@ class ModuleData {
         for (String s : set) {
             dos.writeUTF(s);
         }
+    }
+
+    String getBuildVersion() {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    String getImplementationVersion() {
+        throw new UnsupportedOperationException("Not yet implemented");
     }
 }
