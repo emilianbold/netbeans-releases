@@ -189,10 +189,6 @@ public class FmtOptions {
     public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
 //    public static final String spaceBeforeColon = "spaceBeforeColon"; //NOI18N
 //    public static final String spaceAfterColon = "spaceAfterColon"; //NOI18N
-    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
-    public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
-    public static final String spaceAfterShortPHPTag = "spaceAfterShortPHPTag"; //NOI18N
-    public static final String spaceBeforeClosePHPTag = "spaceBeforeClosePHPTag"; //NOI18N
 
     public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
     public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
@@ -364,10 +360,6 @@ public class FmtOptions {
             { spaceAfterSemi, TRUE},
 //            { spaceBeforeColon, TRUE},
 //            { spaceAfterColon, TRUE},
-            { spaceAfterTypeCast, TRUE},
-	    { spaceCheckAfterKeywords, TRUE},
-            { spaceAfterShortPHPTag, TRUE},
-	    { spaceBeforeClosePHPTag, TRUE},
 
 	    { alignMultilineMethodParams, FALSE}, //NOI18N
             { alignMultilineCallArgs, FALSE}, //NOI18N

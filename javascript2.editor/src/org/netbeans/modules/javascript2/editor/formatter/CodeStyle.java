@@ -462,22 +462,6 @@ public final class CodeStyle {
 //        return preferences.getBoolean(spaceAfterColon, getDefaultAsBoolean(spaceAfterColon));
 //    }
 
-    public boolean spaceAfterTypeCast() {
-        return preferences.getBoolean(spaceAfterTypeCast, getDefaultAsBoolean(spaceAfterTypeCast));
-    }
-
-    public boolean spaceCheckAfterKeywords() {
-        return preferences.getBoolean(spaceCheckAfterKeywords, getDefaultAsBoolean(spaceCheckAfterKeywords));
-    }
-
-    public boolean spaceAfterShortPHPTag() {
-        return preferences.getBoolean(spaceAfterShortPHPTag, getDefaultAsBoolean(spaceAfterShortPHPTag));
-    }
-
-    public boolean spaceBeforeClosePHPTag() {
-        return preferences.getBoolean(spaceBeforeClosePHPTag, getDefaultAsBoolean(spaceBeforeClosePHPTag));
-    }
-
     // alignment
     public boolean alignMultilineMethodParams() {
         return preferences.getBoolean(alignMultilineMethodParams, getDefaultAsBoolean(alignMultilineMethodParams));
