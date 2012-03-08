@@ -66,10 +66,13 @@ import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 class KeywordCompletion extends BaseCompletion {
 
     private EnumSet<GroovyKeyword> keywords;
+    private CompletionRequest request;
 
 
     @Override
     public boolean complete(List<CompletionProposal> proposals, CompletionRequest request, int anchor) {
+        this.request = request;
+
         LOG.log(Level.FINEST, "-> completeKeywords"); // NOI18N
         String prefix = request.prefix;
 
@@ -157,11 +160,17 @@ class KeywordCompletion extends BaseCompletion {
 
         if (ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_interface) {
             keywords.clear();
-            keywords.add(GroovyKeyword.KEYWORD_extends);
+            addIfPrefixed(GroovyKeyword.KEYWORD_extends);
         } else if (ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             keywords.clear();
-            keywords.add(GroovyKeyword.KEYWORD_extends);
-            keywords.add(GroovyKeyword.KEYWORD_implements);
+            addIfPrefixed(GroovyKeyword.KEYWORD_extends);
+            addIfPrefixed(GroovyKeyword.KEYWORD_implements);
+        }
+    }
+
+    private void addIfPrefixed(GroovyKeyword keyword) {
+        if (isPrefixed(request, keyword.getName())) {
+            keywords.add(keyword);
         }
     }
 
