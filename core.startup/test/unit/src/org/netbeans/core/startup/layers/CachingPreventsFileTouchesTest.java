@@ -127,7 +127,9 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             LOG.log(Level.FINE, "Can't pre-load JavaHelp", ex);
         }
         FileObject fo = FileUtil.getConfigFile("Services/Browsers");
-        fo.delete();
+        if (fo != null) {
+            fo.delete();
+        }
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
@@ -136,6 +138,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
     public void testInMiddle() {
         String p = System.getProperty("manifestParsing");
         assertNotNull("Parsing of manifests during first run is natural", p);
+        System.getProperties().remove("manifestParsing");
     }
 
     public void testReadAccess() throws Exception {
