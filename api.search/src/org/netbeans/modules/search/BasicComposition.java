@@ -146,6 +146,10 @@ public class BasicComposition extends SearchComposition<MatchingObject.Def> {
         return presenter;
     }
 
+    public BasicSearchCriteria getBasicSearchCriteria() {
+        return basicSearchCriteria;
+    }
+
     /**
      * Search scope conserving last used search info.
      */

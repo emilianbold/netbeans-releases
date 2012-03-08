@@ -260,11 +260,7 @@ public class SearchPanel extends JPanel implements FocusListener,
 
     @Override
     public boolean requestFocusInWindow() {
-        if (tabbedPane != null) {
-            return tabbedPane.getSelectedComponent().requestFocusInWindow();
-        } else {
-            return getComponent(0).requestFocusInWindow();
-        }
+        return selectedPresenter.getForm().requestFocusInWindow();
     }
 
     /**

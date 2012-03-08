@@ -73,7 +73,7 @@ import static org.netbeans.modules.search.ReplaceTask.ResultStatus.PRE_CHECK_FAI
  * @author  Marian Petras
  * @author  kaktus
  */
-final class Manager {
+public final class Manager {
     
     static final int SEARCHING        = 0x01;
 /*
@@ -115,7 +115,7 @@ final class Manager {
 
     /**
      */
-    static Manager getInstance() {
+    public static Manager getInstance() {
         return instance;
     }
 
@@ -159,7 +159,7 @@ final class Manager {
 
     /**
      */
-    synchronized void schedulePrintTask(PrintDetailsTask task) {
+    public synchronized void schedulePrintTask(PrintDetailsTask task) {
         assert EventQueue.isDispatchThread();
 
         pendingTasks.add(task);
