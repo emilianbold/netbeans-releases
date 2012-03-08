@@ -2081,7 +2081,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
     }
 
     public String getThreadStateLog() {
-        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking;
+        return getThreadStateLog(threadReference)+", internal suspend status = "+suspended+", suspendedNoFire = "+suspendedNoFire+", invoking a method = "+methodInvoking+", is in step = "+inStep;
     }
 
     public static String getThreadStateLog(ThreadReference threadReference) {
