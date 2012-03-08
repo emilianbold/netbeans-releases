@@ -60,6 +60,7 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
@@ -141,10 +142,20 @@ public class TypesCompletion extends BaseCompletion {
 
         boolean onlyInterfaces = false;
 
-        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) {
-            LOG.log(Level.FINEST, "Completing only interfaces after implements keyword.");
-            onlyInterfaces = true;
+        Token<? extends GroovyTokenId> literal = request.ctx.beforeLiteral;
+        if (literal != null) {
+            
+            // We don't need to complete Types after class definition
+            if (literal.id() == GroovyTokenId.LITERAL_class) {
+                return false;
+            }
+
+            if (literal.id() == GroovyTokenId.LITERAL_implements) {
+                LOG.log(Level.FINEST, "Completing only interfaces after implements keyword.");
+                onlyInterfaces = true;
+            }
         }
+
 
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
 
