@@ -51,10 +51,12 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
@@ -77,7 +79,7 @@ final class CallHierarchyTasks {
     private static final RequestProcessor RP = new RequestProcessor("Call Hierarchy Processor", 1); // NOI18N
     
     private static final Object LOCK = new Object();
-    private static CallersTask CURR_TASK;
+    private static CancellableTask CURR_TASK;
     
     public static void stop() {
         synchronized (LOCK) {
@@ -88,19 +90,17 @@ final class CallHierarchyTasks {
     }
     
     public static void findCallers(Call c, boolean includeTest, boolean searchAll, Runnable resultHandler) {
+        stop();
         RP.post(new CallersTask(c, resultHandler, includeTest, searchAll));
     }
     
     public static void findCallees(Call c, Runnable resultHandler) {
-        RP.post(new CalleesTask(c, resultHandler));
+        stop();
+        CalleesTask t = new CalleesTask(c, resultHandler);
+        RP.post(t);
     }
     
-    public static Call resolveRoot(TreePathHandle selection, boolean isCallerGraph) {
-        JavaSource js = JavaSource.forFileObject(selection.getFileObject());
-        return resolveRoot(js, new RootResolver(selection, isCallerGraph));
-    }
-    
-    public static Call resolveRoot(Lookup lookup, boolean isCallerGraph) {
+    public static void resolveRoot(Lookup lookup, boolean isCallerGraph, Task<Call> rootCallback) {
         JavaSource js = null;
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -113,15 +113,87 @@ final class CallHierarchyTasks {
             // XXX resolve Node.class
             
         }
-        
-        return resolveRoot(js, resolver);
+        postResolveRoot(js, resolver, rootCallback);
+    }   
+    
+    static void resolveRoot(TreePathHandle selection, boolean isCallerGraph, Task<Call> rootCallback) {
+        JavaSource js = JavaSource.forFileObject(selection.getFileObject());
+        postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
     }
+    
+    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
+        RootResolver rr = new RootResolver(position, isCallerGraph);
+        postResolveRoot(src, rr, rootCallback);
+    }
+    
+    private static void  postResolveRoot(JavaSource src, final RootResolver rr, final Task<Call> callback) {
+        stop();
+        synchronized (callback) {
+            Task<CompilationController> ct = new Task<CompilationController>() {
+
+                @Override
+                public void run(CompilationController parameter) throws Exception {
+                    synchronized (callback) {
+                        rr.run(parameter);
+                        callback.run(rr.getRoot());
+                    }
+                }
+                
+            };
+            final Future<Void> rootResolve = ScanUtils.postUserActionTask(src, ct);
+            // still synchronized
+            if (!rootResolve.isDone()) {
+                CancellableTask t = new CancellableTask() {
+                    @Override
+                    public void cancel() {
+                        rootResolve.cancel(true);
+                        
+                        synchronized (LOCK) {
+                            if (CURR_TASK != this) {
+                                return;
+                            }
+                        }
+                        
+                        Call c = Call.createEmpty();
+                        c.setCanceled(true);
+                        try {
+                            callback.run(c);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    CallHierarchyTopComponent.findInstance().setRunningState(false);
+                                }
+                            });
+                        } catch (Exception ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+
+                    @Override
+                    public void run(Object parameter) throws Exception {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                };
+                synchronized (LOCK) {
+                    CURR_TASK = t;
+                }
+                try {
+                    Call tempNode = Call.createEmpty();
+                    callback.run(tempNode);
+                    CallHierarchyTopComponent.findInstance().setRunningState(true);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        } 
+    }
+    
     
     private static Call resolveRoot(JavaSource source, RootResolver resolver) {
         Call root = null;
         if (source != null && resolver != null) {
             try {
-                source.runWhenScanFinished(resolver, true);
+                ScanUtils.waitUserActionTask(source, resolver);
                 root = resolver.getRoot();
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -153,6 +225,10 @@ final class CallHierarchyTasks {
             TreePath tpath = null;
             Element method = null;
             
+            synchronized (this) {
+                CURR_TASK = null;
+            }
+            
             javac.toPhase(JavaSource.Phase.RESOLVED);
             if (tHandle == null) {
                 tpath = javac.getTreeUtilities().pathFor(offset);
@@ -163,7 +239,7 @@ final class CallHierarchyTasks {
             while (tpath != null) {
                 Kind kind = tpath.getLeaf().getKind();
                 if (kind == Kind.METHOD || kind == Kind.METHOD_INVOCATION || kind == Kind.MEMBER_SELECT) {
-                    method = javac.getTrees().getElement(tpath);
+                    method = ScanUtils.checkElement(javac, javac.getTrees().getElement(tpath));
                     if (method != null && (method.getKind() == ElementKind.METHOD || method.getKind() == ElementKind.CONSTRUCTOR)) {
                         break;
                     }
@@ -183,63 +259,21 @@ final class CallHierarchyTasks {
         
     }
     
-    private static final class CallersTask implements Runnable, CancellableTask<WorkingCopy> {
+    private static void notifyRunningTask(final boolean isRunning, CancellableTask t) {
+    }
+    
+    private static abstract class CallTaskBase implements Runnable, CancellableTask<CompilationController> {
         
-        private final Call elmDesc;
+        protected final Call elmDesc;
         private final Runnable resultHandler;
-        private AtomicBoolean isCanceled = new AtomicBoolean(false);
-        private final List<Call> result = new ArrayList<Call>();
-        private final boolean includeTest;
-        private final boolean searchAll;
-        
-        public CallersTask(Call elmDesc, Runnable resultHandler, boolean includeTest, boolean searchAll) {
+        AtomicBoolean isCanceled = new AtomicBoolean(false);
+        protected final List<Call> result = new ArrayList<Call>();
+
+        protected abstract void runTask() throws Exception;
+
+        public CallTaskBase(Call elmDesc, Runnable resultHandler) {
             this.elmDesc = elmDesc;
             this.resultHandler = resultHandler;
-            this.includeTest = includeTest;
-            this.searchAll = searchAll;
-        }
-        
-        @Override
-        public void run() {
-            try {
-                notifyRunning(true);
-
-                TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
-                
-                // validate source
-                // TODO: what is this?
-                //if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
-                //    elmDesc.setBroken();
-                //} else {
-                    ClasspathInfo cpInfo;
-                    if (searchAll) {
-                        cpInfo = RefactoringUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
-                    } else {
-                        cpInfo = RefactoringUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
-                    }
-
-                    Set<FileObject> relevantFiles = null;
-                    if (!isCanceled()) {
-                        relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
-                                sourceToQuery, cpInfo, false, false, false, true, null);
-                    }
-                    try {
-                        if (!isCanceled()) {
-                            processFiles(relevantFiles, this, null);
-                        }
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    elmDesc.setCanceled(isCanceled());
-                //}
-                elmDesc.setReferences(result);
-                resultHandler.run();
-            } finally {
-                synchronized(LOCK) {
-                    CURR_TASK = null;
-                }
-                notifyRunning(false);
-            }
         }
         
         private void notifyRunning(final boolean isRunning) {
@@ -264,10 +298,9 @@ final class CallHierarchyTasks {
         @Override
         public void cancel() {
             isCanceled.set(true);
-            RefactoringUtils.cancel = true;
         }
         
-        private boolean isCanceled() {
+        protected boolean isCanceled() {
             if (Thread.interrupted()) {
                 isCanceled.set(true);
             }
@@ -275,7 +308,87 @@ final class CallHierarchyTasks {
         }
         
         @Override
-        public void run(WorkingCopy javac) throws Exception {
+        public void run() {
+            try {
+                notifyRunning(true);
+
+                runTask();
+                
+                elmDesc.setReferences(result);
+                resultHandler.run();
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                elmDesc.setCanceled(isCanceled());
+                synchronized(LOCK) {
+                    CURR_TASK = null;
+                }
+                notifyRunning(false);
+            }
+        }
+    }
+    
+    private static final class CallersTask extends CallTaskBase {
+        private final boolean includeTest;
+        private final boolean searchAll;
+        
+        public CallersTask(Call elmDesc, Runnable resultHandler, boolean includeTest, boolean searchAll) {
+            super(elmDesc, resultHandler);
+            this.includeTest = includeTest;
+            this.searchAll = searchAll;
+        }
+        
+        @Override
+        public void runTask() throws Exception {
+            TreePathHandle sourceToQuery = elmDesc.getSourceToQuery();
+
+            // validate source
+            // TODO: what is this?
+            //if (RefactoringUtils.getElementHandle(sourceToQuery) == null) {
+            //    elmDesc.setBroken();
+            //} else {
+                ClasspathInfo cpInfo;
+                if (searchAll) {
+                    cpInfo = RefactoringUtils.getClasspathInfoFor(true, sourceToQuery.getFileObject());
+                } else {
+                    cpInfo = RefactoringUtils.getClasspathInfoFor(false, elmDesc.selection.getFileObject());
+                }
+
+                Set<FileObject> relevantFiles = null;
+                if (!isCanceled()) {
+                    relevantFiles = JavaWhereUsedQueryPlugin.getRelevantFiles(
+                            sourceToQuery, cpInfo, false, false, false, true, null, isCanceled);
+                    if (SourceUtils.isScanInProgress()) {
+                        elmDesc.setIncomplete(true);
+                    }
+                }
+                if (!isCanceled()) {
+                    processFiles(relevantFiles, this, null);
+                }
+            //}
+        }
+        
+        private void notifyRunning(final boolean isRunning) {
+            synchronized (LOCK) {
+                CURR_TASK = isRunning ? this : null;
+            }
+            try {
+                EventQueue.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        CallHierarchyTopComponent.findInstance().setRunningState(isRunning);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        
+        @Override
+        public void run(CompilationController javac) throws Exception {
             if (javac.toPhase(JavaSource.Phase.RESOLVED) != JavaSource.Phase.RESOLVED) {
                 return;
             }
@@ -391,44 +504,39 @@ final class CallHierarchyTasks {
             return result.values();
         }
         
-        protected final void processFiles(Set<FileObject> files, Task<WorkingCopy> task, ClasspathInfo info) throws IOException {
+        protected final void processFiles(Set<FileObject> files, Task<CompilationController> task, ClasspathInfo info) throws IOException {
             Iterable<? extends List<FileObject>> work = groupByRoot(files);
             for (List<FileObject> fos : work) {
                 if (isCanceled()) {
                     return;
                 }
                 final JavaSource javaSource = JavaSource.create(info == null ? ClasspathInfo.create(fos.get(0)) : info, fos);
-                javaSource.runModificationTask(task);
+                javaSource.runUserActionTask(task, true);
             }
         }
 
     }
     
-    private static final class CalleesTask implements Runnable, Task<CompilationController> {
-        
-        private final Call elmDesc;
-        private final Runnable resultHandler;
-
+    private static final class CalleesTask extends CallTaskBase {
         public CalleesTask(Call element, Runnable resultHandler) {
-            this.elmDesc = element;
-            this.resultHandler = resultHandler;
+            super(element, resultHandler);
         }
         
         @Override
-        public void run() {
-            try {
-                JavaSource js = JavaSource.forFileObject(elmDesc.getSourceToQuery().getFileObject());
-                if (js != null) {
-                    js.runWhenScanFinished(this, true);
-                }
-                resultHandler.run();
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+        protected void runTask() throws Exception {
+            JavaSource js = JavaSource.forFileObject(elmDesc.getSourceToQuery().getFileObject());
+            if (js != null) {
+                Future<Void> control = ScanUtils.postUserActionTask(js, this);
+                control.get();
             }
         }
 
         @Override
         public void run(CompilationController javac) throws Exception {
+            if (isCanceled()) {
+                elmDesc.setCanceled(true);
+                return;
+            }
             javac.toPhase(JavaSource.Phase.RESOLVED);
             TreePath resolved = elmDesc.getSourceToQuery().resolve(javac);
             if (resolved == null) {
@@ -447,22 +555,25 @@ final class CallHierarchyTasks {
 
             CalleeScanner scanner = new CalleeScanner(javac);
             scanner.scan(resolved, null);
-            List<Call> usages = new ArrayList<Call>();
+            elmDesc.setIncomplete(scanner.incomplete);
             for (OccurrencesDesc occurDesc : scanner.getOccurrences()) {
-                usages.add(Call.createUsage(
+                if (isCanceled()) {
+                    elmDesc.setCanceled(true);
+                    return;
+                }
+                result.add(Call.createUsage(
                         javac, occurDesc.selection, occurDesc.elm, elmDesc, occurDesc.occurrences));
             }
-            elmDesc.setReferences(usages);
         }
         
     }
     
     private static final class CalleeScanner extends TreePathScanner<Void, Void> {
-
-        private final CompilationInfo javac;
+        private final CompilationInfo   javac;
         /** map of all executables and their occurrences in the method body */
         private Map<Element, OccurrencesDesc> refs = new HashMap<Element, OccurrencesDesc>();
         private int elmCounter = 0;
+        private boolean incomplete;
 
         public CalleeScanner(CompilationInfo javac) {
             this.javac = javac;
@@ -486,6 +597,11 @@ final class CallHierarchyTasks {
         
         private void resolvePath(TreePath tpath) {
             Element resolved = javac.getTrees().getElement(tpath);
+            if (javac.getElementUtilities().isErroneous(resolved) &&
+                SourceUtils.isScanInProgress()) {
+                incomplete = true;
+                return;
+            } 
             if (resolved != null
                     && !javac.getElementUtilities().isSynthetic(resolved)
                     && (resolved.getKind() == ElementKind.METHOD || resolved.getKind() == ElementKind.CONSTRUCTOR)) {

@@ -65,7 +65,7 @@ public class KeyValidatorRepository extends HashMapRepository {
         Key oldKey = keyMap.get(key);
         if (oldKey != null && oldKey != key)
         {
-            System.err.println("key uniquity breaked for " + key); //NOI18N
+            System.err.println("key uniquity breaked for\n" + key + "\nvs.\n" + oldKey); //NOI18N
         }
         assert oldKey == null || oldKey == key;
 

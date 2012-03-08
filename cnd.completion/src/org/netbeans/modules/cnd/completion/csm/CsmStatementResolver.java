@@ -45,27 +45,8 @@
 package org.netbeans.modules.cnd.completion.csm;
 
 import java.util.List;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
-import org.netbeans.modules.cnd.api.model.deep.CsmCompoundStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmExceptionHandler;
-import org.netbeans.modules.cnd.api.model.deep.CsmForStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmIfStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmLoopStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmSwitchStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmTryCatchStatement;
-import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmClassifier;
-import org.netbeans.modules.cnd.api.model.CsmEnum;
-import org.netbeans.modules.cnd.api.model.CsmEnumerator;
-import org.netbeans.modules.cnd.api.model.CsmFunction;
-import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
-import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
-import org.netbeans.modules.cnd.api.model.CsmMember;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
-import org.netbeans.modules.cnd.api.model.CsmType;
-import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.*;
+import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
@@ -128,14 +109,18 @@ public class CsmStatementResolver {
             case SWITCH:
                 found = findInner((CsmSwitchStatement) stmt, offset, context);
                 break;
+            case EXPRESSION:
+                found = findInner(((CsmExpressionStatement) stmt).getExpression(), offset, context);
+                break;
+            case RETURN:
+                found = findInner(((CsmReturnStatement) stmt).getReturnExpression(), offset, context);
+                break;
             case BREAK:
             case CASE:
             case CONTINUE:
             case DEFAULT:
-            case EXPRESSION:
             case GOTO:
             case LABEL:
-            case RETURN:
                 break;
             default:
                 if (CsmUtilities.DEBUG) {
@@ -240,6 +225,44 @@ public class CsmStatementResolver {
                         }
                     }
 //                }
+                    
+                if (CsmKindUtilities.isFunctionDefinition(fun)) {
+                    CsmFunctionDefinition funDef = (CsmFunctionDefinition)fun;
+                    CsmCompoundStatement body = funDef.getBody();
+                    if ((!CsmOffsetUtilities.sameOffsets(funDef, body) || body.getStartOffset() != body.getEndOffset()) && CsmOffsetUtilities.isInObject(body, offset)) {
+                        CsmContextUtilities.updateContext(fun, offset, context);
+                        // offset is in body, try to find inners statement
+                        if (CsmStatementResolver.findInnerObject(body, offset, context)) {
+                            CsmContextUtilities.updateContext(body, offset, context);
+                            // if found exact object => return it, otherwise return last found scope
+                            CsmObject found = context.getLastObject();
+                            if (!CsmOffsetUtilities.sameOffsets(body, found)) {
+                                context.setLastObject(found);
+                                return true;
+                            }
+                        }
+                    }
+                }
+                    
+                    
+            } else if (CsmKindUtilities.isVariable(decl)) {
+                CsmExpression initialValue = ((CsmVariable)decl).getInitialValue();
+                if(initialValue != null) {
+                    for (CsmStatement csmStatement : initialValue.getLambdas()) {
+                        CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
+                        if ((!CsmOffsetUtilities.sameOffsets(decl, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
+                            // offset is in body, try to find inners statement
+                            if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
+                                // if found exact object => return it, otherwise return last found scope
+                                CsmObject found = context.getLastObject();
+                                if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
+                                    context.setLastObject(found);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
             }
             return true;
         }
@@ -297,14 +320,23 @@ public class CsmStatementResolver {
             if (CsmUtilities.DEBUG) {
                 System.out.println("in ITERATION  of for statement"); //NOI18N
             }
-            CsmContextUtilities.updateContextObject(stmt.getIterationExpression(), offset, context);
+            CsmExpression iterationExpression = stmt.getIterationExpression();
+            CsmContextUtilities.updateContextObject(iterationExpression, offset, context);
+            
+            if(findInner(iterationExpression, offset, context)) {
+                return true;
+            }
             return true;
         }
         if (CsmOffsetUtilities.isInObject(stmt.getCondition(), offset)) {
             if (CsmUtilities.DEBUG) {
                 System.out.println("in CONDITION of for statement "); //NOI18N
             }
-            CsmContextUtilities.updateContextObject(stmt.getCondition(), offset, context);
+            CsmCondition condition = stmt.getCondition();
+            CsmContextUtilities.updateContextObject(condition, offset, context);
+            if(findInner(condition.getExpression(), offset, context)) {
+                return true;
+            }
             return true;
         }
         return findInnerObject(stmt.getBody(), offset, context);
@@ -318,5 +350,25 @@ public class CsmStatementResolver {
             return true;
         }
         return findInnerObject(stmt.getBody(), offset, context);
+    }
+
+    private static boolean findInner(CsmExpression expr, int offset, CsmContext context) {
+        if(expr != null) {
+            for (CsmStatement csmStatement : expr.getLambdas()) {
+                CsmDeclarationStatement lambda = (CsmDeclarationStatement)csmStatement;
+                if ((!CsmOffsetUtilities.sameOffsets(expr, lambda) || lambda.getStartOffset() != lambda.getEndOffset()) && CsmOffsetUtilities.isInObject(lambda, offset)) {
+                    // offset is in body, try to find inners statement
+                    if (CsmStatementResolver.findInnerObject(lambda, offset, context)) {
+                        // if found exact object => return it, otherwise return last found scope
+                        CsmObject found = context.getLastObject();
+                        if (!CsmOffsetUtilities.sameOffsets(lambda, found)) {
+                            CsmContextUtilities.updateContextObject(found, offset, context);
+                            return true;
+                        }
+                    }
+                }
+            }            
+        }
+        return false;        
     }
 }

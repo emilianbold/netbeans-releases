@@ -49,13 +49,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -66,11 +60,13 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
-import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.ListenersSupport;
+import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -89,8 +85,9 @@ import org.openide.windows.WindowManager;
 public class LocalHistory {    
       
     private static LocalHistory instance;
-    private VCSInterceptor vcsInterceptor;
+    private LocalHistoryVCSInterceptor vcsInterceptor;
     private VCSAnnotator vcsAnnotator;
+    private VCSHistoryProvider vcsHistoryProvider;
     private LocalHistoryStore store;
 
     private ListenersSupport listenerSupport = new ListenersSupport(this);
@@ -153,10 +150,10 @@ public class LocalHistory {
     }
 
     void init() {
-        if(!LocalHistorySettings.getInstance().getKeepForever()) {
+        if(!HistorySettings.getInstance().getKeepForever()) {
             LocalHistoryStore s = getLocalHistoryStore(false);
             if(s != null) {
-                getLocalHistoryStore().cleanUp(LocalHistorySettings.getInstance().getTTLMillis());
+                getLocalHistoryStore().cleanUp(HistorySettings.getInstance().getTTLMillis());
             }
         }
         getParallelRequestProcessor().post(new Runnable() {
@@ -166,7 +163,7 @@ public class LocalHistory {
             }
         });
     }
-
+    
     private void setRoots(Project[] projects) {        
         Set<File> newRoots = new HashSet<File>();
         for(Project project : projects) {
@@ -210,7 +207,7 @@ public class LocalHistory {
         return instance;
     }
     
-    VCSInterceptor getVCSInterceptor() {
+    LocalHistoryVCSInterceptor getVCSInterceptor() {
         if(vcsInterceptor == null) {
             vcsInterceptor = new LocalHistoryVCSInterceptor();
         }
@@ -224,6 +221,13 @@ public class LocalHistory {
         return vcsAnnotator;
     }    
 
+    VCSHistoryProvider getVCSHistoryProvider() {
+        if(vcsHistoryProvider == null) {
+            vcsHistoryProvider = new LocalHistoryProvider();
+        } 
+        return vcsHistoryProvider;
+    }
+    
     /**
      * Creates the LocalHistoryStore
      * @return

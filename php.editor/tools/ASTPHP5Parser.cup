@@ -545,16 +545,16 @@ namespace_name:list
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
 
-| T_NS_SEPARATOR namespace_name:list
+| T_NS_SEPARATOR:s namespace_name:list
 {:
-	RESULT = new UseStatementPart(listleft, listright,
-		new NamespaceName(listleft, listright, list, true, false), null);
+	RESULT = new UseStatementPart(sleft, listright,
+		new NamespaceName(sleft, listright, list, true, false), null);
 :}
 
-| T_NS_SEPARATOR namespace_name:list T_AS T_STRING:aliasName
+| T_NS_SEPARATOR:s namespace_name:list T_AS T_STRING:aliasName
 {:
-	RESULT = new UseStatementPart(listleft, aliasNameright,
-		new NamespaceName(listleft, listright, list, true, false),
+	RESULT = new UseStatementPart(sleft, aliasNameright,
+		new NamespaceName(sleft, listright, list, true, false),
 		new Identifier(aliasNameleft, aliasNameright, aliasName));
 :}
 
@@ -1637,9 +1637,9 @@ namespace_name:list
 	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, false, false));
 :}
 
-| T_NS_SEPARATOR namespace_name:list
+| T_NS_SEPARATOR:s namespace_name:list
 {:
-	RESULT = new UseTraitStatementPart(listleft, listright, new NamespaceName(listleft, listright, list, true, false));
+	RESULT = new UseTraitStatementPart(sleft, listright, new NamespaceName(sleft, listright, list, true, false));
 :}
 ;
 
@@ -2496,6 +2496,14 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 			new FunctionName(reflectionNameleft, reflectionNameright, reflectionName), parameters));
 :}
 
+| class_name:className T_PAAMAYIM_NEKUDOTAYIM T_CURLY_OPEN:o expr:expr T_CURLY_CLOSE:c T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+{:
+    ReflectionVariable reflectionVariable = new ReflectionVariable(oleft, cright, expr);
+	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
+		new FunctionInvocation(oleft, eright,
+			new FunctionName(oleft, cright, reflectionVariable), parameters));
+:}
+
 | variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM string_st:fn T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
 {:
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
@@ -2509,6 +2517,14 @@ namespace_name:list T_OPEN_PARENTHESE function_call_parameter_list:parameters T_
 	RESULT = new StaticMethodInvocation(classNameleft, eright, className,
 		new FunctionInvocation(reflectionNameleft, eright,
 			new FunctionName(reflectionNameleft, reflectionNameright, reflectionName), parameters));
+:}
+
+| variable_class_name:className T_PAAMAYIM_NEKUDOTAYIM T_CURLY_OPEN:o expr:expr T_CURLY_CLOSE:c T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
+{:
+	ReflectionVariable reflectionVariable = new ReflectionVariable(oleft, cright, expr);
+    RESULT = new StaticMethodInvocation(classNameleft, eright, className,
+		new FunctionInvocation(oleft, eright,
+			new FunctionName(oleft, cright, reflectionVariable), parameters));
 :}
 
 | variable_without_objects:reflectionName T_OPEN_PARENTHESE function_call_parameter_list:parameters T_CLOSE_PARENTHESE:e
@@ -2529,14 +2545,14 @@ T_STATIC:s
 	RESULT = new NamespaceName(listleft, listright, list, false, false);
 :}
 
-| T_NAMESPACE T_NS_SEPARATOR namespace_name:list
+| T_NAMESPACE:s T_NS_SEPARATOR namespace_name:list
 {:
-	RESULT = new NamespaceName(listleft, listright, list, false, true);
+	RESULT = new NamespaceName(sleft, listright, list, false, true);
 :}
 
-| T_NS_SEPARATOR namespace_name:list
+| T_NS_SEPARATOR:s namespace_name:list
 {:
-	RESULT = new NamespaceName(listleft, listright, list, true, false);
+	RESULT = new NamespaceName(sleft, listright, list, true, false);
 :}
 ;
 

@@ -44,6 +44,7 @@ package org.netbeans.modules.jira.kenai;
 
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -62,7 +63,7 @@ public class KenaiQuery extends JiraQuery {
         super(name, repository, jf, saved, false);
         this.predefinedQuery = predefined;
         this.project = project;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
         controller = createControler(repository, this, jf);
         boolean autoRefresh = JiraConfig.getInstance().getQueryAutoRefresh(getDisplayName());
         if(autoRefresh) {
@@ -78,7 +79,7 @@ public class KenaiQuery extends JiraQuery {
 
     @Override
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             getDisplayName(),
             count,

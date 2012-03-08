@@ -75,6 +75,7 @@ import org.netbeans.api.java.source.WorkingCopy;
 
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -600,6 +601,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
     public void test195882() throws Exception {
         clearWorkDir();
+        beginTx();
         assertTrue(new File(getWorkDir(), "test").mkdirs());
         testFile = new File(getWorkDir(), "test/Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -653,6 +655,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
     public void testParameterizedType() throws Exception {
         clearWorkDir();
+        beginTx();
         assertTrue(new File(getWorkDir(), "test").mkdirs());
         testFile = new File(getWorkDir(), "test/Test.java");
         TestUtilities.copyStringToFile(testFile,
@@ -709,23 +712,27 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "\n" +
             "public abstract class Test implements Entry, Map {\n" +
             "}\n";
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, getWorkDir().toURI().toURL());
+        try {
+            ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
+            JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+            Task<WorkingCopy> task = new Task<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    CompilationUnitTree node = workingCopy.getCompilationUnit();
+                    ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                    workingCopy.rewrite(clazz, make.insertClassImplementsClause(clazz, 0, make.QualIdent("java.util.Map.Entry")));
+                }
 
-        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
-        JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
-        Task<WorkingCopy> task = new Task<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                TreeMaker make = workingCopy.getTreeMaker();
-                CompilationUnitTree node = workingCopy.getCompilationUnit();
-                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
-                workingCopy.rewrite(clazz, make.insertClassImplementsClause(clazz, 0, make.QualIdent("java.util.Map.Entry")));
-            }
-
-        };
-        src.runModificationTask(task).commit();
-        String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
-        assertEquals(golden, res);
+            };
+            src.runModificationTask(task).commit();
+            String res = TestUtilities.copyFileToString(testFile);
+            System.err.println(res);
+            assertEquals(golden, res);
+        } finally {
+            ctx.commit();
+        }
     }
 
     public void testTooSoon206957b() throws Exception {
@@ -748,22 +755,27 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "public abstract class Entry implements Map.Entry, Map {\n" +
             "}\n";
 
-        ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
-        JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
-        Task<WorkingCopy> task = new Task<WorkingCopy>() {
-            public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(Phase.RESOLVED);
-                TreeMaker make = workingCopy.getTreeMaker();
-                CompilationUnitTree node = workingCopy.getCompilationUnit();
-                ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
-                workingCopy.rewrite(clazz, make.insertClassImplementsClause(clazz, 0, make.QualIdent("java.util.Map.Entry")));
-            }
+        final TransactionContext ctx = TransactionContext.beginStandardTransaction(true, getWorkDir().toURI().toURL());
+        try {
+            ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
+            JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+            Task<WorkingCopy> task = new Task<WorkingCopy>() {
+                public void run(WorkingCopy workingCopy) throws IOException {
+                    workingCopy.toPhase(Phase.RESOLVED);
+                    TreeMaker make = workingCopy.getTreeMaker();
+                    CompilationUnitTree node = workingCopy.getCompilationUnit();
+                    ClassTree clazz = (ClassTree) node.getTypeDecls().get(0);
+                    workingCopy.rewrite(clazz, make.insertClassImplementsClause(clazz, 0, make.QualIdent("java.util.Map.Entry")));
+                }
 
-        };
-        src.runModificationTask(task).commit();
-        String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
-        assertEquals(golden, res);
+            };
+            src.runModificationTask(task).commit();
+            String res = TestUtilities.copyFileToString(testFile);
+            System.err.println(res);
+            assertEquals(golden, res);
+        } finally {
+            ctx.commit();
+        }
     }
 
     String getGoldenPckg() {

@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.remote.test;
 
+import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
-import org.openide.filesystems.AttributesTestHidden;
 import org.openide.filesystems.FileObjectTestHid;
 import org.openide.filesystems.FileSystemTestHid;
 import org.openide.filesystems.FileUtilTestHidden;
+import org.openide.filesystems.TempFileObjectTestHid;
 import org.openide.filesystems.URLMapperTestHidden;
 
 /**
@@ -55,22 +57,39 @@ import org.openide.filesystems.URLMapperTestHidden;
  * @author vv159170
  */
 public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-    private static final boolean ALLOW_TCK = true;
-    
+   
     public RemoteFSTCKTest(Test test) {
         super(test);
     }
     
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
-        if (ALLOW_TCK) {
-            suite.addTestSuite(FileSystemTestHid.class);
-            suite.addTestSuite(FileObjectTestHid.class);
-            suite.addTestSuite(AttributesTestHidden.class);
-            suite.addTestSuite(URLMapperTestHidden.class);
-            suite.addTestSuite(FileUtilTestHidden.class);
-        }
+        suite.addTestSuite(FileSystemTestHid.class);
+        suite.addTestSuite(FileObjectTestHid_.class);
+        // it seems AttributesTestHidden does not belong to FS TCK
+        //suite.addTestSuite(AttributesTestHidden.class);
+        suite.addTestSuite(URLMapperTestHidden.class);
+        suite.addTestSuite(FileUtilTestHidden.class);
+        suite.addTestSuite(TempFileObjectTestHid.class);
         return new RemoteFSTCKTest(suite);
     }
+    
+    public static class FileObjectTestHid_ extends FileObjectTestHid {
 
+        public FileObjectTestHid_(String testName) {
+            super(testName);
+        }
+
+        @RandomlyFails
+        @Override
+        public void testFireFileDeletedEvent2() throws IOException {
+            super.testFireFileDeletedEvent2();
+        }
+
+        @RandomlyFails
+        @Override
+        public void testBigFileAndAsString() throws Exception {
+            super.testBigFileAndAsString();
+        }
+    }
 }

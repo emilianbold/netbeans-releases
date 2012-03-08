@@ -268,6 +268,13 @@ public abstract class AbstractTabCellRenderer extends JLabel
         return (state & TabState.AFTER_SELECTED) != 0;
     }
 
+    /**
+     * @return True if the tab is busy.
+     */
+    protected final boolean isBusy() {
+        return (state & TabState.BUSY) != 0;
+    }
+    
     public Dimension getPadding() {
         return new Dimension(padding);
     }

@@ -46,7 +46,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 public class ForeignClassBundlerImpl implements ForeignClassBundler { // #179521
 
     @Override public boolean preferSources() {
-        // XXX could try to be more clever and inspect Export-Package, Private-Package, and Embed-Dependency config
+        // XXX #208410: crude guess
         return false;
     }
 

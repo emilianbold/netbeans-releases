@@ -184,7 +184,7 @@ public class RepositoryConnection {
     }
     
     final void setSshPortNumber (int portNumber) {
-        if (portNumber > 0) {
+        if (portNumber > 0 && portNumber <= 65535) {
             this.sshPortNumber = portNumber;
         } else {
             this.sshPortNumber = -1;

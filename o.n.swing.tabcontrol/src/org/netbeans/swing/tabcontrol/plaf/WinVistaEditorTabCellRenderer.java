@@ -273,6 +273,14 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
     protected int getIconYAdjustment() {
         return -2;
     }
+
+    @Override
+    protected void paintIconAndText( Graphics g ) {
+        if( isBusy() ) {
+            setIcon( BusyTabsSupport.getDefault().getBusyIcon( isSelected() ) );
+        }
+        super.paintIconAndText( g );
+    }
     
     private static class WinVistaPainter implements TabPainter {
 

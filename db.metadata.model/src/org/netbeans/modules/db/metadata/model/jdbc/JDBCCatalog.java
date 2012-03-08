@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -141,10 +141,10 @@ public class JDBCCatalog extends CatalogImplementation {
                     boolean supportsCatalog = jdbcMetadata.getDmd().supportsCatalogsInTableDefinitions();
                     try {
                         while (rs.next()) {
-                            String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
+                            String schemaName = MetadataUtilities.trimmed(rs.getString("TABLE_SCHEM")); // NOI18N
                             // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
                             // only returns a TABLE_SCHEM column.
-                            String catalogName = columnCount > 1 && supportsCatalog ? rs.getString("TABLE_CATALOG") : name; // NOI18N
+                            String catalogName = columnCount > 1 && supportsCatalog ? MetadataUtilities.trimmed(rs.getString("TABLE_CATALOG")) : name; // NOI18N
                             LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
                             LOGGER.log(Level.FINEST, "MetadataUtilities.equals(catalogName=''{0}'', name=''{1}'') returns {2}",
                                     new Object[] {catalogName, name, MetadataUtilities.equals(catalogName, name)});

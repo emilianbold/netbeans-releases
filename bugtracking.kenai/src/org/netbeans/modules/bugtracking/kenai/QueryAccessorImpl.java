@@ -50,9 +50,8 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandle;
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.kenai.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryAccessor;
@@ -81,14 +80,13 @@ public class QueryAccessorImpl extends QueryAccessor {
             return null;
         }
 
-        KenaiSupport support = repo.getLookup().lookup(KenaiSupport.class);
-        if(support == null) {
+        if(!KenaiUtil.isKenai(repo)) {
             return null;
         }
 
         KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = support.getAllIssuesQuery(repo);
+        Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repo);
         if(allIssuesQuery == null) {
             return null;
         }

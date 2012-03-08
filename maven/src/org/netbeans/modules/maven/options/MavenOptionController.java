@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.options.java.api.JavaOptions;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -57,10 +58,11 @@ import org.openide.util.Lookup;
  * @author Milos Kleint
  */
 @OptionsPanelController.SubRegistration(
+    location=JavaOptions.JAVA,
     id=MavenOptionController.OPTIONS_SUBPATH,
     displayName="#TIT_Maven_Category",
     keywords="#KW_MavenOptions",
-    keywordsCategory="Advanced/Maven"
+    keywordsCategory=JavaOptions.JAVA + "/Maven"
 //    toolTip="#TIP_Maven_Category"
 )
 public class MavenOptionController extends OptionsPanelController {

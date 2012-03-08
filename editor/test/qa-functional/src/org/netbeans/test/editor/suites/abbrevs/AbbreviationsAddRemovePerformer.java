@@ -63,6 +63,7 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.test.editor.lib.EditorTestCase;
 //import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.test.editor.lib.LineDiff;
 
@@ -71,13 +72,11 @@ import org.netbeans.test.editor.lib.LineDiff;
  * @author Jan Lahoda
  * @author Max Sauer
  */
-public class AbbreviationsAddRemovePerformer extends JellyTestCase {
+public class AbbreviationsAddRemovePerformer extends EditorTestCase {
 
     /** 'Source Packages' string from j2se project bundle */
-    public static final String SRC_PACKAGES_PATH =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
-            "NAME_src.dir");
-
+    public static final String SRC_PACKAGES_PATH = "Source Packages";
+            
     private static String getText(Object elementAt)  {
         try {
             Method method = elementAt.getClass().getMethod("getText", null);
@@ -105,7 +104,7 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
         isInFramework = false;
     }
 
-    public EditorOperator openFile(String fileName) {
+    public EditorOperator openFile(String fileName) {        
         Node pn = new ProjectsTabOperator().getProjectRootNode(
                 "editor_test");
         pn.select();
@@ -121,7 +120,8 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     private void checkAbbreviation(String abbreviation) throws Exception {
         //Open an editor:
         System.out.println("### Checking abbreviation \"" + abbreviation + "\"");
-        EditorOperator editor = openFile("Test");
+        openSourceFile("abbrev", "Test.java");        
+        EditorOperator editor = new EditorOperator("Test.java");
         try {
 
             //This line is reserved for testing. All previous content is destroyed
@@ -154,8 +154,12 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     @Override
     public void setUp() {
         isInFramework = true;
+        openDefaultProject();
         log("Starting abbreviations test.");
         log("Test name=" + getName());
+        System.out.println("########");
+        System.out.println("Staring "+getName());
+        System.out.println("########");
         try {
             //EditorOperator.closeDiscardAll();
             log("Closed Welcome screen.");
@@ -167,9 +171,13 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     public void tearDown() throws Exception {
         getRef().flush();
         log("Finishing abbreviations test.");        
+        System.out.println("########");
+        System.out.println("Finished "+getName());
+        System.out.println("########");
         assertFile("Output does not match golden file.", getGoldenFile(), new File(getWorkDir(), this.getName() + ".ref"),
                 new File(getWorkDir(), this.getName() + ".diff"), new LineDiff(false));
         isInFramework = false;
+        new EventTool().waitNoEvent(1000);
     }
 
     public void testAllAbbrev() throws Exception {
@@ -323,6 +331,18 @@ public class AbbreviationsAddRemovePerformer extends JellyTestCase {
     
     public static Test suite() {
       return NbModuleSuite.create(
-              NbModuleSuite.createConfiguration(AbbreviationsAddRemovePerformer.class).enableModules(".*").clusters(".*"));
+              NbModuleSuite.createConfiguration(AbbreviationsAddRemovePerformer.class)
+              .addTest("testAllAbbrev")  
+              .addTest("testAddRemove")  
+//              .addTest("testChangeExpansionKey")  
+              .addTest("testCodeTemplate")  
+              .addTest("testCursorPosition")  
+//              .addTest("testEdit")  
+              .addTest("testInInvalidMime")  
+//              .addTest("testJavadocAbbrev")  
+//              .addTest("testRemove")  
+              .addTest("testSelection")                              
+              .enableModules(".*")
+              .clusters(".*"));
    }
 }

@@ -225,6 +225,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         "ApiGenPanel.error.invalidAccessLevels=Access levels must be provided.",
         "ApiGenPanel.warn.nbWillAskForDir=NetBeans will ask for the directory before generating documentation.",
         "ApiGenPanel.warn.targetDirWillBeCreated=Target directory will be created.",
+        "# {0} - encoding",
         "ApiGenPanel.warn.missingCharset=Project encoding ''{0}'' nout found within specified charsets.",
         "ApiGenPanel.warn.configNotNeon=Neon file is expected for configuration."
     })
@@ -367,11 +368,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         targetLabel.setLabelFor(targetTextField);
         Mnemonics.setLocalizedText(targetLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetLabel.text")); // NOI18N
-        targetButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                targetButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(targetButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.targetButton.text")); // NOI18N
         targetButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -384,11 +380,6 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
 
         configLabel.setLabelFor(configTextField);
         Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configLabel.text")); // NOI18N
-        configButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configButtonActionPerformed(evt);
-            }
-        });
         Mnemonics.setLocalizedText(configButton, NbBundle.getMessage(ApiGenPanel.class, "ApiGenPanel.configButton.text")); // NOI18N
         configButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {

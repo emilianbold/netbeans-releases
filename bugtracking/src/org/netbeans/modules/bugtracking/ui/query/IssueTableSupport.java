@@ -44,9 +44,8 @@ package org.netbeans.modules.bugtracking.ui.query;
 
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
-import org.netbeans.modules.bugtracking.spi.Query;
 
 /**
  *
@@ -55,7 +54,7 @@ import org.netbeans.modules.bugtracking.spi.Query;
 public class IssueTableSupport {
 
     private static IssueTableSupport instance;
-    private Map<Query, IssueTable> tables = new WeakHashMap<Query, IssueTable>(5);
+    private Map<QueryImpl, IssueTable> tables = new WeakHashMap<QueryImpl, IssueTable>(5);
 
     private IssueTableSupport() {}
 
@@ -66,11 +65,11 @@ public class IssueTableSupport {
         return instance;
     }
 
-    public void put(Query query, IssueTable table) {
+    public void put(QueryImpl query, IssueTable table) {
         tables.put(query, table);
     }
 
-    public IssueTable find(Query query) {
+    public IssueTable find(QueryImpl query) {
         return tables.get(query);
     }
 

@@ -43,6 +43,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.swing.JDialog;
 import javax.swing.JTextArea;
+import javax.swing.text.Document;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -54,8 +55,10 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -253,15 +256,19 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, Collections.<VariableElement>emptyList(), vars, -1);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, Collections.<VariableElement>emptyList(), vars);
             }
         }
 
         TaskImpl t = new TaskImpl();
 
         js.runModificationTask(t).commit();
-
-        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
+        
+        DataObject dObj = DataObject.find(java);
+        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
+        Document doc = ec != null ? ec.getDocument() : null;
+        
+        String result = doc != null ? doc.getText(0, doc.getLength()) : TestUtilities.copyFileToString(FileUtil.toFile(java));
 
         String golden = "" +
                         "class X {\n" +
@@ -328,7 +335,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars);
             }
         }
 
@@ -336,8 +343,11 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
 
         js.runModificationTask(t).commit();
 
-        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
-
+        DataObject dObj = DataObject.find(java);
+        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
+        Document doc = ec != null ? ec.getDocument() : null;
+        
+        String result = doc != null ? doc.getText(0, doc.getLength()) : TestUtilities.copyFileToString(FileUtil.toFile(java));
         String golden = "\nimport java.util.Arrays;\n" +
                         "class X {\n" +
                         "  private byte b;\n" +
@@ -500,7 +510,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                     }
                 }
 
-                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars, -1);
+                EqualsHashCodeGenerator.generateEqualsAndHashCode(copy, clazz, vars, vars);
             }
         }
 
@@ -508,8 +518,11 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
 
         js.runModificationTask(t).commit();
 
-        String result = TestUtilities.copyFileToString(FileUtil.toFile(java));
-
+        DataObject dObj = DataObject.find(java);
+        EditorCookie ec = dObj != null ? dObj.getCookie(org.openide.cookies.EditorCookie.class) : null;
+        Document doc = ec != null ? ec.getDocument() : null;
+        
+        String result = doc != null ? doc.getText(0, doc.getLength()) : TestUtilities.copyFileToString(FileUtil.toFile(java));
         String golden = "class X {\n" +
                         "  private float f;\n" +
                         "  private double d;\n" +
@@ -517,7 +530,6 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "  private boolean b;\n" +
                         "  private char c;\n" +
                         "  private E e;\n" +
-                        "  public enum E {A, B;}\n" +
                         "    @Override\n" +
                         "    public int hashCode() {\n" +
                         "        int hash = 1;\n" +
@@ -558,6 +570,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                         "        }\n" +
                         "        return true;\n" +
                         "    }\n" +
+                        "  public enum E {A, B;}\n" +
                         "}\n";
 
         result = result.replaceAll("[ \t\n]+", " ");

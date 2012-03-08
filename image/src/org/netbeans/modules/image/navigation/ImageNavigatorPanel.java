@@ -136,7 +136,9 @@ public class ImageNavigatorPanel implements NavigatorPanel {
     public void panelDeactivated() {
         currentContext.removeLookupListener(getContextListener());
         currentContext = null;
-        currentDataObject.getPrimaryFile().removeFileChangeListener(fileChangeListener);
+        if (currentDataObject != null) {
+            currentDataObject.getPrimaryFile().removeFileChangeListener(fileChangeListener);
+        }
         currentDataObject = null;
     }
 

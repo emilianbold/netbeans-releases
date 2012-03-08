@@ -41,13 +41,14 @@
  */
 package org.netbeans.modules.php.symfony2.commands;
 
-import java.io.File;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
+import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
@@ -56,13 +57,33 @@ import org.openide.util.NbBundle.Messages;
  */
 public final class Symfony2Script extends PhpProgram {
 
-    public static final String SCRIPT_PATH = "app/console"; // NOI18N
     public static final String CACHE_CLEAR_COMMAND = "cache:clear"; // NOI18N
     public static final String CACHE_WARMUP_COMMAND = "cache:warmup"; // NOI18N
+
+    public static final String SCRIPT_NAME = "console"; // NOI18N
 
 
     Symfony2Script(String command) {
         super(command);
+    }
+
+    /**
+     * @return console script or {@code null} if not valid
+     */
+    public static FileObject getPath(PhpModule phpModule) {
+        return getPath(phpModule, Symfony2Preferences.getAppDir(phpModule));
+    }
+
+    /**
+     * @return console script or {@code null} if not valid
+     */
+    public static FileObject getPath(PhpModule phpModule, String relativeAppDir) {
+        FileObject appDir = phpModule.getSourceDirectory().getFileObject(relativeAppDir);
+        if (appDir == null) {
+            // perhaps deleted app dir? fallback to default and let it fail later...
+            return null;
+        }
+        return appDir.getFileObject(SCRIPT_NAME);
     }
 
     /**
@@ -72,9 +93,16 @@ public final class Symfony2Script extends PhpProgram {
      * @return Symfony2 console script or {@code null} if the script is not valid
      */
     @CheckForNull
-    @Messages("MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})")
+    @Messages({
+        "# {0} - error message",
+        "MSG_InvalidSymfony2Script=<html>Project''s Symfony2 console script is not valid.<br>({0})"
+    })
     public static Symfony2Script forPhpModule(PhpModule phpModule, boolean warn) throws InvalidPhpProgramException {
-        String console = new File(FileUtil.toFile(phpModule.getSourceDirectory()), SCRIPT_PATH.replace('/', File.separatorChar)).getAbsolutePath(); // NOI18N
+        String console = null;
+        FileObject script = getPath(phpModule);
+        if (script != null) {
+            console = FileUtil.toFile(script).getAbsolutePath();
+        }
         String error = validate(console);
         if (error == null) {
             return new Symfony2Script(console);
@@ -93,14 +121,10 @@ public final class Symfony2Script extends PhpProgram {
         return new Symfony2Script(command).validate();
     }
 
-    @Messages("LBL_Symfony2ScriptPrefix=Symfony2 console: {0}")
+    @Messages("Symfony2Script.script.label=Symfony2 console")
     @Override
     public String validate() {
-        String error = FileUtils.validateFile(getProgram(), false);
-        if (error == null) {
-            return null;
-        }
-        return Bundle.LBL_Symfony2ScriptPrefix(error);
+        return FileUtils.validateFile(Bundle.Symfony2Script_script_label(), getProgram(), false);
     }
 
 }

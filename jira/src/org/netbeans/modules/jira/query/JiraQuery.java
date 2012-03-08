@@ -45,22 +45,20 @@ package org.netbeans.modules.jira.query;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -68,12 +66,13 @@ import org.netbeans.modules.jira.commands.PerformQueryCommand;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class JiraQuery extends Query {
+public class JiraQuery {
 
     private String name;
     private final JiraRepository repository;
@@ -83,6 +82,10 @@ public class JiraQuery extends Query {
 
     protected JiraFilter jiraFilter;
     private boolean firstRun = true;
+    private Node[] context;
+    private boolean saved;
+    protected long lastRefresh;
+    private final PropertyChangeSupport support;
 
     public JiraQuery(JiraRepository repository) {
         this(null, repository, null, false, true);
@@ -97,7 +100,9 @@ public class JiraQuery extends Query {
         this.saved = saved;
         this.name = name;
         this.jiraFilter = jiraFilter;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.support = new PropertyChangeSupport(this);
+        
         if(initControler) {
             // enforce controller creation
             getController();
@@ -110,17 +115,35 @@ public class JiraQuery extends Query {
         }
     }
 
-    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    // XXX does this has to be protected
+    public void fireQuerySaved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
+    }
+
+    protected void fireQueryRemoved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
+    }
+
+    protected void fireQueryIssuesChanged() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }  
+    
     public String getDisplayName() {
         return name;
     }
 
-    @Override
     public String getTooltip() {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    @Override
     public synchronized QueryController getController() {
         if (controller == null) {
             controller = createControler(repository, this, jiraFilter);
@@ -128,11 +151,18 @@ public class JiraQuery extends Query {
         return controller;
     }
 
-    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
+    public void setContext(Node[] nodes) {
+        context = nodes;
+    }
+
+    public Node[] getContext() {
+        return context;
+    }
+    
     protected QueryController createControler(JiraRepository r, JiraQuery q, JiraFilter jiraFilter) {
         if(jiraFilter == null || jiraFilter instanceof FilterDefinition) {
             return new QueryController(r, q, (FilterDefinition) jiraFilter);
@@ -207,7 +237,7 @@ public class JiraQuery extends Query {
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             name,
             count,
@@ -226,15 +256,8 @@ public class JiraQuery extends Query {
         fireQueryRemoved();
     }
 
-    @Override
-    public int getIssueStatus(Issue issue) {
-        String id = issue.getID();
-        return getIssueStatus(id);
-    }
-
-    @Override
-    public boolean contains(Issue issue) {
-        return issues.contains(issue.getID());
+    public boolean contains(String id) {
+        return issues.contains(id);
     }
 
     public int getIssueStatus(String id) {
@@ -249,46 +272,43 @@ public class JiraQuery extends Query {
         this.name = name;
     }
 
-    @Override
     public void setSaved(boolean saved) {
-        super.setSaved(saved);
+        if(saved) {
+            context = null;
+        }
+        this.saved = saved;
     }
 
+    public boolean isSaved() {
+        return saved;
+    }
+    
     public void setFilter(Filter filter) {
         getController().selectFilter(filter);
     }
 
-    @Override
-    public void fireQuerySaved() {
-        super.fireQuerySaved();
-        repository.fireQueryListChanged();
+    public Collection<NbJiraIssue> getIssues() {
+        return getIssues(~0);
     }
-
-    @Override
-    public void fireQueryRemoved() {
-        super.fireQueryRemoved();
-        repository.fireQueryListChanged();
-    }
-
-    @Override
-    public Issue[] getIssues(int includeStatus) {
+    
+    public Collection<NbJiraIssue> getIssues(int includeStatus) {
         if (issues == null) {
-            return new Issue[0];
+            return Collections.emptyList();
         }
         List<String> ids = new ArrayList<String>();
         synchronized (issues) {
             ids.addAll(issues);
         }
-
-        IssueCache cache = repository.getIssueCache();
-        List<Issue> ret = new ArrayList<Issue>();
+        
+        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
+        List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
         for (String id : ids) {
             int status = getIssueStatus(id);
             if((status & includeStatus) != 0) {
                 ret.add(cache.getIssue(id));
             }
         }
-        return ret.toArray(new Issue[ret.size()]);
+        return ret;
     }
 
     /**
@@ -303,6 +323,10 @@ public class JiraQuery extends Query {
         return !firstRun;
     }
 
+    public long getLastRefresh() {
+        return lastRefresh;
+    }
+
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
         public void accept(TaskData taskData) {
@@ -310,7 +334,7 @@ public class JiraQuery extends Query {
             NbJiraIssue issue;
             try {
                 getController().progress(NbJiraIssue.getDisplayName(taskData));
-                IssueCache<TaskData> cache = repository.getIssueCache();
+                IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
             } catch (IOException ex) {
@@ -320,4 +344,68 @@ public class JiraQuery extends Query {
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
     };
+    
+    public void addNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.add(l);
+        }
+    }
+
+    public void removeNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.remove(l);
+        }
+    }
+
+    protected void fireNotifyData(NbJiraIssue issue) {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.notifyData(issue);
+        }
+    }
+
+    protected void fireStarted() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.started();
+        }
+    }
+
+    protected void fireFinished() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.finished();
+        }
+    }
+
+    // XXX move to API
+    protected void executeQuery (Runnable r) {
+        fireStarted();
+        try {
+            r.run();
+        } finally {
+            fireFinished();
+            fireQueryIssuesChanged();
+            lastRefresh = System.currentTimeMillis();
+        }
+    }
+    
+    private QueryNotifyListener[] getListeners() {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        QueryNotifyListener[] listeners;
+        synchronized (list) {
+            listeners = list.toArray(new QueryNotifyListener[list.size()]);
+        }
+        return listeners;
+    }
+
+    private List<QueryNotifyListener> notifyListeners;
+    private List<QueryNotifyListener> getNotifyListeners() {
+        if(notifyListeners == null) {
+            notifyListeners = new ArrayList<QueryNotifyListener>();
+        }
+        return notifyListeners;
+    }     
 }

@@ -129,14 +129,14 @@ public final class PackageDisplayUtils {
      * @param pkgname the dot-separated package name (<code>""</code> for default package)
      * @return an appropriate display icon for it
      */
-    public static Image getIcon(FileObject pkg, String pkgname) {
-        return getIcon( pkg, pkgname, isEmpty(pkg) );
+    public static Image getIcon(FileObject pkg) {
+        return getIcon( pkg, isEmpty(pkg) );
     }
     
     /** Performance optiomization if the the isEmpty status is alredy known.
      * 
      */
-    public static Image getIcon(FileObject pkg, String pkgname, boolean empty ) {
+    public static Image getIcon(FileObject pkg, boolean empty) {
         if ( empty ) {
             return ImageUtilities.loadImage(PACKAGE_EMPTY);
         } else {

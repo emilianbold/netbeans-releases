@@ -81,7 +81,7 @@ public abstract class EditorViewFactory {
         viewFactoryFactories.add(factory);
         Collections.sort(viewFactoryFactories, new Comparator<Factory>() {
             public int compare(Factory f0, Factory f1) {
-                return f0.importance() - f1.importance();
+                return f0.weight() - f1.weight();
             }
         });
     }
@@ -131,12 +131,30 @@ public abstract class EditorViewFactory {
      * Restart this view factory to start producing views.
      *
      * @param startOffset first offset from which the views will be produced.
-     * @param matchOffset offset where the view creation should end (original views
-     *  should match with the new views at that offset).
+     * @param endOffset offset where the view creation should end.
+     *  Original views should match with the new ones at this offset (or earlier).
      *  However during the views creation it may be found out that this offset
-     *  will be exceeded.
+     *  will be exceeded and if so then {@link #continueCreation(int, int)} gets called.
+     * @param createViews If false then no physical views will be created
+     *  {@link #createView(int, int, org.netbeans.modules.editor.lib2.view.EditorView)}
+     *   will not be called and solely {@link #viewEndOffset(int, int)} will be called
+     *   to give info about each potential view boundaries.
      */
-    public abstract void restart(int startOffset, int matchOffset);
+    public abstract void restart(int startOffset, int endOffset, boolean createViews);
+
+    /**
+     * Notify next offset area where views will be created in case endCreationOffset
+     * in {@link #restart(int, int)} was exceeded.
+     * <br/>
+     * This method may be called multiple times if views building still does not match
+     * original views boundaries.
+     *
+     * @param startOffset start offset (usually it's an original endCreationOffset).
+     * @param endCreationOffset currently planned end of views creation offset.
+     *  Unless the view hierarchy has custom bounds the endOffset typically points
+     *  to end-offset of a line element.
+     */
+    public abstract void continueCreation(int startOffset, int endOffset);
 
     /**
      * Return starting offset of the next view to be produced by this view factory.
@@ -163,24 +181,55 @@ public abstract class EditorViewFactory {
      * @param startOffset start offset at which the view must start
      *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory
      *   and {@link EditorView#getStartOffset()} must return it).
-     * @param limitOffset maximum end offset that the created view can have.
+     * @param limitOffset maximum end offset that the created view should have.
+     *  It is lower than (or equal) to endOffset given in {@link #restart(int, int, boolean) }
+     *  or {@link #continueCreation(int, int) }. It may be exceeded unless
+     *  forcedLimit parameter is true.
+     * @param forcedLimit whether view factory is obliged to respect limitOffset. It means
+     *  that a view factory with higher weight will create view at limitOffset.
+     * @param origView original view located at the given position (it may have a different
+     *  physical offset due to just performed modification but it corresponds to the same text
+     *  in the document). It may be null if there is no view to reuse.
+     *  <br/>
+     *  The factory may not return the given instance but it may reuse an arbitrary information
+     *  from it.
+     *  <br/>
+     *  For example for text layout reuse the highlights view factory will first check if the view
+     *  is non-null and matches views produced by it then it will check
+     *  if the new view has same length as the original one and that the view attributes
+     *  give the same font like original one. Then the original text layout may reused for the new view.
+     * @param nextOrigViewOffset offset where an original view (possibly passed as origView) ends.
+     *  Currently this is only used by highlights view factory for very long lines which
+     *  (for performance reasons) are typically broken into multiple shorter views (text layouts).
+     *  even though normally a single view (text layout) could be used. In case one of these shorter views
+     *  gets modified all the subsequent shorter views could become recreated with their boundaries
+     *  shifted up/down according to the modification. That is undesirable from the text layout reuse
+     *  point of view. Therefore the factory may check when (nextOrigViewOffset - startOffset)
+     *  is bigger than certain threshold and possibly end the view at nextOrigViewOffset.
+     *  
      * @return EditorView instance or null if limitOffset is too limiting
      *  for the view that would be otherwise created.
      */
-    public abstract EditorView createView(int startOffset, int limitOffset);
+    public abstract EditorView createView(int startOffset, int limitOffset, boolean forcedLimit,
+    EditorView origView, int nextOrigViewOffset);
 
     /**
      * Return to-be-created view's end offset.
      * <br/>
-     * This method is only called in offset-mode when only view boundaries
-     * are being determined.
+     * This method is only called when createViews parameter
+     * in {@link #restart(int, int, boolean)} is false. In such mode no physical views
+     * are created and only view boundaries of potential views are being determined.
      *
      * @param startOffset start offset at which the view would start
      *  (it was previously returned from {@link #nextViewStartOffset(int)} by this factory).
-     * @param limitOffset maximum end offset that the created view can have.
-     * @param end offset of the view to be created or -1 if view's creation is refused by the factory.
+     * @param limitOffset maximum end offset that the created view should have.
+     *  It is lower than (or equal) to endOffset given in {@link #restart(int, int, boolean) }
+     *  or {@link #continueCreation(int, int) }. It may be exceeded unless
+     *  forcedLimit parameter is true.
+     * @param forcedLimit whether view factory is obliged to respect limitOffset.
+     * @return end offset of the view to be created or -1 if view's creation is refused by the factory.
      */
-    public abstract int viewEndOffset(int startOffset, int limitOffset);
+    public abstract int viewEndOffset(int startOffset, int limitOffset, boolean forcedLimit);
 
     /**
      * Finish this round of views creation.
@@ -198,23 +247,11 @@ public abstract class EditorViewFactory {
         listenerList.remove(listener);
     }
 
-    protected void fireEvent(List<Change> changes) {
-        fireEvent(changes, 0);
-    }
-
-    protected void fireEvent(List<Change> changes, int priority) {
-        EditorViewFactoryEvent evt = new EditorViewFactoryEvent(this, changes, priority);
+    protected void fireEvent(List<EditorViewFactoryChange> changes) {
+        EditorViewFactoryEvent evt = new EditorViewFactoryEvent(this, changes);
         for (EditorViewFactoryListener listener : listenerList.getListeners()) {
             listener.viewFactoryChanged(evt);
         }
-    }
-
-    public static Change createChange(int startOffset, int endOffset) {
-        return new Change(startOffset, endOffset);
-    }
-
-    public static List<Change> createSingleChange(int startOffset, int endOffset) {
-        return Collections.singletonList(createChange(startOffset, endOffset));
     }
 
     /**
@@ -290,12 +327,12 @@ public abstract class EditorViewFactory {
         EditorViewFactory createEditorViewFactory(View documentView);
 
         /**
-         * A higher importance factory wins when wishing to create view
+         * A factory with higher weight wins when wishing to create view
          * in the same offset area.
          *
-         * @return id &gt;0. A default factory for creating basic views has importance 0.
+         * @return weight &gt;0. A default factory for creating basic views has weight 0.
          */
-        int importance();
+        int weight();
 
     }
 

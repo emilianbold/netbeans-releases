@@ -683,7 +683,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                                 public void run(ResultIterator resultIterator) throws Exception {
                                     if (System.currentTimeMillis() - currentTimeMillis < 1500) {
                                         GeneratingBracketCompleter.generateDocTags(doc, (Integer) ret[0], indent);
-                                        caret.setDot((Integer) ret[0] - 1);
+                                        caret.setDot((Integer) ret[0]);
                                     }
                                 }
                             });

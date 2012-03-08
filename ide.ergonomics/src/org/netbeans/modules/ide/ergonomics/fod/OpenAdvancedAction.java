@@ -78,7 +78,7 @@ public final class OpenAdvancedAction extends CookieAction {
         if (mimeDefinition == null) {
             return;
         }
-        final FeatureInfo info = FoDFileSystem.getInstance().whichProvides(mimeDefinition);
+        final FeatureInfo info = FoDLayersProvider.getInstance().whichProvides(mimeDefinition);
         if (info == null || info.isEnabled()) {
             return;
         }

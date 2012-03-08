@@ -44,8 +44,6 @@
 
 package org.netbeans.modules.editor.fold;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,6 +58,7 @@ import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.EditorView;
 import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
+import org.netbeans.modules.editor.lib2.view.EditorViewFactoryChange;
 import org.netbeans.modules.editor.lib2.view.ViewUtils;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -133,12 +132,17 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
 
     private void refreshColors() {
         colorSettings = (FontColorSettings)colorSource.allInstances().iterator().next();
-        int end = document().getLength();
-        fireEvent(Collections.singletonList(EditorViewFactory.createChange(0, end)));
+        document().render(new Runnable() {
+            @Override
+            public void run() {
+                int end = document().getLength();
+                fireEvent(EditorViewFactoryChange.createList(0, end, EditorViewFactoryChange.Type.CHARACTER_CHANGE));
+            }
+        });
     }
 
     @Override
-    public void restart(int startOffset, int matchOffset) {
+    public void restart(int startOffset, int endOffset, boolean createViews) {
         foldHierarchy.lock(); // this.finish() always called in try-finally
         foldHierarchyLocked = true;
         @SuppressWarnings("unchecked")
@@ -171,9 +175,10 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     }
 
     @Override
-    public EditorView createView(int startOffset, int limitOffset) {
+    public EditorView createView(int startOffset, int limitOffset, boolean forcedLimit,
+    EditorView origView, int nextOrigViewOffset) {
         assert (startOffset == foldStartOffset) : "startOffset=" + startOffset + " != foldStartOffset=" + foldStartOffset; // NOI18N
-        if (fold.getEndOffset() <= limitOffset) {
+        if (fold.getEndOffset() <= limitOffset || !forcedLimit) {
             return new FoldView(textComponent(), fold, colorSettings);
         } else {
             return null;
@@ -181,13 +186,17 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     }
     
     @Override
-    public int viewEndOffset(int startOffset, int limitOffset) {
+    public int viewEndOffset(int startOffset, int limitOffset, boolean forcedLimit) {
         int foldEndOffset = fold.getEndOffset();
         if (foldEndOffset <= limitOffset) {
             return foldEndOffset;
         } else {
             return -1;
         }
+    }
+
+    @Override
+    public void continueCreation(int startOffset, int endOffset) {
     }
 
     @Override
@@ -202,14 +211,14 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     @Override
     public void foldHierarchyChanged(FoldHierarchyEvent evt) {
         // For fold state changes use a higher priority
-        int priority = (evt.getFoldStateChangeCount() > 0) ? 1 : 0;
         int startOffset = evt.getAffectedStartOffset();
         int endOffset = evt.getAffectedEndOffset();
         if (CHANGE_LOG.isLoggable(Level.FINE)) {
             ViewUtils.log(CHANGE_LOG, "CHANGE in FoldViewFactory: <" + // NOI18N
                     startOffset + "," + endOffset + ">\n"); // NOI18N
         }
-        fireEvent(Collections.singletonList(EditorViewFactory.createChange(startOffset, endOffset)), priority);
+        fireEvent(EditorViewFactoryChange.createList(startOffset, endOffset,
+                EditorViewFactoryChange.Type.PARAGRAPH_CHANGE));
     }
 
     public static final class FoldFactory implements EditorViewFactory.Factory {
@@ -220,7 +229,7 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
         }
 
         @Override
-        public int importance() {
+        public int weight() {
             return 100;
         }
 

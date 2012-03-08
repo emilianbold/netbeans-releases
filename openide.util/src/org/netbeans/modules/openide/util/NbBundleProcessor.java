@@ -241,7 +241,12 @@ public class NbBundleProcessor extends AbstractProcessor {
                     String name = toIdentifier(key);
                     method.append("    static String ").append(name).append("(");
                     boolean first = true;
+                    i = 0;
                     for (String param : params) {
+                        if (param.equals("arg" + i)) {
+                            processingEnv.getMessager().printMessage(Kind.WARNING, "Undocumented format parameter {" + i + "}", identifiers.get(name));
+                        }
+                        i++;
                         if (first) {
                             first = false;
                         } else {
@@ -268,9 +273,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                             restored.add(identifier);
                         }
                     }
+                    /*
                     if (!restored.isEmpty()) {
                         processingEnv.getMessager().printMessage(Kind.NOTE, "loaded " + pkg + ".Bundle identifiers " + restored + " from earlier run");
                     }
+                    */
                 } catch (IOException x) {
                     // OK, not there
                 }

@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpoint;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
@@ -85,7 +86,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 		       MIResult result,
 		       NativeBreakpoint breakpoint) {
 
-	assert result.variable().equals("bkpt");
+	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 
@@ -130,35 +131,8 @@ public class GdbHandlerExpert implements HandlerExpert {
 	return handler;
     }
 
-
-    // interface HandlerExpert
-    public HandlerCommand commandFormNew(NativeBreakpoint breakpoint) {
-
-	//
-	// First, weed out options gdb doesn't support
-        // but do not fail, see IZ 191537
-        //
-	if (breakpoint.getAction() != Action.STOP) {
-            LOG.warning(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
-//	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
-        }
-
-	if (!IpeUtils.isEmpty(breakpoint.getWhileIn())) {
-            LOG.warning(Catalog.get("MSG_NoWhileGdb")); // NOI18N
-//	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb")); // NOI18N
-        }
-
-	if (!IpeUtils.isEmpty(breakpoint.getLwp())) {
-            LOG.warning(Catalog.get("MSG_NoLwpGdb")); // NOI18N
-//	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb")); // NOI18N
-        }
-
-
-	//
-	// Now we should breeze through
-	//
-	StringBuilder cmd = new StringBuilder("-break-insert");				// NOI18N
-        
+    private void appendCommandStart(StringBuilder cmd, NativeBreakpoint breakpoint) {
+        cmd.append("-break-insert"); //NOI18N
         cmd.append(debugger.getGdbVersionPeculiarity().breakPendingFlag());
 
 	if (breakpoint.getTemp()) {
@@ -188,10 +162,34 @@ public class GdbHandlerExpert implements HandlerExpert {
 	if (! breakpoint.isEnabled())
 	    cmd += " -d";					// NOI18N
 	*/
+    }
 
+    // interface HandlerExpert
+    @Override
+    public HandlerCommand commandFormNew(NativeBreakpoint breakpoint) {
 
+	//
+	// First, weed out options gdb doesn't support
+        // but do not fail, see IZ 191537
+        //
+	if (breakpoint.getAction() != Action.STOP) {
+            LOG.warning(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
+        }
+
+	if (!IpeUtils.isEmpty(breakpoint.getWhileIn())) {
+            LOG.warning(Catalog.get("MSG_NoWhileGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_NoWhileGdb")); // NOI18N
+        }
+
+	if (!IpeUtils.isEmpty(breakpoint.getLwp())) {
+            LOG.warning(Catalog.get("MSG_NoLwpGdb")); // NOI18N
+//	    return HandlerCommand.makeError(Catalog.get("MSG_NoLwpGdb")); // NOI18N
+        }
+
+        StringBuilder cmd = new StringBuilder();
+        
 	Class<?> bClass = breakpoint.getClass(); // dynamic type
-
 	if (bClass == LineBreakpoint.class) {
 	    LineBreakpoint lb = (LineBreakpoint) breakpoint;
 
@@ -213,7 +211,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 }
             }
 
-	    String fileLine = null;
+	    String fileLine;
 	    if (file != null && file.length() > 0) {
                 // IZs 169200 & 174479 (send internal path for cygwin)
                 file = debugger.fmap().worldToEngine(file);
@@ -221,11 +219,12 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    } else {
 		fileLine = "" + line;		// NOI18N
 	    }
-
+            appendCommandStart(cmd, breakpoint);
 	    cmd.append(" \"").append(fileLine).append('"'); // NOI18N
 
 	} else if (bClass == InstructionBreakpoint.class) {
 	    InstructionBreakpoint ib = (InstructionBreakpoint) breakpoint;
+            appendCommandStart(cmd, breakpoint);
 	    cmd.append(" *").append(ib.getAddress()); // NOI18N
 
 	} else if (bClass == FunctionBreakpoint.class) {
@@ -243,20 +242,24 @@ public class GdbHandlerExpert implements HandlerExpert {
 		return HandlerCommand.makeError(null);
 	    }
 
+            appendCommandStart(cmd, breakpoint);
 	    // MI -break-insert doesn't like like spaces in function names.
 	    // Surrounding teh whole function signature with quotes seems
 	    // to help.
 	    cmd.append(" \"").append(function).append('"'); // NOI18N
-
+        } else if (bClass == VariableBreakpoint.class) {
+            VariableBreakpoint vb = (VariableBreakpoint) breakpoint;
+            cmd.append("-break-watch "); //NOI18N
+            cmd.append(vb.getVariable());
 	} else {
 	    return HandlerCommand.makeError(null);
 	}
-
 
 	return HandlerCommand.makeCommand(cmd.toString());
     }
 
     // interface HandlerExpert
+    @Override
     public HandlerCommand commandFormCustomize(NativeBreakpoint clonedBreakpoint, 
 		                       NativeBreakpoint repairedBreakpoint) {
 
@@ -286,35 +289,18 @@ public class GdbHandlerExpert implements HandlerExpert {
 
     private void setGenericProperties(Handler handler, MITList props) {
 	// enabled
-	MIValue enabledValue = props.valueOf("enabled");	// NOI18N
-	String enabledString = enabledValue.asConst().value();
-
-	if (IpeUtils.sameString(enabledString, "y"))		// NOI18N
-	    handler.setEnabled(true);
-	else if (IpeUtils.sameString(enabledString, "n"))	// NOI18N
-	    handler.setEnabled(false);
-	else
-	    handler.setEnabled(false);
-
+	String enabledString = props.getConstValue("enabled", "y"); // NOI18N
+        handler.setEnabled("y".equals(enabledString)); //NOI18N
+        
 	// 'number'
-	MIValue numberValue = props.valueOf("number");		// NOI18N
-	String numberString = numberValue.asConst().value();
-	int number = Integer.parseInt(numberString);
+	int number = Integer.parseInt(props.getConstValue("number")); // NOI18N
 	handler.setId(number);
     }
 
-    private void setGenericProperties(NativeBreakpoint breakpoint,
-				      MITList props) {
-
+    private void setGenericProperties(NativeBreakpoint breakpoint, MITList props) {
 	// temporary
-	MIValue dispValue = props.valueOf("disp");		// NOI18N
-	String dispString = dispValue.asConst().value();
-	if ("keep".equals(dispString))				// NOI18N
-	    breakpoint.setTemp(false);
-	else if ("del".equals(dispString))			// NOI18N
-	    breakpoint.setTemp(true);
-	else
-	    breakpoint.setTemp(false);
+	String dispString = props.getConstValue("disp"); // NOI18N
+        breakpoint.setTemp("del".equals(dispString)); //NOI18N
 
 	// count
 	MIValue ignoreValue = props.valueOf("ignore");		// NOI18N
@@ -332,22 +318,10 @@ public class GdbHandlerExpert implements HandlerExpert {
 	}
 
 	// thread
-	MIValue threadValue = props.valueOf("thread");		// NOI18N
-	if (threadValue != null) {
-	    String threadString = threadValue.asConst().value();
-	    breakpoint.setThread(threadString);
-	} else {
-            breakpoint.setThread(null);
-        }
+        breakpoint.setThread(props.getConstValue("thread", null)); //NOI18N
 
 	// condition
-	MIValue condValue = props.valueOf("cond");		// NOI18N
-	if (condValue != null) {
-	    String condString = condValue.asConst().value();
-	    breakpoint.setCondition(condString);
-	} else {
-            breakpoint.setCondition(null);
-        }
+        breakpoint.setCondition(props.getConstValue("cond", null)); //NOI18N
 
 	// action
 	Action action = Action.STOP;
@@ -502,6 +476,11 @@ public class GdbHandlerExpert implements HandlerExpert {
 	    long addr = getAddr(props);
 
 	    ib.setAddress(Address.toHexString0x(addr, true));
+	} else if (template instanceof VariableBreakpoint) {
+	    VariableBreakpoint vb = (VariableBreakpoint) breakpoint;
+
+            String exp = props.getConstValue("exp"); //NOI18N
+	    vb.setVariable(exp);
 	}
     }
 
@@ -510,7 +489,7 @@ public class GdbHandlerExpert implements HandlerExpert {
 			       NativeBreakpoint template,
 			       MIResult result) {
 
-	assert result.variable().equals("bkpt");
+	assert result.variable().equals("bkpt") || result.variable().equals("wpt");
 	MIValue bkptValue = result.value();
 	MITList props = bkptValue.asTuple();
 

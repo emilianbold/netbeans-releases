@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter.FilterToken;
 
 /**
  *
@@ -218,130 +219,9 @@ final class APTFortranEOSFilter implements APTLanguageFilter {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
-    }
-
-    /**
-     * A wrapper token that changes original token type
-     * and delegates the rest of the methods to original token.
-     */
-    public static final class FilterToken implements APTToken {
-
-        private final APTToken origToken;
-        private int type;
-
-        public FilterToken(APTToken origToken, int type) {
-            this.origToken = origToken;
-            this.type = type;
-        }
-
-        public APTToken getOriginalToken() {
-            return origToken;
-        }
-
         @Override
-        public int getOffset() {
-            return origToken.getOffset();
-        }
-
-        @Override
-        public void setOffset(int o) {
-            origToken.setOffset(o);
-        }
-
-        @Override
-        public int getEndColumn() {
-            return origToken.getEndColumn();
-        }
-
-        @Override
-        public void setEndColumn(int c) {
-            origToken.setEndColumn(c);
-        }
-
-        @Override
-        public int getEndLine() {
-            return origToken.getEndLine();
-        }
-
-        @Override
-        public void setEndLine(int l) {
-            origToken.setEndLine(l);
-        }
-
-        @Override
-        public int getEndOffset() {
-            return origToken.getEndOffset();
-        }
-
-        @Override
-        public void setEndOffset(int o) {
-            origToken.setEndOffset(o);
-        }
-
-        @Override
-        public CharSequence getTextID() {
-            return origToken.getTextID();
-        }
-
-        @Override
-        public void setTextID(CharSequence id) {
-            origToken.setTextID(id);
-        }
-
-        @Override
-        public int getColumn() {
-            return origToken.getColumn();
-        }
-
-        @Override
-        public void setColumn(int c) {
-            origToken.setColumn(c);
-        }
-
-        @Override
-        public int getLine() {
-            return origToken.getLine();
-        }
-
-        @Override
-        public void setLine(int l) {
-            origToken.setLine(l);
-        }
-
-        @Override
-        public String getFilename() {
-            return origToken.getFilename();
-        }
-
-        @Override
-        public void setFilename(String name) {
-            origToken.setFilename(name);
-        }
-
-        @Override
-        public String getText() {
-            return origToken.getText();
-        }
-
-        @Override
-        public void setText(String t) {
-            origToken.setText(t);
-        }
-
-        @Override
-        public int getType() {
-            return type;
-        }
-
-        @Override
-        public void setType(int t) {
-            this.type = t;
-        }
-
-        @Override
-        public String toString() {
-            return "FilterToken: " + type + ((origToken == null) ? "null" : origToken.toString()); // NOI18N
+        public Object getProperty(Object key) {
+            return null;
         }
     }
-
 }

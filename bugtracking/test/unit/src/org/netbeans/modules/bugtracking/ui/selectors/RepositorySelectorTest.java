@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -53,15 +54,16 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -87,17 +89,17 @@ public class RepositorySelectorTest extends NbTestCase {
 
     public void testRepositorySelectorBuilder() throws MalformedURLException, CoreException, IOException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         String errorMsg = "tpyo";
-        Repository repo = new MyRepository();
+        MyRepository repo = new MyRepository();
 
         SelectorPanel sp = new SelectorPanel();
-        createEditDescriptor(sp, repo, errorMsg);
+        createEditDescriptor(sp, TestKit.getRepository(repo), errorMsg);
 
         String text = getErrroLabelText(sp);
         assertEquals(errorMsg, text);
     }
 
-    private void createEditDescriptor(SelectorPanel sp, Repository repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", Repository.class, String.class);
+    private void createEditDescriptor(SelectorPanel sp, RepositoryImpl repository, String error) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = sp.getClass().getDeclaredMethod("createEditDescriptor", RepositoryImpl.class, String.class);
         m.setAccessible(true);
         m.invoke(sp, repository, error);
     }
@@ -116,35 +118,26 @@ public class RepositorySelectorTest extends NbTestCase {
         return f.get(o);
     }
 
-    private class MyRepository extends Repository {
+    private class MyRepository extends TestRepository {
+        private RepositoryInfo info;
 
+        public MyRepository() {
+            this.info = new RepositoryInfo("repoid", "connectorid", "http://foo.bar/bogus", "My repository", "My repository", null, null, null, null);
+        }
+
+        
         @Override
         public Image getIcon() {
             return null;
         }
 
         @Override
-        public String getID() {
-            return "repoid";
+        public RepositoryInfo getInfo() {
+            return info;
         }
 
         @Override
-        public String getDisplayName() {
-            return "My repository";
-        }
-
-        @Override
-        public String getTooltip() {
-            return "My repository";
-        }
-
-        @Override
-        public String getUrl() {
-            return "http://foo.bar/bogus";
-        }
-
-        @Override
-        public Issue getIssue(String id) {
+        public TestIssue getIssue(String id) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -154,15 +147,15 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public BugtrackingController getController() {
+        public RepositoryController getController() {
             final JPanel panel = new JPanel();
             JLabel label = new JLabel();
             label.setText("<html>" +
-                            getDisplayName() + "</br>" +
-                            getUrl() +
+                            getInfo().getDisplayName() + "</br>" +
+                            getInfo().getUrl() +
                           "</html>");
             panel.add(label);
-            return new BugtrackingController() {
+            return new RepositoryController() {
 
                 @Override
                 public JComponent getComponent() {
@@ -183,26 +176,46 @@ public class RepositorySelectorTest extends NbTestCase {
                 public void applyChanges() throws IOException {
 
                 }
+
+                @Override
+                public void populate() {
+                    
+                }
+
+                @Override
+                public String getErrorMessage() {
+                    return null;
+                }
+
+                @Override
+                public void addChangeListener(ChangeListener l) {
+                    
+                }
+
+                @Override
+                public void removeChangeListener(ChangeListener l) {
+                    
+                }
             };
         }
 
         @Override
-        public Query createQuery() {
+        public TestQuery createQuery() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Issue createIssue() {
+        public TestIssue createIssue() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Query[] getQueries() {
+        public Collection<TestQuery> getQueries() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
         @Override
-        public Issue[] simpleSearch(String criteria) {
+        public Collection<TestIssue> simpleSearch(String criteria) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
@@ -215,9 +228,15 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         @Override
-        public Collection<RepositoryUser> getUsers() {
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
     }
 
 }

@@ -323,11 +323,12 @@ public class EditorOptions {
     private static final String OPEN_SOLARIS_PROFILE = "OpenSolaris"; // NOI18N
     private static final String K_AND_R_PROFILE = "KandR"; // NOI18N
     private static final String MYSQL_PROFILE = "MySQL"; // NOI18N
+    private static final String WHITESMITHS_PROFILE = "Whitesmiths"; // NOI18N
 
     static final String[] PREDEFINED_STYLES = new String[] {
                                  DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE,
                                  LUNIX_PROFILE, ANSI_PROFILE, OPEN_SOLARIS_PROFILE,
-                                 K_AND_R_PROFILE, MYSQL_PROFILE
+                                 K_AND_R_PROFILE, MYSQL_PROFILE, WHITESMITHS_PROFILE
     };
 
     private static Map<String,Object> defaults;
@@ -556,6 +557,26 @@ public class EditorOptions {
         mysql.put(spaceAroundAssignOps, false);
         mysql.put(spaceKeepExtra, true);
         mysql.put(addLeadingStarInComment, false);
+        
+        //WHITESMITHS_PROFILE
+        Map<String,Object> whitesmiths = new HashMap<String,Object>();
+        namedDefaults.put(WHITESMITHS_PROFILE, whitesmiths);
+        whitesmiths.put(alignMultilineArrayInit, true);
+        whitesmiths.put(alignMultilineCallArgs, true);
+        whitesmiths.put(alignMultilineCallArgs, true);
+        whitesmiths.put(alignMultilineFor, true);
+        whitesmiths.put(alignMultilineIfCondition, true);
+        whitesmiths.put(alignMultilineMethodParams, true);
+        whitesmiths.put(alignMultilineParen, true);
+        whitesmiths.put(alignMultilineWhileCondition, true);
+        whitesmiths.put(newLineBeforeBrace, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineBeforeBraceClass, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineBeforeBraceDeclaration, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineBeforeBraceNamespace, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineBeforeBraceSwitch, BracePlacement.NEW_LINE_FULL_INDENTED.name());
+        whitesmiths.put(newLineCatch, true);
+        whitesmiths.put(newLineElse, true);
+        whitesmiths.put(newLineWhile, true);
         
         //DEFAULT_PROFILE
         Map<String,Object> netbeans = new HashMap<String,Object>();

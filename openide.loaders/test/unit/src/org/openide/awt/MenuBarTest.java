@@ -61,13 +61,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.InstanceCookie;
-import org.openide.filesystems.FileSystem;
-import org.openide.loaders.*;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.XMLFileSystem;
+import org.openide.loaders.*;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Utilities;
@@ -242,7 +243,8 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         
         assertEquals("And now the action is created", 1, MyAction.counter);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #7857 expected:<[m1]> but was:<[]>
     public void testSurviveInvalidationOfAFolder() throws Exception {
         CharSequence seq = Log.enable("", Level.ALL);
         
@@ -259,7 +261,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
                 fail("It has to be menu: " + o1);
             }
             menu = (JMenu)o1;
-            assertEquals("simple name ", "m1", menu.getText());
+            assertEquals("simple name", "m1", menu.getText());
         }
         
         Node n = f1.getNodeDelegate();

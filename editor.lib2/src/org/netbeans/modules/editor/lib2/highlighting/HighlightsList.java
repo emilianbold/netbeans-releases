@@ -85,12 +85,12 @@ public final class HighlightsList {
         return startOffset;
     }
     
-    public void setStartOffset(int startOffset) {
-        int firstItemEndOffset;
-        assert (startOffset < (firstItemEndOffset = highlightItems[startIndex].getEndOffset())) :
-                "startOffset=" + startOffset + " >= firstItemEndOffset=" + firstItemEndOffset; // NOI18N
-        this.startOffset = startOffset;
-    }
+//    public void setStartOffset(int startOffset) {
+//        int firstItemEndOffset;
+//        assert (startOffset < (firstItemEndOffset = highlightItems[startIndex].getEndOffset())) :
+//                "startOffset=" + startOffset + " >= firstItemEndOffset=" + firstItemEndOffset; // NOI18N
+//        this.startOffset = startOffset;
+//    }
     
     public int endOffset() {
         return (endIndex - startIndex > 0)
@@ -104,7 +104,7 @@ public final class HighlightsList {
     
     public HighlightItem get(int index) {
         if (startIndex + index >= endIndex) {
-            throw new IndexOutOfBoundsException("index=" + index + " >= size=" + size()); // NOI18N
+            throw new IndexOutOfBoundsException("index=" + index + " >= size=" + size() + ", " + this); // NOI18N
         }
         return highlightItems[startIndex + index];
     }
@@ -131,27 +131,55 @@ public final class HighlightsList {
      * <br/>
      * The list must cover cutEndOffset otherwise the behavior is undefined.
      *
-     * @param defaultFont
-     * @param maxEndOffset
-     * @return 
+     * @param defaultFont default font to which the attributes in highlight items
+     *  are added to get the resulting font.
+     * @param maxEndOffset maximum end offset where the cutting must end.
+     * @param wsEndOffset whitespace end offset must be lower than or equal to maxEndOffset
+     *  and when exceeded a first whitespace char in docText means that the cutting will end there.
+     * @param docText document text in order properly handle wsEndOffset parameter.
+     * @return either simple or compound attribute set.
      */
-    public AttributeSet cutSameFont(Font defaultFont, int maxEndOffset) {
-        assert (maxEndOffset <= endOffset()) : "maxEndOffset=" + maxEndOffset + " > endOffset()=" + endOffset(); // NOI18N
-        HighlightItem item = highlightItems[startIndex];
+    public AttributeSet cutSameFont(Font defaultFont, int maxEndOffset, int wsEndOffset, CharSequence docText) {
+        assert (maxEndOffset <= endOffset()) :
+                "maxEndOffset=" + maxEndOffset + " > endOffset()=" + endOffset() + ", " + this; // NOI18N
+        HighlightItem item = get(0);
         AttributeSet firstAttrs = item.getAttributes();
         int itemEndOffset = item.getEndOffset();
-        if (maxEndOffset <= itemEndOffset) {
-            if (maxEndOffset == itemEndOffset) {
-                cutStartItems(1);
+        if (wsEndOffset <= itemEndOffset) {
+            if (wsEndOffset == maxEndOffset) {
+                if (maxEndOffset == itemEndOffset) {
+                    cutStartItems(1);
+                }
+                startOffset = maxEndOffset;
+                return firstAttrs;
+
+            } else { // wsEndOffset < maxEndOffset (see javadoc above)
+                // Search for whitespace starting from wsEndOffset
+                int limitOffset = Math.min(maxEndOffset, itemEndOffset);
+                for (int offset = wsEndOffset; offset < limitOffset; offset++) {
+                    if (Character.isWhitespace(docText.charAt(offset))) {
+                        startOffset = offset;
+                        return firstAttrs;
+                    }
+                }
+                if ((maxEndOffset > itemEndOffset && Character.isWhitespace(docText.charAt(itemEndOffset))) ||
+                    maxEndOffset == itemEndOffset)
+                {
+                    cutStartItems(1);
+                    startOffset = itemEndOffset;
+                    return firstAttrs;
+                } else if (maxEndOffset < itemEndOffset) {
+                    startOffset = maxEndOffset;
+                    return firstAttrs;
+                } // else: for non-WS at itemEndOffset continue to next hItem
             }
-            startOffset = maxEndOffset;
-            return firstAttrs;
         }
-        // Span two or more highlights
+
+        // Extends beyond first highlight
         Font firstFont = ViewUtils.getFont(firstAttrs, defaultFont);
         int index = 1;
         while (true) {
-            item = highlightItems[startIndex + index];
+            item = get(index);
             AttributeSet attrs = item.getAttributes();
             Font font = ViewUtils.getFont(attrs, defaultFont);
             if (!font.equals(firstFont)) { // Stop at itemEndOffset
@@ -163,20 +191,40 @@ public final class HighlightsList {
                 // Index > 1
                 return cutCompound(index, itemEndOffset); // end offset of first item
             }
+            int itemStartOffset = itemEndOffset;
             itemEndOffset = item.getEndOffset();
-            if (maxEndOffset <= itemEndOffset) {
-                if (maxEndOffset == itemEndOffset) {
-                    return cutCompound(index + 1, itemEndOffset);
+            if (wsEndOffset <= itemEndOffset) {
+                if (wsEndOffset == maxEndOffset) {
+                    if (maxEndOffset == itemEndOffset) {
+                        return cutCompound(index + 1, itemEndOffset);
+                    }
+                    return cutCompoundAndPart(index, maxEndOffset, attrs);
+
+                } else { // wsEndOffset < maxEndOffset (see javadoc above)
+                    int offset = Math.max(itemStartOffset, wsEndOffset);
+                    int limitOffset = Math.min(maxEndOffset, itemEndOffset);
+                    for (; offset < limitOffset; offset++) {
+                        if (Character.isWhitespace(docText.charAt(offset))) {
+                            return cutCompoundAndPart(index, offset, attrs);
+                        }
+                    }
+                    if ((maxEndOffset > itemEndOffset && Character.isWhitespace(docText.charAt(itemEndOffset)))
+                            || maxEndOffset == itemEndOffset)
+                    {
+                        return cutCompound(index + 1, itemEndOffset);
+                    } else if (maxEndOffset < itemEndOffset) {
+                        return cutCompoundAndPart(index, maxEndOffset, attrs);
+                    } // else: for non-WS at itemEndOffset continue to next hItem
                 }
-                return cutCompoundNext(index, maxEndOffset, attrs);
             }
             index++;
         }
     }
     
     public AttributeSet cut(int endOffset) {
-        assert (endOffset <= endOffset()) : "endOffset=" + endOffset + " > endOffset()=" + endOffset(); // NOI18N
-        HighlightItem item = highlightItems[startIndex];
+        assert (endOffset <= endOffset()) :
+                "endOffset=" + endOffset + " > endOffset()=" + endOffset() + ", " + this; // NOI18N
+        HighlightItem item = get(0);
         AttributeSet attrs = item.getAttributes();
         int itemEndOffset = item.getEndOffset();
         if (endOffset <= itemEndOffset) {
@@ -189,13 +237,13 @@ public final class HighlightsList {
         // Span two or more highlights
         int index = 1;
         while (true) {
-            item = highlightItems[startIndex + index];
+            item = get(index);
             itemEndOffset = item.getEndOffset();
             if (endOffset <= itemEndOffset) {
                 if (endOffset == itemEndOffset) {
                     return cutCompound(index + 1, itemEndOffset);
                 }
-                return cutCompoundNext(index, endOffset, item.getAttributes());
+                return cutCompoundAndPart(index, endOffset, item.getAttributes());
             }
             index++;
         }
@@ -209,7 +257,7 @@ public final class HighlightsList {
      * @return attribute set.
      */
     public AttributeSet cutSingleChar() {
-        HighlightItem item = highlightItems[startIndex];
+        HighlightItem item = get(0);
         startOffset++;
         if (startOffset == item.getEndOffset()) {
             cutStartItems(1);
@@ -218,7 +266,7 @@ public final class HighlightsList {
     }
     
     public void skip(int newStartOffset) {
-        HighlightItem item = highlightItems[startIndex];
+        HighlightItem item = get(0);
         int itemEndOffset = item.getEndOffset();
         if (newStartOffset <= itemEndOffset) {
             if (newStartOffset == itemEndOffset) {
@@ -227,7 +275,7 @@ public final class HighlightsList {
         } else {
             int index = 1;
             while (true) {
-                item = highlightItems[startIndex + index];
+                item = get(index);
                 itemEndOffset = item.getEndOffset();
                 if (newStartOffset <= itemEndOffset) {
                     if (newStartOffset == itemEndOffset) {
@@ -256,7 +304,7 @@ public final class HighlightsList {
         return cAttrs;
     }
     
-    private CompoundAttributes cutCompoundNext(int count, int cutEndOffset, AttributeSet lastAttrs) {
+    private CompoundAttributes cutCompoundAndPart(int count, int cutEndOffset, AttributeSet lastAttrs) {
         HighlightItem[] cutItems = new HighlightItem[count + 1];
         cutItems[count] = new HighlightItem(cutEndOffset, lastAttrs);
         System.arraycopy(highlightItems, startIndex, cutItems, 0, count);
@@ -269,6 +317,8 @@ public final class HighlightsList {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(200);
+        sb.append("HL:<").append(startOffset()).append(",").append(endOffset()).append(">");
+        sb.append(", Items#").append(size()).append("\n");
         int size = size();
         int digitCount = ArrayUtilities.digitCount(size);
         int lastOffset = startOffset;

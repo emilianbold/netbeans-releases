@@ -55,19 +55,22 @@ import java.io.Reader;
 import java.io.StringBufferInputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
-import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.*;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringCustomUI;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -79,15 +82,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.Mnemonics;
-import org.openide.awt.StatusDisplayer;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionBounds;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+import org.openide.util.*;
 import org.openide.windows.TopComponent;
 
 /**
@@ -129,6 +126,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private transient JToggleButton logicalViewButton = null;
     private transient JToggleButton physicalViewButton = null;
     private transient JToggleButton customViewButton = null;
+    private JButton stopButton;
+
     private transient ProgressListener progressListener;
 
     private transient JButton prevMatch = null;
@@ -136,6 +135,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private WeakReference<TopComponent> refCallerTC;
     private boolean inited = false;
     private Component customComponent;
+    private AtomicBoolean cancelRequest = new AtomicBoolean();
 
     
     static Image PACKAGE_BADGE = ImageUtilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -327,6 +327,18 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             NbBundle.getMessage(RefactoringPanel.class, "HINT_prevMatch") // NOI18N
         );
         prevMatch.addActionListener(getButtonListener());
+
+                stopButton = new JButton(
+            ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/stop.png", false));
+        
+        stopButton.setMaximumSize(dim);
+        stopButton.setMinimumSize(dim);
+        stopButton.setPreferredSize(dim);
+        stopButton.setToolTipText(
+            NbBundle.getMessage(RefactoringPanel.class, "HINT_stop") // NOI18N
+        );
+        stopButton.addActionListener(getButtonListener());
+        
         
         toolBar.add(refreshButton);
         toolBar.add(expandButton);
@@ -337,6 +349,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         }
         toolBar.add(prevMatch);
         toolBar.add(nextMatch);
+        toolBar.add(stopButton);
         
         return toolBar;
     }
@@ -445,8 +458,38 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         Icon icon = representedObject.getIcon();
         
         node = new CheckNode(representedObject, displayName, icon);
-        CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
-        parentNode.add(node);
+        final CheckNode parentNode = parent == null ? root : createNode(parent, nodes, root);
+        
+        boolean added = false;
+        int i = 0;
+        for (; i < parentNode.getChildCount(); i++) {
+            if (node.getLabel().compareTo(((CheckNode) parentNode.getChildAt(i)).getLabel()) < 0 ) {
+                parentNode.insert(node, i);
+                added = true;
+                break;
+            }
+        }
+        if (!added) {
+            parentNode.add(node);
+        }
+
+        
+        if (isInstant()) {
+            final int last = i;
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        ((DefaultTreeModel) tree.getModel()).nodesWereInserted(parentNode, new int[]{last});
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         
         if (representedObject instanceof SourceGroup) {
             //workaround for issue 52541
@@ -459,6 +502,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     
     private static final String getString(String key) {
         return NbBundle.getMessage(RefactoringPanel.class, key);
+    }
+    
+    private boolean isInstant() {
+        return parametersPanel!=null &&  parametersPanel.isBackgroundQuery();
     }
 
     /**
@@ -593,7 +640,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
 
     private void refresh(final boolean showParametersPanel) {
         checkEventThread();
-
+        boolean scanning = IndexingManager.getDefault().isIndexing();
         if (showParametersPanel) {
             // create parameters panel for refactoring
             if (parametersPanel == null) {
@@ -609,7 +656,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     close();
                 }
                 return;
-            } else if (tempSession.getRefactoringElements().isEmpty()) {
+            } else if (!isInstant() && tempSession.getRefactoringElements().isEmpty() && !scanning) {
                 DialogDescriptor nd = new DialogDescriptor(NbBundle.getMessage(ParametersPanel.class, "MSG_NoPatternsFound"),
                                         ui.getName(),
                                         true,
@@ -627,6 +674,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         
         initialize();
 
+        cancelRequest.set(false);
+        stopButton.setVisible(isInstant());
+        stopButton.setEnabled(true);
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection<RefactoringElement> elements = session.getRefactoringElements();
@@ -661,7 +711,104 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             }
                         }
                     }
-                    int occurencesNum = elements.size();
+                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isInstant()?0:elements.size());
+                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
+                    final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
+                    
+                    final Cursor old = getCursor();
+                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
+                    if (isInstant() && showParametersPanel) {
+                        setupInstantTree(root, showParametersPanel);
+                    }
+                    
+                    progressHandle.start(elements.size()/10);
+                    int i=0;
+                    try {
+                        //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
+                        try {
+                            // ui.getRefactoring().setClassPath();
+                            for (Iterator it = elements.iterator(); it.hasNext();i++) {
+                                final RefactoringElement e = (RefactoringElement) it.next();
+                                createNode(TreeElementFactory.getTreeElement(e), nodes, root);
+                                
+                                if (isInstant() && showParametersPanel) {
+                                    if (cancelRequest.get()) {
+                                        break;
+                                    }
+                                    tree.expandRow(0);
+
+                                    final int in = i;
+                                    if (i==0) {
+                                        try {
+                                            SwingUtilities.invokeAndWait(new Runnable() {
+
+                                                @Override
+                                                public void run() {
+                                                    TreeNode current = root;
+                                                    int i=0;
+                                                    while (!current.isLeaf()) {
+                                                        tree.expandRow(i++);
+                                                        current = current.getChildAt(0);
+                                                    }
+                                                }
+                                                
+                                            });
+                                        } catch (InterruptedException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        } catch (InvocationTargetException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
+                                    final boolean last = !it.hasNext();
+                                    if (i % 10 == 0 || last) {
+                                        final int occurrences = i;
+                                        SwingUtilities.invokeLater(new Runnable() {
+
+                                            @Override
+                                            public void run() {
+                                                root.setNodeLabel(description + getErrorDesc(0, occurrences));
+                                                if (last) {
+                                                    stopButton.setEnabled(false);
+                                                    tree.repaint();
+                                                }
+                                                
+                                            }
+                                        });
+                                    }
+                                }
+                                PositionBounds pb = e.getPosition();
+                                if (pb != null) {
+                                    CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
+                                    editorSupports.add(ces);
+                                }
+                                
+                                if (i % 10 == 0)
+                                    progressHandle.progress(i/10);
+                            }
+                        } finally {
+                            //[retouche]                        JavaModel.getJavaRepository().endTrans();
+                        }
+                       
+                        UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
+                    } catch (RuntimeException t) {
+                        cleanupTreeElements();
+                        throw t;
+                    } catch (Error e) {
+                        cleanupTreeElements();
+                        throw e;
+                    } finally {
+                        progressHandle.finish();
+                        setCursor(old);
+                    }
+                    
+                    if (!(isInstant() && showParametersPanel)) {
+                        setupTree(root, showParametersPanel, elements.size());
+                    }
+                    
+                }
+
+                private StringBuffer getErrorDesc(int errorsNum, int occurencesNum) throws MissingResourceException {
                     StringBuffer errorsDesc = new StringBuffer();
                     errorsDesc.append(" [" + occurencesNum); // NOI18N
                     errorsDesc.append(' ');
@@ -681,100 +828,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                         errorsDesc.append("</font>"); // NOI18N
                     }
                     errorsDesc.append(']');
-                    final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
-                    Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
-                    
-                    final Cursor old = getCursor();
-                    setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                    
-                    progressHandle.start(elements.size()/10);
-                    int i=0;
-                    try {
-                        //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
-                        try {
-                            // ui.getRefactoring().setClassPath();
-                            for (Iterator it = elements.iterator(); it.hasNext();i++) {
-                                RefactoringElement e = (RefactoringElement) it.next();
-                                createNode(TreeElementFactory.getTreeElement(e), nodes, root);
-                                PositionBounds pb = e.getPosition();
-                                if (pb != null) {
-                                    CloneableEditorSupport ces = pb.getBegin().getCloneableEditorSupport();
-                                    editorSupports.add(ces);
-                                }
-                                
-                                if (i % 10 == 0)
-                                    progressHandle.progress(i/10);
-                            }
-                        } finally {
-                            //[retouche]                        JavaModel.getJavaRepository().endTrans();
-                        }
-                        UndoManager.getDefault().watch(editorSupports, RefactoringPanel.this);
-                        sortTree(root);
-                    } catch (RuntimeException t) {
-                        cleanupTreeElements();
-                        throw t;
-                    } catch (Error e) {
-                        cleanupTreeElements();
-                        throw e;
-                    } finally {
-                        progressHandle.finish();
-                        setCursor(old);
-                    }
-                    
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (tree == null) {
-                                // add panel with appropriate content
-                                tree = new JTree(root);
-                                if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
-                                    tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
-                                }
-                                ToolTipManager.sharedInstance().registerComponent(tree);
-                                tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
-                                String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
-                                tree.getAccessibleContext().setAccessibleDescription(s);
-                                tree.getAccessibleContext().setAccessibleName(s);
-                                CheckNodeListener l = new CheckNodeListener(isQuery);
-                                tree.addMouseListener(l);
-                                tree.addKeyListener(l);
-                                tree.setToggleClickCount(0);
-                                tree.setTransferHandler(new TransferHandlerImpl());
-                                scrollPane = new JScrollPane(tree);
-                                    scrollPane.setBorder(new EmptyBorder(0,0,0,0));
-                                RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
-                                RefactoringPanel.this.validate();
-                            } else {
-                                tree.setModel(new DefaultTreeModel(root));
-                            }
-                            tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
-                            
-                            if (showParametersPanel) {
-                                splitPane.setDividerLocation(0.3);
-                                if (elements.size() < MAX_ROWS) {
-                                    expandAll();
-                                    if (!isQuery)
-                                        selectNextUsage();
-                                } else
-                                    expandButton.setSelected(false);
-                            } else {
-                                if (expandButton.isSelected()) {
-                                    expandAll();
-                                    if (!isQuery)
-                                        selectNextUsage();
-                                } else
-                                    expandButton.setSelected(false);
-                            }
-                            
-                            tree.setSelectionRow(0);
-                            requestFocus();
-                            setRefactoringEnabled(true, true);
-                            if (parametersPanel!=null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
-                                selectNextUsage();
-                            }
-                        }
-                    });
+                    return errorsDesc;
                 }
+
+
             });
         }
         if (!isVisible) {
@@ -791,37 +848,81 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         setRefactoringEnabled(false, true);
     }
     
-    private void sortTree(CheckNode root) {
-        ArrayList<CheckNode> nodes = new ArrayList<CheckNode>();
-        ArrayList<CheckNode> leaves = new ArrayList<CheckNode>();
-        for (int i = 0; i < root.getChildCount(); i++){
-                CheckNode node = (CheckNode) root.getChildAt(i);
-                if(!node.isLeaf()) {
-                        sortTree(node);
-                        nodes.add(node);
-                }
-        }
-        for (int i = 0; i < root.getChildCount(); i++){
-            CheckNode node = (CheckNode) root.getChildAt(i);
-            if (node.isLeaf()) {
-                leaves.add(node);
-            }
-        }
-        Collections.sort(nodes, new Comparator<CheckNode>() {
+    private void setupTree(final CheckNode root, final boolean showParametersPanel, final int size) {
+        SwingUtilities.invokeLater(new Runnable() {
+
             @Override
-            public int compare(CheckNode o1, CheckNode o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
+            public void run() {
+                createTree(root);
+
+                if (showParametersPanel) {
+                    splitPane.setDividerLocation(0.3);
+                    if (size < MAX_ROWS) {
+                        expandAll();
+                        if (!isQuery) {
+                            selectNextUsage();
+                        }
+                    } else {
+                        expandButton.setSelected(false);
+                    }
+                } else {
+                    if (expandButton.isSelected()) {
+                        expandAll();
+                        if (!isQuery) {
+                            selectNextUsage();
+                        }
+                    } else {
+                        expandButton.setSelected(false);
+                    }
+                }
+
+                tree.setSelectionRow(0);
+                requestFocus();
+                setRefactoringEnabled(true, true);
+                if (parametersPanel != null && (Boolean) parametersPanel.getClientProperty(ParametersPanel.JUMP_TO_FIRST_OCCURENCE)) {
+                    selectNextUsage();
+                }
             }
         });
-        root.removeAllChildren();
-        for (CheckNode checkNode : nodes) {
-            root.add(checkNode);
-        }
-        for (CheckNode checkNode : leaves) {
-            root.add(checkNode);
-        }
     }
     
+    private void createTree(TreeNode root) throws MissingResourceException {
+        if (tree == null) {
+            // add panel with appropriate content
+            tree = new JTree(root);
+            if ("Aqua".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
+                tree.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
+            }
+            ToolTipManager.sharedInstance().registerComponent(tree);
+            tree.setCellRenderer(new CheckRenderer(isQuery, tree.getBackground()));
+            String s = NbBundle.getMessage(RefactoringPanel.class, "ACSD_usagesTree"); // NOI18N
+            tree.getAccessibleContext().setAccessibleDescription(s);
+            tree.getAccessibleContext().setAccessibleName(s);
+            CheckNodeListener l = new CheckNodeListener(isQuery);
+            tree.addMouseListener(l);
+            tree.addKeyListener(l);
+            tree.setToggleClickCount(0);
+            tree.setTransferHandler(new TransferHandlerImpl());
+            scrollPane = new JScrollPane(tree);
+            scrollPane.setBorder(new EmptyBorder(0, 0, 0, 0));
+            RefactoringPanel.this.left.add(scrollPane, BorderLayout.CENTER);
+            RefactoringPanel.this.validate();
+        } else {
+            tree.setModel(new DefaultTreeModel(root));
+        }
+        tree.setRowHeight((int) ((CheckRenderer) tree.getCellRenderer()).getPreferredSize().getHeight());
+    }
+
+    private void setupInstantTree(final CheckNode root, final boolean showParametersPanel) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            @Override
+            public void run() {
+                createTree(root);
+            }
+        });
+    }    
+                
     @Override
     public void requestFocus() {
         super.requestFocus();
@@ -937,6 +1038,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 selectNextUsage();
             } else if (o == prevMatch) {
                 selectPrevUsage();
+            } else if (o == stopButton) {
+                stopButton.setEnabled(false);
+                cancelRequest.set(true);
+                ui.getRefactoring().cancelRequest();
             }
         }
     } // end ButtonL

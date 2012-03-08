@@ -64,6 +64,7 @@ import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.UIManager;
+import org.netbeans.swing.tabcontrol.WinsysInfoForTabbedContainer;
 
 /**
  * A view tabs ui for OS-X adapted from the view tabs UI for Metal.
@@ -163,6 +164,17 @@ public final class AquaViewTabDisplayerUI extends AbstractViewTabDisplayerUI {
                     - 1;
         } else {
             textY = (height / 2) - (textHeight / 2) + fm.getAscent();
+        }
+
+        boolean slidedOut = false;
+        WinsysInfoForTabbedContainer winsysInfo = displayer.getContainerWinsysInfo();
+        if( null != winsysInfo && winsysInfo.isSlidedOutContainer() )
+            slidedOut = false;
+        if( isTabBusy( index ) && !slidedOut ) {
+            Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
+            textW -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
+            busyIcon.paintIcon( displayer, g, textX, y+(height-busyIcon.getIconHeight())/2);
+            textX += busyIcon.getIconWidth() + 3;
         }
 
         int realTextWidth = (int)HtmlRenderer.renderString(text, g, textX, textY, textW, height, getTxtFont(),

@@ -145,11 +145,9 @@ public final class Setup extends AbstractDiffSetup {
             case DIFFTYPE_REMOTE:
 
                 // from-BASE
-
-                if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY
-                | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
-                    firstRevision = REVISION_BASE;
-                    firstTitle = loc.getString("MSG_DiffPanel_LocalNew");
+                if (match(status, FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY | FileInformation.STATUS_VERSIONED_ADDEDLOCALLY)) {
+                    firstRevision = null;
+                    firstTitle = loc.getString("MSG_DiffPanel_NoBaseRevision");
                 } else if (match (status, FileInformation.STATUS_VERSIONED_NEWINREPOSITORY)) {
                     firstRevision = null;
                     firstTitle = NbBundle.getMessage(Setup.class, "LBL_Diff_NoLocalFile"); // NOI18N

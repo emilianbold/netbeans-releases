@@ -122,6 +122,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     public Problem preCheck() {
         cancelRequest = false;
+        cancelRequested.set(false);
         //        Element subType = refactoring.getTypeElement();
         //        if(!(subType instanceof JavaClass)){
         //            String errMsg = NbBundle.getMessage(UseSuperTypeRefactoringPlugin.class,
@@ -289,6 +290,11 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
 
             //This check shouldn't be needed (ideally).
             if (varElement == null) {
+                return super.visitVariable(varTree, elementToMatch);
+            }
+            TreePath parentPath = treePath.getParentPath();
+            if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.CATCH) {
+                // Do not change in catch statement
                 return super.visitVariable(varTree, elementToMatch);
             }
 

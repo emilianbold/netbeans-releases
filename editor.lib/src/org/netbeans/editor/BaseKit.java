@@ -1150,6 +1150,23 @@ public class BaseKit extends DefaultEditorKit {
                             final Object [] result = new Object [] { Boolean.FALSE, "" }; //NOI18N
                             doc.runAtomicAsUser (new Runnable () {
                                 public void run () {
+                                    boolean alreadyBeeped = false;
+                                    if (Utilities.isSelectionShowing(target.getCaret())) { // valid selection
+                                        EditorUI editorUI = Utilities.getEditorUI(target);
+                                        Boolean overwriteMode = (Boolean) editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                                        try {
+                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                            replaceSelection(target, insertionOffset.getOffset(), target.getCaret(), "", ovr);
+                                        } catch (BadLocationException ble) {
+                                            LOG.log(Level.FINE, null, ble);
+                                            target.getToolkit().beep();
+                                            alreadyBeeped = true;
+                                        }
+                                        finally {
+                                            doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                                        }
+                                    }
                                     Object [] r = transaction.textTyped();
                                     String insertionText = r == null ? cmd : (String) r[0];
                                     int caretPosition = r == null ? -1 : (Integer) r[1];
@@ -1160,7 +1177,8 @@ public class BaseKit extends DefaultEditorKit {
                                         result[1] = insertionText;
                                     } catch (BadLocationException ble) {
                                         LOG.log(Level.FINE, null, ble);
-                                        target.getToolkit().beep();
+                                        if (!alreadyBeeped)
+                                            target.getToolkit().beep();
                                     }
                                 }
                             });
@@ -1291,7 +1309,7 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 if (caretPosition != -1) {
-                    assert caretPosition >= 0 && caretPosition < insertionText.length();
+                    assert caretPosition >= 0 && (caretPosition < insertionText.length() || (insertionText.isEmpty() && caretPosition == 0));
                     caret.setDot(insertionOffset + caretPosition);
                 }
             } finally {
@@ -1773,7 +1791,7 @@ public class BaseKit extends DefaultEditorKit {
 		final Caret caret = target.getCaret();
 		final int dot = caret.getDot();
 		final int mark = caret.getMark();
-
+                
                 if (dot != mark) {
                     // remove selection
                     doc.runAtomicAsUser (new Runnable () {

@@ -60,9 +60,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JList;
+import javax.swing.*;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
@@ -71,6 +72,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -669,6 +671,7 @@ public class Util {
 
     /**
      * Ad library to the project to compile classpath(default)
+     * Method is called off of AWT thread
      * @param project
      * @param library
      */
@@ -678,11 +681,39 @@ public class Util {
 
     /**
      * add library to the project to specified classpath
+     * Method is called off of AWT thread
      * @param project
      * @param library
      * @param classpathType
      */
     public static void addLibraryToProject(Project project, Library library, String classpathType) {
+        if(SwingUtilities.isEventDispatchThread()){
+            AtomicBoolean cancel = new AtomicBoolean();
+            ProgressUtils.runOffEventDispatchThread( new AddLibrary(project, library, classpathType), 
+                   NbBundle.getMessage(Util.class, 
+                 "TTL_ExtendProjectClasspath"), cancel, false );  // NOI18N
+        } else {
+            addLibraryToProject0(project, library, classpathType);
+        }
+    }
+
+    private static class AddLibrary implements  Runnable{
+        Project project;
+        Library library;
+        String classpathType;
+        public AddLibrary(Project project, Library library, String classpathType){
+            this.project = project;
+            this.library = library;
+            this.classpathType = classpathType;
+        }
+        
+        @Override
+        public void run() {
+                addLibraryToProject0(project, library, classpathType);
+        }
+    }
+    
+    private static void addLibraryToProject0(Project project, Library library, String classpathType) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup groups[] = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         SourceGroup firstGroup = groups[0];

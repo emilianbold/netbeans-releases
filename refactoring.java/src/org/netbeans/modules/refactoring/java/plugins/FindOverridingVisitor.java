@@ -49,7 +49,7 @@ import com.sun.source.tree.Tree;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.CompilationController;
 
 /**
  *
@@ -57,7 +57,7 @@ import org.netbeans.api.java.source.WorkingCopy;
  */
 public class FindOverridingVisitor extends FindVisitor {
 
-    public FindOverridingVisitor(WorkingCopy workingCopy) {
+    public FindOverridingVisitor(CompilationController workingCopy) {
         super(workingCopy);
     }
 

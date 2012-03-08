@@ -110,7 +110,7 @@ public class CompletionContext {
         int id = token.getTokenID().getNumericID();
         SyntaxElement element = documentContext.getCurrentElement();
         switch (id) {
-            //user enters < character
+            //
             case XMLDefaultTokenContext.TEXT_ID:
                 String chars = token.getImage().trim();
                 if (chars != null && chars.equals("") &&
@@ -127,7 +127,7 @@ public class CompletionContext {
                         token.getPrevious().getImage().trim().equals(">")) { // NOI18N
 
                     completionType = CompletionType.VALUE;
-                    typedChars = "";
+                    typedChars = token.getImage().substring(0, caretOffset - token.getOffset());
                     break;
                 }
                 if (chars != null && !chars.equals("<") &&

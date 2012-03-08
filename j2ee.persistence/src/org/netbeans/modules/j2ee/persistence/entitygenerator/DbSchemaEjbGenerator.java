@@ -83,6 +83,8 @@ public class DbSchemaEjbGenerator {
     private final static Logger LOGGER = Logger.getLogger(DbSchemaEjbGenerator.class.getName());
     private boolean useColumNamesInRelations = false;
     //private ArrayList<String> warningMessages;
+    private final boolean generateUnresolvedRelationships;
+    private final boolean useDefaults;
    
     /**
      * Creates a generator for a set of beans.
@@ -91,7 +93,7 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      */
     public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement) {
-        this(genTables, schemaElement, CollectionType.COLLECTION, false);
+        this(genTables, schemaElement, CollectionType.COLLECTION, false, false, false);
     }
 
     /**
@@ -101,11 +103,13 @@ public class DbSchemaEjbGenerator {
      * @param schemaElement the dbschema containing the tables to generate beans for.
      * @param collectionType collection type is used in some names generation
      */
-    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType, boolean useColumnNamesInRelationships) {
+    public DbSchemaEjbGenerator(GeneratedTables genTables, SchemaElement schemaElement, CollectionType collectionType, boolean useColumnNamesInRelationships, boolean useDefaults, boolean generateUnresolvedRelationships) {
         this.schemaElement = schemaElement;
         this.genTables = genTables;
         this.colectionType = collectionType;
         this.useColumNamesInRelations = useColumnNamesInRelationships;
+        this.generateUnresolvedRelationships = generateUnresolvedRelationships;
+        this.useDefaults = useDefaults;
         //warningMessages = new ArrayList<String>();
 
         tablesReferecedByOtherTables = getTablesReferecedByOtherTables(schemaElement);
@@ -242,6 +246,7 @@ public class DbSchemaEjbGenerator {
                 genTables.getPackageName(tableName),
                 genTables.getClassName(tableName),
                 genTables.getUpdateType(tableName),
+                useDefaults,
                 genTables.getUniqueConstraints(tableName) );
         beans.put(tableName, bean);
         
@@ -485,12 +490,19 @@ public class DbSchemaEjbGenerator {
         String keyRefName = key.getReferencedTable().getName().getName();
         boolean oneToOne = isFkUnique(key);
         
-        EntityClass roleBHelper = getBean(keyRefName);
-        if (roleBHelper == null) {
-            return;
-        }
         EntityClass roleAHelper = getBean(keyTableName);
         if (roleAHelper == null) {
+            return;
+        }
+        
+        EntityClass roleBHelper = getBean(keyRefName);
+        if (roleBHelper == null) {
+            if(generateUnresolvedRelationships){
+                //we may want to generate field instead of skip
+                for(ColumnElement col:key.getLocalColumns()){
+                    generatePkField(col, false, false);
+                }
+            }
             return;
         }
 
@@ -647,6 +659,13 @@ public class DbSchemaEjbGenerator {
             }
         }
         return (ForeignKeyElement[]) ret.values().toArray(new ForeignKeyElement[]{});
+    }
+
+    /**
+     * @return the useDefaults
+     */
+    public boolean isUseDefaults() {
+        return useDefaults;
     }
 
     /**

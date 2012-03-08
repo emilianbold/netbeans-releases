@@ -53,19 +53,17 @@ import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.MissingResourceException;
+import java.util.*;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.TextUtils;
-import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.util.ImageUtilities;
@@ -87,7 +85,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(getRepositoryId(repoName, url), repoName, url, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject), null, null);
+        super(createInfo(repoName, url, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject)));
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
@@ -101,7 +99,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    public Query createQuery() {
+    public JiraQuery createQuery() {
         FilterDefinition fd = new FilterDefinition();
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
@@ -114,27 +112,24 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     }
 
     @Override
-    public Issue createIssue() {
+    public NbJiraIssue createIssue() {
         return super.createIssue();
     }
 
     @Override
-    public synchronized Query[] getQueries() {
-        Query[] qs = super.getQueries();
-        Query[] dq = getDefinedQueries();
-        Query[] ret = new Query[qs.length + dq.length];
-        System.arraycopy(qs, 0, ret, 0, qs.length);
-        System.arraycopy(dq, 0, ret, qs.length, dq.length);
+    public synchronized Collection<JiraQuery> getQueries() {
+        List<JiraQuery> ret = new LinkedList<JiraQuery>();
+        ret.addAll(super.getQueries());
+        ret.addAll(getDefinedQueries());
         return ret;
     }
 
     @Override
     protected Object[] getLookupObjects() {
         Object[] obj = super.getLookupObjects();
-        Object[] obj2 = new Object[obj.length + 2];
+        Object[] obj2 = new Object[obj.length + 1];
         System.arraycopy(obj, 0, obj2, 0, obj.length);
         obj2[obj2.length - 1] = kenaiProject;
-        obj2[obj2.length - 2] = Jira.getInstance().getKenaiSupport();
         return obj2;
     }
 
@@ -142,28 +137,28 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return host;
     }
 
-    private Query[] getDefinedQueries() {
-        List<Query> queries = new ArrayList<Query>();
+    private Collection<JiraQuery> getDefinedQueries() {
+        List<JiraQuery> queries = new ArrayList<JiraQuery>();
 
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
-            return new Query[0];
+            return Collections.emptyList();
         }
 
-        Query mi = getMyIssuesQuery(configuration);
+        JiraQuery mi = getMyIssuesQuery(configuration);
         if(mi != null) {
             queries.add(mi);
         }
 
-        Query ai = getAllIssuesQuery(configuration);
+        JiraQuery ai = getAllIssuesQuery(configuration);
         if(ai != null) {
             queries.add(ai);
         }
 
-        return queries.toArray(new Query[queries.size()]);
+        return queries;
     }
 
-    Query getMyIssuesQuery() throws MissingResourceException {
+    public JiraQuery getMyIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
             return null;
@@ -171,7 +166,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return getMyIssuesQuery(configuration);
     }
 
-    synchronized private Query getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+    synchronized private JiraQuery getMyIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if(myIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if(p != null) {
@@ -194,7 +189,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return myIssues;
     }
 
-    Query getAllIssuesQuery() throws MissingResourceException {
+    public JiraQuery getAllIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();
         if(configuration == null) {
             return null;
@@ -202,7 +197,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return getAllIssuesQuery(configuration);
     }
 
-    synchronized private Query getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
+    synchronized private JiraQuery getAllIssuesQuery(JiraConfiguration configuration) throws MissingResourceException {
         if (allIssues == null) {
             Project p = configuration.getProjectByKey(projectName);
             if (p != null) {
@@ -243,7 +238,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return c;
     }
 
-    protected void setCredentials(String user, String password) {
+    protected void setCredentials(String user, char[] password) {
         super.setCredentials(user, password, null, null);
     }
 
@@ -265,7 +260,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         String user = pa.getUserName();
         char[] password = pa.getPassword();
 
-        setCredentials(user, new String(password));
+        setCredentials(user, password);
 
         return true;
     }
@@ -278,12 +273,12 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return "";                                                              // NOI18N
     }
 
-    private static String getKenaiPassword(KenaiProject kenaiProject) {
+    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
         PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
-            return new String(pa.getPassword());
+            return pa.getPassword();
         }
-        return "";                                                              // NOI18N
+        return new char[0];                                                              
     }
 
     /**
@@ -345,18 +340,23 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             // XXX move to spi?
             // get kenai credentials
             String user;
-            String psswd;
+            char[] psswd;
             PasswordAuthentication pa =
                 KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
-                psswd = new String(pa.getPassword());
+                psswd = pa.getPassword();
             } else {
                 user = "";                                                      // NOI18N
-                psswd = "";                                                     // NOI18N
+                psswd = new char[0]; 
             }
 
             setCredentials(user, psswd);
         }
+    }
+    private static RepositoryInfo createInfo(String repoName, String url, String userName, char[] password) {
+        String id = getRepositoryId(repoName, url);
+        String tooltip = NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, userName, url}); // NOI18N
+        return new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip, userName, null, password, null);
     }
 }

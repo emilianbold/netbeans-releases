@@ -42,16 +42,14 @@
 
 package org.netbeans.modules.maven.repository.register;
 
-import java.io.File;
 import java.net.URISyntaxException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.repository.register.Bundle.*;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -60,7 +58,6 @@ import org.openide.util.NbBundle.Messages;
  */
 public class RepositoryRegisterUI extends javax.swing.JPanel {
 
-    private static File lastFolder = new File(System.getProperty("user.home")); //NOI18N
     private boolean modify = false;
     private boolean singleType = false;
     private boolean alreadyFilled = false;
@@ -77,6 +74,16 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         } 
         comType.setModel(new DefaultComboBoxModel(types));
         comType.setSelectedItem(RepositoryPreferences.TYPE_NEXUS);
+    }
+    
+     @Messages(
+        "LBL_Repo_EDIT=Ok"
+     )
+     public RepositoryRegisterUI(RepositoryInfo info) {
+        this();
+        modify(info);
+        validateInfo();
+        btnOK.setText(LBL_Repo_EDIT());
     }
 
     /** This method is called from within the constructor to
@@ -97,12 +104,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         txtRepoName = new javax.swing.JTextField();
         lblType = new javax.swing.JLabel();
         comType = new javax.swing.JComboBox();
-        lblRepoType = new javax.swing.JLabel();
-        jraLocal = new javax.swing.JRadioButton();
-        jraRemote = new javax.swing.JRadioButton();
-        lblRepoPath = new javax.swing.JLabel();
-        txtRepoPath = new javax.swing.JTextField();
-        btnBrowse = new javax.swing.JButton();
         lblRepoUrl = new javax.swing.JLabel();
         txtRepoUrl = new javax.swing.JTextField();
         lblValidate = new javax.swing.JLabel();
@@ -135,43 +136,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
 
         comType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        lblRepoType.setText(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type", new Object[] {})); // NOI18N
-
-        buttonGroup1.add(jraLocal);
-        org.openide.awt.Mnemonics.setLocalizedText(jraLocal, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Local", new Object[] {})); // NOI18N
-        jraLocal.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jraLocalActionPerformed(evt);
-            }
-        });
-
-        buttonGroup1.add(jraRemote);
-        jraRemote.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(jraRemote, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Type_Remote", new Object[] {})); // NOI18N
-        jraRemote.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jraRemoteActionPerformed(evt);
-            }
-        });
-
-        lblRepoPath.setLabelFor(txtRepoPath);
-        org.openide.awt.Mnemonics.setLocalizedText(lblRepoPath, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_Path", new Object[] {})); // NOI18N
-
-        txtRepoPath.setEnabled(false);
-        txtRepoPath.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                txtRepoPathKeyTyped(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(btnBrowse, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "CMD_Repo_Path_Browse", new Object[] {})); // NOI18N
-        btnBrowse.setEnabled(false);
-        btnBrowse.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnBrowseActionPerformed(evt);
-            }
-        });
-
         lblRepoUrl.setLabelFor(txtRepoUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lblRepoUrl, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_URL", new Object[] {})); // NOI18N
 
@@ -192,41 +156,22 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblValidate, javax.swing.GroupLayout.DEFAULT_SIZE, 844, Short.MAX_VALUE)
-                            .addComponent(lblHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 844, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lblRepoName)
-                                    .addComponent(lblRepoId, javax.swing.GroupLayout.DEFAULT_SIZE, 331, Short.MAX_VALUE)
-                                    .addComponent(lblType))
-                                .addGap(14, 14, 14)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(txtRepoId, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
-                                    .addComponent(txtRepoName, javax.swing.GroupLayout.DEFAULT_SIZE, 499, Short.MAX_VALUE)
-                                    .addComponent(comType, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(22, 22, 22)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(lblRepoType, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jraLocal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGap(21, 21, 21)
-                                        .addComponent(lblRepoPath))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                                        .addComponent(jraRemote, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                            .addGap(21, 21, 21)
-                                            .addComponent(lblRepoUrl))))))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(txtRepoUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(txtRepoPath, javax.swing.GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnBrowse)))))
+                            .addComponent(lblRepoId)
+                            .addComponent(lblRepoName)
+                            .addComponent(lblType)
+                            .addComponent(lblRepoUrl))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(txtRepoUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                            .addComponent(comType, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtRepoName, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
+                            .addComponent(txtRepoId, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(lblHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(lblValidate, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -246,73 +191,21 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblType)
                     .addComponent(comType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(lblRepoType)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jraLocal)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblRepoPath)
-                    .addComponent(btnBrowse)
-                    .addComponent(txtRepoPath, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jraRemote)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblRepoUrl)
                     .addComponent(txtRepoUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 49, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
                 .addComponent(lblValidate, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         txtRepoId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoId.AccessibleContext.accessibleDescription")); // NOI18N
         txtRepoName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoName.AccessibleContext.accessibleDescription")); // NOI18N
         comType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.comType.AccessibleContext.accessibleDescription")); // NOI18N
-        jraLocal.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.jraLocal.AccessibleContext.accessibleDescription")); // NOI18N
-        jraRemote.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.jraRemote.AccessibleContext.accessibleDescription")); // NOI18N
-        txtRepoPath.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoPath.AccessibleContext.accessibleDescription")); // NOI18N
-        btnBrowse.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.btnBrowse.AccessibleContext.accessibleDescription")); // NOI18N
         txtRepoUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
-    @Messages({
-        "LBL_Repo_Path_Header=Choose Repository Directory",
-        "LBL_SELECT=Select Repository"
-    })
-private void btnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBrowseActionPerformed
-        JFileChooser chooser = new JFileChooser(lastFolder);
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(LBL_Repo_Path_Header());
-
-        chooser.setMultiSelectionEnabled(false);
-        if (txtRepoPath.getText().trim().length() > 0) {
-            File fil = new File(txtRepoPath.getText().trim());
-            if (fil.exists()) {
-                chooser.setSelectedFile(fil);
-            }
-        }
-        int ret = chooser.showDialog(SwingUtilities.getWindowAncestor(this), LBL_SELECT());
-        if (ret == JFileChooser.APPROVE_OPTION) {
-            txtRepoPath.setText(chooser.getSelectedFile().getAbsolutePath());
-            txtRepoPath.requestFocusInWindow();
-        }
-        validateInfo();
-}//GEN-LAST:event_btnBrowseActionPerformed
-
-private void jraLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jraLocalActionPerformed
-    txtRepoUrl.setEnabled(false);
-    txtRepoPath.setEnabled(true);
-    btnBrowse.setEnabled(true);
-    validateInfo();
-}//GEN-LAST:event_jraLocalActionPerformed
-
-private void jraRemoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jraRemoteActionPerformed
-    selectRemoteRepo(true);
-}//GEN-LAST:event_jraRemoteActionPerformed
-
 private void selectRemoteRepo(boolean checkValidity) {
-    txtRepoPath.setEnabled(false);
-    btnBrowse.setEnabled(false);
     txtRepoUrl.setEnabled(true);
     if (checkValidity) {
         validateInfo();
@@ -323,10 +216,6 @@ private void txtRepoIdKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
     validateInfo();
 }//GEN-LAST:event_txtRepoIdKeyReleased
 
-private void txtRepoPathKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtRepoPathKeyTyped
-    validateInfo();
-}//GEN-LAST:event_txtRepoPathKeyTyped
-
 private void txtRepoNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtRepoNameKeyReleased
     validateInfo();
 }//GEN-LAST:event_txtRepoNameKeyReleased
@@ -335,7 +224,7 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
     validateInfo();
 }//GEN-LAST:event_txtRepoUrlKeyReleased
 
-    public void modify(RepositoryInfo info) {
+    private void modify(RepositoryInfo info) {
         modify = true;
         txtRepoId.setEnabled(false);
         txtRepoId.setText(info.getId());
@@ -344,13 +233,9 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
             comType.setSelectedItem(info.getType());
         }
         if (info.isLocal()) {
-            jraLocal.setSelected(true);
-            txtRepoPath.setText(info.getRepositoryPath());
-            jraLocalActionPerformed(null);
+            throw new IllegalStateException( "cannot modify local repository definition");
         } else if (info.isRemoteDownloadable()) {
-            jraRemote.setSelected(true);
-            txtRepoUrl.setText(info.getRepositoryUrl());
-            jraRemoteActionPerformed(null);
+           txtRepoUrl.setText(info.getRepositoryUrl());
         }
     }
     
@@ -358,8 +243,8 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
       return new RepositoryInfo(txtRepoId.getText().trim(),
               (String)comType.getSelectedItem(),
               txtRepoName.getText().trim(),
-              jraLocal.isSelected()  ? txtRepoPath.getText().trim() : null,
-              jraRemote.isSelected() ? txtRepoUrl.getText().trim() : null);
+              null,
+              txtRepoUrl.getText().trim());
     }
 
     @Messages({
@@ -392,7 +277,6 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
             } else if (info != null && !alreadyFilled) {
                 txtRepoUrl.setText(info.getRepositoryUrl());
                 txtRepoName.setText(info.getName());
-                jraRemote.setSelected(true);
                 selectRemoteRepo(false);
                 alreadyFilled = true;
             }
@@ -404,21 +288,14 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
             lblValidate.setText(LBL_Repo_Name_Error1());
             return;
         }
-        if (jraLocal.isSelected()) {
-            //check repo url
-            if (txtRepoPath.getText().trim().length() == 0 || !new File(txtRepoPath.getText().trim()).exists()) {
-                btnOK.setEnabled(false);
-                lblValidate.setText(LBL_Repo_Path_Error());
-                return;
-            }
-        } else {
-            //check repo url
-            if (txtRepoUrl.getText().trim().length() == 0) {
-                btnOK.setEnabled(false);
-                lblValidate.setText(LBL_Repo_Url_Error());
-                return;
-            }
+
+        //check repo url
+        if (txtRepoUrl.getText().trim().length() == 0) {
+            btnOK.setEnabled(false);
+            lblValidate.setText(LBL_Repo_Url_Error());
+            return;
         }
+
 
         lblValidate.setText("");
         btnOK.setEnabled(true);
@@ -429,23 +306,17 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnBrowse;
     private javax.swing.JButton btnOK;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JComboBox comType;
-    private javax.swing.JRadioButton jraLocal;
-    private javax.swing.JRadioButton jraRemote;
     private javax.swing.JLabel lblHeader;
     private javax.swing.JLabel lblRepoId;
     private javax.swing.JLabel lblRepoName;
-    private javax.swing.JLabel lblRepoPath;
-    private javax.swing.JLabel lblRepoType;
     private javax.swing.JLabel lblRepoUrl;
     private javax.swing.JLabel lblType;
     private javax.swing.JLabel lblValidate;
     private javax.swing.JTextField txtRepoId;
     private javax.swing.JTextField txtRepoName;
-    private javax.swing.JTextField txtRepoPath;
     private javax.swing.JTextField txtRepoUrl;
     // End of variables declaration//GEN-END:variables
 

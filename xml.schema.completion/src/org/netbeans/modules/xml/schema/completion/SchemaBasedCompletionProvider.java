@@ -48,14 +48,10 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
-import org.netbeans.modules.xml.schema.completion.util.CompletionUtil.DocRoot;
 import org.netbeans.modules.xml.text.syntax.XMLSyntaxSupport;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -86,7 +82,7 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
         
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            return new AsyncCompletionTask(new CompletionQuery(CompletionUtil.getPrimaryFile()), component);
+            return new AsyncCompletionTask(new CompletionQuery(CompletionUtil.getPrimaryFile(component.getDocument())), component);
         }
         
         return null;

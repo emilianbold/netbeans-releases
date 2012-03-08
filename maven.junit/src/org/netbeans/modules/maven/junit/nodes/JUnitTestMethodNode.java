@@ -51,12 +51,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodNode;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
+import static org.netbeans.modules.maven.junit.nodes.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SingleMethod;
+import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
-import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
 
 /**
  * mkleint: copied from junit module
@@ -75,6 +77,10 @@ public class JUnitTestMethodNode extends TestMethodNode{
         super(testcase, project);
     }
 
+    @Messages({
+        "LBL_RerunTest=Run Again",
+        "LBL_DebugTest=Debug"
+    })
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
@@ -112,14 +118,14 @@ public class JUnitTestMethodNode extends TestMethodNode{
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_RUN_SINGLE_METHOD,
-                                                         "LBL_RerunTest"));     //NOI18N
+                                                         LBL_RerunTest()));
                 }
                 if (debugSupported && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD,
                                                                      nodeContext)) {
                     actions.add(new TestMethodNodeAction(actionProvider,
                                                          nodeContext,
                                                          COMMAND_DEBUG_SINGLE_METHOD,
-                                                         "LBL_DebugTest"));     //NOI18N
+                                                         LBL_DebugTest()));
                 }
             }
         }

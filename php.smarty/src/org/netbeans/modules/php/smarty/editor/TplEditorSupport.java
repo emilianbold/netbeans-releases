@@ -51,6 +51,7 @@ import java.nio.charset.CharsetEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -130,11 +131,6 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
         //try to find encoding specification in the editor content
         String documentContent = getDocumentText();
         String encoding = TplDataObject.findEncoding(documentContent);
-
-
-
-
-
         String feqEncoding = FileEncodingQuery.getEncoding(getDataObject().getPrimaryFile()).name();
         String finalEncoding = null;
         if (encoding != null) {
@@ -169,7 +165,10 @@ public final class TplEditorSupport extends DataEditorSupport implements OpenCoo
 
         //FEQ cannot be run in saveFromKitToStream since document is locked for writing,
         //so setting the FEQ result to document property
-        getDocument().putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+        Document document = getDocument();
+        if (document != null) {
+            document.putProperty(DOCUMENT_SAVE_ENCODING, finalEncoding);
+        }
     }
 
 

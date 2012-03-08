@@ -46,6 +46,7 @@
 package org.netbeans.core.windows.view.ui;
 
 
+import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.actions.ActionUtils;
 import org.netbeans.core.windows.actions.MaximizeWindowAction;
@@ -69,7 +70,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.Switches;
-import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.slides.SlideBar;
 import org.netbeans.core.windows.view.ui.slides.SlideBarActionEvent;
 import org.netbeans.core.windows.view.ui.slides.SlideOperationFactory;
@@ -142,6 +142,10 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
 
     public void cancelRequestAttention (TopComponent tc) {
         tabbed.cancelRequestAttention(tc);
+    }
+
+    public void makeBusy( TopComponent tc, boolean busy ) {
+        tabbed.makeBusy( tc, busy );
     }
     
     public Component getComponent() {
@@ -299,7 +303,7 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     }
     
     // DnD>>
-    public Shape getIndicationForLocation(Point location, TopComponentDraggable startingTransfer,
+    public Shape getIndicationForLocation(Point location, TopComponent startingTransfer,
     Point startingPoint, boolean attachingPossible) {
         return tabbed.getIndicationForLocation(location, startingTransfer,
                                             startingPoint, attachingPossible);
@@ -463,13 +467,13 @@ public final class TabbedHandler implements ChangeListener, ActionListener {
     /** Possibly invokes the (un)maximization. */
     public static void handleMaximization(TabActionEvent tae) {
         Component c = (Component) tae.getSource();
-        while (c != null && !(c instanceof Tabbed))
+        while (c != null && !(c instanceof Tabbed.Accessor))
             c = c.getParent();
         if (c == null) {
             return;
         }
         
-        final Tabbed tab = (Tabbed) c;
+        final Tabbed tab = ((Tabbed.Accessor) c).getTabbed();
         TopComponent tc = tab.getTopComponentAt(tae.getTabIndex());
         // perform action
         MaximizeWindowAction mwa = new MaximizeWindowAction(tc);

@@ -45,14 +45,18 @@ package org.netbeans.modules.jira.query;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.jira.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.jira.repository.JiraRepository;
+import org.netbeans.modules.jira.util.JiraUtils;
 
 /**
  *
@@ -60,6 +64,8 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  */
 public class IssueTableTest extends IssuetableTestFactory {
 
+    private Map<String, JiraQuery> queries = new HashMap<String, JiraQuery>();
+    
     public IssueTableTest(Test test) {
         super(test);
     }
@@ -83,14 +89,22 @@ public class IssueTableTest extends IssuetableTestFactory {
         FilterDefinition fd = new FilterDefinition();
         fd.setContentFilter(new ContentFilter("glb", true, true, true, true));
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, false, true); // false = not saved
-        assertEquals(0,jq.getIssues().length);
-        return jq;
+        assertEquals(0, jq.getIssues().size());
+        queries.put(queryName, jq);
+        return JiraUtils.getQuery(jq);
     }
 
     @Override
+    public void setSaved(Query q) {
+        JiraQuery jiraQuery = queries.get(q.getDisplayName());
+        jiraQuery.setSaved(true);
+    }
+        
+    @Override
     public IssueTable getTable(Query q) {
         try {
-            BugtrackingController c = q.getController();
+            JiraQuery jiraQuery = queries.get(q.getDisplayName());
+            BugtrackingController c = jiraQuery.getController();
             Field f = c.getClass().getDeclaredField("issueTable");
             f.setAccessible(true);
             return (IssueTable) f.get(c);

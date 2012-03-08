@@ -59,15 +59,20 @@ public class JavaProjectSettings {
 
     private static final PropertyChangeSupport pcs = new PropertyChangeSupport(JavaProjectSettings.class);
 
-    /**
-     * The package view should be displayed as a list of packages.
-     */
-    public static final int TYPE_PACKAGE_VIEW = 0;
-
-    /**
-     * The package view should be displayed as a tree of folders.
-     */
-    public static final int TYPE_TREE = 1;
+    public enum PackageViewType {
+        /**
+         * The package view should be displayed as a list of packages.
+         */
+        PACKAGES,
+        /**
+         * The package view should be displayed as a tree of folders.
+         */
+        TREE,
+        /**
+         * #53192: the package view should be displayed as a tree of folders with unique subcomponents collapsed.
+         */
+        REDUCED_TREE;
+    }
 
     public static final String PROP_PACKAGE_VIEW_TYPE = "packageViewType"; //NOI18N
     private static final String PROP_SHOW_AGAIN_BROKEN_REF_ALERT = "showAgainBrokenRefAlert"; //NOI18N
@@ -78,20 +83,20 @@ public class JavaProjectSettings {
 
     /**
      * Returns how the package view should be displayed.
-     * @return {@link #TYPE_PACKAGE_VIEW} or {@link #TYPE_TREE}
      */
-    public static int getPackageViewType() {
-        return prefs().getInt(PROP_PACKAGE_VIEW_TYPE, TYPE_PACKAGE_VIEW);
+    public static PackageViewType getPackageViewType() {
+        int type = prefs().getInt(PROP_PACKAGE_VIEW_TYPE, -1);
+        PackageViewType[] types = PackageViewType.values();
+        return type >= 0 && type < types.length ? types[type] : PackageViewType.PACKAGES;
     }
 
     /**
      * Sets how the package view should be displayed.
-     * @param type either {@link #TYPE_PACKAGE_VIEW} or {@link #TYPE_TREE}
      */
-    public static void setPackageViewType(int type) {
-        int currentType = getPackageViewType();
+    public static void setPackageViewType(PackageViewType type) {
+        PackageViewType currentType = getPackageViewType();
         if (currentType != type) {
-            prefs().putInt(PROP_PACKAGE_VIEW_TYPE, type);
+            prefs().putInt(PROP_PACKAGE_VIEW_TYPE, type.ordinal());
             pcs.firePropertyChange(PROP_PACKAGE_VIEW_TYPE, currentType, type);
         }
     }

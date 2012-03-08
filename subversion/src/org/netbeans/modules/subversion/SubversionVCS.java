@@ -64,6 +64,7 @@ import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.shelve.ShelveChangesAction;
 import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
+import org.netbeans.modules.versioning.spi.*;
 
 /**
  * @author Maros Sandor
@@ -83,6 +84,7 @@ import org.netbeans.modules.versioning.shelve.ShelveChangesActionsRegistry;
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private SubversionVisibilityQuery visibilityQuery;
+
     public SubversionVCS() {
         putProperty(PROP_DISPLAY_NAME, getDisplayName());
         putProperty(PROP_MENU_LABEL, NbBundle.getMessage(SubversionVCS.class, "CTL_Subversion_MainMenu"));
@@ -128,6 +130,11 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
         Subversion.getInstance().getOriginalFile(workingCopy, originalFile);
     }
 
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return Subversion.getInstance().getHistoryProvider();
+    }
+    
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;

@@ -994,6 +994,48 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
 
+    public void testSearchPackageClause() throws Exception {
+        performVariablesTest("package test.a; public class Test { }",
+                             "test.$1",
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$1", "a"),
+                             },
+                             false,
+                             true);
+    }
+
+    public void testPackageImport() throws Exception {
+        performVariablesTest("package test; import java.util.*; public class Test { }",
+                             "java.$1",
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$1", "util"),
+                             },
+                             false,
+                             true);
+    }
+    
+    public void testSubclassMatching() throws Exception {
+        performVariablesTest("package test; import java.util.*; public abstract class Test { Map.Entry e; }",
+                             "java.util.Map.$1",
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                             },
+                             new Pair[] {
+                                 new Pair<String, String>("$1", "Entry"),
+                             },
+                             false,
+                             true);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }

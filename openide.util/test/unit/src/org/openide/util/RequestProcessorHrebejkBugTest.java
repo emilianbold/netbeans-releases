@@ -41,13 +41,18 @@
  */
 package org.openide.util;
 
-import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 
 
-public class RequestProcessorHrebejkBugTest {
+public class RequestProcessorHrebejkBugTest extends NbTestCase {
+
+    public RequestProcessorHrebejkBugTest(String name) {
+        super(name);
+    }
     
-    @Test
+    @RandomlyFails // NB-Core-Build #7925: NPE in r1.wrong
     public void testBug() throws Exception {
         RequestProcessor rp = new RequestProcessor("TestProcessor", 3, true); 
         

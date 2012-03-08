@@ -111,16 +111,28 @@ public final class NbLifecycleManager extends LifecycleManager {
         Mutex.EVENT.readAccess(DO_EXIT);
     }
 
+    public void exit(int status) {
+        ExitActions action = new ExitActions(0, status);
+        Mutex.EVENT.readAccess(action);
+    }
+
     private static class ExitActions implements Runnable {
         private final int type;
+        private final int status;
         ExitActions(int type) {
             this.type = type;
+            this.status = 0;
+        }
+
+        ExitActions(int type, int status) {
+            this.type = type;
+            this.status = status;
         }
 
         public void run() {
             switch (type) {
                 case 0:
-                    doExit();
+                    doExit(status);
                     break;
                 case 1:
                     CLIHandler.stopServer();
@@ -132,12 +144,12 @@ public final class NbLifecycleManager extends LifecycleManager {
                     }
                     if (Boolean.getBoolean("netbeans.close.when.invisible")) {
                         // hook to permit perf testing of time to *apparently* shut down
-                        TopSecurityManager.exit(0);
+                        TopSecurityManager.exit(status);
                     }
                     break;
                 case 2:
                     if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                        TopSecurityManager.exit(0);
+                        TopSecurityManager.exit(status);
                     }
                     break;
                 default:
@@ -156,7 +168,7 @@ public final class NbLifecycleManager extends LifecycleManager {
         return doingExit;
     }
 
-    private static void doExit() {
+    private static void doExit(int status) {
         if (doingExit) {
             return ;
         }
@@ -164,7 +176,7 @@ public final class NbLifecycleManager extends LifecycleManager {
         // save all open files
         try {
             if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1))) {
+                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1, status))) {
                     try {
                         try {
                             NbLoaderPool.store();
@@ -189,7 +201,7 @@ public final class NbLifecycleManager extends LifecycleManager {
                     // exit is dispatched through that proprietary queue and it
                     // can be refused by security check. So, we need to replan
                     // to RequestProcessor to avoid security problems.
-                    Task exitTask = new Task(new ExitActions(2));
+                    Task exitTask = new Task(new ExitActions(2, status));
                     RequestProcessor.getDefault().post(exitTask);
                     exitTask.waitFinished();
                 }

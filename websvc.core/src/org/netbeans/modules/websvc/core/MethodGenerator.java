@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlParameter;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
+import org.netbeans.modules.websvc.core.jaxws.nodes.JaxWsNode;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -99,7 +100,7 @@ public class MethodGenerator {
         
         JavaSource targetSource = JavaSource.forFileObject(implClassFo);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-            
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
@@ -178,16 +179,20 @@ public class MethodGenerator {
     public static void deleteMethod(final FileObject implClass, final String operationName) throws IOException{
         JavaSource targetSource = JavaSource.forFileObject(implClass);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 //workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 if (javaClass!=null) {
-                    ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
+                    ExecutableElement method = new MethodVisitor(workingCopy).
+                        getMethod( operationName);
                     TreeMaker make  = workingCopy.getTreeMaker();
                     if(method != null){
-                        MethodTree methodTree = workingCopy.getTrees().getTree(method);
-                        ClassTree modifiedJavaClass = make.removeClassMember(javaClass, methodTree);
+                        MethodTree methodTree = workingCopy.getTrees().getTree(
+                                method);
+                        ClassTree modifiedJavaClass = make.removeClassMember(
+                                javaClass, methodTree);
                         workingCopy.rewrite(javaClass, modifiedJavaClass);
                         boolean removeImplementsClause = false;
                         //find out if there are no more exposed operations, if so remove the implements clause
@@ -198,9 +203,12 @@ public class MethodGenerator {
                         if(removeImplementsClause){
                             //TODO: need to remove implements clause on the SEI
                             //for now all implements are being remove
-                            List<? extends Tree> implementeds = javaClass.getImplementsClause();
+                            List<? extends Tree> implementeds = javaClass.
+                                getImplementsClause();
                             for(Tree implemented : implementeds) {
-                                modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                                modifiedJavaClass = make.
+                                    removeClassImplementsClause(modifiedJavaClass, 
+                                            implemented);
                             }
                             workingCopy.rewrite(javaClass, modifiedJavaClass);
                         }
@@ -219,30 +227,28 @@ public class MethodGenerator {
         }
     }
     
-    public static void removeMethod(final FileObject implClass, final String operationName) throws IOException {
+    public static void removeMethod(final FileObject implClass, 
+            final String operationName) throws IOException 
+    {
         JavaSource targetSource = JavaSource.forFileObject(implClass);
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
-                TypeElement classEl = SourceUtils.getPublicTopLevelElement(workingCopy);
+                TypeElement classEl = SourceUtils.getPublicTopLevelElement(
+                        workingCopy);
                 if (classEl!=null) {
-                    ExecutableElement method = new MethodVisitor(workingCopy).getMethod( operationName);
+                    ExecutableElement method = new MethodVisitor(workingCopy).
+                        getMethod( operationName);
                     if(method != null){
-                        ClassTree javaClass = workingCopy.getTrees().getTree(classEl);
+                        ClassTree javaClass = workingCopy.getTrees().
+                            getTree(classEl);
                         //first find out if @WebService annotation is present in the class
-                        boolean foundWebServiceAnnotation = false;
-                        TypeElement wsElement = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
-                        if (wsElement!=null) {
-                            List<? extends AnnotationMirror> annotations = classEl.getAnnotationMirrors();
-                            for (AnnotationMirror anMirror : annotations) {
-                                if (workingCopy.getTypes().isSameType(wsElement.asType(), anMirror.getAnnotationType())) {
-                                    foundWebServiceAnnotation = true;
-                                    break;
-                                }
-                            }
-                        }
+                        boolean foundWebServiceAnnotation = JaxWsUtils.hasAnnotation(
+                                classEl, "javax.jws.WebService");   //NOI18N
                         //do the class methods have at least one WebMethod annotation
-                        boolean classHasWebMethods = new MethodVisitor(workingCopy).hasWebMethod();
+                        boolean classHasWebMethods = new MethodVisitor(workingCopy).
+                            hasWebMethod();
                         TreeMaker make = workingCopy.getTreeMaker();
                         MethodTree methodTree = workingCopy.getTrees().getTree(method);
                         if(methodTree != null){
@@ -250,30 +256,48 @@ public class MethodGenerator {
                                 if(!classHasWebMethods){
                                     //if class has no WebMethod annotations, add WebMethod annotation to all
                                     //methods except the removed operation
-                                    List<ExecutableElement> publicMethods = new MethodVisitor(workingCopy).getPublicMethods();
+                                    List<ExecutableElement> publicMethods = 
+                                        new MethodVisitor(workingCopy).
+                                            getPublicMethods();
                                     for(ExecutableElement m : publicMethods){
                                         if(m != method){
-                                            TypeElement webMethodAnn = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-                                            List<ExpressionTree> emptyList = Collections.emptyList();
+                                            List<ExpressionTree> emptyList = 
+                                                Collections.emptyList();
                                             
-                                            AnnotationTree webMethodAnnotation = make.Annotation(make.QualIdent(webMethodAnn),emptyList);
-                                            MethodTree mTree = workingCopy.getTrees().getTree(m);
-                                            ModifiersTree modTree = mTree.getModifiers();
-                                            ModifiersTree newModifiersTree = make.addModifiersAnnotation(modTree, webMethodAnnotation);
-                                            workingCopy.rewrite(modTree, newModifiersTree);
+                                            AnnotationTree webMethodAnnotation = 
+                                                make.Annotation(make.QualIdent(
+                                                        "javax.jws.WebMethod"),
+                                                            emptyList);
+                                            MethodTree mTree = workingCopy.
+                                                getTrees().getTree(m);
+                                            ModifiersTree modTree = 
+                                                    mTree.getModifiers();
+                                            ModifiersTree newModifiersTree = 
+                                                make.addModifiersAnnotation(
+                                                        modTree, webMethodAnnotation);
+                                            workingCopy.rewrite(modTree, 
+                                                    newModifiersTree);
                                         }
                                     }
                                 }else{ //there are WebMethod annotations in the class, remove WebMethod annotation from the method
-                                    ModifiersTree modifiersTree = methodTree.getModifiers();
-                                    ModifiersTree newModTree = make.Modifiers(modifiersTree.getFlags());
+                                    ModifiersTree modifiersTree = methodTree.
+                                        getModifiers();
+                                    ModifiersTree newModTree = make.
+                                        Modifiers(modifiersTree.getFlags());
                                     workingCopy.rewrite(modifiersTree, newModTree);
                                 }
                             } else{ //no @WebService annotation, there must have been a @WebMethod annotation, remove it
-                                AnnotationMirror webMethodAnMirr =  getWebMethodAnnotation(workingCopy, method);
+                                AnnotationMirror webMethodAnMirr =  
+                                    getWebMethodAnnotation(workingCopy, method);
                                 if(webMethodAnMirr != null){
-                                    ModifiersTree modifiersTree = methodTree.getModifiers();
-                                    AnnotationTree annotTree = (AnnotationTree)workingCopy.getTrees().getTree(classEl,webMethodAnMirr);
-                                    ModifiersTree newModTree = make.removeModifiersAnnotation(modifiersTree, annotTree);
+                                    ModifiersTree modifiersTree = methodTree.
+                                        getModifiers();
+                                    AnnotationTree annotTree = 
+                                        (AnnotationTree)workingCopy.getTrees().
+                                            getTree(classEl,webMethodAnMirr);
+                                    ModifiersTree newModTree = make.
+                                        removeModifiersAnnotation(modifiersTree, 
+                                                annotTree);
                                     workingCopy.rewrite(modifiersTree, newModTree);
                                 }
                             }
@@ -293,10 +317,13 @@ public class MethodGenerator {
                             if(removeImplementsClause){
                                 //TODO: need to remove implements clause on the SEI
                                 //for now all implements are being removed
-                                List<? extends Tree> implementeds = javaClass.getImplementsClause();
+                                List<? extends Tree> implementeds = javaClass.
+                                    getImplementsClause();
                                 ClassTree modifiedJavaClass = javaClass;
                                 for(Tree implemented : implementeds) {
-                                    modifiedJavaClass = make.removeClassImplementsClause(modifiedJavaClass, implemented);
+                                    modifiedJavaClass = make.
+                                        removeClassImplementsClause(
+                                                modifiedJavaClass, implemented);
                                 }
                                 workingCopy.rewrite(javaClass, modifiedJavaClass);
                             }
@@ -304,6 +331,8 @@ public class MethodGenerator {
                     }
                 }
             }
+            
+            @Override
             public void cancel() {
             }
         };
@@ -316,15 +345,10 @@ public class MethodGenerator {
     }
     
     
-    private static AnnotationMirror getWebMethodAnnotation(WorkingCopy workingCopy, ExecutableElement method){
-        TypeElement methodAnnotationEl = workingCopy.getElements().getTypeElement("javax.jws.WebMethod"); //NOI18N
-        List<? extends AnnotationMirror> methodAnnotations = method.getAnnotationMirrors();
-        for (AnnotationMirror anMirror : methodAnnotations) {
-            if (workingCopy.getTypes().isSameType(methodAnnotationEl.asType(), anMirror.getAnnotationType())) {
-                return anMirror;
-            }
-        }
-        return null;
+    private static AnnotationMirror getWebMethodAnnotation(WorkingCopy workingCopy, 
+            ExecutableElement method)
+    {
+        return JaxWsUtils.getAnnotation(method, "javax.jws.WebMethod"); //NOI18N
     }
     
     private WsdlOperation getWsdlOperation(String operationName) {
@@ -335,7 +359,9 @@ public class MethodGenerator {
             for (WsdlPort port:ports) {
                 List<WsdlOperation> operations = port.getOperations();
                 for (WsdlOperation operation:operations) {
-                    if (operationName.equals(operation.getName())) return (WsdlOperation) operation;
+                    if (operationName.equals(operation.getName())) {
+                        return (WsdlOperation) operation;
+                    }
                 }
             }
         }

@@ -154,7 +154,7 @@ public class Abbreviations {
                 
     public void addAbbreviation(String abbreviation, String expansion, String description) {
         getNewButton().push();
-        NbDialogOperator dialogOperator = new NbDialogOperator("New Code Template Dialog");
+        NbDialogOperator dialogOperator = new NbDialogOperator("New Code Template");
         JTextFieldOperator abbrev = new JTextFieldOperator(dialogOperator);
         abbrev.typeText(abbreviation);        
         JButtonOperator ok = new JButtonOperator(abbrev.getWindowContainerOperator());        
@@ -235,7 +235,7 @@ public class Abbreviations {
     
     public static Abbreviations invoke(String language) {
         OptionsOperator options = OptionsOperator.invoke();
-        options.selectCategory("Editor");
+        options.selectEditor();
         JTabbedPaneOperator jtpo = new JTabbedPaneOperator(options);
         jtpo.selectPage("Code Templates");                
         new EventTool().waitNoEvent(500);                

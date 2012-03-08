@@ -107,7 +107,7 @@ public class PushDownTest extends RefactoringTestBase {
                 new File("pushdown/I.java", "package pushdown; public interface I { public void i(); }"));
     }
     
-    private void performPushDown(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException {
+    private void performPushDown(FileObject source, final int position, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PushDownRefactoring[] r = new PushDownRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
 

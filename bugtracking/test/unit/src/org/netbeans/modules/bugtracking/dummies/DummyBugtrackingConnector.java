@@ -42,42 +42,48 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.util.Lookup;
 
 /**
  *
  * @author Marian Petras
  */
+@BugtrackingConnector.Registration (
+    id=DummyBugtrackingConnector.ID,
+    displayName=DummyBugtrackingConnector.DISPLAY_NAME,
+    tooltip=DummyBugtrackingConnector.TOOLTIP
+)    
 public class DummyBugtrackingConnector extends BugtrackingConnector {
-
+    public static final String ID = "DummyBugtrackingConnector";
+    public static final String DISPLAY_NAME = "Dummy bugtracking connector";
+    public static final String TOOLTIP = "bugtracking connector created for testing purposes";
+    
     private char newRepositoryName = 'A';
     private int newRepositoryNumber = 0;
-    private List<Repository> repositories;
+    private List<RepositoryImpl> repositories;
+    public static DummyBugtrackingConnector instance;
 
-    @Override
-    public String getDisplayName() {
-        return "Dummy bugtracking connector";
+    public DummyBugtrackingConnector() {
+        instance = this;
     }
-
-    @Override
-    public String getTooltip() {
-        return "bugtracking connector created for testing purposes";
-    }
-
+    
     @Override
     public Repository createRepository() {
         return createRepository(generateNewRepositoryName());
     }
 
     public Repository createRepository(String repositoryName) {
-        Repository newRepository = new DummyRepository(this, repositoryName);
+        RepositoryImpl newRepository = TestKit.getRepository(new DummyRepository(this, repositoryName));
         storeRepository(newRepository);
-        return newRepository;
+        return newRepository.getRepository();
     }
 
     private String generateNewRepositoryName() {
@@ -88,32 +94,30 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
         }
     }
 
-    private void storeRepository(Repository repository) {
+    private void storeRepository(RepositoryImpl repository) {
         if (repositories == null) {
-            repositories = new ArrayList<Repository>();
+            repositories = new ArrayList<RepositoryImpl>();
         }
         repositories.add(repository);
+        RepositoryRegistry.getInstance().addRepository(repository);
     }
 
-    @Override
-    public Repository[] getRepositories() {
-        if (repositories == null) {
-            return new Repository[0];
-        }
-
-        return repositories.toArray(new Repository[repositories.size()]);
-    }
-
-    void removeRepository(DummyRepository repository) {
+    void removeRepository(RepositoryImpl repository) {
         if (repositories == null) {
             return;
         }
 
         repositories.remove(repository);
+        RepositoryRegistry.getInstance().removeRepository(repository);
     }
 
     public void reset() {
-        repositories = null;
+        if(repositories != null) {
+            for (RepositoryImpl repository : repositories) {
+                RepositoryRegistry.getInstance().removeRepository(repository);
+            }
+            repositories = null;
+        }
     }
 
     public Lookup getLookup() {
@@ -121,13 +125,7 @@ public class DummyBugtrackingConnector extends BugtrackingConnector {
     }
 
     @Override
-    public String getID() {
+    public Repository createRepository(RepositoryInfo info) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
 }

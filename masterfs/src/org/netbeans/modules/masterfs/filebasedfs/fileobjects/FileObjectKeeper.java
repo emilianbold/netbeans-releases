@@ -43,6 +43,7 @@
 package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -189,7 +190,7 @@ final class FileObjectKeeper implements FileChangeListener {
         for (;;) {
             File f = it.poll();
             LOG.log(Level.FINEST, "listenToAll, processing {0}", f);
-            if (f == null) {
+            if (f == null || isCyclicSymlink(f)) {
                 break;
             }
             if (factory == null) {
@@ -347,6 +348,27 @@ final class FileObjectKeeper implements FileChangeListener {
         }
         FolderObj obj = root.getExistingParent();
         return obj != null && obj.hasRecursiveListener();
+    }
+
+    private static boolean isCyclicSymlink(File f) {
+        File p = f.getParentFile();
+        for (;;) {
+            if (p == null) {
+                return false;
+            }
+            if (p.getName().equals(f.getName())) {
+                try {
+                    if (f.getCanonicalFile().equals(p.getCanonicalFile())) {
+                        return true;
+                    }
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Can't convert to cannonical files {0} and {1}", new Object[]{f, p});
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+            p = p.getParentFile();
+        }
+        
     }
 
 }

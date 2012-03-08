@@ -59,6 +59,7 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.SourceGroup;
+import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
@@ -83,7 +84,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
@@ -224,7 +225,13 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
 
     // Show reasonable properties of the DataFolder,
     //it shows the sorting names as rw property, the name as ro property and the path to root as ro property
-    public @Override PropertySet[] getPropertySets() {
+    @Messages({
+        "PROP_name=Name",
+        "HINT_name=Package Name",
+        "PROP_rootpath=Source Root",
+        "HINT_rootpath=Source Root"
+    })
+    @Override public PropertySet[] getPropertySets() {
         final PropertySet[] properties =  getDataFolderNodeDelegate().getPropertySets();
         final PropertySet[] newProperties = Arrays.copyOf(properties, properties.length);
         for (int i=0; i< newProperties.length; i++) {
@@ -233,14 +240,14 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
                 //having the ro name property and ro path property
                 newProperties[i] = Sheet.createPropertiesSet();
                 ((Sheet.Set)newProperties[i]).put(new PropertySupport.ReadOnly<String>(DataObject.PROP_NAME, String.class,
-                        NbBundle.getMessage(PackageRootNode.class,"PROP_name"), NbBundle.getMessage(PackageRootNode.class,"HINT_name")) {
+                        PROP_name(), HINT_name()) {
                     @Override
                     public String getValue() {
                         return PackageRootNode.this.getDisplayName();
                     }
                 });
                 ((Sheet.Set)newProperties[i]).put(new PropertySupport.ReadOnly<String>("ROOT_PATH", String.class,    //NOI18N
-                        NbBundle.getMessage(PackageRootNode.class,"PROP_rootpath"), NbBundle.getMessage(PackageRootNode.class,"HINT_rootpath")) {
+                        PROP_rootpath(), HINT_rootpath()) {
                     @Override
                     public String getValue() {
                         return FileUtil.getFileDisplayName(PackageRootNode.this.file);

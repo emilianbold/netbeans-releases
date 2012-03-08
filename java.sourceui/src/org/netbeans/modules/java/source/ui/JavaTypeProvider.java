@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.source.ui;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -71,6 +72,8 @@ import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
+import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.netbeans.modules.parsing.lucene.support.IndexManager.Action;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
@@ -277,7 +280,7 @@ public class JavaTypeProvider implements TypeProvider {
 
         Set<CacheItem> c = getCache();
         if (c == null) return;
-        ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(c.size() * 20);
+        final ArrayList<JavaTypeDescription> types = new ArrayList<JavaTypeDescription>(c.size() * 20);
 
         // is scan in progress? If so, provide a message to user.
         boolean scanInProgress = SourceUtils.isScanInProgress();
@@ -339,29 +342,40 @@ public class JavaTypeProvider implements TypeProvider {
             do {
                 c = getCache();
                 if (c == null) return;
-                for (final CacheItem ci : getCache()) {
-                    if (isCanceled) {
-                        return;
-                    }
-                    final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.getDeclaredTypes(textForQuery,nameKind));
-                    if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                        names.addAll(ci.getDeclaredTypes(textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
-                    }
-                    for (ElementHandle<TypeElement> name : names) {
-                        JavaTypeDescription td = new JavaTypeDescription(ci, name);
-                        types.add(td);
-                        if (isCanceled) {
-                            return;
+                try {
+                    //Perform queries in single readAccess to suspend RU for all queries.
+                    IndexManager.priorityAccess(new Action<Void>() {
+                        @Override
+                        public Void run() throws IOException, InterruptedException {
+                            for (final CacheItem ci : getCache()) {
+                                if (isCanceled) {
+                                    return null;
+                                }
+                                final Set<ElementHandle<TypeElement>> names = new HashSet<ElementHandle<TypeElement>> (ci.getDeclaredTypes(textForQuery,nameKind));
+                                if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
+                                    names.addAll(ci.getDeclaredTypes(textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX));
+                                }
+                                for (ElementHandle<TypeElement> name : names) {
+                                    JavaTypeDescription td = new JavaTypeDescription(ci, name);
+                                    types.add(td);
+                                    if (isCanceled) {
+                                        return null;
+                                    }
+                                }
+                            }
+                            return null;
                         }
-                    }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-
-                if (types.isEmpty() && scanInProgress) {
-                    res.pendingResult();
+                if ( isCanceled ) {
                     return;
                 }
-
-                if ( isCanceled ) {
+                if (types.isEmpty() && scanInProgress) {
+                    res.pendingResult();
                     return;
                 }
                 scanInProgress = SourceUtils.isScanInProgress();
@@ -375,7 +389,7 @@ public class JavaTypeProvider implements TypeProvider {
 
     }
 
-    private static String removeNonJavaChars(String text) {
+    static String removeNonJavaChars(String text) {
        StringBuilder sb = new StringBuilder();
 
        for( int i = 0; i < text.length(); i++) {

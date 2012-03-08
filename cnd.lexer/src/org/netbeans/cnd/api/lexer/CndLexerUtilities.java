@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageEmbeddingProvider;
 import org.netbeans.cnd.spi.lexer.CndLexerLanguageFilterProvider;
+import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.util.lookup.Lookups;
 
@@ -66,7 +67,10 @@ public final class CndLexerUtilities {
     public static final String LEXER_FILTER = "lexer-filter"; // NOI18N
     public static final String FORTRAN_FREE_FORMAT = "fortran-free-format"; // NOI18N
     public static final String FORTRAN_MAXIMUM_TEXT_WIDTH = "fortran-maximum-text-width"; // NOI18N
+    public static final String FLAVOR = "language-flavor"; // NOI18N
 
+    public static final boolean CPP11 = DebugUtils.getBoolean("cnd.modelimpl.cpp11", false); // NOI18N
+    
     private CndLexerUtilities() {
     }
 
@@ -131,7 +135,11 @@ public final class CndLexerUtilities {
         } else if (language == CppTokenId.languagePreproc()) {
             return CndLexerUtilities.getPreprocFilter();
         } else {
-            return CndLexerUtilities.getGccCppFilter();
+            if(CPP11) {
+                return CndLexerUtilities.getGccCpp11Filter();
+            } else {
+                return CndLexerUtilities.getGccCppFilter();
+            }
         }
     }
     
@@ -517,6 +525,28 @@ public final class CndLexerUtilities {
         return FILTER_GCC_CPP;
     }
 
+    public synchronized static Filter<CppTokenId> getStdCpp11Filter() {
+        if (FILTER_STD_CPP == null) {
+            FILTER_STD_CPP = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_STD_CPP);
+            addCppOnlyKeywords(FILTER_STD_CPP);
+            addCpp11OnlyKeywords(FILTER_STD_CPP);
+        }
+        return FILTER_STD_CPP;
+    }
+
+    public synchronized static Filter<CppTokenId> getGccCpp11Filter() {
+        if (FILTER_GCC_CPP == null) {
+            FILTER_GCC_CPP = new Filter<CppTokenId>();
+            addCommonCCKeywords(FILTER_GCC_CPP);
+            addCppOnlyKeywords(FILTER_GCC_CPP);
+            addCpp11OnlyKeywords(FILTER_GCC_CPP);
+            addGccOnlyCommonCCKeywords(FILTER_GCC_CPP);
+            addGccOnlyCppOnlyKeywords(FILTER_GCC_CPP);
+        }
+        return FILTER_GCC_CPP;
+    }
+    
     public synchronized static Filter<CppTokenId> getHeaderFilter() {
         if (FILTER_HEADER == null) {
             FILTER_HEADER = new Filter<CppTokenId>();
@@ -692,6 +722,23 @@ public final class CndLexerUtilities {
         addToFilter(ids, filterToModify);
     }
 
+    private static void addCpp11OnlyKeywords(Filter<CppTokenId> filterToModify) {
+        CppTokenId[] ids = new CppTokenId[]{
+            CppTokenId.FINAL, // c++11
+            CppTokenId.OVERRIDE, // c++11
+            CppTokenId.CONSTEXPR, // c++11
+            CppTokenId.DECLTYPE, // c++11
+            CppTokenId.NULLPTR, // c++11
+            CppTokenId.THREAD_LOCAL, // c++11
+            CppTokenId.STATIC_ASSERT, // c++11
+            CppTokenId.ALIGNAS, // c++11
+            CppTokenId.CHAR16_T, // c++11
+            CppTokenId.CHAR32_T, // c++11
+            CppTokenId.NOEXCEPT, // c++11
+        };
+        addToFilter(ids, filterToModify);
+    }    
+    
     private static void addCOnlyKeywords(Filter<CppTokenId> filterToModify) {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.INLINE, // gcc, C++, now in C also
