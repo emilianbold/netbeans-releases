@@ -851,9 +851,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         if (parameterName instanceof Variable) {
-            //Identifier paramId = parameterType != null ? CodeUtils.extractUnqualifiedIdentifier(parameterType) : null;
-            occurencesBuilder.prepare(Kind.CLASS, parameterType, fncScope);
-            occurencesBuilder.prepare(Kind.IFACE, parameterType, fncScope);
+            if (parameterType instanceof NamespaceName) {
+                Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+                occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
+            }
             occurencesBuilder.prepare((Variable) parameterName, fncScope);
         }
         super.visit(node);

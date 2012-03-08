@@ -700,6 +700,18 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", "public $^bbbbb;");
     }
 
+    public void testIssue209309_01() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a) {}", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209309_02() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a) {}", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209309_03() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

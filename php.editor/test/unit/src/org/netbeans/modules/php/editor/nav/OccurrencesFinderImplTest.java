@@ -653,6 +653,34 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "public $bb^bbb;", true);
     }
 
+    public void testIssue209309_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {}", true);
+    }
+
+    public void testIssue209309_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as O^mg;", true);
+    }
+
+    public void testIssue209309_03() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue209309_04() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as C^ls;", true);
+    }
+
+    public void testIssue209309_05() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_06() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_07() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
