@@ -54,6 +54,7 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -93,7 +94,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     //GUI Builder
     private TemplatesPanelGUI.Builder builder;
     private Project project;
-    private String[] projectRecommendedTypes;
+    private @NonNull String[] projectRecommendedTypes;
     private String category;
     private String template;
     private boolean isWarmUp = true;
