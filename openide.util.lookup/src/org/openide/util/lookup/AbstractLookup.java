@@ -1016,7 +1016,12 @@ public class AbstractLookup extends Lookup implements Serializable {
         }
 
         public Collection<T> allInstances() {
-            reference.lookup.beforeLookup(reference.template);
+            return allInstances(true);
+        }
+        protected Collection<T> allInstances(boolean callBeforeLookup) {
+            if (callBeforeLookup) {
+                reference.lookup.beforeLookup(reference.template);
+            }
 
             Collection<T> s = getInstancesCache();
 
@@ -1077,8 +1082,13 @@ public class AbstractLookup extends Lookup implements Serializable {
          */
         @Override
         public Collection<? extends Item<T>> allItems() {
-            reference.lookup.beforeLookup(reference.template);
-
+            return allItems(true);
+        }
+        @Override
+        protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            if (callBeforeLookup) {
+                reference.lookup.beforeLookup(reference.template);
+            }
             return allItemsWithoutBeforeLookup();
         }
 

@@ -492,9 +492,13 @@ public class ProxyLookup extends Lookup {
         /** Access to all instances in the result.
          * @return collection of all instances
          */
-        @SuppressWarnings("unchecked")
+        @Override
         public java.util.Collection<T> allInstances() {
-            return computeResult(0);
+            return allInstances(true);
+        }
+        @SuppressWarnings("unchecked")
+        protected java.util.Collection<T> allInstances(boolean callBeforeLookup) {
+            return computeResult(0, callBeforeLookup);
         }
 
         /** Classes of all results. Set of the most concreate classes
@@ -504,26 +508,30 @@ public class ProxyLookup extends Lookup {
         @SuppressWarnings("unchecked")
         @Override
         public java.util.Set<Class<? extends T>> allClasses() {
-            return (java.util.Set<Class<? extends T>>) computeResult(1);
+            return (java.util.Set<Class<? extends T>>) computeResult(1, true);
         }
 
         /** All registered items. The collection of all pairs of
          * ii and their classes.
          * @return collection of Lookup.Item
          */
-        @SuppressWarnings("unchecked")
         @Override
         public java.util.Collection<? extends Item<T>> allItems() {
-            return computeResult(2);
+            return allItems(true);
+        }
+        @SuppressWarnings("unchecked")
+        @Override
+        public java.util.Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            return computeResult(2, callBeforeLookup);
         }
 
         /** Computes results from proxied lookups.
          * @param indexToCache 0 = allInstances, 1 = allClasses, 2 = allItems
          * @return the collection or set of the objects
          */
-        private java.util.Collection computeResult(int indexToCache) {
+        private java.util.Collection computeResult(int indexToCache, boolean callBeforeLookup) {
             // results to use
-            Lookup.Result<T>[] arr = myBeforeLookup();
+            Lookup.Result<T>[] arr = myBeforeLookup(callBeforeLookup);
 
             // if the call to beforeLookup resulted in deletion of caches
             synchronized (proxy()) {
@@ -554,13 +562,23 @@ public class ProxyLookup extends Lookup {
             for (int i = 0; i < arr.length; i++) {
                 switch (indexToCache) {
                 case 0:
-                    compute.addAll(arr[i].allInstances());
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>)arr[i];
+                        compute.addAll(wr.allInstances(callBeforeLookup));
+                    } else {
+                        compute.addAll(arr[i].allInstances());
+                    }
                     break;
                 case 1:
                     compute.addAll(arr[i].allClasses());
                     break;
                 case 2:
-                    compute.addAll(arr[i].allItems());
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>)arr[i];
+                        compute.addAll(wr.allItems(callBeforeLookup));
+                    } else {
+                        compute.addAll(arr[i].allItems());
+                    }
                     break;
                 default:
                     assert false : "Wrong index: " + indexToCache;
@@ -625,18 +643,18 @@ public class ProxyLookup extends Lookup {
                 }
 
                 if (oldItems != null) {
-                    Collection<? extends Item<T>> newItems = allItems();
+                    Collection<? extends Item<T>> newItems = allItems(false);
                     if (oldItems.equals(newItems)) {
                         modified = false;
                     }
                 } else {
                     if (oldInstances != null) {
-                        Collection newInstances = allInstances();
+                        Collection newInstances = allInstances(false);
                         if (oldInstances.equals(newInstances)) {
                             modified = false;
                         }
                     } else {
-                        Collection<? extends Item<T>> newItems = allItems();
+                        Collection<? extends Item<T>> newItems = allItems(false);
                         if (newItems.isEmpty()) {
                             modified = false;
                         }
@@ -666,18 +684,22 @@ public class ProxyLookup extends Lookup {
         /** Implementation of my before lookup.
          * @return results to work on.
          */
-        private Lookup.Result<T>[] myBeforeLookup() {
+        private Lookup.Result<T>[] myBeforeLookup(boolean callBeforeLookup) {
             Template<T> template = weakL.result.template;
             
-            proxy().beforeLookup(template);
+            if (callBeforeLookup) {
+                proxy().beforeLookup(template);
+            }
 
             Lookup.Result<T>[] arr = initResults();
 
-            // invoke update on the results
-            for (int i = 0; i < arr.length; i++) {
-                if (arr[i] instanceof WaitableResult) {
-                    WaitableResult w = (WaitableResult) arr[i];
-                    w.beforeLookup(template);
+            if (callBeforeLookup) {
+                // invoke update on the results
+                for (int i = 0; i < arr.length; i++) {
+                    if (arr[i] instanceof WaitableResult) {
+                        WaitableResult w = (WaitableResult) arr[i];
+                        w.beforeLookup(template);
+                    }
                 }
             }
 
@@ -686,9 +708,10 @@ public class ProxyLookup extends Lookup {
 
         /** Used by proxy results to synchronize before lookup.
          */
+        @Override
         protected void beforeLookup(Lookup.Template t) {
             if (t.getType() == weakL.result.template.getType()) {
-                myBeforeLookup();
+                myBeforeLookup(true);
             }
         }
 
@@ -803,6 +826,15 @@ public class ProxyLookup extends Lookup {
 
         private void setResults(Lookup.Result<T>[] results) {
             this.results = results;
+        }
+
+        @Override
+        protected Collection<? extends Object> allInstances(boolean callBeforeLookup) {
+            return allInstances();
+        }
+        @Override
+        protected Collection<? extends Item<T>> allItems(boolean callBeforeLookup) {
+            return allItems();
         }
     } // end of WeakResult
     

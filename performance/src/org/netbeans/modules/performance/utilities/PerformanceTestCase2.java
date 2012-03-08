@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,54 +34,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.performance.utilities;
 
-package org.netbeans.performance.languages.setup;
-
+import java.io.File;
 import java.io.IOException;
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
-import org.netbeans.performance.languages.Projects;
-import org.openide.util.Exceptions;
+import org.netbeans.jellytools.JellyTestCase;
 
 /**
  *
- * @author mkhramov@netbeans.org
+ * @author petr cyhelsky
  */
-public class ScriptingSetup extends PerformanceTestCase2 {
+public class PerformanceTestCase2 extends JellyTestCase{
     
-    public ScriptingSetup(String testName) {
+
+    public PerformanceTestCase2(String testName) {
         super(testName);
     }
-
-    public void testCloseMemoryToolbar() {
-        CommonUtilities.closeMemoryToolbar();
+    
+    
+    @Override
+    public void openDataProjects(String... projects) throws IOException {
+        String[] fullPaths = new String[projects.length];
+        String altPath = System.getProperty("nb_perf_alt_path");
+        for (int i = 0; i < projects.length; i++) {
+            if (altPath!=null) {
+                fullPaths[i] = mergePaths(altPath,getDataDir().getAbsolutePath()) + File.separator + projects[i];
+            } else {
+                fullPaths[i] = getDataDir().getAbsolutePath() + File.separator + projects[i];
+            }
+        }
+        
+        openProjects(fullPaths);
     }
 
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
+    private String mergePaths(String altPath, String absolutePath) {
+        if (absolutePath.startsWith(altPath)) {
+            return absolutePath;
+        }
+        final String PERF = "performance"; //NOI18N
+        StringBuilder sb;
+        if (absolutePath.contains(PERF)) {
+            sb  = new StringBuilder(absolutePath);
+            sb.replace(0,absolutePath.indexOf(PERF)+11, altPath);
+        } else {
+            sb = new StringBuilder(altPath);            
+        }        
+        return sb.toString();
     }
     
-    public void testOpenScriptingProject() {
-
-        try {
-            this.openDataProjects(Projects.SCRIPTING_PROJECT);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testOpenPHPProject() {
-
-        try {
-            this.openDataProjects(Projects.PHP_PROJECT);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    public void testCloseTaskWindow() {
-        CommonUtilities.closeTaskWindow();
-    }
-
 }
