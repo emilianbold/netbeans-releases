@@ -61,8 +61,8 @@ public class UseAliasElementImpl extends ModelElementImpl implements UseAliasEle
         super(inScope, name, file, offsetRange, PhpElementKind.USE_ALIAS);
     }
 
-    UseAliasElementImpl(final UseScope useElement, final ASTNodeInfo<Expression> nodeInfo) {
-        this(useElement, nodeInfo.getName(), useElement.getInScope().getFile(), nodeInfo.getRange());
+    UseAliasElementImpl(final UseScope inScope, final ASTNodeInfo<Expression> nodeInfo) {
+        this(inScope, nodeInfo.getName(), inScope.getFile(), nodeInfo.getRange());
     }
 
 }
