@@ -593,6 +593,18 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                         }
                     }
                 };
+                MessageEditProvider mep = null;
+                if(he.canEdit()) {
+                    mep = new MessageEditProvider() {
+                        @Override
+                        public void setMessage(String message) throws IOException {
+                            org.netbeans.modules.versioning.spi.VCSHistoryProvider.MessageEditProvider provider = Accessor.IMPL.getMessageEditProvider(he);
+                            if(provider != null) {
+                                provider.setMessage(message);
+                            }
+                        }
+                    };
+                }
                 proxyHistory[i] = 
                     new HistoryEntry(
                         proxies, 
@@ -603,7 +615,8 @@ public class DelegatingVCS extends org.netbeans.modules.versioning.core.spi.Vers
                         he.getRevision(), 
                         he.getRevisionShort(), 
                         he.getActions(), 
-                        rp);
+                        rp,
+                        mep);
             }
             return proxyHistory;
         }

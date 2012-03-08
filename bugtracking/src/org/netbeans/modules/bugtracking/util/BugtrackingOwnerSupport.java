@@ -470,6 +470,13 @@ public abstract class BugtrackingOwnerSupport {
 
         @Override
         public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
+            if(file == null) {
+                if(askIfUnknown) {
+                    return askUserToSpecifyRepository(null);
+                } else {
+                    return null;
+                }
+            }
             //TODO - synchronization/threading
             FileObject fileObject = FileUtil.toFileObject(file);
             if (fileObject == null) {

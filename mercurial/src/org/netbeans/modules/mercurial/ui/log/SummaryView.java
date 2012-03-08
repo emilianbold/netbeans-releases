@@ -284,11 +284,6 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
         }
 
         @Override
-        public File getFile () {
-            return event.getFile();
-        }
-
-        @Override
         public String getAction () {
             return Character.toString(event.getChangedPath().getAction());
         }
