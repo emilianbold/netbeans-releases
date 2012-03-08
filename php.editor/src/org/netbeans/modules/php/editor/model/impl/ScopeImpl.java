@@ -109,6 +109,7 @@ abstract class ScopeImpl extends ModelElementImpl implements Scope {
         return false;
     }
 
+    @Override
     public List<? extends ModelElementImpl> getElements() {
         return new ArrayList<ModelElementImpl>(elements);
     }
