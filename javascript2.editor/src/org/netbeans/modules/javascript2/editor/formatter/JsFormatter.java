@@ -196,6 +196,10 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeFinally());
                             break;
+                        case AFTER_SEMICOLON:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAfterSemi());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
@@ -278,6 +282,15 @@ public class JsFormatter implements Formatter {
         FormatToken token = tokens.get(index);
         FormatToken next = getNextNonVirtual(token);
 
+        // this avoids collision of after and before rules on same whitespace
+        for (FormatToken virtual = next; virtual != null && virtual != token;
+                virtual = virtual.previous()) {
+            // the before marker should win anyway
+            if (virtual.isBeforeMarker()) {
+                return offsetDiff;
+            }
+        }
+
         // has next and it is not an eol
         if (next != null
                 && next.getKind() != FormatToken.Kind.EOL) {
@@ -292,14 +305,17 @@ public class JsFormatter implements Formatter {
 
             // next is whitespace not followed by EOL
             // (this would be removed by trailing space logic)
-            } else if (next.next() != null
-                    && next.next().getKind() != FormatToken.Kind.EOL) {
-                if (remove) {
-                    return remove(doc, theToken.getOffset() + theToken.getText().length(),
-                            next.getText().length(), offsetDiff);
-                } else if (next.getText().length() != 1) {
-                    return replace(doc, theToken.getOffset() + theToken.getText().length(),
-                            next.getText().toString(), " ", offsetDiff); // NOI18N
+            } else {
+                FormatToken afterNext = getNextNonVirtual(next);
+                if (afterNext != null
+                        && afterNext.getKind() != FormatToken.Kind.EOL) {
+                    if (remove) {
+                        return remove(doc, theToken.getOffset() + theToken.getText().length(),
+                                next.getText().length(), offsetDiff);
+                    } else if (next.getText().length() != 1) {
+                        return replace(doc, theToken.getOffset() + theToken.getText().length(),
+                                next.getText().toString(), " ", offsetDiff); // NOI18N
+                    }
                 }
             }
         }
@@ -318,7 +334,7 @@ public class JsFormatter implements Formatter {
 
             if (!current.isVirtual()) {
                 if(current.getKind() != FormatToken.Kind.WHITESPACE
-                    && current.getKind() != FormatToken.Kind.EOL) {
+                        && current.getKind() != FormatToken.Kind.EOL) {
                     start = current;
                     break;
                 } else if (current.getKind() == FormatToken.Kind.EOL) {
@@ -449,13 +465,13 @@ public class JsFormatter implements Formatter {
         }
 
         try {
-            if (SAFE_DELETE_PATTERN.matcher(oldString).matches()) {
+            if (SAFE_DELETE_PATTERN.matcher(doc.getText(offset + offsetDiff, oldString.length())).matches()) {
                 doc.remove(offset + offsetDiff, oldString.length());
                 doc.insertString(offset + offsetDiff, newString, null);
                 return offsetDiff + (newString.length() - oldString.length());
             } else {
                 LOGGER.log(Level.WARNING, "Tried to remove non empty text: {0}",
-                        oldString);
+                        doc.getText(offset + offsetDiff, oldString.length()));
                 return offsetDiff;
             }
         } catch (BadLocationException ex) {
