@@ -40,7 +40,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.refactoring.ui;
+package org.netbeans.modules.groovy.refactoring;
 
 import java.util.Collection;
 import javax.swing.JOptionPane;
@@ -54,7 +54,7 @@ import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.ui.WhereUsedQueryUI;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
