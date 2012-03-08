@@ -73,14 +73,12 @@ class HgGrep extends SearchComposition<String> {
 
     private static final RequestProcessor RP = new RequestProcessor(HgGrep.class.getName(), 5);
 
-    private final SearchProvider.Presenter presenter;
     private final File repo;
     private final String pattern;
     private final String text;
     private final SearchResultsDisplayer<String> displayer;
 
     HgGrep(SearchProvider.Presenter presenter, File repo, String pattern, String text) {
-        this.presenter = presenter;
         this.repo = repo;
         this.pattern = pattern;
         this.text = text;
