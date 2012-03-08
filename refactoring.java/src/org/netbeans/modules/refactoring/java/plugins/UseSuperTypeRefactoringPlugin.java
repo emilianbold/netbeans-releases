@@ -292,6 +292,11 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             if (varElement == null) {
                 return super.visitVariable(varTree, elementToMatch);
             }
+            TreePath parentPath = treePath.getParentPath();
+            if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.CATCH) {
+                // Do not change in catch statement
+                return super.visitVariable(varTree, elementToMatch);
+            }
 
             Types types = workingCopy.getTypes();
             TypeMirror varTypeErasure = erasureOf(varElement.asType());
