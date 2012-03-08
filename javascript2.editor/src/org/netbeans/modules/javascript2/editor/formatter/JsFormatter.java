@@ -281,9 +281,13 @@ public class JsFormatter implements Formatter {
 
         FormatToken token = tokens.get(index);
         FormatToken next = getNextNonVirtual(token);
+        FormatToken marker = next;
+        if (next != null && next.getKind() == FormatToken.Kind.WHITESPACE) {
+            marker = getNextNonVirtual(next);
+        }
 
         // this avoids collision of after and before rules on same whitespace
-        for (FormatToken virtual = next; virtual != null && virtual != token;
+        for (FormatToken virtual = marker; virtual != null && virtual != token;
                 virtual = virtual.previous()) {
             // the before marker should win anyway
             if (virtual.isBeforeMarker()) {

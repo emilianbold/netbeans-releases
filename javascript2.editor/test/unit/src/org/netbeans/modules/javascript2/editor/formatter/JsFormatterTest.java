@@ -215,6 +215,33 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/spaces1.js", options, ".disabled.formatted");
     }
 
+    public void testSpacesSemicolons1Enabled() throws Exception {
+        reformatFileContents("testfiles/formatter/spacesSemicolons1.js",
+                Collections.<String, Object>emptyMap(), ".enabled.formatted");
+    }
+
+    public void testSpacesSemicolons1SemiDisabled() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAfterSemi, false);
+        reformatFileContents("testfiles/formatter/spacesSemicolons1.js",
+                options, ".semiDisabled.formatted");
+    }
+
+    public void testSpacesSemicolons1WhileDisabled() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeWhile, false);
+        reformatFileContents("testfiles/formatter/spacesSemicolons1.js",
+                options, ".whileDisabled.formatted");
+    }
+
+    public void testSpacesSemicolons1Disabled() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAfterSemi, false);
+        options.put(FmtOptions.spaceBeforeWhile, false);
+        reformatFileContents("testfiles/formatter/spacesSemicolons1.js",
+                options, ".disabled.formatted");
+    }
+
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         reformatFileContents(file, options, null);
     }
