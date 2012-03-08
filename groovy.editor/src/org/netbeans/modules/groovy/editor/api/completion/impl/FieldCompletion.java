@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,8 +51,10 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 
 /**
  * Complete the fields for a class. There are two principal completions for fields:
@@ -75,6 +76,10 @@ public class FieldCompletion extends BaseCompletion {
         }
 
         if (request.dotContext != null && request.dotContext.isMethodsOnly()) {
+            return false;
+        }
+        
+        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             return false;
         }
 
