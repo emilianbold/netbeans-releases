@@ -696,6 +696,10 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "if ($x instanceof C^ls) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
     }
 
+    public void testFieldAccessInInstanceOf() throws Exception {
+        checkDeclaration(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", "public $^bbbbb;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

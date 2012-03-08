@@ -645,6 +645,14 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "if ($x instanceof Class^Name) {}", true);
     }
 
+    public void testFieldAccessInInstanceOf_01() throws Exception {
+        checkOccurrences(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", true);
+    }
+
+    public void testFieldAccessInInstanceOf_02() throws Exception {
+        checkOccurrences(getTestPath(), "public $bb^bbb;", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite
