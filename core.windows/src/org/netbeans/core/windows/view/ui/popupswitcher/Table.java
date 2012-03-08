@@ -128,10 +128,7 @@ class Table extends JTable {
         });
 
         //icon for top-level items with sub-items
-        Icon icon = UIManager.getIcon( "Menu.arrowIcon" ); //NOI18N
-        if( null == icon )
-            icon = new ArrowIcon();
-        rightArrowLabel.setIcon( icon );
+        rightArrowLabel.setIcon( new ArrowIcon() );
         rightArrowLabel.setIconTextGap( 2 );
         rightArrowLabel.setHorizontalTextPosition( JLabel.LEFT );
         topItemPanel.setLayout( new BorderLayout(5, 0) );
@@ -666,9 +663,6 @@ class Table extends JTable {
     }
 
 
-    /**
-     * Fallback when UIManager has no 'sub-menu' icon.
-     */
     private static class ArrowIcon implements Icon {
 
         private static final int SIZE = 10;
