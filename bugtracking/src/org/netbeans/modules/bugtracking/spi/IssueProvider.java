@@ -43,117 +43,61 @@ package org.netbeans.modules.bugtracking.spi;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.nodes.Node;
-import static java.lang.Character.isSpaceChar;
 
 /**
  * Represents a bugtracking IssueProvider
  *
  * @author Tomas Stupka
  */
-public abstract class IssueProvider {
-
-    private static final int SHORT_DISP_NAME_LENGTH = 15;
+public abstract class IssueProvider<I> {
 
     /**
      * issue data were refreshed
      */
     public static final String EVENT_ISSUE_REFRESHED = "issue.data_changed"; // NOI18N
 
-    private RepositoryProvider repository;
-
     static {
         SPIAccessorImpl.createAccesor();
-    }
-
-    /**
-     * Creates an issue
-     */
-    public IssueProvider(RepositoryProvider repository) {
-        this.repository = repository;
-    }
-
-    /**
-     * Returns this issues repository
-     *
-     * @return
-     */
-    public RepositoryProvider getRepository() {
-        return repository;
     }
 
     /**
      * Returns this issues display name
      * @return
      */
-    public abstract String getDisplayName();
+    public abstract String getDisplayName(I data);
 
-    /**
-     * Returns a short variant of the display name. The short variant is used
-     * in cases where the full display name might be too long, such as when used
-     * as a title of a tab. The default implementation uses the
-     * the {@linkplain #getDisplayName full display name} as a base and trims
-     * it to maximum of {@value #SHORT_DISP_NAME_LENGTH} characters if
-     * necessary. If it was necessary to trim the name (i.e. if the full name
-     * was longer then {@value #SHORT_DISP_NAME_LENGTH}), then an ellipsis
-     * is appended to the end of the trimmed display name.
-     *
-     * @return  short variant of the display name
-     * @see #getDisplayName
-     */
-    public String getShortenedDisplayName() {
-        String displayName = getDisplayName();
-
-        int length = displayName.length();
-        int limit = SHORT_DISP_NAME_LENGTH;
-
-        if (length <= limit) {
-            return displayName;
-        }
-
-        String trimmed = displayName.substring(0, limit).trim();
-
-        StringBuilder buf = new StringBuilder(limit + 4);
-        buf.append(trimmed);
-        if ((length > (limit + 1)) && isSpaceChar(displayName.charAt(limit))) {
-            buf.append(' ');
-        }
-        buf.append("...");                                              //NOI18N
-
-        return buf.toString();
-    }
 
     /**
      * Returns this issues tooltip
      * @return
      */
-    public abstract String getTooltip();
+    public abstract String getTooltip(I data);
 
     /**
      * Returns this issues unique ID
      * @return
      */
-    public abstract String getID();
+    public abstract String getID(I data);
 
     /**
      * Returns this issues summary
      * @return
      */
-    public abstract String getSummary();
+    public abstract String getSummary(I data);
 
     /**
      * Returns true if the issue isn't stored in a repository yet. Otherwise false.
      * @return
      */
-    public abstract boolean isNew();
+    public abstract boolean isNew(I data);
 
     /**
      * Refreshes this Issues data from its bugtracking repository
      *
      * @return true if the issue was refreshed, otherwise false
      */
-    public abstract boolean refresh();
+    public abstract boolean refresh(I data);
 
     /**
      * Add a comment to this issue and close it as fixed eventually.
@@ -162,7 +106,7 @@ public abstract class IssueProvider {
      * @param closeAsFixed 
      */
     // XXX throw exception
-    public abstract void addComment(String comment, boolean closeAsFixed);
+    public abstract void addComment(I data, String comment, boolean closeAsFixed);
 
     /**
      * Attach a file to this issue
@@ -170,50 +114,19 @@ public abstract class IssueProvider {
      * @param description 
      */
     // XXX throw exception; attach Patch or attachFile?
-    public abstract void attachPatch(File file, String description);
+    public abstract void attachPatch(I data, File file, String description);
 
     /**
      * Returns this issues controller
      * XXX we don't need this. use get component instead and get rid of the BugtrackingController
      * @return
      */
-    public abstract BugtrackingController getController();
+    public abstract BugtrackingController getController(I data);
 
-    /**
-     * Opens the issue with the given issueId in the IDE. In case that issueId
-     * is null a new issue wil be created.
-     *
-     * @param repository
-     * @param issueId
-     */
-    public static void open(final RepositoryProvider repository, final String issueId) {
-        if(issueId == null) {
-            IssueAction.createIssue(repository);
-        } else {            
-            IssueAction.openIssue(repository, issueId);
-        }
-    }
+    public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
 
-    /**
-     * Opens this issue in the IDE
-     */
-    public final void open() {
-        open(false);
-    }
+    public abstract void addPropertyChangeListener(I data, PropertyChangeListener listener);
 
-    /**
-     * Opens this issue in the IDE
-     * @param refresh also refreshes the issue after opening
-     *
-     */
-    public final void open(final boolean refresh) {
-        IssueAction.openIssue(this, refresh);
-    }
-
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
-
-    public abstract void setContext(Node[] nodes);
+    public abstract void setContext(I data, Node[] nodes);
 
 }

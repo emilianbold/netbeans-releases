@@ -101,7 +101,7 @@ private:
     bool parseArgs(int argc, char *argv[]);
     bool initPlatformDir();
     bool processAutoUpdateCL();
-    void deteteNewClustersFile();
+    void deleteNewClustersFile();
     bool checkForNewUpdater(const char *basePath);
     bool shouldAutoUpdate(bool firstStart, const char *basePath);
     bool shouldAutoUpdateClusters(bool firstStart);

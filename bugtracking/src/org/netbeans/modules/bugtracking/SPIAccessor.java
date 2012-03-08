@@ -42,10 +42,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.util.prefs.Preferences;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.openide.nodes.Node;
 
 /**
  *
@@ -66,8 +63,8 @@ public abstract class SPIAccessor {
         }
     }  
     
+    
     public abstract RepositoryInfo read(Preferences preferences, String key);
     public abstract void store(Preferences preferences, RepositoryInfo info, String key);
-    public abstract void setSelection(IssueProvider issue, Node[] nodes);
-    public abstract void setSelection(QueryProvider query, Node[] nodes); 
+    
 }

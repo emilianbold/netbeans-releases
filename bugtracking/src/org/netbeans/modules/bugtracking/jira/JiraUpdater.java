@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.jira;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -59,8 +58,11 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -205,68 +207,53 @@ public class JiraUpdater {
     }
     
     private class JiraProxyConector extends BugtrackingConnector {
+        private BugtrackingFactory<Object, Object, Object> f = new BugtrackingFactory<Object, Object, Object>();
         @Override
-        public RepositoryProvider createRepository() {
-            return new JiraProxyRepository();
+        public Repository createRepository() {
+            return f.createRepository(f, new JiraProxyRepositoryProvider(), null, null);
         }
         @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-        @Override
-        public RepositoryProvider createRepository(RepositoryInfo info) {
+        public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
     }
-
-    private class JiraProxyRepository extends RepositoryProvider {
+    private class JiraProxyRepositoryProvider extends RepositoryProvider<Object,Object,Object> {
         @Override
-        public Image getIcon() {
+        public Image getIcon(Object r) {
             return null;
         }
         @Override
-        public RepositoryInfo getInfo() {
+        public RepositoryInfo getInfo(Object r) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public IssueProvider getIssue(String id) {
+        public Object getIssue(Object r, String id) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public void remove() { }
+        public void remove(Object r) { }
         @Override
-        public RepositoryController getController() {
+        public RepositoryController getController(Object r) {
             return new JiraProxyController();
         }
         @Override
-        public QueryProvider createQuery() {
+        public Object createIssue(Object r) {
             throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
         }
         @Override
-        public IssueProvider createIssue() {
-            throw new UnsupportedOperationException("Not supported yet.");      // NOI18N
-        }
-
-        @Override
-        public QueryProvider[] getQueries() {
-            return new QueryProvider[0];
+        public Object createQuery(Object r) {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
         @Override
-        public IssueProvider[] simpleSearch(String criteria) {
-            return new IssueProvider[0];
+        public Collection<Object> getQueries(Object r) {
+            return Collections.emptyList();
         }
-        public Lookup getLookup() {
+        @Override
+        public Collection<Object> simpleSearch(Object r, String criteria) {
+            return Collections.emptyList();
+        }
+        public Lookup getLookup(Object r) {
             return Lookup.EMPTY;
-        }
-
-        @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            
-        }
-
-        @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            
         }
     }
 

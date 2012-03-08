@@ -50,15 +50,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.logging.Level;
-import org.eclipse.mylyn.commons.net.WebUtil;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.modules.bugzilla.*;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
-import org.netbeans.modules.bugzilla.kenai.KenaiSupportImpl;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -132,134 +131,147 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
         KenaiProject prj = instance.getProject("nb-jnet-test");
         assertNotNull(prj);
 
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        BugzillaRepository repo = (BugzillaRepository) support.createRepository(KenaiProjectImpl.getInstance(prj));
+        BugzillaConnector support = new BugzillaConnector();
+        Repository repo = support.createRepository(KenaiProjectImpl.getInstance(prj));
         assertNotNull(repo);
 
-        trm.addRepository(repo.getTaskRepository());
-        TestUtil.validate(brc, repo.getTaskRepository());
+        BugzillaRepository bugzillaRepository = getData(repo);
+        
+        trm.addRepository(bugzillaRepository.getTaskRepository());
+        TestUtil.validate(brc, bugzillaRepository.getTaskRepository());
     }
 
     public void testGetRepositoryFromUrl () throws Throwable {
         KenaiProject prj = KenaiProject.forRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
-        KenaiSupportImpl support = new KenaiSupportImpl();
-        KenaiRepository repo = (KenaiRepository) support.createRepository(KenaiProjectImpl.getInstance(prj));
+        BugzillaConnector support = new BugzillaConnector();
+        Repository repo = support.createRepository(KenaiProjectImpl.getInstance(prj));
         assertNotNull(repo);
 
-        String product = (String) getFieldValue(repo, "product");
+        KenaiRepository kenaiRepository = getData(repo);
+        String product = (String) getFieldValue(kenaiRepository, "product");
         assertEquals("nb-jnet-test", product);
 
-        String urlParam = (String) getFieldValue(repo, "urlParam");
+        String urlParam = (String) getFieldValue(kenaiRepository, "urlParam");
         assertEquals("product=nb-jnet-test", urlParam);
 
-        String host = (String) getFieldValue(repo, "host");
+        String host = (String) getFieldValue(kenaiRepository, "host");
         assertEquals("testjava.net", host);
 
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        trm.addRepository(repo.getTaskRepository());
-        TestUtil.validate(brc, repo.getTaskRepository());
+        trm.addRepository(kenaiRepository.getTaskRepository());
+        TestUtil.validate(brc, kenaiRepository.getTaskRepository());
     }
 
     public void testCreateRepositoryFromLocation () throws Throwable {
-        KenaiRepository repo = createRepository("http://testjava.net/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        Repository repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?product=someproject");
+        KenaiRepository kenaiRepository = getData(repository);
+        
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("https://testjava.net/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        repository = createRepository("https://testjava.net/bugzilla/buglist.cgi?product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?product=someproject&vole=tyvole&etwas=1");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bugzilla", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net/bugzilla/buglist.cgi?vole=tyvole&etwas=1&product=someproject&vole=tyvole&etwas=1");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/bgzll/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net/bgzll", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net/bgzll/buglist.cgi?product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net/bgzll", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("kekskenai.com", getFieldValue(repo, "host"));
-        assertEquals("https://kekskenai.com/bgzll", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://kekskenai.com/bgzll/buglist.cgi?product=someproject");
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("kekskenai.com", getFieldValue(repository, "host"));
+        assertEquals("https://kekskenai.com/bgzll", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net/buglist.cgi?product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net:8080/bugzilla/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net:8080/bugzilla", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net:8080/bugzilla/buglist.cgi?product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net:8080/bugzilla", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net:8080/buglist.cgi?product=someproject");
-        assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
-        assertEquals("someproject", getFieldValue(repo, "product"));
-        assertEquals("product=someproject", getFieldValue(repo, "urlParam"));
-        assertEquals("testjava.net", getFieldValue(repo, "host"));
-        assertEquals("https://testjava.net:8080", repo.getTaskRepository().getUrl());
+        repository = createRepository("http://testjava.net:8080/buglist.cgi?product=someproject");
+        kenaiRepository = getData(repository);
+        assertNotNull(repository);
+        assertTrue(KenaiUtil.isKenai(repository));
+        assertEquals("someproject", getFieldValue(repository, "product"));
+        assertEquals("product=someproject", getFieldValue(repository, "urlParam"));
+        assertEquals("testjava.net", getFieldValue(repository, "host"));
+        assertEquals("https://testjava.net:8080", kenaiRepository.getTaskRepository().getUrl());
 
-        repo = createRepository("http://testjava.net/bugzilla/cece.cgi?product=someproject");
-        assertNull(repo);
+        repository = createRepository("http://testjava.net/bugzilla/cece.cgi?product=someproject");
+        assertNull(repository);
 
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?produ=someproject");
-        assertNull(repo);
+        repository = createRepository("http://kekskenai.com/bgzll/buglist.cgi?produ=someproject");
+        assertNull(repository);
 
-        repo = createRepository("http://kekskenai.com/bgzll/buglist.cgi?productik=someproject");
-        assertNull(repo);
+        repository = createRepository("http://kekskenai.com/bgzll/buglist.cgi?productik=someproject");
+        assertNull(repository);
 
     }
 
-    private KenaiRepository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
-        KenaiSupportImpl support = new KenaiSupportImpl();
+    private Repository createRepository(String location) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException {
+        BugzillaConnector support = new BugzillaConnector();
         Method m = support.getClass().getDeclaredMethod("createKenaiRepository", org.netbeans.modules.bugtracking.kenai.spi.KenaiProject.class, String.class, String.class);
         m.setAccessible(true);
-        return (KenaiRepository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
+        return (Repository) m.invoke(support, getKenaiProject(), "Kenai repo", location);
     }
 
 
@@ -271,6 +283,15 @@ public class BugzillaKenaiSupportTest extends NbTestCase implements TestConstant
 
     private org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProject() throws KenaiException {
         return KenaiProjectImpl.getInstance(instance.getProject("nb-jnet-test"));
+    }
+
+    private KenaiRepository getData(Repository repo) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        Field f = repo.getClass().getDeclaredField("bind");
+        f.setAccessible(true);
+        Object bind = f.get(repo);
+        f = bind.getClass().getDeclaredField("r");
+        f.setAccessible(true);
+        return (KenaiRepository) f.get(bind);
     }
 
 }

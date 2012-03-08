@@ -61,8 +61,10 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -86,6 +88,8 @@ public class IssueTest extends NbTestCase implements TestConstants {
     protected void setUp() throws Exception {
         super.setUp();
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
     }
 
 //    public void testStatusOpenIssue() throws MalformedURLException, CoreException, InterruptedException, IOException, Throwable {
@@ -911,7 +915,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         while (!lh.done) {
             Thread.sleep(100);
         }
-        for (IssueField f : issue.getBugzillaRepository().getConfiguration().getFields()) {
+        for (IssueField f : issue.getRepository().getConfiguration().getFields()) {
             // seen -> everything's uptodate
             assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
         }

@@ -59,8 +59,9 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.versioning.util.VerticallyNonResizingPanel;
 
@@ -75,7 +76,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
 
     private QuickSearchComboBar qs;
     private boolean blockEvents;
-    private IssueProvider preselectedIssue;
+    private Issue preselectedIssue;
 
     private class FieldValues {
         private boolean addLinkInfo = false;
@@ -119,12 +120,12 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         repositoryComboBox.addItemListener(this);
     }
 
-    IssueProvider getIssue() {
+    Issue getIssue() {
         return qs.getIssue();
     }
 
     void enableFields() {
-        boolean repoSelected = !blockEvents && repositoryComboBox.getSelectedItem() instanceof RepositoryProvider;
+        boolean repoSelected = !blockEvents && repositoryComboBox.getSelectedItem() instanceof Repository;
         boolean enableFields = repoSelected && (getIssue() != null);
 
         if(!enableFields && !fieldValues.stored) { // !fieldValues.stored ->
@@ -155,7 +156,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         }
     }
 
-    void setIssue (IssueProvider issue) {
+    void setIssue (Issue issue) {
         this.preselectedIssue = issue;
         qs.setRepository(issue.getRepository());
         preselectIssue();
@@ -300,7 +301,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
     }
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        RepositoryProvider repo = BugtrackingUtil.createRepository();
+        Repository repo = Util.createRepository();
         if(repo == null) {
             return;
         }
@@ -331,7 +332,7 @@ public class HgQueueHookPanel extends VerticallyNonResizingPanel implements Item
         enableFields();
         if(e.getStateChange() == ItemEvent.SELECTED) {
             Object item = e.getItem();
-            RepositoryProvider repo = (item instanceof RepositoryProvider) ? (RepositoryProvider) item : null;
+            Repository repo = (item instanceof Repository) ? (Repository) item : null;
             if (!blockEvents && repo != null) {
                 qs.setRepository(repo);
                 if (preselectedIssue != null && repo.equals(preselectedIssue.getRepository())) {

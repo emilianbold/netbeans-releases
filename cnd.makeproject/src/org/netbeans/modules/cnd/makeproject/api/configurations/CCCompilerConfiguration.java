@@ -68,8 +68,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     // Constructors
     public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master, owner);
-        cppStandard = new IntConfiguration(null, STANDARD_DEFAULT, STANDARD_NAMES, null);
+        cppStandard = new IntConfiguration(master != null ? master.getCppStandard() : null, STANDARD_DEFAULT, STANDARD_NAMES, null);
     }
+    
+    public void fixupMasterLinks(CCCompilerConfiguration compilerConfiguration) {
+        super.fixupMasterLinks(compilerConfiguration);
+        getCppStandard().setMaster(compilerConfiguration.getCppStandard());
+    }    
     
     public IntConfiguration getCppStandard() {
         return cppStandard;
