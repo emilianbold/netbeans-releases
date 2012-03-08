@@ -50,6 +50,19 @@ made subject to such option by the copyright holder.
 <apidef name="awt">AWT API</apidef>
 </apidefs>
 <changes>
+    <change id="QuickSearch">
+      <api name="awt"/>
+      <summary>QuickSearch class that allows to attach quick search field to an arbitratry component.</summary>
+      <date day="8" month="3" year="2012"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" semantic="compatible" modification="no" deletion="no"/>
+      <description>
+          QuickSearch class is added. It can be used to attach
+          a quick search functionality to an arbitrary component.
+      </description>
+      <class package="org.openide.awt" name="QuickSearch"/>
+      <issue number="208794"/>
+    </change>
     <change id="Actions.forID">
         <api name="awt"/>
         <summary>Added <code>Actions.forID</code></summary>
