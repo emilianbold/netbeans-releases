@@ -67,8 +67,7 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
         if (alias != null) {
             aliasedName = new AliasedName(alias.getName(),QualifiedName.create(getName()));
             ASTNodeInfo<Expression> nodeInfo = ASTNodeInfo.create(ASTNodeInfo.Kind.USE_ALIAS, alias);
-            UseAliasElementImpl aliasElement = new UseAliasElementImpl(this, nodeInfo);
-            addElement(aliasElement);
+            new UseAliasElementImpl(this, nodeInfo);
         }
         this.aliasName = aliasedName;
     }

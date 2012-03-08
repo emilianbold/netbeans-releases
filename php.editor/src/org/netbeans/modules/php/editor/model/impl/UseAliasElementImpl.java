@@ -62,7 +62,7 @@ public class UseAliasElementImpl extends ModelElementImpl implements UseAliasEle
     }
 
     UseAliasElementImpl(final UseScope useElement, final ASTNodeInfo<Expression> nodeInfo) {
-        this(useElement.getInScope(), nodeInfo.getName(), useElement.getInScope().getFile(), nodeInfo.getRange());
+        this(useElement, nodeInfo.getName(), useElement.getInScope().getFile(), nodeInfo.getRange());
     }
 
 }
