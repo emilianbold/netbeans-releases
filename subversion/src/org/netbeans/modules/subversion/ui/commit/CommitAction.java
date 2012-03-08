@@ -710,7 +710,7 @@ public class CommitAction extends ContextAction {
 
             List<ISVNLogMessage> logs = new ArrayList<ISVNLogMessage>();
             List<File> hookFiles = new ArrayList<File>();
-            boolean needAfterCommit = false;
+            boolean handleHooks = false;
             if(hooks.size() > 0) {
                 for (List<File> l : managedTrees) {
                     hookFiles.addAll(l);
@@ -721,7 +721,7 @@ public class CommitAction extends ContextAction {
                         // XXX handle returned context
                         context = hook.beforeCommit(context);
                         if(context != null) {
-                            needAfterCommit = true;
+                            handleHooks = true;
                             message = context.getMessage();
                         }
                     } catch (IOException ex) {
@@ -741,15 +741,18 @@ public class CommitAction extends ContextAction {
 
                 // one commit for each wc
                 List<File> commitList = itCandidates.next();
+                File[] commitedFiles = commitList.toArray(new File[commitList.size()]);
 
-                CommitCmd cmd = new CommitCmd(client, support, message, needAfterCommit ? logs : null);
+                CommitCmd cmd = new CommitCmd(client, support, message, handleHooks ? logs : null);
                 // handle recursive commits - deleted and copied folders can't be commited non recursively
                 List<File> recursiveCommits = getRecursiveCommits(commitList, removeCandidates);
                 if(recursiveCommits.size() > 0) {
                     // remove from the commits list all files which are supposed to be commited recursively
                     // or are children from recursively commited folders
                     commitList.removeAll(getAllChildren(recursiveCommits, commitList));
-
+                    // leave in recursive commits only top-level parents, it does not make sense to name children explicitely
+                    // moreover svn 1.7 complains when we list the children for copied folder
+                    recursiveCommits = filterChildren(recursiveCommits);
                     // commit recursively
                     cmd.commitFiles(recursiveCommits, true);
                     if(support.isCanceled()) {
@@ -764,7 +767,11 @@ public class CommitAction extends ContextAction {
                         return;
                     }
                 }
-                if(needAfterCommit) {
+                
+                // notify change in the history
+                Subversion.getInstance().getHistoryProvider().fireHistoryChange(commitedFiles);
+                
+                if(handleHooks) {
                     afterCommit(hooks, hookFiles, message, logs);
                 }
 
@@ -1144,6 +1151,22 @@ public class CommitAction extends ContextAction {
             SvnClientExceptionHandler.notifyException(ex, true, true); // should not hapen
             return null;
         }
+    }
+
+    private static List<File> filterChildren (List<File> files) {
+        Set<File> filteredFiles = new LinkedHashSet<File>(files);
+        for (File parent : files) {
+            Set<File> toRemove = new HashSet<File>(filteredFiles.size());
+            for (File f : filteredFiles) {
+                if (Utils.isAncestorOrEqual(f, parent)) {
+                    continue;
+                } else if (Utils.isAncestorOrEqual(parent, f)) {
+                    toRemove.add(f);
+                } 
+            }
+            filteredFiles.removeAll(toRemove);
+        }
+        return new ArrayList<File>(filteredFiles);
     }
 
     private static void deleteMissingFiles (List<File> removeCandidates, SvnClient client) throws SVNClientException {

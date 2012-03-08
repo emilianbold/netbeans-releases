@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.api.toolchain;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -108,6 +107,22 @@ public abstract class AbstractCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getCStandardOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getCStandardFlags() != null && compiler.getCStandardFlags().length > value){
+            return compiler.getCStandardFlags()[value];
+        }
+        return ""; //NOI18N
+    }
+    
+    public String getCppStandardOptions(int value) {
+        CompilerDescriptor compiler = getDescriptor();
+        if (compiler != null && compiler.getCppStandardFlags() != null && compiler.getCppStandardFlags().length > value){
+            return compiler.getCppStandardFlags()[value];
+        }
+        return ""; //NOI18N
+    }
+    
     public String getStripOption(boolean value) {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && value){

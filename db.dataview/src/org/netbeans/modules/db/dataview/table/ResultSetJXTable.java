@@ -1,45 +1,43 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR parent HEADER.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
-
-Oracle and Java are registered trademarks of Oracle and/or its affiliates.
-Other names may be trademarks of their respective owners.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
- * The contents of parent file are subject to the terms of either the GNU
+ * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
+ * Other names may be trademarks of their respective owners.
+ *
+ * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use parent file except in compliance with the
+ * "License"). You may not use this file except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
- * License.  When distributing the software, include parent License Header
+ * License.  When distributing the software, include this License Header
  * Notice in each file and include the License file at
- * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates parent
+ * nbbuild/licenses/CDDL-GPL-2-CP.  Oracle designates this
  * particular file as subject to the "Classpath" exception as provided
  * by Oracle in the GPL Version 2 section of the License file that
- * accompanied parent code. If applicable, add the following below the
+ * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2009 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
- * If you wish your version of parent file to be governed by only the CDDL
+ * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
- * "[Contributor] elects to include parent software in parent distribution
+ * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
- * your version of parent file under either the CDDL, the GPL Version 2 or
+ * your version of this file under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.db.dataview.table;
 
@@ -47,6 +45,8 @@ import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,11 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
+import javax.swing.table.*;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTableHeader;
 import org.jdesktop.swingx.decorator.ColorHighlighter;
@@ -73,6 +69,8 @@ import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.jdesktop.swingx.table.DatePickerCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.output.DataView;
+import org.netbeans.modules.db.dataview.table.celleditor.*;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.netbeans.modules.db.dataview.util.DateType;
 import org.netbeans.modules.db.dataview.util.TimestampType;
 
@@ -158,7 +156,9 @@ public class ResultSetJXTable extends JXTableDecorator {
         setDefaultEditor(Object.class, new StringTableCellEditor(txtFld));
         setDefaultEditor(String.class, new StringTableCellEditor(txtFld));
         setDefaultEditor(java.sql.Time.class, new StringTableCellEditor(txtFld));
-
+        setDefaultEditor(Blob.class, new BlobFieldTableCellEditor());
+        setDefaultEditor(Clob.class, new ClobFieldTableCellEditor());
+        
         JTextField numFld = new JTextField();
         txtFld.addKeyListener(kl);
         setDefaultEditor(Number.class, new NumberFieldEditor(numFld));
@@ -240,7 +240,13 @@ public class ResultSetJXTable extends JXTableDecorator {
         DefaultTableModel dtm = getDefaultTableModel();
         for (int i = 0, I = getRSColumnCount(); i < I; i++) {
             DBColumn col = getDBColumn(i);
-            dtm.addColumn(col.getDisplayName());
+            StringBuilder sb = new StringBuilder();
+            sb.append("<html>"); // NOI18N
+            if (col.getDisplayName() != null) {
+                 sb.append(DataViewUtils.escapeHTML(col.getDisplayName().toString()));
+            }
+            sb.append("</html>"); // NOI18N
+            dtm.addColumn(sb.toString());
         }
 
         for (Object[] row : rows) {
@@ -262,7 +268,14 @@ public class ResultSetJXTable extends JXTableDecorator {
         return new ResultSetTableModel(this);
     }
 
-
+    @Override
+    public boolean isEditable() {
+        if(dView != null && dView.isEditable()) {
+            return dView.isEditable();
+        }
+        return false;
+    }
+    
     // This is mainly used for set Tooltip for column headers
 
     private class JTableHeaderImpl extends JXTableHeader {

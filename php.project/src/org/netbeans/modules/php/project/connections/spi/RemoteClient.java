@@ -185,7 +185,7 @@ public interface RemoteClient {
     boolean setPermissions(int permissions, String path) throws RemoteException;
 
     /**
-     * Get the list of the {@link RemoteFile files} of the current directory.
+     * Get the list of the {@link RemoteFile files} (including hidden!) of the current directory.
      * @return the list of the {@link RemoteFile files} of the current directory, never <code>null</code>.
      * @throws RemoteException if any unexpected error occurs.
      */

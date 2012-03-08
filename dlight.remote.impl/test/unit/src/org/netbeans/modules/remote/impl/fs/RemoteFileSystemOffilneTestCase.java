@@ -45,6 +45,8 @@ import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.NativeexecutionApiUtilTestBridge;
+import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.test.RemoteApiTest;
@@ -71,16 +73,60 @@ public class RemoteFileSystemOffilneTestCase extends RemoteFileTestBase {
         String text2search = "getenv";
         assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
                 content.indexOf(text2search) >= 0);
+        char[] passwd = PasswordManager.getInstance().getPassword(execEnv);
         ConnectionManager.getInstance().disconnect(execEnv);
-        assertFalse("Shouldn't be connected now", ConnectionManager.getInstance().isConnectedTo(execEnv));
-        fo = getFileObject(absPath);
-        assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
-        content = readFile(fo);
-        text2search = "getenv";
-        assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
-                content.indexOf(text2search) >= 0);
+        try {
+            assertFalse("Shouldn't be connected now", ConnectionManager.getInstance().isConnectedTo(execEnv));
+            fo = getFileObject(absPath);
+            assertTrue("File " +  getFileName(execEnv, absPath) + " does not exist", fo.isValid());
+            content = readFile(fo);
+            text2search = "getenv";
+            assertTrue("Can not find \"" + text2search + "\" in " + getFileName(execEnv, absPath),
+                    content.indexOf(text2search) >= 0);
+        } finally {
+            PasswordManager.getInstance().storePassword(execEnv, passwd, false);
+            ConnectionManager.getInstance().connectTo(execEnv);
+        }
     }
-        
+
+    @ForAllEnvironments
+    public void testOfflineCanRead() throws Exception {
+        String baseDir = null;
+        char[] passwd = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+
+            String allPath = "/usr/include/stdio.h";
+            String usrPath = baseDir + '/' + "usrFile";
+            //String grpPath = baseDir + '/' + "grpFile";
+
+            //runScript(String.format("touch %s; chmod 600 %s; touch %s; chmod 060 %s", usrPath, usrPath, grpPath, grpPath));
+            runScript(String.format("touch %s; chmod 600 %s;", usrPath, usrPath));
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            baseDirFO.refresh();
+
+            FileObject allFO = getFileObject(allPath);
+            assertTrue(allFO.canRead());
+            FileObject usrFO = getFileObject(usrPath);
+            assertTrue(usrFO.canRead());
+            //FileObject grpFO = getFileObject(grpPath);
+            //assertTrue(grpFO.canRead());
+
+            passwd = PasswordManager.getInstance().getPassword(execEnv);
+            ConnectionManager.getInstance().disconnect(execEnv);
+            NativeexecutionApiUtilTestBridge.resetHostInfoUtilsData();
+
+            assertTrue("canRead shuld return for " + allFO.getPath() + " when disconnected", allFO.canRead());
+            assertTrue("canRead shuld return for " + usrFO.getPath() + " when disconnected", usrFO.canRead());
+            //assertTrue(grpFO.canRead());
+        } finally {
+            PasswordManager.getInstance().storePassword(execEnv, passwd, false);
+            ConnectionManager.getInstance().connectTo(execEnv);
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteFileSystemOffilneTestCase.class);
     }

@@ -240,9 +240,13 @@ public final class IndexingManager {
      *  documents rather than saved files. For scans the indexers should prefer
      *  content of files. the document content may be useful for example for error badge
      *  recovery.
+     * @exception IllegalStateException when caller holds the parser lock
      * @since 1.40
      */
-    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) {
+    public void refreshIndexAndWait(URL root, Collection<? extends URL> files, boolean fullRescan, boolean checkEditor) throws IllegalStateException {
+        if (Utilities.holdsParserLock()) {
+            throw new IllegalStateException("The caller holds TaskProcessor.parserLock");   //NOI18N
+        }
         inRefreshIndexAndWait.set(Boolean.TRUE);
         try {
             if (IndexingManagerAccessor.getInstance().requiresReleaseOfCompletionLock()) {
@@ -375,8 +379,10 @@ public final class IndexingManager {
 
     /**
      * Runs the <code>operation</code> in protected mode. All events that would normally
-     * trigger rescanning are rememberd and processed after the operation finishes.
-     *
+     * trigger rescanning are remembered and processed after the operation finishes.
+     * <p>Note that events coming from other threads during the time that this
+     * thread is performing the operation will also be queued.
+     * Also note that this call is not reentrant.
      * @param operation The operation to run without rescanning while the operation
      *   is running.
      * @return Whatever value the <code>operation</code> returns.

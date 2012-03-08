@@ -177,14 +177,18 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
     }
 
 
-    static Bundle findBundle(String bsn) throws Exception {
+    public static Bundle findBundle(String bsn) throws Exception {
         Bundle[] arr = findFramework().getBundleContext().getBundles();
+        Bundle candidate = null;
         for (Bundle b : arr) {
             if (bsn.equals(b.getSymbolicName())) {
-                return b;
+                candidate = b;
+                if ((b.getState() & Bundle.ACTIVE) != 0) {
+                    return b;
+                }
             }
         }
-        return null;
+        return candidate;
     }
 
     private File changeManifest(File orig, String manifest) throws IOException {
@@ -216,7 +220,7 @@ public class NetigsoServicesTest extends SetupHid implements LookupListener {
         cnt++;
     }
 
-    static Framework findFramework() {
+    public static Framework findFramework() {
         Object o = Lookup.getDefault().lookup(NetigsoFramework.class);
         assertEquals("The right class", Netigso.class, o.getClass());
         Netigso f = (Netigso)o;

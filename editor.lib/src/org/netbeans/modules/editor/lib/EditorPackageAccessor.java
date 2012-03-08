@@ -47,7 +47,7 @@ package org.netbeans.modules.editor.lib;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.undo.CompoundEdit;
+import javax.swing.undo.UndoableEdit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.InvalidMarkException;
 import org.netbeans.editor.Mark;
@@ -87,7 +87,7 @@ public abstract class EditorPackageAccessor {
     protected EditorPackageAccessor() {
     }
 
-    public abstract CompoundEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
+    public abstract UndoableEdit BaseDocument_markAtomicEditsNonSignificant(BaseDocument doc);
     public abstract void BaseDocument_clearAtomicEdits(BaseDocument doc);
     public abstract MarkVector BaseDocument_getMarksStorage(BaseDocument doc);
     public abstract Mark BaseDocument_getMark(BaseDocument doc, MultiMark multiMark);

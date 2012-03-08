@@ -65,7 +65,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LoggingPermission;
-import org.openide.modules.Places;
 import org.openide.util.Lookup;
 
 /** NetBeans security manager implementation.
@@ -281,7 +280,7 @@ public class TopSecurityManager extends SecurityManager {
                     String n = c.getName();
                     synchronized (warnedClassesNH) {
                         if (warnedClassesNH.add(n)) {
-                            LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator at {1}", new Object[] {x, findCallStackLine(n)});
+                            LOG.log(Level.WARNING, "use of system property {0} has been obsoleted in favor of InstalledFileLocator/Places at {1}", new Object[] {x, findCallStackLine(n)});
                         }
                     }
                     break;

@@ -400,8 +400,8 @@ public JButtonOperator btProxyConfiguration() {
     }
     
     public void setRepositoryURL(String url) {
-        cboRepositoryURL().clearText();
-        cboRepositoryURL().typeText(url);
+        cboRepositoryURL().getTextField().clearText();
+        cboRepositoryURL().getTextField().typeText(url);
     }
 
     /** types text for cboRepositoryURL

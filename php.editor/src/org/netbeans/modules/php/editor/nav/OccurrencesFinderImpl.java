@@ -42,13 +42,7 @@
 
 package org.netbeans.modules.php.editor.nav;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.prefs.Preferences;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -82,6 +76,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     private int caretPosition;
     private volatile boolean cancelled;
 
+    @Override
     public void setCaretPosition(int position) {
         this.caretPosition = position;
     }
@@ -119,7 +114,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             return ;
         }
 
-        if(localRange2Attribs.size() > 0) {
+        if(!node.getBoolean(MarkOccurencesSettings.KEEP_MARKS, true) || localRange2Attribs.size() > 0) {
             //store the occurrences if not empty, return null in getOccurrences() otherwise
             range2Attribs = localRange2Attribs;
         }

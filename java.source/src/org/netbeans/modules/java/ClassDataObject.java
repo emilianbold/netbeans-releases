@@ -62,6 +62,7 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -72,7 +73,15 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-    
+@NbBundle.Messages({
+    "ClassResolver=Class Files"
+})
+@MIMEResolver.ExtensionRegistration(
+    position=101,
+    displayName="#ClassResolver",
+    extension="class",
+    mimeType="application/x-class-file"
+)    
 public final class ClassDataObject extends MultiDataObject {
     
     public ClassDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {

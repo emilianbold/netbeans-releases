@@ -78,7 +78,7 @@ public final class LazyCompoundStatementImpl extends LazyStatementImpl implement
     protected CsmParserResult resolveLazyStatement(TokenStream tokenStream) {
         CsmParser parser = CsmParserProvider.createParser(getContainingFile());
         if (parser != null) {
-            parser.init(this, tokenStream);
+            parser.init(this, tokenStream, null);
             return parser.parse(CsmParser.ConstructionKind.COMPOUND_STATEMENT);
         }
         assert false : "parser not found";

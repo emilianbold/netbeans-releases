@@ -57,7 +57,6 @@ import java.util.concurrent.RunnableFuture;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -83,9 +82,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.xml.EntityCatalog;
 import org.xml.sax.Attributes;
-import org.xml.sax.InputSource;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
 import org.xml.sax.ext.DefaultHandler2;
 
 @MimeRegistration(mimeType="text/x-netbeans-layer+xml", service=UpToDateStatusProviderFactory.class)
@@ -187,11 +186,9 @@ public class LayerHints implements UpToDateStatusProviderFactory {
                 public @Override Map<String,Integer> call() throws Exception {
                     // Adapted from OpenLayerFilesAction.openLayerFileAndFind:
                     final Map<String,Integer> lines = new HashMap<String,Integer>();
-                    InputSource in = new InputSource(layerURL.toExternalForm());
                     LOG.log(Level.FINE, "parsing {0}", layerURL);
-                    SAXParserFactory factory = SAXParserFactory.newInstance();
-                    SAXParser parser = factory.newSAXParser();
-                    class Handler extends DefaultHandler2 {
+                    XMLReader reader = SAXParserFactory.newInstance().newSAXParser().getXMLReader();
+                    reader.setContentHandler(new DefaultHandler2() {
                         private Locator locator;
                         private String path;
                         public @Override void setDocumentLocator(Locator l) {
@@ -212,11 +209,9 @@ public class LayerHints implements UpToDateStatusProviderFactory {
                             int slash = path.lastIndexOf('/');
                             path = slash == -1 ? null : path.substring(0, slash);
                         }
-                    }
-                    DefaultHandler2 handler = new Handler();
-                    parser.getXMLReader().setContentHandler(handler); // NOI18N
-                    parser.getXMLReader().setEntityResolver(EntityCatalog.getDefault());
-                    parser.parse(in, handler);
+                    });
+                    reader.setEntityResolver(EntityCatalog.getDefault());
+                    reader.parse(layerURL.toString());
                     return lines;
                 }
             });

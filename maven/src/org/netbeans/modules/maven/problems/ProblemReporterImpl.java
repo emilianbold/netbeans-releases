@@ -360,7 +360,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
         "MSG_SystemScope=There is a 'system' scoped dependency in the project but the path to the binary is not valid.\n"
             + "Please check that the path is absolute and points to an existing binary.",
         "ERR_NonLocal=Some dependency artifacts are not in the local repository.",
-        "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
+        "# {0} - list of artifacts", "MSG_NonLocal=Your project has dependencies that are not resolved locally. "
             + "Code completion in the IDE will not include classes from these dependencies or their transitive dependencies (unless they are among the open projects).\n"
             + "Please download the dependencies, or install them manually, if not available remotely.\n\n"
             + "The artifacts are:\n {0}"
@@ -383,7 +383,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
                     if (file == null) {
                         missingNonSibling = true;
                     } else {
-                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(file));
+                        SourceForBinaryQuery.Result2 result = SourceForBinaryQuery.findSourceRoots2(FileUtil.urlForArchiveOrDir(FileUtil.normalizeFile(file)));
                         if (!result.preferSources() || /* SourceForBinaryQuery.EMPTY_RESULT2.preferSources() so: */ result.getRoots().length == 0) {
                             missingNonSibling = true;
                         } // else #189442: typically a snapshot dep on another project
@@ -408,7 +408,7 @@ public final class ProblemReporterImpl implements ProblemReporter, Comparator<Pr
 
     @Messages({
         "ERR_NoParent=Parent POM file is not accessible. Project might be improperly setup.",
-        "MSG_NoParent=The parent POM with id {0}  was not found in sources or local repository. "
+        "# {0} - Maven coordinates", "MSG_NoParent=The parent POM with id {0} was not found in sources or local repository. "
             + "Please check that <relativePath> tag is present and correct, the version of parent POM in sources matches the version defined. \n"
             + "If parent is only available through a remote repository, please check that the repository hosting it is defined in the current POM."
     })

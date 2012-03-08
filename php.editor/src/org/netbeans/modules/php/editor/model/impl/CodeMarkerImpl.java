@@ -66,10 +66,12 @@ class CodeMarkerImpl implements CodeMarker {
          this.fileScope = fileScope;
     }
 
+    @Override
     public List<? extends CodeMarker> getAllMarkers() {
         return fileScope.getMarkers();
     }
 
+    @Override
     public OffsetRange getOffsetRange() {
         return range;
     }

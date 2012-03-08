@@ -71,6 +71,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -384,7 +385,7 @@ public class JavaSourceTaskFactoryTest extends NbTestCase {
     
     private class AccessorImpl implements JavaSourceTaskFactory.Accessor2 {
         
-        public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) {
+        public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority, TaskIndexingMode im) {
             addedTasks.put(js.getFileObjects().iterator().next(), task);
         }
 

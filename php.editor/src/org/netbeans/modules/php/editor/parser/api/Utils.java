@@ -135,6 +135,10 @@ public class Utils {
 
     }
 
+    public static ASTNode getNodeAfterOffset(ParserResult info, int offset) {
+        return (new AfterOffsetLocator()).locate(getRoot(info), offset);
+    }
+
     public static ASTNode[] getNodeHierarchyAtOffset(ASTNode node, int offset) {
         if (node.getStartOffset() > offset || node.getEndOffset() < offset) {
             return null;
@@ -157,6 +161,31 @@ public class Utils {
         }
 
         return (new SpecificClassNodeLocator(terminus)).locate(node, offset);
+    }
+
+    private static class AfterOffsetLocator extends DefaultVisitor {
+        private int offset;
+        private ASTNode resultNode = null;
+        private int lastStartOffset = -1;
+
+        public ASTNode locate(ASTNode beginNode, int offset) {
+            this.offset = offset;
+            scan(beginNode);
+            return resultNode;
+        }
+
+        @Override
+        public void scan(final ASTNode node) {
+            if (node != null) {
+                int startOffset = node.getStartOffset();
+                if (startOffset >= offset && (lastStartOffset == -1 || startOffset < lastStartOffset)) {
+                    lastStartOffset = startOffset;
+                    resultNode = node;
+                }
+                node.accept(this);
+            }
+        }
+
     }
 
     private static class NodeLocator extends DefaultVisitor {

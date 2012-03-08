@@ -179,6 +179,42 @@ public class MoveFieldTest extends MoveBaseTest {
                 + "}\n"));
     }
     
+    public void testMoveInitializedFieldSystem() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int i;\n"
+                + "    private int k = System.identityHashCode(System.out);\n"
+                + "\n"
+                + "    public static int calculate() {\n"
+                + "        retun 42;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{2}, src.getFileObject("v/B.java"), Visibility.ASIS, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int i;\n"
+                + "\n"
+                + "    public static int calculate() {\n"
+                + "        retun 42;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "    private int k = System.identityHashCode(System.out);\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "}\n"));
+    }
+    
     public void testMoveInitializedField2() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -213,5 +249,18 @@ public class MoveFieldTest extends MoveBaseTest {
                 new File("t/C.java", "package t;\n"
                 + "public class C {\n"
                 + "}\n"));
+    }
+    
+    
+    public void testMoveGenericField() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A <E> {\n"
+                + "    private E i;\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("v/B.java"), Visibility.ASIS, false, new Problem(true, "ERR_MoveGenericField"));
     }
 }

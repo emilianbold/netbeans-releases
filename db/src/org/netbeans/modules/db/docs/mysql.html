@@ -28,19 +28,21 @@
         
         <ul>
             <li><strong>Create Database.</strong> Brings up a dialog for creating a database, including sample databases.
-            <ul class=note"><li>
-<b>Note:</b> When using MySQL 5.0 with Windows, some foreign characters may not be used when creating a database.</li></ul></li>
-    <li><strong>Start.</strong> Starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
+                <ul class="note">
+                    <li><b>Note:</b> When using MySQL 5.0 with Windows, some foreign characters may not be used when creating a database.</li>
+                </ul>
+            </li>
+            <li><strong>Start.</strong> Starts the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
             <li><strong>Stop.</strong> Stops the database server. If the user chooses this action and no start or stop command is set, then they are prompted to set the command.</li>
             <li><strong>Connect.</strong> Connects the IDE to the MySQL database server. </li>
             <li><strong>Disconnect</strong>. Disconnects the IDE ffrom the MySQL database server.</li>
             
-    <li><strong>Delete.</strong> Removes the MySQL node. It also marks the node as removed, so that next time the user starts up the IDE will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
-           <li><strong>Refresh.</strong> Refreshes the list of databases based on what's currently on the server.</li>
+            <li><strong>Delete.</strong> Removes the MySQL node. It also marks the node as removed, so that next time the user starts up the IDE will not auto-register the node again. The user will need to manually register the node using Databases &gt; Register MySQL Server.</li>
+            <li><strong>Refresh.</strong> Refreshes the list of databases based on what's currently on the server.</li>
             <li><strong>Run Administration Tool.</strong> Brings up the administration tool that is registered with the runtime. The provider either invokes the admin tool as a separate system process, or if it is a web-based tool, brings up the provided URL in the default browser. If the administer command has not been set, then when the user picks the action, they are prompted to set the path to the command. </li>
             <li><strong>Properties.</strong>  Brings up a dialog that allows the user to configure important settings for the server. There are two tabs, one for basic settings and one for setting command paths to administrative commands (start, stop, administer) </li>
            
-            </ol>
+            </ul>
 
         <p>When you expand the MySQL node, MySQL databases detected by the IDE appear under the node. By right-clicking a database, you can either connect to  or delete the database.</p>
   
@@ -52,8 +54,7 @@
           <li><strong>Register MySQL Database.</strong> If the IDE does not auto-detect and register the MySQL node, the user can manually register it. There will be a new action under Databases to register the server</li>
           <li><strong>Enable Debug.</strong> Once debug mode is enabled, the IDE sends SQL statements to the Output window, 
                 where you can view the log of statements. Debug mode does not list all SQL statements, 
-                only those which you cannot see. For example, SQL queries for viewing data 
-          are not logged.</li>
+                only those which you cannot see. For example, SQL queries for viewing data are not logged.</li>
           <li><strong>Disable Debug.</strong> This terminates the debugging function. </li>
         </ul>
 

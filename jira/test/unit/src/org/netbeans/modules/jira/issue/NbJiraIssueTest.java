@@ -66,6 +66,7 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.NbJiraIssue.CustomField;
 import org.netbeans.modules.jira.issue.NbJiraIssue.WorkLog;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -641,7 +642,8 @@ public class NbJiraIssueTest extends NbTestCase {
 
     private JiraRepository getRepository() {
         if (repository == null) {
-            repository = new JiraRepository("jira", "jira", REPO_URL, REPO_USER, REPO_PASSWD, null, null);
+            RepositoryInfo info = new RepositoryInfo("jira", JiraConnector.ID, JiraTestUtil.REPO_URL, "jira", "jira", JiraTestUtil.REPO_USER, null, JiraTestUtil.REPO_PASSWD.toCharArray() , null);
+            repository = new JiraRepository(info);
         }
         return repository;
     }

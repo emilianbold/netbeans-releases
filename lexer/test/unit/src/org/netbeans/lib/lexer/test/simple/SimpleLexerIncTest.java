@@ -382,9 +382,10 @@ public class SimpleLexerIncTest extends NbTestCase {
         offset++;
         assertTrue(ts.moveNext());
 //        LexerTestUtilities.assertTokenEquals(ts, TestTokenId.IDENTIFIER, id2, offset);
-        checkTokenText(ts.token(), id2);
-//        tokenText = ts.token().text();
-//        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
+//        checkTokenText(ts.token(), id2);
+        Token token = ts.token();
+        tokenText = token.text();
+        assert (!(tokenText instanceof String)) : "Should not be a String here"; // beware of e.g. token.toString() call during debugging
 //        checkText(tokenText, id2, false);
         offset += id2.length();
         assertTrue(ts.moveNext());
@@ -397,6 +398,13 @@ public class SimpleLexerIncTest extends NbTestCase {
         
 
         doc.insertString(0, id1, null); // Insert extra chars
+        
+        // Now force the tokenText to become cached (after insert)
+        for (int i = 0; i < 10; i++) {
+            tokenText.toString();
+        }
+        assert (token.text() instanceof String) : "Expecting String instance";
+        
 
         ts = hi.tokenSequence();
         offset = 0;

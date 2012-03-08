@@ -43,16 +43,16 @@
 package org.netbeans.modules.bugtracking.util;
 
 import java.util.Comparator;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class ConnectorComparator implements Comparator<BugtrackingConnector>{
+public class ConnectorComparator implements Comparator<DelegatingConnector>{
 
     @Override
-    public int compare(BugtrackingConnector c1, BugtrackingConnector c2) {
+    public int compare(DelegatingConnector c1, DelegatingConnector c2) {
         if(c1 == null && c2 == null) {
             return 0;
         }

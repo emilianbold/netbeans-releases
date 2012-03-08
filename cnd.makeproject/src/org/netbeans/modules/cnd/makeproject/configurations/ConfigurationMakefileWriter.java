@@ -1423,7 +1423,7 @@ public class ConfigurationMakefileWriter {
 
     private static String getOutput(MakeConfigurationDescriptor projectDescriptor, MakeConfiguration conf, CompilerSet compilerSet) {
         String output = conf.getOutputValue();
-        if (!conf.getDevelopmentHost().isLocalhost()) {
+        if (!conf.getDevelopmentHost().isLocalhost() && ! output.startsWith("$") && ! CndPathUtilitities.isPathAbsolute(output)) { //NOI18N
             PathMap mapper = RemoteSyncSupport.getPathMap(projectDescriptor.getProject());
             if (mapper != null) {
                 output = mapper.getRemotePath(output, true);

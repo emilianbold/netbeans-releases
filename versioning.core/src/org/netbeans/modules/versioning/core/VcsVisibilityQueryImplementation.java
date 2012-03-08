@@ -201,7 +201,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
             boolean visible = true;
             VersioningSystem system = VersioningManager.getInstance().getOwner(file, !file.isDirectory());
             if (system != null) {
-                VCSVisibilityQuery vqi = system.getVisibility();
+                VCSVisibilityQuery vqi = system.getVisibilityQuery();
                 if(vqi == null) {
                     visible = true;
                 } else {

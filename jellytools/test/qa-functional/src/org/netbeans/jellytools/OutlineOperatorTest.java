@@ -39,159 +39,93 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.modules.debugger.actions.DebugJavaFileAction;
+import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.ToggleBreakpointAction;
 import org.netbeans.jellytools.nodes.JavaNode;
 import org.netbeans.jellytools.nodes.OutlineNode;
-import org.netbeans.jemmy.EventTool;
+import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.openide.nodes.Node.Property;
 
 /**
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Vojtech Sigler
  */
 public class OutlineOperatorTest extends JellyTestCase {
 
-    public OutlineOperatorTest(String isName)
-    {
+    public static final String[] tests = new String[]{"testNodes"};
+
+    public OutlineOperatorTest(String isName) {
         super(isName);
     }
 
-     /** Use for internal test execution inside IDE
-     * @param args command line arguments
-     */
-    public static void main(java.lang.String[] args) {
-        TestRunner.run(suite());
-    }
-
-    public static final String[] tests = new String[] {
-                "testNodes" };
-
-    /** Method used for explicit testsuite definition
-     * @return  created suite
+    /**
+     * Method used for explicit test suite definition
+     *
+     * @return created suite
      */
     public static Test suite() {
-        
-        return createModuleTest(OutlineOperatorTest.class,
-                tests);
+        return createModuleTest(OutlineOperatorTest.class, tests);
     }
 
     @Override
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
-        
         openDataProjects("SampleProject");
-
-        ProjectsTabOperator lrPTO = ProjectsTabOperator.invoke();
-        JavaNode lrTestClass = new JavaNode(lrPTO.getProjectRootNode("SampleProject"), "Source Packages|sample1|TestOutline.java");
-
+        JavaNode lrTestClass = new JavaNode(new SourcePackagesNode("SampleProject"), "sample1|TestOutline.java");
         lrTestClass.open();
-
         EditorOperator eo = new EditorOperator("TestOutline.java");
         eo.setCaretPosition(67, 1);
-
         new ToggleBreakpointAction().perform();
-        
-        new EventTool().waitNoEvent(500);
-        
         String windowMenu = Bundle.getStringTrimmed("org.netbeans.core.windows.resources.Bundle", "Menu/Window");
         String debugMenu = Bundle.getStringTrimmed("org.netbeans.modules.debugger.resources.Bundle", "Menu/Window/Debug");
         String watchesItem = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchesAction");
-
-        (new Action(windowMenu + "|" + debugMenu +"|" + watchesItem,null)).perform();
-
+        new Action(windowMenu + "|" + debugMenu + "|" + watchesItem, null).perform();
         String debug = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.Bundle", "Menu/RunProject");
         String newWatch = Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_New_Watch");
-
-        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
-
-        NbDialogOperator dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
-
-        JEditorPaneOperator txtWatch = new JEditorPaneOperator (dia);
-
-        txtWatch.typeText("test");
-
-        dia.ok();
-
-        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
-
-        dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
-
-        txtWatch = new JEditorPaneOperator (dia);
-
-        txtWatch.typeText("test");
-
-        dia.ok();
-
-        (new ActionNoBlock(debug + "|" + newWatch, null)).performMenu();
-
-        dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
-
-        txtWatch = new JEditorPaneOperator (dia);
-
-        txtWatch.typeText("test");
-
-        dia.ok();
-
+        for (int i = 0; i < 3; i++) {
+            new ActionNoBlock(debug + "|" + newWatch, null).performMenu();
+            NbDialogOperator dia = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.debugger.ui.actions.Bundle", "CTL_WatchDialog_Title"));
+            JEditorPaneOperator txtWatch = new JEditorPaneOperator(dia);
+            txtWatch.typeText("test");
+            dia.ok();
+        }
         new DebugJavaFileAction().perform(lrTestClass);
-
-
-        Thread.sleep(6000);
-
+        MainWindowOperator.getDefault().waitStatusText("stopped at");
     }
 
-    public void tearDown()
-    {
-
+    @Override
+    public void tearDown() {
+        new FinishDebuggerAction().perform();
+        new EditorOperator("TestOutline.java").close();
     }
 
-    public void testNodes() throws Exception
-    {
-        TopComponentOperator tco = new TopComponentOperator(
+    public void testNodes() throws Exception {
+        TopComponentOperator tcoVariables = new TopComponentOperator("Variables");
+        TopComponentOperator tcoBreakpoints = new TopComponentOperator("Breakpoints");
+        TopComponentOperator tcoWatches = new TopComponentOperator(
                 Bundle.getString("org.netbeans.modules.debugger.ui.views.Bundle", "CTL_Watches_view"));
-
-        Thread.sleep(5000);
-
-        OutlineOperator lrOO = new OutlineOperator(tco);
-
+        OutlineOperator lrOO = new OutlineOperator(tcoWatches);
         lrOO.getRootNode("test").expand();
-
         lrOO.getRootNode("test", 1).expand();
-
-        OutlineNode lrNode = lrOO.getRootNode("test",2);
-
+        OutlineNode lrNode = lrOO.getRootNode("test", 2);
         lrNode.expand();
-
         OutlineNode lrNewNode = new OutlineNode(lrNode, "test");
-
-        new Action(null,Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
+        new Action(null, Bundle.getStringTrimmed("org.netbeans.modules.debugger.jpda.ui.actions.Bundle",
                 "CTL_CreateVariable")).performPopup(lrNewNode);
-
         OutlineNode lrFixedWatch = lrOO.getRootNode("test");
 
-        Thread.sleep(20000);
         int lnNodeRow = lrOO.getLocationForPath(lrNewNode.getTreePath()).y;
         int lnFixedRow = lrOO.getLocationForPath(lrFixedWatch.getTreePath()).y;
-
         Property lrNodeProperty = (Property) lrOO.getValueAt(lnNodeRow, 2);
         Property lrFixedProperty = (Property) lrOO.getValueAt(lnFixedRow, 2);
         assertTrue("Values of the original node and the fixed watch do not match!",
                 lrNodeProperty.getValue().toString().equals(lrFixedProperty.getValue().toString()));
-
-        lrNodeProperty = (Property) lrOO.getValueAt(6, 2);
-        lrFixedProperty = (Property) lrOO.getValueAt(0, 2);
-
-        assertTrue("Values of the original node and the fixed watch do not match! (absolute row values)",
-                lrNodeProperty.getValue().toString().equals(lrFixedProperty.getValue().toString()));
-
     }
 }

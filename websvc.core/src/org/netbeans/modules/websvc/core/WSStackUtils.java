@@ -65,12 +65,12 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.JaxRpc;
+import org.netbeans.modules.javaee.specs.support.api.JaxRpcStackSupport;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.javaee.specs.support.api.JaxWsStackSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpc;
-import org.netbeans.modules.websvc.wsstack.jaxrpc.JaxRpcStackProvider;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -106,7 +106,7 @@ public class WSStackUtils {
     
      public boolean isWsitSupported() {
         if (j2eePlatform != null) {
-            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            WSStack<JaxWs> wsStack = JaxWsStackSupport.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.WSIT);
         }
         return false;
@@ -114,7 +114,7 @@ public class WSStackUtils {
 
      public boolean isJsr109Supported() {
         if(j2eePlatform != null){
-            WSStack<JaxWs> wsStack = JaxWsStackProvider.getJaxWsStack(j2eePlatform);
+            WSStack<JaxWs> wsStack = JaxWsStackSupport.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxWs.Feature.JSR109);
         }
         return false;
@@ -122,7 +122,7 @@ public class WSStackUtils {
     
     public boolean isJsr109OldSupported() {
         if (j2eePlatform != null) {
-            WSStack<JaxRpc> wsStack = JaxRpcStackProvider.getJaxWsStack(j2eePlatform);
+            WSStack<JaxRpc> wsStack = JaxRpcStackSupport.getJaxWsStack(j2eePlatform);
             return wsStack != null && wsStack.isFeatureSupported(JaxRpc.Feature.JSR109);
         }
         return false;

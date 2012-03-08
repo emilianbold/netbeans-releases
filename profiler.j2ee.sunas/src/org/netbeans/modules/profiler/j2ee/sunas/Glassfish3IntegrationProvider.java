@@ -120,7 +120,7 @@ public class Glassfish3IntegrationProvider extends SunASAutoIntegrationProvider 
             String option = tk.nextToken();
             if (option.trim().isEmpty()) continue;
             
-            sb.append(createJvmOptionsElementText(option));
+            sb.append(createJvmOptionsElementText(option.replace("&nbsp;", " "))); // NOI18N
         }
         
         return sb.toString();

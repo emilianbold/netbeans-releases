@@ -56,6 +56,7 @@ import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
@@ -66,6 +67,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 
+@MIMEResolver.Registration(
+    displayName="#AntResolver",
+    position=310,
+    resource="../resources/ant-mime-resolver.xml"
+)
 public class AntProjectDataObject extends MultiDataObject implements PropertyChangeListener {
 
     public static final String MIME_TYPE = "text/x-ant+xml"; // NOI18N

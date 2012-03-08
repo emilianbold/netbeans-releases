@@ -301,7 +301,8 @@ public class TestVCSInterceptor extends VCSInterceptor {
             deleteRecursively(proxy);
         }
         private void deleteRecursively(VCSFileProxy proxy) throws IOException {
-            if(proxy.isFile()) proxy.toFile().delete();;
+            assertProxy(proxy);
+            if(proxy.isFile()) proxy.toFile().delete();
             VCSFileProxy[] files = proxy.listFiles();
             if(files != null) {
                 for (VCSFileProxy f : files) {
@@ -314,6 +315,8 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private class DefaultMoveHandler implements MoveHandler {
         @Override
         public void move(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            assertProxy(from);
+            assertProxy(to);
             if(!from.toFile().renameTo(to.toFile())) {
                 throw new IOException("wasn't able t rename " + from + " to " + to);
             }
@@ -323,6 +326,8 @@ public class TestVCSInterceptor extends VCSInterceptor {
     private class DefaultCopyHandler implements CopyHandler {
         @Override
         public void copy(VCSFileProxy from, VCSFileProxy to) throws IOException {
+            assertProxy(from);
+            assertProxy(to);
             copy(from.toFile(), to.toFile());
         }
         
@@ -344,5 +349,10 @@ public class TestVCSInterceptor extends VCSInterceptor {
                 }
             }
         }
+    }
+    
+    private void assertProxy(VCSFileProxy proxy) {
+        assert proxy != null;
+        assert proxy.toFile() != null;
     }
 }

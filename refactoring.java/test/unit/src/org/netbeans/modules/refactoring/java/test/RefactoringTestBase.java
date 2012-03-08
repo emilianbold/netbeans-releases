@@ -48,13 +48,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeUtilities;
@@ -65,10 +63,10 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
-import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.gototest.TestLocator;
@@ -105,7 +103,7 @@ public class RefactoringTestBase extends NbTestCase {
             TestUtilities.copyStringToFile(fo, f.content);
         }
 
-        RepositoryUpdater.getDefault().refreshAll(false, true, false, null);
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null, true);
     }
 
     protected void verifyContent(FileObject sourceRoot, File... files) throws Exception {
@@ -114,7 +112,7 @@ public class RefactoringTestBase extends NbTestCase {
         todo.add(sourceRoot);
 
         Map<String, String> content = new HashMap<String, String>();
-        
+
         FileUtil.refreshFor(FileUtil.toFile(sourceRoot));
 
         while (!todo.isEmpty()) {
@@ -181,151 +179,152 @@ public class RefactoringTestBase extends NbTestCase {
     protected FileObject src;
     protected FileObject test;
     protected Project prj;
+    private ClassPath sourcePath;
 
     @Override
     protected void setUp() throws Exception {
         TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
         MimeTypes.setAllMimeTypes(new HashSet<String>());
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
-            "org/netbeans/modules/java/source/resources/layer.xml",
-            "org/netbeans/modules/java/editor/resources/layer.xml",
-            "org/netbeans/libs/freemarker/layer.xml",
+                    "org/netbeans/modules/java/source/resources/layer.xml",
+                    "org/netbeans/modules/java/editor/resources/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
-            new ClassPathProvider() {
-            @Override
-                public ClassPath findClassPath(FileObject file, String type) {
-                    if ((src != null && (file == src || FileUtil.isParentOf(src, file)))
-                            || (test != null && (file == test || FileUtil.isParentOf(test, file)))){
-                        if (ClassPath.BOOT.equals(type)) {
-                            return ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path"));
-                        }
-                        if (ClassPath.COMPILE.equals(type)) {
-                            return ClassPathSupport.createClassPath(new FileObject[0]);
-                        }
-                        if (ClassPath.SOURCE.equals(type)) {
-                            return ClassPathSupport.createClassPath(src, test);
-                        }
-                    }
+                    new ClassPathProvider() {
+                        @Override
+                        public ClassPath findClassPath(FileObject file, String type) {
+                    if (sourcePath != null && sourcePath.contains(file)){
+                                if (ClassPath.BOOT.equals(type)) {
+                                    return ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path"));
+                                }
+                                if (ClassPath.COMPILE.equals(type)) {
+                                    return ClassPathSupport.createClassPath(new FileObject[0]);
+                                }
+                                if (ClassPath.SOURCE.equals(type)) {
+                                    return sourcePath;
+                                }
+                            }
 
-                    return null;
-                }
-            },
-            new ProjectFactory() {
-            @Override
-            public boolean isProject(FileObject projectDirectory) {
-                return src != null && src.getParent() == projectDirectory;
-            }
-            @Override
-            public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
+                            return null;
+                        }
+                    },
+                    new ProjectFactory() {
+                        @Override
+                        public boolean isProject(FileObject projectDirectory) {
+                            return src != null && src.getParent() == projectDirectory;
+                        }
+                        @Override
+                        public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;
-                return new Project() {
-                    @Override
-                    public FileObject getProjectDirectory() {
-                        return projectDirectory;
-                    }
-                    @Override
-                    public Lookup getLookup() {
-                        final Project p = this;
-                        return Lookups.singleton(new Sources() {
+                            return new Project() {
+                                @Override
+                                public FileObject getProjectDirectory() {
+                                    return projectDirectory;
+                                }
+                                @Override
+                                public Lookup getLookup() {
+                                    final Project p = this;
+                                    return Lookups.singleton(new Sources() {
 
-                            @Override
-                            public SourceGroup[] getSourceGroups(String type) {
-                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "", "", null, null)};//,
-//                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
-                            }
+                                        @Override
+                                        public SourceGroup[] getSourceGroups(String type) {
+                                return new SourceGroup[] {GenericSources.group(p, src.getParent(), "source", "Java Sources", null, null),
+                                                        GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
+                                        }
 
-                            @Override
-                            public void addChangeListener(ChangeListener listener) {
-                            }
+                                        @Override
+                                        public void addChangeListener(ChangeListener listener) {
+                                        }
 
-                            @Override
-                            public void removeChangeListener(ChangeListener listener) {
-                            }
-                        });
-                    }
-                };
-            }
-            @Override
+                                        @Override
+                                        public void removeChangeListener(ChangeListener listener) {
+                                        }
+                                    });
+                                }
+                            };
+                        }
+                        @Override
             public void saveProject(Project project) throws IOException, ClassCastException {}
-            },
-            new TestLocator() {
+                    },
+                    new TestLocator() {
 
-            @Override
-            public boolean appliesTo(FileObject fo) {
-                return true;
-            }
+                        @Override
+                        public boolean appliesTo(FileObject fo) {
+                            return true;
+                        }
 
-            @Override
-            public boolean asynchronous() {
-                return false;
-            }
+                        @Override
+                        public boolean asynchronous() {
+                            return false;
+                        }
 
-            @Override
-            public LocationResult findOpposite(FileObject fo, int caretOffset) {
-                ClassPath srcCp;
-        
-                if ((srcCp = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null) {
-                    return new LocationResult("File not found"); //NOI18N
-                }
+                        @Override
+                        public LocationResult findOpposite(FileObject fo, int caretOffset) {
+                            ClassPath srcCp;
 
-                String baseResName = srcCp.getResourceName(fo, '/', false);
-                String testResName = getTestResName(baseResName, fo.getExt());
-                assert testResName != null;
-                FileObject fileObject = test.getFileObject(testResName);
+                            if ((srcCp = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null) {
+                                return new LocationResult("File not found"); //NOI18N
+                            }
+
+                            String baseResName = srcCp.getResourceName(fo, '/', false);
+                            String testResName = getTestResName(baseResName, fo.getExt());
+                            assert testResName != null;
+                            FileObject fileObject = test.getFileObject(testResName);
                 if(fileObject != null) {
-                    return new LocationResult(fileObject, -1);
-                }
-                
-                return new LocationResult("File not found"); //NOI18N
-            }
+                                return new LocationResult(fileObject, -1);
+                            }
 
-            @Override
-            public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
-                throw new UnsupportedOperationException("This should not be called on synchronous locators.");
-            }
+                            return new LocationResult("File not found"); //NOI18N
+                        }
 
-            @Override
-            public FileType getFileType(FileObject fo) {
+                        @Override
+                        public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
+                            throw new UnsupportedOperationException("This should not be called on synchronous locators.");
+                        }
+
+                        @Override
+                        public FileType getFileType(FileObject fo) {
                 if(FileUtil.isParentOf(test, fo)) {
-                    return FileType.TEST;
+                                return FileType.TEST;
                 } else if(FileUtil.isParentOf(src, fo)) {
-                    return FileType.TESTED;
-                }
-                return FileType.NEITHER;
-            }
-            
-            private String getTestResName(String baseResName, String ext) {
+                                return FileType.TESTED;
+                            }
+                            return FileType.NEITHER;
+                        }
+
+                        private String getTestResName(String baseResName, String ext) {
                 StringBuilder buf
                         = new StringBuilder(baseResName.length() + ext.length() + 10);
-                buf.append(baseResName).append("Test");                         //NOI18N
-                if (ext.length() != 0) {
-                    buf.append('.').append(ext);
-                }
-                return buf.toString();
-            }
-        }});
+                            buf.append(baseResName).append("Test");                         //NOI18N
+                            if (ext.length() != 0) {
+                                buf.append('.').append(ext);
+                            }
+                            return buf.toString();
+                        }
+                    }});
         Main.initializeURLFactory();
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
         org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj = ProjectManager.getDefault().findProject(src.getParent())}, false);
         MimeTypes.setAllMimeTypes(Collections.singleton("text/x-java"));
-        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {ClassPathSupport.createClassPath(src),
-                                                                                    ClassPathSupport.createClassPath(test)});
+        sourcePath = ClassPathSupport.createClassPath(src, test);
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
         RepositoryUpdater.getDefault().start(true);
         super.setUp();
         FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Empty.java");
+        System.setProperty("org.netbeans.modules.parsing.impl.Source.excludedTasks", ".*");
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
-        org.netbeans.api.project.ui.OpenProjects.getDefault().open(new Project[] {prj}, false);
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        org.netbeans.api.project.ui.OpenProjects.getDefault().close(new Project[] {prj});
         prj = null;
     }
 
     private void prepareTest() throws Exception {
         FileObject workdir = SourceUtilsTestUtil.makeScratchDir(this);
-        
+
         FileObject projectFolder = FileUtil.createFolder(workdir, "testProject");
         src = FileUtil.createFolder(projectFolder, "src");
         test = FileUtil.createFolder(projectFolder, "test");
@@ -350,12 +349,16 @@ public class RefactoringTestBase extends NbTestCase {
         }
         
     }
-    
+
     protected static boolean problemIsFatal(List<Problem> problems) {
         for (Problem problem : problems) {
-            if (problem.isFatal()) {
-                return true;
-            }
+            Problem next = problem;
+            do {
+                if (next.isFatal()) {
+                    return true;
+                }
+                next = next.getNext();
+            } while (next != null);
         }
         return false;
     }

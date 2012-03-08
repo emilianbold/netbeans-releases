@@ -71,7 +71,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
@@ -87,6 +86,7 @@ import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.file.LazyListModel;
+import org.netbeans.modules.sampler.Sampler;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -774,15 +774,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             return null;
         }
 
-        FileObject fo = FileUtil.getConfigFile("Actions/Profile/org-netbeans-modules-profiler-actions-SelfSamplerAction.instance");     //NOI18N
-        if (fo == null) {
-            return null;
-        }
-        Action a = (Action)fo.getAttribute("delegate"); // NOI18N
-        if (a == null) {
-            return null;
-        }
-        Object profiler = a.getValue("logger-jumpto"); //NOI18N
+        Sampler profiler = Sampler.createSampler("jumpto"); //NOI18N
         if (profiler == null) {
             return null;
         }
@@ -791,10 +783,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
     private class Profile implements Runnable {
         private final long time;
-        private volatile  Object profiler;
+        private volatile  Sampler profiler;
         private volatile boolean profiling;
 
-        public Profile(Object profiler) {
+        public Profile(Sampler profiler) {
             time = System.currentTimeMillis();
             this.profiler = profiler;
         }
@@ -806,17 +798,16 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 
         @Override
         public synchronized void run() {
-            profiling = true;
-            if (profiler instanceof Runnable) {
-                Runnable r = (Runnable)profiler;
-                r.run();
+            if (profiler != null) {
+                profiling = true;
+                profiler.start();
             }
         }
 
         private synchronized void stop() throws Exception {
             long delta = System.currentTimeMillis() - time;
 
-            ActionListener ss = (ActionListener)profiler;
+            Sampler ss = profiler;
             profiler = null;
             if (!profiling) {
                 return;
@@ -824,7 +815,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             try {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 DataOutputStream dos = new DataOutputStream(out);
-                ss.actionPerformed(new ActionEvent(dos, 0, "write")); // NOI18N
+                ss.stopAndWriteTo(dos);
                 dos.close();
                 if (dos.size() > 0) {
                     Object[] params = new Object[]{out.toByteArray(), delta, "GoToType" };      //NOI18N

@@ -53,7 +53,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.modules.ide.ergonomics.fod.FoDFileSystem;
+import org.netbeans.modules.ide.ergonomics.fod.FoDLayersProvider;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
@@ -95,7 +95,7 @@ public final class FeatureOnDemandWizardIterator implements WizardDescriptor.Pro
     
     private static WizardDescriptor.InstantiatingIterator getRealNewMakeProjectWizardIterator (FileObject template) {
         WizardDescriptor.InstantiatingIterator res = null;
-        if (FoDFileSystem.getInstance().getDelegateFileSystem (template) != null) {
+        if (FoDLayersProvider.getInstance().getDelegateFileSystem (template) != null) {
             return null;
         }
         FileObject fo = FileUtil.getConfigFile(template.getPath ());

@@ -69,8 +69,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.visitor.FindSubstitutions;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.windows.TopComponent;
+import org.openide.util.Lookup;
 
 /**
  * Utility class containing methods to query the model for completion suggestions.
@@ -207,6 +206,21 @@ public class CompletionUtil {
         }
     }
     
+    private static AXIComponent findOriginal(AXIComponent c) {
+        while (true) {
+            switch (c.getComponentType()) {
+                case REFERENCE:
+                    c = c.getSharedComponent();
+                    break;
+                case PROXY:
+                    c = c.getOriginal();
+                    break;
+                default:
+                    return c;
+            }
+        }
+    }
+    
     /**
      * Returns the list of attributes for a given element.
      */
@@ -217,7 +231,7 @@ public class CompletionUtil {
             return null;
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractAttribute aa: element.getAttributes()) {
-            AXIComponent original = aa.getOriginal();
+            AXIComponent original = findOriginal(aa);
             if(original.getTargetNamespace() == null) {  //no namespace
                 CompletionResultItem item = createResultItem(original, null, context);
                 if(item != null)
@@ -252,7 +266,7 @@ public class CompletionUtil {
         
         List<CompletionResultItem> results = new ArrayList<CompletionResultItem>();
         for(AbstractElement ae: element.getChildElements()) {
-            AXIComponent original = ae.getOriginal();
+            AXIComponent original = findOriginal(ae);
             if(original.getTargetNamespace() == null) {  //no namespace
                 CompletionResultItem item = createResultItem(original, null, context);
                 if(item != null) {
@@ -478,12 +492,13 @@ public class CompletionUtil {
         CompletionModel cm) {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
+            ae = findOriginal(ae);
             if(context.getDefaultNamespace() != null &&
                !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;
-                String prefix = context.suggestPrefix("ns1");
+                String prefix = context.suggestPrefix(ae.getTargetNamespace());
                 CompletionModel m = new CompletionModelEx(context, prefix,
                     ae.getModel().getSchemaModel());
                 context.addCompletionModel(m);
@@ -828,7 +843,7 @@ public class CompletionUtil {
      * and for those who do not declare namespaces in root tag.
      */
     public static boolean canProvideCompletion(BaseDocument doc) {
-        FileObject file = getPrimaryFile();
+        FileObject file = getPrimaryFile(doc);
         if(file == null)
             return false;
         
@@ -844,15 +859,16 @@ public class CompletionUtil {
         return true;
     }
     
-    public static FileObject getPrimaryFile() {
-        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
-        if(activatedTC == null)
+    public static FileObject getPrimaryFile(Document doc) {
+        Object o = doc.getProperty(Document.StreamDescriptionProperty);
+        if (o instanceof FileObject) {
+            return (FileObject) o;
+        } else if (o instanceof Lookup.Provider) {
+            //Note: DataObject is a Lookup.Provider
+            return ((Lookup.Provider) o).getLookup().lookup(FileObject.class);
+        } else {
             return null;
-        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
-        if(activeFile == null)
-            return null;
-        
-        return activeFile.getPrimaryFile();
+        }        
     }
 
     /*

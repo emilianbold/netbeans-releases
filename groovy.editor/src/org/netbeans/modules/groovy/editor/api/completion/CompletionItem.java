@@ -46,12 +46,11 @@ import groovy.lang.MetaMethod;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.ImageIcon;
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
-import java.util.logging.Logger;
-import java.util.logging.Level;
-import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -61,10 +60,10 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.util.ImageUtilities;
@@ -77,16 +76,14 @@ import org.openide.util.ImageUtilities;
 // FIXME static accessors
 public abstract class CompletionItem extends DefaultCompletionProposal {
 
-    private static final Logger LOG = Logger.getLogger(CompletionItem.class.getName());
-
     protected final GroovyElement element;
-
+    
+    private static final Logger LOG = Logger.getLogger(CompletionItem.class.getName());
     private static volatile ImageIcon groovyIcon;
-
     private static volatile ImageIcon javaIcon;
-
     private static volatile ImageIcon newConstructorIcon;
 
+    
     private CompletionItem(GroovyElement element, int anchorOffset) {
         this.element = element;
         this.anchorOffset = anchorOffset;
@@ -99,6 +96,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return element.getName();
     }
 
+    @Override
     public ElementHandle getElement() {
         LOG.log(Level.FINEST, "getElement() element : {0}", element);
 
@@ -121,6 +119,32 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         cls = cls.substring(cls.lastIndexOf('.') + 1);
 
         return cls + "(" + getKind() + "): " + getName();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CompletionItem other = (CompletionItem) obj;
+        if ((this.getName() == null) ? (other.getName() != null) : !this.getName().equals(other.getName())) {
+            return false;
+        }
+        if (this.getKind() != other.getKind()) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 47 * hash + (this.getName() != null ? this.getName().hashCode() : 0);
+        hash = 47 * hash + (this.getKind() != null ? this.getKind().hashCode() : 0);
+        return hash;
     }
 
     public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
@@ -462,7 +486,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
                 String sig = signature.substring(start + 1, end);
 
-                StringBuffer buf = new StringBuffer();
+                StringBuilder buf = new StringBuilder();
 
                 for (String param : sig.split(",")) {
                     if (buf.length() > 0) {
@@ -690,12 +714,13 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class ConstructorItem extends CompletionItem {
 
-        private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
-        private boolean expand; // should this item expand to a constructor body?
+        private final boolean expand; // should this item expand to a constructor body?
+        private final String name;
         private final String paramListString;
         private final List<ParameterDescriptor> paramList;
 
+        
         public ConstructorItem(String name, String paramListString, List<ParameterDescriptor> paramList, int anchorOffset, boolean expand) {
             super(null, anchorOffset);
             this.name = name;
@@ -707,7 +732,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             if (expand) {
-                return name + " - generate"; // NOI18N
+                return name + "(" + paramListString +  ") - generate"; // NOI18N
             } else {
                 return name + "(" + paramListString +  ")";
             }
@@ -715,11 +740,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getName() {
-            if (expand) {
-                return name  + "()\n{\n}";
-            } else {
-                return name;
-            }
+            return name;
         }
 
         @Override
@@ -773,36 +794,41 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
             // sb.append("${cursor}"); // NOI18N
 
-            for (ParameterDescriptor paramDesc : paramList) {
+            if (paramList != null) {
+                for (ParameterDescriptor paramDesc : paramList) {
 
-                LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
-                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
-                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
+                    LOG.log(Level.FINEST, "-------------------------------------------------------------------");
+                    LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
+                    LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                    LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
 
-                sb.append("${"); //NOI18N
+                    sb.append("${"); //NOI18N
 
-                sb.append("groovy-cc-"); // NOI18N
-                sb.append(Integer.toString(id));
+                    sb.append("groovy-cc-"); // NOI18N
+                    sb.append(Integer.toString(id));
 
-                sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc.getName());
-                sb.append("\""); // NOI18N
+                    sb.append(" default=\""); // NOI18N
+                    sb.append(paramDesc.getName());
+                    sb.append("\""); // NOI18N
 
-                sb.append("}"); //NOI18N
+                    sb.append("}"); //NOI18N
 
-                // simply hardcoded values. For testing purposes.
-                // sb.append(paramDesc.name);
+                    // simply hardcoded values. For testing purposes.
+                    // sb.append(paramDesc.name);
 
 
-                if (id < paramList.size()) {
-                    sb.append(", "); //NOI18N
+                    if (id < paramList.size()) {
+                        sb.append(", "); //NOI18N
+                    }
+
+                    id++;
                 }
-
-                id++;
             }
 
             sb.append(")");
+            if (expand) {
+                sb.append(" {\n}");
+            }
 
             LOG.log(Level.FINEST, "Template returned : {0}", sb.toString());
             return sb.toString();
@@ -993,6 +1019,46 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
+        }
+
+        @Override
+        public Set<Modifier> getModifiers() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public ElementHandle getElement() {
+            return null;
+        }
+    }
+
+    public static class NewFieldItem extends CompletionItem {
+
+        private final String fieldName;
+
+        public NewFieldItem(String var, int anchorOffset) {
+            super(null, anchorOffset);
+            this.fieldName = var;
+        }
+
+        @Override
+        public String getName() {
+            return fieldName;
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return null;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD, null);
         }
 
         @Override

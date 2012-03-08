@@ -208,6 +208,10 @@ public class MacroExpandedToken implements APTToken, Serializable {
         return retValue;
     }
 
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }    
     //////////////////////////////////////////////////////////////////////////////
     // serialization support
 

@@ -49,19 +49,16 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -258,43 +255,42 @@ public final class MainClassUpdater extends FileChangeAdapter implements Propert
         }
         final String mainClassName = org.netbeans.modules.java.j2seproject.MainClassUpdater.this.eval.getProperty(mainClassPropName);
         if (mainClassName != null) {
-            try {
-                FileObject[] roots = sourcePath.getRoots();
-                if (roots.length>0) {
-                    ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
-                    if (bootCp == null) {
-                        LOG.log(Level.WARNING, "No bootpath for: {0}", FileUtil.getFileDisplayName(roots[0]));   //NOI18N
-                        bootCp = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-                    }
-                    ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
-                    if (compileCp == null) {
-                        LOG.log(Level.WARNING, "No classpath for: {0}", FileUtil.getFileDisplayName(roots[0]));  //NOI18N
-                        compileCp = ClassPathSupport.createClassPath(new URL[0]);
-                    }
-                    final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
-                    JavaSource js = JavaSource.create(cpInfo);
-                    js.runWhenScanFinished(new Task<CompilationController>() {
-                        @Override
-                        public void run(CompilationController c) throws Exception {
-                            TypeElement te = c.getElements().getTypeElement(mainClassName);
-                             if (te != null) {
-                                final FileObject fo = SourceUtils.getFile(te, cpInfo);
-                                synchronized (MainClassUpdater.this) {
-                                    if (lc == clc && fo != null && sourcePath.contains(fo)) {
-                                        currentFo = fo;
-                                        foListener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, currentFo);
-                                        currentFo.addFileChangeListener(foListener);                                        
-                                        currentDo = DataObject.find(currentFo);
-                                        doListener = WeakListeners.propertyChange(MainClassUpdater.this, currentDo);
-                                        currentDo.addPropertyChangeListener(doListener);
-                                    }                                    
-                                }
-                            }                            
-                        }
-
-                    }, true);
+            FileObject[] roots = sourcePath.getRoots();
+            if (roots.length>0) {
+                ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
+                if (bootCp == null) {
+                    LOG.log(Level.WARNING, "No bootpath for: {0}", FileUtil.getFileDisplayName(roots[0]));   //NOI18N
+                    bootCp = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
                 }
-            } catch (IOException ioe) {
+                ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
+                if (compileCp == null) {
+                    LOG.log(Level.WARNING, "No classpath for: {0}", FileUtil.getFileDisplayName(roots[0]));  //NOI18N
+                    compileCp = ClassPathSupport.createClassPath(new URL[0]);
+                }
+                final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                final JavaSource js = JavaSource.create(cpInfo);
+
+                // execute immediately, or delay if cannot find main class
+                ScanUtils.postUserActionTask(js, new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController c) throws Exception {
+                        TypeElement te = ScanUtils.checkElement(c, c.getElements().getTypeElement(mainClassName));
+                            if (te != null) {
+                            final FileObject fo = SourceUtils.getFile(te, cpInfo);
+                            synchronized (MainClassUpdater.this) {
+                                if (lc == clc && fo != null && sourcePath.contains(fo)) {
+                                    currentFo = fo;
+                                    foListener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, currentFo);
+                                    currentFo.addFileChangeListener(foListener);                                        
+                                    currentDo = DataObject.find(currentFo);
+                                    doListener = org.openide.util.WeakListeners.propertyChange(MainClassUpdater.this, currentDo);
+                                    currentDo.addPropertyChangeListener(doListener);
+                                }                                    
+                            }
+                        }                            
+                    }
+
+                });
             }
         }        
     }

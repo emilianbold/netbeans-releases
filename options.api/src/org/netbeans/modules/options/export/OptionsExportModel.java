@@ -59,16 +59,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Model for export/import options. It reads {@code OptionsExport/<category>/<item>}
@@ -101,6 +102,7 @@ public final class OptionsExportModel {
     private EditableProperties currentProperties;
     /** List of ignored folders in userdir. It speeds up folder scanning. */
     private static final List<String> IGNORED_FOLDERS = Arrays.asList("var/cache");  // NOI18N
+    private final String PASSWORDS_PATTERN = "config/Preferences/org/netbeans/modules/keyring.*";  // NOI18N
 
     /** Returns instance of export options model.
      * @param source source of export/import. It is either zip file or userdir
@@ -151,8 +153,17 @@ public final class OptionsExportModel {
      * @param state new state
      */
     void setState(State state) {
+        String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.category.displayName");
         for (OptionsExportModel.Category category : getCategories()) {
-            category.setState(state);
+            if (category.isApplicable()) {
+                if (state.equals(State.ENABLED)) {
+                    if (category.getDisplayName() != null && !category.getDisplayName().equals(passwords)) {
+                        category.setState(state);
+                    }
+                } else {
+                    category.setState(state);
+                }
+            }
         }
     }
 
@@ -164,6 +175,45 @@ public final class OptionsExportModel {
     void doImport(File targetUserdir) throws IOException {
         LOGGER.fine("Copying from: " + source + "\n    to: " + targetUserdir);  //NOI18N
         this.targetUserdir = targetUserdir;
+        FileUtil.getConfigRoot().addRecursiveListener(new FileChangeListener() {
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = Preferences.userRoot().node(path);
+            }
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+            }
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+            }
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+                try {
+                    pref.removeNode();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+            }
+
+            @Override
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+            }
+        });
         copyFiles();
     }
 
@@ -287,12 +337,17 @@ public final class OptionsExportModel {
     private Set<String> getExcludePatterns() {
         if (excludePatterns == null) {
             excludePatterns = new HashSet<String>();
+            String passwords = NbBundle.getMessage(OptionsChooserPanel.class, "OptionsChooserPanel.export.passwords.displayName");
             for (OptionsExportModel.Category category : getCategories()) {
                 for (OptionsExportModel.Item item : category.getItems()) {
                     if (item.isEnabled()) {
                         String exclude = item.getExclude();
                         if (exclude != null && exclude.length() > 0) {
                             excludePatterns.addAll(parsePattern(exclude));
+                        }
+                    } else {
+                        if(item.getDisplayName().equals(passwords)) {
+                            excludePatterns.add(PASSWORDS_PATTERN);
                         }
                     }
                 }

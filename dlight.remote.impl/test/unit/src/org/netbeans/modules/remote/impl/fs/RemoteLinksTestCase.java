@@ -103,6 +103,12 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
                 assertTrue("Incorrect link child path: " + childPath + " should start with parent path " + parentPath, 
                         child.getPath().startsWith(parentPath));
             }
+            FileObject linkFO2;
+            linkFO2 = getFileObject(linkFile);
+            assertTrue("Duplicate instances for " + linkFile, linkFO ==linkFO2);
+            linkDirFO.refresh();
+            linkFO2 = getFileObject(linkFile);
+            assertTrue("Duplicate instances for " + linkFile, linkFO ==linkFO2);
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
@@ -151,6 +157,35 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             baseDirFO.refresh();
             FileObject[] children = baseDirFO.getChildren(); // otherwise existent children are empty => refresh won't cycle
             baseDirFO.refresh();
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    @ForAllEnvironments
+    public void testCyclicLinksDelete() throws Exception {
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String selfLinkName = "link";
+            String linkName1 = "link1";
+            String linkName2 = "link2";
+            String parentName2 = "link2parent";
+            String baseDirlinkName = "linkToDir";
+            String script =
+                    "cd " + baseDir + "; " +
+                    "ln -s " + selfLinkName + ' ' + selfLinkName + ";" +
+                    "ln -s " + linkName1 + ' ' + linkName2 + ";" +
+                    "ln -s " + linkName2 + ' ' + linkName1 + ";" +
+                    "ln -s . " + parentName2 + ";" +
+                    "ln -s " + baseDir + ' ' + baseDirlinkName;
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            baseDirFO.refresh();
+            FileObject[] children = baseDirFO.getChildren(); // otherwise existent children are empty => refresh won't cycle
+            baseDirFO.delete();
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }

@@ -65,15 +65,11 @@ public class MIMESupport68318Test extends NbTestCase {
         ErrorManager.getDefault().log("Just initialize the ErrorManager");
     }
 
-    protected void tearDown() throws Exception {
-    }
-
     public void testQueryMIMEFromInsideTheLookup() throws IOException {
         Lkp l = (Lkp)Lookup.getDefault();
         {
             MIMEResolver[] result = MIMESupport.getResolvers();
-            assertEquals("One is there", 1, result.length);
-            assertEquals("It is c1", Lkp.c1, result[0]);
+            MIMESupportHid.assertNonDeclarativeResolver("c1 is there", Lkp.c1, result);
 
             assertNotNull("Result computed", l.result);
             assertEquals("But it has to be empty", 0, l.result.length);
@@ -84,13 +80,10 @@ public class MIMESupport68318Test extends NbTestCase {
         
         {
             MIMEResolver[] result = MIMESupport.getResolvers();
-            assertEquals("Now two", 2, result.length);
-            assertEquals("It is c1", Lkp.c1, result[0]);
-            assertEquals("and c2", Lkp.c2, result[1]);
+            MIMESupportHid.assertNonDeclarativeResolver("c1 and c2 are there", new MIMEResolver[] { Lkp.c1, Lkp.c2 }, result);
 
             assertNotNull("Result in lookup computed", l.result);
-            assertEquals("And it contains the previous result", 1, l.result.length);
-            assertEquals("which is c1", Lkp.c1, l.result[0]);
+            MIMESupportHid.assertNonDeclarativeResolver("And it contains the previous result", Lkp.c1, l.result);
         }
     }
     

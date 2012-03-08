@@ -51,64 +51,74 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.Set;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
+import javax.swing.event.*;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
-import org.openide.NotificationLineSupport;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
  * Panel for specifying message destination for Send JMS Message action.
  * @author Tomas Mysik
  */
-public class SendJmsMessagePanel extends javax.swing.JPanel {
+public class SendJmsMessagePanel extends javax.swing.JPanel implements ChangeListener {
     
     public static final String IS_VALID = SendJmsMessagePanel.class.getName() + ".IS_VALID";
     
     private final J2eeModuleProvider provider;
     private final Set<MessageDestination> moduleDestinations;
     private final Set<MessageDestination> serverDestinations;
-    private final List<SendJMSMessageUiSupport.MdbHolder> mdbs;
     private final boolean isDestinationCreationSupportedByServerPlugin;
     private final ServiceLocatorStrategyPanel slPanel;
-    private NotificationLineSupport statusLine;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
+    private List<SendJMSMessageUiSupport.MdbHolder> mdbs;
+    private String errorMsg;
+    private String warningMsg;
     
     // private because correct initialization is needed
     private SendJmsMessagePanel(J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations,
-            Set<MessageDestination> serverDestinations, List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            String lastLocator, ClasspathInfo cpInfo) {
+            Set<MessageDestination> serverDestinations, String lastLocator, ClasspathInfo cpInfo) {
         initComponents();
         
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
-        this.mdbs = mdbs;
-        isDestinationCreationSupportedByServerPlugin = provider.getConfigSupport().supportsCreateMessageDestination();
-        slPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
-        addAncestorListener(new AncestorListener() {
-            public void ancestorAdded(AncestorEvent event) {
-                verifyAndFire();
-            }
-            public void ancestorRemoved(AncestorEvent event) {
-                verifyAndFire();
-            }
-            public void ancestorMoved(AncestorEvent event) {
+        // get MDBs with listening on model updates
+        this.mdbs = SendJMSMessageUiSupport.getMdbs(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                // get new MDBs
+                mdbs = SendJMSMessageUiSupport.getMdbs(null);
+                populate();
                 verifyAndFire();
             }
         });
 
-        // show warning if the project is missing any app server
-        if (!Util.isValidServerInstance(provider)) {
-            warningLabel.setText(NbBundle.getMessage(SendJmsMessagePanel.class, "ERR_MissingServer")); //NOI18N
-        }
+        changeSupport.addChangeListener(this);
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
+
+        isDestinationCreationSupportedByServerPlugin = provider.getConfigSupport().supportsCreateMessageDestination();
+        slPanel = new ServiceLocatorStrategyPanel(lastLocator, cpInfo);
+        addAncestorListener(new AncestorListener() {
+            @Override
+            public void ancestorAdded(AncestorEvent event) {
+                verifyAndFire();
+            }
+            @Override
+            public void ancestorRemoved(AncestorEvent event) {
+                verifyAndFire();
+            }
+            @Override
+            public void ancestorMoved(AncestorEvent event) {
+                verifyAndFire();
+            }
+        });
     }
     
     /**
@@ -116,28 +126,21 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
      * @param provider Java EE module provider.
      * @param moduleDestinations project message destinations.
      * @param serverDestinations server message destinations.
-     * @param mdbs message-driven beans with their properties.
      * @param lastLocator name of the service locator.
      * @return SendJmsMessagePanel instance.
      */
     public static SendJmsMessagePanel newInstance(final J2eeModuleProvider provider, final Set<MessageDestination> moduleDestinations,
-            final Set<MessageDestination> serverDestinations, final List<SendJMSMessageUiSupport.MdbHolder> mdbs,
-            final String lastLocator, ClasspathInfo cpInfo) {
+            final Set<MessageDestination> serverDestinations, final String lastLocator, ClasspathInfo cpInfo) {
         SendJmsMessagePanel sjmp = new SendJmsMessagePanel(
                 provider,
                 moduleDestinations,
                 serverDestinations,
-                mdbs,
                 lastLocator,
                 cpInfo);
         sjmp.initialize();
         sjmp.verifyAndFire();
         sjmp.handleConnectionFactory();
         return sjmp;
-    }
-
-    public void setNotificationLine(NotificationLineSupport statusLine) {
-        this.statusLine = statusLine;
     }
 
     /**
@@ -193,18 +196,21 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     private void registerListeners() {
         // radio buttons
         projectDestinationsRadio.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
                 handleComboBoxes();
             }
         });
         serverDestinationsRadio.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
                 handleComboBoxes();
             }
         });
         mdbRadio.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
                 handleComboBoxes();
@@ -213,28 +219,34 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         
         // combo boxes
         projectDestinationsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
             }
         });
         serverDestinationsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
             }
         });
         mdbCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
                 verifyAndFire();
                 handleConnectionFactory();
             }
         });
         connectionFactoryTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent documentEvent) {
                 verifyAndFire();
             }
+            @Override
             public void removeUpdate(DocumentEvent documentEvent) {
                 verifyAndFire();
             }
+            @Override
             public void changedUpdate(DocumentEvent documentEvent) {
                 verifyAndFire();
             }
@@ -284,6 +296,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     private void setupServiceLocatorPanel() {
         slPanel.addPropertyChangeListener(ServiceLocatorStrategyPanel.IS_VALID,
                 new PropertyChangeListener() {
+            @Override
                     public void propertyChange(PropertyChangeEvent evt) {
                         Object newvalue = evt.getNewValue();
                         if ((newvalue != null) && (newvalue instanceof Boolean)) {
@@ -304,35 +317,64 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         SendJMSMessageUiSupport.populateDestinations(serverDestinations, serverDestinationsCombo, null);
         SendJMSMessageUiSupport.populateMessageDrivenBeans(mdbs, mdbCombo, destinationText);
     }
+
+    private boolean valid() {
+        return verifyComponents() && slPanel.verifyComponents();
+    }
     
     void verifyAndFire() {
-        boolean isValid = verifyComponents();
+        changeSupport.fireChange();
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        // update scanning label visibility
+        scanningLabel.setVisible(SourceUtils.isScanInProgress());
+
+        boolean isValid = valid();
         firePropertyChange(IS_VALID, !isValid, isValid);
+    }
+
+    private void isValidServer() {
+        // show warning if the project is missing any app server
+        boolean isValid = Util.isValidServerInstance(provider);
+        if (isValid) {
+            warningMsg = null;
+        } else {
+            warningMsg = NbBundle.getMessage(SendJmsMessagePanel.class, "ERR_MissingServer"); //NOI18N
+        }
     }
     
     private boolean verifyComponents() {
         // destination
-        if (destinationGroup.getSelection() == null
-                || getDestination() == null) {
-            setInfo("ERR_NoDestinationSelected"); // NOI18N
+        if (destinationGroup.getSelection() == null || getDestination() == null) {
+            errorMsg = NbBundle.getMessage(SendJmsMessagePanel.class, "ERR_NoDestinationSelected"); //NOI18N
             return false;
         }
         
         if (getConnectionFactory().trim().length() < 1) {
-            setInfo("ERR_NoConnectionFactorySelected"); // NOI18N
+            errorMsg = NbBundle.getMessage(SendJmsMessagePanel.class, "ERR_NoConnectionFactorySelected"); //NOI18N
             return false;
         }
+
+        isValidServer();
         
         // no errors
-        if (statusLine != null) {
-            statusLine.clearMessages();
-        }
+        errorMsg = null;
         return true;
     }
-    
-    private void setInfo(String key) {
-        if (statusLine != null) {
-            statusLine.setInformationMessage(NbBundle.getMessage(SendJmsMessagePanel.class, key));
+
+    public String getWarningMessage() {
+        return warningMsg;
+    }
+
+    public String getErrorMessage() {
+        if (!verifyComponents()) {
+            return errorMsg;
+        } else if (!slPanel.verifyComponents()) {
+            return slPanel.getErrorMessage();
+        } else {
+            return null;
         }
     }
     
@@ -357,7 +399,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
         destinationText = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
         connectionFactoryTextField = new javax.swing.JTextField();
-        warningLabel = new javax.swing.JLabel();
+        scanningLabel = new javax.swing.JLabel();
 
         destinationGroup.add(projectDestinationsRadio);
         projectDestinationsRadio.setSelected(true);
@@ -384,7 +426,9 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ConnectionFactory")); // NOI18N
 
-        warningLabel.setForeground(new java.awt.Color(221, 119, 0));
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        scanningLabel.setForeground(new java.awt.Color(0, 0, 0));
+        org.openide.awt.Mnemonics.setLocalizedText(scanningLabel, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ScanningInProgress")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -393,29 +437,29 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(projectDestinationsRadio)
-                            .addComponent(serverDestinationsRadio)
-                            .addComponent(mdbRadio)
-                            .addComponent(destinationLabel, javax.swing.GroupLayout.Alignment.TRAILING))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(destinationText, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
-                            .addComponent(mdbCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
-                            .addComponent(serverDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
-                            .addComponent(projectDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
-                            .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(addButton)
-                        .addContainerGap())
                     .addComponent(jLabel1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(warningLabel)
-                        .addContainerGap(643, Short.MAX_VALUE))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 631, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(projectDestinationsRadio)
+                                    .addComponent(serverDestinationsRadio)
+                                    .addComponent(mdbRadio)
+                                    .addComponent(destinationLabel, javax.swing.GroupLayout.Alignment.TRAILING))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(destinationText, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE)
+                                    .addComponent(mdbCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                                    .addComponent(serverDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                                    .addComponent(projectDestinationsCombo, javax.swing.GroupLayout.Alignment.TRAILING, 0, 392, Short.MAX_VALUE)
+                                    .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 392, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(addButton))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(scanningLabel)
+                                .addGap(0, 334, Short.MAX_VALUE)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -443,8 +487,8 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
                     .addComponent(connectionFactoryTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(serviceLocatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
-                .addComponent(warningLabel))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 9, Short.MAX_VALUE)
+                .addComponent(scanningLabel))
         );
 
         projectDestinationsRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "ACSD_JMSProjectDestination")); // NOI18N
@@ -476,10 +520,10 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton mdbRadio;
     private javax.swing.JComboBox projectDestinationsCombo;
     private javax.swing.JRadioButton projectDestinationsRadio;
+    private javax.swing.JLabel scanningLabel;
     private javax.swing.JComboBox serverDestinationsCombo;
     private javax.swing.JRadioButton serverDestinationsRadio;
     private javax.swing.JPanel serviceLocatorPanel;
-    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
     
 }

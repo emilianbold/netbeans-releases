@@ -389,7 +389,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                                 token = null;
                                 break;                            
                             }
-                            case APTTokenTypes.ID:
+                            case APTTokenTypes.IDENT:
                             {
                                 // may be it is parameter of macro to substitute with input parameter value  
                                 List<APTToken> paramValue = paramsMap.get(token.getTextID());
@@ -430,7 +430,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     List<APTToken> rightConcatTokens = new ArrayList<APTToken>();
                     rightConcatTokens.add(body.nextToken());
                     laToken = body.nextToken();
-                    if (rightConcatTokens.get(0).getType() == APTTokenTypes.SHARP && laToken.getType() == APTTokenTypes.ID) {
+                    if (rightConcatTokens.get(0).getType() == APTTokenTypes.SHARP && laToken.getType() == APTTokenTypes.IDENT) {
                         // stringize right part before concatenation (IZ#175801)
                         rightConcatTokens.set(0, stringizeParam(paramsMap.get(laToken.getTextID())));
                         laToken = body.nextToken();
@@ -469,7 +469,7 @@ public class APTExpandedStream implements TokenStream, APTTokenStream {
                     token = null;                    
                     // stringize next token, it must be param
                     // unless macro is incomplete
-                    if (laToken != null && laToken.getType() == APTTokenTypes.ID) {
+                    if (laToken != null && laToken.getType() == APTTokenTypes.IDENT) {
                         APTToken stringized = stringizeParam(paramsMap.get(laToken.getTextID()));
                         laToken = body.nextToken();
                         switch (laToken.getType()) {

@@ -190,7 +190,7 @@ public final class EncapsulateFieldsPlugin extends JavaRefactoringPlugin {
         List<EncapsulateDesc> descs = new ArrayList<EncapsulateDesc>(refactorings.size());
         fireProgressListenerStart(ProgressEvent.START, refactorings.size() + 1);
         for (EncapsulateFieldRefactoringPlugin ref : refactorings) {
-            if (cancelRequest) {
+            if (cancelRequested.get()) {
                 return null;
             }
             

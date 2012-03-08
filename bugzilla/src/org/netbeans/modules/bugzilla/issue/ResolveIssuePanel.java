@@ -49,10 +49,11 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -72,7 +73,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
         // workaround for 0 size container gap caused by invisible duplicatePanel
         ((javax.swing.GroupLayout)getLayout()).setHonorsVisibility(false);
 
-        BugzillaRepository repository = issue.getBugzillaRepository();
+        BugzillaRepository repository = issue.getRepository();
         BugzillaConfiguration bc = repository.getConfiguration();
         if(bc == null || !bc.isValid()) {
             // XXX nice error msg?
@@ -199,7 +200,7 @@ public class ResolveIssuePanel extends javax.swing.JPanel {
     private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
         Issue newIssue = BugtrackingUtil.selectIssue(
                 NbBundle.getMessage(IssuePanel.class, "IssuePanel.duplicateButton.message"), //NOI18N
-                issue.getBugzillaRepository(),
+                BugzillaUtil.getRepository(issue.getRepository()),
                 this,
                 new HelpCtx("org.netbeans.modules.bugzilla.duplicateChooser")); // NOI18N
         if (newIssue != null) {

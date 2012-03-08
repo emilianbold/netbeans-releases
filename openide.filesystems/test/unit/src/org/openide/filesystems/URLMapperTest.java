@@ -124,5 +124,20 @@ public class URLMapperTest extends NbTestCase {
         assertTrue("correct URL -> FO for root", Arrays.asList(URLMapper.findFileObjects(rootU)).contains(rootFO));
         assertTrue("correct URL -> FO for " + textPath, Arrays.asList(URLMapper.findFileObjects(textU)).contains(textFO));
     }
+
+    public void testNbhostURLs() throws Exception { // #207690
+        FileObject r = FileUtil.getConfigRoot();
+        check(r);
+        FileObject d = r.createFolder("some folder");
+        check(d);
+        FileObject f = d.createData("file #1");
+        check(f);
+        new XMLFileSystem().getRoot().toURI(); // anonymous, cannot round-trip
+    }
+    private static void check(FileObject f) throws Exception {
+        URL u = f.toURL();
+        assertEquals(u.toURI(), f.toURI());
+        assertEquals(u.toString(), f, URLMapper.findFileObject(u));
+    }
     
 }

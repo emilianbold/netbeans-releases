@@ -46,10 +46,12 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.DelegatingConnector;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.netbeans.modules.bugtracking.ui.nodes.BugtrackingRootNode;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -64,16 +66,17 @@ public class RepositorySelector {
         // init connector cbo
     }
 
-    public Repository create() {
-        BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+    public RepositoryImpl create() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
         connectors = addJiraProxyIfNeeded(connectors);
         selectorPanel.setConnectors(connectors);
         if(!selectorPanel.open()) {
             return null;
         }
-        final Repository repo = selectorPanel.getRepository();
+        final RepositoryImpl repo = selectorPanel.getRepository();
         try {
-            repo.getController().applyChanges();
+            repo.applyChanges();
+            RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -87,13 +90,15 @@ public class RepositorySelector {
         return repo;
     }
 
-    public boolean edit(Repository repository, String errorMessage) {
+    public boolean edit(RepositoryImpl repository, String errorMessage) {
         if(!selectorPanel.edit(repository, errorMessage)) {
             return false;
         }
-        Repository repo = selectorPanel.getRepository();
+        RepositoryImpl repo = selectorPanel.getRepository();
         try {
-            repo.getController().applyChanges();
+            repo.applyChanges();
+            // no repo on edit
+            RepositoryRegistry.getInstance().addRepository(repo);
         } catch (IOException ex) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
             return false;
@@ -101,9 +106,9 @@ public class RepositorySelector {
         return true;
     }
 
-    private BugtrackingConnector[] addJiraProxyIfNeeded(BugtrackingConnector[] connectors) {
+    private DelegatingConnector[] addJiraProxyIfNeeded(DelegatingConnector[] connectors) {
         if(!BugtrackingUtil.isJiraInstalled()) {
-            BugtrackingConnector[] ret = new BugtrackingConnector[connectors.length + 1];
+            DelegatingConnector[] ret = new DelegatingConnector[connectors.length + 1];
             System.arraycopy(connectors, 0, ret, 0, connectors.length);
             ret[ret.length - 1] = JiraUpdater.getInstance().getConnector();
             connectors = ret;

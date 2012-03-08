@@ -42,18 +42,21 @@
 package org.netbeans.modules.nativeexecution;
 
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService.class, position = 100)
 public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironmentFactoryService {
+    
+    /*package*/ static final String DEFAULT_USER = System.getProperty("user.name"); //NOI18N
+    private static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
-    private static final ExecutionEnvironment LOCAL = new ExecutionEnvironmentImpl();
-    public static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
+    private static final ExecutionEnvironment LOCAL = new ExecutionEnvironmentImpl(DEFAULT_USER, HostInfoUtils.LOCALHOST, 0);
 
     /**
-     * Returns an instance of <tt>ExecutionEnvironment</tt> for localexecution.
+     * Returns an instance of <tt>ExecutionEnvironment</tt> for local execution.
      */
     @Override
     public ExecutionEnvironment getLocal() {
@@ -61,11 +64,8 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
     }
 
     /**
-     * Creates a new instance of <tt>ExecutionEnvironment</tt>. If <tt>host</tt>
-     * refers to the localhost or is <tt>null</tt> then task, started in this
-     * environment will be executed locally. Otherwise it will be executed
-     * remotely using ssh connection to the specified host using default ssh
-     * port (22).
+     * Creates a new instance of remote <tt>ExecutionEnvironment</tt>. 
+     * using default ssh port (22).
      *
      * @param user user name to be used in this environment
      * @param host host identification string (either hostname or IP address)
@@ -90,6 +90,15 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      */
     @Override
     public ExecutionEnvironment createNew(String user, String host, int port) {
+        if (user == null) {
+            user = DEFAULT_USER; // NOI18N
+        }
+        if (host == null) {
+            host = HostInfoUtils.LOCALHOST;
+        }
+        if (port == 0) {
+            port = DEFAULT_PORT;
+        }
         return new ExecutionEnvironmentImpl(user, host, port);
     }
 

@@ -57,11 +57,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.spring.api.Action;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
@@ -211,11 +207,8 @@ public class BeanClassFinder {
         }
 
         ClassResolver classResolver = new ClassResolver(js, implClass, factoryMethodName, staticFlag, retVal);
-        // TODO - remove this condition once the bg scan will be available
-        if (immediateAction) {
-            runClassResolverAsUserActionTask(js, classResolver);
-        }
-        if (!immediateAction && !classResolver.wasClassResolved()) {
+        runClassResolverAsUserActionTask(js, classResolver);
+        if (!immediateAction && !classResolver.wasClassResolved() && SourceUtils.isScanInProgress()) {
             ScanDialog.runWhenScanFinished(classResolver, Bundle.title_class_resolver());
         }
 

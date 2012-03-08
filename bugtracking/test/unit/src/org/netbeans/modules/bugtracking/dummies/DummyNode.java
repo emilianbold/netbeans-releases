@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.dummies;
 
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 

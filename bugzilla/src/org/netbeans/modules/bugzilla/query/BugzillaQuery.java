@@ -42,24 +42,22 @@
 
 package org.netbeans.modules.bugzilla.query;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.io.IOException;
+import java.util.*;
 import org.netbeans.modules.bugzilla.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.commands.GetMultiTaskDataCommand;
 import org.netbeans.modules.bugzilla.commands.PerformQueryCommand;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -70,7 +68,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQuery extends Query {
+public class BugzillaQuery {
 
     private String name;
     private final BugzillaRepository repository;
@@ -84,7 +82,11 @@ public class BugzillaQuery extends Query {
 
     private boolean firstRun = true;
     private ColumnDescriptor[] columnDescriptors;
-
+    private Node[] context;
+    private boolean saved;
+    protected long lastRefresh;
+    private final PropertyChangeSupport support;
+        
     public BugzillaQuery(BugzillaRepository repository) {
         this(null, repository, null, false, false, true);
     }
@@ -95,7 +97,9 @@ public class BugzillaQuery extends Query {
         this.name = name;
         this.urlParameters = urlParameters;
         this.initialUrlDef = urlDef;
-        this.setLastRefresh(repository.getIssueCache().getQueryTimestamp(getStoredQueryName()));
+        this.lastRefresh = repository.getIssueCache().getQueryTimestamp(getStoredQueryName());
+        this.support = new PropertyChangeSupport(this);
+        
         if(initControler) {
             controller = createControler(repository, this, urlParameters);
         }
@@ -107,17 +111,34 @@ public class BugzillaQuery extends Query {
         }
     }
 
-    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+
+    private void fireQuerySaved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
+    }
+
+    private void fireQueryRemoved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
+    }
+
+    private void fireQueryIssuesChanged() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
+    }  
+    
     public String getDisplayName() {
         return name;
     }
 
-    @Override
     public String getTooltip() {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    @Override
     public synchronized QueryController getController() {
         if (controller == null) {
             controller = createControler(repository, this, urlParameters);
@@ -125,7 +146,6 @@ public class BugzillaQuery extends Query {
         return controller;
     }
 
-    @Override
     public BugzillaRepository getRepository() {
         return repository;
     }
@@ -152,6 +172,7 @@ public class BugzillaQuery extends Query {
 
         final boolean ret[] = new boolean[1];
         executeQuery(new Runnable() {
+            @Override
             public void run() {
                 Bugzilla.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new String[] {name, urlParameters}); // NOI18N
                 try {
@@ -164,8 +185,8 @@ public class BugzillaQuery extends Query {
                     issues.clear();
                     archivedIssues.clear();
                     if(isSaved()) {
-                        if(!wasRun() && issues.size() != 0) {
-                                Bugzilla.LOG.warning("query " + getDisplayName() + " supposed to be run for the first time yet already contains issues."); // NOI18N
+                        if(!wasRun() && !issues.isEmpty()) {
+                                Bugzilla.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                                 assert false;
                         }
                         // read the stored state ...
@@ -177,7 +198,7 @@ public class BugzillaQuery extends Query {
                     firstRun = false;
 
                     // run query to know what matches the criteria
-                    StringBuffer url = new StringBuffer();
+                    StringBuilder url = new StringBuilder();
                     url.append(BugzillaConstants.URL_ADVANCED_BUG_LIST);
                     url.append(urlParameters); // XXX encode url?
                     // IssuesIdCollector will populate the issues set
@@ -221,7 +242,7 @@ public class BugzillaQuery extends Query {
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             BugzillaConnector.getConnectorName(),
             name,
             count,
@@ -240,20 +261,16 @@ public class BugzillaQuery extends Query {
         fireQueryRemoved();
     }
 
-    @Override
-    public int getIssueStatus(Issue issue) {
-        String id = issue.getID();
-        return getIssueStatus(id);
+    public boolean contains(String id) {
+        return issues.contains(id);
     }
 
-    @Override
-    public boolean contains(Issue issue) {
-        return issues.contains(issue.getID());
+    public void setContext(Node[] nodes) {
+        context = nodes;
     }
 
-    @Override
-    public Node[] getSelection() {
-        return super.getSelection();
+    public Node[] getContext() {
+        return context;
     }
 
     public int getIssueStatus(String id) {
@@ -276,50 +293,53 @@ public class BugzillaQuery extends Query {
         this.name = name;
     }
 
-    @Override
     public void setSaved(boolean saved) {
-        super.setSaved(saved);
+        if(saved) {
+            context = null;
+        }
+        this.saved = saved;
+        fireQuerySaved();
     }
 
-    @Override
-    public void fireQuerySaved() {
-        super.fireQuerySaved();
-        repository.fireQueryListChanged();
+    public boolean isSaved() {
+        return saved;
     }
-
-    @Override
-    public void fireQueryRemoved() {
-        super.fireQueryRemoved();
-        repository.fireQueryListChanged();
+    
+    public Collection<BugzillaIssue> getIssues() {
+        return getIssues(~0);
     }
-
-    @Override
-    public Issue[] getIssues(int includeStatus) {
+    
+    public Collection<BugzillaIssue> getIssues(int includeStatus) {
         if (issues == null) {
-            return new Issue[0];
+            return Collections.emptyList();
         }
         List<String> ids = new ArrayList<String>();
         synchronized (issues) {
             ids.addAll(issues);
         }
 
-        IssueCache cache = repository.getIssueCache();
-        List<Issue> ret = new ArrayList<Issue>();
+        IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
+        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (String id : ids) {
             int status = getIssueStatus(id);
             if((status & includeStatus) != 0) {
                 ret.add(cache.getIssue(id));
             }
         }
-        return ret.toArray(new Issue[ret.size()]);
+        return ret;
     }
 
     boolean wasRun() {
         return !firstRun;
     }
 
+    long getLastRefresh() {
+        return lastRefresh;
+    }
+
     private class IssuesIdCollector extends TaskDataCollector {
         public IssuesIdCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             issues.add(id);
@@ -327,12 +347,13 @@ public class BugzillaQuery extends Query {
     };
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = BugzillaIssue.getID(taskData);
             getController().addProgressUnit(BugzillaIssue.getDisplayName(taskData));
             BugzillaIssue issue;
             try {
-                IssueCache<TaskData> cache = repository.getIssueCache();
+                IssueCache<BugzillaIssue, TaskData> cache = repository.getIssueCache();
                 issue = (BugzillaIssue) cache.setIssueData(id, taskData);
             } catch (IOException ex) {
                 Bugzilla.LOG.log(Level.SEVERE, null, ex);
@@ -341,4 +362,68 @@ public class BugzillaQuery extends Query {
             fireNotifyData(issue); // XXX - !!! triggers getIssues()
         }
     };
+    
+    public void addNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.add(l);
+        }
+    }
+
+    public void removeNotifyListener(QueryNotifyListener l) {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        synchronized(list) {
+            list.remove(l);
+        }
+    }
+
+    protected void fireNotifyData(BugzillaIssue issue) {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.notifyData(issue);
+        }
+    }
+
+    protected void fireStarted() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.started();
+        }
+    }
+
+    protected void fireFinished() {
+        QueryNotifyListener[] listeners = getListeners();
+        for (QueryNotifyListener l : listeners) {
+            l.finished();
+        }
+    }
+
+    // XXX move to API
+    protected void executeQuery (Runnable r) {
+        fireStarted();
+        try {
+            r.run();
+        } finally {
+            fireFinished();
+            fireQueryIssuesChanged();
+            lastRefresh = System.currentTimeMillis();
+        }
+    }
+    
+    private QueryNotifyListener[] getListeners() {
+        List<QueryNotifyListener> list = getNotifyListeners();
+        QueryNotifyListener[] listeners;
+        synchronized (list) {
+            listeners = list.toArray(new QueryNotifyListener[list.size()]);
+        }
+        return listeners;
+    }
+
+    private List<QueryNotifyListener> notifyListeners;
+    private List<QueryNotifyListener> getNotifyListeners() {
+        if(notifyListeners == null) {
+            notifyListeners = new ArrayList<QueryNotifyListener>();
+        }
+        return notifyListeners;
+    }    
 }

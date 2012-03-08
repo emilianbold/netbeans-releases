@@ -55,10 +55,10 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,19 +95,11 @@ public class BugzillaExecutor {
     }
 
     public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion) {
-        execute(cmd, handleExceptions, checkVersion, true);
-    }
-
-    public void execute(BugzillaCommand cmd, boolean handleExceptions, boolean checkVersion, boolean ensureCredentials) {
         try {
             cmd.setFailed(true);
 
             if(checkVersion) {
                 checkAutoupdate();
-            }
-
-            if(ensureCredentials) {
-                ensureCredentials();
             }
 
             Bugzilla.LOG.log(Level.FINE, "execute {0}", cmd);
@@ -306,10 +298,6 @@ public class BugzillaExecutor {
         return true;
     }
 
-    private void ensureCredentials() {
-        BugzillaConfig.getInstance().setupCredentials(repository);
-    }
-
     private static abstract class ExceptionHandler {
 
         protected String errroMsg;
@@ -465,7 +453,7 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(executor.repository, errroMsg);
+                boolean ret = BugtrackingUtil.editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }

@@ -65,10 +65,10 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.javaee.specs.support.api.JaxWsStackSupport;
 import org.netbeans.modules.websvc.api.jaxws.project.JAXWSVersionProvider;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWs;
-import org.netbeans.modules.websvc.wsstack.jaxws.JaxWsStackProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -110,7 +110,7 @@ public class J2SEJAXWSVersionProvider implements JAXWSVersionProvider{
                             "Failed to detect JKAX-WS version", ex); //NOI18N
                 }
             } else {
-                WSStack<JaxWs> jdkJaxWsStack = JaxWsStackProvider.getJdkJaxWsStack();
+                WSStack<JaxWs> jdkJaxWsStack = JaxWsStackSupport.getJdkJaxWsStack();
                 if (jdkJaxWsStack != null) {
                     return jdkJaxWsStack.getVersion().toString();
                 }

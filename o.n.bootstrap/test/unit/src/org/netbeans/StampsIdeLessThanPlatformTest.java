@@ -132,7 +132,7 @@ public class StampsIdeLessThanPlatformTest extends NbTestCase {
             String[] seg = line.split("=");
             assertEquals("There should be one = in the: " + line, 2, seg.length);
             String s = seg[0];
-            if (s.endsWith("platform")) {
+            if (s.endsWith("home")) {
                 assertEquals("Correct for platform: " + line, "60000", seg[1]);
                 check ++;
             }

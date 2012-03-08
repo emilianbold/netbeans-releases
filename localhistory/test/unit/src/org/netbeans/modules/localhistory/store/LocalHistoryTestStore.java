@@ -56,8 +56,9 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store = LocalHistoryStoreFactory.getInstance().createLocalHistoryStorage();
     }
 
-    public void setLabel(File file, long ts, String label) {
-        store.setLabel(file, ts, label);
+    @Override
+    public StoreEntry setLabel(File file, long ts, String label) {
+        return store.setLabel(file, ts, label);
     }
 
     public void removeVersioningListener(VersioningListener l) {
@@ -100,8 +101,8 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.fileCreate(file, ts);
     }
 
-    public void fileChange(File file, boolean handleAsync, long ts) {
-        store.fileChange(file, handleAsync, ts);
+    public void fileChange(File file, long ts) {
+        store.fileChange(file, ts);
     }
 
     public void deleteEntry(File file, long ts) {
@@ -167,6 +168,11 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
             lockedFolders.setAccessible(true);
         }
         return (Set<File>) lockedFolders.get(store);
+    }
+    
+    @Override
+    public void waitForProcessedStoring(File file, String caller) {
+        store.waitForProcessedStoring(file, caller);
     }
     
 }

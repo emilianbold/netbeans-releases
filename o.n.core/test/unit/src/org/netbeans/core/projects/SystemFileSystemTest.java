@@ -85,7 +85,8 @@ public class SystemFileSystemTest extends NbTestCase {
         mgr = org.netbeans.core.startup.Main.getModuleSystem().getManager();
         org.netbeans.core.startup.Main.initializeURLFactory ();
         try {
-            mgr.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     File data = new File(getDataDir(), "projects");
                     File jars = getWorkDir();
@@ -102,7 +103,8 @@ public class SystemFileSystemTest extends NbTestCase {
     }
     protected @Override void tearDown() throws Exception {
         try {
-            mgr.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+            mgr.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws Exception {
                     mgr.disable(satModule);
                     mgr.delete(satModule);

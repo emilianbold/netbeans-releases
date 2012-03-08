@@ -101,17 +101,19 @@ made subject to such option by the copyright holder.
                         <attr name="template" boolvalue="true"/>
                     </file>-->
                 </folder>
-                <folder name="Web">
+                
+                <folder name="Enterprise">
                     <file name="LeanServiceECBComponentWithAjax" url="LeanServiceECBComponentWithAjax.zip">
-                        <attr name="position" intvalue="487"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.websvc.rest.samples.resources.Bundle#Templates/Project/Samples/Enterprise/LeanServiceECBComponentWithAjax"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
+                        <attr name="position" intvalue="110"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.rest.samples.ui.LeanServiceECBSampleWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/LeanServiceECBComponentWithAjax.html"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif"/>
                         <attr name="prjType" stringvalue="web"/>
                     </file>
                 </folder>
+
                 <folder name="Maven">
                     <file name="RestRCPMvnAppSampleProject.zip" url="RestRCPMvnAppSampleProject.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/samples/resources/restservice.png"/>

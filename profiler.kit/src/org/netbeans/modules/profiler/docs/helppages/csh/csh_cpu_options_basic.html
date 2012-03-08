@@ -19,13 +19,14 @@
         <p>When analyzing application performance, you specify one of the following options:</p>
         <ul>
             
-            <li><b>Sample Application.</b> 
+            <li><b>Quick.</b> 
             When selected, the IDE samples the application and takes a stack trace periodically.
             This option is less precise than instrumenting methods, but the overhead is lower.
             This option can help you locate methods that you might want to instrument.
             </li>
-            <li><b>Profile Application.</b> 
-            When selected, all of the methods of the profiled application are instrumented. 
+            <li><b>Advanced.</b> 
+            When selected, all of the methods of the profiled application are instrumented if
+            you do not specify any root methods. 
             <p>When entering a method, threads generate a "method entry" event. 
             Threads generate a corresponding "method exit" event when exiting the method. 
             The timestamps for both of these events are recorded. 

@@ -63,6 +63,7 @@ import org.netbeans.modules.form.codestructure.*;
 import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutCodeGenerator;
+import org.netbeans.modules.form.project.ClassPathUtils;
 
 import java.awt.*;
 import java.beans.*;
@@ -71,6 +72,8 @@ import java.lang.reflect.*;
 import java.util.*;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.modules.form.project.ClassSource;
+import org.netbeans.modules.form.project.ClassSource.Entry;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.Lookup;
@@ -184,6 +187,8 @@ class JavaCodeGenerator extends CodeGenerator {
     private boolean canGenerate = true;
     private boolean codeUpToDate = true;
 
+    private boolean mnemonicsClassPathUpdated;
+
     private String listenerClassName;
     private String listenerVariableName;
 
@@ -199,6 +204,9 @@ class JavaCodeGenerator extends CodeGenerator {
     private Map<RADComponent, java.util.List<FormProperty>> childrenDependentProperties;
 
     private SwingLayoutCodeGenerator swingGenerator;
+
+    private static int indentSize = 4;
+    private static boolean braceOnNewLine = false;
 
     private static class PropertiesFilter implements FormProperty.Filter {
 		
@@ -599,6 +607,11 @@ class JavaCodeGenerator extends CodeGenerator {
                     bundle.getString("PROP_GENERATE_MNEMONICS"), // NOI18N
                     bundle.getString("HINT_GENERATE_MNEMONICS2")) // NOI18N
                 {
+                    private boolean writable = JavaCodeGenerator.this.canGenerate
+                                && !component.isReadOnly()
+                        // don't allow turing mnemonics on if not supported (and not already on)
+                                && (isUsingMnemonics(component)
+                                    || formEditorSupport.canGenerateNBMnemonicsCode());
                     @Override
                     public void setValue(Object value) {
                         Object oldValue = getValue();
@@ -617,12 +630,18 @@ class JavaCodeGenerator extends CodeGenerator {
 
                     @Override
                     public boolean canWrite() {
-                        return JavaCodeGenerator.this.canGenerate && !component.isReadOnly();
+                        return writable;
                     }
 
                     @Override
                     public boolean supportsDefaultValue() {
                         return true;
+                    }
+
+                    @Override
+                    public boolean isDefaultValue() {
+                        Object mnem = component.getAuxValue(PROP_GENERATE_MNEMONICS);
+                        return mnem == null || mnem.equals(formModel.getSettings().getGenerateMnemonicsCode());
                     }
 
                     @Override
@@ -948,8 +967,8 @@ class JavaCodeGenerator extends CodeGenerator {
             return;
 
         // find indent engine to use or imitate
-        IndentEngine indentEngine = IndentEngine.find(
-                                        formEditor.getSourcesDocument());
+        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+                ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
 
         final SimpleSection initComponentsSection = formEditor.getInitComponentSection();
         int initComponentsOffset = initComponentsSection.getCaretPosition().getOffset();
@@ -957,14 +976,13 @@ class JavaCodeGenerator extends CodeGenerator {
         // create Writer for writing the generated code in
         StringWriter initCodeBuffer = new StringWriter(1024);
         CodeWriter initCodeWriter;
-        if (formSettings.getUseIndentEngine()) { // use original indent engine
+        if (indentEngine != null) { // use original indent engine
             initCodeWriter = new CodeWriter(
                     indentEngine.createWriter(formEditor.getSourcesDocument(),
                                               initComponentsOffset,
                                               initCodeBuffer),
                     true);
-        }
-        else {
+        } else {
             initCodeWriter = new CodeWriter(initCodeBuffer, true);
         }
         // optimization - only properties need to go through CodeWriter
@@ -1039,8 +1057,8 @@ class JavaCodeGenerator extends CodeGenerator {
 
              // set the text into the guarded block
             String newText = initCodeBuffer.toString();
-            if (!formSettings.getUseIndentEngine()) {
-                newText = indentCode(newText, 1, indentEngine);
+            if (indentEngine == null) {
+                newText = indentCode(newText, 1);
             }
             initComponentsSection.setText(newText);
             
@@ -1081,42 +1099,42 @@ class JavaCodeGenerator extends CodeGenerator {
      * 
      * @return the set of generated variables.
      */
-    Set<String> regenerateVariables() {
-        if (!initialized || !canGenerate)
-            return Collections.emptySet();
-        
-        IndentEngine indentEngine = IndentEngine.find(
-                                        formEditor.getSourcesDocument());
+    private void regenerateVariables() {
+        if (!initialized || !canGenerate) {
+            return;
+        }
+
+        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+                ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
 
         StringWriter variablesBuffer = new StringWriter(1024);
         CodeWriter variablesWriter;
         final SimpleSection variablesSection = formEditor.getVariablesSection();
 
-        if (formSettings.getUseIndentEngine()) {
+        if (indentEngine != null) {
             variablesWriter = new CodeWriter(
                     indentEngine.createWriter(formEditor.getSourcesDocument(),
                                               variablesSection.getCaretPosition().getOffset(),
                                               variablesBuffer),
                     false);
-        }
-        else {
+        } else {
             variablesWriter = new CodeWriter(variablesBuffer, false);
         }
 
-        Set<String> variableNames = Collections.emptySet();
         try {
 	    variablesWriter.write(getVariablesHeaderComment());
             variablesWriter.write("\n"); // NOI18N
 
-            variableNames = addFieldVariables(variablesWriter);
+            addFieldVariables(variablesWriter);
             
             variablesWriter.write(getVariablesFooterComment());
             variablesWriter.write("\n"); // NOI18N
             variablesWriter.getWriter().close();
 
             String newText = variablesBuffer.toString();
-            if (!formSettings.getUseIndentEngine())
-                newText = indentCode(newText, 1, indentEngine);
+            if (indentEngine == null) {
+                newText = indentCode(newText, 1);
+            }
 
             variablesSection.setText(newText);        
             clearUndo();
@@ -1124,7 +1142,6 @@ class JavaCodeGenerator extends CodeGenerator {
         catch (IOException e) { // should not happen
             e.printStackTrace();
         }
-        return variableNames;
     }   
     
     private void addCreateCode(RADComponent comp, CodeWriter initCodeWriter)
@@ -2187,6 +2204,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 if (propValueCode != null) {
                     initCodeWriter.write("org.openide.awt.Mnemonics.setLocalizedText(" // NOI18N
                         + comp.getName() + ", " + propValueCode + ");\n"); // NOI18N
+                    updateProjectClassPathForMnemonics();
                 }
             }
             // Mnemonics support - end -
@@ -2675,6 +2693,23 @@ class JavaCodeGenerator extends CodeGenerator {
 
         return comp.getFormModel().getSettings().getGenerateMnemonicsCode();
     }
+
+    private void updateProjectClassPathForMnemonics() {
+        if (!mnemonicsClassPathUpdated) {
+            FileObject srcFile = formEditor.getFormDataObject().getPrimaryFile();
+            if (!ClassPathUtils.checkUserClass("org.openide.awt.Mnemonics", srcFile)) { // NOI18N
+                Entry cpe = ClassSource.unpickle("dependency", "org.openide.awt"); // NOI18N
+                if (cpe != null) {
+                    try {
+                        cpe.addToProjectClassPath(srcFile,  ClassPath.COMPILE);
+                    } catch (Exception ex) {
+                        Logger.getLogger(JavaCodeGenerator.class.getName()).log(Level.INFO, null, ex);
+                    }
+                }
+            }
+            mnemonicsClassPathUpdated = true;
+        }
+    }
     // Mnemonics support - end -
 
     private String getComponentParameterString(RADComponent component,
@@ -3053,16 +3088,24 @@ class JavaCodeGenerator extends CodeGenerator {
         if (sec != null && bodyText == null)
             return; // already exists, no need to generate
 
-        IndentEngine engine = IndentEngine.find(formEditor.getSourcesDocument());
+        IndentEngine indentEngine = formSettings.getUseIndentEngine()
+                ? IndentEngine.find(formEditor.getSourcesDocument()) : null;
         StringWriter buffer = new StringWriter();
 
         try {
             if (sec == null) {
                 sec = insertEvendHandlerSection(handlerName);
             }
-            Writer codeWriter = engine.createWriter(formEditor.getSourcesDocument(),
-                                                    sec.getStartPosition().getOffset(),
-                                                    buffer);
+            // optimization - only properties need to go through CodeWriter
+            Writer codeWriter;
+            if (indentEngine != null) { // use original indent engine
+                codeWriter = indentEngine.createWriter(formEditor.getSourcesDocument(),
+                                                       sec.getStartPosition().getOffset(),
+                                                       buffer);
+            } else {
+                codeWriter = buffer;
+            }
+
             int i0, i1, i2;
 
             if (annotationText != null) {
@@ -3087,9 +3130,21 @@ class JavaCodeGenerator extends CodeGenerator {
             if (i0 != 0) {
                 formEditor.getSourcesDocument().insertString(sec.getStartPosition().getOffset(), annotationText, null);
             }
-            sec.setHeader(buffer.getBuffer().substring(i0,i1));
-            sec.setBody(buffer.getBuffer().substring(i1,i2));
-            sec.setFooter(buffer.getBuffer().substring(i2));
+            String s = buffer.getBuffer().substring(i0, i1);
+            if (indentEngine == null) {
+                s = indentCode(s, 1);
+            }
+            sec.setHeader(s);
+            s = buffer.getBuffer().substring(i1, i2);
+            if (indentEngine == null) {
+                s = indentCode(s, 2);
+            }
+            sec.setBody(s);
+            s = buffer.getBuffer().substring(i2);
+            if (indentEngine == null) {
+                s = indentCode(s, 1);
+            }
+            sec.setFooter(s);
 
             codeWriter.close();
         } 
@@ -3375,7 +3430,8 @@ class JavaCodeGenerator extends CodeGenerator {
     public void regenerateCode() {
         if (!codeUpToDate) {	    
             codeUpToDate = true;
-            /*Set<String> variableNames = */regenerateVariables();
+            refreshFormattingSettings();
+            regenerateVariables();
             regenerateInitComponents();
             if (!formModel.getSettings().getGenerateFQN()) {
                 importFQNs(true, true);
@@ -3384,6 +3440,11 @@ class JavaCodeGenerator extends CodeGenerator {
             ensureMainClassImplementsListeners();            
             FormModel.t("code regenerated"); // NOI18N	    
         }
+    }
+
+    private void refreshFormattingSettings() {
+        indentSize = formEditorSupport.getCodeIndentSize();
+        braceOnNewLine = formEditorSupport.getCodeBraceOnNewLine();
     }
 
     private void importFQNs(boolean handleInitComponents, boolean handleVariables, String... eventHandlers) {
@@ -3465,34 +3526,14 @@ class JavaCodeGenerator extends CodeGenerator {
     }
 
     private String indentCode(String code) {
-        return indentCode(code, 0, null);
+        return indentCode(code, 0);
     }
 
-    private String indentCode(String code, int minIndentLevel, IndentEngine refEngine) {
-        int spacesPerTab = 4;
-        boolean braceOnNewLine = false;
-        
-        if (refEngine != null) {
-            Class engineClass = refEngine.getClass();
-            try {
-                Method m = engineClass.getMethod("getSpacesPerTab", // NOI18N
-                        new Class[0]);
-                spacesPerTab = ((Integer)m.invoke(refEngine, new Object[0]))
-                .intValue();
-            } catch (Exception ex) {} // ignore
-            
-            try {
-                Method m = engineClass.getMethod("getJavaFormatNewlineBeforeBrace", // NOI18N
-                        new Class[0]);
-                braceOnNewLine = ((Boolean)m.invoke(refEngine, new Object[0]))
-                .booleanValue();
-            } catch (Exception ex) {} // ignore
-        }
-        
-        StringBuilder tab = new StringBuilder(spacesPerTab);
-        for (int i=0; i < spacesPerTab; i++)
+    private String indentCode(String code, int minIndentLevel) {
+        StringBuilder tab = new StringBuilder(indentSize);
+        for (int i=0; i < indentSize; i++) {
             tab.append(" "); // NOI18N
-        
+        }
         return doIndentation(code, minIndentLevel, tab.toString(), braceOnNewLine);
     }
     
@@ -3857,7 +3898,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         if (!ev.getCreatedDeleted()) {
                             ev.setEventHandlerContent(getEventHandlerText(handlerName));
                         }
-
+                        refreshFormattingSettings();
                         generateEventHandler(handlerName,
                                             (ev.getComponentEvent() == null) ?
                                                 formModel.getFormEvents().getOriginalListenerMethod(handlerName) :
@@ -4146,6 +4187,7 @@ class JavaCodeGenerator extends CodeGenerator {
                 Integer.class,
                 FormUtils.getBundleString("PROP_VARIABLES_MODIFIER"), // NOI18N
                 FormUtils.getBundleString("HINT_VARIABLES_MODIFIER")); // NOI18N
+            setValue("changeImmediate", Boolean.FALSE); // NOI18N
         }
             
         @Override
@@ -4279,7 +4321,12 @@ class JavaCodeGenerator extends CodeGenerator {
     }
     
     private class GenerateMnemonicsCodeProperty extends PropertySupport.ReadWrite {
-        
+        private boolean writable = JavaCodeGenerator.this.canGenerate
+                                   && !JavaCodeGenerator.this.formModel.isReadOnly()
+                // don't allow turing mnemonics on if not supported (and not already on)
+                                   && (formModel.getSettings().getGenerateMnemonicsCode()
+                                       || formEditorSupport.canGenerateNBMnemonicsCode());
+
         private GenerateMnemonicsCodeProperty() {
             super(PROP_GENERATE_MNEMONICS,
                 Boolean.TYPE,
@@ -4308,25 +4355,13 @@ class JavaCodeGenerator extends CodeGenerator {
         
         @Override
         public boolean canWrite() {
-            return JavaCodeGenerator.this.canGenerate && !JavaCodeGenerator.this.formModel.isReadOnly();
+            return writable;
         }
-        
+
         @Override
         public boolean supportsDefaultValue() {
-            return true;
+            return false;
         }
-        
-        @Override
-        public void restoreDefaultValue() {
-            setValue(Boolean.valueOf(FormLoaderSettings.getInstance().getGenerateMnemonicsCode()));
-        }
-        
-        @Override
-        public boolean isDefaultValue() {
-            return (formModel.getSettings().getGenerateMnemonicsCode() == 
-                FormLoaderSettings.getInstance().getGenerateMnemonicsCode());
-        }
-        
     }
 
     private class ListenerGenerationStyleProperty extends PropertySupport.ReadWrite {

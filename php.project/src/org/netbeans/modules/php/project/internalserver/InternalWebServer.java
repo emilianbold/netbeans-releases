@@ -43,6 +43,9 @@ package org.netbeans.modules.php.project.internalserver;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,15 +53,21 @@ import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.modules.php.api.phpmodule.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram.InvalidPhpProgramException;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.runconfigs.RunConfigInternal;
+import org.netbeans.modules.php.project.runconfigs.validation.RunConfigInternalValidator;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
+// #207763 - add InternalWebServers that holds all running web servers and:
+//   - before running, verify that no other server with same hostname and port is running; or
+//   - before running, stop all other servers
 /**
  * Manager of internal web server (available in PHP 5.4+)
  * for the given {@link PhpProject}.
@@ -68,7 +77,13 @@ public final class InternalWebServer implements PropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(InternalWebServer.class.getName());
 
     private static final String WEB_SERVER_PARAM = "-S"; // NOI18N
-    private static final String WEB_ROOT_PARAM = "-t"; // NOI18N
+    private static final String DOCUMENT_ROOT_PARAM = "-t"; // NOI18N
+
+    private static final Set<String> RELATED_EVENT_NAMES = new HashSet<String>(Arrays.asList(
+            PhpProject.PROP_WEB_ROOT,
+            PhpProjectProperties.HOSTNAME,
+            PhpProjectProperties.PORT,
+            PhpProjectProperties.ROUTER));
 
     private final PhpProject project;
 
@@ -82,7 +97,10 @@ public final class InternalWebServer implements PropertyChangeListener {
 
     public static InternalWebServer createForProject(PhpProject project) {
         InternalWebServer server = new InternalWebServer(project);
+        // listen to changes in project.properties
         ProjectPropertiesSupport.getPropertyEvaluator(project).addPropertyChangeListener(server);
+        // listen to changes in webroot
+        ProjectPropertiesSupport.addProjectPropertyChangeListener(project, server);
         return server;
     }
 
@@ -90,16 +108,17 @@ public final class InternalWebServer implements PropertyChangeListener {
         return process != null && !process.isDone();
     }
 
-    public synchronized void start() {
+    public synchronized boolean start() {
         if (isRunning()) {
             LOGGER.log(Level.INFO, "Internal web server already running for project {0}", project.getName());
-            return;
+            return true;
         }
         process = createProcess();
+        return isRunning();
     }
 
     @NbBundle.Messages({
-        "# 0 - project name",
+        "# {0} - project name",
         "InternalWebServer.error.cancelProcess=Cannot cancel running internal web server for project {0}."
     })
     public synchronized void stop() {
@@ -123,10 +142,11 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     @NbBundle.Messages({
-        "# 0 - project name",
+        "# {0} - project name",
         "InternalWebServer.output.title=Internal WebServer [{0}]"
     })
     private Future<Integer> createProcess() {
+        // validate
         PhpInterpreter phpInterpreter;
         try {
             phpInterpreter = PhpInterpreter.getDefault();
@@ -134,19 +154,28 @@ public final class InternalWebServer implements PropertyChangeListener {
             UiUtils.invalidScriptProvided(ex.getLocalizedMessage());
             return null;
         }
-        ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
-                .workingDirectory(FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)))
-                .addArgument(WEB_SERVER_PARAM)
-                // XXX
-                .addArgument("localhost:8000"); // NOI18N
-        FileObject sourceDirectory = ProjectPropertiesSupport.getSourcesDirectory(project);
-        FileObject webRootDirectory = ProjectPropertiesSupport.getWebRootDirectory(project);
-        if (!sourceDirectory.equals(webRootDirectory)) {
-            externalProcessBuilder = externalProcessBuilder
-                    .addArgument(WEB_ROOT_PARAM)
-                    .addArgument(ProjectPropertiesSupport.getWebRoot(project));
+        RunConfigInternal runConfig = RunConfigInternal.forProject(project);
+        if (RunConfigInternalValidator.validateCustomizer(runConfig) != null) {
+            PhpProjectUtils.openCustomizerRun(project);
+            return null;
         }
-        // XXX router script
+        // run
+        ExternalProcessBuilder externalProcessBuilder = phpInterpreter.getProcessBuilder()
+                .workingDirectory(runConfig.getWorkDir())
+                .redirectErrorStream(true)
+                .addArgument(WEB_SERVER_PARAM)
+                .addArgument(runConfig.getServer());
+        String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();
+        if (relativeDocumentRoot != null) {
+            externalProcessBuilder = externalProcessBuilder
+                .addArgument(DOCUMENT_ROOT_PARAM)
+                .addArgument(relativeDocumentRoot);
+        }
+        String routerRelativePath = runConfig.getRouterRelativePath();
+        if (StringUtils.hasText(routerRelativePath)) {
+            externalProcessBuilder = externalProcessBuilder
+                    .addArgument(routerRelativePath);
+        }
         ExecutionDescriptor executionDescriptor = new ExecutionDescriptor()
                 .controllable(true)
                 .frontWindow(true)
@@ -156,8 +185,11 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (isRunning()) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
+        if (!isRunning()) {
+            return;
+        }
+        if (RELATED_EVENT_NAMES.contains(evt.getPropertyName())) {
             restart();
         }
     }

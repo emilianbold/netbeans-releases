@@ -47,6 +47,7 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.text.BadLocationException;
@@ -221,13 +222,28 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             if (wm != null) {
                 ClasspathInfo cpi = ClasspathInfo.create(wm.getDocumentBase());
                 ClassSeekerTask classSeekerTask = new ClassSeekerTask(cpi, fqn);
-                ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
+                runClassSeekerUserTask(classSeekerTask);
+                if (!classSeekerTask.wasElementFound() && SourceUtils.isScanInProgress()) {
+                    ScanDialog.runWhenScanFinished(classSeekerTask, Bundle.title_go_to_class_action());
+                }
+            }
+        }
+    }
+
+    private void runClassSeekerUserTask(ClassSeekerTask classSeekerTask) {
+        JavaSource js = JavaSource.create(classSeekerTask.cpi);
+        if (js != null) {
+            try {
+                js.runUserActionTask(classSeekerTask, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
     }
 
     private class ClassSeekerTask implements Runnable, CancellableTask<CompilationController> {
 
+        private final AtomicBoolean elementFound = new AtomicBoolean(false);
         private final ClasspathInfo cpi;
         private final String fqn;
 
@@ -236,16 +252,13 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             this.fqn = fqn;
         }
 
+        public boolean wasElementFound() {
+            return elementFound.get();
+        }
+
         @Override
         public void run() {
-            JavaSource js = JavaSource.create(cpi);
-            if (js != null) {
-                try {
-                    js.runUserActionTask(this, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            runClassSeekerUserTask(this);
         }
 
         @Override
@@ -262,6 +275,7 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
             Elements elements = cc.getElements();
             TypeElement element = elements.getTypeElement(fqn.trim());
             if (element != null) {
+                elementFound.set(true);
                 ElementHandle el = ElementHandle.create(element);
                 FileObject fo = SourceUtils.getFile(el, cpi);
 
@@ -276,12 +290,11 @@ public class JSFConfigHyperlinkProvider implements HyperlinkProvider {
                     StatusDisplayer.getDefault().setStatusText(Bundle.lbl_goto_source_not_found(fqn));
                     Toolkit.getDefaultToolkit().beep();
                 }
-            } else {
+            } else if (!SourceUtils.isScanInProgress()) {
                 StatusDisplayer.getDefault().setStatusText(Bundle.lbl_managed_bean_not_found(fqn));
                 Toolkit.getDefaultToolkit().beep();
             }
         }
-
     }
 
     private void findResourcePath(String path, BaseDocument doc){

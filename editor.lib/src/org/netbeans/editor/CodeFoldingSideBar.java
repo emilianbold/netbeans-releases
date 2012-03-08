@@ -337,7 +337,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
                     if (map.size() == 0 && foldList.size() > 0) {
                         assert foldList.size() == 1;
-                        return Collections.singletonList(new PaintInfo(PAINT_LINE, 0, clip.y, clip.height));
+                        return Collections.singletonList(new PaintInfo(PAINT_LINE, 0, clip.y, clip.height, -1, -1));
                     } else {
                         return new ArrayList<PaintInfo>(map.values());
                     }
@@ -369,10 +369,10 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
 
         if (lineStartOffset1 == lineStartOffset2) {
             // whole fold is on a single line
-            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed()));
+            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
         } else {
             // fold spans multiple lines
-            infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed()));
+            infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
         }
 
         if (!f.isCollapsed()) {
@@ -405,7 +405,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         // until next fold is reached (or end of doc).
         if (lineStartOffset1 != lineStartOffset2 && !f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
             int y2 = btui.getYFromPos(lineStartOffset2);
-            infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
+            infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
         }
 
         return true;
@@ -428,17 +428,17 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         if (lineStartOffset1 == lineStartOffset2) {
             // whole fold is on a single line
             int y1 = btui.getYFromPos(lineStartOffset1);
-            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed()));
+            infos.put(lineStartOffset1, new PaintInfo(SINGLE_PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset1));
         } else {
             // fold spans multiple lines
             if (f.getStartOffset() >= upperBoundary) {
                 int y1 = btui.getYFromPos(lineStartOffset1);
-                infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed()));
+                infos.put(lineStartOffset1, new PaintInfo(PAINT_MARK, level, y1, h, f.isCollapsed(), lineStartOffset1, lineStartOffset2));
             }
 
             if (!f.isCollapsed() && f.getEndOffset() <= upperBoundary) {
                 int y2 = btui.getYFromPos(lineStartOffset2);
-                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h));
+                infos.put(lineStartOffset2, new PaintInfo(PAINT_END_MARK, level, y2, h, lineStartOffset1, lineStartOffset2));
             }
         }
 
@@ -704,17 +704,21 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
         int paintY;
         int paintHeight;
         boolean isCollapsed;
+        int startOffset;
+        int endOffset;
         
-        public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, boolean isCollapsed){
+        public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, boolean isCollapsed, int startOffset, int endOffset){
             this.paintOperation = paintOperation;
             this.innerLevel = innerLevel;
             this.paintY = paintY;
             this.paintHeight = paintHeight;
             this.isCollapsed = isCollapsed;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
         }
 
-        public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight){
-            this(paintOperation, innerLevel, paintY, paintHeight, false);
+        public PaintInfo(int paintOperation, int innerLevel, int paintY, int paintHeight, int startOffset, int endOffset){
+            this(paintOperation, innerLevel, paintY, paintHeight, false, startOffset, endOffset);
         }
         
         public int getPaintOperation(){
@@ -758,6 +762,7 @@ public class CodeFoldingSideBar extends JComponent implements Accessible {
             }
             sb.append(",L:").append(innerLevel); // NOI18N
             sb.append(',').append(isCollapsed ? "C" : "E"); // NOI18N
+            sb.append(", start=").append(startOffset).append(", end=").append(endOffset);
             return sb.toString();
         }
     }

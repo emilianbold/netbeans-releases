@@ -42,6 +42,7 @@
 package org.netbeans.modules.editor.lib2.view;
 
 import javax.swing.text.AttributeSet;
+import javax.swing.text.Document;
 import javax.swing.text.Position;
 
 /**
@@ -50,13 +51,24 @@ import javax.swing.text.Position;
  */
 final class TestHighlight {
     
+    public static TestHighlight create(Document doc, int startOffset, int endOffset, AttributeSet attrs) {
+        assert (startOffset <= endOffset);
+        Position startPos = ViewUtils.createPosition(doc, startOffset);
+        Position endPos = ViewUtils.createPosition(doc, endOffset);
+        return new TestHighlight(startPos, endPos, attrs);
+    }
+    
+    public static TestHighlight create(Position startPos, Position endPos, AttributeSet attrs) {
+        return new TestHighlight(startPos, endPos, attrs);
+    }
+
     final Position startPos;
     
     final Position endPos;
     
     final AttributeSet attrs;
     
-    public TestHighlight(Position startPos, Position endPos, AttributeSet attrs) {
+    private TestHighlight(Position startPos, Position endPos, AttributeSet attrs) {
         this.startPos = startPos;
         this.endPos = endPos;
         this.attrs = attrs;

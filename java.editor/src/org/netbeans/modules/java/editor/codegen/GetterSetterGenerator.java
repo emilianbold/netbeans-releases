@@ -224,7 +224,6 @@ public class GetterSetterGenerator implements CodeGenerator {
                                     String message = NbBundle.getMessage(GetterSetterGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                     org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                                 } else {
-                                    int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree) path.getLeaf(), caretOffset);
                                     ArrayList<VariableElement> variableElements = new ArrayList<VariableElement>();
                                     for (ElementHandle<? extends Element> elementHandle : panel.getVariables()) {
                                         VariableElement elem = (VariableElement) elementHandle.resolve(copy);
@@ -235,7 +234,7 @@ public class GetterSetterGenerator implements CodeGenerator {
                                         }
                                         variableElements.add(elem);
                                     }
-                                    GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type, idx);
+                                    GeneratorUtils.generateGettersAndSetters(copy, path, variableElements, type);
                                 }
                             }
                         });

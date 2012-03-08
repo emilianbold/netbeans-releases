@@ -61,7 +61,7 @@ public class ImportAppRunParams extends ProjectImporterTestCase {
     @Override
     public void setUp() throws Exception {
         super.setUp();
-        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
+        ExtractToWorkDir(getDataDir(), "testdata.jar");
     }
     public void testImportJavaVMParams() {
         String projectName = "JavaRunParams";

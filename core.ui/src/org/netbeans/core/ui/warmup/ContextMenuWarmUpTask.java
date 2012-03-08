@@ -67,19 +67,22 @@ import org.openide.windows.TopComponent;
  */
 @ServiceProvider(service=Runnable.class, path="WarmUp")
 public final class ContextMenuWarmUpTask implements Runnable {
-
+    @Override
     public void run() {
         // For first context menu.
         org.openide.actions.ActionManager.getDefault().getContextActions();
-        new javax.swing.JMenuItem();
+        JMenuItem mi = new javax.swing.JMenuItem();
 
         // #30676 ToolsAction popup warm up.
         try {
             EventQueue.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     warmUpToolsPopupMenuItem();
                 }
             });
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         } catch (Exception e) {
             e.printStackTrace();
         }

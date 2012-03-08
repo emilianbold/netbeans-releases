@@ -166,13 +166,7 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadingFiles", projectName), remoteClient);
                 DefaultOperationMonitor downloadOperationMonitor = new DefaultOperationMonitor(progressHandle, forDownload);
                 remoteClient.setOperationMonitor(downloadOperationMonitor);
-                // XXX #202673 - work around, remove it once #202728 is fixed
-                suspendCopySupport(project);
-                try {
-                    transferInfo = remoteClient.download(sources, forDownload);
-                } finally {
-                    unsuspendCopySupport(project);
-                }
+                transferInfo = remoteClient.download(forDownload);
                 remoteClient.setOperationMonitor(null);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(DownloadCommand.class, "MSG_DownloadFinished", projectName));
@@ -195,22 +189,6 @@ public class DownloadCommand extends RemoteCommand implements Displayable {
             }
         }
     }
-
-    private static void suspendCopySupport(PhpProject project) {
-        if (project == null) {
-            return;
-        }
-        project.getCopySupport().setSuspended(true);
-    }
-
-    private static void unsuspendCopySupport(PhpProject project) {
-        if (project == null) {
-            return;
-        }
-        project.getCopySupport().setSuspended(false);
-    }
-
-
 
     // #142955 - but remember only if one of the selected files is source directory
     //  (otherwise it would make no sense, consider this scenario: upload just one file -> remember timestamp

@@ -58,6 +58,7 @@ import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunFileCommand;
 import org.netbeans.modules.php.project.ui.actions.RunTestCommand;
+import org.netbeans.modules.php.project.ui.actions.RunTestsCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -249,23 +250,22 @@ public class SrcNode extends FilterNode {
             this.project = project;
             this.isTest = isTest;
 
-            ProjectPropertiesSupport.addWeakPropertyChangeListener(project, propertyChangeListener);
+            ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, propertyChangeListener);
         }
 
         @Override
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            if (!isTest) {
-                int idx = actions.indexOf(SystemAction.get(PasteAction.class));
-                for (int i = 0; i < COMMON_ACTIONS.length; i++) {
-                    if (idx >= 0 && idx + COMMON_ACTIONS.length < actions.size()) {
-                        //put on the proper place after paste
-                        actions.add(idx + i + 1, COMMON_ACTIONS[i]);
-                    } else {
-                        //else put at the tail
-                        actions.add(COMMON_ACTIONS[i]);
-                    }
+            Action[] commonActions = getCommonActions();
+            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            for (int i = 0; i < commonActions.length; i++) {
+                if (idx >= 0 && idx + commonActions.length < actions.size()) {
+                    //put on the proper place after paste
+                    actions.add(idx + i + 1, commonActions[i]);
+                } else {
+                    //else put at the tail
+                    actions.add(commonActions[i]);
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -290,6 +290,17 @@ public class SrcNode extends FilterNode {
             }
             return super.getOpenedIcon(type);
         }
+
+        private Action[] getCommonActions() {
+            if (isTest) {
+                return new Action[] {
+                    null,
+                    ProjectSensitiveActions.projectCommandAction(RunTestsCommand.ID, RunTestsCommand.DISPLAY_NAME, null)
+                };
+            }
+            return COMMON_ACTIONS;
+        }
+
     }
 
     private static final class ObjectNode extends FilterNode {

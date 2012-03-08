@@ -53,6 +53,7 @@ import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
@@ -64,6 +65,12 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
 
+@MIMEResolver.ExtensionRegistration(
+    mimeType="text/x-jnlp+xml",
+    position=200,
+    displayName="#JNLPResolver",
+    extension={ "jnlp" }
+)
 public class JnlpDataObject extends MultiDataObject {
     
     public JnlpDataObject(FileObject pf, JnlpDataLoader loader) throws DataObjectExistsException, IOException {
