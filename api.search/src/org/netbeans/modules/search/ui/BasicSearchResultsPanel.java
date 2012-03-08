@@ -41,14 +41,22 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
 import org.netbeans.modules.search.BasicComposition;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
@@ -56,11 +64,19 @@ import org.netbeans.modules.search.PrintDetailsTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.TextDetail;
 import org.netbeans.swing.outline.Outline;
+import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.datatransfer.PasteType;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -78,28 +94,39 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             "org/netbeans/modules/search/res/colapseTree.png";          //NOI18N
     private static final String SHOW_DETAILS_ICON =
             "org/netbeans/modules/search/res/search.gif";               //NOI18N
+    private static final String FLAT_VIEW_ICON =
+            "org/netbeans/modules/search/res/logical_view.png";         //NOI18N
+    private static final String FOLDER_VIEW_ICON =
+            "org/netbeans/modules/search/res/file_view.png";            //NOI18N
     private ResultModel resultModel;
     private ResultsNode resultsNode;
     private JButton nextButton;
     private JButton prevButton;
     private JToggleButton expandButton;
+    private JToggleButton toggleViewButton;
     private JButton showDetailsButton;
     private boolean replacing;
     private boolean details;
     private BasicComposition composition;
+    private List<FileObject> rootFiles;
+    private FolderTreeItem rootPathItem = new FolderTreeItem();
 
     public BasicSearchResultsPanel(ResultModel resultModel,
-            BasicComposition composition, boolean replacing, boolean details) {
+            BasicComposition composition, boolean replacing, boolean details,
+            List<FileObject> rootFiles) {
 
         super(composition, composition.getSearchProviderPresenter());
         this.composition = composition;
         this.replacing = replacing;
         this.details = details;
+        this.rootFiles = rootFiles;
         this.resultsNode = new ResultsNode();
         getExplorerManager().setRootContext(resultsNode);
         this.resultModel = resultModel;
         setOutlineColumns(resultModel);
         initSelectionListeners();
+        getOutlineView().addTreeExpansionListener(
+                new ExpandingTreeExpansionListener());
     }
 
     private void initSelectionListeners() {
@@ -163,16 +190,40 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
      */
     private class ResultsNode extends AbstractNode {
 
-        private ResultChildren children;
+        private FlatChildren flatChildren;
+        private FolderTreeChildren folderTreeChildren;
 
         public ResultsNode() {
-            super(new ResultChildren());
-            this.children = (ResultChildren) this.getChildren();
+            super(new FlatChildren());
+            this.flatChildren = (FlatChildren) this.getChildren();
+            this.folderTreeChildren = new FolderTreeChildren(rootPathItem);
         }
 
         void update() {
             setDisplayName(resultModel.size() + " matching objects found.");       //TODO
-            children.update();
+            flatChildren.update();
+        }
+
+        void setFlatMode() {
+            setChildren(flatChildren);
+            expand();
+        }
+
+        void setFolderTreeMode() {
+            setChildren(folderTreeChildren);
+            expand();
+        }
+
+        private void expand() {
+            getOutlineView().expandNode(resultsNode);
+        }
+    }
+
+    private void expandOnlyChilds(Node parent) {
+        if (parent.getChildren().getNodesCount(true) == 1) {
+            Node onlyChild = parent.getChildren().getNodeAt(0);
+            getOutlineView().expandNode(onlyChild);
+            expandOnlyChilds(onlyChild);
         }
     }
 
@@ -181,28 +232,197 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
      *
      * Shows list of matching data objects.
      */
-    private class ResultChildren extends Children.Keys<MatchingObject> {
+    private class FlatChildren extends Children.Keys<MatchingObject> {
 
         @Override
         protected Node[] createNodes(MatchingObject key) {
-            Node delegate;
-            if (key.getDataObject() == null) {
-                return new Node[0];
-            }
-            delegate = key.getDataObject().getNodeDelegate();
-            Children children;
-            if (key.getTextDetails() == null
-                    || key.getTextDetails().isEmpty()) {
-                children = Children.LEAF;
-            } else {
-                children = key.getDetailsChildren();
-            }
-            Node n = new MatchingObjectNode(delegate, children, key);
-            return new Node[]{n};
+            return new Node[]{createNodeForMatchingObject(key)};
         }
 
         private synchronized void update() {
             setKeys(resultModel.getMatchingObjects());
+        }
+    }
+
+    private Node createNodeForMatchingObject(MatchingObject key) {
+        Node delegate;
+        if (key.getDataObject() == null) {
+            Node n = new AbstractNode(Children.LEAF);
+            n.setDisplayName("Error"); //NOI18N
+            return n;
+        }
+        delegate = key.getDataObject().getNodeDelegate();
+        Children children;
+        if (key.getTextDetails() == null
+                || key.getTextDetails().isEmpty()) {
+            children = Children.LEAF;
+        } else {
+            children = key.getDetailsChildren();
+        }
+        return new MatchingObjectNode(delegate, children, key);
+    }
+
+    public void addMatchingObject(MatchingObject mo) {
+        for (FileObject fo : rootFiles) {
+            if (fo == mo.getFileObject()
+                    || FileUtil.isParentOf(fo, mo.getFileObject())) {
+                addToTreeView(rootPathItem,
+                        getRelativePath(fo, mo.getFileObject()), mo);
+                return;
+            }
+        }
+        addToTreeView(rootPathItem,
+                Collections.singletonList(mo.getFileObject()), mo);
+    }
+
+    private List<FileObject> getRelativePath(FileObject parent, FileObject fo) {
+        List<FileObject> l = new LinkedList<FileObject>();
+        FileObject part = fo;
+        while (part != null) {
+            l.add(0, part);
+            if (part == parent) {
+                break;
+            }
+            part = part.getParent();
+        }
+        return l;
+    }
+
+    private void addToTreeView(FolderTreeItem parentItem, List<FileObject> path,
+            MatchingObject matchingObject) {
+        for (FolderTreeItem pi : parentItem.getChildren()) {
+            if (!pi.isPathLeaf()
+                    && pi.getFolder().getPrimaryFile().equals(path.get(0))) {
+                addToTreeView(pi, path.subList(1, path.size()), matchingObject);
+                return;
+            }
+        }
+        createInTreeView(parentItem, path, matchingObject);
+    }
+
+    private void createInTreeView(FolderTreeItem parentItem,
+            List<FileObject> path, MatchingObject matchingObject) {
+        if (path.size() == 1) {
+            for (FolderTreeItem pi : parentItem.getChildren()) {
+                if (pi.isPathLeaf()
+                        && pi.getMatchingObject().equals(matchingObject)) {
+                    return;
+                }
+            }
+            parentItem.addChild(new FolderTreeItem(matchingObject));
+        } else {
+            try {
+                FolderTreeItem newChild = new FolderTreeItem(
+                        DataObject.find(path.get(0)));
+                parentItem.addChild(newChild);
+                createInTreeView(newChild, path.subList(1, path.size()),
+                        matchingObject);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+
+    private class FolderTreeItem {
+
+        private DataObject folder = null;
+        private MatchingObject matchingObject = null;
+        private List<FolderTreeItem> children =
+                new LinkedList<FolderTreeItem>();
+        ChangeListener changeListener = null;
+
+        /**
+         * Constructor for root node
+         */
+        public FolderTreeItem() {
+        }
+
+        public FolderTreeItem(MatchingObject matchingObject) {
+            this.matchingObject = matchingObject;
+        }
+
+        public FolderTreeItem(DataObject file) {
+            this.folder = file;
+        }
+
+        void addChild(FolderTreeItem pathItem) {
+            children.add(pathItem);
+            if (changeListener != null) {
+                changeListener.stateChanged(new ChangeEvent(this));
+            }
+        }
+
+        public DataObject getFolder() {
+            return folder;
+        }
+
+        public List<FolderTreeItem> getChildren() {
+            return children;
+        }
+
+        public MatchingObject getMatchingObject() {
+            return matchingObject;
+        }
+
+        public void setChangeListener(ChangeListener changeListener) {
+            this.changeListener = changeListener;
+        }
+
+        public boolean isPathLeaf() {
+            return matchingObject != null;
+        }
+    }
+
+    private class FolderTreeNode extends FilterNode {
+
+        public FolderTreeNode(FolderTreeItem pathItem) {
+            super(pathItem.getFolder().getNodeDelegate(),
+                    new FolderTreeChildren(pathItem), Lookups.fixed());
+        }
+
+        @Override
+        public PasteType[] getPasteTypes(Transferable t) {
+            return new PasteType[0];
+        }
+
+        @Override
+        public PasteType getDropType(Transferable t, int action, int index) {
+            return null;
+        }
+    }
+
+    private class FolderTreeChildren extends Children.Keys<FolderTreeItem> {
+
+        private FolderTreeItem item = null;
+
+        public FolderTreeChildren(FolderTreeItem pathItem) {
+            this.item = pathItem;
+            pathItem.setChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    update();
+                }
+            });
+        }
+
+        @Override
+        protected void addNotify() {
+            update();
+        }
+
+        void update() {
+            setKeys(item.getChildren());
+        }
+
+        @Override
+        protected Node[] createNodes(FolderTreeItem key) {
+            Node n;
+            if (key.isPathLeaf()) {
+                n = createNodeForMatchingObject(key.getMatchingObject());
+            } else {
+                n = new FolderTreeNode(key);
+            }
+            return new Node[]{n};
         }
     }
 
@@ -215,8 +435,27 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
 
     @Override
     protected AbstractButton[] createButtons() {
+        toggleViewButton = new JToggleButton();
+        toggleViewButton.setEnabled(true);
+        toggleViewButton.setIcon(ImageUtilities.loadImageIcon(FOLDER_VIEW_ICON,
+                true));
+        toggleViewButton.setSelectedIcon(ImageUtilities.loadImageIcon(
+                FLAT_VIEW_ICON, true));
+        toggleViewButton.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_TOGGLE_VIEW"));                            //NOI18N
+        toggleViewButton.setSelected(false);
+        toggleViewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (toggleViewButton.isSelected()) {
+                    resultsNode.setFolderTreeMode();
+                } else {
+                    resultsNode.setFlatMode();
+                }
+            }
+        });
         if (!details) {
-            return new AbstractButton[] {};
+            return new AbstractButton[] {toggleViewButton};
         }
         prevButton = new JButton();
         prevButton.setEnabled(false);
@@ -268,7 +507,7 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
         });
 
         return new AbstractButton[]{prevButton, nextButton, expandButton,
-                    showDetailsButton};
+                    toggleViewButton, showDetailsButton};
     }
 
     private void shift(int direction) {
@@ -375,13 +614,19 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
     }
 
     private void toggleExpand(boolean expand) {
-        getOutlineView().expandNode(resultsNode);
-        for (Node n : resultsNode.getChildren().getNodes()) {
+        Node rootNode = getExplorerManager().getRootContext();
+        getOutlineView().expandNode(rootNode);
+        toggleExpand(rootNode, expand);
+    }
+
+    public void toggleExpand(Node root, boolean expand) {
+        for (Node n : root.getChildren().getNodes()) {
             if (expand) {
                 getOutlineView().expandNode(n);
             } else {
                 getOutlineView().collapseNode(n);
             }
+            toggleExpand(n, expand);
         }
     }
 
@@ -400,5 +645,21 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
         Manager.getInstance().schedulePrintTask(
                 new PrintDetailsTask(resultModel.getMatchingObjects(),
                 composition.getBasicSearchCriteria()));
+    }
+
+    private class ExpandingTreeExpansionListener implements TreeExpansionListener {
+
+        @Override
+        public void treeExpanded(TreeExpansionEvent event) {
+            Object lpc = event.getPath().getLastPathComponent();
+            Node node = Visualizer.findNode(lpc);
+            if (node != null) {
+                expandOnlyChilds((Node) node);
+            }
+        }
+
+        @Override
+        public void treeCollapsed(TreeExpansionEvent event) {
+        }
     }
 }

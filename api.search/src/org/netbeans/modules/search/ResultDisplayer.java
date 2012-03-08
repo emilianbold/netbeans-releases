@@ -77,7 +77,8 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     public JComponent getVisualComponent() {
 
         resultPanel = new BasicSearchResultsPanel(resultModel, composition,
-                criteria.isSearchAndReplace(), criteria.isFullText());
+                criteria.isSearchAndReplace(), criteria.isFullText(),
+                composition.getRootFiles());
         return resultPanel;
     }
 
@@ -86,6 +87,9 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
         if (resultModel.objectFound(object.getFileObject(), object.getCharset(),
                 object.getTextDetails())) {
             resultPanel.update();
+            resultPanel.addMatchingObject(
+                    resultModel.getMatchingObjects().get(
+                    resultModel.size() - 1));
         }
         if (resultModel.wasLimitReached()) {
             composition.terminate();

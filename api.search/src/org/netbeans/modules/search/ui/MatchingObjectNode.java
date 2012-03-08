@@ -46,6 +46,7 @@ import java.util.Date;
 import org.netbeans.modules.search.MatchingObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -58,7 +59,7 @@ public class MatchingObjectNode extends FilterNode {
     public MatchingObjectNode(Node original,
             org.openide.nodes.Children children,
             MatchingObject matchingObject) {
-        super(original, children);
+        super(original, children, Lookups.fixed());
 
         this.matchingObject = matchingObject;
     }
