@@ -380,7 +380,7 @@ public class ProxyLookup extends Lookup {
                 Result<T>[] arr = newResults(myLkps.length);
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i] = myLkps[i].lookup(weakL.result.template);
+                    arr[i] = myLkps[i].lookup(template());
                 }
 
                 synchronized (proxy()) {
@@ -450,7 +450,7 @@ public class ProxyLookup extends Lookup {
             for (int i = 0; i < current.length; i++) {
                 if (added.contains(current[i])) {
                     // new lookup
-                    arr[i] = current[i].lookup(weakL.result.template);
+                    arr[i] = current[i].lookup(template());
                     if (toAdd != null) {
                         toAdd.put(arr[i], weakL);
                     }
@@ -618,7 +618,7 @@ public class ProxyLookup extends Lookup {
          * @return results to work on.
          */
         private Lookup.Result<T>[] myBeforeLookup(boolean callBeforeLookup) {
-            Template<T> template = weakL.result.template;
+            Template<T> template = template();
             
             if (callBeforeLookup) {
                 proxy().beforeLookup(template);
@@ -643,7 +643,7 @@ public class ProxyLookup extends Lookup {
          */
         @Override
         protected void beforeLookup(Lookup.Template t) {
-            if (t.getType() == weakL.result.template.getType()) {
+            if (t.getType() == template().getType()) {
                 myBeforeLookup(true);
             }
         }
@@ -657,6 +657,10 @@ public class ProxyLookup extends Lookup {
             this.cache = cache;
         }
         private static final Collection[] NO_CACHE = new Collection[0];
+
+        private Template<T> template() {
+            return weakL.result.template;
+        }
     }
     private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
         final WeakResult<T> result;
