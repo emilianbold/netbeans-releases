@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -531,10 +532,21 @@ public class ProxyLookup extends Lookup {
          * @return the collection or set of the objects
          */
         private java.util.Collection computeResult(int indexToCache, boolean callBeforeLookup) {
-            if (indexToCache == 1) {
-                return new LazySet(this, indexToCache, callBeforeLookup);
+            Lookup.Result[] arr = myBeforeLookup(callBeforeLookup, false);
+            // use caches, if they exist
+            synchronized (proxy()) {
+                Collection[] cc = getCache();
+                if (cc != null && cc != R.NO_CACHE) {
+                    Collection r = cc[indexToCache];
+                    if (r != null) {
+                        return r;
+                    }
+                }
             }
-            return new LazyList(this, indexToCache, callBeforeLookup);
+            if (indexToCache == 1) {
+                return new LazySet(this, indexToCache, callBeforeLookup, arr);
+            }
+            return new LazyList(this, indexToCache, callBeforeLookup, arr);
         }
 
         /** When the result changes, fire the event.
@@ -617,7 +629,9 @@ public class ProxyLookup extends Lookup {
         /** Implementation of my before lookup.
          * @return results to work on.
          */
-        private Lookup.Result<T>[] myBeforeLookup(boolean callBeforeLookup) {
+        private Lookup.Result<T>[] myBeforeLookup(
+            boolean callBeforeLookup, boolean callBeforeOnWait
+        ) {
             Template<T> template = template();
             
             if (callBeforeLookup) {
@@ -626,7 +640,7 @@ public class ProxyLookup extends Lookup {
 
             Lookup.Result<T>[] arr = initResults();
 
-            if (callBeforeLookup) {
+            if (callBeforeOnWait) {
                 // invoke update on the results
                 for (int i = 0; i < arr.length; i++) {
                     if (arr[i] instanceof WaitableResult) {
@@ -644,7 +658,7 @@ public class ProxyLookup extends Lookup {
         @Override
         protected void beforeLookup(Lookup.Template t) {
             if (t.getType() == template().getType()) {
-                myBeforeLookup(true);
+                myBeforeLookup(true, true);
             }
         }
 
@@ -660,6 +674,23 @@ public class ProxyLookup extends Lookup {
 
         private Template<T> template() {
             return weakL.result.template;
+        }
+
+        private void updateResultCache(int indexToCache, Result[] arr, Collection<Object> ret) {
+            synchronized (proxy()) {
+                Collection[] cc = getCache();
+                if (cc == null || cc == R.NO_CACHE) {
+                    // initialize the cache to indicate this result is in use
+                    setCache(cc = new Collection[3]);
+                }
+
+                if (arr == weakL.getResults()) {
+                    // updates the results, if the results have not been
+                    // changed during the computation of allInstances
+                    cc[indexToCache] = ret;
+                }
+            }
+            
         }
     }
     private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
@@ -984,102 +1015,97 @@ public class ProxyLookup extends Lookup {
         private R result;
         private final int indexToCache;
         private final boolean callBeforeLookup;
+        private final Lookup.Result[] arr;
+        /** GuardedBy("this") */
+        private final Collection[] computed;
+        /** GuardedBy("this") */
         private Collection delegate;
 
-        public LazyCollection(R result, int indexToCache, boolean callBeforeLookup) {
+        public LazyCollection(R result, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
             this.result = result;
             this.indexToCache = indexToCache;
             this.callBeforeLookup = callBeforeLookup;
+            this.arr = arr;
+            this.computed = new Collection[arr.length];
         }
 
         final Collection delegate() {
-            Collection computed = null;
+            return delegate(true);
+        }
+        final Collection delegate(boolean computeIt) {
+            Collection dlgt = null;
             for (;;) {
                 synchronized (this) {
-                    if (computed != null && delegate == null) {
-                        delegate = computed;
+                    if (dlgt != null && delegate == null) {
+                        delegate = dlgt;
                         result = null;
                     }
                     if (delegate != null) {
                         return delegate;
                     }
+                    if (!computeIt) {
+                        return null;
+                    }
                 }
-                computed = computeDelegate();
+                dlgt = computeDelegate(null);
             }
         }
 
-        private Collection computeDelegate() {
-            // results to use
-            Lookup.Result[] arr = result.myBeforeLookup(callBeforeLookup);
-
-            // if the call to beforeLookup resulted in deletion of caches
-            synchronized (result.proxy()) {
-                Collection[] cc = result.getCache();
-                if (cc != null && cc != R.NO_CACHE) {
-                    Collection result = cc[indexToCache];
-                    if (result != null) {
-                        return result;
-                    }
-                }
-            }
-
+        private Collection computeDelegate(int[] firstNonEmpty) {
             // initialize the collection to hold result
-            Collection<Object> compute;
-            Collection<Object> ret;
+            Collection<Object> compute = null;
+            Collection<Object> ret = null;
 
-            if (indexToCache == 1) {
-                HashSet<Object> s = new HashSet<Object>();
-                compute = s;
-                ret = Collections.unmodifiableSet(s);
-            } else {
-                List<Object> l = new ArrayList<Object>(arr.length * 2);
-                compute = l;
-                ret = Collections.unmodifiableList(l);
+            if (firstNonEmpty == null) {
+                if (indexToCache == 1) {
+                    HashSet<Object> s = new HashSet<Object>();
+                    compute = s;
+                    ret = Collections.unmodifiableSet(s);
+                } else {
+                    List<Object> l = new ArrayList<Object>(arr.length * 2);
+                    compute = l;
+                    ret = Collections.unmodifiableList(l);
+                }
             }
 
             // fill the collection
-            for (int i = 0; i < arr.length; i++) {
-                switch (indexToCache) {
-                    case 0:
-                        if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
-                            WaitableResult<?> wr = (WaitableResult<?>) arr[i];
-                            compute.addAll(wr.allInstances(callBeforeLookup));
-                        } else {
-                            compute.addAll(arr[i].allInstances());
+            int i = firstNonEmpty == null ? 0 : firstNonEmpty[0];
+            while (i < arr.length) {
+                Collection one;
+                synchronized (this) {
+                    one = getComputed()[i];
+                }
+                if (one == null) {
+                    if (firstNonEmpty != null && callBeforeLookup && arr[i] instanceof WaitableResult) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        wr.beforeLookup(result.template());
+                    }
+                    one = computeSingleResult(i);
+                    assert one != null;
+                }
+                synchronized (this) {
+                    if (getComputed()[i] == null) {
+                        getComputed()[i] = one;
+                    }
+                    i++;
+                    if (firstNonEmpty != null) {
+                        firstNonEmpty[0] = i;
+                        if (!one.isEmpty()) {
+                            ret = one;
+                            break;
                         }
-                        break;
-                    case 1:
-                        compute.addAll(arr[i].allClasses());
-                        break;
-                    case 2:
-                        if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
-                            WaitableResult<?> wr = (WaitableResult<?>) arr[i];
-                            compute.addAll(wr.allItems(callBeforeLookup));
-                        } else {
-                            compute.addAll(arr[i].allItems());
-                        }
-                        break;
-                    default:
-                        assert false : "Wrong index: " + indexToCache;
+                    } else {
+                        compute.addAll(one);
+                    }
                 }
             }
-
-
-
-            synchronized (result.proxy()) {
-                Collection[] cc = result.getCache();
-                if (cc == null || cc == R.NO_CACHE) {
-                    // initialize the cache to indicate this result is in use
-                    result.setCache(cc = new Collection[3]);
+            if (i == arr.length) {
+                R r = result;
+                if (r != null) {
+                    r.updateResultCache(indexToCache, arr, ret);
                 }
-
-                if (arr == result.weakL.getResults()) {
-                    // updates the results, if the results have not been
-                    // changed during the computation of allInstances
-                    cc[indexToCache] = ret;
-                }
+                result = null;
             }
-
             return ret;
         }
 
@@ -1100,7 +1126,8 @@ public class ProxyLookup extends Lookup {
 
         @Override
         public Iterator iterator() {
-            return delegate().iterator();
+            Collection c = delegate(false);
+            return c != null ? c.iterator() : lazyIterator();
         }
 
         @Override
@@ -1162,12 +1189,85 @@ public class ProxyLookup extends Lookup {
         public void clear() {
             throw new UnsupportedOperationException();
         }
+
+        private Iterator lazyIterator() {
+            return new Iterator() {
+                private Iterator current;
+                private int[] indx = { 0 };
+                @Override
+                public boolean hasNext() {
+                    for (;;) {
+                        if (current != null && current.hasNext()) {
+                            return true;
+                        }
+                        if (indx[0] == arr.length) {
+                            return false;
+                        }
+                        // increments indx[0] at least by one
+                        final Collection newIt = computeDelegate(indx);
+                        if (newIt != null) {
+                            current = newIt.iterator();
+                        } else {
+                            assert indx[0] == arr.length;
+                            current = null;
+                        }
+                    }
+                }
+
+                @Override
+                public Object next() {
+                    if (hasNext()) {
+                        return current.next();
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        private Collection computeSingleResult(int i) {
+            Collection one = null;
+            switch (indexToCache) {
+                case 0:
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        one = wr.allInstances(callBeforeLookup);
+                    } else {
+                        one = arr[i].allInstances();
+                    }
+                    break;
+                case 1:
+                    one = arr[i].allClasses();
+                    break;
+                case 2:
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        one = wr.allItems(callBeforeLookup);
+                    } else {
+                        one = arr[i].allItems();
+                    }
+                    break;
+                default:
+                    assert false : "Wrong index: " + indexToCache;
+            }
+            return one;
+        }
+
+        private Collection[] getComputed() {
+            assert Thread.holdsLock(this);
+            return computed;
+        }
     } // end of LazyCollection
 
     private final static class LazyList extends LazyCollection implements List {
 
-        public LazyList(R data, int indexToCache, boolean callBeforeLookup) {
-            super(data, indexToCache, callBeforeLookup);
+        public LazyList(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, indexToCache, callBeforeLookup, arr);
         }
 
         final List delegateList() {
@@ -1227,8 +1327,8 @@ public class ProxyLookup extends Lookup {
 
     private static final class LazySet extends LazyCollection implements Set {
 
-        public LazySet(R data, int indexToCache, boolean callBeforeLookup) {
-            super(data, indexToCache, callBeforeLookup);
+        public LazySet(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, indexToCache, callBeforeLookup, arr);
         }
     } // end of LazySet
 }
