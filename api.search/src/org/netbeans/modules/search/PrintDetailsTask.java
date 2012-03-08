@@ -56,7 +56,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author  Marian Petras
  */
-final class PrintDetailsTask implements Runnable {
+public final class PrintDetailsTask implements Runnable {
 
     /** */
     private static final int BUFFER_SIZE = 8;
@@ -74,7 +74,7 @@ final class PrintDetailsTask implements Runnable {
     private volatile boolean interrupted = false;
 
     /** Creates a new instance of PrintDetailsTask */
-    PrintDetailsTask(final List<MatchingObject> matchingObjects,
+    public PrintDetailsTask(final List<MatchingObject> matchingObjects,
                      final BasicSearchCriteria basicCriteria) {
         this.objects = matchingObjects;
         this.basicSearchCriteria = basicCriteria;

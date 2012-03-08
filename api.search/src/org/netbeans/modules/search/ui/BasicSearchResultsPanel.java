@@ -50,7 +50,9 @@ import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
+import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
+import org.netbeans.modules.search.PrintDetailsTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.TextDetail;
 import org.netbeans.swing.outline.Outline;
@@ -74,18 +76,23 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
             "org/netbeans/modules/search/res/expandTree.png";           //NOI18N
     private static final String COLLAPSE_ICON =
             "org/netbeans/modules/search/res/colapseTree.png";          //NOI18N
+    private static final String SHOW_DETAILS_ICON =
+            "org/netbeans/modules/search/res/search.gif";               //NOI18N
     private ResultModel resultModel;
     private ResultsNode resultsNode;
     private JButton nextButton;
     private JButton prevButton;
     private JToggleButton expandButton;
+    private JButton showDetailsButton;
     private boolean replacing;
     private boolean details;
+    private BasicComposition composition;
 
     public BasicSearchResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean replacing, boolean details) {
 
         super(composition, composition.getSearchProviderPresenter());
+        this.composition = composition;
         this.replacing = replacing;
         this.details = details;
         this.resultsNode = new ResultsNode();
@@ -247,7 +254,21 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
                 toggleExpand(expandButton.isSelected());
             }
         });
-         return new AbstractButton[]{prevButton, nextButton, expandButton};
+        showDetailsButton = new JButton();
+        showDetailsButton.setEnabled(false);
+        showDetailsButton.setIcon(ImageUtilities.loadImageIcon(
+                SHOW_DETAILS_ICON, true));
+        showDetailsButton.setToolTipText(UiUtils.getText(
+                "TEXT_BUTTON_FILL"));                                   //NOI18N
+        showDetailsButton.addActionListener(new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                fillOutput();
+            }
+        });
+
+        return new AbstractButton[]{prevButton, nextButton, expandButton,
+                    showDetailsButton};
     }
 
     private void shift(int direction) {
@@ -362,5 +383,22 @@ public class BasicSearchResultsPanel extends AbstractSearchResultsPanel {
                 getOutlineView().collapseNode(n);
             }
         }
+    }
+
+    @Override
+    public void searchFinished() {
+        super.searchFinished();
+        if (details && resultModel.size() > 0) {
+            showDetailsButton.setEnabled(true);
+        }
+    }
+
+    /**
+     * Send search details to output window.
+     */
+    public void fillOutput() {
+        Manager.getInstance().schedulePrintTask(
+                new PrintDetailsTask(resultModel.getMatchingObjects(),
+                composition.getBasicSearchCriteria()));
     }
 }
