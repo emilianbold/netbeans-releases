@@ -94,7 +94,7 @@ class HgGrep extends SearchComposition<String> {
                     call();
             RP.post(InputReaderTask.newTask(InputReaders.forStream(proc.getInputStream(), Charset.defaultCharset()), InputProcessors.bridge(new LineProcessor() {
                 @Override public void processLine(String line) {
-                    getSearchResultsDisplayer().addMatchingObject(line);
+                    displayer.addMatchingObject(line);
                 }
                 @Override public void reset() {}
                 @Override public void close() {}
