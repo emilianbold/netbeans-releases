@@ -47,6 +47,7 @@ import org.netbeans.modules.php.editor.api.AliasedName;
 /**
  * @author Radek Matous
  */
-public interface UseElement extends ModelElement {
+public interface UseElement extends Scope {
     AliasedName getAliasedName();
+    UseAliasElement getAliasElement();
 }

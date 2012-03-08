@@ -648,6 +648,54 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "return new B\\B^ag();", "class ^Bag {}");
     }
 
+    public void testIssue200596_01() throws Exception {
+        checkDeclaration(getTestPath(), "(new O^mg\\AliasedClassName())->bar();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_02() throws Exception {
+        checkDeclaration(getTestPath(), "new O^mg\\AliasedClassName();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_03() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::foo();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_04() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::FOO;", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_05() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::$foo;", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_06() throws Exception {
+        checkDeclaration(getTestPath(), "if ($x instanceof O^mg\\AliasedClassName) {}", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_07() throws Exception {
+        checkDeclaration(getTestPath(), "(new C^ls())->bar();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_08() throws Exception {
+        checkDeclaration(getTestPath(), "new C^ls();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_09() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::foo();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_10() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::FOO;", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_11() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::$foo;", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_12() throws Exception {
+        checkDeclaration(getTestPath(), "if ($x instanceof C^ls) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

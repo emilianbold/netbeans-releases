@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,14 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.api;
+package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.csl.api.ElementKind;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public interface UseAliasElement extends ModelElement {
 
-public enum PhpElementKind {
-
-    INDEX, PROGRAM, INCLUDE,
-    IFACE, CLASS, USE_ALIAS,
-    METHOD, FIELD, TYPE_CONSTANT,
-    VARIABLE, CONSTANT, FUNCTION,
-    NAMESPACE_DECLARATION, USE_STATEMENT, CONSTRUCTOR,
-    TRAIT, TRAIT_CONFLICT_RESOLUTION, TRAIT_METHOD_ALIAS;
-
-    public final ElementKind getElementKind() {
-        switch (this) {
-            case CLASS:
-                return ElementKind.CLASS;
-            case TYPE_CONSTANT:
-                return ElementKind.CONSTANT;
-            case CONSTANT:
-                return ElementKind.CONSTANT;
-            case FIELD:
-                return ElementKind.FIELD;
-            case FUNCTION:
-                return ElementKind.METHOD;
-            case IFACE:
-                return ElementKind.INTERFACE;
-            case METHOD:
-                return ElementKind.METHOD;
-            case VARIABLE:
-                return ElementKind.VARIABLE;
-            case NAMESPACE_DECLARATION:
-                return ElementKind.PACKAGE;
-        }
-        return ElementKind.OTHER;
-    }
 }

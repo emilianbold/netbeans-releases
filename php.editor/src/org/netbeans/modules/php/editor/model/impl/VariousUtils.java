@@ -1311,6 +1311,61 @@ public class VariousUtils {
         return namespaces;
     }
 
+    public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
+                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                for (UseElement useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @CheckForNull
+    public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        AliasedName result = null;
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
+                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                for (UseElement useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = aliasName;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
         if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
                 && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N

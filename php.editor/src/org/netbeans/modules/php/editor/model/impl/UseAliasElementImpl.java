@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,32 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.Collection;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.UseAliasElement;
 import org.netbeans.modules.php.editor.model.UseElement;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Union2;
 
-class UseElementImpl extends ScopeImpl implements UseElement {
-    private AliasedName aliasName;
-    UseElementImpl(NamespaceScopeImpl inScope, ASTNodeInfo<UseStatementPart> node) {
-        this(inScope,node.getName(),inScope.getFile(),node.getRange());
-        final Identifier alias = node.getOriginalNode().getAlias();
-        this.aliasName = alias != null ? new AliasedName(alias.getName(),QualifiedName.create(getName())) : null;
-        AliasedName aliasedName = null;
-        if (alias != null) {
-            aliasedName = new AliasedName(alias.getName(),QualifiedName.create(getName()));
-            ASTNodeInfo<Expression> nodeInfo = ASTNodeInfo.create(ASTNodeInfo.Kind.USE_ALIAS, alias);
-            UseAliasElementImpl aliasElement = new UseAliasElementImpl(this, nodeInfo);
-            addElement(aliasElement);
-        }
-        this.aliasName = aliasedName;
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class UseAliasElementImpl extends ModelElementImpl implements UseAliasElement {
+
+    private UseAliasElementImpl(Scope inScope, String name, Union2<String, FileObject> file, OffsetRange offsetRange) {
+        super(inScope, name, file, offsetRange, PhpElementKind.USE_ALIAS);
     }
 
-    private UseElementImpl(ScopeImpl inScope, String name,
-            Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpElementKind.USE_STATEMENT);
+    UseAliasElementImpl(final UseElement useElement, final ASTNodeInfo<Expression> nodeInfo) {
+        this(useElement.getInScope(), nodeInfo.getName(), useElement.getInScope().getFile(), nodeInfo.getRange());
     }
 
-    @Override
-    public AliasedName getAliasedName() {
-        return aliasName;
-    }
-
-    @CheckForNull
-    @Override
-    public UseAliasElement getAliasElement() {
-        Collection<UseAliasElement> filteredElements = filter(getElements(), new ElementFilter() {
-
-            @Override
-            public boolean isAccepted(ModelElement element) {
-                return (element instanceof UseAliasElement);
-            }
-        });
-        return filteredElements.size() > 0 ? filteredElements.iterator().next() : null;
-    }
 }
