@@ -72,26 +72,25 @@ public class JsDocParser {
     public static Map<Integer, JsDocBlock> parse(Snapshot snapshot) {
         Map<Integer, JsDocBlock> blocks = new HashMap<Integer, JsDocBlock>();
 
-        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence();
-        if (tokenSequence == null || tokenSequence.language() != JsTokenId.language()) {
+        TokenSequence tokenSequence = snapshot.getTokenHierarchy().tokenSequence(JsTokenId.language());
+        if (tokenSequence == null) {
             return blocks;
         }
 
-        Token<? extends JsTokenId> token;
-        while (tokenSequence.moveNext() && (token = tokenSequence.token()) != null) {
-            if (token.id() == JsTokenId.DOC_COMMENT) {
-                JsDocCommentType commentType = getCommentType(token.text());
+        while (tokenSequence.moveNext()) {
+            if (tokenSequence.token().id() == JsTokenId.DOC_COMMENT) {
+                JsDocCommentType commentType = getCommentType(tokenSequence.token().text());
                 LOGGER.log(Level.FINEST, "JsDocParser:comment block offset=[{0}-{1}],type={2},text={3}", new Object[]{
-                    tokenSequence.offset(), tokenSequence.offset() + token.length(), commentType, token.text()});
+                    tokenSequence.offset(), tokenSequence.offset() + tokenSequence.token().length(), commentType, tokenSequence.token().text()});
 
-                OffsetRange offsetRange = new OffsetRange(tokenSequence.offset(), tokenSequence.offset() + token.length());
+                OffsetRange offsetRange = new OffsetRange(tokenSequence.offset(), tokenSequence.offset() + tokenSequence.token().length());
                 if (commentType == JsDocCommentType.DOC_NO_CODE_START
                         || commentType == JsDocCommentType.DOC_NO_CODE_END
                         || commentType == JsDocCommentType.DOC_SHARED_TAG_END) {
                     blocks.put(offsetRange.getEnd(), new JsDocBlock(offsetRange, commentType, Collections.<JsDocElement>emptyList()));
                     continue;
                 } else {
-                    blocks.put(offsetRange.getEnd(), parseCommentBlock(tokenSequence, offsetRange, commentType == JsDocCommentType.DOC_SHARED_TAG_START));
+                    blocks.put(offsetRange.getEnd(), parseCommentBlock(tokenSequence, offsetRange, commentType));
                     continue;
                 }
             }
@@ -100,64 +99,31 @@ public class JsDocParser {
         return blocks;
     }
 
-    private static void storeCommentPart(List<CommentStrip> storage, String cleanedPart, int offset, StringBuilder link) {
-        if (!"".equals(cleanedPart.trim())) { //NOI18N
-            if (cleanedPart.startsWith("@link")) { //NOI18N
-                link.insert(0, cleanedPart);
-            } else if (link.length() > 0) {
-                storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
-                link.delete(0, link.toString().length());
-            } else {
-                storage.add(new CommentStrip(cleanedPart + link.toString(), offset));
-            }
-        }
-    }
-
-    /**
-     * Gets particular cleaned parts of comment.
-     * @param comment whole comment block string
-     * @return array of strings with cleaned
-     */
-    protected static CommentStrip[] getCleanedCommentStrips(String comment, int commentOffset) {
-        List<CommentStrip> strips = new ArrayList<CommentStrip>();
-
-        String processedText = comment;
-        StringBuilder linkComment = new StringBuilder();
-        int indexOfAt;
-        while ((indexOfAt = processedText.lastIndexOf("@")) != -1) { //NOI18N
-            String cleaned = cleanElementText(processedText.substring(indexOfAt));
-            storeCommentPart(strips, cleaned, commentOffset + indexOfAt, linkComment);
-            processedText = processedText.substring(0, indexOfAt);
-        }
-
-        // process the rest from string
-        String cleaned = cleanElementText(processedText);
-        storeCommentPart(strips, cleaned, 0, linkComment);
-        Collections.reverse(strips);
-        return strips.toArray(new CommentStrip[strips.size()]);
-    }
-
     private static boolean isTextToken(Token<? extends JsDocTokenId> token) {
         return (token.id() != JsDocTokenId.ASTERISK && token.id() != JsDocTokenId.COMMENT_SHARED_BEGIN
                 && token.id() != JsDocTokenId.COMMENT_START);
     }
 
-    private static JsDocBlock parseCommentBlock(TokenSequence ts, OffsetRange range, boolean sharedTag) {
-        List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
+    private static TokenSequence getEmbeddedJsDocTS(TokenSequence ts) {
+        return ts.embedded(JsDocTokenId.language());
+    }
 
-        TokenSequence ets = ts.embedded();
+    private static JsDocBlock parseCommentBlock(TokenSequence ts, OffsetRange range, JsDocCommentType commentType) {
+        TokenSequence ets = getEmbeddedJsDocTS(ts);
+
+        List<JsDocElement> jsDocElements = new ArrayList<JsDocElement>();
         Token<? extends JsDocTokenId> token;
         Type type = null;
         boolean afterDescription = false;
         StringBuilder sb = new StringBuilder();
         int offset = ts.offset();
-        while (ets.moveNext() && (token = ets.token()) != null) {
+        while (ets.moveNext()) {
+            token = ets.token();
             if (!isTextToken(token)) {
                 continue;
             }
 
             if (token.id() == JsDocTokenId.KEYWORD || token.id() == JsDocTokenId.COMMENT_END) {
-
                 if (sb.toString().trim().isEmpty()) {
                     // simple tag
                     if (type != null) {
@@ -183,16 +149,13 @@ public class JsDocParser {
                     ets.movePrevious();
                 }
                 afterDescription = true;
-                type = Type.fromString(token.text().toString());
+                type = Type.fromString(CharSequenceUtilities.toString(token.text()));
             } else {
                 sb.append(token.text());
             }
         }
 
-        return new JsDocBlock(
-                range,
-                sharedTag ? JsDocCommentType.DOC_SHARED_TAG_START : JsDocCommentType.DOC_COMMON,
-                jsDocElements);
+        return new JsDocBlock(range, commentType, jsDocElements);
     }
 
     private static JsDocCommentType getCommentType(CharSequence text) {
@@ -209,36 +172,5 @@ public class JsDocParser {
             }
         }
         return JsDocCommentType.DOC_COMMON;
-    }
-
-    protected static String cleanElementText(String comment) {
-        String cleaned = comment.trim();
-
-        // clean " /** ", " */", " * " on all rows
-        cleaned = cleaned.replaceAll("[\\s&&[^\r\n]]*(\\*)+(\\s)*|[/]$|(\\s)*[/*](\\*)+(\\s)*", ""); //NOI18N
-
-        // replace enters by spaces
-        cleaned = cleaned.replaceAll("\r?\n", " ").trim(); //NOI18N
-
-        return cleaned;
-    }
-
-    protected static class CommentStrip {
-
-        private final String strip;
-        private final int offset;
-
-        public CommentStrip(String strip, int offset) {
-            this.strip = strip;
-            this.offset = offset;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-
-        public String getStrip() {
-            return strip;
-        }
     }
 }
