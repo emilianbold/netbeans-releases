@@ -44,7 +44,6 @@ package org.netbeans.modules.mercurial.search;
 
 import java.awt.event.ActionEvent;
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -66,17 +65,19 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 class HgGrep extends SearchComposition<String> {
 
-    private static final RequestProcessor RP = new RequestProcessor(HgGrep.class.getName(), 5);
+    private static final RequestProcessor RP = new RequestProcessor(HgGrep.class.getName(), 3);
 
     private final File repo;
     private final String pattern;
     private final String text;
     private final SearchResultsDisplayer<String> displayer;
+    private Cancellable cancel;
 
     HgGrep(SearchProvider.Presenter presenter, File repo, String pattern, String text) {
         this.repo = repo;
@@ -92,24 +93,33 @@ class HgGrep extends SearchComposition<String> {
                     addArgument("hg locate --rev . --print0 '" + pattern + "' | xargs --null egrep --files-with-matches '" + text + "'").
                     workingDirectory(repo).
                     call();
-            RP.post(InputReaderTask.newTask(InputReaders.forStream(proc.getInputStream(), Charset.defaultCharset()), InputProcessors.bridge(new LineProcessor() {
+            InputReaderTask task = InputReaderTask.newDrainingTask(InputReaders.forStream(proc.getInputStream(), Charset.defaultCharset()), InputProcessors.bridge(new LineProcessor() {
                 @Override public void processLine(String line) {
                     displayer.addMatchingObject(line);
                 }
                 @Override public void reset() {}
                 @Override public void close() {}
-            })));
-        } catch (IOException x) {
+            }));
+            cancel = task;
+            RP.post(task);
+            proc.waitFor(); // XXX report nonzero code
+        } catch (Exception x) {
            listener.generalError(x);
+        } finally {
+            terminate();
         }
     }
 
     @Override public void terminate() {
-        // XXX
+        if (cancel != null) {
+            cancel.cancel();
+            cancel = null;
+            // XXX should also call proc.destroy
+        }
     }
 
     @Override public boolean isTerminated() {
-        return false; // XXX
+        return cancel == null;
     }
 
     @Override public SearchResultsDisplayer<String> getSearchResultsDisplayer() {
