@@ -215,16 +215,14 @@ class ModuleData {
             this.codeName = dis.readUTF();
             this.codeNameBase = dis.readUTF();
             this.codeNameRelease = dis.readInt();
-            this.coveredPackages = new HashSet<String>();
-            readStrings(dis, coveredPackages);
+            this.coveredPackages = readStrings(dis, new HashSet<String>(), true);
             this.dependencies = (Dependency[]) dis.readObject();
             this.implVersion = dis.readUTF();
             this.buildVersion = dis.readUTF();
-            this.friendNames = null;
-            this.specVers = null;
+            this.provides = readStrings(dis);
+            this.friendNames = readStrings(dis, new HashSet<String>(), false);
+            this.specVers = new SpecificationVersion(dis.readUTF());
             this.publicPackages = null;
-            
-            this.provides = null;
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
@@ -238,6 +236,9 @@ class ModuleData {
         dos.writeObject(dependencies);
         dos.writeUTF(implVersion);
         dos.writeUTF(buildVersion);
+        writeStrings(dos, provides);
+        writeStrings(dos, friendNames);
+        dos.writeUTF(specVers.toString());
     }
 
     private String[] computeProvides(Module forModule, Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
@@ -374,18 +375,36 @@ class ModuleData {
         return coveredPackages.isEmpty() ? null : coveredPackages;
     }
 
-    private void readStrings(DataInput dis, Collection<String> set) throws IOException {
+    private <T extends Collection<String>> T readStrings(
+        DataInput dis, T set, boolean returnEmpty
+    ) throws IOException {
         int cnt = dis.readInt();
+        if (!returnEmpty && cnt == 0) {
+            return null;
+        }
         while (cnt-- > 0) {
             set.add(dis.readUTF());
         }
+        return set;
+    }
+    private String[] readStrings(ObjectInput dis) throws IOException {
+        List<String> arr = new ArrayList<String>();
+        readStrings(dis, new HashSet<String>(), false);
+        return arr.toArray(new String[0]);
     }
     private void writeStrings(DataOutput dos, Collection<String> set) 
     throws IOException {
+        if (set == null) {
+            dos.writeInt(0);
+            return;
+        }
         dos.writeInt(set.size());
         for (String s : set) {
             dos.writeUTF(s);
         }
+    }
+    private void writeStrings(ObjectOutput dos, String[] provides) throws IOException {
+        writeStrings(dos, Arrays.asList(provides));
     }
 
 }

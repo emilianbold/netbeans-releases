@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.Places;
 import org.openide.util.Lookup;
 
@@ -130,6 +131,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         if (fo != null) {
             fo.delete();
         }
+        assertEnabled("org.netbeans.core.windows");
         // initializes counting, but waits till netbeans.dirs are provided
         // by NbModuleSuite
         initCheckReadAccess();
@@ -158,6 +160,7 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             e.printStackTrace(getLog("file-reads-report.txt"));
             throw e;
         }
+        assertEnabled("org.netbeans.core.windows");
     }
     
     public void testRememberCacheDir() {
@@ -207,6 +210,16 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         if (content.contains(text)) {
             fail("File " + file + " seems to contain '" + text + "'!");
         }
+    }
+
+    private static void assertEnabled(String cnb) {
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            if (mi.getCodeNameBase().equals(cnb)) {
+                assertTrue("Is enabled", mi.isEnabled());
+                return;
+            }
+        }
+        fail("Not found " + cnb);
     }
     
     public static final class CaptureLog extends Handler {
