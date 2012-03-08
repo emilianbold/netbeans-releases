@@ -568,6 +568,18 @@ public abstract class Module extends ModuleInfo {
     Set<String> getCoveredPackages() {
         return data().getCoveredPackages();
     }
+
+    /** Is this module a wrapper around OSGi?
+     * @return true, if the module is build around OSGi
+     * @since 2.51
+     */
+    public final boolean isNetigso() {
+        return isNetigsoImpl();
+    }
+    
+    boolean isNetigsoImpl() {
+        return false;
+    }
     
     /** Struct representing a package exported from a module.
      * @since org.netbeans.core/1 > 1.4

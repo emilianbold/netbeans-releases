@@ -91,7 +91,12 @@ final class NetigsoModule extends Module {
             this.version = computeVersion(v);
         }
         
-        computeProvides(mani.getMainAttributes(), false);
+        //JST: computeProvides(mani.getMainAttributes(), false);
+    }
+
+    @Override
+    boolean isNetigsoImpl() {
+        return true;
     }
 
     @Override

@@ -44,16 +44,14 @@
 
 package org.netbeans.core.startup;
 
-import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
@@ -69,7 +68,6 @@ import java.util.TreeSet;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.Events;
@@ -80,16 +78,15 @@ import org.netbeans.ModuleManager;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
-import org.netbeans.core.startup.preferences.RelPaths;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbCollections;
 import org.openide.util.SharedClassObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.InstanceContent;
 import org.xml.sax.SAXException;
 
@@ -124,6 +121,8 @@ final class NbInstaller extends ModuleInstaller {
     private final Map<Module,List<Module.PackageExport>> hiddenClasspathPackages = new  HashMap<Module,List<Module.PackageExport>>();
     /** #164510: similar to {@link #hiddenClasspathPackages} but backwards for efficiency */
     private final Map<Module.PackageExport,List<Module>> hiddenClasspathPackagesReverse = new HashMap<Module.PackageExport,List<Module>>();
+    /** caches important values from module manifests */
+    private final Cache cache = new Cache();
         
     /** Create an NbInstaller.
      * You should also call {@link #registerManager} and if applicable
@@ -145,12 +144,15 @@ final class NbInstaller extends ModuleInstaller {
     }
 
     // @SuppressWarnings("unchecked")
+    @Override
     public void prepare(Module m) throws InvalidException {
         ev.log(Events.PREPARE, m);
         checkForHiddenPackages(m);
         Set<ManifestSection> mysections = null;
         Class<?> clazz = null;
-        {
+        
+        String processSections = cache.findGlobalProperty("processSections", null, "false"); // NOI18N
+        if (!"false".equals(processSections)) { // NOI18N
             // Find and load manifest sections.
             for (Map.Entry<String,Attributes> entry : m.getManifest().getEntries().entrySet()) {
                 ManifestSection section = ManifestSection.create(entry.getKey(), entry.getValue(), m);
@@ -161,8 +163,11 @@ final class NbInstaller extends ModuleInstaller {
                     mysections.add(section);
                 }
             }
+            if (mysections != null) {
+                cache.findGlobalProperty("processSections", "false", "true"); // NOI18N
+            }
         }
-        String installClass = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Install"); // NOI18N
+        String installClass = cache.findProperty(m, "OpenIDE-Module-Install"); // NOI18N
         if (installClass != null) {
             String installClassName;
             try {
@@ -216,15 +221,14 @@ final class NbInstaller extends ModuleInstaller {
         }
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
-        String layerResource = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Layer"); // NOI18N
-        String osgi = m.getManifest().getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
-        if (layerResource != null && osgi == null) {
+        String layerResource = cache.findProperty(m, "OpenIDE-Module-Layer"); // NOI18N
+        if (layerResource != null && !m.isNetigso()) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
-        String helpSetName = m.getManifest().getMainAttributes().getValue("OpenIDE-Module-Description"); // NOI18N
+        String helpSetName = cache.findProperty(m, "OpenIDE-Module-Description"); // NOI18N
         if (helpSetName != null) {
-            Util.err.warning("Use of OpenIDE-Module-Description in " + m.getCodeNameBase() + " is deprecated.");
+            Util.err.log(Level.WARNING, "Use of OpenIDE-Module-Description in {0} is deprecated.", m.getCodeNameBase());
             Util.err.warning("(Please install help using an XML layer instead.)");
         }
         // We are OK, commit everything to our cache.
@@ -236,7 +240,7 @@ final class NbInstaller extends ModuleInstaller {
         }
         if (layerResource != null) {
             layers.put(m, layerResource);
-        }
+        }   
     }
 
     private void checkForHiddenPackages(Module m) throws InvalidException {
@@ -251,7 +255,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
         for (Module _m : mWithDeps) {
-            String hidden = (String) _m.getAttribute("OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
+            String hidden = cache.findProperty(m, "OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
             if (hidden != null) {
                 for (String piece : hidden.trim().split("[ ,]+")) { // NOI18N
                     try {
@@ -610,7 +614,8 @@ final class NbInstaller extends ModuleInstaller {
     private void checkForDeprecations(List<Module> modules) {
         Map<String,Set<String>> depToUsers = new TreeMap<String,Set<String>>();
         for (Module m : modules) {
-            if (!Boolean.parseBoolean((String) m.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+            String depr = cache.findProperty(m, "OpenIDE-Module-Deprecated"); // NOI18N
+            if (!Boolean.parseBoolean(depr)) { 
                 for (Dependency dep : m.getDependencies()) {
                     if (dep.getType() == Dependency.TYPE_MODULE) {
                         String cnb = (String) Util.parseCodeName(dep.getName())[0];
@@ -628,7 +633,8 @@ final class NbInstaller extends ModuleInstaller {
             String dep = entry.getKey();
             Module o = mgr.get(dep);
             assert o != null : "No such module: " + dep;
-            if (Boolean.parseBoolean((String) o.getAttribute("OpenIDE-Module-Deprecated"))) { // NOI18N
+            String depr = cache.findProperty(o, "OpenIDE-Module-Deprecated"); // NOI18N
+            if (Boolean.parseBoolean(depr)) {
                 String message = (String) o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
                 // XXX use NbEvents? I18N?
                 // For now, assume this is a developer-oriented message that need not be localized or displayed in a pretty fashion.
@@ -1169,5 +1175,69 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
     }
+    
+    /** Cache important attributes from module manifests */
+    private static class Cache implements Stamps.Updater {
+        private static final String CACHE = "all-installer.dat"; // NOI18N
+        private final boolean modulePropertiesCached;
+        private final Properties moduleProperties;
 
+        public Cache() {
+            InputStream is = Stamps.getModulesJARs().asStream(CACHE);
+            IF:
+            if (is != null) {
+                Properties p = new Properties();
+                try {
+                    p.load(is);
+                    is.close();
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Can't load all-installer.dat", ex);
+                    break IF;
+                }
+                moduleProperties = p;
+                modulePropertiesCached = true;
+                return;
+            }
+            moduleProperties = new Properties();
+            modulePropertiesCached = false;
+        }
+
+        final String findProperty(Module m, String name) {
+            final String fullName = m.getCodeNameBase() + '.' + name;
+            if (modulePropertiesCached) {
+                return moduleProperties.getProperty(fullName);
+            } else {
+                String prop = m.getManifest().getMainAttributes().getValue(name);
+                if (prop != null) {
+                    moduleProperties.setProperty(fullName, prop);
+                    Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                }
+                return prop;
+            }
+        }
+
+        final String findGlobalProperty(String name, String expValue, String replaceValue) {
+            assert name != null;
+            assert replaceValue != null;
+            if (modulePropertiesCached) {
+                return moduleProperties.getProperty(name);
+            } else {
+                final Object prevValue = moduleProperties.get(name);
+                if (Utilities.compareObjects(expValue, prevValue)) {
+                    moduleProperties.put(name, replaceValue);
+                }
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                return null;
+            }
+        }
+
+        @Override
+        public void flushCaches(DataOutputStream os) throws IOException {
+            moduleProperties.store(os, null);
+        }
+
+        @Override
+        public void cacheReady() {
+        }
+    } // end of Cache
 }
