@@ -59,7 +59,8 @@ public final class FormatToken {
         Collections.addAll(BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
                 Kind.BEFORE_ASSIGNMENT_OPERATOR, Kind.BEFORE_COMMA,
                 Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
-                Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD);
+                Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD,
+                Kind.BEFORE_SEMICOLON);
     }
 
     private final Kind kind;
@@ -178,6 +179,7 @@ public final class FormatToken {
         BEFORE_CATCH_KEYWORD,
         BEFORE_FINALLY_KEYWORD,
 
+        BEFORE_SEMICOLON,
         AFTER_SEMICOLON
     }
 

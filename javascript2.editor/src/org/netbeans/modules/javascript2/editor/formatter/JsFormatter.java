@@ -196,6 +196,10 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeFinally());
                             break;
+                        case BEFORE_SEMICOLON:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeSemi());
+                            break;
                         case AFTER_SEMICOLON:
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceAfterSemi());
@@ -349,7 +353,7 @@ public class JsFormatter implements Formatter {
 
         if (start != null) {
             start = getNextNonVirtual(start);
-            FormatToken theToken = tokens.get(index + 1);
+            FormatToken theToken = getNextNonVirtual(tokens.get(index));
             if (start.getKind() != FormatToken.Kind.WHITESPACE
                     && start.getKind() != FormatToken.Kind.EOL) {
                 if (!remove) {

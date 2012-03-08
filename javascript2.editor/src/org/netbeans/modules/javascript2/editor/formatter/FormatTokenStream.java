@@ -168,6 +168,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     break;
                 case OPERATOR_SEMICOLON:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_SEMICOLON));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SEMICOLON));
                     break;
