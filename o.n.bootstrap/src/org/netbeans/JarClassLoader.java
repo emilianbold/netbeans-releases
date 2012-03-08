@@ -863,13 +863,21 @@ public class JarClassLoader extends ProxyClassLoader {
     }
     
     private static Iterable<String> getCoveredPackages(Module mod, Source[] sources) {
+        if (mod != null) {
+            Set<String> ret = mod.getCoveredPackages();
+            if (ret != null) {
+                return ret;
+            }
+        }
+        
         Set<String> known = new HashSet<String>();
         Manifest m = mod == null ? null : mod.getManifest();
         if (m != null) {
             Attributes attr = m.getMainAttributes();
-            String pack = attr.getValue("Covered-Packages");
+            String pack = attr.getValue("Covered-Packages"); // NOI18N
             if (pack != null) {
                 known.addAll(Arrays.asList(pack.split(",", -1)));
+                mod.registerCoveredPackages(known);
                 return known;
             }
         }
@@ -879,9 +887,8 @@ public class JarClassLoader extends ProxyClassLoader {
         for (Source s : sources) s.listCoveredPackages(known, save);
 
         if (save.length() > 0) save.setLength(save.length()-1);
-        if (m != null) {
-            Attributes attr = m.getMainAttributes();
-            attr.putValue("Covered-Packages", save.toString());
+        if (mod != null) {
+            mod.registerCoveredPackages(known);
         }
         return known;
     }

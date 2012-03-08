@@ -44,7 +44,7 @@ package org.netbeans;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -810,7 +810,7 @@ public final class Stamps {
         return cluster.getName().replaceAll("\\.\\.", "__");
     }
     
-    static String readRelativePath(DataInputStream dis) throws IOException {
+    static String readRelativePath(DataInput dis) throws IOException {
         String index = dis.readUTF();
         if (index.isEmpty()) {
             return index;

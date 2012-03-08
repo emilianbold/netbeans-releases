@@ -47,9 +47,14 @@ package org.netbeans;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.security.AllPermission;
 import java.security.CodeSource;
@@ -122,6 +127,7 @@ public final class ModuleManager extends Modules {
     private final Object classLoaderLock = new String("ModuleManager.classLoaderLock"); // NOI18N
 
     private final Events ev;
+    private final ModuleDataCache mdc = new ModuleDataCache();
 
     /** Create a manager, initially with no managed modules.
      * The handler for installing modules is given.
@@ -770,6 +776,21 @@ public final class ModuleManager extends Modules {
 
     private void subCreate(Module m) throws DuplicateException {
         Util.err.log(Level.FINE, "created: {0}", m);
+        final File path = m.getJarFile();
+        if (path != null) {
+            byte[] arr = mdc.getModuleState(path.getPath());
+            if (arr != null) {
+                try {
+                    ObjectInputStream dis = new ObjectInputStream(
+                        new ByteArrayInputStream(arr)
+                    );
+                    m.readData(dis);
+                    dis.close();
+                } catch (IOException ex) {
+                    throw new IllegalStateException(ex);
+                }
+            }
+        }
         Module old = get(m.getCodeNameBase());
         if (old != null) {
             throw new DuplicateException(old, m);
@@ -1848,5 +1869,72 @@ public final class ModuleManager extends Modules {
                 }
             }
         });
+    }
+    private class ModuleDataCache implements Stamps.Updater {
+        private static final String CACHE = "all-modules.dat";
+        private final Map<String,byte[]> cnb2Data;
+        
+        public ModuleDataCache() {
+            InputStream is = Stamps.getModulesJARs().asStream(CACHE);
+            Map <String,byte[]> map = null;
+            if (is != null) try {
+                DataInputStream dis = new DataInputStream(is);
+                map = new HashMap<String, byte[]>();
+                for (;;) {
+                    String cnb = Stamps.readRelativePath(dis);
+                    if (cnb.isEmpty()) {
+                        break;
+                    }
+                    int len = dis.readInt();
+                    byte[] data = new byte[len];
+                    dis.readFully(data);
+                    map.put(cnb, data);
+                }
+                dis.close();
+            } catch (IOException ex) {
+                Util.err.log(Level.INFO, "Cannot read all-modules.dat", ex);
+            }
+            cnb2Data = map;
+            if (map == null) {
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+            }
+        }
+        
+        public synchronized byte[] getModuleState(String path) {
+            byte[] res = null;
+            if (cnb2Data != null) {
+                res = cnb2Data.remove(path);
+            }
+            if (res == null) {
+                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+            }
+            return res;
+        }
+
+        @Override
+        public void flushCaches(DataOutputStream os) throws IOException {
+            Set<Module> store = getModules();
+            for (Module m : store) {
+                final File path = m.getJarFile();
+                if (path == null) {
+                    assert m instanceof FixedModule : "Only fixed modules are excluded from caches " + m;
+                    continue;
+                }
+                Stamps.writeRelativePath(path.getPath(), os);
+                
+                ByteArrayOutputStream data = new ByteArrayOutputStream();
+                ObjectOutputStream dos = new ObjectOutputStream(data);
+                m.writeData(dos);
+                dos.close();
+                
+                byte[] arr = data.toByteArray();
+                os.writeInt(arr.length);
+                os.write(arr);
+            }
+            Stamps.writeRelativePath("", os);
+        }
+        @Override
+        public void cacheReady() {
+        }
     }
 }
