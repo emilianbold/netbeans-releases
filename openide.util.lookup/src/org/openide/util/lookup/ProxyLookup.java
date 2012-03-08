@@ -55,8 +55,10 @@ import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
@@ -379,7 +381,7 @@ public class ProxyLookup extends Lookup {
                 Result<T>[] arr = newResults(myLkps.length);
 
                 for (int i = 0; i < arr.length; i++) {
-                    arr[i] = myLkps[i].lookup(weakL.result.template);
+                    arr[i] = myLkps[i].lookup(template());
                 }
 
                 synchronized (proxy()) {
@@ -449,7 +451,7 @@ public class ProxyLookup extends Lookup {
             for (int i = 0; i < current.length; i++) {
                 if (added.contains(current[i])) {
                     // new lookup
-                    arr[i] = current[i].lookup(weakL.result.template);
+                    arr[i] = current[i].lookup(template());
                     if (toAdd != null) {
                         toAdd.put(arr[i], weakL);
                     }
@@ -530,78 +532,21 @@ public class ProxyLookup extends Lookup {
          * @return the collection or set of the objects
          */
         private java.util.Collection computeResult(int indexToCache, boolean callBeforeLookup) {
-            // results to use
-            Lookup.Result<T>[] arr = myBeforeLookup(callBeforeLookup);
-
-            // if the call to beforeLookup resulted in deletion of caches
+            Lookup.Result[] arr = myBeforeLookup(callBeforeLookup, false);
+            // use caches, if they exist
             synchronized (proxy()) {
                 Collection[] cc = getCache();
-                if (cc != null && cc != NO_CACHE) {
-                    Collection result = cc[indexToCache];
-                    if (result != null) {
-                        return result;
+                if (cc != null && cc != R.NO_CACHE) {
+                    Collection r = cc[indexToCache];
+                    if (r != null) {
+                        return r;
                     }
                 }
             }
-
-            // initialize the collection to hold result
-            Collection<Object> compute;
-            Collection<Object> ret;
-
             if (indexToCache == 1) {
-                HashSet<Object> s = new HashSet<Object>();
-                compute = s;
-                ret = Collections.unmodifiableSet(s);
-            } else {
-                List<Object> l = new ArrayList<Object>(arr.length * 2);
-                compute = l;
-                ret = Collections.unmodifiableList(l);
+                return new LazySet(this, indexToCache, callBeforeLookup, arr);
             }
-
-            // fill the collection
-            for (int i = 0; i < arr.length; i++) {
-                switch (indexToCache) {
-                case 0:
-                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
-                        WaitableResult<?> wr = (WaitableResult<?>)arr[i];
-                        compute.addAll(wr.allInstances(callBeforeLookup));
-                    } else {
-                        compute.addAll(arr[i].allInstances());
-                    }
-                    break;
-                case 1:
-                    compute.addAll(arr[i].allClasses());
-                    break;
-                case 2:
-                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
-                        WaitableResult<?> wr = (WaitableResult<?>)arr[i];
-                        compute.addAll(wr.allItems(callBeforeLookup));
-                    } else {
-                        compute.addAll(arr[i].allItems());
-                    }
-                    break;
-                default:
-                    assert false : "Wrong index: " + indexToCache;
-                }
-            }
-            
-            
-
-            synchronized (proxy()) {
-                Collection[] cc = getCache();
-                if (cc == null || cc == NO_CACHE) {
-                    // initialize the cache to indicate this result is in use
-                    setCache(cc = new Collection[3]);
-                }
-                
-                if (arr == weakL.getResults()) {
-                    // updates the results, if the results have not been
-                    // changed during the computation of allInstances
-                    cc[indexToCache] = ret;
-                }
-            }
-
-            return ret;
+            return new LazyList(this, indexToCache, callBeforeLookup, arr);
         }
 
         /** When the result changes, fire the event.
@@ -684,8 +629,10 @@ public class ProxyLookup extends Lookup {
         /** Implementation of my before lookup.
          * @return results to work on.
          */
-        private Lookup.Result<T>[] myBeforeLookup(boolean callBeforeLookup) {
-            Template<T> template = weakL.result.template;
+        private Lookup.Result<T>[] myBeforeLookup(
+            boolean callBeforeLookup, boolean callBeforeOnWait
+        ) {
+            Template<T> template = template();
             
             if (callBeforeLookup) {
                 proxy().beforeLookup(template);
@@ -693,7 +640,7 @@ public class ProxyLookup extends Lookup {
 
             Lookup.Result<T>[] arr = initResults();
 
-            if (callBeforeLookup) {
+            if (callBeforeOnWait) {
                 // invoke update on the results
                 for (int i = 0; i < arr.length; i++) {
                     if (arr[i] instanceof WaitableResult) {
@@ -710,8 +657,8 @@ public class ProxyLookup extends Lookup {
          */
         @Override
         protected void beforeLookup(Lookup.Template t) {
-            if (t.getType() == weakL.result.template.getType()) {
-                myBeforeLookup(true);
+            if (t.getType() == template().getType()) {
+                myBeforeLookup(true, true);
             }
         }
 
@@ -724,6 +671,27 @@ public class ProxyLookup extends Lookup {
             this.cache = cache;
         }
         private static final Collection[] NO_CACHE = new Collection[0];
+
+        private Template<T> template() {
+            return weakL.result.template;
+        }
+
+        private void updateResultCache(int indexToCache, Result[] arr, Collection<Object> ret) {
+            synchronized (proxy()) {
+                Collection[] cc = getCache();
+                if (cc == null || cc == R.NO_CACHE) {
+                    // initialize the cache to indicate this result is in use
+                    setCache(cc = new Collection[3]);
+                }
+
+                if (arr == weakL.getResults()) {
+                    // updates the results, if the results have not been
+                    // changed during the computation of allInstances
+                    cc[indexToCache] = ret;
+                }
+            }
+            
+        }
     }
     private static final class WeakRef<T> extends WeakReference<R> implements Runnable {
         final WeakResult<T> result;
@@ -1041,4 +1009,326 @@ public class ProxyLookup extends Lookup {
             return EMPTY_ARR;
         }
     } // end of EmptyInternalData
+
+    private static class LazyCollection implements Collection {
+
+        private R result;
+        private final int indexToCache;
+        private final boolean callBeforeLookup;
+        private final Lookup.Result[] arr;
+        /** GuardedBy("this") */
+        private final Collection[] computed;
+        /** GuardedBy("this") */
+        private Collection delegate;
+
+        public LazyCollection(R result, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            this.result = result;
+            this.indexToCache = indexToCache;
+            this.callBeforeLookup = callBeforeLookup;
+            this.arr = arr;
+            this.computed = new Collection[arr.length];
+        }
+
+        final Collection delegate() {
+            return delegate(true);
+        }
+        final Collection delegate(boolean computeIt) {
+            Collection dlgt = null;
+            for (;;) {
+                synchronized (this) {
+                    if (dlgt != null && delegate == null) {
+                        delegate = dlgt;
+                        result = null;
+                    }
+                    if (delegate != null) {
+                        return delegate;
+                    }
+                    if (!computeIt) {
+                        return null;
+                    }
+                }
+                dlgt = computeDelegate(null);
+            }
+        }
+
+        private Collection computeDelegate(int[] firstNonEmpty) {
+            // initialize the collection to hold result
+            Collection<Object> compute = null;
+            Collection<Object> ret = null;
+
+            if (firstNonEmpty == null) {
+                if (indexToCache == 1) {
+                    HashSet<Object> s = new HashSet<Object>();
+                    compute = s;
+                    ret = Collections.unmodifiableSet(s);
+                } else {
+                    List<Object> l = new ArrayList<Object>(arr.length * 2);
+                    compute = l;
+                    ret = Collections.unmodifiableList(l);
+                }
+            }
+
+            // fill the collection
+            int i = firstNonEmpty == null ? 0 : firstNonEmpty[0];
+            while (i < arr.length) {
+                Collection one;
+                synchronized (this) {
+                    one = getComputed()[i];
+                }
+                if (one == null) {
+                    if (firstNonEmpty != null && callBeforeLookup && arr[i] instanceof WaitableResult) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        wr.beforeLookup(result.template());
+                    }
+                    one = computeSingleResult(i);
+                    assert one != null;
+                }
+                synchronized (this) {
+                    if (getComputed()[i] == null) {
+                        getComputed()[i] = one;
+                    }
+                    i++;
+                    if (firstNonEmpty != null) {
+                        firstNonEmpty[0] = i;
+                        if (!one.isEmpty()) {
+                            ret = one;
+                            break;
+                        }
+                    } else {
+                        compute.addAll(one);
+                    }
+                }
+            }
+            if (i == arr.length) {
+                R r = result;
+                if (r != null) {
+                    r.updateResultCache(indexToCache, arr, ret);
+                }
+                result = null;
+            }
+            return ret;
+        }
+
+        @Override
+        public int size() {
+            return delegate().size();
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return delegate().isEmpty();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            return delegate().contains(o);
+        }
+
+        @Override
+        public Iterator iterator() {
+            Collection c = delegate(false);
+            return c != null ? c.iterator() : lazyIterator();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return delegate().toArray();
+        }
+
+        @Override
+        public Object[] toArray(Object[] a) {
+            return delegate().toArray(a);
+        }
+
+        @Override
+        public String toString() {
+            return delegate().toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return delegate().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return delegate().equals(obj);
+        }
+
+        @Override
+        public boolean add(Object e) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean remove(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean containsAll(Collection c) {
+            return delegate().containsAll(c);
+        }
+
+        @Override
+        public boolean addAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean removeAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            throw new UnsupportedOperationException();
+        }
+
+        private Iterator lazyIterator() {
+            return new Iterator() {
+                private Iterator current;
+                private int[] indx = { 0 };
+                @Override
+                public boolean hasNext() {
+                    for (;;) {
+                        if (current != null && current.hasNext()) {
+                            return true;
+                        }
+                        if (indx[0] == arr.length) {
+                            return false;
+                        }
+                        // increments indx[0] at least by one
+                        final Collection newIt = computeDelegate(indx);
+                        if (newIt != null) {
+                            current = newIt.iterator();
+                        } else {
+                            assert indx[0] == arr.length;
+                            current = null;
+                        }
+                    }
+                }
+
+                @Override
+                public Object next() {
+                    if (hasNext()) {
+                        return current.next();
+                    } else {
+                        throw new NoSuchElementException();
+                    }
+                }
+
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
+            };
+        }
+
+        private Collection computeSingleResult(int i) {
+            Collection one = null;
+            switch (indexToCache) {
+                case 0:
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        one = wr.allInstances(callBeforeLookup);
+                    } else {
+                        one = arr[i].allInstances();
+                    }
+                    break;
+                case 1:
+                    one = arr[i].allClasses();
+                    break;
+                case 2:
+                    if (!callBeforeLookup && arr[i] instanceof WaitableResult<?>) {
+                        WaitableResult<?> wr = (WaitableResult<?>) arr[i];
+                        one = wr.allItems(callBeforeLookup);
+                    } else {
+                        one = arr[i].allItems();
+                    }
+                    break;
+                default:
+                    assert false : "Wrong index: " + indexToCache;
+            }
+            return one;
+        }
+
+        private Collection[] getComputed() {
+            assert Thread.holdsLock(this);
+            return computed;
+        }
+    } // end of LazyCollection
+
+    private final static class LazyList extends LazyCollection implements List {
+
+        public LazyList(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, indexToCache, callBeforeLookup, arr);
+        }
+
+        final List delegateList() {
+            return (List) delegate();
+        }
+
+        @Override
+        public Object get(int index) {
+            return delegateList().get(index);
+        }
+
+        @Override
+        public List subList(int fromIndex, int toIndex) {
+            return delegateList().subList(fromIndex, toIndex);
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            return delegateList().indexOf(o);
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            return delegateList().lastIndexOf(o);
+        }
+
+        @Override
+        public ListIterator listIterator() {
+            return delegateList().listIterator();
+        }
+
+        @Override
+        public ListIterator listIterator(int index) {
+            return delegateList().listIterator(index);
+        }
+
+        @Override
+        public boolean addAll(int index, Collection c) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object set(int index, Object element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void add(int index, Object element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Object remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+    } // end of LazyList
+
+    private static final class LazySet extends LazyCollection implements Set {
+
+        public LazySet(R data, int indexToCache, boolean callBeforeLookup, Lookup.Result[] arr) {
+            super(data, indexToCache, callBeforeLookup, arr);
+        }
+    } // end of LazySet
 }

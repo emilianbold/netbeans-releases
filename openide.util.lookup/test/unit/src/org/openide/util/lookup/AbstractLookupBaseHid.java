@@ -1619,7 +1619,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
             result.addLookupListener(listeners[i]);
         }
         // initialize listening
-        result.allItems();
+        result.allItems().toArray();
         
         ic.remove(object);
         
