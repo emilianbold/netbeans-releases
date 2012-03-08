@@ -53,7 +53,7 @@ public class HgSearchProvider extends SearchProvider {
 
     @Override public Presenter createPresenter(boolean replaceMode) {
         assert !replaceMode;
-        return new HgSearchPresenter(this);
+        return new HgSearchForm().new Presenter(this);
     }
 
     @Override public boolean isReplaceSupported() {

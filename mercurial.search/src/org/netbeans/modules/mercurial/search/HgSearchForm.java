@@ -43,6 +43,7 @@
 package org.netbeans.modules.mercurial.search;
 
 import java.io.File;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -54,13 +55,15 @@ import org.netbeans.api.search.ui.ComponentUtils;
 import org.netbeans.api.search.ui.FileNameController;
 import org.netbeans.api.search.ui.ScopeController;
 import org.netbeans.api.search.ui.ScopeOptionsController;
+import static org.netbeans.modules.mercurial.search.Bundle.*;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
+import org.openide.NotificationLineSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle.Messages;
 
-class HgSearchForm extends JPanel implements ChangeListener {
+class HgSearchForm extends JPanel {
 
-    static final String PROP_USABLE = "usable";
     private ScopeController scopeController;
     private FileNameController fileNameController;
     private ScopeOptionsController scopeOptionsController;
@@ -71,60 +74,6 @@ class HgSearchForm extends JPanel implements ChangeListener {
         fileNameController = ComponentUtils.adjustComboForFileName(fileCombo);
         scopeOptionsController = ComponentUtils.adjustPanelForOptions(
                 scopePanel, false, fileNameController);
-        scopeController.addChangeListener(this);
-        fileNameController.addChangeListener(this);
-        scopeOptionsController.addChangeListener(this);
-        patternField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override public void insertUpdate(DocumentEvent e) {
-                stateChanged(null);
-            }
-            @Override public void removeUpdate(DocumentEvent e) {
-                stateChanged(null);
-            }
-            @Override public void changedUpdate(DocumentEvent e) {}
-        });
-    }
-
-    @Override public void stateChanged(ChangeEvent e) {
-        firePropertyChange(PROP_USABLE, null, null);
-    }
-
-    boolean isUsable() {
-        if (patternField.getText().isEmpty()) {
-            return false;
-        }
-        SearchInfo searchInfo = scopeController.getSearchInfo();
-        if (!searchInfo.canSearch()) {
-            return false;
-        }
-        File repo = null;
-        for (SearchRoot r : searchInfo.getSearchRoots()) {
-            File _repo = findRepo(FileUtil.toFile(r.getFileObject()));
-            if (_repo == null) {
-                return false;
-            } else if (repo == null) {
-                repo = _repo;
-            } else if (!repo.equals(_repo)) {
-                return false;
-            }
-        }
-        if (repo == null) {
-            return false;
-        }
-        // XXX validate fileCombo(), scopePanel()
-        return true;
-    }
-
-    SearchComposition<?> composeSearch(SearchProvider.Presenter presenter) {
-        // XXX pick out the actual root substrings and prepend them to pattern
-        File repo = findRepo(FileUtil.toFile(scopeController.getSearchInfo().getSearchRoots().get(0).getFileObject()));
-        // XXX pay attention to SearchRoot.filters
-        // XXX check for regexp vs. basic, and map to Hg pattern syntax
-        //String pattern = fileCombo().getFileNamePattern();
-        String pattern = "**.xsl"; // XXX pending JG25
-        // XXX pay attention to scopePanel()
-        String text = patternField.getText();
-        return new HgGrep(presenter, repo, pattern, text);
     }
 
     private static File findRepo(File f) {
@@ -191,5 +140,83 @@ class HgSearchForm extends JPanel implements ChangeListener {
     private javax.swing.JComboBox scopeCombo;
     private javax.swing.JPanel scopePanel;
     // End of variables declaration//GEN-END:variables
+
+    class Presenter extends SearchProvider.Presenter implements ChangeListener {
+
+        Presenter(HgSearchProvider provider) {
+            super(provider, false);
+            scopeController.addChangeListener(this);
+            fileNameController.addChangeListener(this);
+            scopeOptionsController.addChangeListener(this);
+            patternField.getDocument().addDocumentListener(new DocumentListener() {
+                @Override public void insertUpdate(DocumentEvent e) {
+                    fireChange();
+                }
+                @Override public void removeUpdate(DocumentEvent e) {
+                    fireChange();
+                }
+                @Override public void changedUpdate(DocumentEvent e) {}
+            });
+        }
+
+        @Override public void stateChanged(ChangeEvent e) {
+            fireChange();
+        }
+
+        @Override public JComponent getForm() {
+            return HgSearchForm.this;
+        }
+
+        @Messages({
+            "ERR_empty_pattern=Must define a search pattern.",
+            "ERR_cannot_search=Nothing to search.",
+            "# {0} - directory", "ERR_not_hg={0} is not in a Mercurial working copy.",
+            "ERR_multiple_roots=Cannot search in more than one Mercurial repository at once."
+        })
+        @Override public boolean isUsable(NotificationLineSupport nls) {
+            if (patternField.getText().isEmpty()) {
+                nls.setInformationMessage(ERR_empty_pattern());
+                return false;
+            }
+            SearchInfo searchInfo = scopeController.getSearchInfo();
+            if (!searchInfo.canSearch()) {
+                nls.setInformationMessage(ERR_cannot_search());
+                return false;
+            }
+            File repo = null;
+            for (SearchRoot r : searchInfo.getSearchRoots()) {
+                File _repo = findRepo(FileUtil.toFile(r.getFileObject()));
+                if (_repo == null) {
+                    nls.setErrorMessage(ERR_not_hg(FileUtil.getFileDisplayName(r.getFileObject())));
+                    return false;
+                } else if (repo == null) {
+                    repo = _repo;
+                } else if (!repo.equals(_repo)) {
+                    nls.setErrorMessage(ERR_multiple_roots());
+                    return false;
+                }
+            }
+            if (repo == null) {
+                nls.setInformationMessage(ERR_cannot_search());
+                return false;
+            }
+            // XXX validate fileCombo(), scopePanel()
+            nls.clearMessages();
+            return true;
+        }
+
+        @Override public SearchComposition<?> composeSearch() {
+            // XXX pick out the actual root substrings and prepend them to pattern
+            File repo = findRepo(FileUtil.toFile(scopeController.getSearchInfo().getSearchRoots().get(0).getFileObject()));
+            // XXX pay attention to SearchRoot.filters
+            // XXX check for regexp vs. basic, and map to Hg pattern syntax
+            //String pattern = fileCombo().getFileNamePattern();
+            String pattern = "**.xsl"; // XXX pending JG25
+            // XXX pay attention to scopePanel()
+            String text = patternField.getText();
+            return new HgGrep(this, repo, pattern, text);
+        }
+
+    }
 
 }
