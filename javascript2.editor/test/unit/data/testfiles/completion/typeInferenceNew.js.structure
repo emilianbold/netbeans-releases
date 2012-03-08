@@ -1,8 +1,8 @@
 Car:CONSTRUCTOR:[PUBLIC]:ESCAPED{Car}ESCAPED{(}PARAMETERS{ESCAPED{color}ESCAPED{, }ESCAPED{maker}}ESCAPED{)}<font color="#999999">ESCAPED{ : }Car</font>:
   arguments:VARIABLE:[PRIVATE]:ESCAPED{arguments}<font color="#999999">ESCAPED{ : }Arguments</font>:
   color:FIELD:[PUBLIC]:ESCAPED{color}:
-  getColor:METHOD:[PUBLIC]:ESCAPED{getColor}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
-  getMaker:METHOD:[PUBLIC]:ESCAPED{getMaker}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  getColor:METHOD:[PROTECTED]:ESCAPED{getColor}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
+  getMaker:METHOD:[PROTECTED]:ESCAPED{getMaker}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }unresolved</font>:
   maker:FIELD:[PUBLIC]:ESCAPED{maker}:
 Context:CLASS:[PUBLIC]:ESCAPED{Context}:
   id:FIELD:[PUBLIC]:ESCAPED{id}:

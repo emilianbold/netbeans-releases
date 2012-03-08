@@ -329,6 +329,7 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> name = null;
             boolean isPrivate = false;
             boolean isStatic = false; 
+            boolean isPrivilage = false;
             int pathSize = getPath().size();
             if (pathSize > 1 && getPath().get(pathSize - 2) instanceof ReferenceNode) {
                 List<FunctionNode> siblings = functionStack.get(functionStack.size() - 1);
@@ -339,6 +340,16 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (node instanceof PropertyNode) {
                         name = getName((PropertyNode)node);
                     } else if (node instanceof BinaryNode) {
+                        BinaryNode bNode = (BinaryNode)node;
+                        if (bNode.lhs() instanceof AccessNode ) {
+                            AccessNode aNode = (AccessNode)bNode.lhs();
+                            if (aNode.getBase() instanceof IdentNode) {
+                                IdentNode iNode = (IdentNode)aNode.getBase();
+                                if ("this".equals(iNode.getName())) {
+                                    isPrivilage = true;
+                                }
+                            }
+                        }
                         name = getName((BinaryNode)node);
                     } else if (node instanceof VarNode) {
                        name = getName((VarNode)node);
@@ -389,9 +400,13 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 fncScope.setAnonymous(isAnonymous);
                 Set<Modifier> modifiers = fncScope.getModifiers();
-                if (isPrivate) {
+                if (isPrivate || isPrivilage) {
                     modifiers.remove(Modifier.PUBLIC);
-                    modifiers.add(Modifier.PRIVATE);
+                    if (isPrivate) {
+                        modifiers.add(Modifier.PRIVATE);
+                    } else {
+                        modifiers.add(Modifier.PROTECTED);
+                    }
                 }
                 if (isStatic) {
                     modifiers.add(Modifier.STATIC);

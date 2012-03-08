@@ -259,11 +259,11 @@ public class ModelUtils {
                 parent = parent.getParent();
             }
             if (possible != null) {
-                if (possible instanceof JsFunction) {
-                    result.addAll(((JsFunction)possible).getReturnTypes());
-                } else {
+//                if (possible instanceof JsFunction) {
+//                    result.addAll(((JsFunction)possible).getReturnTypes());
+//                } else {
                     result.add(new TypeUsageImpl(ModelUtils.createFQN(possible), possible.getOffset(), true));
-                }
+//                }
             } else {
                 result.add(type);
             }

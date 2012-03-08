@@ -191,7 +191,7 @@ public class ModelTest extends JsTestBase {
         assertEquals(true, variable.isDeclared());
         assertEquals(JsElement.Kind.METHOD, variable.getJSKind());
         assertEquals(false, variable.getModifiers().contains(Modifier.PRIVATE));
-        assertEquals(true, variable.getModifiers().contains(Modifier.PUBLIC));
+        assertEquals(true, variable.getModifiers().contains(Modifier.PROTECTED));
 
         JsObject myApp = global.getProperty("MyApp");
         assertEquals(JsElement.Kind.OBJECT, myApp.getJSKind());
@@ -627,6 +627,80 @@ public class ModelTest extends JsTestBase {
         JsObject function = object.getProperty("testFunction");
         JsObject variable = function.getProperty("i");
         assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+     }
+     
+     public void testPerson() throws Exception {
+         Model model = getModel("testfiles/model/person.js");
+         assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        JsObject person = global.getProperty("Person");
+        assertEquals(JsElement.Kind.CONSTRUCTOR, person.getJSKind());
+        
+        JsObject variable = person.getProperty("alive");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+        
+        variable = person.getProperty("age");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+        
+        variable = person.getProperty("maxAge");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+        
+        variable = person.getProperty("weight");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+        
+        variable = person.getProperty("myName");
+        assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+        
+        JsFunctionImpl method = (JsFunctionImpl)person.getProperty("getName");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("toString");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("makeOlder");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PRIVATE));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("eat");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("exercise");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("weigh");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("getRace");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("getAge");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
+        
+        method = (JsFunctionImpl)person.getProperty("muchTimePasses");
+        assertEquals(JsElement.Kind.METHOD, method.getJSKind());
+        assertTrue(method.getModifiers().contains(Modifier.PROTECTED));
+        assertEquals(0, method.getParameters().size());
      }
      
 //    public void testPrivateMethod01() throws Exception {
