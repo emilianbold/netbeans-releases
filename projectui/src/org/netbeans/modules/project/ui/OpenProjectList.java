@@ -83,6 +83,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -1315,8 +1316,8 @@ public final class OpenProjectList {
                
     }
 
-    static boolean isRecommended (String[] recommendedTypes, FileObject primaryFile) {
-        if (recommendedTypes == null || recommendedTypes.length == 0) {
+    static boolean isRecommended(@NonNull String[] recommendedTypes, @NonNull FileObject primaryFile) {
+        if (recommendedTypes.length == 0) {
             // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
             return true;
         }
@@ -1343,12 +1344,12 @@ public final class OpenProjectList {
      * loop because it may scan project files to resolve its type which is time
      * consuming.
      */
-    static String[] getRecommendedTypes(Project project) {
+    static @NonNull String[] getRecommendedTypes(@NullAllowed Project project) {
         if (project == null) {
-            return null;
+            return new String[0];
         }
         RecommendedTemplates rt = project.getLookup().lookup(RecommendedTemplates.class);
-        return rt == null ? null :rt.getRecommendedTypes();
+        return rt == null ? new String[0] : rt.getRecommendedTypes();
     }
     
     private static List<String> getCategories (String source) {
