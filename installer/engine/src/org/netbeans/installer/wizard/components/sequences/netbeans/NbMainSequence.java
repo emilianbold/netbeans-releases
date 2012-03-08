@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -38,16 +38,20 @@
  */
 package org.netbeans.installer.wizard.components.sequences.netbeans;
 
-import org.netbeans.installer.wizard.components.sequences.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
-import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
-import org.netbeans.installer.product.components.Product;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.util.*;
+import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.product.Registry;
+import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.helper.ExecutionMode;
+import org.netbeans.installer.wizard.components.WizardAction;
 import org.netbeans.installer.wizard.components.WizardComponent;
 import org.netbeans.installer.wizard.components.WizardSequence;
 import org.netbeans.installer.wizard.components.actions.DownloadConfigurationLogicAction;
@@ -58,6 +62,9 @@ import org.netbeans.installer.wizard.components.actions.netbeans.NbMetricsAction
 import org.netbeans.installer.wizard.components.actions.netbeans.NbShowUninstallationSurveyAction;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
 import org.netbeans.installer.wizard.components.panels.netbeans.NbJUnitLicensePanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbPostInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.panels.netbeans.NbPreInstallSummaryPanel;
+import org.netbeans.installer.wizard.components.sequences.ProductWizardSequence;
 
 /**
  *
@@ -97,6 +104,125 @@ public class NbMainSequence extends WizardSequence {
                 DEFAULT_IA_TITLE);
         installAction.setProperty(InstallAction.DESCRIPTION_PROPERTY,
                 DEFAULT_IA_DESCRIPTION);
+    }
+    
+    private static class PupolateCacheAction extends WizardAction {
+        private final Product nbBase;
+        public PupolateCacheAction(Product p) {
+            this.nbBase = p;
+        }
+
+        @Override
+        public void execute() {
+            LogManager.log("running headless NetBeans IDE : ");
+            
+            File nbInstallLocation = nbBase.getInstallationLocation();
+            LogManager.log("    nbLocation = " + nbInstallLocation);
+            
+            String runIDE = new File(nbInstallLocation, "bin").getPath();
+            if (SystemUtils.isWindows()) {
+                runIDE += File.separator + "netbeans.exe";
+            } else {
+                runIDE += File.separator + "netbeans";
+            }
+            
+            File tmpUserDir = new File(SystemUtils.getTempDirectory(), "tmpnb");
+            File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache");
+            
+            String[] commands = new String [] {
+                    runIDE,
+                    "-J-Dnetbeans.close=true",
+                    "--nosplash",
+                    "-J-Dorg.netbeans.core.WindowSystem.show=false",
+                    "--userdir",
+                    tmpUserDir.getPath()};
+            LogManager.log("    Run " + Arrays.asList(commands));
+            try {
+                SystemUtils.executeCommand(nbInstallLocation, commands);
+                LogManager.log("    .... success ");
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception ", ioe);
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            LogManager.log("preparing caches : ");
+            
+            LogManager.log("    temporary cache location = " + tmpCacheDir);
+            
+            // zip OSGi cache
+            try {
+                LogManager.log("    zipping OSGi caches");
+                File zipFile = new File(tmpCacheDir, "populate.zip");
+                ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));            
+                FileUtils.zip(new File (tmpCacheDir, "netigso"), zos, tmpCacheDir, new ArrayList <File> ());
+                zos.close();
+                LogManager.log("    .... success ");
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            // remove useless files
+            try {
+                LogManager.log("    remove useless files from cache");
+                FileUtils.deleteFile(new File(tmpCacheDir, "netigso"), true);
+                FileUtils.deleteFile(new File(tmpCacheDir, "lastModified"), true);
+                
+                String[] splashFileNames = tmpCacheDir.list(new FilenameFilter() {
+
+                                    @Override
+                                    public boolean accept(File dir, String name) {
+                                        return name.startsWith("splash"); // NOI18N
+                                    }
+                                });
+                
+                if (splashFileNames != null) {
+                    for (String name : splashFileNames) {
+                        FileUtils.deleteFile(new File(tmpCacheDir, name));
+                    }
+                }
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+            
+            LogManager.log("copying pupulate caches : ");
+            File populateCacheDir = new File(nbInstallLocation, "nb"/*nb clsuter*/ + File.separator + "var" + File.separator + "cache");
+            LogManager.log("    pupulate cache location = " + populateCacheDir);
+            try {
+                FileUtils.copyFile(tmpCacheDir, populateCacheDir, true);
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+                return ;
+            } finally {
+                LogManager.log("    .... done. ");
+                try {
+                    FileUtils.deleteFile(tmpUserDir, true);
+                } catch (IOException ioe) {
+                    LogManager.log("    .... exception " + ioe.getMessage());
+                }
+            }
+            
+            
+            // adding files into list of installed files
+            LogManager.log("add pupulate caches in installed list: ");
+            try {
+                for (File f : populateCacheDir.listFiles()) {
+                    nbBase.getInstalledFiles().add(f);
+                }
+            } catch (IOException ioe) {
+                LogManager.log("    .... exception " + ioe.getMessage());
+            } finally {
+                LogManager.log("    .... done. ");
+            }
+        }
+        
     }
     
     @Override
@@ -139,6 +265,10 @@ public class NbMainSequence extends WizardSequence {
         if (toInstall.size() > 0) {
             addChild(downloadInstallationDataAction);
             addChild(installAction);
+            Product nbBase = toInstall.get(0);
+            if ("nb-base".equals(nbBase.getUid())) { // NOI18N
+                addChild(new PupolateCacheAction(nbBase));
+            }
         }
 
         addChild(nbPostInstallSummaryPanel);
