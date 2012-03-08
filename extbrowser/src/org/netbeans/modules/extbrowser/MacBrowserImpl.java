@@ -118,25 +118,27 @@ public class MacBrowserImpl extends ExtBrowserImpl {
         if (pluginId != BrowserId.UNKNOWN && pluginId != BrowserId.OTHER){
             return pluginId;
         }
-        String protocol = url.getProtocol();
         String defaultApps = getDefaultApps();
-        if ( protocol != null ){
-            pluginId = parseDefaultApps( defaultApps , "LSHandlerURLScheme",    // NOI18N
-                    protocol );
-        }
-        if ( pluginId != null ){
-            return pluginId;
-        }
-        String file = url.getFile();
-        if ( file!= null ){
-            int index = file.lastIndexOf('.');
-            if ( index != -1 && file.length() > index +1 ){
-                String ext = file.substring( index +1);
-                pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",
-                        "public."+ext );                                        // NOI18N
+        if (url != null) {
+            String protocol = url.getProtocol();
+            if ( protocol != null ){
+                pluginId = parseDefaultApps( defaultApps , "LSHandlerURLScheme",    // NOI18N
+                        protocol );
+            }
+            if ( pluginId != null && pluginId != BrowserId.UNKNOWN){
+                return pluginId;
+            }
+            String file = url.getFile();
+            if ( file!= null ){
+                int index = file.lastIndexOf('.');
+                if ( index != -1 && file.length() > index +1 ){
+                    String ext = file.substring( index +1);
+                    pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",
+                            "public."+ext );                                        // NOI18N
+                }
             }
         }
-        if ( pluginId == null ){
+        if ( pluginId == null || pluginId == BrowserId.UNKNOWN){
             pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",    
                     "public.url" );                                             // NOI18N
             if (pluginId == null) {
