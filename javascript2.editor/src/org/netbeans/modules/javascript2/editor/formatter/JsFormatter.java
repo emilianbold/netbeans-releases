@@ -50,12 +50,14 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -265,9 +267,13 @@ public class JsFormatter implements Formatter {
                                 if (isContinuation(tokens, index)) {
                                     indentationSize += continuationIndent;
                                 }
-                                offsetDiff = replace(doc, indentationStart.getOffset(),
-                                        current.toString(), IndentUtils.createIndentString(doc, indentationSize),
-                                        offsetDiff);
+                                try {
+                                    int diff = GsfUtilities.setLineIndentation(doc,
+                                            offsetDiff + indentationStart.getOffset(), indentationSize);
+                                    offsetDiff = offsetDiff + diff;
+                                } catch (BadLocationException ex) {
+                                    LOGGER.log(Level.INFO, null, ex);
+                                }
                             }
                             break;
                     }
