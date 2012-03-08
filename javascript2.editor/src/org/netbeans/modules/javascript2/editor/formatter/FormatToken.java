@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor.formatter;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
@@ -49,6 +52,15 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author Petr Hejl
  */
 public final class FormatToken {
+
+    private static final Set<Kind> BEFORE_MARKERS = EnumSet.noneOf(Kind.class);
+
+    static {
+        Collections.addAll(BEFORE_MARKERS, Kind.BEFORE_BINARY_OPERATOR,
+                Kind.BEFORE_ASSIGNMENT_OPERATOR, Kind.BEFORE_COMMA,
+                Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
+                Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD);
+    }
 
     private final Kind kind;
 
@@ -106,6 +118,10 @@ public final class FormatToken {
         return offset < 0;
     }
 
+    public boolean isBeforeMarker() {
+        return BEFORE_MARKERS.contains(kind);
+    }
+
     @Override
     public String toString() {
         return "FormattingToken{" + "kind=" + kind + ", offset=" + offset + ", text=" + text + '}';
@@ -160,7 +176,9 @@ public final class FormatToken {
         BEFORE_WHILE_KEYWORD,
         BEFORE_ELSE_KEYWORD,
         BEFORE_CATCH_KEYWORD,
-        BEFORE_FINALLY_KEYWORD
+        BEFORE_FINALLY_KEYWORD,
+
+        AFTER_SEMICOLON
     }
 
 }
