@@ -50,7 +50,6 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -62,7 +61,6 @@ import org.netbeans.core.windows.ModeImpl;
 import org.netbeans.core.windows.TopComponentTracker;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.netbeans.core.windows.view.ui.popupswitcher.KeyboardPopupSwitcher;
-import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -143,21 +141,6 @@ public final class RecentViewListAction extends AbstractAction
         
         tc.requestActive();
     }
-    
-    private class ActivatableTC implements SwitcherTableItem.Activatable {
-        private WeakReference<TopComponent> wtc;
-        private ActivatableTC(TopComponent tc) {
-            this.wtc = new WeakReference<TopComponent>(tc);
-        }
-        @Override
-        public void activate() {
-            TopComponent tc = wtc.get();
-            if (tc != null) {
-                tc.requestActive();
-            }
-        }
-    }
-    
     
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
