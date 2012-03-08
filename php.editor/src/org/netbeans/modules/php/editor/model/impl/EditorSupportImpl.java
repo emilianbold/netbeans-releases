@@ -130,6 +130,7 @@ public class EditorSupportImpl implements EditorSupport {
         return retval;
     }
 
+    @Override
     public PhpBaseElement getElement(FileObject fo, final int offset) {
         Source source = Source.create(fo);
         final List<PhpBaseElement> retval = new ArrayList<PhpBaseElement>(1);
