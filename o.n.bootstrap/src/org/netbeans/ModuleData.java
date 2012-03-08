@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-final class ModuleData {
+class ModuleData {
     private final static PackageExport[] ZERO_PACKAGE_ARRAY = new PackageExport[0];
     private final static String[] ZERO_STRING_ARRAY = new String[0];
 
@@ -221,7 +221,7 @@ final class ModuleData {
         }
     }
     
-    final void write(ObjectOutput dos) throws IOException {
+    void write(ObjectOutput dos) throws IOException {
         dos.writeUTF(codeName);
         dos.writeUTF(codeNameBase);
         dos.writeInt(codeNameRelease);

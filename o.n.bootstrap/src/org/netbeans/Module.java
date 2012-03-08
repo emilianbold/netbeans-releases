@@ -137,10 +137,18 @@ public abstract class Module extends ModuleInfo {
         enabled = false;
     }
     
+    ModuleData createData(ObjectInput in, Manifest mf) throws IOException {
+        if (in != null) {
+            return new ModuleData(in);
+        } else {
+            return new ModuleData(mf, this);
+        }
+    }
+    
     final void readData(ObjectInput di) throws IOException {
         synchronized (DATA_LOCK) {
-            assert data == null;
-            data = new ModuleData(di);
+            assert data == null : "No data created yet: " + data;
+            data = createData(di, null);
         }
     }
     
@@ -154,10 +162,10 @@ public abstract class Module extends ModuleInfo {
                 return data;
             }
             try {
-                ModuleData mine = new ModuleData(getManifest(), this);
+                ModuleData mine = createData(null, getManifest());
                 assert mine == data;
                 return mine;
-            } catch (InvalidException ex) {
+            } catch (IOException ex) {
                 throw new IllegalStateException(ex);
             }
         }
@@ -548,7 +556,7 @@ public abstract class Module extends ModuleInfo {
     Set<String> getCoveredPackages() {
         return data().getCoveredPackages();
     }
-
+    
     /** Struct representing a package exported from a module.
      * @since org.netbeans.core/1 > 1.4
      * @see Module#getPublicPackages
