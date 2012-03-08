@@ -89,18 +89,20 @@ public class SearchHistoryAction extends ContextAction {
         if(!Subversion.getInstance().checkClientAvailable()) {            
             return;
         }        
-        String title = NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)); // NOI18N
-        openHistory(getContext(nodes), title);
+        openHistory(getContext(nodes).getFiles(), NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", getContextDisplayName(nodes)));
     }
 
-    private void openHistory(final Context context, final String title) {
+    public static void openHistory(final File [] files) {
+        openHistory(files, NbBundle.getMessage(SearchHistoryAction.class, "CTL_SearchHistory_Title", files[0].getName()));
+    }
+    
+    private static void openHistory(final File [] files, final String title) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(context);
-                tc.setDisplayName(title);
+                SearchHistoryTopComponent tc = new SearchHistoryTopComponent(files);
+                tc.setDisplayName(title); 
                 tc.open();
                 tc.requestActive();
-                File [] files = context.getFiles();
                 if (files.length == 1 && files[0].isFile() || files.length > 1 && Utils.shareCommonDataObject(files)) {
                     tc.search();
                 }
