@@ -3,7 +3,7 @@ MyParamTestContext.|testParamDoc();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     charAt(index): undefined        [PUBLIC]   paramTypes01.js
-METHOD     definedInOtherFile(param1: Num  [PUBLIC]   testFile.js
+METHOD     definedInOtherFile(param1: Num  [PUBLIC,   testFile.js
 METHOD     eval(string): undefined         [PUBLIC]   stub_core_Object.js
 METHOD     hasOwnProperty(prop): Boolean   [PUBLIC]   stub_core_Object.js
 METHOD     isPrototypeOf(object): Boolean  [PUBLIC]   stub_core_Object.js

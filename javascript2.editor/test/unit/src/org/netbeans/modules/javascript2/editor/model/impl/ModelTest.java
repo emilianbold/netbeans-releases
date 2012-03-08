@@ -87,7 +87,7 @@ public class ModelTest extends JsTestBase {
         JsObject ridic = global.getProperty("Ridic");
         assertEquals("Ridic", ridic.getDeclarationName().getName());
         assertEquals("Ridic", ridic.getName());
-        assertEquals(3, ridic.getProperties().size());
+        assertEquals(4, ridic.getProperties().size());
     }
     
     public void testMethodsInFunction() throws Exception {
@@ -163,7 +163,7 @@ public class ModelTest extends JsTestBase {
         JsObject address = global.getProperty("Address");
         assertEquals(JsElement.Kind.CONSTRUCTOR, address.getJSKind());
         assertEquals(true, address.isDeclared());
-        assertEquals(5, address.getProperties().size());
+        assertEquals(6, address.getProperties().size());
         
         variable = address.getProperty("city");
         assertEquals(true, variable.isDeclared());
@@ -314,7 +314,7 @@ public class ModelTest extends JsTestBase {
         JsObject object = global.getProperty("Kolo");
         assertEquals(JsElement.Kind.CONSTRUCTOR, object.getJSKind());
         assertEquals(true, object.isDeclared());
-        assertEquals(4, object.getProperties().size());
+        assertEquals(5, object.getProperties().size());
         
         object = object.getProperty("data");
         assertEquals(3, object.getProperties().size());
@@ -367,7 +367,7 @@ public class ModelTest extends JsTestBase {
         object = object.getProperty("$function");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
-        assertEquals(4, object.getProperties().size());
+        assertEquals(5, object.getProperties().size());
         assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
         
         JsObject param = ((JsFunction)object).getParameter("window");
@@ -388,7 +388,7 @@ public class ModelTest extends JsTestBase {
         object = global.getProperty("$function");
         assertEquals(true, object.isDeclared());
         assertEquals(true, ((JsFunction)object).isAnonymous());
-        assertEquals(2, object.getProperties().size());
+        assertEquals(3, object.getProperties().size());
         assertEquals(JsElement.Kind.FUNCTION, object.getJSKind());
         
         object = object.getProperty("MyContext");
@@ -397,7 +397,7 @@ public class ModelTest extends JsTestBase {
         
         object = object.getProperty("createTextWrapper");
         assertEquals(true, object.isDeclared());
-        assertEquals(5, object.getProperties().size());
+        assertEquals(6, object.getProperties().size());
         
     }
     
@@ -491,8 +491,8 @@ public class ModelTest extends JsTestBase {
         JsObject object = global.getProperty("Man");
         
         JsFunction function = (JsFunction)object.getProperty("createAddress");
-        assertEquals(2, function.getModifiers().size());
-        assertTrue(function.getModifiers().contains(Modifier.STATIC));
+        assertEquals(1, function.getModifiers().size());
+        assertTrue(!function.getModifiers().contains(Modifier.STATIC));
         assertTrue(function.getModifiers().contains(Modifier.PRIVATE));
         assertEquals(JsElement.Kind.METHOD, function.getJSKind());
         assertEquals(1, function.getReturnTypes().size());
@@ -537,7 +537,7 @@ public class ModelTest extends JsTestBase {
         
         object = object.getProperty("extend");
         assertEquals(JsElement.Kind.METHOD, object.getJSKind());
-        assertEquals(0, object.getProperties().size());
+        assertEquals(1, object.getProperties().size());
         
     }
     
@@ -548,7 +548,7 @@ public class ModelTest extends JsTestBase {
         JsObject global = model.getGlobalObject();
         // TODO one global parameter is now treated arguments of function
         // It should be treated as property of the function
-        assertEquals(5, global.getProperties().size());
+        assertEquals(4, global.getProperties().size());
         
         JsObject object = global.getProperty("furniture");
         assertEquals(JsElement.Kind.OBJECT, object.getJSKind());
@@ -558,7 +558,7 @@ public class ModelTest extends JsTestBase {
         object = object.getProperty("getDescription");
         assertEquals(JsElement.Kind.METHOD, object.getJSKind());
         assertEquals(true, object.isDeclared());
-        assertEquals(1, object.getProperties().size());
+        assertEquals(2, object.getProperties().size());
         
         JsObject variable = object.getProperty("param");
         assertEquals(JsElement.Kind.VARIABLE, variable.getJSKind());
@@ -575,7 +575,7 @@ public class ModelTest extends JsTestBase {
         
         JsFunction function = (JsFunction)global.getProperty("$function");
         assertTrue(function.isAnonymous());
-        assertEquals(2, function.getProperties().size());
+        assertEquals(3, function.getProperties().size());
         
         JsObject object = function.getProperty("Car");
         function = (JsFunction)object.getProperty("getColor");
@@ -612,11 +612,23 @@ public class ModelTest extends JsTestBase {
         assertEquals(5, global.getProperties().size());
         
         JsObject object = global.getProperty("Address");
-        assertEquals(3, object.getProperties().size());
+        assertEquals(4, object.getProperties().size());
         
         JsObject property = object.getProperty("street");
         assertEquals(JsElement.Kind.PROPERTY, property.getJSKind());
      }
+     
+     public void testPrivateVariables01() throws Exception {
+        Model model = getModel("testfiles/completion/arguments/arguments.js");
+        assertNotNull(model);
+        
+        JsObject global = model.getGlobalObject();
+        JsObject object = global.getProperty("ArgumentsContext");
+        JsObject function = object.getProperty("testFunction");
+        JsObject variable = function.getProperty("i");
+        assertTrue(variable.getModifiers().contains(Modifier.PRIVATE));
+     }
+     
 //    public void testPrivateMethod01() throws Exception {
 //        Model model = getModel("testfiles/model/privateMethod.js");
 //        assertNotNull(model);

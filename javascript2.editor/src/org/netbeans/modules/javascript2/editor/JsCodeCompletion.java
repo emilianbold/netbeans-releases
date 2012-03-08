@@ -433,7 +433,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
                         Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
                         for (IndexResult indexResult : indexResults) {
-                            JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
                             } else {
@@ -462,7 +462,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // look at the index
                     if (exp.get(1).equals("@pro")) {
                         for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
-                            JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if (kind.isFunction()) {
                                 isFunction = true;
                             }
@@ -487,7 +487,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             
             // add as last type Object
             for (IndexedElement indexedElement : jsIndex.getProperties("Object")) {
-                if (startsWith(indexedElement.getName(), request.prefix)) {
+                if (startsWith(indexedElement.getName(), request.prefix)
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
                     addedProperties.put(indexedElement.getName(), indexedElement);
                 }
             }
@@ -522,6 +523,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 JsElement element = addedProperties.get(indexedElement.getName());
                 if (startsWith(indexedElement.getName(), request.prefix) 
                         && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)
                         && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
                     addedProperties.put(indexedElement.getName(), indexedElement);
                 }
@@ -601,6 +603,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         for (JsObject property : jsObject.getProperties().values()) {
             String propertyName = property.getName();
             if (!(property instanceof JsFunction && ((JsFunction) property).isAnonymous())
+                    && !property.getModifiers().contains(Modifier.PRIVATE)
                     && (!filter || startsWith(propertyName, request.prefix))
                     && !property.getJSKind().isPropertyGetterSetter()) {
                 JsElement element = addedProperties.get(propertyName);

@@ -365,7 +365,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         new OffsetRange(start, end)));
                 if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                     isPrivate = true;
-                    isStatic = true;
+                    //isStatic = true;
                 }
             }
             functionStack.add(functions);

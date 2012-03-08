@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.index;
 
 import java.util.*;
+import java.util.ArrayList;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -86,12 +87,13 @@ public class IndexedElement extends JsElementImpl {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
         elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  ModelUtils.createFQN(object), true, true);
-        elementDocument.addPair(JsIndex.FIELD_JS_KIND, Integer.toString(object.getJSKind().getId()), true, true);
         elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (ModelUtils.isGlobal(object.getParent()) ? "1" : "0"), true, true);
-        elementDocument.addPair(JsIndex.FIELD_IS_DECLARED, (object.isDeclared() ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
+        elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
         for (JsObject property : object.getProperties().values()) {
-            elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
+                elementDocument.addPair(JsIndex.FIELD_PROPERTY, codeProperty(property), false, true);
+            }
         }
         StringBuilder sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
@@ -106,7 +108,7 @@ public class IndexedElement extends JsElementImpl {
             sb = new StringBuilder();
             for(TypeUsage type : ((JsFunction)object).getReturnTypes()) {
                 sb.append(type.getType());
-                sb.append(":"); //NOI18N
+                sb.append(","); //NOI18N
                 sb.append(type.getOffset());
                 sb.append("|");
             }
@@ -121,12 +123,14 @@ public class IndexedElement extends JsElementImpl {
         FileObject fo = indexResult.getFile();
         String name = indexResult.getValue(JsIndex.FIELD_BASE_NAME);
         String fqn = indexResult.getValue(JsIndex.FIELD_FQ_NAME);
-        boolean isDeclared = "1".equals(indexResult.getValue(JsIndex.FIELD_IS_DECLARED)); //NOI18N
-        JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+        int flag = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG));
+        boolean isDeclared = Flag.isDeclared(flag);
+        JsElement.Kind kind = Flag.getJsKind(flag);
+        Set<Modifier> modifiers = Flag.getModifiers(flag);
         int offset = Integer.parseInt(indexResult.getValue(JsIndex.FIELD_OFFSET));
         IndexedElement result;
         if (!kind.isFunction()) {
-            result = new IndexedElement(fo, name, fqn, isDeclared, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC));
+            result = new IndexedElement(fo, name, fqn, isDeclared, kind, new OffsetRange(offset, offset + name.length()), modifiers);
         } else {
             Collection<TypeUsage> returnTypes = getReturnTypes(indexResult);
             Collection<String>rTypes = new ArrayList<String>();
@@ -135,7 +139,7 @@ public class IndexedElement extends JsElementImpl {
             }
             String paramText = indexResult.getValue(JsIndex.FIELD_PARAMETERS);
             LinkedHashMap<String, Collection<String>> params  = decodeParameters(paramText);
-            result = new FunctionIndexedElement(fo, name, fqn, kind, new OffsetRange(offset, offset + name.length()), EnumSet.of(Modifier.PUBLIC), params, rTypes);
+            result = new FunctionIndexedElement(fo, name, fqn, kind, new OffsetRange(offset, offset + name.length()), modifiers, params, rTypes);
         }
         return result;
     }
@@ -170,7 +174,7 @@ public class IndexedElement extends JsElementImpl {
         if (text != null) {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(':');
+                int index = token.indexOf(',');
                 String type = token.substring(0, index);
                 String offset = token.substring(index + 1);
                 result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
@@ -277,6 +281,103 @@ public class IndexedElement extends JsElementImpl {
         
         public Collection<String> getReturnTypes() {
             return this.returnTypes;
+        }        
+    }
+    
+    public static class Flag {
+        // modifiers
+        private static final int PRIVATE = 1 << 0;
+        private static final int PUBLIC = 1 << 1;
+        private static final int STATIC = 1 << 2;
+        private static final int PRIVILAGE = 1 << 3;
+        
+        private static final int DEPRICATED = 1 << 4;
+        
+        private static final int GLOBAL = 1 << 5;
+        private static final int DECLARED = 1 << 6;
+        private static final int ANONYMOUS = 1 << 7;
+        
+        // Js Kind
+        private static final int FILE = 1 << 8;
+        private static final int PROPERTY = 1 << 9;
+        private static final int VARIABLE = 1 << 10;
+        private static final int OBJECT = 1 << 11;
+        private static final int METHOD = 1 << 12;
+        private static final int FUNCTION = 1 << 13;
+        private static final int ANONYMOUS_OBJECT = 1 << 14;
+        private static final int CONSTRUCTOR = 1 << 15;
+        private static final int FIELD = 1 << 16;
+        private static final int PARAMETER = 1 << 17;
+        private static final int PROPERTY_GETTER = 1 << 18;
+        private static final int PROPERTY_SETTER = 1 << 19;
+        
+        public static int getFlag(JsObject object) {
+            int value = 0;
+            
+            Set<Modifier> modifiers = object.getModifiers();
+            if(modifiers.contains(Modifier.PRIVATE)) value = value | PRIVATE;
+            if(modifiers.contains(Modifier.PUBLIC)) value = value | PUBLIC;
+            if(modifiers.contains(Modifier.STATIC)) value = value | STATIC;
+            if(modifiers.contains(Modifier.PROTECTED)) value = value | PRIVILAGE;
+            if(modifiers.contains(Modifier.DEPRECATED)) value = value | DEPRICATED;
+            
+            if(ModelUtils.isGlobal(object)) value = value | GLOBAL;
+            if(object.isDeclared()) value = value | DECLARED;
+            if(object.isAnonymous()) value = value | ANONYMOUS;
+            
+            JsElement.Kind kind = object.getJSKind();
+            if (kind == JsElement.Kind.ANONYMOUS_OBJECT) value = value | ANONYMOUS_OBJECT;
+            if (kind == JsElement.Kind.CONSTRUCTOR) value = value | CONSTRUCTOR;
+            if (kind == JsElement.Kind.FIELD) value = value | FIELD;
+            if (kind == JsElement.Kind.FILE) value = value | FILE;
+            if (kind == JsElement.Kind.FUNCTION) value = value | FUNCTION;
+            if (kind == JsElement.Kind.METHOD) value = value | METHOD;
+            if (kind == JsElement.Kind.OBJECT) value = value | OBJECT;
+            if (kind == JsElement.Kind.PARAMETER) value = value | PARAMETER;
+            if (kind == JsElement.Kind.PROPERTY) value = value | PROPERTY;
+            if (kind == JsElement.Kind.PROPERTY_GETTER) value = value | PROPERTY_GETTER;
+            if (kind == JsElement.Kind.PROPERTY_SETTER) value = value | PROPERTY_SETTER;
+            if (kind == JsElement.Kind.VARIABLE) value = value | VARIABLE;
+            return value;
+        }
+        
+        public static Set<Modifier> getModifiers(int flag) {
+            EnumSet result = EnumSet.noneOf(Modifier.class);
+            if ((flag & PRIVATE) != 0) result.add(Modifier.PRIVATE);
+            if ((flag & PUBLIC) != 0) result.add(Modifier.PUBLIC);
+            if ((flag & STATIC) != 0) result.add(Modifier.STATIC);
+            if ((flag & PRIVILAGE) != 0) result.add(Modifier.PROTECTED);
+            if ((flag & DEPRICATED) != 0) result.add(Modifier.DEPRECATED);
+            return result;
+        }
+        
+        public static boolean isGlobal(int flag) {
+            return (flag & GLOBAL) != 0;
+        }
+        
+        public static boolean isDeclared(int flag) {
+            return (flag & DECLARED) != 0;
+        }
+        
+        public static boolean isAnonymous(int flag) {
+            return (flag & ANONYMOUS) != 0;
+        }
+        
+        public static JsElement.Kind getJsKind(int flag) {
+            JsElement.Kind result = JsElement.Kind.VARIABLE;
+            if ((flag & ANONYMOUS_OBJECT) != 0) result = JsElement.Kind.ANONYMOUS_OBJECT;
+            else if ((flag & CONSTRUCTOR) != 0) result = JsElement.Kind.CONSTRUCTOR;
+            else if ((flag & FIELD) != 0) result = JsElement.Kind.FIELD;
+            else if ((flag & FILE) != 0) result = JsElement.Kind.FILE;
+            else if ((flag & FUNCTION) != 0) result = JsElement.Kind.FUNCTION;
+            else if ((flag & METHOD) != 0) result = JsElement.Kind.METHOD;
+            else if ((flag & OBJECT) != 0) result = JsElement.Kind.OBJECT;
+            else if ((flag & PARAMETER) != 0) result = JsElement.Kind.PARAMETER;
+            else if ((flag & PROPERTY) != 0) result = JsElement.Kind.PROPERTY;
+            else if ((flag & PROPERTY_GETTER) != 0) result = JsElement.Kind.PROPERTY_GETTER;
+            else if ((flag & PROPERTY_SETTER) != 0) result = JsElement.Kind.PROPERTY_SETTER;
+            else if ((flag & VARIABLE) != 0) result = JsElement.Kind.VARIABLE;
+            return result;
         }
     }
 }
