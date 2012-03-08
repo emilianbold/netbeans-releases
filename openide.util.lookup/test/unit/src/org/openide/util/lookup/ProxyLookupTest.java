@@ -274,6 +274,28 @@ implements AbstractLookupBaseHid.Impl {
         doProxyLookupTemplateCaching(lookups, true);
     }
     
+    public void testIterativeIterator() {
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup l1 = new AbstractLookup(ic);
+        
+        class AL extends AbstractLookup {
+            @Override
+            protected void beforeLookup(Template<?> template) {
+                fail("Don't call me! Called for: " + template.getType());
+            }
+        }
+        AL l2 = new AL();
+        
+        ProxyLookup pl = new ProxyLookup(l1, l2);
+        
+        ic.add(Integer.valueOf(10));
+        
+        for (Integer i : pl.lookupAll(Integer.class)) {
+            assertEquals(Integer.valueOf(10), i);
+            break;
+        }
+    }
+    
     /** Index 0 of lookups will be modified, the rest is up to the 
      * setup code.
      */
