@@ -174,7 +174,6 @@ made subject to such option by the copyright holder.
         <condition property="run.args.mac" value="-J-Xdock:name=${app.name}" else="">
             <os family="mac"/>
         </condition>
-        <echo message="${run.exe}" />
         <exec osfamily="windows" executable="${run.exe}" failonerror="no" resultproperty="result.prop">
             <arg value="--jdkhome"/>
             <arg file="${run.jdkhome}"/>
