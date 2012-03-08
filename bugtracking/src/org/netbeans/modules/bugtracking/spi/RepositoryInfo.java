@@ -42,6 +42,8 @@
 package org.netbeans.modules.bugtracking.spi;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -50,6 +52,8 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  * @author Tomas Stupka
  */
 public final class RepositoryInfo {
+    
+    private static final Logger LOG = Logger.getLogger(RepositoryInfo.class.getName());
     
     static {
         SPIAccessorImpl.createAccesor();
@@ -68,10 +72,29 @@ public final class RepositoryInfo {
     private static final String PROPERTY_HTTP_USERNAME = "httpUsername";        // NOI18N    
 
     private RepositoryInfo(Map<String, String> properties) {
+        logMap("create RepositoryInfo for ",properties);
         this.map.putAll(properties);
     }
 
+    public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip) {
+        LOG.log(
+            Level.FINER, 
+                "create RepositoryInfo for [id={0},connectorId={1},url={2},displayName={3},tooltip={4}]", 
+                new Object[]{id, connectorId, url, displayName, tooltip});
+        
+        map.put(PROPERTY_ID, id);
+        map.put(PROPERTY_CONNECTOR_ID, connectorId);
+        map.put(PROPERTY_DISPLAY_NAME, displayName);
+        map.put(PROPERTY_TOOLTIP, tooltip);
+        map.put(PROPERTY_URL, url);
+    }
+    
     public RepositoryInfo(String id, String connectorId, String url, String displayName, String tooltip, String user, String httpUser, char[] password, char[] httpPassword) {
+        LOG.log(
+            Level.FINER, 
+                "create RepositoryInfo for [id={0},connectorId={1},url={2},displayName={3},tooltip={4},user={5},httpUser={6},password={7},httpPassword={8}]", 
+                new Object[]{id, connectorId, url, displayName, tooltip, user, httpUser, BugtrackingUtil.getPasswordLog(password), BugtrackingUtil.getPasswordLog(httpPassword)});
+        
         map.put(PROPERTY_ID, id);
         map.put(PROPERTY_CONNECTOR_ID, connectorId);
         map.put(PROPERTY_DISPLAY_NAME, displayName);
@@ -90,7 +113,9 @@ public final class RepositoryInfo {
         if(isNbRepository(map)) {
             return new char[0];
         } else {
-            return BugtrackingUtil.readPassword(null, "http", getHttpUsername(), getUrl()); // NOI18N
+            char[] httpPassword = BugtrackingUtil.readPassword(null, "http", getHttpUsername(), getUrl());
+            LOG.log(Level.FINER, "read httpPassword={0}", BugtrackingUtil.getPasswordLog(httpPassword));
+            return httpPassword; // NOI18N
         }
     }
 
@@ -108,9 +133,13 @@ public final class RepositoryInfo {
 
     public char[] getPassword() {
         if(isNbRepository(map)) {
-            return BugtrackingUtil.getNBPassword();
+            char[] password = BugtrackingUtil.getNBPassword();
+            LOG.log(Level.FINER, "read netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
+            return password;
         } else {
-            return BugtrackingUtil.readPassword(null, null, getUsername(), getUrl());
+            char[] password = BugtrackingUtil.readPassword(null, null, getUsername(), getUrl());
+            LOG.log(Level.FINER, "read password={0}", BugtrackingUtil.getPasswordLog(password));
+            return password;
         }
     }
 
@@ -190,8 +219,10 @@ public final class RepositoryInfo {
     
     private void storePasswords(char[] password, char[] httpPassword) throws MissingResourceException {
         if(isNbRepository(map)) {
+            LOG.log(Level.FINER, "storing netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
             BugtrackingUtil.saveNBPassword(password);
         } else {
+            LOG.log(Level.FINER, "storing password={0}, httpPassword={1}", new Object[] {BugtrackingUtil.getPasswordLog(password), BugtrackingUtil.getPasswordLog(httpPassword)});
             BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
             BugtrackingUtil.savePassword(httpPassword, "http", getHttpUsername(), getUrl()); // NOI18N
         }
@@ -200,5 +231,35 @@ public final class RepositoryInfo {
     private static boolean isNbRepository(Map<String, String> map) {
         String url = map.get(PROPERTY_URL);
         return url != null ? BugtrackingUtil.isNbRepository(url) : false;
+    }
+
+    private void logMap(String prefix, Map<String, String> properties) {
+        if(!LOG.isLoggable(Level.FINER)) {
+            return;
+        }
+        HashMap<String, String> m = new HashMap<String, String>(properties);
+        StringBuilder sb = new StringBuilder();
+        if(prefix != null) {
+            sb.append(prefix);
+        }
+        sb.append("[");
+        sb.append(PROPERTY_ID);
+        sb.append("=");
+        sb.append(m.get(PROPERTY_ID));
+        sb.append(",");
+        m.remove(PROPERTY_ID);
+        String[] keys = m.keySet().toArray(new String[m.size()]);
+        Arrays.sort(keys);
+        for (int i = 0; i < keys.length; i++) {
+            String key = keys[i];
+            sb.append(key);
+            sb.append("=");
+            sb.append(m.get(key));
+            if(i < keys.length - 1) {
+                sb.append(",");
+            }
+        }
+        sb.append("]");
+        LOG.finer(sb.toString());
     }
 }

@@ -85,7 +85,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
-        super(createInfo(repoName, url, getKenaiUser(kenaiProject), getKenaiPassword(kenaiProject)));
+        super(createInfo(repoName, url));
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
@@ -354,9 +354,9 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             setCredentials(user, psswd);
         }
     }
-    private static RepositoryInfo createInfo(String repoName, String url, String userName, char[] password) {
+    private static RepositoryInfo createInfo(String repoName, String url) {
         String id = getRepositoryId(repoName, url);
-        String tooltip = NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, userName, url}); // NOI18N
-        return new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip, userName, null, password, null);
+        String tooltip = NbBundle.getMessage(JiraRepository.class, "LBL_RepositoryTooltip", new Object[] {repoName, url}); // NOI18N
+        return new RepositoryInfo(id, JiraConnector.ID, url, repoName, tooltip);
     }
 }
