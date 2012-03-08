@@ -945,6 +945,7 @@ public final class TopLogging {
         public LookupDel() {
             handlers = Lookup.getDefault().lookupResult(Handler.class);
             instances = handlers.allInstances();
+            instances.size(); // initialize
             handlers.addLookupListener(this);
         }
 
