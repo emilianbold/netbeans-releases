@@ -242,6 +242,14 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".disabled.formatted");
     }
 
+    public void testPartialFormat1() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat1.js", Collections.<String, Object>emptyMap());
+    }
+
+    public void testPartialFormat2() throws Exception {
+        reformatFileContents("testfiles/formatter/partialFormat2.js", Collections.<String, Object>emptyMap());
+    }
+
     protected void reformatFileContents(String file, Map<String, Object> options) throws Exception {
         reformatFileContents(file, options, null);
     }

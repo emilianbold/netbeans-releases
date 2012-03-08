@@ -58,11 +58,14 @@ public class FormatVisitor extends NodeVisitor {
 
     private final FormatTokenStream tokenStream;
 
+    private final int formatFinish;
+
     private final Set<Block> caseNodes = new HashSet<Block>();
 
-    public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts) {
+    public FormatVisitor(FormatTokenStream tokenStream, TokenSequence<? extends JsTokenId> ts, int formatFinish) {
         this.ts = ts;
         this.tokenStream = tokenStream;
+        this.formatFinish = formatFinish;
     }
 
     @Override
@@ -189,7 +192,7 @@ public class FormatVisitor extends NodeVisitor {
     public Node visit(ObjectNode objectNode, boolean onset) {
         if (onset) {
             // indentation mark
-            FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY);
+            FormatToken formatToken = getPreviousToken(getStart(objectNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
@@ -205,7 +208,7 @@ public class FormatVisitor extends NodeVisitor {
 
             // put indentation mark after non white token preceeding curly bracket
             formatToken = getPreviousNonWhiteToken(getFinish(objectNode),
-                    getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY);
+                    getStart(objectNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
@@ -217,7 +220,7 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(SwitchNode switchNode, boolean onset) {
         if (onset) {
-            FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY);
+            FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
@@ -238,7 +241,7 @@ public class FormatVisitor extends NodeVisitor {
 
             // put indentation mark after non white token preceeding curly bracket
             formatToken = getPreviousNonWhiteToken(getFinish(switchNode),
-                    getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY);
+                    getStart(switchNode), JsTokenId.BRACKET_RIGHT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
             }
@@ -259,14 +262,14 @@ public class FormatVisitor extends NodeVisitor {
         handleBlockContent(block);
 
         // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY);
+        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
 
         // put indentation mark after non white token preceeding curly bracket
         formatToken = getPreviousNonWhiteToken(getFinish(block),
-                getStart(block), JsTokenId.BRACKET_RIGHT_CURLY);
+                getStart(block), JsTokenId.BRACKET_RIGHT_CURLY, true);
         if (formatToken != null && !isScript(block)) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
         }
@@ -276,7 +279,7 @@ public class FormatVisitor extends NodeVisitor {
         handleBlockContent(block);
 
         // indentation mark
-        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON);
+        FormatToken formatToken = getPreviousToken(getStart(block), JsTokenId.OPERATOR_COLON, true);
         if (formatToken != null) {
             appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
         }
@@ -303,13 +306,16 @@ public class FormatVisitor extends NodeVisitor {
         Token token = getPreviousNonEmptyToken(getStart(statement));
         if (token != null) {
             FormatToken formatToken = tokenStream.getToken(ts.offset());
-            if (formatToken != null && !isScript(block)) {
+            if (!isScript(block)) {
+                if (formatToken == null && ts.offset() <= formatFinish) {
+                    formatToken = tokenStream.getTokens().get(0);
+                }
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
             }
         }
 
         // put indentation mark after non white token
-        FormatToken formatToken = getPreviousToken(getFinish(statement), null);
+        FormatToken formatToken = getPreviousToken(getFinish(statement), null, true);
         if (formatToken != null && !isScript(block)) {
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_DEC));
@@ -338,15 +344,19 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private FormatToken getNextToken(int offset, JsTokenId expected) {
-        return getToken(offset, expected, false);
+    private FormatToken getNextToken(int offset, JsTokenId expected, boolean startFallback) {
+        return getToken(offset, expected, false, startFallback);
     }
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected) {
-        return getToken(offset, expected, true);
+        return getPreviousToken(offset, expected, false);
     }
 
-    private FormatToken getToken(int offset, JsTokenId expected, boolean backward) {
+    private FormatToken getPreviousToken(int offset, JsTokenId expected, boolean startFallback) {
+        return getToken(offset, expected, true, startFallback);
+    }
+
+    private FormatToken getToken(int offset, JsTokenId expected, boolean backward, boolean startFallback) {
         ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
@@ -364,7 +374,7 @@ public class FormatVisitor extends NodeVisitor {
             }
         }
         if (token != null) {
-            return tokenStream.getToken(ts.offset());
+            return getFallback(ts.offset(), startFallback);
         }
         return null;
     }
@@ -389,9 +399,13 @@ public class FormatVisitor extends NodeVisitor {
         return ret;
     }
 
-    private FormatToken getPreviousNonWhiteToken(int offset, int stop, JsTokenId expected) {
+    private FormatToken getPreviousNonWhiteToken(int offset, int stop, JsTokenId expected, boolean startFallback) {
         assert stop <= offset;
-        FormatToken ret = getPreviousToken(offset, expected);
+        FormatToken ret = getPreviousToken(offset, expected, startFallback);
+        if (startFallback && ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START) {
+            return ret;
+        }
+
         if (ret != null) {
             if (expected == null) {
                 return ret;
@@ -407,7 +421,7 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             if (token != null) {
-                return tokenStream.getToken(ts.offset());
+                return getFallback(ts.offset(), startFallback);
             }
         }
         return null;
@@ -450,10 +464,19 @@ public class FormatVisitor extends NodeVisitor {
             }
 
             if (ret != null) {
-                return tokenStream.getToken(ts.offset());
+                return getFallback(ts.offset(), true);
             }
         }
         return null;
+    }
+
+    private FormatToken getFallback(int offset, boolean fallback) {
+        FormatToken ret = tokenStream.getToken(offset);
+        if (ret == null && fallback && offset <= formatFinish) {
+            ret = tokenStream.getTokens().get(0);
+            assert ret != null && ret.getKind() == FormatToken.Kind.SOURCE_START;
+        }
+        return ret;
     }
 
     private static int getStart(Node node) {
