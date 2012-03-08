@@ -210,8 +210,7 @@ class HgSearchForm extends JPanel {
             File repo = findRepo(FileUtil.toFile(scopeController.getSearchInfo().getSearchRoots().get(0).getFileObject()));
             // XXX pay attention to SearchRoot.filters
             // XXX check for regexp vs. basic, and map to Hg pattern syntax
-            //String pattern = fileCombo().getFileNamePattern();
-            String pattern = "**.xsl"; // XXX pending JG25
+            String pattern = fileNameController.isAllFilesInfoDisplayed() ? "**" : fileNameController.getFileNamePattern();
             // XXX pay attention to scopePanel()
             String text = patternField.getText();
             return new HgGrep(this, repo, pattern, text);
