@@ -63,18 +63,17 @@ public class JsIndex {
     private static final JsIndex EMPTY = new JsIndex(null);
 
     public static final String FIELD_IS_GLOBAL = "isglobal"; //NOI18N
-    public static final String FIELD_BASE_NAME = "basename"; //NOI18N
+    public static final String FIELD_BASE_NAME = "bn"; //NOI18N
     public static final String FIELD_FQ_NAME = "fqn"; //NOI18N
-    public static final String FIELD_PROPERTY = "property"; //NOI18N
-    public static final String FIELD_IS_DECLARED = "isdec"; //NOI18N
-    public static final String FIELD_JS_KIND = "jskind"; //NOI18N
+    public static final String FIELD_PROPERTY = "prop"; //NOI18N
     public static final String FIELD_OFFSET = "offset"; //NOI18N
     public static final String FIELD_ASSIGNMENS = "assign"; //NOI18N
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
     public static final String FIELD_PARAMETERS = "param"; //NOI18N
+    public static final String FIELD_FLAG = "flag"; //NOI18N
     
-    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_JS_KIND, FIELD_OFFSET, FIELD_IS_GLOBAL, FIELD_IS_DECLARED, FIELD_RETURN_TYPES, FIELD_PARAMETERS};
-    public static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_JS_KIND};
+    public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_IS_GLOBAL};
+    public static final String[] TERMS_PROPERTIES = new String[] { FIELD_PROPERTY, FIELD_ASSIGNMENS, FIELD_RETURN_TYPES, FIELD_FLAG};
     
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;

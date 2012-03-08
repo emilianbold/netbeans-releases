@@ -5,4 +5,3 @@ formatter.println("town: " + object.|town);
 FIELD      country                         [PUBLIC]   typeInferenceNew.js
 FIELD      street                          [PUBLIC]   typeInferenceNew.js
 FIELD      town                            [PUBLIC]   typeInferenceNew.js
-VARIABLE   arguments                       [PRIVATE]  typeInferenceNew.js

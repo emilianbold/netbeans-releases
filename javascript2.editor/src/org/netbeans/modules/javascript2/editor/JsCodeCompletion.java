@@ -433,7 +433,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
                         Collection<? extends IndexResult> indexResults = JsIndex.get(fo).findFQN(typeUsage.getType() + "." + name);
                         for (IndexResult indexResult : indexResults) {
-                            JsElement.Kind jsKind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 newResolvedTypes.addAll(IndexedElement.getReturnTypes(indexResult));
                             } else {
@@ -462,7 +462,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     // look at the index
                     if (exp.get(1).equals("@pro")) {
                         for(IndexResult indexResult : jsIndex.findFQN(typeUsage.getType())){
-                            JsElement.Kind kind = JsElement.Kind.fromId(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_JS_KIND)));
+                            JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                             if (kind.isFunction()) {
                                 isFunction = true;
                             }
