@@ -147,8 +147,6 @@ class HgSearchForm extends JPanel implements ChangeListener {
         scopePanel = new javax.swing.JPanel();
         patternField = new javax.swing.JTextField();
 
-        setName(org.openide.util.NbBundle.getMessage(HgSearchForm.class, "HgSearchForm.name")); // NOI18N
-
         javax.swing.GroupLayout scopePanelLayout = new javax.swing.GroupLayout(scopePanel);
         scopePanel.setLayout(scopePanelLayout);
         scopePanelLayout.setHorizontalGroup(
