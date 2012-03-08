@@ -242,7 +242,7 @@ public class TypesCompletion extends BaseCompletion {
             if (imports != null) {
                 for (ImportNode importNode : imports) {
                     ElementKind ek;
-                    if (importNode.getClass().isInterface()) {
+                    if (importNode.getType().isInterface()) {
                         ek = ElementKind.INTERFACE;
                     } else {
                         ek = ElementKind.CLASS;
