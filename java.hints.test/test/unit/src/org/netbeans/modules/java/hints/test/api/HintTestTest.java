@@ -51,7 +51,9 @@ import java.io.Reader;
 import java.io.Writer;
 import org.junit.Assert;
 import org.junit.Test;
+import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -59,6 +61,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -70,21 +73,23 @@ public class HintTestTest {
     }
 
     @Test
-    public void testTestingNonJavaChanges() throws Exception {
+    public void testNonJavaChanges() throws Exception {
         HintTest.create()
                 .input("package test;\n" +
                        "public class Test { }\n")
                 .input("test/test.txt", "1\n2\n", false)
-                .run(HintTestTest.class)
+                .run(NonJavaChanges.class)
                 .findWarning("1:13-1:17:verifier:Test")
                 .applyFix()
                 .assertVerbatimOutput("test/test.txt", "2\n3\n");
     }
 
     @Hint(displayName="testingNonJavaChanges", description="testingNonJavaChanges", category="test")
-    @TriggerTreeKind(Kind.CLASS)
-    public static ErrorDescription testingNonJavaChanges(HintContext ctx) {
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "Test", new TestingNonJavaChangesFix(ctx.getInfo(), ctx.getPath()).toEditorFix());
+    public static final class NonJavaChanges {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), "Test", new TestingNonJavaChangesFix(ctx.getInfo(), ctx.getPath()).toEditorFix());
+        }
     }
 
     private static final class TestingNonJavaChangesFix extends JavaFix {
@@ -124,5 +129,50 @@ public class HintTestTest {
             }
         }
 
+    }
+
+    @Test
+    public void testMeaningfullSourcePath() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test { }\n")
+                .run(MeaningfullSourcePath.class)
+                .assertWarnings();
+    }
+
+    @Hint(displayName="meaningfullSourcePath", description="meaningfullSourcePath", category="test")
+    public static final class MeaningfullSourcePath {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            if (ctx.getInfo().getClasspathInfo().getClassPath(PathKind.SOURCE).findOwnerRoot(ctx.getInfo().getFileObject()) == null) {
+                return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), "Broken Source Path");
+            }
+
+            return null;
+        }
+    }
+
+    @Test
+    public void testCompilationClassPath() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test { }\n")
+                .classpath(FileUtil.getArchiveRoot(JavaSource.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(CompilationClassPath.class)
+                .assertWarnings();
+    }
+
+    @Hint(displayName="compilationClassPath", description="compilationClassPath", category="test")
+    public static final class CompilationClassPath {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            FileObject clazz = ctx.getInfo().getClasspathInfo().getClassPath(PathKind.COMPILE).findResource("org/netbeans/api/java/source/JavaSource.class");
+
+            if (clazz == null) {
+                return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), "Broken Compilation ClassPath");
+            }
+
+            return null;
+        }
     }
 }

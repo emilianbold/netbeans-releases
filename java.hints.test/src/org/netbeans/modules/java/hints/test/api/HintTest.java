@@ -163,7 +163,8 @@ public class HintTest {
     private Character caretMarker;
     private FileObject testFile;
     private int caret = -1;
-    private FileObject[] extraClassPath = new FileObject[0];
+    private ClassPath sourcePath;
+    private ClassPath compileClassPath = ClassPathSupport.createClassPath(new URL[0]);
 
     private HintTest() throws Exception {
         List<URL> layers = new LinkedList<URL>();
@@ -264,6 +265,8 @@ public class HintTest {
         CacheFolder.setCacheFolder(cache);
 
         NbBundle.setBranding("test");
+
+        sourcePath = ClassPathSupport.createClassPath(sourceRoot);
     }
 
     /**Bootstraps the test framework.
@@ -282,6 +285,20 @@ public class HintTest {
      */
     public HintTest setCaretMarker(char c) {
         this.caretMarker = c;
+        return this;
+    }
+
+    /**Use the specified {@link java.net.URL}s as compile classpath while parsing
+     * the Java input. The {@link java.net.URL}s need to be "folder" {@link java.net.URL}s,
+     * ready to be passed to {@link ClassPathSupport#createClassPath(java.net.URL[]) }.
+     *
+     * @param entries that should become roots of the compile classpath
+     * @return itself
+     * @see FileUtil#urlForArchiveOrDir(java.io.File)
+     * @see FileUtil#getArchiveRoot(java.net.URL)
+     */
+    public HintTest classpath(URL... entries) {
+        compileClassPath = ClassPathSupport.createClassPath(entries);
         return this;
     }
 
@@ -607,8 +624,6 @@ public class HintTest {
     
     private class TestProxyClassPathProvider implements ClassPathProvider {
 
-        private final ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoot);
-
         public ClassPath findClassPath(FileObject file, String type) {
             try {
             if (ClassPath.BOOT == type) {
@@ -621,7 +636,7 @@ public class HintTest {
             }
 
             if (ClassPath.COMPILE == type) {
-                return ClassPathSupport.createClassPath(extraClassPath);
+                return compileClassPath;
             }
 
             if (ClassPath.EXECUTE == type) {
