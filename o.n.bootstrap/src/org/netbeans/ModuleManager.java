@@ -82,6 +82,7 @@ import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -505,6 +506,25 @@ public final class ModuleManager extends Modules {
         return cnt;
     }
 
+    final void postCreate(Module m) throws IOException {
+        final File path = m.getJarFile();
+        if (path != null) {
+            Util.err.log(Level.FINE, "created: {0}", path);
+            byte[] arr = mdc.getModuleState(path.getPath());
+            if (arr != null) {
+                ObjectInputStream dis = new ObjectInputStream(
+                    new ByteArrayInputStream(arr)
+                );
+                m.readData(dis);
+                dis.close();
+            } else {
+                m.dataInit();
+            }
+        } else {
+            Util.err.log(Level.FINE, "created: {0}", m);
+        }
+    }
+
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -775,21 +795,10 @@ public final class ModuleManager extends Modules {
     }
 
     private void subCreate(Module m) throws DuplicateException {
-        Util.err.log(Level.FINE, "created: {0}", m);
-        final File path = m.getJarFile();
-        if (path != null) {
-            byte[] arr = mdc.getModuleState(path.getPath());
-            if (arr != null) {
-                try {
-                    ObjectInputStream dis = new ObjectInputStream(
-                        new ByteArrayInputStream(arr)
-                    );
-                    m.readData(dis);
-                    dis.close();
-                } catch (IOException ex) {
-                    throw new IllegalStateException(ex);
-                }
-            }
+        try {
+            postCreate(m);
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
         }
         Module old = get(m.getCodeNameBase());
         if (old != null) {

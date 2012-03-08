@@ -67,6 +67,7 @@ public class ModuleFactory {
     throws IOException {
         try {
             StandardModule m = new StandardModule(mgr, ev, jar, history, reloadable, autoload, eager);
+            mgr.postCreate(m);
             return m;
         } catch (InvalidException ex) {
             Manifest mani = ex.getManifest();

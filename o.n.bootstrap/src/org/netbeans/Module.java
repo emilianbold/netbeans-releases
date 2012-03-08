@@ -156,18 +156,22 @@ public abstract class Module extends ModuleInfo {
         data().write(out);
     }
     
-    final ModuleData data() {
+    final ModuleData dataInit() throws IOException {
         synchronized (DATA_LOCK) {
             if (data != null) {
                 return data;
             }
-            try {
-                ModuleData mine = createData(null, getManifest());
-                assert mine == data;
-                return mine;
-            } catch (IOException ex) {
-                throw new IllegalStateException(ex);
-            }
+            ModuleData mine = createData(null, getManifest());
+            assert mine == data;
+            return mine;
+        }
+    }
+    
+    final ModuleData data() {
+        try {
+            return dataInit();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
         }
     }
     
@@ -276,7 +280,12 @@ public abstract class Module extends ModuleInfo {
         return new HashSet<Dependency>(Arrays.asList(getDependenciesArray()));
     }
     public final Dependency[] getDependenciesArray() {
-        Dependency[] dependenciesA = data().getDependencies();
+        Dependency[] dependenciesA;
+        try {
+            dependenciesA = data().getDependencies();
+        } catch (IllegalStateException ex) {
+            dependenciesA = null;
+        }
         return dependenciesA == null ? new Dependency[0] : dependenciesA;
     }
     
