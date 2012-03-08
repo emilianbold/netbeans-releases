@@ -125,7 +125,8 @@ class ModuleData {
             } else {
                 specVers = null;
             }
-            implVersion = attr.getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            String iv = attr.getValue("OpenIDE-Module-Implementation-Version"); // NOI18N
+            implVersion = iv == null ? "" : iv;
             String bld = attr.getValue("OpenIDE-Module-Build-Version"); // NOI18N
             buildVersion = bld == null ? implVersion : bld;
             
@@ -357,11 +358,11 @@ class ModuleData {
     }
 
     final String getBuildVersion() {
-        return buildVersion;
+        return buildVersion.isEmpty() ? null : buildVersion;
     }
 
     final String getImplementationVersion() {
-        return implVersion;
+        return implVersion.isEmpty() ? null : implVersion;
     }
     
     void registerCoveredPackages(Set<String> known) {
