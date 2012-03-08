@@ -91,7 +91,7 @@ public class JDBCDriverDeployHelper {
      * @param drivers Target ULR list where to add drivers.
      * @param jdbcDrivers JDBC drivers to be searched for URLs.
      */
-    static public void addDriversURLs(List<URL> drivers, JDBCDriver[] jdbcDrivers) {
+    static private void addDriversURLs(List<URL> drivers, JDBCDriver[] jdbcDrivers) {
         for (JDBCDriver jdbcDriver : jdbcDrivers) {
             URL[] allUrls = jdbcDriver.getURLs();
             for (int i = 0; i < allUrls.length; i++) {
