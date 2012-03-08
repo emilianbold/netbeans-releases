@@ -120,8 +120,10 @@ public abstract class JavaFix {
     /**Do the transformations needed to implement the hint's function.
      *
      * @param ctx a context over which the fix should operate
+     * @throws Exception if something goes wrong while performing the transformation
+     *                   - will be logged by the infrastructure
      */
-    protected abstract void performRewrite(@NonNull TransformationContext ctx);
+    protected abstract void performRewrite(@NonNull TransformationContext ctx) throws Exception;
 
     /**Convert this {@link JavaFix} into the Editor Hints {@link Fix}.
      *
