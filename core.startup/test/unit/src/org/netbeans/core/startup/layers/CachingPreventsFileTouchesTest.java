@@ -222,12 +222,13 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
         
         @Override
         public void publish(LogRecord record) {
-            if (record.getMessage().contains("loading manifest")) {
+            final String m = record.getMessage();
+            if (m != null && m.contains("loading manifest")) {
                 String prev = System.getProperty("manifestParsing");
                 if (prev == null) {
-                    prev = record.getMessage();
+                    prev = m;
                 } else {
-                    prev = prev + "\n" + record.getMessage();
+                    prev = prev + "\n" + m;
                 }
                 System.setProperty("manifestParsing", prev);
             }
