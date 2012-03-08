@@ -48,21 +48,17 @@ import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDef
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
@@ -76,7 +72,7 @@ import org.openide.nodes.Node;
  *
  * @author Tomas Stupka
  */
-public class JiraQuery extends QueryProvider {
+public class JiraQuery {
 
     private String name;
     private final JiraRepository repository;
@@ -119,42 +115,35 @@ public class JiraQuery extends QueryProvider {
         }
     }
 
-    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
     
-    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
     // XXX does this has to be protected
-    protected void fireQuerySaved() {
-        support.firePropertyChange(EVENT_QUERY_SAVED, null, null);
-        repository.fireQueryListChanged();
+    public void fireQuerySaved() {
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_SAVED, null, null);
     }
 
     protected void fireQueryRemoved() {
-        support.firePropertyChange(EVENT_QUERY_REMOVED, null, null);
-        repository.fireQueryListChanged();
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
 
     protected void fireQueryIssuesChanged() {
-        support.firePropertyChange(EVENT_QUERY_ISSUES_CHANGED, null, null);
+        support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
     
-    @Override
     public String getDisplayName() {
         return name;
     }
 
-    @Override
     public String getTooltip() {
         return name + " - " + repository.getDisplayName(); // NOI18N
     }
 
-    @Override
     public synchronized QueryController getController() {
         if (controller == null) {
             controller = createControler(repository, this, jiraFilter);
@@ -162,12 +151,10 @@ public class JiraQuery extends QueryProvider {
         return controller;
     }
 
-    @Override
     public JiraRepository getRepository() {
         return repository;
     }
 
-    @Override
     public void setContext(Node[] nodes) {
         context = nodes;
     }
@@ -250,7 +237,7 @@ public class JiraQuery extends QueryProvider {
     }
 
     protected void logQueryEvent(int count, boolean autoRefresh) {
-        BugtrackingUtil.logQueryEvent(
+        LogUtils.logQueryEvent(
             JiraConnector.getConnectorName(),
             name,
             count,
@@ -269,15 +256,8 @@ public class JiraQuery extends QueryProvider {
         fireQueryRemoved();
     }
 
-    @Override
-    public int getIssueStatus(IssueProvider issue) {
-        String id = issue.getID();
-        return getIssueStatus(id);
-    }
-
-    @Override
-    public boolean contains(IssueProvider issue) {
-        return issues.contains(issue.getID());
+    public boolean contains(String id) {
+        return issues.contains(id);
     }
 
     public int getIssueStatus(String id) {
@@ -299,7 +279,6 @@ public class JiraQuery extends QueryProvider {
         this.saved = saved;
     }
 
-    @Override
     public boolean isSaved() {
         return saved;
     }
@@ -308,25 +287,28 @@ public class JiraQuery extends QueryProvider {
         getController().selectFilter(filter);
     }
 
-    @Override
-    public IssueProvider[] getIssues(int includeStatus) {
+    public Collection<NbJiraIssue> getIssues() {
+        return getIssues(~0);
+    }
+    
+    public Collection<NbJiraIssue> getIssues(int includeStatus) {
         if (issues == null) {
-            return new IssueProvider[0];
+            return Collections.emptyList();
         }
         List<String> ids = new ArrayList<String>();
         synchronized (issues) {
             ids.addAll(issues);
         }
-
-        IssueCache cache = repository.getIssueCache();
-        List<IssueProvider> ret = new ArrayList<IssueProvider>();
+        
+        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
+        List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
         for (String id : ids) {
             int status = getIssueStatus(id);
             if((status & includeStatus) != 0) {
                 ret.add(cache.getIssue(id));
             }
         }
-        return ret.toArray(new IssueProvider[ret.size()]);
+        return ret;
     }
 
     /**
@@ -352,7 +334,7 @@ public class JiraQuery extends QueryProvider {
             NbJiraIssue issue;
             try {
                 getController().progress(NbJiraIssue.getDisplayName(taskData));
-                IssueCache<TaskData> cache = repository.getIssueCache();
+                IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
                 issue = (NbJiraIssue) cache.setIssueData(id, taskData);
                 issues.add(issue.getID());
             } catch (IOException ex) {
@@ -363,7 +345,7 @@ public class JiraQuery extends QueryProvider {
         }
     };
     
-public void addNotifyListener(QueryNotifyListener l) {
+    public void addNotifyListener(QueryNotifyListener l) {
         List<QueryNotifyListener> list = getNotifyListeners();
         synchronized(list) {
             list.add(l);
@@ -377,7 +359,7 @@ public void addNotifyListener(QueryNotifyListener l) {
         }
     }
 
-    protected void fireNotifyData(IssueProvider issue) {
+    protected void fireNotifyData(NbJiraIssue issue) {
         QueryNotifyListener[] listeners = getListeners();
         for (QueryNotifyListener l : listeners) {
             l.notifyData(issue);

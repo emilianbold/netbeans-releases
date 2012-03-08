@@ -613,12 +613,16 @@ public abstract class ConnectionType implements ActionListener, DocumentListener
 
         private void onPortNumberChange (RepositoryConnection rc) {
             boolean valid;
-            int portNumber = -1;
-            try {
-                portNumber = Integer.parseInt(panel.txtPort.getText());
-                valid = portNumber > 0 && portNumber <= 65535;
-            } catch (NumberFormatException ex) {
-                valid = false;
+            int portNumber = 22;
+            if (panel.txtPort.getText().trim().isEmpty()) {
+                valid = true;
+            } else {
+                try {
+                    portNumber = Integer.parseInt(panel.txtPort.getText());
+                    valid = portNumber > 0 && portNumber <= 65535;
+                } catch (NumberFormatException ex) {
+                    valid = false;
+                }
             }
             if (rc != null && valid) {
                 rc.setSshPortNumber(portNumber);

@@ -50,7 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -65,7 +65,7 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
     private BugtrackingOwnerSupport support;
     private AttachPanel panel;
     private File[] files;
-    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssueProvider");   // NOI18N
+    private static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.exportdiff.AttachIssue");   // NOI18N
 
     public ExportDiffProviderImpl() {
         support = BugtrackingOwnerSupport.getInstance();
@@ -80,7 +80,7 @@ public class ExportDiffProviderImpl extends ExportDiffSupport.ExportDiffProvider
     public void handleDiffFile(File file) {
         LOG.log(Level.FINE, "handeDiff start for " + file); // NOI18N
 
-        IssueProvider issue = panel.getIssue();
+        Issue issue = panel.getIssue();
         if (issue == null) {
             LOG.log(Level.FINE, " no issue set"); // NOI18N
             return;
