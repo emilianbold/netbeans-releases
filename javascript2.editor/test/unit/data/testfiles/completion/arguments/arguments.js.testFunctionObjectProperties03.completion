@@ -22,5 +22,3 @@ FIELD      NaN                             [PUBLIC]   stub_core_Number.js
 FIELD      POSITIVE_INFINITY               [PUBLIC]   stub_core_Number.js
 FIELD      constructor                     [PUBLIC]   stub_core_Object.js
 FIELD      prototype                       [PUBLIC]   stub_core_Object.js
-VARIABLE   arguments                       [PUBLIC]   arguments.js
-VARIABLE   i                               [PUBLIC]   arguments.js

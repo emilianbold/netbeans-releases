@@ -21,4 +21,3 @@ FIELD      length                          [PUBLIC]   stub_core_Function.js
 FIELD      name                            [PUBLIC]   stub_core_Function.js
 FIELD      prototype                       [PUBLIC]   stub_core_Function.js
 VARIABLE   arguments                       [PUBLIC]   stub_core_Function.js
-VARIABLE   i                               [PUBLIC]   arguments.js

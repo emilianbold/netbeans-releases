@@ -523,6 +523,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 JsElement element = addedProperties.get(indexedElement.getName());
                 if (startsWith(indexedElement.getName(), request.prefix) 
                         && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)
                         && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
                     addedProperties.put(indexedElement.getName(), indexedElement);
                 }
