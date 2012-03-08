@@ -356,6 +356,14 @@ class ModuleData {
         return dependencies;
     }
 
+    final String getBuildVersion() {
+        return buildVersion;
+    }
+
+    final String getImplementationVersion() {
+        return implVersion;
+    }
+    
     void registerCoveredPackages(Set<String> known) {
         assert coveredPackages.isEmpty();
         coveredPackages.addAll(known);
@@ -379,11 +387,4 @@ class ModuleData {
         }
     }
 
-    String getBuildVersion() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    String getImplementationVersion() {
-        throw new UnsupportedOperationException("Not yet implemented");
-    }
 }
