@@ -78,7 +78,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -118,8 +118,8 @@ public class PhpStructureScanner implements StructureScanner {
             if (!nameScope.isDefaultNamespace()) {
                 items.add(new PHPNamespaceStructureItem(nameScope, namespaceChildren));
             }
-            Collection<? extends UseElement> declaredUses = nameScope.getDeclaredUses();
-            for (UseElement useElement : declaredUses) {
+            Collection<? extends UseScope> declaredUses = nameScope.getDeclaredUses();
+            for (UseScope useElement : declaredUses) {
                 namespaceChildren.add(new PHPUseStructureItem(useElement));
             }
 
@@ -638,14 +638,14 @@ public class PhpStructureScanner implements StructureScanner {
     }
 
     private class PHPUseStructureItem extends PHPStructureItem {
-        public PHPUseStructureItem(UseElement elementHandle) {
+        public PHPUseStructureItem(UseScope elementHandle) {
             super(elementHandle, null, "aaaa_use"); //NOI18N
         }
 
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
             formatter.appendText(getName());
-            UseElement useElement = (UseElement) getElementHandle();
+            UseScope useElement = (UseScope) getElementHandle();
             final AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
                 formatter.appendText(" as ");//NOI18N

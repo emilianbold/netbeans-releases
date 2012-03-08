@@ -178,6 +178,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return className+super.getNormalizedName();
     }
 
+    @Override
     public Collection<? extends String> getTypeNames(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
         Collection<? extends String> retval = (assignment != null) ? assignment.getTypeNames() : Collections.emptyList();
@@ -196,10 +197,12 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    @Override
     public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
         return getTypes(offset);
     }
 
+    @Override
     public Collection<? extends TypeScope> getTypes(int offset) {
         AssignmentImpl assignment = findAssignment(offset);
         Collection retval = (assignment != null) ? assignment.getTypes() : Collections.emptyList();
@@ -225,6 +228,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return retval;
     }
 
+    @Override
     public Collection<? extends String> getDefaultTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
         if (defaultType != null && defaultType.length() > 0) {
@@ -240,6 +244,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
 
     public Collection<? extends FieldAssignmentImpl> getAssignments() {
         return filter(getElements(), new ElementFilter() {
+            @Override
             public boolean isAccepted(ModelElement element) {
                 return true;
             }
@@ -284,6 +289,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return sb.toString();
     }
 
+    @Override
     public Collection<? extends TypeScope> getFieldTypes(FieldElement element, int offset) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

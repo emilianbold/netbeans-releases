@@ -64,7 +64,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.FunctionElement;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -244,11 +244,11 @@ public class AddUseImportHint extends AbstractRule {
                 NamespaceScope currentScope = ModelUtils.getNamespaceScope(currenNamespace, context.fileScope);
 
                 if (!NameKind.exact(currentScope.getQualifiedName().append(nodeName)).matchesName(idxElement)) {
-                    Collection<? extends UseElement> declaredUses = currentScope.getDeclaredUses();
-                    List<? extends UseElement> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseElement>() {
+                    Collection<? extends UseScope> declaredUses = currentScope.getDeclaredUses();
+                    List<? extends UseScope> suitableUses = ModelUtils.filter(declaredUses, new ModelUtils.ElementFilter<UseScope>() {
 
                         @Override
-                        public boolean isAccepted(UseElement element) {
+                        public boolean isAccepted(UseScope element) {
                             return element.getName().equalsIgnoreCase(retvalStr);
                         }
                     });
@@ -335,8 +335,8 @@ public class AddUseImportHint extends AbstractRule {
 
         private ModelElement getReferenceElement() {
             ModelElement offsetElement = null;
-            Collection<? extends UseElement> declaredUses = scope.getDeclaredUses();
-            for (UseElement useElement : declaredUses) {
+            Collection<? extends UseScope> declaredUses = scope.getDeclaredUses();
+            for (UseScope useElement : declaredUses) {
                 if (offsetElement == null || offsetElement.getOffset() < useElement.getOffset()) {
                     offsetElement = useElement;
                 }
