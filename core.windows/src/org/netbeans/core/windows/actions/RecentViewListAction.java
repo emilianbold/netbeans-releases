@@ -96,7 +96,23 @@ public final class RecentViewListAction extends AbstractAction
     
     @Override
     public void actionPerformed(ActionEvent evt) {
-        TopComponent[] documents = getRecentDocuments();
+        boolean editors = true;
+        boolean views = !documentsOnly;
+        if( "immediately".equals( evt.getActionCommand() ) ) {
+            TopComponent activeTc = TopComponent.getRegistry().getActivated();
+            if( null != activeTc ) {
+                if( TopComponentTracker.getDefault().isEditorTopComponent( activeTc ) ) {
+                    //switching in a document, go to some other document
+                    views = false;
+                } else {
+                    //switching in a view, go to some other view
+                    editors = false;
+                    views = true;
+                }
+            }
+        }
+        
+        TopComponent[] documents = getRecentWindows(editors, views);
         
         if (documents.length < 2) {
             return;
@@ -129,7 +145,7 @@ public final class RecentViewListAction extends AbstractAction
                 }
             }
         }
-        
+
         int documentIndex = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : documents.length-1;
         TopComponent tc = documents[documentIndex];
         // #37226 Unmaximized the other mode if needed.
@@ -182,7 +198,7 @@ public final class RecentViewListAction extends AbstractAction
         return false;
     }
     
-    private TopComponent[] getRecentDocuments() {
+    private static TopComponent[] getRecentWindows( boolean editors, boolean views) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] documents = wm.getRecentViewList();
         TopComponentTracker tcTracker = TopComponentTracker.getDefault();
@@ -198,7 +214,8 @@ public final class RecentViewListAction extends AbstractAction
                 continue;
             }
             
-            if (mode.getKind() == Constants.MODE_KIND_EDITOR || tcTracker.isEditorTopComponent( tc ) || !documentsOnly) {
+            if( (editors && tcTracker.isEditorTopComponent( tc ))
+                    || (views && tcTracker.isViewTopComponent( tc )) ) {
                 docsList.add(tc);
             }
         }
