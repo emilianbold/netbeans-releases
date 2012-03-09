@@ -1191,6 +1191,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
+                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")) {
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
@@ -1253,9 +1254,10 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName qualifiedClzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    if (clzName != null) {
+                    if (qualifiedClzName != null) {
+                        QualifiedName clzName = VariousUtils.getFullyQualifiedName(qualifiedClzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
                                 clzName = ((TypeScope) scope).getFullyQualifiedName();
@@ -1319,6 +1321,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
+                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")  //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
