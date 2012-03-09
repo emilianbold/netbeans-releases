@@ -70,6 +70,19 @@ public class UserAnnotationsTest extends NbTestCase {
         assertTrue("Annotations should be empty but are not: " + annotations.size(), annotations.isEmpty());
     }
 
+    public void testClear() {
+        // save
+        UserAnnotations.getInstance().setAnnotations(ANNOTATIONS);
+        // read
+        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
+        assertEquals(ANNOTATIONS.size(), annotations.size());
+        // clear
+        UserAnnotations.getInstance().clearAnnotations();
+        // read
+        annotations = UserAnnotations.getInstance().getAnnotations();
+        assertTrue("Annotations should be empty but are not: " + annotations.size(), annotations.isEmpty());
+    }
+
     public void testSaveAndRead() {
         // save
         UserAnnotations.getInstance().setAnnotations(ANNOTATIONS);

@@ -43,15 +43,10 @@ package org.netbeans.modules.php.project.annotations;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
 
 public final class UserAnnotations {
-
-    private static final Logger LOGGER = Logger.getLogger(UserAnnotations.class.getName());
 
     // Do not change arbitrary - consult with layer's folder OptionsExport
     // Path to Preferences node for storing these preferences
@@ -91,25 +86,33 @@ public final class UserAnnotations {
     }
 
     public void setAnnotations(List<UserAnnotationTag> annotations) {
-        try {
-            clearAnnotations();
-            Preferences preferences = getPreferences();
-            int i = 0;
-            for (UserAnnotationTag annotation : annotations) {
-                preferences.put(getTypeKey(i), annotation.getType().name());
-                preferences.put(getNameKey(i), annotation.getName());
-                preferences.put(getInsertTemplateKey(i), annotation.getInsertTemplate());
-                preferences.put(getDocumentationKey(i), annotation.getDocumentation());
-                i++;
-            }
-        } catch (BackingStoreException ex) {
-            LOGGER.log(Level.WARNING, "Cannot save preferences", ex);
+        clearAnnotations();
+        Preferences preferences = getPreferences();
+        int i = 0;
+        for (UserAnnotationTag annotation : annotations) {
+            preferences.put(getTypeKey(i), annotation.getType().name());
+            preferences.put(getNameKey(i), annotation.getName());
+            preferences.put(getInsertTemplateKey(i), annotation.getInsertTemplate());
+            preferences.put(getDocumentationKey(i), annotation.getDocumentation());
+            i++;
         }
     }
 
     // for unit tests
-    void clearAnnotations() throws BackingStoreException {
-        getPreferences().removeNode();
+    void clearAnnotations() {
+        Preferences preferences = getPreferences();
+        int i = 0;
+        for (;;) {
+            String type = preferences.get(getTypeKey(i), null);
+            if (type == null) {
+                return;
+            }
+            preferences.remove(getTypeKey(i));
+            preferences.remove(getNameKey(i));
+            preferences.remove(getInsertTemplateKey(i));
+            preferences.remove(getDocumentationKey(i));
+            i++;
+        }
     }
 
     private String getTypeKey(int i) {
