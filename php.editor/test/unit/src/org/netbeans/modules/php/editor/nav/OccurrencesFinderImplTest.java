@@ -837,6 +837,30 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "\\Foo\\Bar\\ClassName::B^AR;", true);
     }
 
+    public void testIssue207971_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld1;", true);
+    }
+
+    public void testIssue207971_02() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld3;", true);
+    }
+
+    public void testIssue207971_03() throws Exception {
+        checkOccurrences(getTestPath(), "private $obj^ect2;", true);
+    }
+
+    public void testIssue207971_04() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->fie^ld1} {$this->object2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_05() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->obj^ect2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_06() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

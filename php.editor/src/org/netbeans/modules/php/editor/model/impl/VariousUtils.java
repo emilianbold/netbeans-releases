@@ -844,7 +844,7 @@ public class VariousUtils {
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
-        String possibleClassName = null;
+        String possibleClassName = ""; //NOI18N
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
@@ -918,7 +918,7 @@ public class VariousUtils {
                         } else if (isRightBracket(token)) {
                             rightBraces++;
                         } else if (isString(token)) {
-                            possibleClassName = token.text().toString();
+                            possibleClassName = fetchPossibleClassName(tokenSequence);
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -991,7 +991,7 @@ public class VariousUtils {
                         metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
-                } else if (state.equals(State.PARAMS) && possibleClassName != null && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
                     state = State.STOP;
                     metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
@@ -1005,6 +1005,15 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static String fetchPossibleClassName(final TokenSequence<PHPTokenId> tokenSequence) {
+        String result = isString(tokenSequence.token()) ? tokenSequence.token().text().toString() : ""; //NOI18N
+        while (tokenSequence.movePrevious() && (isString(tokenSequence.token()) || isNamespaceSeparator(tokenSequence.token()))) {
+            result = tokenSequence.token().text().toString() + result;
+        }
+        tokenSequence.moveNext();
+        return result;
     }
 
     private static StringBuilder transformToFullyQualifiedType(final StringBuilder metaAll, final TokenSequence<PHPTokenId> tokenSequence, final Scope varScope) {
