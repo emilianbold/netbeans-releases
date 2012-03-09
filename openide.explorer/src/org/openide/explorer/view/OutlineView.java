@@ -88,6 +88,7 @@ import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
+import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
@@ -132,6 +133,7 @@ import org.netbeans.swing.outline.RowModel;
 import org.netbeans.swing.outline.TreePathSupport;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
+import org.openide.awt.QuickSearch;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.propertysheet.PropertyPanel;
@@ -233,9 +235,8 @@ public class OutlineView extends JScrollPane {
         rowModel = new PropertiesRowModel();
         model = createOutlineModel(treeModel, rowModel, nodesColumnLabel);
         outline = new OutlineViewOutline(model, rowModel);
-        quickSearch = QuickSearch.attach(this, searchConstraints);
-        TableQuickSearchSupport tqss = new TableQuickSearchSupport(outline, outline, outline.qss);
-        quickSearch.addQuickSearchListener(tqss);
+        TableQuickSearchSupport tqss = outline.createDefaultTableQuickSearchSupport();
+        attachQuickSearch(tqss, false, tqss.createSearchPopupMenu());
         outline.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -250,7 +251,6 @@ public class OutlineView extends JScrollPane {
                 quickSearch.processKeyEvent(e);
             }
         });
-        quickSearch.setPopupMenu(tqss.createSearchPopupMenu());
         rowModel.setOutline(outline);
         outline.setRenderDataProvider(new NodeRenderDataProvider(outline));
         SheetCell tableCell = new SheetCell.OutlineSheetCell(outline);
@@ -315,6 +315,13 @@ public class OutlineView extends JScrollPane {
         setBorder( BorderFactory.createEmptyBorder() );
 
         initializeTreeScrollSupport();
+    }
+    
+    private void attachQuickSearch(QuickSearch.Callback callback, boolean asynchronous, JMenu popup) {
+        if (quickSearch != null) {
+            quickSearch.detach();
+        }
+        quickSearch = QuickSearch.attach(this, searchConstraints, callback, asynchronous, popup);
     }
 
     @Override
@@ -683,22 +690,35 @@ public class OutlineView extends JScrollPane {
     /**
      * Test whether the quick search feature is enabled or not.
      * Default is enabled (true).
-     * @since 
-     * @return <code>true</code> if quick search feature is enabled, <code>false</code> otherwise.
+     * @since 6.43
+     * @return true if quick search feature is enabled, false otherwise.
      */
-    /*public*/ boolean isQuickSearchAllowed() {
+    public boolean isQuickSearchAllowed() {
         return quickSearch.isEnabled();
     }
     
     /**
      * Set whether the quick search feature is enabled or not.
-     * @since 
+     * @since 6.43
      * @param allowedQuickSearch <code>true</code> if quick search shall be enabled
      */
-    /*public*/ void setQuickSearchAllowed(boolean allowedQuickSearch) {
+    public void setQuickSearchAllowed(boolean allowedQuickSearch) {
         quickSearch.setEnabled(allowedQuickSearch);
     }
 
+    /**
+     * Set a quick search filter.
+     * @param quickSearchTableFilter The quick search filter
+     * @param asynchronous When <code>true</code>, the {@link QuickSearchTableFilter}
+     * will be called asynchronously on a background thread. When <code>false</code>,
+     * the filter will be called in an event queue thread.
+     * @since 6.43
+     */
+    public void setQuickSearchTableFilter(QuickSearchTableFilter quickSearchTableFilter, boolean asynchronous) {
+        TableQuickSearchSupport tqss = outline.createTableQuickSearchSupport(quickSearchTableFilter);
+        attachQuickSearch(tqss, asynchronous, tqss.createSearchPopupMenu());
+    }
+    
     /** Initializes the component and lookup explorer manager.
      */
     @Override
@@ -1327,7 +1347,7 @@ public class OutlineView extends JScrollPane {
      * Extension of the ETable that allows adding a special comparator
      * for sorting the rows.
      */
-    static class OutlineViewOutline extends Outline implements TableQuickSearchSupport.StringValuedTable {
+    static class OutlineViewOutline extends Outline {
         private final PropertiesRowModel rowModel;
         private static final String COLUMNS_SELECTOR_HINT = "ColumnsSelectorHint"; // NOI18N
         private static final String COPY_ACTION_DELEGATE = "Outline Copy Action Delegate "; // NOI18N
@@ -1406,34 +1426,46 @@ public class OutlineView extends JScrollPane {
             }
             return null;
         }
+        
+        private TableQuickSearchSupport createDefaultTableQuickSearchSupport() {
+            return new TableQuickSearchSupport(this, new DefaultQuickSearchTableFilter(), qss);
+        }
 
-        @Override
-        public String getStringValueAt(int row, int col) {
-            Object value = transformValue(getValueAt(row, col));
-            String str;
-            if (value instanceof Property) {
-                Property p = (Property) value;
-                Object v = null;
-                try {
-                    v = p.getValue();
-                } catch (IllegalAccessException ex) {
-                } catch (InvocationTargetException ex) {
-                }
-                if (v instanceof String) {
-                    str = (String) v;
+        private TableQuickSearchSupport createTableQuickSearchSupport(QuickSearchTableFilter quickSearchTableFilter) {
+            return new TableQuickSearchSupport(this, quickSearchTableFilter, qss);
+        }
+        
+        private final class DefaultQuickSearchTableFilter implements QuickSearchTableFilter {
+
+            @Override
+            public String getStringValueAt(int row, int col) {
+                Object value = transformValue(getValueAt(row, col));
+                String str;
+                if (value instanceof Property) {
+                    Property p = (Property) value;
+                    Object v = null;
+                    try {
+                        v = p.getValue();
+                    } catch (IllegalAccessException ex) {
+                    } catch (InvocationTargetException ex) {
+                    }
+                    if (v instanceof String) {
+                        str = (String) v;
+                    } else {
+                        str = null;
+                    }
+                } else if (value instanceof VisualizerNode) {
+                    str = ((VisualizerNode) value).getDisplayName();
+                } else if (value instanceof Node) {
+                    str = ((Node) value).getDisplayName();
+                } else if (value instanceof String) {
+                    str = (String) value;
                 } else {
                     str = null;
                 }
-            } else if (value instanceof VisualizerNode) {
-                str = ((VisualizerNode) value).getDisplayName();
-            } else if (value instanceof Node) {
-                str = ((Node) value).getDisplayName();
-            } else if (value instanceof String) {
-                str = (String) value;
-            } else {
-                str = null;
+                return str;
             }
-            return str;
+        
         }
 
         private class CopyToClipboardAction implements Action {
