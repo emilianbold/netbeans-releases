@@ -54,7 +54,6 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -417,7 +416,7 @@ public final class ParserQueue {
             }
         }
         if (ppStates.isEmpty()) {
-            Utils.LOG.log(Level.SEVERE, "Adding a file {0} with an emty preprocessor state set", file.getAbsolutePath()); //NOI18N
+            Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
         assert state != null;
         if (TraceFlags.TRACE_PARSER_QUEUE) {
