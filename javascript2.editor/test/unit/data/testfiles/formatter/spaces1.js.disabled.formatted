@@ -3,7 +3,7 @@ var engine = {
     power: "22k",
     getDescription: function () {
         with(this) {
-            if(enabled) {
+            if(!disabled) {
                 println ('Cylinders: '
                         + cylinders + ' with power: ' + power);
             }else {
@@ -16,7 +16,7 @@ var engine = {
 function computeColor() {
     try {
         color = 0;
-        for(var a = 0; a < 3; a++) {
+        for(var a = -1; a < 3; a++) {
             color += Math.round(Math.random() * 2);
         }
     }catch(error) {

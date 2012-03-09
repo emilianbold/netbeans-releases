@@ -54,6 +54,15 @@ import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
  */
 public class FormatVisitor extends NodeVisitor {
 
+    private static final Set<TokenType> UNARY_TYPES = EnumSet.noneOf(TokenType.class);
+
+    static {
+        Collections.addAll(UNARY_TYPES, TokenType.ADD, TokenType.SUB,
+                TokenType.BIT_NOT, TokenType.NOT,
+                TokenType.INCPOSTFIX, TokenType.INCPREFIX,
+                TokenType.DECPOSTFIX, TokenType.DECPREFIX);
+    }
+
     private final TokenSequence<? extends JsTokenId> ts;
 
     private final FormatTokenStream tokenStream;
@@ -146,6 +155,8 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(IfNode ifNode, boolean onset) {
         if (onset) {
+            ifNode.getTest().accept(this);
+
             // pass block
             Block body = ifNode.getPass();
             if (body.getStart() == body.getFinish()) {
@@ -249,6 +260,34 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(switchNode, onset);
     }
 
+    @Override
+    public Node visit(UnaryNode unaryNode, boolean onset) {
+        if (onset) {
+            TokenType type = unaryNode.tokenType();
+            if (UNARY_TYPES.contains(type)) {
+                if (TokenType.DECPOSTFIX.equals(type) || TokenType.INCPOSTFIX.equals(type)) {
+                    FormatToken formatToken = getPreviousToken(getFinish(unaryNode),
+                            TokenType.DECPOSTFIX.equals(type) ? JsTokenId.OPERATOR_DECREMENT : JsTokenId.OPERATOR_INCREMENT);
+
+                    if (formatToken != null) {
+                        formatToken = formatToken.previous();
+                        if (formatToken != null) {
+                            appendToken(formatToken,
+                                    FormatToken.forFormat(FormatToken.Kind.BEFORE_UNARY_OPERATOR));
+                        }
+                    }
+                } else {
+                    FormatToken formatToken = getNextToken(getStart(unaryNode), null);
+                    if (formatToken != null) {
+                        appendToken(formatToken,
+                                FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
+                    }
+                }
+            }
+        }
+        return super.visit(unaryNode, onset);
+    }
+
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
@@ -342,6 +381,10 @@ public class FormatVisitor extends NodeVisitor {
                         FormatToken.forFormat(FormatToken.Kind.AFTER_STATEMENT), true);
             }
         }
+    }
+
+    private FormatToken getNextToken(int offset, JsTokenId expected) {
+        return getToken(offset, expected, false, false);
     }
 
     private FormatToken getNextToken(int offset, JsTokenId expected, boolean startFallback) {

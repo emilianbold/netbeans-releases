@@ -180,7 +180,10 @@ public final class FormatToken {
         BEFORE_FINALLY_KEYWORD,
 
         BEFORE_SEMICOLON,
-        AFTER_SEMICOLON
+        AFTER_SEMICOLON,
+
+        BEFORE_UNARY_OPERATOR,
+        AFTER_UNARY_OPERATOR
     }
 
 }

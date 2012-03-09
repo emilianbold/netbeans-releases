@@ -215,6 +215,19 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/spaces1.js", options, ".disabled.formatted");
     }
 
+    public void testOperators1Default() throws Exception {
+        reformatFileContents("testfiles/formatter/operators1.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testOperators1Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceAroundAssignOps, false);
+        options.put(FmtOptions.spaceAroundBinaryOps, false);
+        options.put(FmtOptions.spaceAroundUnaryOps, true);
+        reformatFileContents("testfiles/formatter/operators1.js", options, ".inverted.formatted");
+    }
+
     public void testSpacesSemicolons1Enabled() throws Exception {
         reformatFileContents("testfiles/formatter/spacesSemicolons1.js",
                 Collections.<String, Object>emptyMap(), ".enabled.formatted");
