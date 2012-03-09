@@ -36,7 +36,7 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.doc.jsdoc;
+package org.netbeans.modules.javascript2.editor.jsdoc;
 
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
@@ -132,29 +132,22 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /* states */
 %state JSDOC
-%state STAR
 %state AT
 %state STRING
 %state STRINGEND
-%state SSTRING
-%state SSTRINGEND
 
 /* base structural elements */
+AnyChar = (.|[\n])
+HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
+Identifier=[[:letter:][:digit:]]+
 LineTerminator = \r|\n|\r\n
-InputCharacter = [^\r\n]
-WhiteSpace = [ \t\f]+
-
-/* string and character literals */
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
+WhiteSpace = [ \t\f]+
 
 /* comment types */
 DocumentationComment = "/**"
 CommentEnd = ["*"]+ + "/"
 
-AnyChar=(.|[\n])
-Identifier=[[:letter:][:digit:]]+
-
-HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 
 %%
 
@@ -168,12 +161,9 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
     "/**#@+"                        { yybegin(JSDOC); return JsDocTokenId.COMMENT_SHARED_BEGIN; }
     "/**#@-*/"                      { return JsDocTokenId.COMMENT_SHARED_END; }
 
-
     {DocumentationComment}          { yybegin(JSDOC); return JsDocTokenId.COMMENT_START; }
-    "*/"                            { return JsDocTokenId.COMMENT_END; }
-
-    /* Error fallback */
-    {AnyChar}                      { }
+    {CommentEnd}                    { return JsDocTokenId.COMMENT_END; }
+    {AnyChar}                       { }
 }
 
 <JSDOC> {
@@ -190,15 +180,15 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
     "]"                             { return JsDocTokenId.BRACKET_RIGHT_BRACKET; }
     "="                             { return JsDocTokenId.ASSIGNMENT; }
 
-    \"                              { yybegin(STRING); return JsDocTokenId.STRING_BEGIN; }
+    "\""                            { yybegin(STRING); return JsDocTokenId.STRING_BEGIN; }
 
-    ~({WhiteSpace}|{LineTerminator}|"*"|"@"|"<"|"{"|"}"|"\"")  { yypushback(1); return JsDocTokenId.OTHER; }
+    ~({WhiteSpace}
+        |{LineTerminator}
+        |"*"|"@"|"<"|"{"|"}"|"\"")  { yypushback(1); return JsDocTokenId.OTHER; }
 }
 
 <STRING> {
-    \"                              {
-                                        yypushback(1);
-                                        yybegin(STRINGEND);
+    \"                              { yypushback(1); yybegin(STRINGEND);
                                         if (tokenLength - 1 > 0) {
                                             return JsDocTokenId.STRING;
                                         }
@@ -207,11 +197,8 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
     {StringCharacter}+              { }
 
     /* escape sequences */
-
     \\.                             { }
-    {LineTerminator}                {
-                                        yypushback(1);
-                                        yybegin(JSDOC);
+    {LineTerminator}                { yypushback(1); yybegin(JSDOC);
                                         if (tokenLength - 1 > 0) {
                                             return JsDocTokenId.UNKNOWN;
                                         }
@@ -219,10 +206,7 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
 }
 
 <STRINGEND> {
-    \"                              {
-                                        yybegin(JSDOC);
-                                        return JsDocTokenId.STRING_END;
-                                    }
+    \"                              { yybegin(JSDOC); return JsDocTokenId.STRING_END; }
 }
 
 <AT> {
@@ -235,7 +219,6 @@ HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
         // backup eof
         input.backup(1);
         //and return the text as error token
-        //System.err.println("Illegal character <"+ yytext()+">");
         return JsDocTokenId.UNKNOWN;
     } else {
         return null;
