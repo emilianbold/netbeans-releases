@@ -181,11 +181,11 @@ public abstract class SearchProvider {
         }
 
         /**
-         * Returns a new JComponent that contains controls for setting search
+         * Return a JComponent that contains controls for setting search
          * options. It will be shown as a tab in search dialog.
          *
-         * The component should be created lazily and all invocations of this
-         * method on this object should return the same object.
+         * All invocations of this method on this object should return the same
+         * object.
          *
          * You should update inner state of this presenter from the component,
          * or store reference to created component in this presenter, so that
