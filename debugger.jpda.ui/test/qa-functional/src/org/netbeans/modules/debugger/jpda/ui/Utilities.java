@@ -523,6 +523,22 @@ public class Utilities {
 
     }
 
+    static boolean checkOuputForText(String tabName, String text, int i) {
+        OutputTabOperator op = new OutputTabOperator(tabName);
+        return op.getLine(i).startsWith(text);
+    }
+
+    public static int checkOutputForNumberOfOccurrences(String tabName, String text, int startLine) {
+        OutputTabOperator op = new OutputTabOperator(tabName);
+        int number = 0;
+        for (int i = startLine; i < op.getLineCount(); i++) {
+            if (op.getLine(i).startsWith(text)) {
+                number++;
+            }
+        }
+        return number;
+    }
+
     static class ConsoleChooser implements ComponentChooser {
 
         int lastIndex = 0;

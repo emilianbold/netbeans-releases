@@ -105,7 +105,7 @@ public class SmartParseHeaderTest extends TraceModelTestBase {
             for (int i = 0; i < filesToParse.length; i++) {
                 FileImpl fileImpl = findFile(filesToParse[i]);
                 fileImpl.markReparseNeeded(false);
-                DeepReparsingUtils.fullReparseOnChangedFile(project, fileImpl);
+                DeepReparsingUtils.reparseOnChangedFileForTests(fileImpl, project);
             }
             ParserQueue.instance().resume();
             getProject().waitParse();
