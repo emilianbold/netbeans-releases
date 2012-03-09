@@ -55,7 +55,7 @@ import org.openide.nodes.Node;
 public interface EditorSupport extends Node.Cookie {
     static String SECTION_INIT_COMPONENTS = "initComponents"; // NOI18N
     static String SECTION_VARIABLES = "variables"; // NOI18N
-    
+
     Document getDocument();
     GuardedSectionManager getGuardedSectionManager();
     void markModified();
@@ -67,4 +67,7 @@ public interface EditorSupport extends Node.Cookie {
     void openSource();
     void reloadForm();
     boolean isJavaEditorDisplayed();
+    int getCodeIndentSize();
+    boolean getCodeBraceOnNewLine();
+    boolean canGenerateNBMnemonicsCode();
 }

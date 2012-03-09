@@ -141,7 +141,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @thread it is accesed from multiple threads all mutations
      * and iterations must be under elementAnnotations lock,
      */
-    private Map<Element, AnnotateLine> elementAnnotations;
+    private Map<Element, AnnotateLine> elementAnnotations = Collections.<Element, AnnotateLine>emptyMap();
 
     /**
      * Represents text that should be displayed in
@@ -239,7 +239,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     public void annotate() {
         annotated = true;
-        elementAnnotations = null;
+        elementAnnotations = Collections.<Element, AnnotateLine>emptyMap();
 
         doc.addDocumentListener(this);
         textComponent.addComponentListener(this);
@@ -326,7 +326,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
             }
         }
 
-        doc.runAtomic(new Runnable() {
+        doc.render(new Runnable() {
             @Override
             public void run() {
                 StyledDocument sd = (StyledDocument) doc;
@@ -479,7 +479,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         
         // annotation for target line
         AnnotateLine al = null;
-        if (elementAnnotations != null) {
+        if (!elementAnnotations.isEmpty()) {
             al = getAnnotateLine(getLineFromMouseEvent(event));
         }
 
@@ -500,7 +500,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         // annotation for target line
         AnnotateLine al = null;
-        if (elementAnnotations != null) {
+        if (!elementAnnotations.isEmpty()) {
             al = getAnnotateLine(getLineFromMouseEvent(e));
         }
         // revision previous to target line's revision
@@ -925,7 +925,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      */
     private int getBarWidth() {
         String longestString = "";  // NOI18N
-        if (elementAnnotations == null) {
+        if (elementAnnotations.isEmpty()) {
             longestString = elementAnnotationsSubstitute;
         } else {
             synchronized(elementAnnotations) {
@@ -960,7 +960,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         if (caretTimer != null) {
             caretTimer.removeActionListener(this);
         }
-        elementAnnotations = null;
+        elementAnnotations = Collections.<Element, AnnotateLine>emptyMap();
         previousRevisions = null;
         originalFiles = null;
         // cancel running annotation task if active
@@ -989,7 +989,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
 
         String annotation = "";  // NOI18N
         AnnotateLine al = null;
-        if (elementAnnotations != null) {
+        if (!elementAnnotations.isEmpty()) {
             al = getAnnotateLine(line);
             if (al != null) {
                 annotation = getDisplayName(al);  // NOI18N
@@ -1029,7 +1029,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         int line = getLineFromMouseEvent(e);
 
         StringBuilder annotation = new StringBuilder();
-        if (elementAnnotations != null) {
+        if (!elementAnnotations.isEmpty()) {
             AnnotateLine al = getAnnotateLine(line);
 
             if (al != null) {
@@ -1172,7 +1172,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     private Color selectedColor() {
-        if (backgroundColor == backgroundColor()) {
+        if (backgroundColor.equals(backgroundColor())) {
             return selectedColor;
         }
         if (textComponent != null) {
@@ -1225,7 +1225,7 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         // XXX Actually NB document implementation triggers this method two times
         //  - first time with one removed and two added lines
         //  - second time with two removed and two added lines
-        if (elementAnnotations != null) {
+        if (!elementAnnotations.isEmpty()) {
             Element[] elements = e.getDocument().getRootElements();
             synchronized(elementAnnotations) { // atomic change
                 for (int i = 0; i < elements.length; i++) {

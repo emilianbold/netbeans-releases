@@ -41,10 +41,7 @@
  */
 package org.netbeans.modules.profiler.nbimpl.providers;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -72,14 +69,7 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
         // #170201: A misconfigured(?) project can have no source roots defined, returning NULL as its ClasspathInfo
         // ignore such a project
         if (cpInfo != null) {
-            Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
-            if (scope == SourcePackageInfo.Scope.SOURCE) {
-                sScope.add(ClassIndex.SearchScope.SOURCE);
-            }
-            if (scope == SourcePackageInfo.Scope.DEPENDENCIES) {
-                sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
-            }
-            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, sScope)) { // NOI18N
+            for (String pkgName : cpInfo.getClassIndex().getPackageNames("", true, toSearchScope(Collections.singleton(scope)))) { // NOI18N
                 pkgs.add(new JavacPackageInfo(cpInfo, indexInfo, pkgName, pkgName, scope));
             }
         }        
@@ -95,7 +85,37 @@ abstract public class BaseProfilerTypeUtilsImpl extends ProfilerTypeUtilsProvide
         }
         return null;
     }
+
+    @Override
+    public Collection<SourceClassInfo> findClasses(String pattern, Set<Scope> scope) {
+        Collection<SourceClassInfo> clzs = new ArrayList<SourceClassInfo>();
+        ClasspathInfo cpInfo = getClasspathInfo();
+        if (cpInfo != null) {
+            for(ElementHandle<TypeElement> eh : cpInfo.getClassIndex().getDeclaredTypes(pattern, ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP, toSearchScope(scope))) {
+                clzs.add(new JavacClassInfo(eh, cpInfo));
+            }
+        }
+        
+        return clzs;
+    }
     
     abstract protected ClasspathInfo getClasspathInfo();
     abstract protected ClasspathInfo getClasspathInfo(boolean subprojects, boolean source, boolean deps);
+    
+    private Set<ClassIndex.SearchScope> toSearchScope(Set<Scope> scope) {
+        Set<ClassIndex.SearchScope> sScope = new HashSet<ClassIndex.SearchScope>();
+        for(Scope s : scope) {
+            switch (s) {
+                case DEPENDENCIES: {
+                    sScope.add(ClassIndex.SearchScope.DEPENDENCIES);
+                    break;
+                }
+                case SOURCE: {
+                    sScope.add(ClassIndex.SearchScope.SOURCE);
+                    break;
+                }
+            }
+        }
+        return sScope;
+    }
 }

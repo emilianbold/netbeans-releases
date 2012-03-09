@@ -77,10 +77,11 @@ import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
+import static org.netbeans.modules.maven.repository.ui.Bundle.*;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
@@ -140,16 +141,21 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         }
     }
 
+    @Messages({
+        "TXT_Bytes={0} bytes",
+        "TXT_kb={0} kb",
+        "TXT_Mb={0} Mb"
+    })
     private String computeSize(long size) {
         long kbytes = size / 1024;
         if (kbytes == 0) {
-            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Bytes", size);
+            return TXT_Bytes(size);
         }
         long mbytes = kbytes / 1024;
         if (mbytes == 0) {
-            return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_kb", kbytes);
+            return TXT_kb(kbytes);
         }
-        return NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Mb", mbytes);
+        return TXT_Mb(mbytes);
     }
 
     public @Override int getPersistenceType() {
@@ -488,6 +494,11 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         super.componentHidden();
     }
 
+    @Messages({
+        "TXT_Loading=Loading...",
+        "MSG_FailedSHA1=<Failed to calculate SHA1>",
+        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>"
+    })
     @Override
     public void componentOpened() {
         final Artifact artifact = getLookup().lookup(Artifact.class);
@@ -512,7 +523,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
 
 
         final DefaultListModel dlm = new DefaultListModel();
-        dlm.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
+        dlm.addElement(TXT_Loading());
         lstVersions.setModel(dlm);
         RP.post(new Runnable() {
             public void run() {
@@ -531,7 +542,7 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
             }
         });
         final DefaultListModel mdl = new DefaultListModel();
-        mdl.addElement(NbBundle.getMessage(BasicArtifactPanel.class, "TXT_Loading"));
+        mdl.addElement(TXT_Loading());
         lstClassifiers.setModel(mdl);
         RP.post(new Runnable() {
             public void run() {
@@ -575,10 +586,10 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                 txtSHA.setText(sha);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-                txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_FailedSHA1"));
+                txtSHA.setText(MSG_FailedSHA1());
             }
         } else {
-            txtSHA.setText(NbBundle.getMessage(BasicArtifactPanel.class, "MSG_NOSHA"));
+            txtSHA.setText(MSG_NOSHA());
         }
     }
 

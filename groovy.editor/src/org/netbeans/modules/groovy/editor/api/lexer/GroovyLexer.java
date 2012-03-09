@@ -383,6 +383,8 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                     return GroovyTokenId.DYNAMIC_MEMBER;
             case GroovyTokenTypes.ELIST:
                     return GroovyTokenId.ELIST;
+            case GroovyTokenTypes.ELVIS_OPERATOR:
+                return GroovyTokenId.ELVIS_OPERATOR;
             case GroovyTokenTypes.EMPTY_STAT:
                     return GroovyTokenId.EMPTY_STAT;
             case GroovyTokenTypes.ENUM_CONSTANT_DEF:

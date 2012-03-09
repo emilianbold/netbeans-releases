@@ -424,9 +424,10 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                     }
                 }
                 result = new Configuration(project, settings, null);
-            } else {
-                spt.cleanup(result != null);
+                
             }
+            
+            spt.cleanup(result != null);
             
             return result;
         } catch (InterruptedException e) {
@@ -443,7 +444,8 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
     }
 
     public void itemExpanded(TaskChooser.Item item) {
-        selectedTask.selectProfilingSettings(((TaskPresenter) item).getSelectedProfilingSettings());
+        if (selectedTask != null) // workaround to address failing tests
+            selectedTask.selectProfilingSettings(((TaskPresenter) item).getSelectedProfilingSettings());
     } // Workaround to focus selected settings after expanding the task
 
     public void itemWillCollapse(TaskChooser.Item item) {

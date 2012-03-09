@@ -124,6 +124,9 @@ final class FreeformEvaluator implements PropertyEvaluator, AntProjectListener, 
                         // Tricky (#48230): need to listen to changes in the location of the file as well as its contents.
                         PropertyEvaluator intermediate = PropertyUtils.sequentialPropertyEvaluator(preprovider, defs.toArray(new PropertyProvider[defs.size()]));
                         fname = intermediate.evaluate(fname);
+                        if (fname == null) {
+                            continue;
+                        }
                         // Listen to changes in it, too.
                         intermediate.addPropertyChangeListener(this);
                         intermediateEvaluators.add(intermediate);

@@ -44,17 +44,8 @@ package org.netbeans.modules.php.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.WeakHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -63,46 +54,23 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.elements.AliasedElement;
-import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.api.elements.FunctionElement;
-import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -115,9 +83,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
+import org.openide.util.*;
 
 /**
  *
@@ -419,39 +385,58 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         private final CompletionRequest request;
         private final int caretOffset;
         private final List<VariableName> usedVariables = new LinkedList<VariableName>();
+        private static final RequestProcessor RP = new RequestProcessor("ExistingVariableResolver"); //NOI18N
 
         public ExistingVariableResolver(CompletionRequest request) {
             this.request = request;
             caretOffset = request.anchor;
         }
 
-        public ParameterElement resolveVariable(ParameterElement param) {
+        public ParameterElement resolveVariable(final ParameterElement param) {
             if (OptionsUtils.codeCompletionSmartParametersPreFilling()) {
-                Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
-                VariableName variableToUse = null;
-                if (declaredVariables != null) {
-                    int oldOffset = 0;
-                    for (VariableName variable : declaredVariables) {
-                        if (!usedVariables.contains(variable) && !variable.representsThis()) {
-                            if (isPreviousVariable(variable)) {
-                                if (hasCorrectType(variable, param.getTypes())) {
-                                    if (variable.getName().equals(param.getName())) {
-                                        variableToUse = variable;
-                                        break;
-                                    }
-                                    int newOffset = variable.getNameRange().getStart();
-                                    if (newOffset > oldOffset) {
-                                        oldOffset = newOffset;
-                                        variableToUse = variable;
+                Future<VariableName> futureVariableToUse = RP.submit(new Callable<VariableName>() {
+
+                    @Override
+                    public VariableName call() throws Exception {
+                        Collection<? extends VariableName> declaredVariables = getDeclaredVariables();
+                        VariableName variableToUse = null;
+                        if (declaredVariables != null) {
+                            int oldOffset = 0;
+                            for (VariableName variable : declaredVariables) {
+                                if (!usedVariables.contains(variable) && !variable.representsThis()) {
+                                    if (isPreviousVariable(variable)) {
+                                        if (hasCorrectType(variable, param.getTypes())) {
+                                            if (variable.getName().equals(param.getName())) {
+                                                variableToUse = variable;
+                                                break;
+                                            }
+                                            int newOffset = variable.getNameRange().getStart();
+                                            if (newOffset > oldOffset) {
+                                                oldOffset = newOffset;
+                                                variableToUse = variable;
+                                            }
+                                        }
                                     }
                                 }
                             }
                         }
+                        return variableToUse;
                     }
+
+                });
+                VariableName variableToUseName = null;
+                try {
+                    variableToUseName = futureVariableToUse.get(300, TimeUnit.MILLISECONDS);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (ExecutionException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (TimeoutException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-                if (variableToUse != null) {
-                    usedVariables.add(variableToUse);
-                    return new ParameterElementImpl(variableToUse.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                if (variableToUseName != null) {
+                    usedVariables.add(variableToUseName);
+                    return new ParameterElementImpl(variableToUseName.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
                 }
             }
             return param;
@@ -631,10 +616,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             List<ParameterElement> allParameters = parameters;
             for (int i = 0; i < allParameters.size(); i++) {
                 ParameterElement parameter = allParameters.get(i);
-                String paramName = parameter.getName();
-                if (paramName.startsWith("&")) {//NOI18N
-                    paramName = paramName.substring(1);
-                }
                 if (i != 0) {
                     formatter.appendText(", "); // NOI18N
                 }

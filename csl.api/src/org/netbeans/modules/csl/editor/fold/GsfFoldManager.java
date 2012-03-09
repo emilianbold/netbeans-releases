@@ -46,7 +46,6 @@ package org.netbeans.modules.csl.editor.fold;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collections;
-import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,10 +86,7 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -299,12 +295,12 @@ public class GsfFoldManager implements FoldManager {
         return prefs.getBoolean(settingName, false);
     }
     
-    static final class JavaElementFoldTask extends ParserResultTask<ParserResult> {
+    static final class JavaElementFoldTask extends IndexingAwareParserResultTask<ParserResult> {
 
         private final AtomicBoolean cancelled = new AtomicBoolean(false);
         
         public JavaElementFoldTask() {
-            super();
+            super(TaskIndexingMode.ALLOWED_DURING_SCAN);
         }
 
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:

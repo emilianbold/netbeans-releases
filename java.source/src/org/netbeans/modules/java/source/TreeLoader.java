@@ -103,13 +103,18 @@ import javax.swing.text.html.parser.ParserDelegator;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.java.source.indexing.JavaBinaryIndexer;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
+import org.netbeans.modules.java.source.parsing.FileManagerTransaction;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.OutputFileManager.InvalidSourcePath;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.modules.parsing.impl.Utilities;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
 /**
@@ -156,7 +161,7 @@ public class TreeLoader extends LazyTreeLoader {
             if (clazz != null) {
                 try {
                     FileObject fo = SourceUtils.getFile(clazz, cpInfo);
-                    JavacTaskImpl jti = context.get(JavacTaskImpl.class);
+                    final JavacTaskImpl jti = context.get(JavacTaskImpl.class);
                     JavaCompiler jc = JavaCompiler.instance(context);
                     if (fo != null && jti != null) {
                         final Log log = Log.instance(context);
@@ -168,8 +173,33 @@ public class TreeLoader extends LazyTreeLoader {
                             couplingErrors = new HashMap<ClassSymbol, StringBuilder>();
                             jc.skipAnnotationProcessing = true;
                             jti.analyze(jti.enter(jti.parse(jfo)));
-                            if (persist)
-                                dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                            if (persist) {
+                                if (canWrite(cpInfo)) {
+                                    dumpSymFile(ClasspathInfoAccessor.getINSTANCE().getFileManager(cpInfo), jti, clazz);
+                                } else {
+                                    final JavaFileObject cfo = clazz.classfile;
+                                    final FileObject cFileObject = URLMapper.findFileObject(cfo.toUri().toURL());
+                                    final ClassPath boot = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
+                                    FileObject root = boot.findOwnerRoot(cFileObject);
+                                    if (root == null) {
+                                        final ClassPath compile = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
+                                        root = compile.findOwnerRoot(cFileObject);
+                                    }
+                                    if (root != null) {
+                                        final FileObject rootFin = root;
+                                        Utilities.runAsScanWork(new Runnable() {
+                                            @Override
+                                            public void run() {
+                                                try {
+                                                    JavaBinaryIndexer.preBuildArgs(rootFin,cFileObject);
+                                                } catch (IOException ioe) {
+                                                    Exceptions.printStackTrace(ioe);
+                                                }
+                                            }
+                                        });
+                                    }
+                                }
+                            }
                             return true;
                         } finally {
                             jc.skipAnnotationProcessing = oldSkipAPT;
@@ -454,6 +484,16 @@ public class TreeLoader extends LazyTreeLoader {
                         } else if (t == HTML.Tag.CODE) {
                             if (state == 11 || state == 21)
                                 state++;
+                        } else if (t == HTML.Tag.DIV && a.containsAttribute(HTML.Attribute.CLASS, "block")) { //NOI18N
+                            if (state == 11) {
+                                setParamNames(signature, sb.toString().trim(), true);
+                                signature = null;
+                                sb = null;
+                            } else if (state == 21) {
+                                setParamNames(signature, sb.toString().trim(), false);
+                                signature = null;
+                                sb = null;
+                            }
                         }
                     }
 
@@ -685,6 +725,12 @@ public class TreeLoader extends LazyTreeLoader {
         } else {
             return false;
         }
+    }
+    
+    private boolean canWrite(final ClasspathInfo cpInfo) {
+        final FileManagerTransaction fmTx = ClasspathInfoAccessor.getINSTANCE().getFileManagerTransaction(cpInfo);
+        assert fmTx != null;
+        return fmTx.canWrite();
     }
     
 }

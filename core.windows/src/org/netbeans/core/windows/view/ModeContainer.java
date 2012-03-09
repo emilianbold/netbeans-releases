@@ -89,5 +89,7 @@ public interface ModeContainer {
     public void requestAttention(TopComponent tc);
 
     public void cancelRequestAttention(TopComponent tc);
+
+    public void makeBusy(TopComponent tc, boolean busy);
 }
 

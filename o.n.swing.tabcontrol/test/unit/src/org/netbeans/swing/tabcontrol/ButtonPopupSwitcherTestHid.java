@@ -52,12 +52,7 @@ import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Arrays;
-import javax.swing.Icon;
-import javax.swing.JButton;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
+import javax.swing.*;
 import junit.framework.TestCase;
 import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 
@@ -70,8 +65,9 @@ import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 public class ButtonPopupSwitcherTestHid extends TestCase {
     
     private JFrame frame;
+    private TabDisplayer displayer;
     
-    private SwitcherTableItem[] items = new SwitcherTableItem[100];
+    private TabData[] items = new TabData[100];
     
     public ButtonPopupSwitcherTestHid(String testName) {
         super(testName);
@@ -85,23 +81,23 @@ public class ButtonPopupSwitcherTestHid extends TestCase {
     protected void setUp() {
         frame = createFrame();
         frame.setVisible(true);
-        items[0] = new SwitcherTableItem(new DummyActivatable("Something.txt"), "Something.txt", new DummyIcon(Color.BLUE));
-        items[1] = new SwitcherTableItem(new DummyActivatable("Sometime.txt"), "Sometime.txt", new DummyIcon());
-        SwitcherTableItem selectedItem = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "Somewhere.txt", "Somewhere.txt", new DummyIcon(Color.YELLOW), true);
-        items[2] = selectedItem;
-        items[3] = new SwitcherTableItem(new DummyActivatable("AbCd.txt"), "AbCd.txt", new DummyIcon(Color.BLUE));
-        items[4] = new SwitcherTableItem(new DummyActivatable("Sometime.txt"),
+        items[0] = new TabData(new JPanel(), new DummyIcon(Color.BLUE), "Something.txt", "Something.txt" );
+        items[1] = new TabData(new JPanel(), new DummyIcon(), "Sometime.txt", "Sometime.txt");
+        items[2] = new TabData( new JPanel(), new DummyIcon(Color.YELLOW), "Somewhere.txt",  "Somewhere.txt");
+        items[3] = new TabData(new JPanel(), new DummyIcon(Color.BLUE), "AbCd.txt", "AbCd.txt" );
+        items[4] = new TabData(new JPanel(), new DummyIcon(), "Sometime.txt",
                 "Very Very Very Long" +
                 " name with a lot of words in its name bla bla bla bla bla bla" +
                 " which sould be shortened and should ends with three dots [...]." +
-                " Hmmmmm", new DummyIcon());
-        items[5] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "Somewhere.txt", new DummyIcon(Color.YELLOW));
-        Arrays.fill(items, 6, 70, new SwitcherTableItem(new DummyActivatable("s2.txt"), "s2.txt", new DummyIcon()));
-        items[70] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), "null icon", null);
-        Arrays.fill(items, 71, 90, new SwitcherTableItem(new DummyActivatable("s5.txt"), "s5.txt", new DummyIcon()));
-        items[90] = new SwitcherTableItem(new DummyActivatable("Somewhere.txt"), null, new DummyIcon(Color.BLACK));
-        Arrays.fill(items, 91, 100, new SwitcherTableItem(new DummyActivatable("q1.txt"), "q1.txt", new DummyIcon(Color.GREEN)));
-        Arrays.sort(items);
+                " Hmmmmm");
+        items[5] = new TabData(new JPanel(), new DummyIcon(Color.YELLOW), "Somewhere.txt", "Somewhere.txt");
+        Arrays.fill(items, 6, 70, new TabData(new JPanel(), new DummyIcon(), "s2.txt", "s2.txt"));
+        items[70] = new TabData(new JPanel(), null, "Somewhere.txt", "null icon");
+        Arrays.fill(items, 71, 90, new TabData(new JPanel(), new DummyIcon(), "s5.txt", "s5.txt"));
+        items[90] = new TabData(new JPanel(), new DummyIcon(Color.BLACK), "Somewhere.txt", null );
+        Arrays.fill(items, 91, 100, new TabData(new JPanel(), new DummyIcon(Color.GREEN), "q1.txt", "q1.txt"));
+
+        displayer = new TabDisplayer(new DefaultTabDataModel( items ), TabDisplayer.TYPE_EDITOR );
         // wait until a developer close the frame
         sleepForever();
     }
@@ -132,7 +128,7 @@ public class ButtonPopupSwitcherTestHid extends TestCase {
         Point p = new Point(c.getWidth(), c.getHeight());
         SwingUtilities.convertPointToScreen(p, c);
         if (!ButtonPopupSwitcher.isShown()) {
-            ButtonPopupSwitcher.selectItem(c, items, p.x, p.y);
+            ButtonPopupSwitcher.showPopup( c, displayer, p.x, p.y);
         }
     }
     

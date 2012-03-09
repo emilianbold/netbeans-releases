@@ -50,13 +50,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -64,6 +58,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import javax.swing.filechooser.FileSystemView;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObj;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory;
 import org.netbeans.modules.masterfs.filebasedfs.fileobjects.WriteLockUtils;
@@ -88,6 +83,7 @@ import org.openide.util.io.NbMarshalledObject;
 
 
 public class BaseFileObjectTestHid extends TestBaseHid{
+    public static final HashSet<String> AUTOMOUNT_SET = new HashSet<String>(Arrays.asList("set", "shared", "net", "java", "share", "home", "ws", "ade_autofs"));
     private FileObject root;
 
     public BaseFileObjectTestHid(String name) {
@@ -186,7 +182,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testFinePathsAroundRoot() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir()).getFileSystem().getRoot();
         StringBuilder sb = new StringBuilder();
-        deep(fo, 3, sb, true);
+        deep(fo, 3, sb, true, AUTOMOUNT_SET);
         if (sb.indexOf("\\") >= 0) {
             fail("\\ is not allowed in getPath()s:\n" + sb);
         }
@@ -198,7 +194,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
     public void testFineNamesAroundRoot() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir()).getFileSystem().getRoot();
         StringBuilder sb = new StringBuilder();
-        deep(fo, 3, sb, false);
+        deep(fo, 3, sb, false, AUTOMOUNT_SET);
         if (sb.indexOf("\\") >= 0) {
             fail("\\ is not allowed in getName()s:\n" + sb);
         }
@@ -210,7 +206,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
     }
     
-    private static void deep(FileObject fo, int depth, StringBuilder sb, boolean path) {
+    private static void deep(FileObject fo, int depth, StringBuilder sb, boolean path, Set<String> skipChildren) {
         if (depth-- == 0) {
             return;
         }
@@ -226,7 +222,9 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         }
         sb.append("\n");
         for (FileObject ch : fo.getChildren()) {
-            deep(ch, depth, sb, path);
+            if (!skipChildren.contains(ch.getNameExt())) {
+                deep(ch, depth, sb, path, Collections.<String>emptySet());
+            }
         }
     }
     
@@ -854,7 +852,8 @@ public class BaseFileObjectTestHid extends TestBaseHid{
         
         assertEquals(FileUtil.normalizeFile(testFile).toURI().toURL(), FileUtil.normalizeFile(testFile2).toURI().toURL());
     }   
-    
+
+    @RandomlyFails // NB-Core-Build #7927 (from FileBasedFileSystemWithUninitializedExtensionsTest): Didn't receive a FileEvent on the parent.
     public void testEventsAfterCreatedFiles55550() throws Exception {
         FileObject parent = root.getFileObject("testdir/mountdir8");  
         assertNotNull(parent);

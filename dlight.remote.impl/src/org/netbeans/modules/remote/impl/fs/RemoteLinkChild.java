@@ -57,13 +57,8 @@ public class RemoteLinkChild extends RemoteLinkBase {
 
     private final RemoteFileObjectBase delegate;
 
-    public static RemoteLinkChild createNew(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
-        RemoteLinkChild res = new RemoteLinkChild(fileSystem, execEnv, parent, remotePath, delegate);
-        return res;
-    }
-    
-    private RemoteLinkChild(RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
-        super(fileSystem, execEnv, parent, remotePath);
+    /*package*/ RemoteLinkChild(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, RemoteLinkBase parent, String remotePath, RemoteFileObjectBase delegate) {
+        super(wrapper, fileSystem, execEnv, parent, remotePath);
         Parameters.notNull("delegate", delegate);
         this.delegate = delegate;
     }
@@ -98,12 +93,11 @@ public class RemoteLinkChild extends RemoteLinkBase {
         return getDelegate().deleteImpl(lock);
     }
 
-    @Override
-    public void rename(FileLock lock, String name, String ext) throws IOException {
+    protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         // all work in delegate
         RemoteFileObjectBase dlg = getDelegate();
         if (dlg != null) {
-            dlg.rename(lock, name, ext);
+            dlg.renameImpl(lock, name, ext, orig);
         } else {
             throw new IOException("can not rename " + getPath()); //NOI18N
         }

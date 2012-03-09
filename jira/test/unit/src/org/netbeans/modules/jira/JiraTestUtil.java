@@ -74,6 +74,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.eclipse.mylyn.tasks.core.sync.ISynchronizationSession;
+import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.repository.JiraRepository;
 
 /**
@@ -306,7 +307,8 @@ public class JiraTestUtil {
 
     public static JiraRepository getRepository() {
         if(repository == null) {
-            repository = new JiraRepository("jira", "jira", JiraTestUtil.REPO_URL, JiraTestUtil.REPO_USER, JiraTestUtil.REPO_PASSWD, null, null);
+            RepositoryInfo info = new RepositoryInfo("jira", JiraConnector.ID, JiraTestUtil.REPO_URL, "jira", "jira", JiraTestUtil.REPO_USER, null, JiraTestUtil.REPO_PASSWD.toCharArray() , null);
+            repository = new JiraRepository(info);
         }
         return repository;
     }

@@ -227,6 +227,10 @@ public class FmtOptions {
     public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
     public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
 
+    public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
+    public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
+
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {}
@@ -395,8 +399,11 @@ public class FmtOptions {
             { wrapTernaryOps, WRAP_NEVER},
             { wrapAssignOps, WRAP_NEVER},
             { wrapBlockBraces, TRUE},
-            { wrapStatementsOnTheLine, TRUE}
+            { wrapStatementsOnTheLine, TRUE},
 
+            { preferFullyQualifiedNames, FALSE},
+            { preferMultipleUseStatementsCombined, FALSE},
+            { startUseWithNamespaceSeparator, FALSE}
         };
 
         defaults = new HashMap<String,String>();

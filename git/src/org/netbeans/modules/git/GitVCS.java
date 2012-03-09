@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
@@ -103,6 +104,11 @@ public class GitVCS extends VersioningSystem implements PropertyChangeListener, 
     @Override
     public CollocationQueryImplementation getCollocationQueryImplementation() {
         return collocationQueryImplementation;
+    }
+
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return Git.getInstance().getHistoryProvider();
     }
 
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {

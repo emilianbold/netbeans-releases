@@ -38,6 +38,7 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.util.ArrayDeque;
+import java.util.Map;
 import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -46,12 +47,17 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class LogContext {
+    
+    private static final RequestProcessor RP = new RequestProcessor("Thread dump shooter", 1); // NOI18N
+    
+    private static final int SECOND_DUMP_DELAY = 5 * 1000; 
 
     public enum EventType {
         PATH,
@@ -84,6 +90,20 @@ public class LogContext {
         createLogMessage(msg);
         return msg.toString();
     }
+    
+    private String createThreadDump() {
+        StringBuilder sb = new StringBuilder();
+        Map<Thread, StackTraceElement[]> allTraces = Thread.getAllStackTraces();
+        for (Thread t : allTraces.keySet()) {
+            sb.append(String.format("Thread id %d, \"%s\" (%s):\n", t.getId(), t.getName(), t.getState()));
+            StackTraceElement[] elems = allTraces.get(t);
+            for (StackTraceElement l : elems) {
+                sb.append("\t").append(l).append("\n");
+            }
+            sb.append("\n");
+        }
+        return sb.toString();
+    }
 
     void log() {
         final LogRecord r = new LogRecord(Level.INFO, LOG_MESSAGE); //NOI18N
@@ -94,7 +114,18 @@ public class LogContext {
         final Exception e = new Exception("Scan canceled.");    //NOI18N
         e.setStackTrace(stackTrace);
         r.setThrown(e);
-        LOG.log(r);
+
+        threadDump = createThreadDump();
+
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                secondDump = createThreadDump();
+                LOG.log(r);
+            }
+            
+        }, SECOND_DUMP_DELAY);
     }
 
     synchronized void absorb(@NonNull final LogContext other) {
@@ -111,6 +142,8 @@ public class LogContext {
     private final LogContext parent;
     //@GuardedBy("this")
     private Queue<LogContext> absorbed;
+    private String threadDump;
+    private String secondDump;
 
     private LogContext(
         @NonNull final EventType eventType,
@@ -139,6 +172,17 @@ public class LogContext {
             parent.createLogMessage(sb);
             sb.append("}\n"); //NOI18N
         }
+        
+        if (threadDump != null) {
+            sb.append("Thread dump:\n").append(threadDump).append("\n");
+        }
+        if (secondDump != null) {
+            sb.append("Thread dump #2 (after ").
+                    append(SECOND_DUMP_DELAY / 1000).
+                    append(" seconds):\n").
+                    append(secondDump).append("\n");
+        }
+
         if (absorbed != null) {
             sb.append("Absorbed {");    //NOI18N
             for (LogContext a : absorbed) {

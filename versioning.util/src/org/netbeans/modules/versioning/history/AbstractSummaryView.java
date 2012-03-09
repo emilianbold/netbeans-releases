@@ -280,6 +280,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     }
 
     File getRoot() {
+        if(master.getRoots() == null || master.getRoots().length == 0) {
+            return null;
+        }
         return master.getRoots()[0];
     }
 
@@ -341,6 +344,14 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
     public interface SummaryViewMaster {
         public JComponent getComponent();
+        /**
+         * Returns the roots on which the view was invoked. 
+         * Note that the value is used only to retrieve an assotiated bugtracking 
+         * system for the need of issue hyperlinks in commit messages. 
+         * Thus in case the roots can't be provided it is ok to return null. 
+         * 
+         * @return 
+         */
         public File[] getRoots();
         public Collection<SearchHighlight> getSearchHighlights ();
         public Map<String, String> getActionColors();
@@ -405,6 +416,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         }
         
         public abstract Collection<Event> getEvents();
+        public Collection<Event> getDummyEvents () {
+            return Collections.<Event>emptyList();
+        }
         public abstract String getAuthor();
         public abstract String getDate();
         public abstract String getRevision();
@@ -442,7 +456,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         public static abstract class Event {
             public abstract String getPath();
             public abstract String getOriginalPath ();
-            public abstract File getFile();
             public abstract String getAction();
             public abstract Action[] getUserActions();
             public abstract boolean isVisibleByDefault ();
@@ -482,6 +495,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
     abstract class Item<T> {
         private final T userData;
+        private boolean visible = true;
         
         Item (T userData) {
             this.userData = userData;
@@ -492,15 +506,17 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         }
         
         boolean isVisible () {
-            return true;
+            return visible;
+        }
+        
+        void setVisible (boolean visible) {
+            this.visible = visible;
         }
 
         abstract String getItemId ();
     };
     
     class MoreRevisionsItem extends Item {
-        private boolean visibleDefault = true;
-
         public MoreRevisionsItem () {
             super(null);
         }
@@ -508,15 +524,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         @Override
         String getItemId () {
             return "#MoreRevisions"; //NOI18N
-        }
-
-        private void setVisible (boolean visible) {
-            visibleDefault = visible;
-        }
-
-        @Override
-        boolean isVisible () {
-            return visibleDefault;
         }
     }
 
@@ -571,6 +578,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                     }
                 } else {
                     entry.expand();
+                    ((SummaryListModel) resultsList.getModel()).addDummyEvents(getUserData());
                 }
             }
         }
@@ -633,7 +641,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
     class LoadingEventsItem extends Item {
         private final RevisionItem parent;
-        private boolean visibleDefault = true;
         public LoadingEventsItem (RevisionItem parent) {
             super(null);
             this.parent = parent;
@@ -646,11 +653,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
         @Override
         boolean isVisible () {
-            return visibleDefault && parent.isVisible() && parent.revisionExpanded;
-        }
-
-        private void setVisible (boolean visible) {
-            visibleDefault = visible;
+            return super.isVisible() && parent.isVisible() && parent.revisionExpanded;
         }
     }
 
@@ -671,7 +674,7 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         @Override
         boolean isVisible () {
             boolean visible = false;
-            if (parent.isVisible() && parent.revisionExpanded) {
+            if (super.isVisible() && parent.isVisible() && parent.revisionExpanded) {
                 if (parent.isAllEventsVisible()) {
                     visible = true;
                 } else {
@@ -808,13 +811,14 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                     rev = (RevisionItem) revCandidate;
                     if (it.hasNext()) {
                         if (it.next() instanceof ActionsItem) {
-                            if (it.hasNext()) {
+                            while (it.hasNext()) {
                                 Item item = it.next();
-                                if (item instanceof LoadingEventsItem) {
-                                    ((LoadingEventsItem) item).setVisible(false);
+                                if (item instanceof EventItem || item instanceof LoadingEventsItem) {
+                                    item.setVisible(false);
                                     it.remove();
                                 } else {
                                     it.previous();
+                                    break;
                                 }
                             }
                         } else {
@@ -831,6 +835,31 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
                     it.add(new EventItem(ev, rev));
                 }
                 it.add(new ShowAllEventsItem(rev));
+            }
+            refreshModel();
+        }
+
+        void addDummyEvents (LogEntry src) {
+            assert EventQueue.isDispatchThread();
+            RevisionItem rev = null;
+            ListIterator<Item> it = allResults.listIterator();
+            while (it.hasNext()) {
+                Item revCandidate = it.next();
+                if (revCandidate instanceof RevisionItem && revCandidate.getUserData() == src) {
+                    rev = (RevisionItem) revCandidate;
+                    if (it.hasNext()) {
+                        if (!(it.next() instanceof ActionsItem)) {
+                            it.previous();
+                        }
+                    }
+                    break;
+                }
+            }
+            if (rev != null) {
+                Collection<LogEntry.Event> events = src.getDummyEvents();
+                for (LogEntry.Event ev : events) {
+                    it.add(new EventItem(ev, rev));
+                }
             }
             refreshModel();
         }

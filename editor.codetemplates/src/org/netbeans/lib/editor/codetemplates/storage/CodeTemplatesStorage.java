@@ -55,6 +55,7 @@ import org.netbeans.modules.editor.settings.storage.spi.StorageDescription;
 import org.netbeans.modules.editor.settings.storage.spi.StorageReader;
 import org.netbeans.modules.editor.settings.storage.spi.StorageWriter;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,6 +67,13 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
+@MIMEResolver.NamespaceRegistration(
+    displayName="org.netbeans.lib.editor.codetemplates.Bundle#CodeTemplatesResolver",
+    position=520,
+    mimeType="text/x-nbeditor-codetemplatesettings",
+    elementName="codetemplates",
+    doctypePublicId="-//NetBeans//DTD Editor Code Templates settings 1.0//EN"
+)
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class CodeTemplatesStorage implements StorageDescription<String, CodeTemplateDescription> {
 

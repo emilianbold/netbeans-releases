@@ -64,6 +64,7 @@ class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
         this.referenceSpanRange = info.getRange();
     }
 
+    @Override
     public OffsetRange getReferenceSpanRange() {
         return referenceSpanRange;
     }

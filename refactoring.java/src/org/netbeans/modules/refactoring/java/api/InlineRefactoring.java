@@ -54,7 +54,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Ralph Ruijs
  */
-public class InlineRefactoring extends AbstractRefactoring {
+public final class InlineRefactoring extends AbstractRefactoring {
     
     public static enum Type {
         METHOD,

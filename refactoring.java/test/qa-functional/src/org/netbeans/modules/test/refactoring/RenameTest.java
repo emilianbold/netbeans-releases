@@ -186,6 +186,7 @@ public class RenameTest extends ModifyingRefactoring {
         openSourceFile(pkgName, className);
         new EventTool().waitNoEvent(1000);
         EditorOperator editor = new EditorOperator(className+".java");
+        new EventTool().waitNoEvent(1000);
         editor.setCaretPosition(row, col);
         editor.select(row, col, col+1);
         new EventTool().waitNoEvent(1000);
@@ -195,5 +196,8 @@ public class RenameTest extends ModifyingRefactoring {
         ro.getNewName().typeText(newName);
         ro.getPreview().push();
         dumpRefactoringResults();
+        new EventTool().waitNoEvent(1000);
+        editor.closeDiscard();
+        new EventTool().waitNoEvent(1000);
     }  
 }

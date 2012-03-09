@@ -200,7 +200,9 @@ public class RestResourceGenerator {
                                 } catch (IOException ex) {
                                     ErrorManager.getDefault().notify(ex);
                                     try {
-                                        restSupport.getRestServicesModel().runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
+                                        restSupport.getRestServicesModel().
+                                            runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() 
+                                            {
 
                                             public Void run(RestServicesMetadata metadata) throws IOException {
                                                 RestServices root = metadata.getRoot();
@@ -262,33 +264,43 @@ public class RestResourceGenerator {
         return pName;
     }
 
-    private void initializeClient(final WsdlService service, final WsdlPort port, final String wsdlUrl, JavaSource targetSource)
-            throws IOException {
+    private void initializeClient(final WsdlService service, 
+            final WsdlPort port, final String wsdlUrl, JavaSource targetSource)
+            throws IOException 
+    {
         CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
-
+            @Override
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.ELEMENTS_RESOLVED);
                 ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
                 TreeMaker make = workingCopy.getTreeMaker();
-                MethodTree constructor = JavaSourceHelper.getDefaultConstructor(workingCopy);
-                String body = "\n{\nport = getPort();\n}\n";
-                ModifiersTree publicTree = GenerationUtils.newInstance(workingCopy).createModifiers(Modifier.PUBLIC);
+                MethodTree constructor = JavaSourceHelper.
+                    getDefaultConstructor(workingCopy);
+                String body = "\n{\nport = getPort();\n}\n";        // NOI18N
+                ModifiersTree publicTree = GenerationUtils.
+                    newInstance(workingCopy).createModifiers(Modifier.PUBLIC);
                 List<TypeParameterTree> params = Collections.emptyList();
                 List<VariableTree> vars = Collections.emptyList();
                 List<ExpressionTree> thrws = Collections.emptyList();
-                MethodTree modifiedConstructor = make.Constructor(publicTree, params, vars, thrws, body);
+                MethodTree modifiedConstructor = make.Constructor(publicTree, 
+                        params, vars, thrws, body);
                 workingCopy.rewrite(constructor, modifiedConstructor);
-                ClassTree modifiedClass = JavaSourceHelper.addField(workingCopy, javaClass, new Modifier[]{Modifier.PRIVATE}, null, null, "port", port.getJavaName(), null);
+                ClassTree modifiedClass = JavaSourceHelper.
+                    addField(workingCopy, javaClass, new Modifier[]{
+                            Modifier.PRIVATE}, null, null, "port",  // NOI18N
+                                port.getJavaName(), null);
                 workingCopy.rewrite(javaClass, modifiedClass);
 
-                ClassTree modifiedJavaClass = JavaSourceHelper.addMethod(workingCopy, modifiedClass,
+                ClassTree modifiedJavaClass = JavaSourceHelper.
+                    addMethod(workingCopy, modifiedClass,
                         new Modifier[]{Modifier.PRIVATE}, null, null,
-                        "getPort", port.getJavaName(), null, null,
+                        "getPort", port.getJavaName(), null, null,  // NOI18N
                         null, null,
                         generateGetPort(service, port), "");      //NOI18N
                 workingCopy.rewrite(javaClass, modifiedJavaClass);
             }
 
+            @Override
             public void cancel() {
             }
         };

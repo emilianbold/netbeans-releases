@@ -514,12 +514,7 @@ public final class FavoritesNode extends FilterNode implements Index {
                 FileObject fo = dataObject.getPrimaryFile();
                 if (fo != null) {
                     //Check if it is root.
-                    File file = FileUtil.toFile(fo);
-                    if (file != null) {
-                        if (file.getParent() == null) {
-                            isRoot = true;
-                        }
-                    }
+                    isRoot = fo.isRoot();
                 }
             }
             

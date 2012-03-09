@@ -230,6 +230,23 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         return prop;
     }
 
+    /** Getter method */
+    public static JWSProjectProperties getInstanceIfExists(Project proj) {
+        assert proj != null;
+        String projDir = proj.getProjectDirectory().getPath();
+        JWSProjectProperties prop = propInstance.get(projDir);
+        if(prop != null) {
+            return prop;
+        }
+        return null;
+    }
+
+    /** Getter method */
+    public static JWSProjectProperties getInstanceIfExists(Lookup context) {
+        Project proj = context.lookup(Project.class);
+        return getInstanceIfExists(proj);
+    }
+
     public static void cleanup(Lookup context) {
         Project proj = context.lookup(Project.class);
         String projDir = proj.getProjectDirectory().getPath();

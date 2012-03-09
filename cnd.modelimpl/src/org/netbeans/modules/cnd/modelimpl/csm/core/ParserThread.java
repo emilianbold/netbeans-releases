@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -102,7 +103,6 @@ public final class ParserThread implements Runnable {
                     Thread currentThread = Thread.currentThread();
                     String oldThreadName = currentThread.getName();
                     FileImpl file = entry.getFile();
-                    currentThread.setName(oldThreadName + ": Parsing "+file.getAbsolutePath()); // NOI18N
                     if (TraceFlags.TRACE_PARSER_QUEUE) {
                         trace("parsing started: " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS)); // NOI18N
                     }
@@ -112,11 +112,18 @@ public final class ParserThread implements Runnable {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
                         project = file.getProjectImpl(true);
+                        String parseCase = ": Parsing "; // NOI18N
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
-                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states"; //NOI18N
+                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states " + states; //NOI18N
                                     preprocHandlers = FileImpl.DUMMY_HANDLERS;
+                                    parseCase = ": ONE FILE Reparsing "; // NOI18N
+                                    break;
+                                } else if (state == FileImpl.PARTIAL_REPARSE_STATE) {
+                                    assert states.size() == 1 : "reparse Dummy state sould never be mixed with normal states \n" + states; //NOI18N
+                                    preprocHandlers = FileImpl.PARTIAL_REPARSE_HANDLERS;
+                                    parseCase = ": PARTIAL Reparsing "; // NOI18N
                                     break;
                                 }
                                 APTPreprocHandler preprocHandler = project.createPreprocHandlerFromState(file.getAbsolutePath(), state);
@@ -128,6 +135,7 @@ public final class ParserThread implements Runnable {
                             }
                         }
                         if (!project.isDisposing()) {
+                            currentThread.setName(oldThreadName + parseCase + file.getAbsolutePath()); // NOI18N
                             if (TraceFlags.SUSPEND_PARSE_FILE_TIME > 0) {
                                 try {
                                     System.err.println("sleep for " + TraceFlags.SUSPEND_PARSE_FILE_TIME + "ms before parsing " + file.getAbsolutePath());

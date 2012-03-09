@@ -67,4 +67,14 @@ public class RemoteFileURLStreamHandler extends URLStreamHandler {
     protected int getDefaultPort() {
         return 22;
     }
+
+    @Override
+    protected boolean hostsEqual(URL u1, URL u2) {
+        // string based implementation to prevent use of expensive InetAddress
+        if (u1.getHost() != null && u2.getHost() != null) {
+            return u1.getHost().equalsIgnoreCase(u2.getHost());
+        } else {
+            return u1.getHost() == null && u2.getHost() == null;
+        }
+    }
 }

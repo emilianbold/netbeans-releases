@@ -68,6 +68,7 @@ public final class RemoteUtils {
      */
     @NbBundle.Messages({
         "LBL_RemoteError=Remote Error",
+        "# {0} - reason of the failure",
         "MSG_RemoteErrorReason=\n\nReason: {0}"
     })
     public static void processRemoteException(RemoteException remoteException) {

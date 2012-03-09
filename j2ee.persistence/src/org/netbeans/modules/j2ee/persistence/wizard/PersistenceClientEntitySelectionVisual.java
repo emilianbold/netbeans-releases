@@ -46,20 +46,10 @@ package org.netbeans.modules.j2ee.persistence.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractListModel;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.ListCellRenderer;
-import javax.swing.ListModel;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
@@ -71,9 +61,9 @@ import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
+import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceMetadata;
 import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -92,11 +82,9 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
 
     private static final long serialVersionUID = -4552755466067867817L;
     
-    private WizardDescriptor wizard;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Project project;
-    boolean waitingForScan;
-    boolean waitingForEntities;
+
     //private PersistenceUnit persistenceUnit;
     private boolean createPU = true;//right now this panel is used in wizards with required pu (but need to handle if pu already created)
 
@@ -115,7 +103,6 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
             WizardDescriptor wizard , boolean requireReferencedClasses ) 
     {
         setName(name);
-        this.wizard = wizard;
         initComponents();
         ListSelectionListener selectionListener = new ListSelectionListener() {
 
@@ -463,11 +450,6 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
     }
 
     public boolean valid(WizardDescriptor wizard) {
-        // check PU - not just warning, required
-//        if (createPUButton.isVisible()) {
-//            wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "ERR_NoPersistenceUnit"));
-//            return false;
-//        }
         
         SourceGroup[] groups = SourceGroups.getJavaSourceGroups(project);
         if (groups.length > 0) {
@@ -483,17 +465,7 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
             return false;
         }
         if (!entityClosure.isModelReady()) {
-            RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
-
-                @Override
-                public void run() {
-                    entityClosure.waitModelIsReady();
-                    changeSupport.fireChange();
-                    updateButtons();
-                }
-            });
             wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(PersistenceClientEntitySelectionVisual.class, "scanning-in-progress"));
-            task.schedule(0);
             return false;
         }
 
@@ -515,6 +487,7 @@ public class PersistenceClientEntitySelectionVisual extends JPanel {
         entityClosure.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
+                changeSupport.fireChange();
                 updateAddAllButton();
             }
         });

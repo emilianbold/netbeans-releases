@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -73,6 +74,8 @@ import org.apache.tools.ant.module.bridge.AntBridge;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.modules.project.indexingbridge.IndexingBridge;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.Actions;
@@ -318,7 +321,7 @@ public final class TargetExecutor implements Runnable {
         }
 
         public void actionPerformed(ActionEvent e) {
-            OptionsDisplayer.getDefault().open("Advanced/" + AntPanelController.OPTIONS_SUBPATH); // NOI18N
+            OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + AntPanelController.OPTIONS_SUBPATH); // NOI18N
         }
 
     }
@@ -454,8 +457,8 @@ public final class TargetExecutor implements Runnable {
             LifecycleManager.getDefault ().saveAll ();
         }
         
-        OutputWriter out;
-        OutputWriter err;
+        final OutputWriter out;
+        final OutputWriter err;
         if (outputStream == null) {
             out = io.getOut();
             err = io.getErr();
@@ -463,7 +466,7 @@ public final class TargetExecutor implements Runnable {
             throw new RuntimeException("XXX No support for outputStream currently!"); // NOI18N
         }
         
-        File buildFile = pcookie.getFile ();
+        final File buildFile = pcookie.getFile ();
         if (buildFile == null) {
             err.println(NbBundle.getMessage(TargetExecutor.class, "EXC_non_local_proj_file"));
             return;
@@ -488,10 +491,10 @@ public final class TargetExecutor implements Runnable {
             }
         };
         
-        InputStream in = null;
+        final AtomicReference<InputStream> in = new AtomicReference<InputStream>();
         if (outputStream == null) { // #43043
             try {
-                in = new ReaderInputStream(io.getIn()) {
+                in.set(new ReaderInputStream(io.getIn()) {
                     // Show the output when an input field is displayed, if it hasn't already.
                     @Override
                     public int read() throws IOException {
@@ -513,14 +516,14 @@ public final class TargetExecutor implements Runnable {
                         interestingOutputCallback.run();
                         return super.skip(n);
                     }
-                };
+                });
             } catch (IOException e) {
                 AntModule.err.notify(ErrorManager.INFORMATIONAL, e);
             }
         }
         
 	    // #58513, #87801: register a progress handle for the task too.
-        ProgressHandle handle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
             public boolean cancel() {
                 sa.actionPerformed(null);
                 return true;
@@ -536,7 +539,11 @@ public final class TargetExecutor implements Runnable {
         for (RerunAction ra : ras) {
             setEnabledEQ(ra, false);
         }
-        ok = AntBridge.getInterface().run(buildFile, targetNames, in, out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
+        IndexingBridge.getDefault().runProtected(new Runnable() {
+            @Override public void run() {
+                ok = AntBridge.getInterface().run(buildFile, targetNames, in.get(), out, err, properties, verbosity, displayName, interestingOutputCallback, handle, io);
+            }
+        });
         
         } finally {
             if (io != null) {

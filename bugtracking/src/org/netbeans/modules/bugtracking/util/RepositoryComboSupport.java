@@ -62,12 +62,17 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.Repository;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import static java.awt.event.HierarchyEvent.DISPLAYABILITY_CHANGED;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import static java.util.logging.Level.FINEST;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
  * Loads the list of repositories and determines the default one off the AWT
@@ -555,7 +560,9 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
 
         int reposCount = (repos != null) ? repos.length : 0;
         Object[] comboData;
-
+        if(repos != null) {
+            Arrays.sort(repos, new RepositoryComparator());
+        }
         int startIndex = 0;
         if (reposCount == 0) {
             comboData = new Object[] {NO_REPOSITORIES};
@@ -609,7 +616,12 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if(refFile != null) {
             pingNBRepository(refFile);
         }
-        repositories = BugtrackingUtil.getKnownRepositories(true);
+        Collection<RepositoryImpl> repoImpls = BugtrackingUtil.getKnownRepositories(true);
+        List<Repository> repos = new ArrayList(repoImpls.size());
+        for (RepositoryImpl impl : repoImpls) {
+            repos.add(impl.getRepository());
+        }
+        repositories = repos.toArray(new Repository[repos.size()]);
 
         long endTimeMillis = System.currentTimeMillis();
         if (LOG.isLoggable(FINEST)) {
@@ -625,7 +637,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         updateProgress(Progress.WILL_DETERMINE_DEFAULT_REPO);
 
         long startTimeMillis, endTimeMillis;
-        Repository result;
+        RepositoryImpl result;
 
         startTimeMillis = System.currentTimeMillis();
 
@@ -650,7 +662,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
             if (LOG.isLoggable(FINEST)) {
                 LOG.finest(" - default repository: " + result.getDisplayName()); //NOI18N
             }
-            defaultRepo = result;
+            defaultRepo = result.getRepository();
         } else {
             LOG.finest(" - default repository: <null>");                //NOI18N
         }

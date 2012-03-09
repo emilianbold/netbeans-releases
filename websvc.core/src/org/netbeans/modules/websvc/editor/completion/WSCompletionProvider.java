@@ -55,8 +55,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -133,33 +131,7 @@ public class WSCompletionProvider implements CompletionProvider {
                 NbEditorUtilities.getFileObject(doc);
                 final JavaSource js = JavaSource.forDocument(doc);
                 if (js!=null) {
-                    Future<?> completion = REQUEST_PROCESSOR.submit( new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                js.runUserActionTask( WsCompletionQuery.this , true);
-                            }
-                            catch (IOException ex) {
-                                LOG.log( Level.WARNING , null , ex );
-                            }
-                        }
-                    });
-                    if ( !completion.isDone()) {
-                        setCompletionHack(false);
-                        resultSet.setWaitText(NbBundle.
-                                getMessage(WSCompletionProvider.class, 
-                                        "scanning-in-progress"));       // NOI18N
-                    }
-                    if (isTaskCancelled()) {
-                        return;
-                    }
-                    if ( hasErrors() && SourceUtils.isScanInProgress()){
-                        Future<Void> f = js.runWhenScanFinished(this, true);
-                        if (!f.isDone()) {
-                            setCompletionHack(false);
-                        }
-                        f.get();
-                    }
+                    js.runUserActionTask(this, true);
                     if (isTaskCancelled()) {
                         return;
                     }
@@ -176,12 +148,6 @@ public class WSCompletionProvider implements CompletionProvider {
             }
             catch (IOException ex) {
                 LOG.log( Level.WARNING , null , ex );
-            }
-            catch ( InterruptedException e ){
-                LOG.log( Level.INFO , null , e );
-            }
-            catch( ExecutionException e ){
-                LOG.log( Level.WARNING , null , e );
             }
             finally 
             {
@@ -203,8 +169,6 @@ public class WSCompletionProvider implements CompletionProvider {
             if (isTaskCancelled()) {
                 return;
             }
-            setCompletionHack(true);
-            
             controller.toPhase(Phase.PARSED);
             results = new ArrayList<CompletionItem>();
             Env env = getCompletionEnvironment(controller, true);
@@ -266,16 +230,6 @@ public class WSCompletionProvider implements CompletionProvider {
         
         private boolean hasErrors(){
             return hasErrors;
-        }
-        
-        /** #145615: this helps to work around the issue with stuck
-         * {@code JavaSource.runWhenScanFinished}
-         * It is copied from {@code JavaCompletionQuery}.
-         */
-        private void setCompletionHack(boolean flag) {
-            if (component != null) {
-                component.putClientProperty("completion-active", flag); //NOI18N
-            }
         }
         
         private void createStringResults(CompilationController controller, Env env) 

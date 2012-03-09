@@ -77,6 +77,8 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         annotationArgsCombo.addFocusListener(this);
         chainedMethodCallsCombo.putClientProperty(OPTION_ID, wrapChainedMethodCalls);
         chainedMethodCallsCombo.addFocusListener(this);
+        afterDotCheckBox.putClientProperty(OPTION_ID, wrapAfterDotInChainedMethodCalls);
+        afterDotCheckBox.addFocusListener(this);
         throwsKeywordCombo.putClientProperty(OPTION_ID, wrapThrowsKeyword);
         throwsKeywordCombo.addFocusListener(this);
         throwsListCombo.putClientProperty(OPTION_ID, wrapThrowsList);
@@ -118,7 +120,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     public static PreferencesCustomizer.Factory getController() {
         return new CategorySupport.Factory("wrapping", FmtWrapping.class, //NOI18N
                 org.openide.util.NbBundle.getMessage(FmtWrapping.class, "SAMPLE_Wrapping"), //NOI18N
-                new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
+                new String[] { FmtOptions.rightMargin, "35" }, //NOI18N
                 new String[] { FmtOptions.redundantDoWhileBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantForBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
                 new String[] { FmtOptions.redundantIfBraces, CodeStyle.BracesGenerationStyle.LEAVE_ALONE.name() },
@@ -158,6 +160,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         annotationArgsCombo = new javax.swing.JComboBox();
         chainedMethodCallsLabel = new javax.swing.JLabel();
         chainedMethodCallsCombo = new javax.swing.JComboBox();
+        afterDotCheckBox = new javax.swing.JCheckBox();
         throwsKeywordLabel = new javax.swing.JLabel();
         throwsKeywordCombo = new javax.swing.JComboBox();
         throwsListLabel = new javax.swing.JLabel();
@@ -289,6 +292,16 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 6, 4, 8);
         panel1.add(chainedMethodCallsCombo, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(afterDotCheckBox, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_afeterDot")); // NOI18N
+        afterDotCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        afterDotCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        afterDotCheckBox.setOpaque(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 8, 6, 0);
+        panel1.add(afterDotCheckBox, gridBagConstraints);
 
         throwsKeywordLabel.setLabelFor(throwsKeywordCombo);
         org.openide.awt.Mnemonics.setLocalizedText(throwsKeywordLabel, org.openide.util.NbBundle.getMessage(FmtWrapping.class, "LBL_wrp_throwsKeyword")); // NOI18N
@@ -550,6 +563,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox afterBinaryOpsCheckBox;
+    private javax.swing.JCheckBox afterDotCheckBox;
     private javax.swing.JCheckBox afterTernaryOpsCheckBox;
     private javax.swing.JComboBox annotationArgsCombo;
     private javax.swing.JLabel annotationArgsLabel;

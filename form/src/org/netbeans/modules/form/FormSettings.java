@@ -210,7 +210,8 @@ public class FormSettings {
                     resAutoMode = ResourceSupport.AUTO_I18N;
             }
             else { // no setting available
-                if (FormEditor.getFormEditor(formModel).needPostCreationUpdate()) {
+                FormEditor formEditor = FormEditor.getFormEditor(formModel);
+                if (formEditor.needPostCreationUpdate()) {
                     int globalResAutoMode = FormLoaderSettings.getInstance().getI18nAutoMode();
                     if (globalResAutoMode == FormLoaderSettings.AUTO_RESOURCE_ON) {
                         ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
@@ -223,8 +224,12 @@ public class FormSettings {
                         ResourceSupport resourceSupport = FormEditor.getResourceSupport(formModel);
                         if (resourceSupport.projectWantsUseResources())
                             resAutoMode = ResourceSupport.AUTO_RESOURCING; // only if app framework already on cp
-                        else if (resourceSupport.isDefaultInternationalizableProject())
+                        else if (resourceSupport.isDefaultInternationalizableProject()) {
                             resAutoMode = ResourceSupport.AUTO_I18N; // NBM project
+                            if (formEditor.getEditorSupport().canGenerateNBMnemonicsCode()) {
+                                setGenerateMnemonicsCode(true);
+                            }
+                        }
                     }
                 }
                 setResourceAutoMode(resAutoMode);

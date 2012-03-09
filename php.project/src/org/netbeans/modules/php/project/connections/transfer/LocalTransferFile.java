@@ -57,16 +57,16 @@ final class LocalTransferFile extends TransferFile {
     private final boolean forceDirectory;
 
 
-    LocalTransferFile(File file, TransferFile parent, String baseDirectory, boolean forceDirectory) {
-        super(parent, baseDirectory);
+    LocalTransferFile(File file, TransferFile parent, String baseLocalDirectoryPath, String baseRemoteDirectoryPath, boolean forceDirectory) {
+        super(parent, baseLocalDirectoryPath, baseRemoteDirectoryPath);
         this.file = file;
         this.forceDirectory = forceDirectory;
 
         if (file == null) {
             throw new NullPointerException("Local file cannot be null");
         }
-        if (!file.getAbsolutePath().startsWith(baseDirectory)) {
-            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseDirectory + "'");
+        if (!file.getAbsolutePath().startsWith(baseLocalDirectoryPath)) {
+            throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' must be underneath base directory '" + baseLocalDirectoryPath + "'");
         }
         if (forceDirectory && file.isFile()) {
             throw new IllegalArgumentException("File '" + file.getAbsolutePath() + "' can't be forced as a directory since it is a file");
@@ -81,11 +81,11 @@ final class LocalTransferFile extends TransferFile {
     @Override
     public String getRemotePath() {
         String absolutePath = file.getAbsolutePath();
-        if (absolutePath.equals(baseDirectory)) {
+        if (absolutePath.equals(baseLocalDirectoryPath)) {
             return REMOTE_PROJECT_ROOT;
         }
         // remove file-separator from the beginning of the relative path
-        String remotePath = absolutePath.substring(baseDirectory.length() + File.separator.length());
+        String remotePath = absolutePath.substring(baseLocalDirectoryPath.length() + File.separator.length());
         if (File.separator.equals(REMOTE_PATH_SEPARATOR)) {
             return remotePath;
         }

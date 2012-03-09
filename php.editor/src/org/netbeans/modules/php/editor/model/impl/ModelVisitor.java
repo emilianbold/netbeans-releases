@@ -42,15 +42,7 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -58,16 +50,16 @@ import org.netbeans.modules.php.api.editor.PhpBaseElement;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpVariable;
 import org.netbeans.modules.php.editor.Cache;
-import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
+import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -76,65 +68,8 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
-import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
-import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.Comment;
-import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
-import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
-import org.netbeans.modules.php.editor.parser.astnodes.Program;
-import org.netbeans.modules.php.editor.parser.astnodes.Reference;
-import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
-import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
-import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
@@ -290,9 +225,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 Set<String> types = new HashSet<String>();
                 if (functionScope.returnType != null) {
                     String[] split = functionScope.returnType.split("\\|");//NOI18N
-                    for (String tp : split) {
-                        types.add(tp);
-                    }
+                    types.addAll(Arrays.asList(split));
                 }
                 String tp = QualifiedName.create(typeName).toString();
                 if (types.isEmpty()) {
@@ -422,6 +355,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
         modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
+        occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), modelBuilder.getCurrentScope());
+        if (statementPart.getAlias() != null) {
+            occurencesBuilder.prepare(Kind.USE_ALIAS, statementPart.getAlias(), modelBuilder.getCurrentScope());
+        }
         super.visit(statementPart);
     }
 
@@ -500,10 +437,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        if (node.getClassName().getName() instanceof Variable) {
-            scan(node.getClassName().getName());
+        Expression className = node.getClassName().getName();
+        if (className instanceof Variable) {
+            scan(className);
         } else {
-            occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            ScopeImpl currentScope = modelBuilder.getCurrentScope();
+            occurencesBuilder.prepare(node, currentScope);
+            if (className instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className, currentScope);
+            }
         }
         scan(node.ctorParams());
     }
@@ -518,7 +460,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 occurencesBuilder.prepare((Variable)expression, modelBuilder.getCurrentScope());
             }
         } else {
-            occurencesBuilder.prepare(node.getClassName(), modelBuilder.getCurrentScope());
+            if (className.getName() instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className.getName(), modelBuilder.getCurrentScope());
+            }
             String clsName = CodeUtils.extractClassName(node.getClassName());
             if (clsName != null) {
                 if (expression instanceof Variable) {
@@ -561,25 +505,32 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        } else if (className instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         scan(node.getMethod().getParameters());
-
     }
 
     @Override
     public void visit(ClassName node) {
-        Scope scope = modelBuilder.getCurrentScope();
-        occurencesBuilder.prepare(node, scope);
+        if (!(node.getName() instanceof Variable) && !(node.getName() instanceof FieldAccess)) {
+            Scope scope = modelBuilder.getCurrentScope();
+            occurencesBuilder.prepare(node, scope);
+        }
+        scan(node.getName());
     }
 
     @Override
     public void visit(StaticConstantAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
-        occurencesBuilder.prepare(Kind.IFACE, node.getClassName(), scope);
+        Expression className = node.getClassName();
+        if (className instanceof Variable) {
+            scan(className);
+        } else if (className instanceof NamespaceName) {
+            Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+            occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
+        }
     }
 
     @Override
@@ -900,9 +851,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         if (parameterName instanceof Variable) {
-            //Identifier paramId = parameterType != null ? CodeUtils.extractUnqualifiedIdentifier(parameterType) : null;
-            occurencesBuilder.prepare(Kind.CLASS, parameterType, fncScope);
-            occurencesBuilder.prepare(Kind.IFACE, parameterType, fncScope);
+            if (parameterType instanceof NamespaceName) {
+                Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+                occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
+            }
             occurencesBuilder.prepare((Variable) parameterName, fncScope);
         }
         super.visit(node);
@@ -1032,8 +984,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        } else if (className instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
@@ -1264,13 +1216,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public ModelElement findDeclaration(PhpElement element) {
         final int offset = element.getOffset();
-        List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
+        final List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
+        ModelElement possibleElement = null;
+        final OffsetRange nameOffsetRange = new OffsetRange(offset,offset+element.getName().length());
         for (ModelElement modelElement : elements) {
-            if (modelElement.getNameRange().overlaps(new OffsetRange(offset,offset+element.getName().length()))) {
-                return modelElement;
+            if (modelElement.getNameRange().overlaps(nameOffsetRange)) {
+                if (possibleElement == null || contains(possibleElement.getNameRange(), modelElement.getNameRange())) {
+                    possibleElement = modelElement;
+                }
             }
         }
-        return null;
+        return possibleElement;
+    }
+
+    private static boolean contains(final OffsetRange outer, final OffsetRange inner) {
+        return inner.getStart() >= outer.getStart() && inner.getEnd() <= outer.getEnd();
     }
 
     public VariableScope getNearestVariableScope(int offset) {

@@ -63,6 +63,7 @@ import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
@@ -79,9 +80,16 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 @Messages("CTL_SourceTabCaption=&Source")
+@MIMEResolver.Registration(
+    displayName="#POMResolver",
+    position=309,
+    resource="POMResolver.xml"
+)
 public class POMDataObject extends MultiDataObject {
 
     public static final String SETTINGS_MIME_TYPE = "text/x-maven-settings+xml";
+
+    static final String POM_ICON = "org/netbeans/modules/maven/grammar/xmlObject.gif";
 
     private static final Logger LOG = Logger.getLogger(POMDataObject.class.getName());
 
@@ -94,7 +102,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
+        iconBase=POM_ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="maven.pom",
         mimeType=Constants.POM_MIME_TYPE,
@@ -106,7 +114,7 @@ public class POMDataObject extends MultiDataObject {
 
     @MultiViewElement.Registration(
         displayName="#CTL_SourceTabCaption",
-        iconBase="org/netbeans/modules/maven/grammar/xmlObject.gif",
+        iconBase=POM_ICON,
         persistenceType=TopComponent.PERSISTENCE_ONLY_OPENED,
         preferredID="xml.text",
         mimeType=SETTINGS_MIME_TYPE,
@@ -150,7 +158,7 @@ public class POMDataObject extends MultiDataObject {
             if (!super.notifyModified()) {
                 return false;
             }
-            if (getCookie(SaveCookie.class) == null) {
+            if (getLookup().lookup(SaveCookie.class) == null) {
                 getCookieSet().add(save);
                 setModified(true);
             }
@@ -159,7 +167,7 @@ public class POMDataObject extends MultiDataObject {
 
         protected @Override void notifyUnmodified() {
             super.notifyUnmodified();
-            if (getCookie(SaveCookie.class) == save) {
+            if (getLookup().lookup(SaveCookie.class) == save) {
                 getCookieSet().remove(save);
                 setModified(false);
             }
@@ -177,7 +185,7 @@ public class POMDataObject extends MultiDataObject {
         private String annotateWithProjectName(String name) { // #154508
             if (getPrimaryFile().getNameExt().equals("pom.xml")) { // NOI18N
                 try {
-                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(getPrimaryFile().getURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
+                    Element artifactId = XMLUtil.findElement(XMLUtil.parse(new InputSource(getPrimaryFile().toURL().toString()), false, false, XMLUtil.defaultErrorHandler(), null).getDocumentElement(), "artifactId", null); // NOI18N
                     if (artifactId != null) {
                         String text = XMLUtil.findText(artifactId);
                         if (text != null) {
@@ -220,7 +228,7 @@ public class POMDataObject extends MultiDataObject {
         }
 
         public @Override CloneableOpenSupport findCloneableOpenSupport() {
-            return getDataObject().getCookie(POMDataEditor.class);
+            return getDataObject().getLookup().lookup(POMDataEditor.class);
         }
 
     }

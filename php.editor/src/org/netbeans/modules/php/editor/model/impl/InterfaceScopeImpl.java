@@ -147,6 +147,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         return allConstants;
     }
 
+    @Override
     public final Collection<? extends MethodScope> getMethods() {
         Set<MethodScope> allMethods = new HashSet<MethodScope>();
         allMethods.addAll(getDeclaredMethods());

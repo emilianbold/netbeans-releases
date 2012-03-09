@@ -44,7 +44,6 @@ package org.netbeans.modules.refactoring.java.callhierarchy;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.awt.ActionID;
@@ -73,17 +72,11 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 
     @Override
     public void performAction(final Lookup context) {
-        Runnable task = new Runnable() {
-            @Override
-            public void run() {
-                CallHierarchyTopComponent win = CallHierarchyTopComponent.findInstance();
-                win.open();
-                win.requestActive();
-                win.reset();
-                win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
-            }
-        };
-        ScanDialog.runWhenScanFinished(task, getName());
+        CallHierarchyTopComponent win = CallHierarchyTopComponent.findInstance();
+        win.open();
+        win.requestActive();
+        win.reset();
+        win.setModel(CallHierarchyModel.create(context, win.getScopes(), win.getHierarchyType()));
     }
 
     @Override

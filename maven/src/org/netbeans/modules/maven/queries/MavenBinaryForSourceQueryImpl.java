@@ -113,6 +113,18 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
             return toReturn;
         }
         NbMavenProjectImpl impl = project.getLookup().lookup(NbMavenProjectImpl.class);
+        for (URI res : impl.getResources(false)) {
+            toReturn = checkRoot(fil, res, null);
+            if (toReturn != null) {
+                return toReturn;
+            }
+        }
+        for (URI res : impl.getResources(true)) {
+            toReturn = checkRoot(fil, null, res);
+            if (toReturn != null) {
+                return toReturn;
+            }
+        }
         for (URI gen : impl.getGeneratedSourceRoots(false)) {
             toReturn = checkRoot(fil, gen, null);
             if (toReturn != null) {

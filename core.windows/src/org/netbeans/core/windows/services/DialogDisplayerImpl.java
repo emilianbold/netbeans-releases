@@ -62,6 +62,7 @@ import java.util.List;
 import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.windows.view.ui.DefaultSeparateContainer;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -112,11 +113,14 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 // if a modal dialog active use it as parent
                 // otherwise use the main window
                 if (NbPresenter.currentModalDialog != null) {
+                    NbDialog dlg;
                     if (NbPresenter.currentModalDialog.isLeaf ()) {
-                        return new NbDialog(d, WindowManager.getDefault ().getMainWindow ());
+                        dlg = new NbDialog(d, WindowManager.getDefault ().getMainWindow ());
                     } else {
-                        return new NbDialog(d, NbPresenter.currentModalDialog);
+                        dlg = new NbDialog(d, NbPresenter.currentModalDialog);
                     }
+                    customizeDlg(dlg);
+                    return dlg;
                 }
                 else {
                     Window w = KeyboardFocusManager.getCurrentKeyboardFocusManager ().getActiveWindow ();
@@ -135,16 +139,16 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     } else if (w instanceof NbPresenter && ((NbPresenter) w).isLeaf ()) {
                         w = WindowManager.getDefault ().getMainWindow ();
                     }
+                    NbDialog dlg;
                     if (w instanceof Dialog) {
-                        NbDialog dlg = new NbDialog(d, (Dialog) w);
-                        dlg.requestFocusInWindow ();
-                        return dlg;
+                        dlg = new NbDialog(d, (Dialog) w);
                     } else {
                         Frame f = w instanceof Frame ? (Frame) w : WindowManager.getDefault ().getMainWindow ();
-                        NbDialog dlg = new NbDialog(d, f);
-                        dlg.requestFocusInWindow ();
-                        return dlg;
+                        dlg = new NbDialog(d, f);
                     }
+                    customizeDlg(dlg);
+                    dlg.requestFocusInWindow ();
+                    return dlg;
                 }
             }
         });
@@ -243,6 +247,8 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                     presenter.getRootPane().putClientProperty ("javahelp.ignore.modality", "true"); //NOI18N
                     System.setProperty("javahelp.ignore.modality", "false"); //NOI18N
                 }
+                
+                customizeDlg(presenter);
 
                 //Bugfix #8551
                 presenter.getRootPane().requestDefaultFocus();
@@ -309,6 +315,11 @@ public class DialogDisplayerImpl extends DialogDisplayer {
             local.add(r);
         } else {
             EventQueue.invokeLater(r);
+        }
+    }
+    private static void customizeDlg(NbPresenter presenter) {
+        for (PresenterDecorator p : Lookup.getDefault().lookupAll(PresenterDecorator.class)) {
+            p.customizePresenter(presenter);
         }
     }
 }

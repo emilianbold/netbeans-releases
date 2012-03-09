@@ -204,25 +204,30 @@ public abstract class AbstractRefactoring {
      */
     @CheckForNull
     public final Problem prepare(@NonNull RefactoringSession session) {
-        Parameters.notNull("session", session); // NOI18N
-        long time = System.currentTimeMillis();
+        try {
+            Parameters.notNull("session", session); // NOI18N
+            long time = System.currentTimeMillis();
 
-        Problem p = null;
-        boolean checkCalled = false;
-        if (currentState < PARAMETERS_CHECK) {
-            p = checkParameters();
-            checkCalled = true;
-        }
-        if (p != null && p.isFatal())
+            Problem p = null;
+            boolean checkCalled = false;
+            if (currentState < PARAMETERS_CHECK) {
+                p = checkParameters();
+                checkCalled = true;
+            }
+            if (p != null && p.isFatal()) {
+                return p;
+            }
+
+            p = pluginsPrepare(checkCalled ? p : null, session);
+            Logger timer = Logger.getLogger("TIMER.RefactoringPrepare");
+            if (timer.isLoggable(Level.FINE)) {
+                time = System.currentTimeMillis() - time;
+                timer.log(Level.FINE, "refactoring.prepare", new Object[]{this, time});
+            }
             return p;
-
-        p =  pluginsPrepare(checkCalled?p:null, session);
-        Logger timer = Logger.getLogger("TIMER.RefactoringPrepare");
-        if (timer.isLoggable(Level.FINE)) {
-            time = System.currentTimeMillis() - time;
-            timer.log(Level.FINE, "refactoring.prepare", new Object[] { this, time } );
+        } finally {
+            session.finished();
         }
-        return p;
     }
     
     /**

@@ -109,7 +109,7 @@ import org.openide.util.NbBundle;
 
 /**XXX: extends CompilationController now, finish method delegation
  *
- * @author Dusan Balek, Petr Hrebejk, Tomas Zezula
+ * @author Dusan Balek, Petr Hrebejk, Tomas Zezul
  */
 public class WorkingCopy extends CompilationController {
 

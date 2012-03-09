@@ -44,15 +44,21 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
-import java.util.*;
-
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.deep.*;
-
-import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
-
-import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
+import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
+import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -71,6 +77,8 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
     
+    private List<CsmStatement> lambdas;
+    
     private ExpressionBase(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         //this.parent = parent;
@@ -80,10 +88,22 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     }
 
     public static ExpressionBase create(AST ast, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
-        return new ExpressionBase(ast, file, scope);
+        ExpressionBase expr = new ExpressionBase(ast, file, scope);
+        AST token = ast.getFirstChild();
+        List<CsmStatement> lambdas = new ArrayList<CsmStatement>();
+        while (token != null) {
+            if(token.getType() == CPPTokenTypes.CSM_DECLARATION_STATEMENT) {
+                lambdas.add(AstRenderer.renderStatement(token, file, scope));
+            }
+            token = token.getNextSibling();
+        }
+        if(!lambdas.isEmpty()) {
+            expr.setLambdas(lambdas);
+        }        
+        return expr;
     }
 
-    public ExpressionBase(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
+    private ExpressionBase(int startOffset, int endOffset, CsmFile file,/* CsmExpression parent,*/ CsmScope scope) {
         super(file, startOffset, endOffset);
         //this.parent = parent;
         if( scope != null ) {
@@ -104,13 +124,28 @@ public final class ExpressionBase extends OffsetableBase implements CsmExpressio
     public CsmScope getScope() {
         return _getScope();
     }
+
+    @Override
+    public List<CsmStatement> getLambdas() {
+        if(lambdas == null) {
+            return Collections.<CsmStatement>emptyList();
+        }
+        return lambdas;        
+    }
+    
+    public void setLambdas(List<CsmStatement> lambdas) {
+        this.lambdas = lambdas;
+    }
     
     @Override
     public void dispose() {
         super.dispose();
         onDispose();
+        if (lambdas != null) {
+            Utils.disposeAll(lambdas);
+        }        
     }
-    
+
     private synchronized void onDispose() {
         if (this.scopeRef == null) {
             // restore container from it's UID if not directly initialized

@@ -191,18 +191,15 @@ public final class ZendOptionsPanel extends JPanel {
         learnMoreLabel = new JLabel();
         errorLabel = new JLabel();
 
-        setFocusTraversalPolicy(null);
-
         zendLabel.setLabelFor(zendTextField);
-
-        Mnemonics.setLocalizedText(zendLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.text"));
-        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.text"));
+        Mnemonics.setLocalizedText(zendLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(browseButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.text")); // NOI18N
         browseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 browseButtonActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.text"));
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
@@ -210,11 +207,9 @@ public final class ZendOptionsPanel extends JPanel {
         });
 
         zendScriptUsageLabel.setLabelFor(this);
-
-
-        Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT");
-        Mnemonics.setLocalizedText(providerRegistrationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationInfoLabel.text"));
-        Mnemonics.setLocalizedText(providerRegistrationButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationButton.text"));
+        Mnemonics.setLocalizedText(zendScriptUsageLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(providerRegistrationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(providerRegistrationButton, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.providerRegistrationButton.text")); // NOI18N
         providerRegistrationButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 providerRegistrationButtonActionPerformed(evt);
@@ -234,7 +229,15 @@ public final class ZendOptionsPanel extends JPanel {
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.text")); // NOI18N
 
         learnMoreLabel.setLabelFor(this);
-        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.text"));
+        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.text")); // NOI18N
+        learnMoreLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                learnMoreLabelMouseEntered(evt);
+            }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                learnMoreLabelMousePressed(evt);
+            }
+        });
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);
@@ -245,120 +248,51 @@ public final class ZendOptionsPanel extends JPanel {
         });
 
         errorLabel.setLabelFor(this);
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
-        Mnemonics.setLocalizedText(errorLabel, "ERROR");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(95, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(installationInfoLabel)
-                .addContainerGap(186, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(466, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-                    .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(defaultParametersLabel)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                            .addContainerGap())
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(errorLabel)
-                            .addGap(447, 447, 447))
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(zendLabel)
-                            .addPreferredGap(ComponentPlacement.RELATED)
-                            .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                                .addGroup(layout.createSequentialGroup()
-                                    .addComponent(zendScriptUsageLabel)
-                                    .addContainerGap())
-                                .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
-                                    .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                                        .addComponent(providerRegistrationButton)
-                                        .addGroup(layout.createSequentialGroup()
-                                            .addComponent(zendTextField, GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                                            .addPreferredGap(ComponentPlacement.RELATED)
-                                            .addComponent(browseButton)
-                                            .addPreferredGap(ComponentPlacement.RELATED)
-                                            .addComponent(searchButton)))
-                                    .addGap(0, 0, 0))))
-                        .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))))
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addComponent(zendLabel)
+
+                .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addComponent(zendScriptUsageLabel)
+                        .addContainerGap()).addComponent(providerRegistrationButton, Alignment.TRAILING).addGroup(Alignment.TRAILING, layout.createSequentialGroup()
+
+                        .addComponent(zendTextField, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(browseButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(searchButton)))).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addComponent(defaultParametersLabel)
+
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(defaultParametersForProjectTextField, GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE)).addComponent(errorLabel).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+
+                                .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(installationInfoLabel)).addGroup(layout.createSequentialGroup()
+                                .addContainerGap()
+
+                                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseButton, searchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(zendLabel)
-                    .addComponent(zendTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(searchButton)
-                    .addComponent(browseButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(zendLabel).addComponent(zendTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(searchButton).addComponent(browseButton)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
                         .addComponent(zendScriptUsageLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addComponent(providerRegistrationButton))
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(defaultParametersLabel)
-                    .addComponent(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(installationInfoLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
-                .addComponent(errorLabel)
-                .addGap(0, 0, 0))
+
+                        .addComponent(providerRegistrationInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addComponent(providerRegistrationButton)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(defaultParametersLabel).addComponent(defaultParametersForProjectTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(includePathInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(installationInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, 16, Short.MAX_VALUE).addComponent(errorLabel).addGap(0, 0, 0))
         );
 
-        zendLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleName")); // NOI18N
-        zendLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        zendTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleName")); // NOI18N
-        zendTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleName")); // NOI18N
-        browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleDescription")); // NOI18N
-        searchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleName")); // NOI18N
-        searchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleDescription")); // NOI18N
-        zendScriptUsageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleName")); // NOI18N
-        zendScriptUsageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        defaultParametersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleName")); // NOI18N
-        defaultParametersLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        defaultParametersForProjectTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleName")); // NOI18N
-        defaultParametersForProjectTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        noteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleName")); // NOI18N
-        noteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        includePathInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        includePathInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        installationInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName")); // NOI18N
-        installationInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        learnMoreLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName")); // NOI18N
-        learnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleName")); // NOI18N
-        errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        zendLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleName"));         zendLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendLabel.AccessibleContext.accessibleDescription"));         zendTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleName"));         zendTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendTextField.AccessibleContext.accessibleDescription"));         browseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleName"));         browseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.browseButton.AccessibleContext.accessibleDescription"));         searchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleName"));         searchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.searchButton.AccessibleContext.accessibleDescription"));         zendScriptUsageLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleName"));         zendScriptUsageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.zendScriptUsageLabel.AccessibleContext.accessibleDescription"));         defaultParametersLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleName"));         defaultParametersLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersLabel.AccessibleContext.accessibleDescription"));         defaultParametersForProjectTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleName"));         defaultParametersForProjectTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.defaultParametersForProjectTextField.AccessibleContext.accessibleDescription"));         noteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleName"));         noteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.noteLabel.AccessibleContext.accessibleDescription"));         includePathInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleName"));         includePathInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.includePathInfoLabel.AccessibleContext.accessibleDescription"));         installationInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName"));         installationInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription"));         learnMoreLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName"));         learnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription"));         errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleName"));         errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); 
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ZendOptionsPanel.class, "ZendOptionsPanel.AccessibleContext.accessibleDescription")); // NOI18N
-    }// </editor-fold>//GEN-END:initComponents
+    }// </editor-fold> //GEN-END:initComponents
 
     private void browseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         File zendScript = new FileChooserBuilder(ZendOptionsPanel.class.getName() + ZEND_LAST_FOLDER_SUFFIX)

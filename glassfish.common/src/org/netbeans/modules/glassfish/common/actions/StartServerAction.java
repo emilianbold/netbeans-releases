@@ -71,7 +71,7 @@ public class StartServerAction extends NodeAction {
     
     private static void performActionImpl(GlassfishModule commonSupport) {
         commonSupport.setEnvironmentProperty(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE, true);
-        commonSupport.startServer(null);
+        commonSupport.startServer(null, ServerState.RUNNING);
     }
     
     @Override

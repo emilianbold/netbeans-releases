@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.CsmIdentifiable;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
@@ -73,23 +74,20 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
     
     private final CharSequence name;    
     
-    private FunctionInstantiationImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, boolean global) throws AstRendererException {
+    private FunctionInstantiationImpl(AST ast, CsmFile file, CsmScope scope, NameHolder nameHolder, FunctionParameterListImpl params) throws AstRendererException {
         super(file, getStartOffset(ast), getEndOffset(ast));
-        this.parameterList = createParameterList(ast, !global);
+        this.parameterList = params;
         _setScope(scope);
         name = QualifiedNameCache.getManager().getString(nameHolder.getName());        
     }
 
-    public static FunctionInstantiationImpl create(AST ast, CsmFile file, boolean register) throws AstRendererException {
+    public static FunctionInstantiationImpl create(AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionInstantiationImpl res =  new FunctionInstantiationImpl(ast, file, null, nameHolder, register);
+        FunctionParameterListImpl params = FunctionParameterListImpl.create(file, fileContent, ast, null, !register);
+        FunctionInstantiationImpl res =  new FunctionInstantiationImpl(ast, file, null, nameHolder, params);
         postObjectCreateRegistration(register, res);
-        nameHolder.addReference(file, res);
+        nameHolder.addReference(fileContent, res);
         return res;
-    }
-
-    private FunctionParameterListImpl createParameterList(AST funAST, boolean isLocal) {
-        return FunctionParameterListImpl.create(getContainingFile(), funAST, getScope(), isLocal);
     }
 
     @Override

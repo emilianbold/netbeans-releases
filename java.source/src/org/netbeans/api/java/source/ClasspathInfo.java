@@ -80,16 +80,14 @@ import org.netbeans.modules.java.source.parsing.ProxyFileManager;
 import org.netbeans.modules.java.source.parsing.SourceFileManager;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
+import org.netbeans.modules.java.source.classpath.AptSourcePath;
 import org.netbeans.modules.java.source.classpath.SourcePath;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
-import org.netbeans.modules.java.source.parsing.AptSourceFileManager;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.parsing.GeneratedFileMarker;
-import org.netbeans.modules.java.source.parsing.InferableJavaFileObject;
-import org.netbeans.modules.java.source.parsing.MemoryFileManager;
-import org.netbeans.modules.java.source.parsing.SiblingSource;
-import org.netbeans.modules.java.source.parsing.SiblingSupport;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
+import org.netbeans.modules.java.source.parsing.*;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -133,9 +131,10 @@ public final class ClasspathInfo {
     private final boolean backgroundCompilation;
     private final boolean useModifiedFiles;
     private final boolean ignoreExcludes;
-    private final JavaFileFilterImplementation filter;    
+    private final JavaFileFilterImplementation filter;
     private final MemoryFileManager memoryFileManager;
     private final ChangeSupport listenerList;
+    private final FileManagerTransaction fmTx;
 
     //@GuardedBy("this")
     private JavaFileManager fileManager;
@@ -156,23 +155,25 @@ public final class ClasspathInfo {
         assert bootCp != null;
         assert compileCp != null;
         this.cpListener = new ClassPathListener ();
-        this.archiveProvider = archiveProvider;        
+        this.archiveProvider = archiveProvider;
         this.bootClassPath = bootCp;
         this.compileClassPath = compileCp;
         this.listenerList = new ChangeSupport(this);
-        this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath);
-        this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath);
+        this.cachedBootClassPath = CacheClassPath.forBootPath(this.bootClassPath,backgroundCompilation);
+        this.cachedCompileClassPath = CacheClassPath.forClassPath(this.compileClassPath,backgroundCompilation);
 	this.cachedBootClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedBootClassPath));
 	this.cachedCompileClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedCompileClassPath));
         if (srcCp == null) {
             this.cachedSrcClassPath = this.srcClassPath = EMPTY_PATH;
-            this.cachedAptSrcClassPath = null;            
+            this.cachedAptSrcClassPath = null;
             this.outputClassPath = EMPTY_PATH;
         } else {
             this.srcClassPath = srcCp;
-            this.cachedSrcClassPath = SourcePath.sources(srcCp, backgroundCompilation);
-            this.cachedAptSrcClassPath = SourcePath.apt(srcCp, backgroundCompilation);
-            this.outputClassPath = CacheClassPath.forSourcePath (this.cachedSrcClassPath);
+            final ClassPathImplementation noApt = AptSourcePath.sources(srcCp);
+            this.cachedSrcClassPath = ClassPathFactory.createClassPath(SourcePath.filtered(noApt, backgroundCompilation));
+            this.cachedAptSrcClassPath = ClassPathFactory.createClassPath(
+                    SourcePath.filtered(AptSourcePath.aptCache(srcCp), backgroundCompilation));
+            this.outputClassPath = CacheClassPath.forSourcePath (ClassPathFactory.createClassPath(noApt),backgroundCompilation);
 	    this.cachedSrcClassPath.addPropertyChangeListener(WeakListeners.propertyChange(this.cpListener,this.cachedSrcClassPath));
         }
         this.backgroundCompilation = backgroundCompilation;
@@ -183,11 +184,18 @@ public final class ClasspathInfo {
             if (srcCp == null) {
                 throw new IllegalStateException ();
             }
-            this.memoryFileManager = new MemoryFileManager();            
-        }
-        else {
+            this.memoryFileManager = new MemoryFileManager();
+        } else {
             this.memoryFileManager = null;
         }
+        if (backgroundCompilation) {
+            final TransactionContext txCtx = TransactionContext.get();
+            fmTx = txCtx.get(FileManagerTransaction.class);
+        } else {
+            //No real transaction, read-only mode.
+            fmTx = FileManagerTransaction.nullWrite();
+        }
+        assert fmTx != null : "No file manager transaction.";   //NOI18N
     }
 
     @Override
@@ -397,8 +405,21 @@ public final class ClasspathInfo {
                 new CachingFileManager (this.archiveProvider, this.cachedCompileClassPath, false, true),
                 hasSources ? (!useModifiedFiles ? new CachingFileManager (this.archiveProvider, this.cachedSrcClassPath, filter, false, ignoreExcludes)
                     : new SourceFileManager (this.cachedSrcClassPath, ignoreExcludes)) : null,
-                cachedAptSrcClassPath != null ? new AptSourceFileManager(this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
-                hasSources ? new OutputFileManager (this.archiveProvider, this.outputClassPath, this.cachedSrcClassPath, this.cachedAptSrcClassPath, siblings.getProvider()) : null,
+                cachedAptSrcClassPath != null ? 
+                    new AptSourceFileManager(
+                            this.cachedSrcClassPath, 
+                            this.cachedAptSrcClassPath, 
+                            siblings.getProvider(),
+                            fmTx
+                    ) : null,
+                hasSources ? 
+                    new OutputFileManager(
+                            this.archiveProvider, 
+                            this.outputClassPath, 
+                            this.cachedSrcClassPath, 
+                            this.cachedAptSrcClassPath, 
+                            siblings.getProvider(), 
+                            fmTx) : null,
                 this.memoryFileManager,
                 marker,
                 siblings);
@@ -444,6 +465,12 @@ public final class ClasspathInfo {
         @Override
         public JavaFileManager getFileManager(ClasspathInfo cpInfo) {
             return cpInfo.getFileManager();
+        }
+        
+        @Override
+        @NonNull
+        public FileManagerTransaction getFileManagerTransaction(@NonNull ClasspathInfo cpInfo) {
+            return cpInfo.fmTx;
         }
 
         @Override

@@ -1,7 +1,7 @@
 #!/bin/sh
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+# Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 # Other names may be trademarks of their respective owners.
@@ -478,6 +478,11 @@ fi
 
 if [ ! -z "$socks_proxy_tmp" ] ; then
 	jargs="-Dnetbeans.system_socks_proxy=\"$socks_proxy_tmp\" $jargs"
+fi
+
+if [ ! -z "${DEFAULT_USERDIR_ROOT}" ] ; then
+	jargs="-Dnetbeans.default_userdir_root=\"${DEFAULT_USERDIR_ROOT}\" $jargs"
+        unset DEFAULT_USERDIR_ROOT
 fi
 
 # http://java.sun.com/j2se/1.5.0/docs/guide/2d/flags.html#pixmaps

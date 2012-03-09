@@ -59,6 +59,8 @@ import org.netbeans.modules.parsing.lucene.DocumentIndexImpl;
 import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
+import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -69,9 +71,10 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
 public final class IndexManager {
-    
+
     private static final ReentrantReadWriteLock lock  = new ReentrantReadWriteLock();
-    
+    private static final Lookup.Result<? extends ScanSuspendImplementation> res = Lookup.getDefault().lookupResult(ScanSuspendImplementation.class);
+
     static IndexFactory factory = new LuceneIndexFactory();    //Unit tests overrides the factory
     
     private IndexManager() {}
@@ -98,7 +101,11 @@ public final class IndexManager {
      * @return the result of the action
      * @throws IOException when the action throws {@link IOException}
      * @throws InterruptedException when the action throws {@link InterruptedException}
+     * @deprecated The {@link Index} is self guarded and global lock acquired by
+     * {@link IndexManager#writeAccess} is not needed for correct synchronization.
+     * To suspend the scan and external changes check during the action use {@link IndexManager#priorityAccess}.
      */
+    @Deprecated
     public static <R> R writeAccess (final Action<R> action) throws IOException, InterruptedException {
         assert action != null;
         lock.writeLock().lock();                    
@@ -131,10 +138,55 @@ public final class IndexManager {
      * @return the result of the action
      * @throws IOException when the action throws {@link IOException}
      * @throws InterruptedException when the action throws {@link InterruptedException}
+     * @deprecated The {@link Index} is self guarded and global lock acquired by
+     * {@link IndexManager#readAccess} is not needed for correct synchronization.
+     * To suspend the scan and external changes check during the action use {@link IndexManager#priorityAccess}.
      */
+    @Deprecated
     public static <R> R readAccess (final Action<R> action) throws IOException, InterruptedException {
         assert action != null;
-        lock.readLock().lock();                                    
+        suspend();
+        try {
+            lock.readLock().lock();
+            try {
+                return ProvidedExtensions.priorityIO(new Callable<R>() {
+                    @Override
+                    public R call() throws Exception {
+                        return action.run();
+                    }
+                });
+            } catch (IOException ioe) {
+                //rethrow ioe
+                throw ioe;
+            } catch (InterruptedException ie) {
+                //rethrow ioe
+                throw ie;
+            } catch (RuntimeException re) {
+                //rethrow ioe
+                throw re;
+            } catch (Exception e) {
+                throw new IOException(e);
+            } finally {
+                lock.readLock().unlock();
+            }
+        } finally {
+            resume();
+        }
+    }
+    
+    /**
+     * Runs the given action as a priority action.
+     * During the priority action scan and checking for external changes are
+     * suspended.
+     * @param action the action to be performed.
+     * @return the result of the action
+     * @throws IOException when the action throws {@link IOException}
+     * @throws InterruptedException when the action throws {@link InterruptedException}
+     * @since 2.9
+     */
+    public static <R> R priorityAccess(final Action<R> action) throws IOException, InterruptedException {
+        assert action != null;
+        suspend();
         try {
             return ProvidedExtensions.priorityIO(new Callable<R>() {
                 @Override
@@ -154,7 +206,7 @@ public final class IndexManager {
         } catch (Exception e) {
             throw new IOException(e);
         } finally {
-            lock.readLock().unlock();
+            resume();
         }
     }
 
@@ -181,6 +233,20 @@ public final class IndexManager {
         final Index index = factory.createIndex(cacheFolder, analyzer);
         assert index != null;
         indexes.put(cacheFolder, new Ref(cacheFolder,index));
+        return index;
+    }
+    
+    /**
+     * Creates a transient {@link Index} stored in the RAM.
+     * @param analyzer the lucene Analyzer used to split fields into tokens.
+     * @return the created {@link Index}
+     * @throws IOException in case of IO problem.
+     * @since 2.8
+     */
+    public static Index createMemoryIndex(final @NonNull Analyzer analyzer) throws IOException {        
+        Parameters.notNull("analyzer", analyzer);       //NOI18N
+        final Index index = factory.createMemoryIndex(analyzer);
+        assert index != null;
         return index;
     }
 
@@ -257,6 +323,18 @@ public final class IndexManager {
         @Override
         public void run() {
             indexes.remove(folder);
+        }
+    }
+
+    private static void suspend() {
+        for (ScanSuspendImplementation impl : res.allInstances()) {
+            impl.suspend();
+        }
+    }
+
+    private static void resume() {
+        for (ScanSuspendImplementation impl : res.allInstances()) {
+            impl.resume();
         }
     }
 

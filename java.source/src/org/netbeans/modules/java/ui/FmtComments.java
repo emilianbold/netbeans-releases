@@ -56,6 +56,7 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
     public FmtComments() {
         initComponents();
         enableCommentFormatCheckBox.putClientProperty(OPTION_ID, enableCommentFormatting);
+        enableBlockCommentFormatCheckBox.putClientProperty(OPTION_ID, enableBlockCommentFormatting);
         addLeadingStarCheckBox.putClientProperty(OPTION_ID, addLeadingStarInComment);
         wrapCommentTextCheckBox.putClientProperty(OPTION_ID, wrapCommentText);
         wrapOneLineCheckBox.putClientProperty(OPTION_ID, wrapOneLineComment);
@@ -91,6 +92,7 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
     private void initComponents() {
 
         enableCommentFormatCheckBox = new javax.swing.JCheckBox();
+        enableBlockCommentFormatCheckBox = new javax.swing.JCheckBox();
         generalLabel = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         addLeadingStarCheckBox = new javax.swing.JCheckBox();
@@ -115,6 +117,8 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
                 enableCommentFormatCheckBoxActionPerformed(evt);
             }
         });
+
+        enableBlockCommentFormatCheckBox.setText(org.openide.util.NbBundle.getMessage(FmtComments.class, "LBL_doc_enableBlockCommentFormat")); // NOI18N
 
         generalLabel.setText(org.openide.util.NbBundle.getMessage(FmtComments.class, "LBL_doc_generalLabel")); // NOI18N
 
@@ -148,45 +152,45 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(enableCommentFormatCheckBox)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(generalLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 329, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(wrapCommentTextCheckBox)
-                            .addComponent(addLeadingStarCheckBox)
-                            .addComponent(wrapOneLineCheckBox)
-                            .addComponent(preserveNewLinesCheckBox)))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(javadocLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE))
+                        .addComponent(jSeparator2))
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(blankLineAfterParamsCheckBox)
-                            .addComponent(blankLineAfterDescCheckBox)
-                            .addComponent(blankLineAfterReturnCheckBox)
-                            .addComponent(generatePCheckBox)
-                            .addComponent(alignParamsCheckBox)
-                            .addComponent(alignReturnCheckBox)
-                            .addComponent(alignExceptionsCheckBox))))
+                            .addComponent(enableCommentFormatCheckBox)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(12, 12, 12)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(wrapCommentTextCheckBox)
+                                    .addComponent(addLeadingStarCheckBox)
+                                    .addComponent(wrapOneLineCheckBox)
+                                    .addComponent(preserveNewLinesCheckBox)
+                                    .addComponent(blankLineAfterParamsCheckBox)
+                                    .addComponent(blankLineAfterDescCheckBox)
+                                    .addComponent(blankLineAfterReturnCheckBox)
+                                    .addComponent(generatePCheckBox)
+                                    .addComponent(alignParamsCheckBox)
+                                    .addComponent(alignReturnCheckBox)
+                                    .addComponent(alignExceptionsCheckBox)
+                                    .addComponent(enableBlockCommentFormatCheckBox))))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(generalLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jSeparator1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(enableCommentFormatCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(enableBlockCommentFormatCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(generalLabel))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGap(16, 16, 16)
-                        .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(generalLabel, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(addLeadingStarCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -216,7 +220,7 @@ public class FmtComments extends javax.swing.JPanel implements Runnable {
                 .addComponent(alignReturnCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(alignExceptionsCheckBox)
-                .addContainerGap(20, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -232,6 +236,7 @@ private void enableCommentFormatCheckBoxActionPerformed(java.awt.event.ActionEve
     private javax.swing.JCheckBox blankLineAfterDescCheckBox;
     private javax.swing.JCheckBox blankLineAfterParamsCheckBox;
     private javax.swing.JCheckBox blankLineAfterReturnCheckBox;
+    private javax.swing.JCheckBox enableBlockCommentFormatCheckBox;
     private javax.swing.JCheckBox enableCommentFormatCheckBox;
     private javax.swing.JLabel generalLabel;
     private javax.swing.JCheckBox generatePCheckBox;
@@ -244,6 +249,7 @@ private void enableCommentFormatCheckBoxActionPerformed(java.awt.event.ActionEve
     // End of variables declaration//GEN-END:variables
 
     private void enableControls(boolean b) {
+        enableBlockCommentFormatCheckBox.setEnabled(b);
         addLeadingStarCheckBox.setEnabled(b);
         alignExceptionsCheckBox.setEnabled(b);
         alignParamsCheckBox.setEnabled(b);

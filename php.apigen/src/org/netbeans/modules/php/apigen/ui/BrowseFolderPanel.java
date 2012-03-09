@@ -103,6 +103,7 @@ public final class BrowseFolderPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "# {0} - project name",
         "BrowseFolderPanel.docFolder.select=Select a directory for documentation for {0}",
         "BrowseFolderPanel.dir.select=Select a directory"
     })

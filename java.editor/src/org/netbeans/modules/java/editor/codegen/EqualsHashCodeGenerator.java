@@ -353,7 +353,6 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                                 String message = NbBundle.getMessage(EqualsHashCodeGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N
                                 org.netbeans.editor.Utilities.setStatusBoldText(component, message);
                             } else {
-                                int idx = GeneratorUtils.findClassMemberIndex(copy, (ClassTree)path.getLeaf(), caretOffset);
                                 ArrayList<VariableElement> equalsElements = new ArrayList<VariableElement>();
                                 if( generateEquals ) {
                                     for (ElementHandle<? extends Element> elementHandle : panel.getEqualsVariables())
@@ -367,8 +366,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
                                 generateEqualsAndHashCode(
                                     copy, path, 
                                     generateEquals ? equalsElements : null, 
-                                    generateHashCode ? hashCodeElements : null, 
-                                    idx
+                                    generateHashCode ? hashCodeElements : null
                                 );
                             }
                         }
@@ -387,29 +385,21 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         Collection<VariableElement> e = arr[0] == null ? Collections.<VariableElement>emptySet() : null;
         Collection<VariableElement> h = arr[1] == null ? Collections.<VariableElement>emptySet() : null;
 
-        generateEqualsAndHashCode(wc, path, e, h, -1);
+        generateEqualsAndHashCode(wc, path, e, h);
     }
     
-    static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields, int index) {
+    static void generateEqualsAndHashCode(WorkingCopy wc, TreePath path, Iterable<? extends VariableElement> equalsFields, Iterable<? extends VariableElement> hashCodeFields) {
         assert TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind());
         TypeElement te = (TypeElement)wc.getTrees().getElement(path);
         if (te != null) {
-            TreeMaker make = wc.getTreeMaker();
             ClassTree nue = (ClassTree)path.getLeaf();
             Scope scope = wc.getTrees().getScope(path);
+            GeneratorUtilities gu = GeneratorUtilities.get(wc);
             if (hashCodeFields != null) {
-                if (index >= 0) {
-                    nue = make.insertClassMember(nue, index, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
-                } else {
-                    nue = make.addClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
-                }
+                nue = gu.insertClassMember(nue, createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
             }
             if (equalsFields != null) {
-                if (index >= 0) {
-                    nue = make.insertClassMember(nue, index, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
-                } else {
-                    nue = make.addClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
-                }
+                nue = gu.insertClassMember(nue, createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
             }
             wc.rewrite(path.getLeaf(), nue);
         }        

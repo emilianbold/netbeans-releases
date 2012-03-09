@@ -114,7 +114,7 @@ final class PhpDocPanel extends JPanel implements HelpCtx.Provider {
         // errors
         String phpDocTarget = getPhpDocTarget();
         if (StringUtils.hasText(phpDocTarget)) {
-            String error = FileUtils.validateDirectory(getPhpDocTarget());
+            String error = FileUtils.validateDirectory(getPhpDocTarget(), true);
             if (error != null) {
                 category.setErrorMessage(error);
                 category.setValid(false);

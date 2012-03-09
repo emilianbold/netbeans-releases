@@ -515,12 +515,9 @@ public final class Actions extends Object {
                     return false;
                 }
                 //Check if it is root.
-                File file = FileUtil.toFile(fo);
-                if (file != null) {
-                    if (file.getParent() == null) {
-                        //It is root: disable.
-                        return false;
-                    }
+                if (fo.isRoot()) {
+                    //It is root: disable.
+                    return false;
                 }
             }
 

@@ -65,8 +65,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
+import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -214,6 +217,9 @@ public class ClassIndexTest extends NbTestCase {
         spiCp.setImpls(Collections.<PathResourceImplementation>emptyList());
         assertTrue(testListener.awaitEvent(10, TimeUnit.SECONDS));
         assertExpectedEvents (et, testListener.getEventLog());
+        
+        //Wait until RU processes remove event (otherwise it may be colapsed with re-add)
+        RepositoryUpdater.getDefault().waitUntilFinished(-1);
 
 
         //Root Added should NOT be fired by registration of new source root
@@ -254,34 +260,28 @@ public class ClassIndexTest extends NbTestCase {
         assertExpectedEvents (et, testListener.getEventLog());
     }
     
+    @SuppressWarnings("deprecation")
     public void testholdsWriteLock () throws Exception {
         //Test basics
-        final ClassIndexManager m = ClassIndexManager.getDefault();
         IndexManager.readAccess(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {
                 assertFalse(IndexManager.holdsWriteLock());
                 return null;
             }
         });
-        m.writeLock(new IndexManager.Action<Void>() {
-            public Void run() throws IOException, InterruptedException {
-                assertTrue(IndexManager.holdsWriteLock());
-                return null;
-            }
-        });
         //Test nesting of [write|read] lock in write lock
         //the opposite is forbidden
-        m.writeLock(new IndexManager.Action<Void>() {
+        IndexManager.writeAccess(new IndexManager.Action<Void>() {
             public Void run() throws IOException, InterruptedException {                           
                 assertTrue(IndexManager.holdsWriteLock());
-                m.writeLock(new IndexManager.Action<Void>() {
+                IndexManager.readAccess(new IndexManager.Action<Void>() {
                     public Void run() throws IOException, InterruptedException {                
                         assertTrue(IndexManager.holdsWriteLock());
                         return null;
                     }
                 });
                 assertTrue(IndexManager.holdsWriteLock());
-                m.writeLock(new IndexManager.Action<Void>() {
+                IndexManager.writeAccess(new IndexManager.Action<Void>() {
                     public Void run() throws IOException, InterruptedException {                
                         assertTrue(IndexManager.holdsWriteLock());
                         return null;
@@ -539,6 +539,18 @@ public class ClassIndexTest extends NbTestCase {
         assertNotNull(result);
         assertFiles(Arrays.asList(dummy, t4),result);
     }
+    
+    public void testNullRootPassedToClassIndexEvent() throws Exception {
+        
+        GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        IndexingManager.getDefault().refreshIndexAndWait(srcRoot.toURL(), null);
+        final ClassIndexManagerListenerImpl testListener = new ClassIndexManagerListenerImpl();
+        ClassIndexManager.getDefault().addClassIndexManagerListener(testListener);
+        testListener.expect(EventType.ROOTS_REMOVED);
+        GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, new ClassPath[] {sourcePath});
+        assertTrue(testListener.await(10000));
+        assertTrue(testListener.getAdded().isEmpty());
+    }
 
     private FileObject createJavaFile (
             final FileObject root,
@@ -717,7 +729,7 @@ public class ClassIndexTest extends NbTestCase {
             this.typesEvent = null;
             this.rootsEvent = event;
         }
-
+        
         @Override
         public String toString() {
             return "[" + type +"]";
@@ -785,6 +797,55 @@ public class ClassIndexTest extends NbTestCase {
             return res;
         }
         
+    }
+    
+    private static class ClassIndexManagerListenerImpl implements ClassIndexManagerListener {
+        
+        private Set<? extends EventType> expectedEvents; 
+        private final List<ClassIndexManagerEvent> added = new ArrayList<ClassIndexManagerEvent>();
+        private final List<ClassIndexManagerEvent> removed = new ArrayList<ClassIndexManagerEvent>();
+        
+        synchronized void expect(final EventType... events) {
+            expectedEvents = new HashSet<EventType>(Arrays.<EventType>asList(events));
+            added.clear();
+            removed.clear();
+        }
+        
+        synchronized boolean await(int millis) throws InterruptedException {
+            final long st = System.currentTimeMillis();
+            while (!expectedEvents.isEmpty()) {
+                if (System.currentTimeMillis() - st >= millis) {
+                    return false;
+                }
+                wait(millis);
+            }
+            return true;
+        }
+        
+        public synchronized List<? extends ClassIndexManagerEvent> getAdded() {
+            return Collections.<ClassIndexManagerEvent>unmodifiableList(added);
+        }
+        
+        public synchronized List<? extends ClassIndexManagerEvent> getRemoved() {
+            return Collections.<ClassIndexManagerEvent>unmodifiableList(removed);
+        }
+
+        @Override
+        public synchronized void classIndexAdded(ClassIndexManagerEvent event) {
+            added.add(event);
+            if (expectedEvents.remove(EventType.ROOTS_ADDED)) {
+                notifyAll();
+            }
+        }
+
+        @Override
+        public synchronized void classIndexRemoved(ClassIndexManagerEvent event) {
+            removed.add(event);
+            if (expectedEvents.remove(EventType.ROOTS_REMOVED)) {
+                notifyAll();
+            }
+        }
+
     }
     
     

@@ -83,10 +83,12 @@ public class AlignWithSupport {
 
             int b1 = sceneWidgetBounds.x;
             int b2 = sceneWidgetBounds.x + sceneWidgetBounds.width;
+            int b3 = sceneWidgetBounds.x + (sceneWidgetBounds.width/2);
 
             for (Rectangle rectangle : regions) {
                 int a1 = rectangle.x;
                 int a2 = a1 + rectangle.width;
+                int a3 = a1 +(rectangle.width/2);
 
                 int d;
                 boolean snapNow = false;
@@ -125,6 +127,14 @@ public class AlignWithSupport {
                     }
                 }
 
+                d = Math.abs(a3 - b3);
+                if ((snap && d < dx) || (!snap && d < GRAVITY)) {
+                    snap = snapNow = true;
+                    xs = a3 - (b3 - b1);
+                    x = a3;
+                    dx = d;
+                }
+
                 if (snapNow) {
                     y1 = rectangle.y;
                     y2 = rectangle.y + rectangle.height;
@@ -151,10 +161,12 @@ public class AlignWithSupport {
 
             int b1 = sceneWidgetBounds.y;
             int b2 = sceneWidgetBounds.y + sceneWidgetBounds.height;
+            int b3 = sceneWidgetBounds.y + (sceneWidgetBounds.height/2);
 
             for (Rectangle rectangle : regions) {
                 int a1 = rectangle.y;
                 int a2 = a1 + rectangle.height;
+                int a3 = a1 + (rectangle.height/2);
 
                 int d;
                 boolean snapNow = false;
@@ -186,6 +198,14 @@ public class AlignWithSupport {
                     snap = snapNow = true;
                     ys = a2 - sceneWidgetBounds.height;
                     y = a2;
+                    dy = d;
+                }
+
+                d = Math.abs(a3 - b3);
+                if ((snap && d < dy) || (!snap && d < GRAVITY)) {
+                    snap = snapNow = true;
+                    ys = a3 - (b3 - b1);
+                    y = a3;
                     dy = d;
                 }
 

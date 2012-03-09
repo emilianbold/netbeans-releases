@@ -135,14 +135,17 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return sb.toString();
     }
 
+    @Override
     public boolean isMagic() {
         return PredefinedSymbols.MAGIC_METHODS.contains(getName().toLowerCase());
     }
 
+    @Override
     public boolean isConstructor() {
         return isMagic() ? getName().contains("__construct") : false;
     }
 
+    @Override
     public TypeScope getTypeScope() {
         return (TypeScope) getInScope();
     }
@@ -152,6 +155,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return classNormName+super.getNormalizedName();
     }
 
+    @Override
     public String getClassSkeleton() {
         StringBuilder sb = new StringBuilder();
         sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
@@ -190,6 +194,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         return sb.toString();
     }
 
+    @Override
     public String getInterfaceSkeleton() {
         StringBuilder sb = new StringBuilder();
         sb.append(getPhpModifiers().toString()).append(" ");//NOI18N

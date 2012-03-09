@@ -136,4 +136,9 @@ public abstract class APTTokenAbstact implements APTToken {
         hash = 59 * hash + this.getTextID().hashCode();
         return hash;
     }
+    
+    @Override
+    public Object getProperty(Object key) {
+        return null;
+    }    
 }

@@ -76,4 +76,6 @@ public interface VCSFileProxyOperations {
     VCSFileProxy[] list(VCSFileProxy file);
     
     ProcessBuilder createProcessBuilder(VCSFileProxy file);
+
+    void refreshFor(VCSFileProxy ... files);
 }

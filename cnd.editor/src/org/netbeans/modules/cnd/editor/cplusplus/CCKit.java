@@ -58,6 +58,7 @@ import org.netbeans.cnd.api.lexer.Filter;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtKit.CommentAction;
 import org.netbeans.editor.ext.ExtKit.UncommentAction;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.editor.NbEditorKit;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -108,6 +109,9 @@ public class CCKit extends NbEditorKit {
         if (lexerAttrs == null) {
             lexerAttrs = new InputAttributes();
             lexerAttrs.setValue(language, CndLexerUtilities.LEXER_FILTER, getFilter(language, doc), true);  // NOI18N
+            if(CndTraceFlags.LANGUAGE_FLAVOR_CPP11) {
+                lexerAttrs.setValue(getLanguage(), CndLexerUtilities.FLAVOR, "CPP11", true); // NOI18N
+            }
         }
         return lexerAttrs;
     }

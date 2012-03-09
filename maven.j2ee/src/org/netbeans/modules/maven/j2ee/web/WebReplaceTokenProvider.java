@@ -110,8 +110,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         isScanStarted = new AtomicBoolean( false );
         isScanFinished = new AtomicBoolean(false);
     }
+
     /**
-     * just gets the array of FOs from lookup.
+     * Just gets the array of FOs from lookup.
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
         List<FileObject> files = new ArrayList<FileObject>();
@@ -124,10 +125,10 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         return files.toArray(new FileObject[files.size()]);
     }
 
+    @Override
     public Map<String, String> createReplacements(String action, Lookup lookup) {
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         String relPath = null;
-        SourceGroup group = null;
         FileObject fo = null;
         HashMap<String, String> replaceMap = new HashMap<String, String>();
         if (fos.length > 0 && action.endsWith(".deploy")) { //NOI18N
@@ -219,47 +220,52 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         }
     }
 
+    @Override
     public String convert(String action, Lookup lookup) {
         if (ActionProvider.COMMAND_RUN_SINGLE.equals(action) ||
             ActionProvider.COMMAND_DEBUG_SINGLE.equals(action)) {
+
             FileObject[] fos = extractFileObjectsfromLookup(lookup);
             if (fos.length > 0) {
                 FileObject fo = fos[0];
                 if ("text/x-java".equals(fo.getMIMEType())) { //NOI18N
-                    //TODO sorty of clashes with .main (if both servlet and main are present.
-                    // also prohitibs any other conversion method.
-                    if ( fo.getAttribute(ATTR_EXECUTION_URI) == null &&
-                            servletFilesScanning( fo ) )
-                    {
-                        return null;
-                    }
-                    Sources srcs = project.getLookup().lookup(Sources.class);
-                    SourceGroup[] grp = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                    for (int i = 0; i < grp.length; i++) {
-                        if (!"2TestSourceRoot".equals(grp[i].getName())) { //NOI18N hack
-                            String relPath = FileUtil.getRelativePath(grp[i].getRootFolder(), fo);
-                            if (relPath != null) {
-                                if (fo.getAttribute(ATTR_EXECUTION_URI) != null ||
-                                        Boolean.TRUE.equals(fo.getAttribute(IS_SERVLET_FILE))) {//NOI18N
-                                    return action + ".deploy"; //NOI18N
-                                }
-                                if (isServletFile(fo,false))  {
-                                    try {
-                                        fo.setAttribute(IS_SERVLET_FILE, Boolean.TRUE); 
-                                    } catch (java.io.IOException ex) {
-                                        //we tried
-                                    }
-                                    return action + ".deploy"; //NOI18N
-                                }
-                            }
-                        }
-                    }
+                    return convertJavaAction(action, fo);
                 }
                 if ("text/x-jsp".equals(fo.getMIMEType())) { //NOI18N
                     return action + ".deploy"; //NOI18N
                 }
                 if ("text/html".equals(fo.getMIMEType())) { //NOI18N
                     return action + ".deploy"; //NOI18N
+                }
+            }
+        }
+        return null;
+    }
+
+    private String convertJavaAction(String action, FileObject fo) {
+        //TODO sorty of clashes with .main (if both servlet and main are present.
+        // also prohitibs any other conversion method.
+        if ( fo.getAttribute(ATTR_EXECUTION_URI) == null && servletFilesScanning(fo)) {
+            return null;
+        }
+        Sources srcs = project.getLookup().lookup(Sources.class);
+        SourceGroup[] sourceGroups = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        for (SourceGroup group : sourceGroups) {
+            if (!"2TestSourceRoot".equals(group.getName())) { //NOI18N hack
+                String relPath = FileUtil.getRelativePath(group.getRootFolder(), fo);
+                if (relPath != null) {
+                    if (fo.getAttribute(ATTR_EXECUTION_URI) != null ||
+                            Boolean.TRUE.equals(fo.getAttribute(IS_SERVLET_FILE))) {//NOI18N
+                        return action + ".deploy"; //NOI18N
+                    }
+                    if (isServletFile(fo,false))  {
+                        try {
+                            fo.setAttribute(IS_SERVLET_FILE, Boolean.TRUE);
+                        } catch (java.io.IOException ex) {
+                            //we tried
+                        }
+                        return action + ".deploy"; //NOI18N
+                    }
                 }
             }
         }
@@ -286,20 +292,18 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             return false;
         }
         try {
-            MetadataModel<WebAppMetadata> metadataModel = webModule
-                    .getMetadataModel();
+            MetadataModel<WebAppMetadata> metadataModel = webModule.getMetadataModel();
             boolean result = false;
             if ( initialScan || metadataModel.isReady()) {
-                List<ServletInfo> servlets = WebAppMetadataHelper
-                        .getServlets(metadataModel);
-                final List<String> servletClasses = 
-                    new ArrayList<String>( servlets.size() );
+                List<ServletInfo> servlets = WebAppMetadataHelper.getServlets(metadataModel);
+                final List<String> servletClasses = new ArrayList<String>( servlets.size() );
+
                 for (ServletInfo si : servlets) {
                     if (className.equals(si.getServletClass())) {
                         result =  true;
                     }
                     else {
-                        servletClasses.add( si.getServletClass() );
+                        servletClasses.add(si.getServletClass());
                     }
                 }
                 synchronized (SERVLET_SEARCH_MODULES) {
@@ -308,15 +312,13 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                         if ( !initialScan || SwingUtilities.isEventDispatchThread()){
                             Runnable runnable = new Runnable() {
                                 public void run() {
-                                    setServletClasses(servletClasses, javaClass,
-                                        webModule);
+                                    setServletClasses(servletClasses, javaClass, webModule);
                                 }
                             };
                             SERVLETS_REQUEST_PROCESSOR.post(runnable);
                         }
                         else {
-                            setServletClasses(servletClasses, javaClass,
-                                    webModule);
+                            setServletClasses(servletClasses, javaClass, webModule);
                         }
                     }
                 }
@@ -335,8 +337,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
      * 
      * Fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
      */
-    private boolean servletFilesScanning( final FileObject fileObject ) 
- {
+    private boolean servletFilesScanning( final FileObject fileObject ) {
         if ( isScanFinished.get()){
             return false;
         }
@@ -366,9 +367,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     /*
      * Created as  fix for IZ#172931 - [68cat] AWT thread blocked for 29229 ms.
      */
-    private static void setServletClasses( final List<String> servletClasses, 
-            final FileObject orig , WebModule module )
-    {
+    private static void setServletClasses( final List<String> servletClasses, final FileObject orig , WebModule module ) {
         JavaSource javaSource = JavaSource.forFileObject(orig);
         if (javaSource == null) {
             return;
@@ -376,29 +375,20 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         try {
             javaSource.runUserActionTask(new Task<CompilationController>() {
 
-                public void run( CompilationController controller )
-                        throws Exception
-                {
+                public void run( CompilationController controller ) throws Exception {
                     controller.toPhase(Phase.ELEMENTS_RESOLVED);
                     for (String servletClass : servletClasses) {
                         if (servletClass == null) {
                             continue;
                         }
-                        TypeElement typeElem = controller.getElements()
-                                .getTypeElement(servletClass);
+                        TypeElement typeElem = controller.getElements().getTypeElement(servletClass);
                         if (typeElem == null) {
                             continue;
                         }
-                        ElementHandle<TypeElement> handle = ElementHandle
-                                .create(typeElem);
-                        FileObject fileObject = SourceUtils.getFile(handle,
-                                controller.getClasspathInfo());
-                        if (fileObject != null
-                                && !Boolean.TRUE.equals(fileObject
-                                        .getAttribute(IS_SERVLET_FILE)))
-                        {
-                            fileObject.setAttribute(IS_SERVLET_FILE,
-                                    Boolean.TRUE);
+                        ElementHandle<TypeElement> handle = ElementHandle.create(typeElem);
+                        FileObject fileObject = SourceUtils.getFile(handle, controller.getClasspathInfo());
+                        if (fileObject != null && !Boolean.TRUE.equals(fileObject.getAttribute(IS_SERVLET_FILE))) {
+                            fileObject.setAttribute(IS_SERVLET_FILE, Boolean.TRUE);
                         }
                     }
                 }
@@ -408,10 +398,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             e.printStackTrace();
         }
         finally {
-            synchronized( SERVLET_SEARCH_MODULES ){
+            synchronized( SERVLET_SEARCH_MODULES ) {
                 SERVLET_SEARCH_MODULES.remove( module );
             }
         }
     }
-
 }

@@ -48,6 +48,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.GuardedException;
 import org.netbeans.modules.editor.impl.SearchBar.ExpandMenu;
@@ -76,6 +78,7 @@ public final class ReplaceBar extends JPanel {
     private final JCheckBox backwardsCheckBox;
     private final FocusTraversalPolicy searchBarFocusTraversalPolicy;
     private List<JComponent> focusList = new ArrayList<JComponent>();
+    private boolean popupMenuWasCanceled = false;
 
     public static ReplaceBar getInstance(SearchBar searchBar) {
         if (replacebarInstance == null) {
@@ -349,8 +352,8 @@ public final class ReplaceBar extends JPanel {
         };
     }
 
-    private static JComboBox createReplaceComboBox() {
-        JComboBox incSearchComboBox = new JComboBox() {
+    private JComboBox createReplaceComboBox() {
+        JComboBox repComboBox = new JComboBox() {
 
             @Override
             public Dimension getMinimumSize() {
@@ -378,8 +381,24 @@ public final class ReplaceBar extends JPanel {
             }
         };
 
-        incSearchComboBox.setEditable(true);
-        return incSearchComboBox;
+        repComboBox.setEditable(true);
+        repComboBox.addPopupMenuListener(new PopupMenuListener() {
+            @Override
+            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+  
+            }
+
+            @Override
+            public void popupMenuCanceled(PopupMenuEvent e) {
+                popupMenuWasCanceled = true;
+            }
+        });
+        return repComboBox;
     }
 
     private void addEscapeKeystrokeFocusBackTo(JPanel jpanel) {
@@ -389,7 +408,13 @@ public final class ReplaceBar extends JPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                looseFocus();
+                if (!popupMenuWasCanceled && !searchBar.isPopupMenuWasCanceled())
+                    looseFocus();
+                else {
+                    popupMenuWasCanceled = false;
+                    searchBar.setPopupMenuWasCanceled(false);
+                }
+                    
             }
         });
     }

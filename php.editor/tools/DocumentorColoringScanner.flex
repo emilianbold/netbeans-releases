@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -61,6 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %state ST_IN_TAG
 %state ST_NO_TAG
+%state ST_HTML_TAG
 
 %eofval{
           if(input.readLength() > 0) {
@@ -85,7 +86,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
                 zzState = zzLexicalState = YYINITIAL;
             }
        }
-        
+
 
         public int getTokenLength() {
             return yylength();
@@ -96,19 +97,19 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             final int zzState;
             /** the current lexical state */
             final int zzLexicalState;
-            
+
             LexerState () {
                 zzState =  DocumentorColoringScanner.this.zzState;
                 zzLexicalState = DocumentorColoringScanner.this.zzLexicalState;
             }
-            
+
         }
-        
+
         public LexerState getState() {
             return new LexerState();
         }
-        
-        public void setState(LexerState state) {    
+
+        public void setState(LexerState state) {
             this.zzState = state.zzState;
             this.zzLexicalState = state.zzLexicalState;
         }
@@ -117,65 +118,42 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 %}
 
-TABS_AND_SPACES=[ \t]*
 ANY_CHAR=(.|[\n])
-NEWLINE=("\r"|"\n"|"\r\n")
-LINESTART=({TABS_AND_SPACES}"*"?{TABS_AND_SPACES})
-EMPTYLINE=({LINESTART}{TABS_AND_SPACES}{NEWLINE})
-
-
+IDENTIFIER=[[:letter:][:digit:]_\\-]+
+HTML_TAG="<"[^"\r""\n""\r\n"">"]+">"
 
 
 
 
 %%
 
-<YYINITIAL> "@" {
-    yybegin(ST_IN_TAG);
-    yypushback(1);
+<YYINITIAL> {
+    "@" {
+        yybegin(ST_IN_TAG);
+        yypushback(1);
+    }
+    "<" {
+        yybegin(ST_HTML_TAG);
+        yypushback(1);
+    }
+    [^@<]* {
+        return PHPDocCommentTokenId.PHPDOC_COMMENT;
+    }
 }
 
-<YYINITIAL>[^@]* {
-    return PHPDocCommentTokenId.PHPDOC_COMMENT;
+<ST_HTML_TAG> {
+    {HTML_TAG} {
+        yybegin(YYINITIAL);
+        return PHPDocCommentTokenId.PHPDOC_HTML_TAG;
+    }
+    {ANY_CHAR} {
+        yybegin(YYINITIAL);
+        return PHPDocCommentTokenId.PHPDOC_COMMENT;
+    }
 }
 
 <ST_IN_TAG> {
-    "@access"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_ACCESS;}
-    "@abstract"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_ABSTRACT;}
-    "@author"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_AUTHOR;}
-    "@category"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_CATEGORY;}
-    "@copyright"     {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_COPYRIGHT;}
-    "@deprecated"    {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_DEPRECATED;}
-    "@desc"          {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_DESC;}
-    "@example"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_EXAMPLE;}
-    "@exception"     {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_EXCEPTION;}
-    "@final"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_FINAL;}
-    "@filesource"    {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_FILESOURCE;}
-    "@global"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_GLOBAL;}
-    "@ignore"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_IGNORE;}
-    "@internal"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_INTERNAL;}
-    "@license"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_LICENSE;}
-    "@link"          {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_LINK;}
-    "@magic"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_MAGIC;}
-    "@method"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_METHOD;}    
-    "@name"          {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_NAME;}
-    "@package"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PACKAGE;}
-    "@param"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PARAM;}
-    "@property"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY;}
-    "@property-read"  {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_READ;}
-    "@property-write" {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_PROPERTY_WRITE;}
-    "@return"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_RETURN;}
-    "@see"           {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SEE;}
-    "@since"         {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SINCE;}
-    "@static"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_STATIC;}
-    "@staticvar"     {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_STATICVAR;}
-    "@subpackage"    {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_SUBPACKAGE;}
-    "@throws"        {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_THROWS;}
-    "@todo"          {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_TODO;}
-    "@tutorial"      {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_TUTORIAL;}
-    "@uses"          {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_USES;}
-    "@var"           {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_VAR;}
-    "@version"       {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_VERSION;}
+    "@"{IDENTIFIER}  {yybegin(YYINITIAL); return PHPDocCommentTokenId.PHPDOC_ANNOTATION;}
     {ANY_CHAR}       {yybegin(ST_NO_TAG); yypushback(1);}
 }
 

@@ -223,7 +223,7 @@ public class GeneratingBracketCompleter {
 
         addVariables(doc, toAdd, "@throws", indent, i.throwsExceptions);
 
-        doc.insertString(offset - 1, toAdd.toString(), null);
+        doc.insertString(offset, toAdd.toString(), null);
     }
 
     private static void addVariables(BaseDocument doc, StringBuilder toAdd, String text, int indent, List<Pair<String, String>> vars) {

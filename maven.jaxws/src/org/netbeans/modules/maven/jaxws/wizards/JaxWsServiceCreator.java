@@ -76,12 +76,16 @@ import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
+import javax.swing.SwingUtilities;
+
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
@@ -428,8 +432,9 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
     private void generateJaxWsImplClass(FileObject targetFile, final WsdlService service, final WsdlPort port, final String wsdlLocation) throws IOException {
 
-        JavaSource targetSource = JavaSource.forFileObject(targetFile);
-        CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
+        final JavaSource targetSource = JavaSource.forFileObject(targetFile);
+        final boolean[] isIncomplete = new boolean[1];
+        final CancellableTask<WorkingCopy> task = new CancellableTask<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws java.io.IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
@@ -439,47 +444,64 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     GenerationUtils genUtils = GenerationUtils.newInstance(workingCopy);
 
                     //add @WebService annotation
-                    TypeElement WSAn = workingCopy.getElements().getTypeElement("javax.jws.WebService"); //NOI18N
                     List<ExpressionTree> attrs = new ArrayList<ExpressionTree>();
                     attrs.add(
-                            make.Assignment(make.Identifier("serviceName"), make.Literal(service.getName()))); //NOI18N
+                            make.Assignment(make.Identifier("serviceName"), 
+                                    make.Literal(service.getName()))); //NOI18N
                     attrs.add(
-                            make.Assignment(make.Identifier("portName"), make.Literal(port.getName()))); //NOI18N
+                            make.Assignment(make.Identifier("portName"), 
+                                    make.Literal(port.getName()))); //NOI18N
                     attrs.add(
-                            make.Assignment(make.Identifier("endpointInterface"), make.Literal(port.getJavaName()))); //NOI18N
+                            make.Assignment(make.Identifier("endpointInterface"), 
+                                    make.Literal(port.getJavaName()))); //NOI18N
                     attrs.add(
-                            make.Assignment(make.Identifier("targetNamespace"), make.Literal(port.getNamespaceURI()))); //NOI18N
+                            make.Assignment(make.Identifier("targetNamespace"), 
+                                    make.Literal(port.getNamespaceURI()))); //NOI18N
                     attrs.add(
-                            make.Assignment(make.Identifier("wsdlLocation"), make.Literal(wsdlLocation))); //NOI18N
+                            make.Assignment(make.Identifier("wsdlLocation"), 
+                                    make.Literal(wsdlLocation))); //NOI18N
 
                     AnnotationTree WSAnnotation = make.Annotation(
-                            make.QualIdent(WSAn),
+                            make.QualIdent("javax.jws.WebService"),      //NOI18N
                             attrs);
-                    ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, WSAnnotation);
+                    ClassTree  modifiedClass = genUtils.addAnnotation(javaClass, 
+                            WSAnnotation);
 
                     if (WsdlPort.SOAP_VERSION_12.equals(port.getSOAPVersion())) {
                         //if SOAP 1.2 binding, add BindingType annotation
-                        TypeElement bindingElement = workingCopy.getElements().getTypeElement(BINDING_TYPE_ANNOTATION);
-                        if (bindingElement != null) {
-                            TypeElement soapBindingElement = workingCopy.getElements().getTypeElement(SOAP_BINDING_TYPE);
-                            ExpressionTree exp = make.MemberSelect(make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
+                        TypeElement bindingElement = workingCopy.getElements().
+                            getTypeElement(BINDING_TYPE_ANNOTATION);
+                        if (bindingElement == null) {
+                            isIncomplete[0] = true;
+                        }
+                        else {
+                            TypeElement soapBindingElement = workingCopy.
+                                getElements().getTypeElement(SOAP_BINDING_TYPE);
+                            ExpressionTree exp = make.MemberSelect(
+                                    make.QualIdent(soapBindingElement), SOAP12_HTTP_BINDING);
 
                             AnnotationTree bindingAnnotation = make.Annotation(
                                     make.QualIdent(bindingElement),
                                     Collections.<ExpressionTree>singletonList(exp));
 
-                            modifiedClass = genUtils.addAnnotation(modifiedClass, bindingAnnotation);
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, 
+                                    bindingAnnotation);
                         }
                     }
 
                     // add @Stateless annotation
                     if (WSUtils.isEJB(project)) {
-                        TypeElement statelessAn = workingCopy.getElements().getTypeElement("javax.ejb.Stateless"); //NOI18N
+                        TypeElement statelessAn = workingCopy.getElements().
+                            getTypeElement("javax.ejb.Stateless"); //NOI18N
                         if (statelessAn != null) {
                             AnnotationTree StatelessAnnotation = make.Annotation(
                                     make.QualIdent(statelessAn),
                                     Collections.<ExpressionTree>emptyList());
-                            modifiedClass = genUtils.addAnnotation(modifiedClass, StatelessAnnotation);
+                            modifiedClass = genUtils.addAnnotation(modifiedClass, 
+                                    StatelessAnnotation);
+                        }
+                        else {
+                            isIncomplete[0] = true;
                         }
                     }
 
@@ -514,6 +536,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             if (excEl != null) {
                                 exc.add(make.QualIdent(excEl));
                             } else {
+                                isIncomplete[0] = true;
                                 exc.add(make.Identifier(exception));
                             }
                         }
@@ -539,11 +562,45 @@ public class JaxWsServiceCreator implements ServiceCreator {
 
                 }
             }
-
+            @Override
             public void cancel() {
             }
         };
-        targetSource.runModificationTask(task).commit();
+        ModificationResult modificationTask = targetSource.runModificationTask(task);
+        if ( isIncomplete[0] && 
+                org.netbeans.api.java.source.SourceUtils.isScanInProgress())
+        {
+            final String title = NbBundle.getMessage(JaxWsServiceCreator.class, 
+                    "LBL_GenWsClass");      // NOI18N
+            final Runnable runnable = new Runnable() {
+                
+                @Override
+                public void run() {
+                    try {
+                        targetSource.runModificationTask(task).commit();
+                    }
+                    catch ( IOException e){
+                        Logger.getLogger( JaxWsServiceCreator.class.getCanonicalName()).
+                            log(Level.WARNING , null , e);
+                    }
+                }
+            };
+            if ( SwingUtilities.isEventDispatchThread() ){
+                ScanDialog.runWhenScanFinished(runnable, title);
+            }
+            else {
+                SwingUtilities.invokeLater( new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        ScanDialog.runWhenScanFinished(runnable, title);
+                    }
+                });
+            }
+        }
+        else {
+            modificationTask.commit();
+        }
     }
 
     private void generateWebServiceFromEJB(String wsName, FileObject pkg, Node[] nodes) throws IOException {
@@ -595,9 +652,10 @@ public class JaxWsServiceCreator implements ServiceCreator {
         final boolean[] onClassPath = new boolean[1];
         final String[] interfaceClass = new String[1];
 
-        JavaSource targetSource = JavaSource.forFileObject(targetFo);
-        CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
+        final JavaSource targetSource = JavaSource.forFileObject(targetFo);
+        final CancellableTask<WorkingCopy> modificationTask = new CancellableTask<WorkingCopy>() {
 
+            @Override
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
 
@@ -633,22 +691,46 @@ public class JaxWsServiceCreator implements ServiceCreator {
                     }
                 }
             }
-
+            @Override
             public void cancel() {
             }
         };
-        targetSource.runModificationTask(modificationTask).commit();
-
-        if (!onClassPath[0]) {
-            RequestProcessor.getDefault().post(new Runnable() {
-
+        final Runnable runnable = new Runnable() {
+            
+            @Override
+            public void run() {
+                try {
+                    targetSource.runModificationTask(modificationTask).commit();
+                    if (!onClassPath[0]) {
+                        DialogDisplayer.getDefault().notify(
+                                new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(JaxWsServiceCreator.class, 
+                                                "MSG_EJB_NOT_ON_CLASSPATH", 
+                                                interfaceClass[0], targetFo.getName()),
+                                                    NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                }
+                catch( IOException e ){
+                    Logger.getLogger(JaxWsServiceCreator.class.getCanonicalName()).
+                        log(Level.WARNING , null, e);
+                }
+            }
+        };
+        final String title = NbBundle.getMessage(JaxWsServiceCreator.class, 
+                "LBL_GenDelegateMethods");              // NOI18N
+        if ( SwingUtilities.isEventDispatchThread()){
+            ScanDialog.runWhenScanFinished( runnable , title);
+        }
+        else {
+            SwingUtilities.invokeLater( new Runnable() {
+                
+                @Override
                 public void run() {
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(NbBundle.getMessage(JaxWsServiceCreator.class, "MSG_EJB_NOT_ON_CLASSPATH", interfaceClass[0], targetFo.getName()),
-                            NotifyDescriptor.WARNING_MESSAGE));
+                    ScanDialog.runWhenScanFinished( runnable , title);                    
                 }
             });
         }
+        
     }
     private VariableTree generateEjbInjection(WorkingCopy workingCopy, TreeMaker make, String beanInterface, boolean[] onClassPath) {
 

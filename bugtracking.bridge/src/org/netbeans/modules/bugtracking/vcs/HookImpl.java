@@ -52,13 +52,16 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryQuery;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -86,9 +89,7 @@ class HookImpl {
         if(files.length == 0) {
 
             if (selectedRepository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
-                        selectedRepository);
+                OwnerUtils.setLooseAssociation(selectedRepository, true);
             }
 
             LOG.warning("calling beforeCommit for zero files");              // NOI18N
@@ -96,7 +97,7 @@ class HookImpl {
         }
 
         if (selectedRepository != null) {
-            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+            OwnerUtils.setFirmAssociations(
                     files,
                     selectedRepository);
         }
@@ -210,7 +211,7 @@ class HookImpl {
             }
 
             if(repo == null) { // don't go for the repository until we really need it
-                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
+                repo = RepositoryQuery.getInstance().getRepository(FileUtil.toFileObject(file), true); // true -> ask user if repository unknown
                                                                                         //         might have deleted in the meantime
                 if(repo == null) {
                     LOG.log(Level.WARNING, " could not find issue tracker for {0}", file);      // NOI18N

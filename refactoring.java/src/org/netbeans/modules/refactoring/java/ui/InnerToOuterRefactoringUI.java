@@ -43,17 +43,21 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.InnerToOuterRefactoring;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -62,9 +66,9 @@ import org.openide.util.NbBundle;
  * @author Martin Matula
  * @author Jan Becicka
  */
-public class InnerToOuterRefactoringUI implements RefactoringUI {
+public class InnerToOuterRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     // reference to pull up refactoring this UI object corresponds to
-    private final InnerToOuterRefactoring refactoring;
+    private InnerToOuterRefactoring refactoring;
     // UI panel for collecting parameters
     private InnerToOuterPanel panel;
     
@@ -75,11 +79,15 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     /** Creates a new instance of InnerToOuterRefactoringUI
      * @param selectedElements Elements the refactoring action was invoked on.
      */
-    public InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
+    private InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
         refactoring = new InnerToOuterRefactoring(sourceType);
+        refactoring.setReferenceName("outer"); //NOI18N
         Element temp = sourceType.resolveElement(info);
         className = temp.getSimpleName().toString();
         disableDeclareFields = temp.getModifiers().contains(Modifier.STATIC) || temp.getKind() !=ElementKind.CLASS;
+    }
+
+    private InnerToOuterRefactoringUI() {
     }
     
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -142,5 +150,24 @@ public class InnerToOuterRefactoringUI implements RefactoringUI {
     private void captureParameters() {
         refactoring.setClassName(panel.getClassName());
         refactoring.setReferenceName(panel.getReferenceName());
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        assert handles.length == 1;
+        TreePath resolved = handles[0].resolve(info);
+        TreePath enclosing = resolved == null
+                ? null
+                : JavaRefactoringUtils.findEnclosingClass(info, resolved, true, true, true, true, false);
+        if (enclosing != null && enclosing != resolved) {
+            handles[0] = TreePathHandle.create(enclosing, info);
+        }
+        return handles[0] != null && resolved != null
+                ? new InnerToOuterRefactoringUI(handles[0], info)
+                : null;
+    }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new InnerToOuterRefactoringUI();
     }
 }

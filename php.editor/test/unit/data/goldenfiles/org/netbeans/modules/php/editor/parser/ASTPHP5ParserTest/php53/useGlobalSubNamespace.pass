@@ -39,9 +39,9 @@
         </Comments>
         <Statements>
             <UseStatement start='6' end='17'>
-                <UseStatementPart start='11' end='16'>
+                <UseStatementPart start='10' end='16'>
                     <Name>
-                        <NamespaceName start='11' end='16' isCurrent='false' isGlobal='true'>
+                        <NamespaceName start='10' end='16' isCurrent='false' isGlobal='true'>
                             <Identifier start='11' end='12' name='A'/>
                             <Identifier start='13' end='14' name='B'/>
                             <Identifier start='15' end='16' name='C'/>
