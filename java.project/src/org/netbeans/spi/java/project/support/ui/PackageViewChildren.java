@@ -72,6 +72,7 @@ import org.netbeans.modules.java.project.PackageDisplayUtils;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FileSystemAction;
@@ -105,8 +106,6 @@ import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  * Display of Java sources in a package structure rather than folder structure.
@@ -669,11 +668,8 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                    new ProxyLookup(
                         Lookups.singleton(new NoFoldersContainer (dataFolder)),
                         dataFolder.getNodeDelegate().getLookup(),
-                        Lookups.singleton(PackageRootNode.alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfo(
-                                                  dataFolder.getPrimaryFile(),
-                                                  false,      //not recursive
-                                                  new FileObjectFilter[] {
-                                                          SearchInfoFactory.VISIBILITY_FILTER})))));
+                        Lookups.singleton(SearchInfoDefinitionFactory.createFlatSearchInfo(
+                                                  dataFolder.getPrimaryFile()))));
             this.root = root;
             this.dataFolder = dataFolder;
             this.isDefaultPackage = root.equals( dataFolder.getPrimaryFile() );

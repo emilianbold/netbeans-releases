@@ -46,7 +46,6 @@ package org.netbeans.modules.utilities;
 
 import org.netbeans.modules.openfile.RecentFiles;
 import org.openide.modules.ModuleInstall;
-import org.openide.util.SharedClassObject;
 
 /** Module install class for Utilities module.
  *
@@ -54,42 +53,11 @@ import org.openide.util.SharedClassObject;
  */
 public class Installer extends ModuleInstall {
 
-    /** Installation instance for &quot;sub-module&quot; Search.  */
-    private final org.netbeans.modules.search.Installer searchInstaller;
-
-    /** Constructs modules installer. */
-    public Installer() {
-        searchInstaller = SharedClassObject.findObject(
-                                  org.netbeans.modules.search.Installer.class,
-                                  true);
-    }
-    
     /**
      * Restores module. Restores &quot;sub-module&quot; Search.
      */
+    @Override
     public void restored() {
-        searchInstaller.restored();
         RecentFiles.init();
     }
-    
-    /**
-     * Uninstalls module. Uninstalls
-     * the Search &quot;sub-module&quot;.
-     */
-    public void uninstalled() {
-        searchInstaller.uninstalled();
-    }
-    
-    /**
-     */
-    public void close() {
-        searchInstaller.close();
-    }
-    
-    /**
-     */
-    public boolean closing() {
-        return searchInstaller.closing();
-    }
-
 }
