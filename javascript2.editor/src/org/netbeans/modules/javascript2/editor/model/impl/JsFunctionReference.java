@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.io.IOException;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public class JsStructureScannerTest extends JsTestBase {
+public class JsFunctionReference extends JsObjectReference implements JsFunction {
     
-    public JsStructureScannerTest(String testName) {
-        super(testName);
+    private final JsFunctionImpl original;
+    
+    public JsFunctionReference(JsObject parent, Identifier declarationName, JsFunctionImpl original, boolean isDeclared) {
+        super(parent, declarationName, original, isDeclared);
+        this.original = original;
     }
-    
+
     @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+    public Collection<? extends JsObject> getParameters() {
+        return original.getParameters();
     }
-    
-    public void testFolds1() throws Exception {
-        checkFolds("testfiles/simple.js");
+
+    @Override
+    public JsObject getParameter(String name) {
+        return original.getParameter(name);
     }
-    
-    public void testSimpleMethodChain() throws Exception {
-        checkStructure("testfiles/completion/simpleMethodChain/methodChainSimple.js");
-    }
-    
-    public void testTypeInferenceNew() throws Exception {
-        checkStructure("testfiles/completion/typeInferenceNew.js");
-    }
-    
-    public void testGetterSettterInObjectLiteral() throws Exception {
-        checkStructure("testfiles/model/getterSettterInObjectLiteral.js");
-    }
-    
-    public void testPerson() throws Exception {
-        checkStructure("testfiles/model/person.js");
+
+    @Override
+    public Collection<? extends TypeUsage> getReturnTypes() {
+        return original.getReturnTypes();
     }
 }

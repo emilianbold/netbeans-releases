@@ -172,6 +172,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     List<Identifier> name = getName(binaryNode);
 //                    System.out.println("in binarynode: " + binaryNode.lhs());
                     AccessNode aNode = (AccessNode)binaryNode.lhs();
+                    JsObjectImpl property = null;
                     if (aNode.getBase() instanceof IdentNode && "this".equals(((IdentNode)aNode.getBase()).getName())) { //NOI18N
                         // a usage of field
                         String fieldName = aNode.getProperty().getName();
@@ -180,14 +181,25 @@ public class ModelVisitor extends PathNodeVisitor {
                                 || isInPropertyNode())) {
                             parent = (JsObjectImpl)parent.getParent();
                         }
-                        if(parent.getProperty(fieldName) == null) {
+                        property = (JsObjectImpl)parent.getProperty(fieldName);
+                        if(property == null) {
                             Identifier identifier = ModelElementFactory.create(parserResult, (IdentNode)aNode.getProperty());
-                            parent.addProperty(fieldName, new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true));
+                            property = new JsObjectImpl(parent, identifier, identifier.getOffsetRange(), true);
+                            parent.addProperty(fieldName, property);
                         }
                     } else {
                         // probably a property of an object
                         List<Identifier> fqName = getName(aNode);
-                        ModelUtils.getJsObject(modelBuilder, fqName);
+                        property = ModelUtils.getJsObject(modelBuilder, fqName);
+                        if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
+                            property.getModifiers().add(Modifier.STATIC);
+                        }
+                    }
+                    if (property != null) {
+                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(binaryNode.rhs());
+                        for (TypeUsage type : types) {
+                            property.addAssignment(type, property.getDeclarationName().getOffsetRange().getEnd());
+                        }
                     }
 
                 } else {
