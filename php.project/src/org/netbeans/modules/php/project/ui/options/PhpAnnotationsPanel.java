@@ -43,8 +43,11 @@ package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.GroupLayout;
@@ -134,6 +137,12 @@ public class PhpAnnotationsPanel extends JPanel {
     }
 
     private void initButtons() {
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteAnnotations();
+            }
+        });
     }
 
     void setEnabledButtons(int selectedRowCount) {
@@ -144,6 +153,20 @@ public class PhpAnnotationsPanel extends JPanel {
     UserAnnotationTag getSelectedAnnotation() {
         assert EventQueue.isDispatchThread();
         return annotations.get(annotationsTable.getSelectedRow());
+    }
+
+    void deleteAnnotations() {
+        int[] selectedRows = annotationsTable.getSelectedRows();
+        assert selectedRows.length > 0 : "No selected annotations?!";
+        if (selectedRows.length == 0) {
+            return;
+        }
+        // delete annotations from the end to avoid ArrayIndexOutOfBoundsException
+        Arrays.sort(selectedRows);
+        for (int i = selectedRows.length - 1; i >= 0; --i) {
+            annotations.remove(i);
+        }
+        tableModel.fireAnnotationsChange();
     }
 
     /**
