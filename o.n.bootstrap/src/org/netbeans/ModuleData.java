@@ -275,15 +275,15 @@ class ModuleData {
     }
 
     private String[] computeProvides(Module forModule, Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
-        String[] provides;
+        String[] arr;
         // Token provides
         String providesS = attr.getValue("OpenIDE-Module-Provides"); // NOI18N
         if (providesS == null) {
-            provides = ZERO_STRING_ARRAY;
+            arr = ZERO_STRING_ARRAY;
         } else {
             StringTokenizer tok = new StringTokenizer(providesS, ", "); // NOI18N
-            provides = new String[tok.countTokens()];
-            for (int i = 0; i < provides.length; i++) {
+            arr = new String[tok.countTokens()];
+            for (int i = 0; i < arr.length; i++) {
                 String provide = tok.nextToken();
                 if (provide.indexOf(',') != -1) {
                     throw new InvalidException("Illegal code name syntax parsing OpenIDE-Module-Provides: " + provide); // NOI18N
@@ -292,24 +292,24 @@ class ModuleData {
                     Dependency.create(Dependency.TYPE_MODULE, provide);
                 }
                 if (provide.lastIndexOf('/') != -1) throw new IllegalArgumentException("Illegal OpenIDE-Module-Provides: " + provide); // NOI18N
-                provides[i] = provide;
+                arr[i] = provide;
             }
-            if (new HashSet<String>(Arrays.asList(provides)).size() < provides.length) {
+            if (new HashSet<String>(Arrays.asList(arr)).size() < arr.length) {
                 throw new IllegalArgumentException("Duplicate entries in OpenIDE-Module-Provides: " + providesS); // NOI18N
             }
         }
         String[] additionalProvides = forModule.getManager().refineProvides (forModule);
         if (additionalProvides != null) {
-            if (provides == null) {
-                provides = additionalProvides;
+            if (arr == null) {
+                arr = additionalProvides;
             } else {
                 ArrayList<String> l = new ArrayList<String> ();
-                l.addAll (Arrays.asList (provides));
+                l.addAll (Arrays.asList (arr));
                 l.addAll (Arrays.asList (additionalProvides));
-                provides = l.toArray (provides);
+                arr = l.toArray (arr);
             }
         }
-        return provides;
+        return arr;
     }
     
     /**
