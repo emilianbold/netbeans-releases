@@ -62,7 +62,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
+import org.netbeans.modules.php.project.phpunit.annotations.AssertTag;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -129,14 +131,25 @@ public class PhpAnnotationsPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2
                         && editButton.isEnabled()) {
-                    // XXX
-                    //openAnnotationPanel();
+                    openAnnotationPanel(annotationsTable.getSelectedRow());
                 }
             }
         });
     }
 
     private void initButtons() {
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openAnnotationPanel(null);
+            }
+        });
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openAnnotationPanel(annotationsTable.getSelectedRow());
+            }
+        });
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -150,9 +163,21 @@ public class PhpAnnotationsPanel extends JPanel {
         editButton.setEnabled(selectedRowCount == 1);
     }
 
-    UserAnnotationTag getSelectedAnnotation() {
+    void openAnnotationPanel(Integer index) {
         assert EventQueue.isDispatchThread();
-        return annotations.get(annotationsTable.getSelectedRow());
+        UserAnnotationPanel panel = new UserAnnotationPanel(getAnnotation(index));
+        if (panel.open()) {
+            UserAnnotationTag annotation = panel.getAnnotation();
+            if (index == null) {
+                // add
+                annotations.add(annotation);
+                tableModel.fireAnnotationsChange();
+            } else {
+                // edit
+                annotations.set(index, annotation);
+                tableModel.fireAnnotationChange(index);
+            }
+        }
     }
 
     void deleteAnnotations() {
@@ -167,6 +192,20 @@ public class PhpAnnotationsPanel extends JPanel {
             annotations.remove(i);
         }
         tableModel.fireAnnotationsChange();
+    }
+
+    private UserAnnotationTag getAnnotation(Integer index) {
+        assert EventQueue.isDispatchThread();
+        if (index == null) {
+            // XXX provide better sample
+            AssertTag assertTag = new AssertTag();
+            return new UserAnnotationTag(
+                    UserAnnotationTag.Type.METHOD,
+                    assertTag.getName(),
+                    assertTag.getInsertTemplate(),
+                    assertTag.getDocumentation());
+        }
+        return annotations.get(index.intValue());
     }
 
     /**
