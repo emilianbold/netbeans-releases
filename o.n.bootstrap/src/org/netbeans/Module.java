@@ -44,6 +44,8 @@
 
 package org.netbeans;
 
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -629,6 +631,32 @@ public abstract class Module extends ModuleInfo {
         }
         public @Override int hashCode() {
             return pkg.hashCode();
+        }
+        
+        static void write(DataOutput dos, PackageExport[] arr) throws IOException {
+            if (arr == null) {
+                dos.writeInt(0);
+                return;
+            }
+            dos.writeInt(arr.length);
+            for (PackageExport pe : arr) {
+                dos.writeUTF(pe.pkg);
+                dos.writeBoolean(pe.recursive);
+            }
+        }
+        
+        static PackageExport[] read(DataInput is) throws IOException {
+            int cnt = is.readInt();
+            if (cnt == 0) {
+                return null;
+            }
+            PackageExport[] arr = new PackageExport[cnt];
+            for (int i = 0; i < cnt; i++) {
+                String pkg = is.readUTF();
+                boolean recursive = is.readBoolean();
+                arr[i] = new PackageExport(pkg, recursive);
+            }
+            return arr;
         }
     }
 }

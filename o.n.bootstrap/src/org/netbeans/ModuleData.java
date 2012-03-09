@@ -254,7 +254,7 @@ class ModuleData {
             this.provides = readStrings(dis);
             this.friendNames = readStrings(dis, new HashSet<String>(), false);
             this.specVers = new SpecificationVersion(dis.readUTF());
-            this.publicPackages = null;
+            this.publicPackages = Module.PackageExport.read(dis);
         } catch (ClassNotFoundException cnfe) {
             throw new IOException(cnfe);
         }
@@ -271,6 +271,7 @@ class ModuleData {
         writeStrings(dos, provides);
         writeStrings(dos, friendNames);
         dos.writeUTF(specVers.toString());
+        Module.PackageExport.write(dos, publicPackages);
     }
 
     private String[] computeProvides(Module forModule, Attributes attr, boolean verifyCNBs) throws InvalidException, IllegalArgumentException {
