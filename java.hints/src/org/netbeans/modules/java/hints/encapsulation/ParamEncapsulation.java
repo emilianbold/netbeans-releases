@@ -47,15 +47,14 @@ import com.sun.source.util.Trees;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,19 +77,19 @@ public class ParamEncapsulation {
     private static final String A_FLOAT = "float[]";                    //NOI18N
     private static final String A_DOUBLE = "double[]";                  //NOI18N
 
-    @Hint(category="encapsulation",                                     //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.collection", category="encapsulation",                                     //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
         enabled=false,
         options=Options.QUERY)
     @TriggerPatterns ({
         @TriggerPattern(value="$var=$expr",                             //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=COLLECTION)           //NOI18N
+                @ConstraintVariableType(variable="$expr",type=COLLECTION)           //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",                             //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=MAP)                  //NOI18N
+                @ConstraintVariableType(variable="$expr",type=MAP)                  //NOI18N
         })
     })
     public static ErrorDescription collection(final HintContext ctx) {
@@ -100,54 +99,54 @@ public class ParamEncapsulation {
             "AssignmentToCollectionOrArrayFieldFromParameter"); //NOI18N
     }
 
-    @Hint(category="encapsulation",                                             //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.array", category="encapsulation",                                             //NOI18N
         suppressWarnings={"AssignmentToCollectionOrArrayFieldFromParameter"},   //NOI18N
         enabled=false,
         options=Options.QUERY)
     @TriggerPatterns ({
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_OBJ)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_OBJ)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_BOOL)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_BOOL)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_BYTE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_BYTE)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_CHAR)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_CHAR)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_SHORT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_SHORT)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_INT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_INT)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_LONG)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_LONG)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_FLOAT)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_FLOAT)   //NOI18N
             }
         ),
         @TriggerPattern(value="$var=$expr",    //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=A_DOUBLE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=A_DOUBLE)   //NOI18N
             }
         )
     })
@@ -158,18 +157,18 @@ public class ParamEncapsulation {
             "AssignmentToCollectionOrArrayFieldFromParameter"); //NOI18N
     }
 
-    @Hint(category="encapsulation",
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.ParamEncapsulation.date", category="encapsulation",
         suppressWarnings={"AssignmentToDateFieldFromParameter"},
         enabled=false,
         options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern(value="$var=$expr",   //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=DATE)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=DATE)   //NOI18N
         }),
         @TriggerPattern(value="$var=$expr",   //NOI18N
             constraints={
-                @Constraint(variable="$expr",type=CALENDAR)   //NOI18N
+                @ConstraintVariableType(variable="$expr",type=CALENDAR)   //NOI18N
         })
     })
     public static ErrorDescription date(final HintContext ctx) {
@@ -206,7 +205,6 @@ public class ParamEncapsulation {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, varPath,
-            description,
-            FixFactory.createSuppressWarningsFix(ctx.getInfo(), varPath, suppressWarnings));
+            description);
     }
 }

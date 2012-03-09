@@ -77,17 +77,17 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.ConstructorGenerator;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -102,7 +102,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Dusan Balek
  */
-@Hint(category = "suggestions", hintKind = HintMetadata.Kind.SUGGESTION, severity = AbstractHint.HintSeverity.CURRENT_LINE_WARNING)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.CreateSubclass", description = "#DESC_org.netbeans.modules.java.hints.suggestions.CreateSubclass", category = "suggestions", hintKind = Kind.ACTION, severity = Severity.HINT)
 public class CreateSubclass {
 
     @TriggerTreeKind({Tree.Kind.CLASS, Tree.Kind.INTERFACE})

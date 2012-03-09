@@ -51,11 +51,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -206,7 +207,7 @@ public class Braces extends AbstractHint {
             return ErrorDescriptionFactory.createErrorDescription(
                         getSeverity().toEditorSeverity(), 
                         getDisplayName(), 
-                        Collections.<Fix>singletonList(JavaFix.toEditorFix(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ) )),
+                        Collections.<Fix>singletonList(new BracesFix( info.getFileObject(), TreePathHandle.create(tp, info) ).toEditorFix( )),
                         info.getFileObject(),
                         span[0],
                         span[1]);
@@ -248,7 +249,7 @@ public class Braces extends AbstractHint {
             result.add( ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(), 
                 getDisplayName(), 
-                Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
+                Collections.<Fix>singletonList(bf.toEditorFix()),
                 info.getFileObject(),
                 span[0],
                 span[1]));
@@ -261,7 +262,7 @@ public class Braces extends AbstractHint {
             result.add( ErrorDescriptionFactory.createErrorDescription(
                 getSeverity().toEditorSeverity(), 
                 getDisplayName(), 
-                Collections.<Fix>singletonList(JavaFix.toEditorFix(bf)),
+                Collections.<Fix>singletonList(bf.toEditorFix()),
                 info.getFileObject(),
                 span[0],
                 span[1]) );
@@ -305,7 +306,9 @@ public class Braces extends AbstractHint {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath path, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath path = ctx.getPath();
             if ( path != null ) {
                 
                 TreeMaker make = copy.getTreeMaker();

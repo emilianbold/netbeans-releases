@@ -39,84 +39,100 @@
  * 
  * Portions Copyrighted 2007-2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class EqualsMethodHintTest extends TestBase {
-    
+public class EqualsMethodHintTest extends NbTestCase {
+
     public EqualsMethodHintTest(String testName) {
-        super(testName, EqualsMethodHint.class);
+        super(testName);
     }
 
     public void testSimple1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public boolean equals(Object o) {\n" +
-                            "        return true;" +
-                            "    }" +
-                            "}\n",
-                            "2:19-2:25:verifier:ENC");
-                             
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(Object o) {\n" +
+                       "        return true;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings("2:19-2:25:verifier:ENC");
+
     }
-    
+
     public void testSimple2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public boolean equals(String s) {\n" +
-                            "        return true;" +
-                            "    }" +
-                            "}\n");
-                             
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(String s) {\n" +
+                       "        return true;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings();
+
     }
-    
+
     public void testSimple3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public boolean equals(Object o) {\n" +
-                            "        return o instanceof Test;" +
-                            "    }" +
-                            "}\n");
-                             
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(Object o) {\n" +
+                       "        return o instanceof Test;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings();
+
     }
-    
+
     public void testSimple4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public boolean equals(Object o) {\n" +
-                            "        return o.getClass() == Test.class;" +
-                            "    }" +
-                            "}\n");
-                             
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(Object o) {\n" +
+                       "        return o.getClass() == Test.class;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings();
+
     }
-    
+
     public void test134255() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public boolean equals(Object o);\n" +
-                            "}\n");
-                             
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public boolean equals(Object o);\n" +
+                       "}\n", false)
+                .run(EqualsMethodHint.class)
+                .assertWarnings();
+
     }
-    
+
     public void testAnnotations() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    @SuppressWarnings(\"a\") public boolean equals(Object o) {\n" +
-                            "        return true;" +
-                            "    }" +
-                            "}\n",
-                            "2:42-2:48:verifier:ENC");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    @SuppressWarnings(\"a\") public boolean equals(Object o) {\n" +
+                       "        return true;" +
+                       "    }" +
+                       "}\n")
+                .run(EqualsMethodHint.class)
+                .assertWarnings("2:42-2:48:verifier:ENC");
 
     }
 }

@@ -54,25 +54,25 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="ReflectionForUnavailableAnnotation", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime", description = "#DESC_org.netbeans.modules.java.hints.bugs.AnnotationsNotRuntime", category="bugs", suppressWarnings="ReflectionForUnavailableAnnotation", options=Options.QUERY)
 public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$el.isAnnotationPresent($annotation.class)",
                     constraints={
-                        @Constraint(variable="$el", type="java.lang.reflect.AnnotatedElement")
+                        @ConstraintVariableType(variable="$el", type="java.lang.reflect.AnnotatedElement")
                     }
                    )
 //    @TriggerPattern(value="$el.isAnnotationPresent($annotationClass)",
@@ -87,7 +87,7 @@ public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$el.getAnnotation($annotation.class)",
                     constraints={
-                        @Constraint(variable="$el", type="java.lang.reflect.AnnotatedElement")
+                        @ConstraintVariableType(variable="$el", type="java.lang.reflect.AnnotatedElement")
                     }
                    )
 //    @TriggerPattern(value="$el.getAnnotation($annotationClass)",
@@ -102,7 +102,7 @@ public class AnnotationsNotRuntime {
 
     @TriggerPattern(value="$ann instanceof $annotation",
                     constraints={
-                        @Constraint(variable="$ann", type="java.lang.annotation.Annotation")
+                        @ConstraintVariableType(variable="$ann", type="java.lang.annotation.Annotation")
                     }
                    )
     public static ErrorDescription instanceOf(HintContext ctx) {

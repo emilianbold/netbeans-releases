@@ -51,19 +51,20 @@ import java.util.List;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="general")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", description = "#DESC_org.netbeans.modules.java.hints.RemoveUnnecessaryReturn", category="general")
 public class RemoveUnnecessaryReturn {
 
     @TriggerPattern("return $val$;")
@@ -153,6 +154,6 @@ public class RemoveUnnecessaryReturn {
         String displayName = NbBundle.getMessage(RemoveUnnecessaryReturn.class, "ERR_UnnecessaryReturnStatement");
         String fixDisplayName = NbBundle.getMessage(RemoveUnnecessaryReturn.class, "FIX_UnnecessaryReturnStatement");
         
-        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFix.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
+        return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, JavaFixUtilities.removeFromParent(ctx, fixDisplayName, ctx.getPath()));
     }
 }

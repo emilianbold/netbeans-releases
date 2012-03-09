@@ -77,14 +77,15 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbBundle;
@@ -94,7 +95,7 @@ import org.openide.util.Parameters;
  *
  * @author Tomas Zezula
  */
-@Hint(category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToARM", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToARM", category="rules15", suppressWarnings="ConvertToTryWithResources")  //NOI18N
 public class ConvertToARM {
 
     private static final SpecificationVersion JDK_17 = new SpecificationVersion("1.7"); //NOI18N
@@ -253,18 +254,18 @@ public class ConvertToARM {
                             ctx,
                             varVar,
                             NbBundle.getMessage(ConvertToARM.class, "TXT_ConvertToARM"),
-                            JavaFix.toEditorFix(new ConvertToARMFix(
-                                info,
-                                ctx.getPath(),
-                                nestingKind,
-                                varVar,
-                                vars.get("$init"),              //NOI18N
-                                multiVars.get("$armres$"),      //NOI18N
-                                stms,
-                                multiVars.get("$catches$"),     //NOI18N
-                                multiVars.get("$finstms$"),     //NOI18N
-                                tail,
-                                cleanUpStatements))
+                        new ConvertToARMFix(
+info,
+ctx.getPath(),
+nestingKind,
+varVar,
+vars.get("$init"),              //NOI18N
+multiVars.get("$armres$"),      //NOI18N
+stms,
+multiVars.get("$catches$"),     //NOI18N
+multiVars.get("$finstms$"),     //NOI18N
+tail,
+cleanUpStatements).toEditorFix()
                         ));
                     }
                 }
@@ -315,10 +316,9 @@ public class ConvertToARM {
         }
 
         @Override
-        protected void performRewrite(
-                final WorkingCopy wc,
-                final TreePath tp,
-                final boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            final WorkingCopy wc = ctx.getWorkingCopy();
+            final TreePath tp = ctx.getPath();
             final TreeMaker tm = wc.getTreeMaker();
             final Set<StatementTree> nonNeededStms = new HashSet<StatementTree>();
             for (TreePath stm : cleanUpStms) {

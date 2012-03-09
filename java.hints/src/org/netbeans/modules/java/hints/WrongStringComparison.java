@@ -51,13 +51,14 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Pattern;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -118,13 +119,13 @@ public class WrongStringComparison extends AbstractHint {
                     if (getStringLiteralsFirst()) {
                         reverseOperands = true;
                     } else {
-                        fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.NULL_CHECK)));
+                        fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.NULL_CHECK).toEditorFix());
                     }
                 } else {
-                    fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck()))));
+                    fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.ternaryNullCheck(getTernaryNullCheck())).toEditorFix());
                 }
             }
-            fixes.add(JavaFix.toEditorFix(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands))));
+            fixes.add(new WrongStringComparisonFix(tph, WrongStringComparisonFix.Kind.reverseOperands(reverseOperands)).toEditorFix());
             return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
                     getSeverity().toEditorSeverity(), 
@@ -186,7 +187,7 @@ public class WrongStringComparison extends AbstractHint {
 
         TreePath originalPath = new TreePath(sourcePathParent.getParentPath(), original);
 
-        return Matcher.create(info, cancel).setSearchRoot(originalPath).setTreeTopSearch().match(Pattern.createSimplePattern(correctPath)).iterator().hasNext();
+        return Matcher.create(info).setCancel(cancel).setSearchRoot(originalPath).setTreeTopSearch().match(Pattern.createSimplePattern(correctPath)).iterator().hasNext();
     }
 
     boolean getTernaryNullCheck() {
@@ -236,7 +237,9 @@ public class WrongStringComparison extends AbstractHint {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath path, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath path = ctx.getPath();
             if (path != null) {
                 TreeMaker make = copy.getTreeMaker();
                 BinaryTree oldTree = (BinaryTree) path.getLeaf();

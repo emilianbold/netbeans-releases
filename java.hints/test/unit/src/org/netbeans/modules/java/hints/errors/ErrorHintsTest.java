@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.hints.errors;
 
-import org.netbeans.modules.java.hints.infrastructure.*;
+import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
 import org.openide.util.NbBundle;
 
 /**

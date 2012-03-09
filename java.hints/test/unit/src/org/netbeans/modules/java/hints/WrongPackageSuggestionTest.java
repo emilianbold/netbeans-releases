@@ -50,10 +50,10 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.WrongPackageSuggestion.CorrectPackageDeclarationFix;
 import org.netbeans.modules.java.hints.WrongPackageSuggestion.MoveToCorrectPlace;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 
 /**
  *
@@ -67,7 +67,7 @@ public class WrongPackageSuggestionTest extends TreeRuleTestBase {
     
     protected void setUp() throws Exception {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), HintSeverity.WARNING);
+        HintsSettings.setSeverity(new WrongPackageSuggestion().getPreferences(null), Severity.VERIFIER);
         super.setUp();
     }
     

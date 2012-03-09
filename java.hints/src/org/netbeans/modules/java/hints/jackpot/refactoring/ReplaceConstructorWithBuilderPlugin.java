@@ -52,12 +52,12 @@ import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
 import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
 import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderRefactoring.Setter;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -215,7 +215,7 @@ public class ReplaceConstructorWithBuilderPlugin implements RefactoringPlugin {
             results.addAll(JackpotBaseRefactoring2.performTransformation(ruleCode[0], new Transform() {
 
                 @Override
-                public void transform(WorkingCopy copy, OccurrenceDescription occurrence) {
+                public void transform(WorkingCopy copy, Occurrence occurrence) {
                     final TreeMaker make = copy.getTreeMaker();
                     ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(replaceConstructorWithBuilder.getBuilderName()), Collections.EMPTY_LIST, null);
 

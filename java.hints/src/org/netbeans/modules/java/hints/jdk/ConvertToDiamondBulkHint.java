@@ -61,34 +61,35 @@ import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.jackpot.spi.CustomizerProvider;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint.CustomizerProviderImpl;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.CustomizerProvider;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, hintKind=Kind.HINT, customizerProvider=ConvertToDiamondBulkHint.CustomizerProviderImpl.class)
+@Hint(displayName = "#DN_Javac_canUseDiamond", description = "#DESC_Javac_canUseDiamond", id=ConvertToDiamondBulkHint.ID, category="rules15",enabled=true, customizerProvider=CustomizerProviderImpl.class)
 public class ConvertToDiamondBulkHint {
 
     public static final String ID = "Javac_canUseDiamond";
     public static final Set<String> CODES = new HashSet<String>(Arrays.asList("compiler.warn.diamond.redundant.args", "compiler.warn.diamond.redundant.args.1"));
 
+    //XXX: hack:
     public static boolean isHintEnabled() {
-        for (HintMetadata hm : RulesManager.getInstance().allHints.keySet()) {
+        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
             if (ID.equals(hm.id)) {
                 return HintsSettings.isEnabled(hm);
             }
@@ -136,15 +137,15 @@ public class ConvertToDiamondBulkHint {
                 }
             }
 
-            List<Fix> fixes = Arrays.asList(JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath())));
+            List<Fix> fixes = Arrays.asList(new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
             
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity().toEditorSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
         }
 
         return null;
     }
 
-    private static final String KEY = "enabledVariants";
+    static final String KEY = "enabledVariants";
     static final String ALL = "initializer,assignment,return,argument,other";
     
     static String getConfiguration(Preferences p) {
@@ -163,15 +164,6 @@ public class ConvertToDiamondBulkHint {
         return ("," + getConfiguration(p) + ",").contains("," + key + ",");
     }
 
-    public static final class CustomizerProviderImpl implements CustomizerProvider {
-
-        @Override
-        public JComponent getCustomizer(Preferences prefs) {
-            return new ConvertToDiamondBulkHintPanel(prefs);
-        }
-
-    }
-
     private static final class FixImpl extends JavaFix {
 
         public FixImpl(CompilationInfo info, TreePath path) {
@@ -183,7 +175,9 @@ public class ConvertToDiamondBulkHint {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             if (tp.getLeaf().getKind() != Tree.Kind.NEW_CLASS) {
                 //XXX: warning
                 return ;
@@ -201,6 +195,14 @@ public class ConvertToDiamondBulkHint {
             ParameterizedTypeTree nue = make.ParameterizedType(ptt.getType(), Collections.<Tree>emptyList());
 
             copy.rewrite(ptt, nue);
+        }
+
+    }
+
+    static final class CustomizerProviderImpl implements CustomizerProvider {
+
+        @Override public JComponent getCustomizer(Preferences prefs) {
+            return new ConvertToDiamondBulkHintPanel(prefs);
         }
 
     }
