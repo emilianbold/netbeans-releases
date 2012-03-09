@@ -123,6 +123,20 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         });
     }
 
+    // TODO - REFACTOR LATER
+    private void checkDeprecated(Source source, final int offset, final boolean expected) throws Exception {
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result result = resultIterator.getParserResult();
+                assertTrue(result instanceof JsParserResult);
+                JsParserResult parserResult = (JsParserResult) result;
+
+                JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
+                assertEquals(expected, documentationProvider.isDeprecated(getNodeForOffset(parserResult, offset)));
+            }
+        });
+    }
+
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
@@ -259,6 +273,30 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "function Hexagon(sideLength) {^");
         checkDocumentation(testSource, caretOffset, "<b>Summary:</b><br><p>Create a new Hexagon instance.</p><b>Examples:</b><br><p>var h = new Hexagon(2);</p><p>if (hasHex) {\n      hex   = new Hexagon(5);\n      color = hex.getColor();\n  }</p>");
+    }
+
+    public void testDeprecated01() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "function Add(One, Two){^");
+        checkDeprecated(testSource, caretOffset, true);
+    }
+
+    public void testDeprecated02() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Circle.^PI = 3.14;");
+        checkDeprecated(testSource, caretOffset, true);
+    }
+
+    public void testDeprecated03() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.^width = 0;");
+        checkDeprecated(testSource, caretOffset, false);
+    }
+
+    public void testDeprecated04() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Coordinate.prototype.getX = function(){^");
+        checkDeprecated(testSource, caretOffset, false);
     }
 
     private static class FakeDocParameter implements DocParameter {

@@ -326,6 +326,7 @@ Circle.prototype.radius = 0;
 /**
  * A very simple class (static) field that is also a constant
  * @final
+ * @deprecated
  * @type float
  */
 Circle.PI = 3.14;

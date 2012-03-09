@@ -122,6 +122,19 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
         return null;
     }
 
+    // TODO - rewrite for getting all associated comments and call getter for all and merge results
+    // TODO - try to move that directly into JsDocBlock
+    @Override
+    public boolean isDeprecated(Node node) {
+        JsDocBlock block = getCommentForOffset(node.getStart());
+        if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
+            for (JsDocElement jsDocElement : block.getTagsForType(JsDocElement.Type.DEPRECATED)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected JsDocBlock getCommentForOffset(int offset) {
         int endOffset = getEndOffsetOfAssociatedComment(offset);
         if (endOffset > 0) {

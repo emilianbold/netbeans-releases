@@ -70,5 +70,12 @@ public interface DocumentationProvider {
      * @return documentation text if any {@code null} otherwise
      */
     String getDocumentation(Node node);
+
+    /**
+     * Says whether is code at given code depricated or not.
+     * @param node examined node
+     * @return {@code true} if the comment says "it's deprecated", {@code false} otherwise
+     */
+    boolean isDeprecated(Node node);
     
 }
