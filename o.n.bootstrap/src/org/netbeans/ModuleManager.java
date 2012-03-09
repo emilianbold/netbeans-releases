@@ -1880,7 +1880,7 @@ public final class ModuleManager extends Modules {
         });
     }
     private class ModuleDataCache implements Stamps.Updater {
-        private static final String CACHE = "all-modules.dat";
+        private static final String CACHE = "all-manifests.dat";
         private final Map<String,byte[]> cnb2Data;
         
         public ModuleDataCache() {

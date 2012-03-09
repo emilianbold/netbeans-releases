@@ -46,6 +46,7 @@ package org.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectInput;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -54,7 +55,6 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 
 /** Special module for representing OSGi bundles 
@@ -66,63 +66,26 @@ final class NetigsoModule extends Module {
     private final File jar;
     private final Manifest manifest;
     private int startLevel = -1;
-    private final String codeName;
-    private final int release;
-    private final SpecificationVersion version;
     private InvalidException problem;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
         this.jar = jar;
         this.manifest = mani;
-        final String symbName = getMainAttribute("Bundle-SymbolicName");
-        this.codeName = symbName.replace('-', '_');
-        int slash = codeName.lastIndexOf('/');
-        if (slash != -1) {
-            this.release = Integer.parseInt(symbName.substring(slash + 1));
+    }
+
+    @Override
+    ModuleData createData(ObjectInput in, Manifest mf) throws IOException {
+        if (in != null) {
+            return new ModuleData(in);
         } else {
-            this.release = -1;
+            return new ModuleData(mf, this);
         }
-        String v = getMainAttribute("Bundle-Version"); // NOI18N
-        if (v == null) {
-            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", jar);
-            this.version = new SpecificationVersion("0.0");
-        } else {
-            this.version = computeVersion(v);
-        }
-        
-        //JST: computeProvides(mani.getMainAttributes(), false);
     }
 
     @Override
     boolean isNetigsoImpl() {
         return true;
-    }
-
-    @Override
-    public String getCodeName() {
-        return getCodeNameBase();
-    }
-
-    @Override
-    public String getCodeNameBase() {
-        return codeName;
-    }
-
-    @Override
-    public int getCodeNameRelease() {
-        return release;
-    }
-
-    @Override
-    public SpecificationVersion getSpecificationVersion() {
-        return version;
-    }
-
-    @Override
-    public String getImplementationVersion() {
-        String explicit = super.getImplementationVersion(); // OIDE-M-I-V/-B-V added by NB build harness
-        return explicit != null ? explicit : getMainAttribute("Bundle-Version"); // NOI18N
     }
 
     @Override
@@ -241,19 +204,6 @@ final class NetigsoModule extends Module {
         return "Netigso: " + jar;
     }
 
-    private String getMainAttribute(String attr) {
-        String s = manifest.getMainAttributes().getValue(attr);
-        if (s == null) {
-            return null;
-        }
-        int semicolon = s.indexOf(';');
-        if (semicolon == -1) {
-            return s;
-        } else {
-            return s.substring(0, semicolon);
-        }
-    }
-
     @Override
     final int getStartLevelImpl() {
         return startLevel;
@@ -263,17 +213,6 @@ final class NetigsoModule extends Module {
         this.startLevel = startLevel;
     }
     
-    private static SpecificationVersion computeVersion(String v) {
-        int pos = -1;
-        for (int i = 0; i < 3; i++) {
-            pos = v.indexOf('.', pos + 1);
-            if (pos == -1) {
-                return new SpecificationVersion(v);
-            }
-        }
-        return new SpecificationVersion(v.substring(0, pos));
-    }
-
     private final class DelegateCL extends ProxyClassLoader 
     implements Util.ModuleProvider {
         public DelegateCL() {

@@ -49,6 +49,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -84,9 +85,7 @@ class ModuleData {
     
     
     ModuleData(Manifest mf, Module forModule) throws InvalidException {
-        forModule.assignData(this);
         Attributes attr = mf.getMainAttributes();
-
         // Code name
         codeName = attr.getValue("OpenIDE-Module"); // NOI18N
         if (codeName == null) {
@@ -98,6 +97,7 @@ class ModuleData {
                 this.toString()));
             throw e;
         }
+        forModule.assignData(this);
         try {
             // This has the side effect of checking syntax:
             if (codeName.indexOf(',') != -1) {
@@ -207,6 +207,38 @@ class ModuleData {
         } catch (IllegalArgumentException iae) {
             throw (InvalidException) new InvalidException("While parsing " + codeName + " a dependency attribute: " + iae.toString()).initCause(iae); // NOI18N
         }
+        this.coveredPackages = new HashSet<String>();
+    }
+    
+    ModuleData(Manifest mf, NetigsoModule m) throws InvalidException {
+        final String symbName = getMainAttribute(mf, "Bundle-SymbolicName"); // NOI18N
+        if (symbName == null) {
+            throw new InvalidException("Not an OSGi bundle: " + m);
+        }
+        m.assignData(this);
+        this.codeName = symbName.replace('-', '_');
+        int slash = codeName.lastIndexOf('/');
+        if (slash != -1) {
+            this.codeNameRelease = Integer.parseInt(symbName.substring(slash + 1));
+        } else {
+            this.codeNameRelease = -1;
+        }
+        String v = getMainAttribute(mf, "Bundle-Version"); // NOI18N
+        if (v == null) {
+            NetigsoModule.LOG.log(Level.WARNING, "No Bundle-Version for {0}", m);
+            this.specVers = new SpecificationVersion(v = "0.0");
+        } else {
+            this.specVers = computeVersion(v);
+        }
+        this.codeNameBase = codeName;
+        String iv = getMainAttribute(mf, "OpenIDE-Module-Implementation-Version"); // NOI18N
+        this.implVersion = iv == null ? v : iv;
+        String bld = getMainAttribute(mf, "OpenIDE-Module-Build-Version"); // NOI18N
+        this.buildVersion = bld == null ? implVersion : bld;
+        this.friendNames = Collections.emptySet();
+        this.publicPackages = null;
+        this.provides = computeProvides(m, mf.getMainAttributes(), false);
+        this.dependencies = null;
         this.coveredPackages = new HashSet<String>();
     }
     
@@ -405,6 +437,29 @@ class ModuleData {
     }
     private void writeStrings(ObjectOutput dos, String[] provides) throws IOException {
         writeStrings(dos, Arrays.asList(provides));
+    }
+    
+    private static String getMainAttribute(Manifest manifest, String attr) {
+        String s = manifest.getMainAttributes().getValue(attr);
+        if (s == null) {
+            return null;
+        }
+        int semicolon = s.indexOf(';');
+        if (semicolon == -1) {
+            return s;
+        } else {
+            return s.substring(0, semicolon);
+        }
+    }
+    private static SpecificationVersion computeVersion(String v) {
+        int pos = -1;
+        for (int i = 0; i < 3; i++) {
+            pos = v.indexOf('.', pos + 1);
+            if (pos == -1) {
+                return new SpecificationVersion(v);
+            }
+        }
+        return new SpecificationVersion(v.substring(0, pos));
     }
 
 }
