@@ -255,7 +255,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
         for (Module _m : mWithDeps) {
-            String hidden = cache.findProperty(m, "OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
+            String hidden = cache.findProperty(_m, "OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
             if (hidden != null) {
                 for (String piece : hidden.trim().split("[ ,]+")) { // NOI18N
                     try {
