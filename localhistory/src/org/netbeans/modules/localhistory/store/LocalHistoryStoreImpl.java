@@ -55,7 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.netbeans.modules.localhistory.utils.FileUtils;
@@ -65,8 +68,7 @@ import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -95,8 +97,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
     private Set<File> lockedFolders = Collections.synchronizedSet(new HashSet<File>(5));
 
+    private static long LOCK_TIMEOUT = 30;
+    private final RequestProcessor rp = new RequestProcessor("LocalHistoryStore", 50); // NOI18N
+    private final Map<File, Semaphore> proccessedFiles = new HashMap<File, Semaphore>();
+    static final Logger LOG = Logger.getLogger(LocalHistoryStoreImpl.class.getName());    
+    
     private static FilenameFilter fileEntriesFilter =
             new FilenameFilter() {
+        @Override
                 public boolean accept(File dir, String fileName) {
                     return !( fileName.endsWith(DATA_FILE)    ||
                               fileName.endsWith(HISTORY_FILE) ||
@@ -122,11 +130,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized void fileCreate(File file, long ts) {
+    public void fileCreate(File file, long ts) {
+        Semaphore s = lock(file, "fileCreate"); // NOI18N
         try {
             fileCreateImpl(file, ts, null, file.getAbsolutePath());
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
+        } finally {
+            if(s != null) s.release();
         }
     }
 
@@ -156,27 +167,36 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized void fileChange(final File file, boolean handleAsync, final long ts) {
-        long lastModified = lastModified(file);
-        if(lastModified == ts) {
-            return;
-        }
-        if(file.isFile()) {
-            if(handleAsync) {
-                storeChangedAsync(file, ts);
-                // fireChanged(file) handled in scope of async copy 
-            } else {                
-                storeChangedSync(file, ts);
+    public void fileChange(final File file, final long ts) {
+        final Semaphore s = lock(file, "fileChange"); // NOI18N
+        rp.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    long lastModified = lastModified(file);
+                    if(lastModified == ts) {
+                        LocalHistory.LOG.log(Level.FINE, "skipping fileChange for file {0} because timestap already exists.", new Object[]{file, ts}); // NOI18N
+                        return;
+                    }
+                    if(file.isFile()) {
+                        storeChangedSync(file, ts);
+                    } else {
+                        try {
+                            touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, false));
+                        } catch (IOException ioe) {
+                            LocalHistory.LOG.log(Level.WARNING, null, ioe);
+                        }
+                    }
+                } finally {
+                    if(s != null) s.release();
+                    synchronized(proccessedFiles) {
+                        proccessedFiles.remove(file);
+                    }
+                }
                 fireChanged(file, ts);
             }
-        } else {
-            try {
-                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, false));
-            } catch (IOException ioe) {
-                LocalHistory.LOG.log(Level.WARNING, null, ioe);
-            }
-            fireChanged(file, ts);
-        }
+        });
+        
     }
 
     private void storeChangedSync(File file, long ts) {
@@ -184,7 +204,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         try {
             try {
                 FileUtils.copy(file, StoreEntry.createStoreFileOutputStream(storeFile));
-                LocalHistory.LOG.log(Level.FINE, "copied {0} into {1}", new Object[]{file, storeFile}); // NOI18N
+                LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{file, storeFile}); // NOI18N
 
                 LocalHistory.logChange(file, storeFile, ts);
                 touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
@@ -196,52 +216,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.LOG.log(Level.INFO, "exception while copying file " + file + " to " + storeFile, ioe); // NOI18N                                    
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
-        }        
-    }
-    
-    private void storeChangedAsync(final File file, final long ts) {
-        final File backup = fastCopyIfPosible(file);
-        if(backup != null && backup.exists()) {
-            Task task = LocalHistory.getInstance().getParallelRequestProcessor().create(new Runnable() {
-                @Override
-                public void run() {
-                    File storeFile = getStoreFile(file, Long.toString(ts), true);
-                    try {
-                        LocalHistory.LOG.log(Level.FINE, "starting copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
-                        OutputStream os = StoreEntry.createStoreFileOutputStream(storeFile);
-                        LocalHistory.LOG.log(Level.FINER, "created storage file {0}", new Object[]{storeFile}); // NOI18N
-                        FileUtils.copy(backup, os);
-                        LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
-
-                        LocalHistory.logChange(file, storeFile, ts);
-                        touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
-                    } catch (FileNotFoundException ioe) {                                
-                        LocalHistory.LOG.log(Level.INFO, "exception while copying file " + backup + " to " + storeFile, ioe); // NOI18N                                    
-                    } catch (IOException ioe) {
-                        LocalHistory.LOG.log(Level.WARNING, "exception while copying file " + backup + " to " + storeFile, ioe); // NOI18N                                    
-                    } finally {
-                        // release
-                        lockedFolders.remove(storeFile.getParentFile());
-                        backup.delete();
-                        fireChanged(file, ts);
-                        LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{backup, storeFile}); // NOI18N
-                    }
-                }
-            });
-            task.schedule(0);
-        } else {
-            // something went wrong - lets copy the file synchronously
-            storeChangedSync(file, ts);
-            fireChanged(file, ts);
+        } finally {
+            LocalHistory.LOG.log(Level.FINE, "finnished copy file {0} into storage file {1}", new Object[]{file, storeFile}); // NOI18N
         }
     }
     
     @Override
-    public synchronized void fileDelete(File file, long ts) {
+    public void fileDelete(File file, long ts) {
+        Semaphore s = lock(file, "fileDelete"); // NOI18N
         try {
             fileDeleteImpl(file, null, file.getAbsolutePath(), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
+        } finally {
+            if(s != null) s.release();
         }
         fireChanged(file, ts);
     }
@@ -251,7 +239,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // XXX what if already deleted?
 
         if(data == null) {
-            LocalHistory.log("deleting without data for file : " + file);
+            LocalHistory.log("deleting without data for file : " + file); // NOI18N
             return;
         }
         // copy from previous entry
@@ -272,24 +260,30 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized void fileCreateFromMove(File from, File to, long ts) {
-        if(lastModified(to) > 0) {
-            return;
-        }
+    public void fileCreateFromMove(File from, File to, long ts) {
+        Semaphore s = lock(from, "fileCreateFromMove"); // NOI18N
         try {
+            if(lastModified(to) > 0) {
+                return;
+            }
             fileCreateImpl(to, ts, from.getAbsolutePath(), to.getAbsolutePath());
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
+        } finally {
+            if(s != null) s.release();
         }
         fireChanged(to, ts);
     }
 
     @Override
-    public synchronized void fileDeleteFromMove(File from, File to, long ts) {
+    public void fileDeleteFromMove(File from, File to, long ts) {
+        Semaphore s = lock(from, "fileDeleteFromMove"); // NOI18N
         try {
             fileDeleteImpl(from, from.getAbsolutePath(), to.getAbsolutePath(), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
+        } finally {
+            if(s != null) s.release();
         }
         fireChanged(from, ts);
     }
@@ -305,9 +299,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized StoreEntry[] getStoreEntries(File file) {
-        // XXX file.isFile() won't work for deleted files
-        return getStoreEntriesImpl(file);
+    public StoreEntry[] getStoreEntries(File file) {
+        Semaphore s = lock(file, "getStoreEntries"); // NOI18N
+        try {
+            // XXX file.isFile() won't work for deleted files
+            return getStoreEntriesImpl(file);
+        } finally {
+            if(s != null) s.release();
+        }
     }
 
     private StoreEntry[] getStoreEntriesImpl(File file) {
@@ -332,6 +331,15 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
     @Override
     public StoreEntry[] getFolderState(File root, File[] files, long ts) {
+        Semaphore s = lock(root, "getFolderState"); // NOI18N
+        try {
+            return getFolderStateIntern(root, files, ts);
+        } finally {
+            if(s != null) s.release();
+        }
+    }
+
+    private StoreEntry[] getFolderStateIntern(File root, File[] files, long ts) {
 
         // check if the root wasn't deleted to that time
         File parentFile = root.getParentFile();
@@ -385,7 +393,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 continue;
             }
             if(data.isFile()) {
-                StoreEntry se = getStoreEntry(file, ts);
+                StoreEntry se = getStoreEntryIntern(file, ts);
                 if(se != null) {
                     ret.add(se);
                 } else {
@@ -424,7 +432,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             StoreDataFile data = readStoreData(file, true);
             if(data != null) {
                 if(data.isFile()) {
-                    StoreEntry se = getStoreEntry(file, ts);
+                    StoreEntry se = getStoreEntryIntern(file, ts);
                     if(se != null) {
                         ret.add(se);
                     } else {
@@ -470,7 +478,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized StoreEntry getStoreEntry(File file, long ts) {
+    public StoreEntry getStoreEntry(File file, long ts) {
+        Semaphore s = lock(file, "getStoreEntry"); // NOI18N
+        try {
+            return getStoreEntryIntern(file, ts);
+        } finally {
+            if(s != null) s.release();
+        }
+    }
+    
+    private StoreEntry getStoreEntryIntern(File file, long ts) {
         return getStoreEntryImpl(file, ts, readStoreData(file, true));
     }
 
@@ -499,17 +516,31 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized void deleteEntry(File file, long ts) {
-        File storeFile = getStoreFile(file, Long.toString(ts), false);
-        if(storeFile.exists()) {
-            storeFile.delete();
+    public void deleteEntry(File file, long ts) {
+        Semaphore s = lock(file, "deleteEntry"); // NOI18N
+        try {
+            File storeFile = getStoreFile(file, Long.toString(ts), false);
+            if(storeFile.exists()) {
+                storeFile.delete();
+            }
+            // XXX delete from parent history
+            fireDeleted(file, ts);
+        } finally {
+            if(s != null) s.release();
         }
-        // XXX delete from parent history
-        fireDeleted(file, ts);
     }
 
     @Override
-    public synchronized StoreEntry[] getDeletedFiles(File root) {
+    public StoreEntry[] getDeletedFiles(File root) {
+        Semaphore s = lock(root, "getDeletedFiles"); // NOI18N
+        try {
+            return getDeletedFilesIntern(root);
+        } finally {
+            if(s != null) s.release();
+        }
+    }
+    
+    private StoreEntry[] getDeletedFilesIntern(File root) {
         if(root.isFile()) {
             return null;
         }
@@ -588,7 +619,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public synchronized StoreEntry setLabel(File file, long ts, String label) {
+    public StoreEntry setLabel(File file, long ts, String label) {
+        Semaphore s = lock(file, "setLabel"); // NOI18N
+        try {
+            return setLabelIntern(file, ts, label);
+        } finally {
+            if(s != null) s.release();
+        }
+    }
+    
+    private StoreEntry setLabelIntern(File file, long ts, String label) {
         File labelsFile = getLabelsFile(file);
         File parent = labelsFile.getParentFile();
         if(!parent.exists()) {
@@ -660,16 +700,16 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.LOG.log(Level.SEVERE, null, ex);
         }
         
-        return getStoreEntry(file, ts);
+        return getStoreEntryIntern(file, ts);
     }
 
     @Override
-    public synchronized void addVersioningListener(VersioningListener l) {
+    public void addVersioningListener(VersioningListener l) {
         listenersSupport.addListener(l);
     }
 
     @Override
-    public synchronized void removeVersioningListener(VersioningListener l) {
+    public void removeVersioningListener(VersioningListener l) {
         listenersSupport.removeListener(l);
     }
 
@@ -774,7 +814,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(files != null) {
             for(File f : files) {
                 // XXX check the timestamp when touched
-                long ts = 0;
+                long ts;
                 try {
                     ts = Long.parseLong(f.getName());
                 } catch (NumberFormatException ex) {
@@ -1158,69 +1198,82 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    /**
-     * Renames the given source file and creates afterwards a new one with the same timestamp
-     * so that filesystem doesn't get confused. Note that leaving the source file
-     * empty is conform with the behavior of <code>FileObject.getOutputStream()</code>
-     * which also should be the <b>only trigger</b> for calling this.<br>
-     * WARNING! This should be called only from <code>fileChange()</code> which
-     * handles <code>ProvidedExtensions.beforeChange()</code> which gets called by
-     * <code>FileObject.getOutputStream()</code>
-     *
-     *
-     * @param source the file to be copied
-     * @return the newly created copy
-     */
-    private File fastCopyIfPosible(File source) {
-        LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} - start", new Object[]{source}); // NOI18N
-        if(!Utilities.isWindows() && !isStoreAsync()) {
-            // some special access setting perhaps? looks like this is not typical 
-            // rw file, so skip this as we aren't able to properly set *nix like file modes
-            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because not on Windows", new Object[]{source}); // NOI18N
-            return null;
+    @Override
+    public void waitForProcessedStoring(File file, String caller) {
+        Semaphore s;
+        synchronized(proccessedFiles) {
+            s = proccessedFiles.get(file);
         }
-        if(isStoreSync()) {
-            LocalHistory.LOG.log(Level.FINE, "fastCopy {0} - skipping because netbeans.localhistory.storeChangesSynchronously is set", new Object[]{source}); // NOI18N
-            return null;
-        }
-        
-        int i = 0;        
-        while(true) {
+        if(s != null) {
             try {
-                source = source.getCanonicalFile();
-            } catch (IOException ex) {
-                LocalHistory.LOG.log(Level.WARNING, null, ex);
-                return null;
-            }
-            
-            File target = new File(source.getParentFile(), source.getName() + "." + i++ + LocalHistory.LH_TMP_FILE_SUFFIX);
-            if(!target.exists()) {
-                long ts = source.lastModified();
-                if(source.renameTo(target)) {                                
-                    try {
-                        source.createNewFile();                        
-                    } catch (IOException ex) {
-                        LocalHistory.LOG.log(Level.WARNING, null, ex);
-                    }
-                    source.setLastModified(ts);
-                    LocalHistory.LOG.log(Level.FINE, "fastCopy file {0} to {1} - end", new Object[]{source, target}); // NOI18N
-                    return target;
-                } else {
-                    // something went wrong, we don't know what 
-                    LocalHistory.LOG.log(Level.WARNING, "wasn't able to rename {0} into {1}", new Object[]{source, target}); // NOI18N
-                    return null;
+                long t9Timeout = getT9LockReleaseTimeOut();
+                long timeout = t9Timeout >= 0 ? t9Timeout : LOCK_TIMEOUT;
+                boolean aquired = s.tryAcquire(timeout, TimeUnit.SECONDS);
+                if(t9Timeout < 0) {
+                    assert aquired;
                 }
+                if(aquired) {
+                    s.release();
+                } else {
+                    LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, file}); // NOI18N
+                    synchronized(proccessedFiles) {
+                        proccessedFiles.remove(file);
+                    }
+                }
+            } catch (InterruptedException ex) {
+                // nothing
             }
+            LOG.log(Level.FINER, "{0} for file {1} was blocked.", new Object[] {caller, file}); // NOI18N
         }
     }
 
-    private boolean isStoreAsync() {
-        return "true".equals(System.getProperty("netbeans.localhistory.storeChangesAsynchronously")); // NOI18N
-    }
-
-    private boolean isStoreSync() {
-        return "true".equals(System.getProperty("netbeans.localhistory.storeChangesSynchronously")); // NOI18N
-    }
+    private Semaphore lock(File file, String caller) {
+        Semaphore s;
+        synchronized(proccessedFiles) {
+            s = proccessedFiles.get(file);
+            if(s == null) {
+                s = new Semaphore(1, true);
+                proccessedFiles.put(file, s);
+            }
+        }
+        try {
+            
+            long t9Timeout = getT9LockTimeOut();
+            long timeout = t9Timeout >= 0 ? t9Timeout : LOCK_TIMEOUT;
+            boolean aquired = s.tryAcquire(timeout, TimeUnit.SECONDS);
+            if(t9Timeout > 0) {
+                assert aquired;
+            }
+            if(aquired) {
+                LOG.log(Level.FINE, "{0} aquired lock for {1}", new Object[]{caller, file}); // NOI18N
+            } else {
+                LOG.log(Level.WARNING, "{0} Releasing lock on file: {1}", new Object[] {caller, file}); // NOI18N
+            }
+        } catch (InterruptedException ex) {
+            return null;
+        }
+        return s;
+    }    
+    
+    private long getT9LockReleaseTimeOut() {
+        String t9yLockTimeOut = System.getProperty("netbeans.t9y.localhistory.release-lock.timeout", "-1"); // NOI18N
+        try {
+            long l = Long.parseLong(t9yLockTimeOut);
+            return l;
+        } catch (NumberFormatException numberFormatException) {
+            return -1;
+        }
+    } 
+    
+    private long getT9LockTimeOut() {
+        String t9yLockTimeOut = System.getProperty("netbeans.t9y.localhistory.lock.timeout", "-1"); // NOI18N
+        try {
+            long l = Long.parseLong(t9yLockTimeOut);
+            return l;
+        } catch (NumberFormatException numberFormatException) {
+            return -1;
+        }
+    } 
     
     private class HistoryEntry {
         private long ts;

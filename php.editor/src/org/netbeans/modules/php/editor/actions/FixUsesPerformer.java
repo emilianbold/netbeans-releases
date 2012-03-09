@@ -59,7 +59,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.ModelElement;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
@@ -114,8 +114,8 @@ public class FixUsesPerformer {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
         int startOffset = getOffset(baseDocument, namespaceScope);
         List<String> useParts = new ArrayList<String>();
-        Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             processUseElement(useElement, useParts);
         }
         for (int i = 0; i < selections.length; i++) {
@@ -125,14 +125,14 @@ public class FixUsesPerformer {
                 useParts.add(sanitizedUse.getSanitizedUsePart());
                 List<UsedNamespaceName> namesToModify = importData.usedNamespaceNames.get(i);
                 for (UsedNamespaceName usedNamespaceName : namesToModify) {
-                    editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), true, 0);
+                    editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), sanitizedUse.getReplaceName(usedNamespaceName), false, 0);
                 }
             }
         }
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
     }
 
-    private void processUseElement(final UseElement useElement, final List<String> useParts) {
+    private void processUseElement(final UseScope useElement, final List<String> useParts) {
         if (isUsed(useElement) || !removeUnusedUses) {
             AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
@@ -153,7 +153,7 @@ public class FixUsesPerformer {
         return result;
     }
 
-    private boolean isUsed(final UseElement useElement) {
+    private boolean isUsed(final UseScope useElement) {
         boolean result = true;
         for (UnusedOffsetRanges unusedRange : SemanticAnalysis.computeUnusedUsesOffsetRanges(parserResult)) {
             if (unusedRange.getRangeToVisualise().containsInclusive(useElement.getOffset())) {
@@ -198,7 +198,7 @@ public class FixUsesPerformer {
         }
         for (OffsetRange offsetRange : visitor.getUsedRanges()) {
             int startOffset = getOffsetWithoutLeadingWhitespaces(offsetRange.getStart());
-            editList.replace(startOffset, offsetRange.getEnd() - startOffset, EMPTY_STRING, true, 0);
+            editList.replace(startOffset, offsetRange.getEnd() - startOffset, EMPTY_STRING, false, 0);
         }
     }
 
@@ -223,8 +223,8 @@ public class FixUsesPerformer {
 
     private static ModelElement getReferenceElement(NamespaceScope namespaceScope) {
         ModelElement offsetElement = null;
-        Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             if (offsetElement == null || offsetElement.getOffset() < useElement.getOffset()) {
                 offsetElement = useElement;
             }

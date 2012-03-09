@@ -143,7 +143,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcPassword(),null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationPropertyName()
-                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationDropCreateValue() });
+                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER.getTableGenerationDropCreateValue(), PersistenceUnitProperties.NONE });
         //hibernate //TODO? reuse hibernate module?
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER2_0, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName(), null);
@@ -165,7 +165,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getJdbcPassword(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER2_0).put(ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationPropertyName()
-                ,new String[] {ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationDropCreateValue() });
+                ,new String[] {ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER2_0.getTableGenerationDropCreateValue(), "validate", "update" });//NOI18N
         //hibernate jpa 1.0
         possiblePropertyValues.put(ProviderUtil.HIBERNATE_PROVIDER, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getJdbcUrl(),null);
@@ -173,7 +173,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getJdbcPassword(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.HIBERNATE_PROVIDER).put(ProviderUtil.HIBERNATE_PROVIDER.getTableGenerationPropertyName()
-                ,new String[] {ProviderUtil.HIBERNATE_PROVIDER.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER.getTableGenerationDropCreateValue() });
+                ,new String[] {ProviderUtil.HIBERNATE_PROVIDER.getTableGenerationCreateValue(),ProviderUtil.HIBERNATE_PROVIDER.getTableGenerationDropCreateValue(), "validate", "update"  });
         //eclipselink jpa 1.0
         possiblePropertyValues.put(ProviderUtil.ECLIPSELINK_PROVIDER1_0, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER1_0).put(ProviderUtil.ECLIPSELINK_PROVIDER1_0.getJdbcUrl(),null);
@@ -181,7 +181,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER1_0).put(ProviderUtil.ECLIPSELINK_PROVIDER1_0.getJdbcPassword(),null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER1_0).put(ProviderUtil.ECLIPSELINK_PROVIDER1_0.getJdbcUsername(),null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER1_0).put(ProviderUtil.ECLIPSELINK_PROVIDER1_0.getTableGenerationPropertyName()
-                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER1_0.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER1_0.getTableGenerationDropCreateValue() });
+                ,new String[] {ProviderUtil.ECLIPSELINK_PROVIDER1_0.getTableGenerationCreateValue(),ProviderUtil.ECLIPSELINK_PROVIDER1_0.getTableGenerationDropCreateValue(), PersistenceUnitProperties.NONE });
         //openjpa 1.0
         possiblePropertyValues.put(ProviderUtil.OPENJPA_PROVIDER, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.OPENJPA_PROVIDER).put(ProviderUtil.OPENJPA_PROVIDER.getJdbcUrl(),null);

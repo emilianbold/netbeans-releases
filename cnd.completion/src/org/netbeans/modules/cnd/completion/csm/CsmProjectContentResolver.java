@@ -992,7 +992,7 @@ public final class CsmProjectContentResolver {
             minVisibility = CsmInheritanceUtilities.getContextVisibility(clazz, contextDeclaration, CsmVisibility.PUBLIC, true);
         }
 
-        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL, MAX_INHERITANCE_DEPTH);
+        Map<CharSequence, CsmClass> set = getBaseClasses(clazz, contextDeclaration, strPrefix, match, new AntiLoop(), minVisibility, INIT_INHERITANCE_LEVEL);
         List<CsmClass> res;
         if (set != null && set.size() > 0) {
             res = new ArrayList<CsmClass>(set.values());
@@ -1259,12 +1259,13 @@ public final class CsmProjectContentResolver {
 
     @SuppressWarnings("unchecked")
     private Map<CharSequence, CsmClass> getBaseClasses(CsmClass csmClass, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match,
-            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel, int level) {
+            AntiLoop handledClasses, CsmVisibility minVisibility, int inheritanceLevel) {
         assert (csmClass != null);
 
         if (handledClasses.contains(csmClass)) {
             return new HashMap<CharSequence, CsmClass>();
         }
+        handledClasses.add(csmClass);
 
         if (minVisibility == CsmVisibility.NONE) {
             return new HashMap<CharSequence, CsmClass>();
@@ -1280,15 +1281,14 @@ public final class CsmProjectContentResolver {
         for (Iterator<CsmInheritance> it2 = csmClass.getBaseClasses().iterator(); it2.hasNext();) {
             CsmInheritance inherit = it2.next();
             CsmClass baseClass = CsmInheritanceUtilities.getCsmClass(inherit);
-            if (baseClass != null) {
-                handledClasses.add(baseClass);
-                if (!baseClass.equals(csmClass) && (level != 0)) {
+            if (baseClass != null) {                
+                if (!baseClass.equals(csmClass)) {
                     VisibilityInfo nextInfo = getNextInheritanceInfo(minVisibility, inherit, inheritanceLevel, friend);
                     CsmVisibility nextMinVisibility = nextInfo.visibility;
                     int nextInheritanceLevel = nextInfo.inheritanceLevel;
                     if (nextMinVisibility != CsmVisibility.NONE) {
                         Map<CharSequence, CsmClass> baseRes = getBaseClasses(baseClass, contextDeclaration, strPrefix, match,
-                                handledClasses, nextMinVisibility, nextInheritanceLevel, level - 1);
+                                handledClasses, nextMinVisibility, nextInheritanceLevel);
                         if (matchName(baseClass.getName(), strPrefix, match)) {
                             baseRes.put(baseClass.getQualifiedName(), baseClass);
                         }

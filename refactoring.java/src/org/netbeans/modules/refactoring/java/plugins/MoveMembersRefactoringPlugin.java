@@ -84,7 +84,8 @@ import org.openide.util.NbBundle;
     "ERR_MoveGenericField=Cannot move a generic field",
     "WRN_InitNoAccess=Field initializer uses local accessors which will not be accessible",
     "# {0} - File displayname : line number",
-    "WRN_NoAccessor=No accessor found to invoke the method from: {0}"})
+    "WRN_NoAccessor=No accessor found to invoke the method from: {0}",
+    "TXT_DelegatingMethod=Delegating method"})
 public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
 
     private final MoveRefactoring refactoring;

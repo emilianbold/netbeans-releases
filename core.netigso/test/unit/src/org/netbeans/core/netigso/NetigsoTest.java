@@ -51,6 +51,7 @@ import org.netbeans.MockModuleInstaller;
 import org.netbeans.MockEvents;
 import org.netbeans.Module;
 import org.netbeans.ModuleManager;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Basic tests to verify the basic interaction between NetBeans module
@@ -106,6 +107,7 @@ public class NetigsoTest extends NetigsoHid {
 
     }
 
+    @RandomlyFails // assert framework != null or OverlappingFileLockException in BundleCache.<init>
     public void testDashnames() throws Exception {
         MockModuleInstaller installer = new MockModuleInstaller();
         MockEvents ev = new MockEvents();

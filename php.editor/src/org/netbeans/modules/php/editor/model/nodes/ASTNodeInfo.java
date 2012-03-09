@@ -83,7 +83,7 @@ public class ASTNodeInfo<T extends ASTNode> {
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
         VARIABLE, CONSTANT, FUNCTION,PARAMETER,
-        INCLUDE, RETURN_MARKER, GOTO, TRAIT}
+        INCLUDE, RETURN_MARKER, GOTO, TRAIT, USE_ALIAS}
 
     ASTNodeInfo(T node) {
         this.node = node;
@@ -178,6 +178,8 @@ public class ASTNodeInfo<T extends ASTNode> {
                 return PhpElementKind.USE_STATEMENT;
             case TRAIT:
                 return PhpElementKind.TRAIT;
+            case USE_ALIAS:
+                return PhpElementKind.USE_ALIAS;
         }
         throw new IllegalStateException();
     }

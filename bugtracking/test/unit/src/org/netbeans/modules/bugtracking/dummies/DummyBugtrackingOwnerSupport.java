@@ -47,7 +47,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -60,8 +61,8 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
 
     private final class FileToRepoAssociation {
         private final File file;
-        private final RepositoryProvider repository;
-        private FileToRepoAssociation(File file, RepositoryProvider repository) {
+        private final RepositoryImpl repository;
+        private FileToRepoAssociation(File file, RepositoryImpl repository) {
             assert ((file != null) && (repository != null));
             this.file = file;
             this.repository = repository;
@@ -70,7 +71,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
 
     private List<FileToRepoAssociation> fileToRepoAssociations;
 
-    public void setAssociation(File file, RepositoryProvider repository) {
+    public void setAssociation(File file, RepositoryImpl repository) {
         if ((file == null) && (repository == null)) {
             throw new IllegalArgumentException("file and repository are <null>");
         }
@@ -111,24 +112,24 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    synchronized protected RepositoryProvider getRepository(Node node) {
+    synchronized protected RepositoryImpl getRepository(Node node) {
         return (node instanceof DummyNode)
-               ? ((DummyNode) node).getAssociatedRepository()
+               ? APIAccessor.IMPL.getImpl(((DummyNode) node).getAssociatedRepository())
                : null;
     }
 
     @Override
-    protected RepositoryProvider getRepository(DataObject dataObj) {
+    protected RepositoryImpl getRepository(DataObject dataObj) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RepositoryProvider getRepository(Project project, boolean askIfUnknown) {
+    public RepositoryImpl getRepository(Project project, boolean askIfUnknown) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public RepositoryProvider getRepository(File file, String issueId, boolean askIfUnknown) {
+    public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
         if (file == null) {
             throw new IllegalArgumentException("file is <null>");
         }
@@ -145,7 +146,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    protected RepositoryProvider getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+    protected RepositoryImpl getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

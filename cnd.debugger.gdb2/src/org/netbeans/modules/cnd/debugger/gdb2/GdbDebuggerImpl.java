@@ -143,6 +143,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private final VariableBag variableBag = new VariableBag();
     
     private FileMapper fmap = FileMapper.getDefault();
+    
+    public static final String MI_BKPT = "bkpt";     //NOI18N
+    public static final String MI_WPT = "wpt";       //NOI18N
+    public static final String MI_EXP = "exp";       //NOI18N
+    public static final String MI_NUMBER = "number"; //NOI18N
 
     /**
      * Utility class to help us deal with 'frame' or 'source file'
@@ -1084,9 +1089,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     private String firstBreakpointId = null;
     
     private void setFirstBreakpointId(MIRecord record) {
-        MIValue bkptValue = record.results().valueOf("bkpt"); //NOI18N
+        MIValue bkptValue = record.results().valueOf(MI_BKPT);
         if (bkptValue != null) {
-            MIValue numberValue = bkptValue.asTList().valueOf("number"); //NOI18N
+            MIValue numberValue = bkptValue.asTList().valueOf(MI_NUMBER);
             if (numberValue != null) {
                 firstBreakpointId = numberValue.asConst().value();
             }
@@ -2355,7 +2360,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             String qname = childResList.getConstValue("name"); // NOI18N
             // display name,
             // e.g. "p_proc_heap"
-            String exp = childResList.getConstValue("exp"); // NOI18N
+            String exp = childResList.getConstValue(MI_EXP);
 
             if (exp.equals("private") || exp.equals("public") || // NOI18N
 					exp.equals("protected")) { // NOI18N
@@ -2903,10 +2908,11 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             reason.equals("end-stepping-range") || // NOI18N
             reason.equals("location-reached") || // NOI18N
             reason.equals("signal-received") || // NOI18N
+            reason.equals("watchpoint-trigger") || //NOI18N
+            reason.equals("watchpoint-scope") || //NOI18N
             reason.equals("function-finished")) { // NOI18N
 
 	    // update our views
-
             NativeBreakpoint breakpoint = null;
             MIValue bkptnoValue = (results != null) ? results.valueOf("bkptno") : null; // NOI18N
             if (bkptnoValue != null) {
@@ -2919,6 +2925,33 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                     breakpoint = handler.breakpoint();
                 }
                 // updateFiredEvent will set status
+            }
+            
+            // watchpoint if any
+            MIValue wptValue = (results != null) ? results.valueOf(MI_WPT) : null; // NOI18N
+            if (wptValue != null) {
+		// It's a watchpoint event
+                String bkptnoString = wptValue.asList().getConstValue(MI_NUMBER);
+                int bkptno = Integer.parseInt(bkptnoString);
+                Handler handler = bm().findHandler(bkptno);
+                if (handler != null) {
+                    handler.setFired(true);
+                    breakpoint = handler.breakpoint();
+                }
+            }
+            
+            // watchpoint to disable
+            MIValue wpnumValue = (results != null) ? results.valueOf("wpnum") : null; // NOI18N
+            if (wpnumValue != null) {
+		// It's a watchpoint scope event
+                String bkptnoString = wpnumValue.asConst().value();
+                int bkptno = Integer.parseInt(bkptnoString);
+                Handler handler = bm().findHandler(bkptno);
+                if (handler != null) {
+                    handler.setFired(true);
+                    handler.setEnabled(false);
+                    breakpoint = handler.breakpoint();
+                }
             }
 
             MIValue frameValue = (results != null) ? results.valueOf("frame") : null; // NOI18N
@@ -3062,7 +3095,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	    MITList props = b.value().asTuple();
 	    // System.out.printf("props %s\n", props.toString());
 
-	    int hid = Integer.parseInt(props.getConstValue("number")); // NOI18N
+	    int hid = Integer.parseInt(props.getConstValue(MI_NUMBER));
 	    Handler h = bm().findHandler(hid);
 
 	    if (h != null && h.breakpoint().hasCountLimit()) {
@@ -3268,6 +3301,21 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
         } else if (reason.equals("breakpoint-hit")) {		// NOI18N
             stateMsg = Catalog.get("Dbx_program_stopped");	// NOI18N
+        } else if (reason.equals("watchpoint-trigger")) { //NOI18N
+            String expValue = "";
+            MIValue wptVal = results.valueOf(MI_WPT);
+            if (wptVal != null) {
+                expValue = wptVal.asList().getConstValue(MI_EXP);
+            }
+            stateMsg = Catalog.format("MSG_Watchpoint_Trigger", expValue); // NOI18N
+        } else if (reason.equals("watchpoint-scope")) { //NOI18N
+            // LATER: show watchpoint name/expression
+//            String expValue = "";
+//            MIValue wptVal = results.valueOf(MI_WPT);
+//            if (wptVal != null) {
+//                expValue = wptVal.asList().getConstValue(MI_EXP);
+//            }
+            stateMsg = Catalog.format("MSG_Watchpoint_Scope"); // NOI18N
         } else {
             stateMsg = "Stopped for unrecognized reason: " + reason; // NOI18N
         }
@@ -3756,7 +3804,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         for (MITListItem elem : record.results().valueOf("register-values").asList()) { //NOI18N
                             StringBuilder sb = new StringBuilder();
                             MITList line = ((MITList)elem);
-                            String number = line.getConstValue("number"); //NOI18N
+                            String number = line.getConstValue(MI_NUMBER);
                             // try to get real name
                             try {
                                 number = regNames.get(Integer.valueOf(number));
@@ -3791,7 +3839,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	MITList results = record.results();
 	for (int tx = 0; tx < results.size(); tx++) {
 	    MIResult result = (MIResult) results.get(tx);
-            if (result.matches("bkpt")) { //NOI18N
+            if (result.matches(MI_BKPT) || result.matches(MI_WPT)) {
                 newHandler(rt, cmd, result);
             }
 	}

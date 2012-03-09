@@ -139,8 +139,11 @@ public class EAWizardIterator extends BaseWizardIterator {
         if (webInfo != null) {
             operations.add(ArchetypeWizards.addDependencyOperation(webInfo, "war")); // NOI18N
         }
-
-        Utilities.performPOMModelOperations(earDirFO.getFileObject("pom.xml"), operations); // NOI18N
+        
+        FileObject earPom = earDirFO.getFileObject("pom.xml"); // NOI18N
+        if (earPom != null) {
+            Utilities.performPOMModelOperations(earPom, operations);
+        }
     }
     
     @Override

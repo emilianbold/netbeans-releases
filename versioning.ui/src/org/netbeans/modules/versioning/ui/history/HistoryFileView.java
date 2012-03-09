@@ -251,7 +251,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     } else {
                         Node[] newExploredContext = getEqualNodes(root, new Node[] { oldSelection[0].getParentNode() });
                         if(newExploredContext.length > 0) {
-                        selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);
+                            selectFirstNeighborNode(newExploredContext[0], oldSelection[0]);
                         }
                     }
                 } else {
@@ -366,7 +366,13 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         }
         return  versioningSystem.getVCSHistoryProvider();
     }
-    
+
+    HistoryEntry getParentEntry(HistoryEntry entry) {
+        // XXX this is a hack! in case of VCS this isn't correct - the previous 
+        // doesn't necesserily has to be real parent of the revision
+        return getRootNode().getPreviousEntry(entry);
+    }
+
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
      * If there wasn't a selection set yet then the first node will be selected.
@@ -756,7 +762,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         
         String getTooltip(Node.Property p) throws IllegalAccessException, InvocationTargetException {
             String tooltip = p.toString();
-            if(tooltip.contains("\n")) { // NOI18N
+            if(tooltip != null && tooltip.contains("\n")) { // NOI18N
                 tooltip = escapeForHTMLLabel(tooltip);
                 StringBuilder sb = new StringBuilder();
                 sb.append("<html>"); // NOI18N

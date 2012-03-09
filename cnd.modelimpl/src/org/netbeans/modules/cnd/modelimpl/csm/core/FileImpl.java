@@ -184,24 +184,10 @@ public final class FileImpl implements CsmFile,
      * it invokes ensureParsed(DUMMY_HANDLERS), which parses the file with all valid states from container.
      * This (2) might happen only when there are NO other states in queue
      */
-    public static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
-    public static final APTPreprocHandler.State DUMMY_STATE = new APTPreprocHandler.State() {
-
-        @Override
-        public boolean isCleaned() {
-            return true;
-        }
-
-        @Override
-        public boolean isCompileContext() {
-            return false;
-        }
-
-        @Override
-        public boolean isValid() {
-            return false;
-        }
-    };
+    static final Collection<APTPreprocHandler> DUMMY_HANDLERS = new EmptyCollection<APTPreprocHandler>();
+    static final APTPreprocHandler.State DUMMY_STATE = new SpecialStateImpl();
+    static final APTPreprocHandler.State PARTIAL_REPARSE_STATE = new SpecialStateImpl();
+    static final Collection<APTPreprocHandler> PARTIAL_REPARSE_HANDLERS = new EmptyCollection<APTPreprocHandler>();
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
     private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
@@ -242,6 +228,7 @@ public final class FileImpl implements CsmFile,
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
     private FileContent currentFileContent;
+    private FileContentSignature lastFileBasedSignature;
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
@@ -444,8 +431,9 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    /** must be called only changeStateLock */
     private void postMarkedAsModified() {
+        // must be called only changeStateLock
+        assert Thread.holdsLock(changeStateLock) : "must be called under changeStateLock";
         tsRef.clear();
         if (parsingState == ParsingState.BEING_PARSED) {
             parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
@@ -479,9 +467,13 @@ public final class FileImpl implements CsmFile,
                 RepositoryUtils.put(this);
                 return;
             }
+            FileContentSignature newSignature = null;
+            FileContentSignature oldSignature = null;
+            boolean tryPartialReparse = false;
             boolean wasDummy = false;
-            if (handlers == DUMMY_HANDLERS) {
+            if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
                 wasDummy = true;
+                tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
             long time;
@@ -544,6 +536,12 @@ public final class FileImpl implements CsmFile,
                             time = System.currentTimeMillis();
                             try {
                                 ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, true);
+                                if (lastFileBasedSignature == null) {
+                                    if (tryPartialReparse ||  !fileBuffer.isFileBased()) {
+                                        // initialize file-based content signature
+                                        lastFileBasedSignature = FileContentSignature.create(this);
+                                    }
+                                }
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     if (first) {
@@ -557,6 +555,12 @@ public final class FileImpl implements CsmFile,
                                     }
                                 }
                                 updateModelAfterParsing(parseParams);
+                                if (tryPartialReparse) {
+                                    assert lastFileBasedSignature != null;
+                                    newSignature = FileContentSignature.create(this);
+                                    oldSignature = lastFileBasedSignature;
+                                    lastFileBasedSignature = null;
+                                }
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -565,7 +569,6 @@ public final class FileImpl implements CsmFile,
                                     } // if not, someone marked it with new state
                                 }
                                 postParseNotify();
-                                stateLock.notifyAll();
                                 lastParseTime = (int)(System.currentTimeMillis() - time);
                                 //System.err.println("Parse of "+getAbsolutePath()+" took "+lastParseTime+"ms");
                             }
@@ -592,15 +595,26 @@ public final class FileImpl implements CsmFile,
                     state = State.INITIAL;
                 }
                 RepositoryUtils.put(this);
-            }            
+            } else {
+                if (tryPartialReparse) {
+                    assert oldSignature != null;
+                    assert newSignature != null;
+                    DeepReparsingUtils.finishPartialReparse(this, oldSignature, newSignature);
+                }
+            }
         } finally {
             if (inEnsureParsed.decrementAndGet() != 0) {
-                assert false : "broken state in file " + getAbsolutePath() + parsingState + state; 
+                CndUtils.assertTrueInConsole(false, "broken state in file " + getAbsolutePath() + parsingState + state);
+            }
+            // all exist points must have state change notifcation
+            synchronized (stateLock) {
+                stateLock.notifyAll();
             }
         }
     }
 
     private void ensureParsedOnInclusion(Collection<APTPreprocHandler> handlers, CsmParserProvider.CsmParseCallback semaHandler) {
+        try {
             CsmModelState modelState = ModelImpl.instance().getState();
             if (modelState == CsmModelState.CLOSING || modelState == CsmModelState.OFF) {
                 if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_MODEL_STATE) {
@@ -612,12 +626,9 @@ public final class FileImpl implements CsmFile,
                 RepositoryUtils.put(this);
                 return;
             }
-            boolean wasDummy = false;
-            if (handlers == DUMMY_HANDLERS) {
-                assert false;
-                wasDummy = true;
-                handlers = getPreprocHandlers();
-            }
+            assert handlers != DUMMY_HANDLERS : "dummy handlers can not be on inclusion";
+            assert handlers != PARTIAL_REPARSE_HANDLERS : "dummy reparse handlers can not be on inclusion";
+
             long time;
             State curState;
             APTFile fullAPT = getFileAPT(true);
@@ -674,7 +685,13 @@ public final class FileImpl implements CsmFile,
                     state = State.INITIAL;
                 }
                 RepositoryUtils.put(this);
-            }            
+            }
+        } finally {
+            // all exist points must have state change notifcation
+            synchronized (stateLock) {
+                stateLock.notifyAll();
+            }
+        }
     }
 
     private void postParse() {
@@ -1645,8 +1662,7 @@ public final class FileImpl implements CsmFile,
                         if (TRACE_SCHUDULE_PARSING) {
                             System.err.printf("scheduleParsing: enqueue %s in states %s, %s\n", getAbsolutePath(), state, parsingState); // NOI18N
                         }
-                        boolean added = ParserQueue.instance().add(this, Collections.singleton(DUMMY_STATE),
-                                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+                        boolean added = ParserQueue.instance().addToBeParsedNext(this);
                         if (!added) {
                             return;
                         }
@@ -2055,5 +2071,26 @@ public final class FileImpl implements CsmFile,
     
     static String toYesNo(boolean b) {
         return b ? "yes" : "no"; // NOI18N
+    }
+
+    private static class SpecialStateImpl implements APTPreprocHandler.State {
+
+        public SpecialStateImpl() {
+        }
+
+        @Override
+        public boolean isCleaned() {
+            return true;
+        }
+
+        @Override
+        public boolean isCompileContext() {
+            return false;
+        }
+
+        @Override
+        public boolean isValid() {
+            return false;
+        }
     }
 }

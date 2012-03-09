@@ -353,6 +353,9 @@ public class XMLUtilTest extends NbTestCase {
                 "    <c>\n" +
                 "        <d>\n" +
                 "            <s/>\n" +
+                "            <e>\n" +
+                "                <!-- oh? -->\n" +
+                "            </e>\n" +
                 "        </d>\n" +
                 "    </c>\n" +
                 "</p>\n";

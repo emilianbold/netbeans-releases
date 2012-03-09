@@ -82,6 +82,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
  */
 /**
  * Change History:
+ * V81 - NB 7.2
+ *    Standard selection support for C++ compiler
+ *    Standard selection support for C compiler
  * V80 - NB 7.1
  *    Custom configurations
  * V79 - NB 7.0
@@ -228,7 +231,7 @@ public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
 
-    public final static int CURRENT_VERSION = 80;
+    public final static int CURRENT_VERSION = 81;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -294,6 +297,7 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String STRIP_SYMBOLS_ELEMENT = "stripSymbols"; // NOI18N
     protected final static String SIXTYFOUR_BITS_ELEMENT = "sixtyfourBits"; // NOI18N
     protected final static String ARCHITECTURE_ELEMENT = "architecture"; // NOI18N
+    protected final static String STANDARD_ELEMENT = "standard"; // NOI18N
     protected final static String PREPROCESSOR_ELEMENT = "preprocessor"; // NOI18N
     protected final static String PREPROCESSOR_LIST_ELEMENT = "preprocessorList"; // NOI18N
     protected final static String SUPRESS_WARNINGS_ELEMENT = "supressWarnings"; // NOI18N
@@ -673,6 +677,9 @@ public abstract class CommonConfigurationXMLCodec
         if (cCompilerConfiguration.getSixtyfourBits().getModified()) {
             xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
         }
+        if (cCompilerConfiguration.getCStandard().getModified()) {
+            xes.element(STANDARD_ELEMENT, "" + cCompilerConfiguration.getCStandard().getValue()); // NOI18N
+        }        
         if (cCompilerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }
@@ -727,6 +734,9 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (ccCompilerConfiguration.getSixtyfourBits().getModified()) {
             xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getCppStandard().getModified()) {
+            xes.element(STANDARD_ELEMENT, "" + ccCompilerConfiguration.getCppStandard().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getTool().getModified()) {
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N

@@ -141,7 +141,7 @@ public class ImportDataCreator {
             }
         } else {
             QualifiedName exactMatchName = createExactMatchName(qualifiedTypeName);
-            if (hasDefaultNamespaceName(filteredTypeElements) || hasExactName(filteredTypeElements, exactMatchName)) {
+            if ((currentNamespace.isDefaultNamespace() && hasDefaultNamespaceName(filteredTypeElements)) || hasExactName(filteredTypeElements, exactMatchName)) {
                 data.defaults[index] = data.variants[index][i];
             }
         }

@@ -211,3 +211,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-java-hints-providers-spi" value="${javadoc.web.root}/org-netbeans-modules-java-hints-providers-spi"/>
 <property name="javadoc.docs.org-netbeans-modules-java-hints-test" value="${javadoc.web.root}/org-netbeans-modules-java-hints-test"/>
 <property name="javadoc.docs.org-netbeans-libs-git" value="${javadoc.web.root}/org-netbeans-libs-git"/>
+<property name="javadoc.docs.org-netbeans-modules-sampler" value="${javadoc.web.root}/org-netbeans-modules-sampler"/>

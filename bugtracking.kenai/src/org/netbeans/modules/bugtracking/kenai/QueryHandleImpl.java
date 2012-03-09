@@ -48,13 +48,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryHandle;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -64,14 +64,14 @@ import org.openide.util.WeakListeners;
  * @author Tomas Stupka
  */
 class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionListener, PropertyChangeListener {
-    private final QueryProvider query;
+    private final Query query;
     private final PropertyChangeSupport changeSupport;
     protected final boolean predefined;
-    private IssueProvider[] issues = new IssueProvider[0];
+    private Collection<Issue> issues = Collections.emptyList();
     private String stringValue;
     protected boolean needsRefresh;
 
-    QueryHandleImpl(QueryProvider query, boolean needsRefresh, boolean predefined) {
+    QueryHandleImpl(Query query, boolean needsRefresh, boolean predefined) {
         this.query = query;
         this.needsRefresh = needsRefresh;
         this.predefined = predefined;
@@ -81,7 +81,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     }
 
     @Override
-    public QueryProvider getQuery() {
+    public Query getQuery() {
         return query;
     }
 
@@ -107,12 +107,12 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        BugtrackingUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, null, true);
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_ISSUES_CHANGED)) {
+        if(evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
             registerIssues();
             changeSupport.firePropertyChange(new PropertyChangeEvent(this, PROP_QUERY_RESULT, null, getQueryResults())); // XXX add result handles
         } else if(evt.getPropertyName().equals(IssueCache.EVENT_ISSUE_SEEN_CHANGED)) {
@@ -140,19 +140,14 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
     synchronized void refreshIfNeeded() {
         if(needsRefresh) {
             needsRefresh = false;
-            KenaiSupport ks = query.getRepository().getLookup().lookup(KenaiSupport.class);
-            assert ks != null;
-            if(ks != null) {
-                ks.refresh(query, true);
-            }
+            query.refresh(true);
         }
     }
 
     private void registerIssues() {
         issues = query.getIssues(IssueCache.ISSUE_STATUS_ALL);
-        for (IssueProvider issue : issues) {
-            issue.addPropertyChangeListener(WeakListeners.propertyChange(this, issue));
-            IssueCacheUtils.addCacheListener(issue, this);
+        for (Issue issue : issues) {
+            KenaiUtil.addCacheListener(issue, this);
         }
     }
 
@@ -161,7 +156,7 @@ class QueryHandleImpl extends QueryHandle implements QueryDescriptor, ActionList
         if(stringValue == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("[");                                                     // NOI18N
-            sb.append(query.getRepository().getInfo().getDisplayName());
+            sb.append(query.getRepository().getDisplayName());
             sb.append(",");                                                     // NOI18N
             sb.append(query.getDisplayName());
             sb.append("]");                                                     // NOI18N

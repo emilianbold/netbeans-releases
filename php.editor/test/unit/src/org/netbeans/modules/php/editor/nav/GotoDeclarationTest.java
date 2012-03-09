@@ -354,7 +354,7 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testClassInstantiation/testClassInstantiation.php
         checkDeclaration(getTestPath(), "$mammal = new Mamm^al;", "function ^__construct() {//Mammal");
     }
-    
+
     public void testClassInstantiation_2() throws Exception {
         checkDeclaration(getTestPath(), "class Mammal extends Animal^ {", "abstract class ^Animal");
     }
@@ -558,15 +558,15 @@ public class GotoDeclarationTest extends TestBase {
 //testfiles/gotodeclaration/testStaticMethodInvocation/testStaticMethodInvocation.php
         checkDeclaration(getTestPath(), "print Ca^t::kindInfo();", "class ^Cat extends Mammal {");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_01() throws Exception {
         checkDeclaration(getTestPath(), "echo static::kin^dInfo();", "public static function ^kindInfo() {return \"cat is ...\";}");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_02() throws Exception {
         checkDeclaration(getTestPath(), "echo static::getCla^ssDesc(); // navigate to parent", "public static function ^getClassDesc() {return \"Mammal class\";}");
     }
-    
+
     public void testStaticMethodInvocation_Issue_200700_03() throws Exception {
         checkDeclaration(getTestPath(), "echo static::get^Animal(); // navigate to parent", "public static function ^getAnimal() {");
     }
@@ -579,7 +579,7 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testVardoc166660/testVardoc166660.php
         checkDeclaration(getTestPath(), "@var $test^Class TestClass", "$^testClass = new TestClass();");
     }
-    
+
     public void testStaticConstant197239_01() throws Exception {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo static::LET^TER22;", "const ^LETTER22 = 'a';");
@@ -589,45 +589,185 @@ public class GotoDeclarationTest extends TestBase {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo self::LETT^ER22;", "const ^LETTER22 = 'a';");
     }
-    
+
     public void testStaticConstant197239_03() throws Exception {
         //testfiles/gotodeclaration/testStaticConstant197239/testStaticConstant197239.php
         checkDeclaration(getTestPath(), "echo AA::LETT^ER22;", "const ^LETTER22 = 'a';");
     }
-    
+
     public void testMixedTypes200156_01() throws Exception {
         checkDeclaration(getTestPath(), "* @property F^oo|Bar $property", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_02() throws Exception {
         checkDeclaration(getTestPath(), "* @property Foo|B^ar $property", "class ^Bar {");
     }
-    
+
     public void testMixedTypes200156_03() throws Exception {
         checkDeclaration(getTestPath(), "     * @var Fo^o|Bar", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_04() throws Exception {
         checkDeclaration(getTestPath(), "     * @var Foo|Ba^r", "class ^Bar {");
     }
-    
+
     // uncomment when issue #200161 will be fixed
 //    public void testMixedTypes200156_05() throws Exception {
 //        checkDeclaration(getTestPath(), "* @method Fo^o|Bar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Foo {");
 //    }
-//    
+//
 //    public void testMixedTypes200156_06() throws Exception {
 //        checkDeclaration(getTestPath(), "* @method Foo|B^ar m1() m1(Foo|Bar $param) a magic method declaration", "class ^Bar {");
 //    }
-    
+
     public void testMixedTypes200156_07() throws Exception {
         checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(F^oo|Bar $param) a magic method declaration", "class ^Foo {");
     }
-    
+
     public void testMixedTypes200156_08() throws Exception {
         checkDeclaration(getTestPath(), "* @method Foo|Bar m1() m1(Foo|B^ar $param) a magic method declaration", "class ^Bar {");
     }
-     
+
+    public void testClassInUseStatement209187() throws Exception {
+        checkDeclaration(getTestPath(), "use \\Foo\\Bar\\Class^Name;", "class ^ClassName {");
+    }
+
+    public void testQualifiedClassInPhpDoc_01() throws Exception {
+        checkDeclaration(getTestPath(), "* @param B\\B^ag $param", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_02() throws Exception {
+        checkDeclaration(getTestPath(), "function functionName1(B\\B^ag $param) {", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_03() throws Exception {
+        checkDeclaration(getTestPath(), "* @return B\\B^ag", "class ^Bag {}");
+    }
+
+    public void testQualifiedClassInPhpDoc_04() throws Exception {
+        checkDeclaration(getTestPath(), "return new B\\B^ag();", "class ^Bag {}");
+    }
+
+    public void testIssue200596_01() throws Exception {
+        checkDeclaration(getTestPath(), "(new O^mg\\AliasedClassName())->bar();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_02() throws Exception {
+        checkDeclaration(getTestPath(), "new O^mg\\AliasedClassName();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_03() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::foo();", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_04() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::FOO;", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_05() throws Exception {
+        checkDeclaration(getTestPath(), "O^mg\\AliasedClassName::$foo;", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_06() throws Exception {
+        checkDeclaration(getTestPath(), "if ($x instanceof O^mg\\AliasedClassName) {}", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue200596_07() throws Exception {
+        checkDeclaration(getTestPath(), "(new C^ls())->bar();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_08() throws Exception {
+        checkDeclaration(getTestPath(), "new C^ls();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_09() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::foo();", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_10() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::FOO;", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_11() throws Exception {
+        checkDeclaration(getTestPath(), "C^ls::$foo;", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue200596_12() throws Exception {
+        checkDeclaration(getTestPath(), "if ($x instanceof C^ls) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testFieldAccessInInstanceOf() throws Exception {
+        checkDeclaration(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", "public $^bbbbb;");
+    }
+
+    public void testIssue209309_01() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209309_02() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209309_03() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209309_04() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\Aliased^ClassName $name) {}", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_01() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Om^g\\AliasedClassName */", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_02() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_03() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_04() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Om^g\\AliasedClassName $p", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_05() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Cl^s */", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_06() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_07() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Cl^s $a", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_08() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_09() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Omg\\Aliased^ClassName */", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_10() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_11() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_12() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Omg\\Aliased^ClassName $p", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_13() throws Exception {
+        checkDeclaration(getTestPath(), "* @param \\Foo\\Bar\\Aliased^ClassName $name Description", "class ^AliasedClassName {}");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

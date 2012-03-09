@@ -59,6 +59,7 @@ import org.netbeans.modules.php.symfony2.annotations.extra.Symfony2ExtraAnnotati
 import org.netbeans.modules.php.symfony2.annotations.security.Symfony2SecurityAnnotationsProvider;
 import org.netbeans.modules.php.symfony2.commands.Symfony2CommandSupport;
 import org.netbeans.modules.php.symfony2.commands.Symfony2Script;
+import org.netbeans.modules.php.symfony2.preferences.Symfony2Preferences;
 import org.netbeans.modules.php.symfony2.ui.actions.Symfony2PhpModuleActionsExtender;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -100,7 +101,13 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        FileObject console = phpModule.getSourceDirectory().getFileObject(Symfony2Script.SCRIPT_PATH);
+        Boolean enabled = Symfony2Preferences.isEnabled(phpModule);
+        if (enabled != null) {
+            // set manually
+            return enabled;
+        }
+        // autodetection
+        FileObject console = Symfony2Script.getPath(phpModule);
         return console != null && console.isData();
     }
 
@@ -123,10 +130,7 @@ public final class Symfony2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
-        if (isInPhpModule(phpModule)) {
-            return new Symfony2PhpModuleCustomizerExtender(phpModule);
-        }
-        return null;
+        return new Symfony2PhpModuleCustomizerExtender(phpModule);
     }
 
     @Override

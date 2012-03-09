@@ -3,4 +3,4 @@ AutoUpdate-Show-In-Client: true
 OpenIDE-Module: org.netbeans.modules.javafx2.scenebuilder
 OpenIDE-Module-Install: org/netbeans/modules/javafx2/scenebuilder/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/javafx2/scenebuilder/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2.3
+OpenIDE-Module-Specification-Version: 1.2.4

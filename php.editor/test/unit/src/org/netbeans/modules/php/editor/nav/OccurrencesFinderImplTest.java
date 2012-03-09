@@ -489,6 +489,282 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
     }
 
+    public void testIssue209187_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue209187_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue209187_03() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
+    public void testIssue208826_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Mo^del {}", true);
+    }
+
+    public void testIssue208826_02() throws Exception {
+        checkOccurrences(getTestPath(), "* @var \\Mo^del", true);
+    }
+
+    public void testIssue208826_03() throws Exception {
+        checkOccurrences(getTestPath(), "* @return \\Mo^del", true);
+    }
+
+    public void testIssue208826_04() throws Exception {
+        checkOccurrences(getTestPath(), "class B^ag {}", true);
+    }
+
+    public void testIssue208826_05() throws Exception {
+        checkOccurrences(getTestPath(), "* @param B\\B^ag $param", true);
+    }
+
+    public void testIssue208826_06() throws Exception {
+        checkOccurrences(getTestPath(), "function functionName1(B\\B^ag $param) {", true);
+    }
+
+    public void testIssue200596_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue200596_02() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {", true);
+    }
+
+    public void testIssue200596_03() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as O^mg;", true);
+    }
+
+    public void testIssue200596_04() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue200596_05() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as C^ls;", true);
+    }
+
+    public void testIssue200596_06() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue200596_07() throws Exception {
+        checkOccurrences(getTestPath(), "(new O^mg\\AliasedClassName())->bar();", true);
+    }
+
+    public void testIssue200596_08() throws Exception {
+        checkOccurrences(getTestPath(), "(new Omg\\Aliased^ClassName())->bar();", true);
+    }
+
+    public void testIssue200596_09() throws Exception {
+        checkOccurrences(getTestPath(), "(new C^ls())->bar();", true);
+    }
+
+    public void testIssue200596_10() throws Exception {
+        checkOccurrences(getTestPath(), "(new Class^Name())->bar();", true);
+    }
+
+    public void testIssue200596_11() throws Exception {
+        checkOccurrences(getTestPath(), "new O^mg\\AliasedClassName();", true);
+    }
+
+    public void testIssue200596_12() throws Exception {
+        checkOccurrences(getTestPath(), "new Omg\\Aliased^ClassName();", true);
+    }
+
+    public void testIssue200596_13() throws Exception {
+        checkOccurrences(getTestPath(), "new C^ls();", true);
+    }
+
+    public void testIssue200596_14() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
+    public void testIssue200596_15() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::foo();", true);
+    }
+
+    public void testIssue200596_16() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::foo();", true);
+    }
+
+    public void testIssue200596_17() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::foo();", true);
+    }
+
+    public void testIssue200596_18() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::bar();", true);
+    }
+
+    public void testIssue200596_19() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::FOO;", true);
+    }
+
+    public void testIssue200596_20() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::FOO;", true);
+    }
+
+    public void testIssue200596_21() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::FOO;", true);
+    }
+
+    public void testIssue200596_22() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::BAR;", true);
+    }
+
+    public void testIssue200596_23() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::$foo;", true);
+    }
+
+    public void testIssue200596_24() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::$foo;", true);
+    }
+
+    public void testIssue200596_25() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::$foo;", true);
+    }
+
+    public void testIssue200596_26() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::$bar;", true);
+    }
+
+    public void testIssue200596_27() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof O^mg\\AliasedClassName) {}", true);
+    }
+
+    public void testIssue200596_28() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof Omg\\Aliased^ClassName) {}", true);
+    }
+
+    public void testIssue200596_29() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof C^ls) {}", true);
+    }
+
+    public void testIssue200596_30() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof Class^Name) {}", true);
+    }
+
+    public void testFieldAccessInInstanceOf_01() throws Exception {
+        checkOccurrences(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", true);
+    }
+
+    public void testFieldAccessInInstanceOf_02() throws Exception {
+        checkOccurrences(getTestPath(), "public $bb^bbb;", true);
+    }
+
+    public void testIssue209309_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {}", true);
+    }
+
+    public void testIssue209309_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as O^mg;", true);
+    }
+
+    public void testIssue209309_03() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue209309_04() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as C^ls;", true);
+    }
+
+    public void testIssue209309_05() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_06() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_07() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", true);
+    }
+
+    public void testIssue209308_01() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as Om^g;", true);
+    }
+
+    public void testIssue209308_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as Cl^s;", true);
+    }
+
+    public void testIssue209308_03() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Cl^s */", true);
+    }
+
+    public void testIssue209308_04() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Om^g\\AliasedClassName */", true);
+    }
+
+    public void testIssue209308_05() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Om^g\\AliasedClassName", true);
+    }
+
+    public void testIssue209308_06() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Om^g\\AliasedClassName", true);
+    }
+
+    public void testIssue209308_07() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Cl^s", true);
+    }
+
+    public void testIssue209308_08() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Om^g\\AliasedClassName $p", true);
+    }
+
+    public void testIssue209308_09() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Cl^s $a", true);
+    }
+
+    public void testIssue209308_010() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Cl^s", true);
+    }
+
+    public void testIssue209308_011() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Om^g\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_012() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cl^s $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_013() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {}", true);
+    }
+
+    public void testIssue209308_014() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue209308_015() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Omg\\Aliased^ClassName */", true);
+    }
+
+    public void testIssue209308_016() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Omg\\Aliased^ClassName", true);
+    }
+
+    public void testIssue209308_017() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Omg\\Aliased^ClassName", true);
+    }
+
+    public void testIssue209308_018() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Omg\\Aliased^ClassName $p", true);
+    }
+
+    public void testIssue209308_019() throws Exception {
+        checkOccurrences(getTestPath(), "* @param \\Foo\\Bar\\Aliased^ClassName $name Description", true);
+    }
+
+    public void testIssue209308_020() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_021() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\Aliased^ClassName $name) {}", true);
+    }
+
     //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
     // and maybe fixed (NOT URGENT)
     //caused by got to declaration, mark occurences rewrite

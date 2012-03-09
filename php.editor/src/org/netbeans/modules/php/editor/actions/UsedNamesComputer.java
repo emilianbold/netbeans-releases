@@ -47,7 +47,7 @@ import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -76,14 +76,14 @@ public class UsedNamesComputer {
     public Map<String, List<UsedNamespaceName>> computeNames() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
         OffsetRange offsetRange = namespaceScope.getBlockRange();
-        Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         NamespaceNameVisitor namespaceNameVisitor = new NamespaceNameVisitor(offsetRange);
         parserResult.getProgram().accept(namespaceNameVisitor);
         possibleNames = namespaceNameVisitor.getExistingNames();
         return filterNamesWithoutUses(declaredUses);
     }
 
-    private Map<String, List<UsedNamespaceName>> filterNamesWithoutUses(final Collection<? extends UseElement> declaredUses) {
+    private Map<String, List<UsedNamespaceName>> filterNamesWithoutUses(final Collection<? extends UseScope> declaredUses) {
         final Map<String, List<UsedNamespaceName>> result = new HashMap<String, List<UsedNamespaceName>>();
         for (String typeName : possibleNames.keySet()) {
             if (!existsUseForTypeName(declaredUses, QualifiedName.create(typeName))) {
@@ -93,10 +93,10 @@ public class UsedNamesComputer {
         return result;
     }
 
-    private boolean existsUseForTypeName(final Collection<? extends UseElement> declaredUses, final QualifiedName typeName) {
+    private boolean existsUseForTypeName(final Collection<? extends UseScope> declaredUses, final QualifiedName typeName) {
         boolean result = false;
         String firstSegmentName = typeName.getSegments().getFirst();
-        for (UseElement useElement : declaredUses) {
+        for (UseScope useElement : declaredUses) {
             AliasedName aliasName = useElement.getAliasedName();
             if (aliasName != null) {
                 if (firstSegmentName.equals(aliasName.getAliasName())) {
@@ -137,6 +137,12 @@ public class UsedNamesComputer {
         }
 
         @Override
+        public void visit(Program node) {
+            scan(node.getStatements());
+            scan(node.getComments());
+        }
+
+        @Override
         public void visit(NamespaceDeclaration node) {
             scan(node.getBody());
         }
@@ -148,6 +154,14 @@ public class UsedNamesComputer {
 
         @Override
         public void visit(NamespaceName node) {
+            UsedNamespaceName usedName = new UsedNamespaceName(node);
+            if (!specialNames.contains(usedName.getName())) {
+                processUsedName(usedName);
+            }
+        }
+
+        @Override
+        public void visit(PHPDocTypeNode node) {
             UsedNamespaceName usedName = new UsedNamespaceName(node);
             if (!specialNames.contains(usedName.getName())) {
                 processUsedName(usedName);

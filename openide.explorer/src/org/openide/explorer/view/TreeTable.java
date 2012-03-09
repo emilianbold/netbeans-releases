@@ -87,7 +87,7 @@ import org.openide.util.Mutex;
  *
  * @author Jan Rojcek
  */
-class TreeTable extends JTable implements Runnable, TableQuickSearchSupport.StringValuedTable {
+class TreeTable extends JTable implements Runnable {
     /** Action key for up/down focus action */
     private static final String ACTION_FOCUS_NEXT = "focusNext"; //NOI18N
     private static Color unfocusedSelBg = null;
@@ -337,31 +337,41 @@ class TreeTable extends JTable implements Runnable, TableQuickSearchSupport.Stri
     QuickSearchSettings getQuickSearchSettings() {
         return qss;
     }
+    
+    private QuickSearchTableFilter qstf = new DefaultQuickSearchTableFilter();
+    
+    QuickSearchTableFilter getQuickSearchTableFilter() {
+        return qstf;
+    }
 
-    @Override
-    public String getStringValueAt(int row, int col) {
-        Object value = getValueAt(row, col);
-        String str;
-        if (value instanceof Property) {
-            Property p = (Property) value;
-            Object v = null;
-            try {
-                v = p.getValue();
-            } catch (IllegalAccessException ex) {
-            } catch (InvocationTargetException ex) {
-            }
-            if (v instanceof String) {
-                str = (String) v;
+    private final class DefaultQuickSearchTableFilter implements QuickSearchTableFilter {
+
+        @Override
+        public String getStringValueAt(int row, int col) {
+            Object value = getValueAt(row, col);
+            String str;
+            if (value instanceof Property) {
+                Property p = (Property) value;
+                Object v = null;
+                try {
+                    v = p.getValue();
+                } catch (IllegalAccessException ex) {
+                } catch (InvocationTargetException ex) {
+                }
+                if (v instanceof String) {
+                    str = (String) v;
+                } else {
+                    str = null;
+                }
+            } else if (value instanceof VisualizerNode) {
+                str = ((VisualizerNode) value).getDisplayName();
+                //str = Visualizer.findNode(value).getDisplayName();
             } else {
                 str = null;
             }
-        } else if (value instanceof VisualizerNode) {
-            str = ((VisualizerNode) value).getDisplayName();
-            //str = Visualizer.findNode(value).getDisplayName();
-        } else {
-            str = null;
+            return str;
         }
-        return str;
+        
     }
     
     private class GuardedActions implements Mutex.Action<Object> {
