@@ -701,15 +701,19 @@ public class GotoDeclarationTest extends TestBase {
     }
 
     public void testIssue209309_01() throws Exception {
-        checkDeclaration(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a) {}", "use \\Foo\\Bar as ^Omg;");
+        checkDeclaration(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "use \\Foo\\Bar as ^Omg;");
     }
 
     public void testIssue209309_02() throws Exception {
-        checkDeclaration(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a) {}", "class ^AliasedClassName {}");
+        checkDeclaration(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "class ^AliasedClassName {}");
     }
 
     public void testIssue209309_03() throws Exception {
-        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a, \\Foo\\Bar\\AliasedClassName $name) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209309_04() throws Exception {
+        checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\Aliased^ClassName $name) {}", "class ^AliasedClassName {}");
     }
 
     public void testIssue209308_01() throws Exception {

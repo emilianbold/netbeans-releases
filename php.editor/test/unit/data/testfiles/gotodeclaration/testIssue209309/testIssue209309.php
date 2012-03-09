@@ -10,7 +10,7 @@ namespace {
     use \Foo\Bar\AliasedClassName as Cls;
 
     class ClassName {
-        function bar(Omg\AliasedClassName $p, Cls $a) {}
+        function bar(Omg\AliasedClassName $p, Cls $a, \Foo\Bar\AliasedClassName $name) {}
     }
 }
 ?>
