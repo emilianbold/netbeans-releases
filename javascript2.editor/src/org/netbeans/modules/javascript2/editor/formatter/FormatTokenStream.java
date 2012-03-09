@@ -107,6 +107,8 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case OPERATOR_LEFT_SHIFT_ARITHMETIC:
                 case OPERATOR_RIGHT_SHIFT_ARITHMETIC:
                 case OPERATOR_RIGHT_SHIFT:
+                case OPERATOR_PLUS:
+                case OPERATOR_MINUS:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_BINARY_OPERATOR));
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_BINARY_OPERATOR));
@@ -197,7 +199,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         return tokens;
     }
     
-    private void addToken(FormatToken token) {
+    public void addToken(FormatToken token) {
         if (firstToken == null) {
             firstToken = token;
             lastToken = token;
@@ -210,6 +212,34 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
         if (token.getOffset() >= 0) {
             tokenPosition.put(token.getOffset(), token);
         }
+    }
+
+    public void removeToken(FormatToken token) {
+        FormatToken previous = token.previous();
+        FormatToken next = token.next();
+
+        token.setNext(null);
+        token.setPrevious(null);
+
+        if (token.getOffset() >= 0) {
+            tokenPosition.remove(token.getOffset());
+        }
+
+        if (previous == null) {
+            assert firstToken == token;
+            firstToken = next;
+            next.setPrevious(null);
+        }
+        if (next == null) {
+            assert lastToken == token;
+            lastToken = previous;
+            previous.setNext(null);
+        }
+        if (previous == null || next == null) {
+            return;
+        }
+        previous.setNext(next);
+        next.setPrevious(previous);
     }
     
     private class FormatTokenIterator implements Iterator<FormatToken> {

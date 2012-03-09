@@ -1,6 +1,6 @@
 
 function computeColor() {
-    a = something +5;
+    a = something + 5;
     x = a * -1
     color = 0;
     for (var a = -1; a < 3; a++) {

@@ -278,6 +278,22 @@ public class FormatVisitor extends NodeVisitor {
                     }
                 } else {
                     FormatToken formatToken = getNextToken(getStart(unaryNode), null);
+
+                    // remove around binary operator tokens added during token
+                    // stream creation
+                    if (TokenType.ADD.equals(type) || TokenType.SUB.equals(type)) {
+                        assert formatToken.getText() != null
+                                && (formatToken.getText().toString().equals(JsTokenId.OPERATOR_PLUS.fixedText())
+                                    || formatToken.getText().toString().equals(JsTokenId.OPERATOR_MINUS.fixedText()));
+                        FormatToken toRemove = formatToken.previous();
+                        assert toRemove.getKind() == FormatToken.Kind.BEFORE_BINARY_OPERATOR;
+                        tokenStream.removeToken(toRemove);
+
+                        toRemove = formatToken.next();
+                        assert toRemove.getKind() == FormatToken.Kind.AFTER_BINARY_OPERATOR;
+                        tokenStream.removeToken(toRemove);
+                    }
+
                     if (formatToken != null) {
                         appendToken(formatToken,
                                 FormatToken.forFormat(FormatToken.Kind.AFTER_UNARY_OPERATOR));
@@ -602,4 +618,5 @@ public class FormatVisitor extends NodeVisitor {
             original.setPrevious(token);
         }
     }
+
 }
