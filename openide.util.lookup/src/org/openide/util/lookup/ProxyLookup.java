@@ -1056,7 +1056,7 @@ public class ProxyLookup extends Lookup {
             Collection<Object> compute = null;
             Collection<Object> ret = null;
 
-            if (firstNonEmpty == null) {
+            if (firstNonEmpty == null || firstNonEmpty[0] == 0) {
                 if (indexToCache == 1) {
                     HashSet<Object> s = new HashSet<Object>();
                     compute = s;
@@ -1099,7 +1099,7 @@ public class ProxyLookup extends Lookup {
                     }
                 }
             }
-            if (i == arr.length) {
+            if (i == arr.length && compute != null) {
                 R r = result;
                 if (r != null) {
                     r.updateResultCache(indexToCache, arr, ret);
