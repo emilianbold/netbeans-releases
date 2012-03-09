@@ -116,11 +116,8 @@ public class SearchScopeBrowse {
          */
         @Override
         public void selected() {
-            FileObject[] fileObjects = chooseRoots();
-            if (fileObjects != null && fileObjects.length > 0) {
-                roots = fileObjects;
-                notifyListeners();
-            }
+            chooseRoots();
+            notifyListeners();
         }
     }
 
@@ -220,6 +217,9 @@ public class SearchScopeBrowse {
         FileObject[] fileObjects = new FileObject[files.length];
         for (int i = 0; i < files.length; i++) {
             fileObjects[i] = FileUtil.toFileObject(files[i]);
+        }
+        if (fileObjects.length > 0) {
+            roots = fileObjects;
         }
         return fileObjects;
     }
