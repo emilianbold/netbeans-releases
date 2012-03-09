@@ -145,7 +145,7 @@ public class UserAnnotationPanel extends JPanel {
     @NbBundle.Messages({
         "UserAnnotationPanel.error.noName=Name must be set.",
         "UserAnnotationPanel.error.noType=Type must be set.",
-        "UserAnnotationPanel.error.noTemplate=Template must be set.",
+        "UserAnnotationPanel.error.noTemplate=Template must be set."
     })
     void validateAnnotation() {
         if (!StringUtils.hasText(nameTextField.getText())) {
