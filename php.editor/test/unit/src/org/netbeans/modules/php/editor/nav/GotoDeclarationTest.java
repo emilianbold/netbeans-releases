@@ -828,22 +828,15 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", "private $^field3;");
     }
 
+    public void testImplementsInterface() throws Exception {
+        checkDeclaration(getTestPath(), "class Man implements Pe^rson {", "interface ^Person {");
+    }
+
+    public void testExtendsClass() throws Exception {
+        checkDeclaration(getTestPath(), "class User extends M^an {", "class ^Man implements Person {");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
-//         public void testImplementsInterface() throws Exception {
-//        String gotoTest2 = prepareTestFile(
-//                "testfiles/classMan.php",
-//                "implements Person {",
-//                "implements P|erson {"
-//                );
-//        String gotoTest = prepareTestFile(
-//                "testfiles/classPerson.php",
-//                "interface Person {",
-//                "interface ^Person {"
-//                );
-//        performTestSimpleFindDeclaration(-1, gotoTest2, gotoTest);
-//
-//    }
-//
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(
 //                "testfiles/gotoType2.php",
@@ -1614,18 +1607,6 @@ public class GotoDeclarationTest extends TestBase {
 //                                         "    }\n" +
 //                                         "}\n" +
 //                                         "?>");
-//    }
-//
-//    public void testExtendedClass() throws Exception {
-//        String userClass = prepareTestFile(
-//                "testfiles/classUser.php",
-//                "extends Man {",
-//                "extends M|an {");
-//        String manClass = prepareTestFile(
-//                "testfiles/classMan.php",
-//                "class Man implements Person {",
-//                "class ^Man implements Person {");
-//        performTestSimpleFindDeclaration(-1, userClass, manClass);
 //    }
 //
 //    public void testPHPDocType01() throws Exception {
