@@ -95,15 +95,17 @@ public class SBHomeFactory {
         }
     };
     private static final HomeFactory UX_HOME_LOCATOR = new HomeFactory() {
-
+        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_LAUNCHER"); // NOI18N
+        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_PROPERTIES"); // NOI18N
+        
         @Override
         public Home defaultHome() {
-            throw new UnsupportedOperationException();
+            return null;
         }
 
         @Override
         public Home loadHome(String customPath) {
-            throw new UnsupportedOperationException();
+            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
         }
     };
     
