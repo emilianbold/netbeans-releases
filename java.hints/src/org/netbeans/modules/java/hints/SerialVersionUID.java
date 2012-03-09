@@ -26,6 +26,7 @@
  */
 package org.netbeans.modules.java.hints;
 
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
