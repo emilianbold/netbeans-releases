@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -145,33 +146,45 @@ public abstract class Module extends ModuleInfo {
         }
     }
     
-    final void readData(ObjectInput di) throws IOException {
-        synchronized (DATA_LOCK) {
-            assert data == null : "No data created yet: " + data;
-            data = createData(di, null);
-        }
-    }
-    
     final void writeData(ObjectOutput out) throws IOException {
         data().write(out);
     }
     
-    final ModuleData dataInit() throws IOException {
+    final ModuleData data() {
+        try {
+            return dataWithCheck();
+        } catch (InvalidException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+    
+    final ModuleData dataWithCheck() throws InvalidException {
         synchronized (DATA_LOCK) {
             if (data != null) {
                 return data;
             }
-            ModuleData mine = createData(null, getManifest());
-            assert mine == data;
-            return mine;
-        }
-    }
-    
-    final ModuleData data() {
-        try {
-            return dataInit();
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
+            InputStream is = mgr.dataFor(getJarFile());
+            if (is != null) {
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(is);
+                    ModuleData mine =  createData(ois, null);
+                    ois.close();
+                    assert mine == data;
+                    return mine;
+                } catch (IOException ex) {
+                    Util.err.log(Level.INFO, "Cannot read cache for " + getJarFile(), ex); // NOI18N
+                }
+            }
+            try {
+                ModuleData mine = createData(null, getManifest());
+                assert mine == data;
+                return mine;
+            } catch (InvalidException ex) {
+                throw ex;
+            } catch (IOException ex) {
+                // no I/O needed when reading from manifest
+                throw new IllegalStateException(ex);
+            }
         }
     }
     
@@ -589,7 +602,7 @@ public abstract class Module extends ModuleInfo {
     boolean isNetigsoImpl() {
         return false;
     }
-    
+
     /** Struct representing a package exported from a module.
      * @since org.netbeans.core/1 > 1.4
      * @see Module#getPublicPackages

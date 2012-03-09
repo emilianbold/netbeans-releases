@@ -53,7 +53,6 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.security.AllPermission;
@@ -82,7 +81,6 @@ import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.TopologicalSortException;
@@ -506,25 +504,24 @@ public final class ModuleManager extends Modules {
         return cnt;
     }
 
-    final void postCreate(Module m) throws IOException {
-        final File path = m.getJarFile();
-        if (path != null) {
-            Util.err.log(Level.FINE, "created: {0}", path);
-            byte[] arr = mdc.getModuleState(path.getPath());
-            if (arr != null) {
-                ObjectInputStream dis = new ObjectInputStream(
-                    new ByteArrayInputStream(arr)
-                );
-                m.readData(dis);
-                dis.close();
-            } else {
-                m.dataInit();
-            }
-        } else {
-            Util.err.log(Level.FINE, "created: {0}", m);
-        }
+    /** Checks whether the module is supposed be OSGi or not 
+     * @return null if it is not known
+     */
+    final Boolean isOSGi(File jar) {
+        return mdc.isOSGi(jar.getPath());
     }
-
+    
+    /** Obtains (and destroys) data for given JAR file.
+     * @return stream with data or null if not found in cache
+     */
+    final InputStream dataFor(File jar) {
+        if (jar == null) {
+            return null;
+        }
+        byte[] arr = mdc.getModuleState(jar.getPath());
+        return arr == null ? null : new ByteArrayInputStream(arr);
+    }
+    
     /** A classloader giving access to all the module classloaders at once. */
     private final class SystemClassLoader extends JarClassLoader {
 
@@ -795,11 +792,6 @@ public final class ModuleManager extends Modules {
     }
 
     private void subCreate(Module m) throws DuplicateException {
-        try {
-            postCreate(m);
-        } catch (IOException ex) {
-            throw new IllegalStateException(ex);
-        }
         Module old = get(m.getCodeNameBase());
         if (old != null) {
             throw new DuplicateException(old, m);
@@ -1882,18 +1874,23 @@ public final class ModuleManager extends Modules {
     private class ModuleDataCache implements Stamps.Updater {
         private static final String CACHE = "all-manifests.dat";
         private final Map<String,byte[]> cnb2Data;
+        private final Map<String,Boolean> cnb2OSGi;
         
         public ModuleDataCache() {
             InputStream is = Stamps.getModulesJARs().asStream(CACHE);
             Map <String,byte[]> map = null;
+            Map <String,Boolean> osgi = null;
             if (is != null) try {
                 DataInputStream dis = new DataInputStream(is);
                 map = new HashMap<String, byte[]>();
+                osgi = new HashMap<String, Boolean>();
                 for (;;) {
                     String cnb = Stamps.readRelativePath(dis);
                     if (cnb.isEmpty()) {
                         break;
                     }
+                    boolean isOSGi = dis.readBoolean();
+                    osgi.put(cnb, isOSGi);
                     int len = dis.readInt();
                     byte[] data = new byte[len];
                     dis.readFully(data);
@@ -1902,11 +1899,21 @@ public final class ModuleManager extends Modules {
                 dis.close();
             } catch (IOException ex) {
                 Util.err.log(Level.INFO, "Cannot read all-modules.dat", ex);
+                map = null;
+                osgi = null;
             }
             cnb2Data = map;
+            cnb2OSGi = osgi;
             if (map == null) {
                 Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
             }
+        }
+        
+        public Boolean isOSGi(String path) {
+            if (cnb2OSGi == null) {
+                return null;
+            }
+            return cnb2OSGi.get(path);
         }
         
         public synchronized byte[] getModuleState(String path) {
@@ -1916,7 +1923,7 @@ public final class ModuleManager extends Modules {
             }
             if (res == null) {
                 Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
-            }
+                }
             return res;
         }
 
