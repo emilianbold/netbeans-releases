@@ -47,10 +47,7 @@ import org.netbeans.modules.javascript2.editor.jsdoc.model.NamedParameterElement
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import com.oracle.nashorn.ir.Node;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -133,6 +130,22 @@ public class JsDocDocumentationProvider implements DocumentationProvider {
             }
         }
         return false;
+    }
+
+    // TODO - rewrite for getting all associated comments and call getter for all and merge results
+    // TODO - try to move that directly into JsDocBlock
+    @Override
+    public Set<Modifier> getModifiers(Node node) {
+        JsDocBlock block = getCommentForOffset(node.getStart());
+        if (block != null && block.getType() == JsDocCommentType.DOC_COMMON) {
+            Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+            for (JsDocElement jsDocElement : block.getTagsForTypes(new JsDocElement.Type[]{
+                    JsDocElement.Type.PRIVATE, JsDocElement.Type.PUBLIC, JsDocElement.Type.STATIC})) {
+                modifiers.add(Modifier.fromString(jsDocElement.getType().toString().substring(1)));
+            }
+            return modifiers;
+        }
+        return Collections.<Modifier>emptySet();
     }
 
     protected JsDocBlock getCommentForOffset(int offset) {
