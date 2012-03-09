@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor.model;
 
 import com.oracle.nashorn.ir.Node;
 import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -77,5 +78,46 @@ public interface DocumentationProvider {
      * @return {@code true} if the comment says "it's deprecated", {@code false} otherwise
      */
     boolean isDeprecated(Node node);
-    
+
+    /**
+     * Gets the set of modifiers attached to given node.
+     * @param node examinded node
+     * @return {@code Set} of modifiers
+     */
+    Set<Modifier> getModifiers(Node node);
+
+    /**
+     * Possible modifiers of the javaScript element declared by documentation tools.
+     */
+    public enum Modifier {
+        PRIVATE("private"),
+        PUBLIC("public"),
+        STATIC("static");
+
+        private final String value;
+
+        private Modifier(String value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+        /**
+         * Gets {@code Modifier} corresponding to given value.
+         * @param value {@code String} value of the {@code Modifier}
+         * @return {@code Modifier}
+         */
+        public static Modifier fromString(String value) {
+            for (Modifier modifier : Modifier.values()) {
+                if (value.equalsIgnoreCase(modifier.toString())) {
+                    return modifier;
+                }
+            }
+            return null;
+        }
+    }
+
 }

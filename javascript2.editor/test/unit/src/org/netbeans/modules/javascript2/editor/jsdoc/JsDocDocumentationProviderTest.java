@@ -44,8 +44,11 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.javascript2.editor.model.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.DocumentationProvider.Modifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeImpl;
@@ -133,6 +136,29 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
 
                 JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
                 assertEquals(expected, documentationProvider.isDeprecated(getNodeForOffset(parserResult, offset)));
+            }
+        });
+    }
+
+    // TODO - REFACTOR LATER
+    private void checkModifiers(Source source, final int offset, final String expectedModifiers) throws Exception {
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result result = resultIterator.getParserResult();
+                assertTrue(result instanceof JsParserResult);
+                JsParserResult parserResult = (JsParserResult) result;
+
+                JsDocDocumentationProvider documentationProvider = getDocumentationProvider(parserResult);
+                Set<Modifier> realModifiers = documentationProvider.getModifiers(getNodeForOffset(parserResult, offset));
+                if (expectedModifiers == null) {
+                    assertEquals(0, realModifiers.size());
+                } else {
+                    String[] expModifiers = expectedModifiers.split("[|]");
+                    assertEquals(expModifiers.length, realModifiers.size());
+                    for (int i = 0; i < expModifiers.length; i++) {
+                        assertTrue(realModifiers.contains(Modifier.fromString(expModifiers[i])));
+                    }
+                }
             }
         });
     }
@@ -297,6 +323,36 @@ public class JsDocDocumentationProviderTest extends JsDocTestBase {
         Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
         final int caretOffset = getCaretOffset(testSource, "Coordinate.prototype.getX = function(){^");
         checkDeprecated(testSource, caretOffset, false);
+    }
+
+    public void testModifiers01() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.^width = 0;");
+        checkModifiers(testSource, caretOffset, "private");
+    }
+
+    public void testModifiers02() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getWidth = function(){^");
+        checkModifiers(testSource, caretOffset, null);
+    }
+
+    public void testModifiers03() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.setWidth = function(width){^");
+        checkModifiers(testSource, caretOffset, "public");
+    }
+
+    public void testModifiers04() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Circle.^PI = 3.14;");
+        checkModifiers(testSource, caretOffset, "static");
+    }
+
+    public void testModifiers05() throws Exception {
+        Source testSource = getTestSource(getTestFile("testfiles/jsdoc/classWithJsDoc.js"));
+        final int caretOffset = getCaretOffset(testSource, "Circle.createCircle = function(radius){^");
+        checkModifiers(testSource, caretOffset, "static|public");
     }
 
     private static class FakeDocParameter implements DocParameter {

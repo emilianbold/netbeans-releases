@@ -235,6 +235,7 @@ Rectangle.prototype.getHeight = function(){
 /**
  * Set the width value for this Rectangle.
  * @param {int} width The width value to be set
+ * @public
  * @see #setWidth
  */
 Rectangle.prototype.setWidth = function(width){
@@ -325,7 +326,7 @@ Circle.prototype.radius = 0;
 
 /**
  * A very simple class (static) field that is also a constant
- * @final
+ * @static
  * @deprecated
  * @type float
  */
@@ -353,6 +354,8 @@ Circle.prototype.setRadius = function(radius){
  * An example of a  class (static) method that acts as a factory for Circle
  * objects. Given a radius value, this method creates a new Circle.
  * @param {int} radius The radius value to use for the new Circle.
+ * @static
+ * @public
  * @type Circle
  */
 Circle.createCircle = function(radius){
