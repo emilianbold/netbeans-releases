@@ -480,7 +480,7 @@ public class HintTest {
 
         JavaSource js = JavaSource.forFileObject(file);
 
-        assertNotNull(js);
+        assertNotNull("found JavaSource for " + file, js);
 
         final DeadlockTask bt = new DeadlockTask(Phase.RESOLVED);
 
