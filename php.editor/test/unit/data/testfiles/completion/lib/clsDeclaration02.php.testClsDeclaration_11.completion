@@ -44,6 +44,7 @@ PACKAGE    XUser                           [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
+PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit

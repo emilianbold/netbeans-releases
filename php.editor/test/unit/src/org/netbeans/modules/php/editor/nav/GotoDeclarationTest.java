@@ -816,6 +816,18 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "Cls::f^oo();", "static function ^foo() {}");
     }
 
+    public void testIssue207971_01() throws Exception {
+        checkDeclaration(getTestPath(), "$sql = \" {$this->fie^ld1} {$this->object2->xxx} {$this->field3['array1']} \";", "private $^field1;");
+    }
+
+    public void testIssue207971_02() throws Exception {
+        checkDeclaration(getTestPath(), "$sql = \" {$this->field1} {$this->obj^ect2->xxx} {$this->field3['array1']} \";", "private $^object2;");
+    }
+
+    public void testIssue207971_03() throws Exception {
+        checkDeclaration(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", "private $^field3;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(
