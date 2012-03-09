@@ -41,13 +41,12 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import org.netbeans.modules.css.lib.api.properties.model.BorderCascadedBox;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumMap;
 import org.netbeans.modules.css.lib.api.properties.model.*;
-import org.netbeans.modules.css.model.api.ElementFactory;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,44 +58,34 @@ import org.openide.util.NbBundle;
     "CTL_BorderDescription=Border Box Model", // NOI18N
     "CTL_BorderCategory=Box" //NOI18N
 })
-public class DeclarationsBorderModel implements EditableBox<BoxEdgeBorder> {
+public class DeclarationsBorderModel implements EditableBox, SemanticModel {
 
     private static final String MODEL_NAME = "border"; //NOI18N
     private Model model;
     private Declarations declarations;
-    private final CascadedBox<BoxEdgeBorder> cascadedBox = new BorderCascadedBox();
     private final Collection<Declaration> involved = new ArrayList<Declaration>();
-    private final SemanticModelListenerSupport LISTENERS = new SemanticModelListenerSupport();
-    
+
     public DeclarationsBorderModel(Model model, Declarations element) {
         this.model = model;
         this.declarations = element;
         updateModel();
     }
 
-    protected PropertyModelId getPropertyModelId() {
-        return PropertyModelId.BORDER;
-    }
-
     private void updateModel() {
-        for (Declaration declaration : declarations.getDeclarations()) {
-            ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(getPropertyModelId());
-            declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
-            Box<BoxEdgeBorder> boxModel = (Box<BoxEdgeBorder>) modelvisitor.getModel();
-            if (boxModel != null) {
-                if(boxModel.isValid()) {
-                    cascadedBox.addBox(boxModel);
-                    involved.add(declaration);
-                }
-            }
-        }
-
-        LISTENERS.fireModelChanged();
+//        for (Declaration declaration : declarations.getDeclarations()) {
+//            ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(Pro());
+//            declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
+//            Box<BoxEdgeBorder> boxModel = (Box<BoxEdgeBorder>) modelvisitor.getModel();
+//            if (boxModel != null) {
+//                cascadedBox.addBox(boxModel);
+//                involved.add(declaration);
+//            }
+//        }
 
     }
 
     @Override
-    public void setEdge(Edge edge, BoxEdgeBorder value) {
+    public void setEdge(Edge edge, BoxElement value) {
 //        BoxEdgeSize current = getEdge(edge);
 //        if (current == null && value == null || current != null && current.equals(value)) {
 //            return; //no change
@@ -199,19 +188,11 @@ public class DeclarationsBorderModel implements EditableBox<BoxEdgeBorder> {
     }
 
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        return cascadedBox.getEdge(edge);
+    public BoxElement getEdge(Edge edge) {
+//        return cascadedBox.getEdge(edge);
+        return null;
     }
 
-    @Override
-    public void addListener(SemanticModelListener listener) {
-        LISTENERS.add(listener);
-    }
-
-    @Override
-    public void removeListener(SemanticModelListener listener) {
-        LISTENERS.remove(listener);
-    }
 
     @Override
     public String getName() {
@@ -233,10 +214,4 @@ public class DeclarationsBorderModel implements EditableBox<BoxEdgeBorder> {
         return Bundle.CTL_BorderCategory();
     }
 
-    @Override
-    public boolean isValid() {
-        //since all the invalid boxes are excluded from the cascaded box 
-        //the generated cascaded box is always valid if there's at least one item there
-        return !cascadedBox.getBoxes().isEmpty();
-    }
 }

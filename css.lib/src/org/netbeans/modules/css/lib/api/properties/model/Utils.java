@@ -50,11 +50,11 @@ public class Utils {
     private Utils() {
     }
 
-    public static void dumpBox(Box<? extends PrintableModel> box) {
-        PrintableModel top = box.getEdge(Edge.TOP);
-        PrintableModel right = box.getEdge(Edge.RIGHT);
-        PrintableModel bottom = box.getEdge(Edge.BOTTOM);
-        PrintableModel left = box.getEdge(Edge.LEFT);
+    public static void dumpBox(Box box) {
+        BoxElement top = box.getEdge(Edge.TOP);
+        BoxElement right = box.getEdge(Edge.RIGHT);
+        BoxElement bottom = box.getEdge(Edge.BOTTOM);
+        BoxElement left = box.getEdge(Edge.LEFT);
         
         System.out.println("\n\t" + (top == null ? null : top.asText()));
         System.out.println((left == null ? null : left.asText()) + "\t\t" + (right == null ? null : right.asText()));

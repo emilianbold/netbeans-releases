@@ -41,32 +41,27 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.PaddingR;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class PaddingRight extends NodeModel implements Box<BoxEdgeSize> {
+public class PaddingRight extends NodeModel implements BoxProvider {
 
-    public PaddingR paddingR;
+    public BoxEdgeSize boxEdgeSize;
 
     public PaddingRight(Node node) {
         super(node);
     }
 
     @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        switch (edge) {
-            case RIGHT:
-                return paddingR.getBoxEdgeSize();
-            default:
-                return null;
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.PADDING) {
+            return new Box.SingleEdge(boxEdgeSize, Edge.RIGHT);
+        } else {
+            return null;
         }
     }
 }

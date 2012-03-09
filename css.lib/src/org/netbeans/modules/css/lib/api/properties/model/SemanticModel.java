@@ -54,7 +54,5 @@ public interface SemanticModel {
     public String getDescription();
     
     public String getCategoryName();
-    
-    public boolean isValid();
-  
+   
 }

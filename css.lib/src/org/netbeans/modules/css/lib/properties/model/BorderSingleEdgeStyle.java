@@ -42,16 +42,13 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderSingleEdgeStyle extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderSingleEdgeStyle extends NodeModel implements BoxProvider {
 
     public BorderStyleItem borderStyleItem;
     
@@ -63,14 +60,14 @@ public class BorderSingleEdgeStyle extends NodeModel implements Box<BoxEdgeBorde
     }
     
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        if(this.edge == edge) {
-            return new BoxEdgeBorderImpl.StyleOnly(borderStyleItem);
+    public Box getBox(BoxType boxType) {
+        if(boxType == BoxType.BORDER_STYLE) {
+            return new Box.SingleEdge(borderStyleItem, edge);
+        } else {
+            return null;
         }
-        return null;
-        
     }
-
+    
     @Override
     public boolean isValid() {
         return borderStyleItem != null;

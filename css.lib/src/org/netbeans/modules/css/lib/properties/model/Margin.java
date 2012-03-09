@@ -41,91 +41,56 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.*;
-
-
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class Margin extends NodeModel implements Box<BoxEdgeSize> {
+public class Margin extends NodeModel implements BoxProvider {
 
-    public MarginTblr marginTblr;
-    public MarginTb marginTb;
-    public MarginLr marginLr;
-    public MarginT marginT;
-    public MarginB marginB;
-    public MarginL marginL;
-    public MarginR marginR;
+    protected List<BoxEdgeSize> models = new ArrayList<BoxEdgeSize>();
 
-    public Margin(Node margin) {
-        super(margin);
-    }
-
-    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
-        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
-        for (NodeModel model : getSubmodels()) {
-            sorted.add((AbstractBEBox) model);
-        }
-        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
-
-            @Override
-            public int compare(AbstractBEBox t, AbstractBEBox t1) {
-                return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
-            }
-        });
-
-        return sorted;
+    public Margin(Node node) {
+        super(node);
     }
 
     @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        //bit cryptic so ... it takes the margin models sorted by the number of accepted edges
-        //and use the one which resolves the given edge
-        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
-            BoxEdgeSize mw = box.getEdge(edge);
-            if (mw != null) {
-                return mw;
-            }
+    protected Class getModelClassForSubNode(String nodeName) {
+        if (nodeName.equals("@box-edge-size")) { //NOI18N
+            return BoxEdgeSize.class;
         }
         return null;
     }
-    
-    //possibly remove following methods
-    
-    MarginB getMarginB() {
-        return marginB;
+
+    @Override
+    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        if (model instanceof BoxEdgeSize) {
+            models.add((BoxEdgeSize) model);
+        }
     }
 
-    MarginL getMarginL() {
-        return marginL;
+    @Override
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.MARGIN) {
+            return new Box.EachEdge(getElement(Edge.TOP), getElement(Edge.RIGHT),
+                    getElement(Edge.BOTTOM), getElement(Edge.LEFT));
+        } else {
+            return null;
+        }
     }
 
-    MarginLr getMarginLr() {
-        return marginLr;
+    private BoxElement getElement(Edge edge) {
+        int values = models.size();
+        int index = BoxPropertySupport.getParameterIndex(values, edge);
+        return models.get(index);
     }
 
-    MarginR getMarginR() {
-        return marginR;
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
     }
-
-    MarginT getMarginT() {
-        return marginT;
-    }
-
-    MarginTb getMarginTb() {
-        return marginTb;
-    }
-
-    MarginTblr getMarginTblr() {
-        return marginTblr;
-    }
-
 }

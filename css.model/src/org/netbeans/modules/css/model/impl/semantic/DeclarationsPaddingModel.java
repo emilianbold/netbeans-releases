@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.openide.util.NbBundle;
@@ -55,17 +58,22 @@ import org.openide.util.NbBundle;
     "CTL_PaddingDescription=Padding Box Model", // NOI18N
     "CTL_PaddingCategory=Box" //NOI18N
 })
-public class DeclarationsPaddingModel extends DeclarationsBoxEdgeSizeModel {
+public class DeclarationsPaddingModel extends DeclarationsBoxEdgeSizeModel implements SemanticModel {
 
-    public DeclarationsPaddingModel(Model model, Declarations element) {
-        super(model, element);
+        private static final String PROPERTY_BASE_NAME = "padding"; //NOI18N
+    
+    public DeclarationsPaddingModel(Model model, 
+            Declarations element, 
+            Collection<Declaration> involved, 
+            Box box) {
+        super(model, element, involved, box);
     }
 
     @Override
-    protected PropertyModelId getPropertyModelId() {
-        return PropertyModelId.PADDING;
+    protected String getPropertyBaseName() {
+        return PROPERTY_BASE_NAME;
     }
-
+    
     @Override
     public String getDisplayName() {
         return Bundle.CTL_PaddingDisplayName();
@@ -80,4 +88,10 @@ public class DeclarationsPaddingModel extends DeclarationsBoxEdgeSizeModel {
     public String getCategoryName() {
         return Bundle.CTL_PaddingCategory();
     }
+
+    @Override
+    public String getName() {
+        return PROPERTY_BASE_NAME;
+    }
+
 }

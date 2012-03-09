@@ -59,93 +59,97 @@ public class DeclarationsBorderModelTest extends ModelTestBase {
     }
 
     public void testBorder() {
-        assertBox("border: red;", "red");
-        assertBox("border: solid;", "solid");
-        assertBox("border: 1pt;", "1pt");
+        assertBox("border: red;", BoxType.BORDER_COLOR, "red");
+        assertBox("border: solid;", BoxType.BORDER_STYLE, "solid");
+        assertBox("border: 1pt;", BoxType.BORDER_WIDTH, "1pt");
     }
-    
+
     public void testBorderMulti() {
-        assertBox("border: red solid;", "red solid"); //color_width_style
-        assertBox("border: solid red;", "red solid");
-        assertBox("border: 2px red;", "red 2px");
-        assertBox("border: 2px red solid;", "red 2px solid");
-        assertBox("border: dashed 2px red;", "red 2px dashed");
+        assertBox("border: red solid;", BoxType.BORDER_COLOR, "red"); 
+        assertBox("border: red solid;", BoxType.BORDER_STYLE, "solid"); 
+        
+        assertBox("border: solid red;", BoxType.BORDER_COLOR, "red");
+        assertBox("border: solid red;", BoxType.BORDER_STYLE, "solid");
+        
+        assertBox("border: 2px red;", BoxType.BORDER_COLOR, "red");
+        assertBox("border: 2px red;", BoxType.BORDER_WIDTH, "2px");
+        
+        assertBox("border: 2px red solid;", BoxType.BORDER_COLOR, "red");
+        assertBox("border: 2px red solid;", BoxType.BORDER_STYLE, "solid");
+        assertBox("border: 2px red solid;", BoxType.BORDER_WIDTH, "2px");
+        
+        assertBox("border: dashed 2px red;", BoxType.BORDER_COLOR, "red");
+        assertBox("border: dashed 2px red;", BoxType.BORDER_STYLE, "dashed");
+        assertBox("border: dashed 2px red;", BoxType.BORDER_WIDTH, "2px");
     }
-    
+
     public void testBorderSingleEdge() {
-        assertBox("border-top: red solid;", "red solid", null, null, null); //color_width_style
-        assertBox("border-left: 10px;", null, null, null, "10px"); //color_width_style
+        assertBox("border-top: red solid;", BoxType.BORDER_COLOR, "red", null, null, null); 
+        assertBox("border-top: red solid;", BoxType.BORDER_STYLE, "solid", null, null, null); 
+        
+        assertBox("border-left: 10px;", BoxType.BORDER_WIDTH, null, null, null, "10px");
     }
-    
+
     public void testBorderAndSingleEdge() {
-        assertBox("border: green; border-top: red solid;", "red solid", "green", "green", "green"); //color_width_style
-        assertBox("border: green 2px; border-right: red;", "green 2px", "red", "green 2px", "green 2px"); //color_width_style
+        assertBox("border: green; border-top: red solid;", BoxType.BORDER_COLOR, "red", "green", "green", "green");
+        assertBox("border: green; border-top: red solid;", BoxType.BORDER_STYLE, "solid", null, null, null);
+        
+        assertBox("border: green 2px; border-right: red;", BoxType.BORDER_COLOR, "green", "red", "green", "green");
+        assertBox("border: green 2px; border-right: red;", BoxType.BORDER_WIDTH, "2px", null, "2px", "2px");
     }
-    
+
     public void testBorderOverwritten() {
-        assertBox("border: green; border: solid;", "solid");
-        assertBox("border: 2px; border: green;", "green");
+        assertBox("border: green; border: solid;", BoxType.BORDER_STYLE, "solid");
+        assertBox("border: green; border: solid;", BoxType.BORDER_COLOR, null);
+        
+        assertBox("border: 2px; border: green;", BoxType.BORDER_COLOR, "green");
+        assertBox("border: 2px; border: green;", BoxType.BORDER_WIDTH, null);
     }
-    
+
     public void testMultipleSingleEdge() {
-        assertBox("border-top: 2px; border-right: red 2px; border-left: dashed", "2px", "red 2px", null, "dashed");
+        assertBox("border-top: 2px; border-right: red 2px; border-left: dashed", 
+                BoxType.BORDER_COLOR, null, "red", null, null);
+        
+        assertBox("border-top: 2px; border-right: red 2px; border-left: dashed", 
+                BoxType.BORDER_STYLE, null, null, null, "dashed");
+        
+        assertBox("border-top: 2px; border-right: red 2px; border-left: dashed", 
+                BoxType.BORDER_WIDTH, "2px", "2px", null, null);
     }
-    
+
     public void testBorderColor() {
-        assertBox("border-color: red", "red");
+        assertBox("border-color: red", BoxType.BORDER_COLOR, "red");
+        assertBox("border-color: red", BoxType.BORDER_WIDTH, null);
+        assertBox("border-color: red", BoxType.BORDER_STYLE, null);
     }
-    
+
     public void testBorderStyle() {
-        assertBox("border-style: solid", "solid");
+        assertBox("border-style: solid", BoxType.BORDER_STYLE, "solid");
+        assertBox("border-style: solid", BoxType.BORDER_COLOR, null);
+        assertBox("border-style: solid", BoxType.BORDER_WIDTH, null);
     }
-    
+
     public void testBorderWidth() {
-        assertBox("border-width: 1px", "1px");
+        assertBox("border-width: 1px", BoxType.BORDER_WIDTH, "1px");
+        assertBox("border-width: 1px", BoxType.BORDER_COLOR, null);
+        assertBox("border-width: 1px", BoxType.BORDER_STYLE, null);
     }
-    
+
     public void testBorderOverriding() {
-        assertBox("border: green; border-color: red", "red");
-        assertBox("border: green; border-width: 2px", "green 2px");
+        assertBox("border: green; border-color: red", BoxType.BORDER_COLOR, "red");
         
+        assertBox("border: green; border-width: 2px",  BoxType.BORDER_COLOR,"green");
+        assertBox("border: green; border-width: 2px",  BoxType.BORDER_WIDTH,"2px");
+
         //border erase everything
-        assertBox("border-width: 20px;border-color: green; border: solid;","solid");
-        
+        assertBox("border-width: 20px;border-color: green; border: solid;", BoxType.BORDER_STYLE, "solid");
+        assertBox("border-width: 20px;border-color: green; border: solid;", BoxType.BORDER_WIDTH, null);
+        assertBox("border-width: 20px;border-color: green; border: solid;", BoxType.BORDER_COLOR, null);
+
         //border overridden
-        assertBox("border: solid; border-width: 20px;border-color: green;","green 20px solid");
+        assertBox("border: solid; border-width: 20px;border-color: green;", BoxType.BORDER_COLOR, "green");
+        assertBox("border: solid; border-width: 20px;border-color: green;", BoxType.BORDER_WIDTH, "20px");
+        assertBox("border: solid; border-width: 20px;border-color: green;", BoxType.BORDER_STYLE, "solid");
     }
-    
-    private void assertBox(String declarations, final String all) {
-        assertBox(declarations, all, all, all, all);
-    }
-    
-    private void assertBox(String declarations, final String top, final String right, final String bottom, final String left) {
-        StringBuilder ruleCode = new StringBuilder();
-        
-        ruleCode.append("div {\n");
-        ruleCode.append(declarations);
-        ruleCode.append("\n");
-        ruleCode.append("}");
-        
-        final Model model = createModel(ruleCode.toString());
 
-        model.runReadTask(new Model.ModelTask() {
-
-            @Override
-            public void run(StyleSheet styleSheet) {
-
-                Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
-                assertNotNull(ds);
-
-                EditableBox<BoxEdgeBorder> box = new DeclarationsBorderModel(model, ds);
-                assertNotNull(box);
-//                Utils.dumpBox(margin);
-
-                assertBox(box, top, right, bottom, left);
-
-            }
-        });
-        
-    }
-    
-    
 }

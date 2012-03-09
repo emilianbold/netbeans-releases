@@ -45,8 +45,72 @@ package org.netbeans.modules.css.lib.api.properties.model;
  *
  * @author marekfukala
  */
-public interface Box<T> extends SemanticModel {
+public interface Box {
 
-    public T getEdge(Edge edge);
+    public BoxElement getEdge(Edge edge);
 
+    public static class SameEdges implements Box {
+
+        private BoxElement value;
+
+        public SameEdges(BoxElement value) {
+            this.value = value;
+        }
+        
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            return value;
+        }
+        
+    }
+    
+    public static class EachEdge implements Box {
+
+        private BoxElement top, right, bottom, left;
+
+        public EachEdge(BoxElement top, BoxElement right, BoxElement bottom, BoxElement left) {
+            this.top = top;
+            this.right = right;
+            this.bottom = bottom;
+            this.left = left;
+        }
+
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            switch(edge) {
+                case TOP:
+                    return top;
+                case RIGHT:
+                    return right;
+                case BOTTOM:
+                    return bottom;
+                case LEFT:
+                    return left;
+                default:
+                    throw new IllegalArgumentException();
+            }
+        }
+        
+    }
+    
+    public static class SingleEdge implements Box {
+
+        private BoxElement value;
+        private Edge edge;
+
+        public SingleEdge(BoxElement value, Edge e) {
+            this.value = value;
+            this.edge = e;
+        }
+
+        @Override
+        public BoxElement getEdge(Edge edge) {
+            return this.edge == edge ? value : null;
+        }
+        
+    }
+    
+    
+    
+    
 }

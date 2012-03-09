@@ -48,58 +48,28 @@ import java.util.List;
  *
  * @author marekfukala
  */
-public class CascadedBox <T> implements Box<T> {
+public class CascadedBox implements Box {
 
-    protected List<Box<T>> boxes = new ArrayList<Box<T>>();
+    protected List<Box> boxes = new ArrayList<Box>();
 
-    public void addBox(Box<T> box) {
+    public void addBox(Box box) {
         boxes.add(box);
     }
     
-    public List<Box<T>> getBoxes() {
+    public List<Box> getBoxes() {
         return boxes;
     }
 
     @Override
-    public T getEdge(Edge edge) {
-        T val = null;
-        for (Box<T> box : boxes) {
-            T v = box.getEdge(edge);
+    public BoxElement getEdge(Edge edge) {
+        BoxElement val = null;
+        for (Box box : boxes) {
+            BoxElement v = box.getEdge(edge);
             if(v != null) {
                 val = v;
             } 
         }
         return val;
     }
-
-    @Override
-    public String getName() {
-        return getClass().getSimpleName();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return getName();
-    }
-
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public String getCategoryName() {
-        return null;
-    }
-
-    @Override
-    public boolean isValid() {
-        for(SemanticModel model : boxes) {
-            if(!model.isValid()) {
-                return false;
-            }
-        }
-        return true;
-    }
-
+    
 }

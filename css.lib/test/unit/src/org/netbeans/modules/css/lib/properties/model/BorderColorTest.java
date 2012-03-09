@@ -46,64 +46,23 @@ import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyModel;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColorTest extends BorderTestBase {
+public class BorderColorTest extends BoxTestBase {
 
     public BorderColorTest(String name) {
         super(name);
     }
 
-    public void testBorderColorBasic() {
-        PropertyModel model = Properties.getPropertyModel("border-color");
-        ResolvedProperty val = new ResolvedProperty(model, "red green blue");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-
-        root.accept(modelvisitor);
-
-        BorderColor borderColor = (BorderColor) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-        List<Color> models = borderColor.models;
-        
-        assertEquals(3, models.size());
-        Color colorModel1 = models.get(0);
-        Color colorModel2 = models.get(1);
-        Color colorModel3 = models.get(2);
-
-        assertEquals("red", colorModel1.getValue());
-        assertEquals("green", colorModel2.getValue());
-        assertEquals("blue", colorModel3.getValue());
-
-    }
-
-    public void testBorderColorBox() {
-        PropertyModel model = Properties.getPropertyModel("border-color");
-        ResolvedProperty val = new ResolvedProperty(model, "red green blue");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-
-        root.accept(modelvisitor);
-
-        BorderColor borderColor = (BorderColor) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "red", "green", "blue", "green");
-
+    public void testBorderColor() {
+        assertBox("border-color", "red", BoxType.BORDER_COLOR, "red");
+        assertBox("border-color", "red green", BoxType.BORDER_COLOR, "red", "green", "red", "green");
+        assertBox("border-color", "red green blue", BoxType.BORDER_COLOR, "red", "green", "blue", "green");
+        assertBox("border-color", "red green blue yellow", BoxType.BORDER_COLOR, "red", "green", "blue", "yellow");        
     }
     
 }

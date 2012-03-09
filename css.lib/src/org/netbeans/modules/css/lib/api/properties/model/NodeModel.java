@@ -53,13 +53,15 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class NodeModel implements SemanticModel, PrintableModel {
+public class NodeModel  {
 
     private Node node;
     
     private Collection<NodeModel> submodels = new ArrayList<NodeModel>();
 
     private Collection<Node> unhandledChildren = new ArrayList<Node>();
+    
+    protected static final String INVALID_VALUE = "invalid value"; //NOI18N
     
     public NodeModel(Node node) {
         this.node = node;
@@ -71,10 +73,9 @@ public class NodeModel implements SemanticModel, PrintableModel {
     public  Node getNode() {
         return node;
     }
-    
-    @Override
-    public CharSequence asText() {
-        return getNode().image();
+
+    public boolean isValid() {
+        return true;
     }
     
     /**
@@ -156,31 +157,6 @@ public class NodeModel implements SemanticModel, PrintableModel {
                 .toString();
     }
 
-    @Override
-    public String getName() {
-        return new StringBuilder().append("NodeModel for: ").append(toString()).toString(); //NOI18N
-    }
-
-    @Override
-    public String getDisplayName() {
-        return getName();
-    }
-
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Override
-    public String getCategoryName() {
-        return null;
-    }
-
-    @Override
-    public boolean isValid() {
-        return true;
-    }
-    
-    
+      
 
 }

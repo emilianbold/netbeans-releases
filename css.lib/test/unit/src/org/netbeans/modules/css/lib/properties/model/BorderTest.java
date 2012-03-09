@@ -41,26 +41,37 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+
 /**
  *
  * @author marekfukala
  */
-public class BorderTest extends BorderTestBase {
+public class BorderTest extends BoxTestBase {
 
     public BorderTest(String name) {
         super(name);
     }
-
+    
 //    @Override
 //    protected boolean isDebugMode() {
 //        return true;
 //    }
 
     public void testBorder() {
-       assertBox("border", "red solid", "red solid"); //color - width - style
-       assertBox("border", "red solid 2px", "red 2px solid");
-       assertBox("border", "dashed 1cm green", "green 1cm dashed");
-       assertBox("border", "2cm", "2cm");
+       assertBox("border", "red solid", BoxType.BORDER_COLOR, "red"); 
+       assertBox("border", "red solid", BoxType.BORDER_STYLE, "solid");
+       
+       assertBox("border", "red solid 2px", BoxType.BORDER_COLOR, "red");
+       assertBox("border", "red solid 2px", BoxType.BORDER_WIDTH, "2px");
+       assertBox("border", "red solid 2px", BoxType.BORDER_STYLE, "solid");
+       
+       assertBox("border", "dashed 1cm green", BoxType.BORDER_COLOR, "green");
+       assertBox("border", "dashed 1cm green", BoxType.BORDER_WIDTH, "1cm");
+       assertBox("border", "dashed 1cm green", BoxType.BORDER_STYLE, "dashed");
+       
+       assertBox("border", "2cm", BoxType.BORDER_WIDTH, "2cm");
     }
     
 }

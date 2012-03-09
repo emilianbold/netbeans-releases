@@ -45,6 +45,7 @@ import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.Tokenizer;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
@@ -52,12 +53,12 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class BorderWidthItem extends NodeModel {
+public class BorderWidthItem extends NodeModel implements BoxElement {
 
     public Length length;
     
     private TokenNodeModel fixedValue;
-    
+
     public static enum FixedValue {
         
         medium, thin, thick;
@@ -134,27 +135,17 @@ public class BorderWidthItem extends NodeModel {
     }
 
     @Override
-    public CharSequence asText() {
+    public String asText() {
         if(getLength() != null) {
-            return getLength().getLength().getValue();
+            return getLength().getLength().getValue().toString();
         } else {
             for(FixedValue fv : FixedValue.values()) {
                 TokenNodeModel tnm = getFixedValueModel(fv);
                 if(tnm != null) {
-                    return tnm.getValue();
+                    return tnm.getValue().toString();
                 }
             }
         }
-        return null;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append(getClass().getSimpleName());
-        b.append("(");
-        b.append(asText());
-        b.append(")");
-        return b.toString();
+        return INVALID_VALUE;
     }
 }

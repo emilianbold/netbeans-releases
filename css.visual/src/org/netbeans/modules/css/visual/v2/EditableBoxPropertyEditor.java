@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -64,12 +65,12 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     private static final String SEPARATOR = " "; //NOI18N
     private static final String NO_VALUE = "-"; //NOI18N
     
-    EditableBox<BoxEdgeSize> editableBox;
-    BoxEdgeSizeModelProperty property;
+    EditableBox editableBox;
+    EditableBoxModelProperty property;
 
-    public EditableBoxPropertyEditor(BoxEdgeSizeModelProperty property) {
+    public EditableBoxPropertyEditor(EditableBoxModelProperty property) {
         this.property = property;
-        editableBox = property.model;
+        editableBox = property.getEditableBox();
     }
 
     @Override
@@ -86,8 +87,8 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
     public String getAsText() {
         StringBuilder b = new StringBuilder();
         for (Edge e : Edge.values()) {
-            BoxEdgeSize mw = editableBox.getEdge(e);
-            b.append(mw == null ? NO_VALUE : mw.getTextRepresentation());
+            BoxElement mw = editableBox.getEdge(e);
+            b.append(mw == null ? NO_VALUE : mw.asText());
             b.append(SEPARATOR);
         }
         return b.toString();

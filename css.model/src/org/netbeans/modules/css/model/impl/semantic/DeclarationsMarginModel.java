@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.openide.util.NbBundle;
@@ -55,18 +58,23 @@ import org.openide.util.NbBundle;
     "CTL_MarginDescription=Margin Box Model", // NOI18N
     "CTL_MarginCategory=Box" //NOI18N
 })
-public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel {
+public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel implements SemanticModel {
 
-    public DeclarationsMarginModel(Model model, Declarations element) {
-        super(model, element);
+    private static final String PROPERTY_BASE_NAME = "margin"; //NOI18N
+    
+    public DeclarationsMarginModel(Model model, 
+            Declarations element, 
+            Collection<Declaration> involved, 
+            Box box) {
+        super(model, element, involved, box);
     }
 
     @Override
-    protected PropertyModelId getPropertyModelId() {
-        return PropertyModelId.MARGIN;
+    protected String getPropertyBaseName() {
+        return PROPERTY_BASE_NAME;
     }
 
-      @Override
+    @Override
     public String getDisplayName() {
         return Bundle.CTL_MarginDisplayName();
     }
@@ -80,5 +88,11 @@ public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel {
     public String getCategoryName() {
         return Bundle.CTL_MarginCategory();
     }
+
+    @Override
+    public String getName() {
+        return PROPERTY_BASE_NAME;
+    }
+    
     
 }

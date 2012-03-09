@@ -42,19 +42,19 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
+import org.netbeans.modules.css.lib.api.properties.model.BoxProvider;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderTop extends BorderDefiningEachEdge implements Box<BoxEdgeBorder> {
+public class BorderTop extends BorderSingleEdgeBase implements BoxProvider {
 
     public BorderTop(Node node) {
         super(node);
     }
+    
     @Override
     protected Edge getDefiningEdge() {
         return Edge.TOP;

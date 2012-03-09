@@ -41,33 +41,12 @@
  */
 package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 /**
  *
  * @author marekfukala
  */
-public class SemanticModelListenerSupport {
-
-    private Collection<SemanticModelListener> LISTENERS = new ArrayList<SemanticModelListener>();
+public interface BoxProvider {
     
-    public SemanticModelListenerSupport() {
-    }
-    
-    public synchronized void add(SemanticModelListener listener) {
-        LISTENERS.add(listener);
-    }
-    
-    public synchronized void remove(SemanticModelListener listener) {
-        LISTENERS.remove(listener);
-    }
-    
-    public synchronized void fireModelChanged() {
-        for(SemanticModelListener l : LISTENERS) {
-            l.modelChanged();
-        }
-    }
-    
-    
+    public Box getBox(BoxType boxType);
+     
 }

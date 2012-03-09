@@ -41,67 +41,52 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
-import org.netbeans.modules.css.lib.api.properties.model.*;
-import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.lib.api.properties.model.Box;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 import org.netbeans.modules.css.model.api.*;
 
 /**
  *
  * @author marekfukala
  */
-public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdgeSize> {
+public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
 
-    private static final String MODEL_NAME = "margin"; //NOI18N
-    private Model model;
-    private Declarations declarations;
-    private final CascadedBox<BoxEdgeSize> cascadedBox = new CascadedBox<BoxEdgeSize>();
-    private final Collection<Declaration> involved = new ArrayList<Declaration>();
-    private final SemanticModelListenerSupport LISTENERS = new SemanticModelListenerSupport();
-
-    public DeclarationsBoxEdgeSizeModel(Model model, Declarations element) {
+    private final Model model;
+    private final Declarations declarations;
+    private final Collection<Declaration> involved;
+    private final Box box;
+    
+    public DeclarationsBoxEdgeSizeModel(Model model, 
+            Declarations element, 
+            Collection<Declaration> involved, 
+            Box box) {
         this.model = model;
         this.declarations = element;
-        updateModel();
+        this.involved = involved;
+        this.box = box;
     }
 
-    protected abstract PropertyModelId getPropertyModelId();
-
-    private void updateModel() {
-        for (Declaration declaration : declarations.getDeclarations()) {
-            ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(getPropertyModelId());
-            declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
-            Box<BoxEdgeSize> model = (Box<BoxEdgeSize>) modelvisitor.getModel();
-            if (model != null) {
-                if (model.isValid()) {
-                    cascadedBox.addBox(model);
-                    involved.add(declaration);
-                }
-            }
-        }
-
-        LISTENERS.fireModelChanged();
-
-    }
-
+    protected abstract String getPropertyBaseName();
+    
     @Override
-    public boolean isValid() {
-        //since all the invalid boxes are excluded from the cascaded box 
-        //the generated cascaded box is always valid if there's at least one item there
-        return !cascadedBox.getBoxes().isEmpty();
+    public BoxElement getEdge(Edge edge) {
+        return box.getEdge(edge);
     }
-
+    
     @Override
-    public void setEdge(Edge edge, BoxEdgeSize value) {
-        BoxEdgeSize current = getEdge(edge);
+    public void setEdge(Edge edge, BoxElement value) {
+        BoxElement current = getEdge(edge);
         if (current == null && value == null || current != null && current.equals(value)) {
             return; //no change
         }
 
         //merge the original Box with the new edge setting
-        EnumMap<Edge, BoxEdgeSize> map = new EnumMap<Edge, BoxEdgeSize>(Edge.class);
+        EnumMap<Edge, BoxElement> map = new EnumMap<Edge, BoxElement>(Edge.class);
         map.put(Edge.TOP, getEdge(Edge.TOP));
         map.put(Edge.BOTTOM, getEdge(Edge.BOTTOM));
         map.put(Edge.LEFT, getEdge(Edge.LEFT));
@@ -114,25 +99,25 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
         }
 
         ElementFactory f = model.getElementFactory();
-        Property p = f.createProperty(getPropertyModelId().getBasePropertyName()); //NOI18N
+        Property p = f.createProperty(getPropertyBaseName()); //NOI18N
 
         //TODO remove the hardcoding - make the algorithm generic
 
-        BoxEdgeSize t = map.get(Edge.TOP);
-        BoxEdgeSize r = map.get(Edge.RIGHT);
-        BoxEdgeSize b = map.get(Edge.BOTTOM);
-        BoxEdgeSize l = map.get(Edge.LEFT);
+        BoxElement t = map.get(Edge.TOP);
+        BoxElement r = map.get(Edge.RIGHT);
+        BoxElement b = map.get(Edge.BOTTOM);
+        BoxElement l = map.get(Edge.LEFT);
 
         if (t == null || r == null || b == null || l == null) {
             //use single properties
             for (Edge e : Edge.values()) {
-                BoxEdgeSize mw = map.get(e);
+                BoxElement mw = map.get(e);
                 if (mw != null) {
-                    CharSequence propVal = mw.getTextRepresentation();
+                    CharSequence propVal = mw.asText();
                     Expression expr = f.createExpression(propVal);
                     PropertyValue pv = f.createPropertyValue(expr);
 
-                    String propertyName = String.format("%s-%s", getPropertyModelId().getBasePropertyName(), e.name().toLowerCase()); //NOI18N
+                    String propertyName = String.format("%s-%s", getPropertyBaseName(), e.name().toLowerCase()); //NOI18N
                     Property prop = f.createProperty(propertyName);
                     Declaration newD = f.createDeclaration(prop, pv, false);
 
@@ -149,40 +134,40 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
                 if (l.equals(r)) {
                     if (t.equals(l)) {
                         //TRBL
-                        sb.append(t.getTextRepresentation());
+                        sb.append(t.asText());
                     } else {
                         //TB LT
-                        sb.append(t.getTextRepresentation());
+                        sb.append(t.asText());
                         sb.append(" ");
-                        sb.append(l.getTextRepresentation());
+                        sb.append(l.asText());
                     }
                 } else {
                     //TB L R - no such perm.
-                    sb.append(t.getTextRepresentation());
+                    sb.append(t.asText());
                     sb.append(" ");
-                    sb.append(r.getTextRepresentation());
+                    sb.append(r.asText());
                     sb.append(" ");
-                    sb.append(b.getTextRepresentation());
+                    sb.append(b.asText());
                     sb.append(" ");
-                    sb.append(l.getTextRepresentation());
+                    sb.append(l.asText());
 
                 }
             } else if (l.equals(r)) {
                 //T LR B
-                sb.append(t.getTextRepresentation());
+                sb.append(t.asText());
                 sb.append(" ");
-                sb.append(l.getTextRepresentation());
+                sb.append(l.asText());
                 sb.append(" ");
-                sb.append(b.getTextRepresentation());
+                sb.append(b.asText());
             } else {
                 //T R B L
-                sb.append(t.getTextRepresentation());
+                sb.append(t.asText());
                 sb.append(" ");
-                sb.append(r.getTextRepresentation());
+                sb.append(r.asText());
                 sb.append(" ");
-                sb.append(b.getTextRepresentation());
+                sb.append(b.asText());
                 sb.append(" ");
-                sb.append(l.getTextRepresentation());
+                sb.append(l.asText());
             }
 
             Expression e = f.createExpression(sb);
@@ -193,26 +178,6 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox<BoxEdg
             declarations.addDeclaration(newD);
         }
 
-        updateModel();
     }
 
-    @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        return cascadedBox.getEdge(edge);
-    }
-
-    @Override
-    public void addListener(SemanticModelListener listener) {
-        LISTENERS.add(listener);
-    }
-
-    @Override
-    public void removeListener(SemanticModelListener listener) {
-        LISTENERS.remove(listener);
-    }
-
-    @Override
-    public String getName() {
-        return MODEL_NAME;
-    }
 }

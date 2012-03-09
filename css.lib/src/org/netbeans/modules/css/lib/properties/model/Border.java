@@ -42,10 +42,7 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 
 
@@ -53,7 +50,7 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class Border extends NodeModel implements Box<BoxEdgeBorder> {
+public class Border extends NodeModel implements BoxProvider {
 
     public BorderWidthItem borderWidthItem;
     public BorderStyleItem borderStyleItem;
@@ -62,18 +59,25 @@ public class Border extends NodeModel implements Box<BoxEdgeBorder> {
     public Border(Node node) {
         super(node);
     }
-
+    
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        //all edges the same
-        return new BoxEdgeBorderImpl(true, color, true, borderStyleItem, true, borderWidthItem);
+    public Box getBox(BoxType boxType) {
+        switch(boxType) {
+            case BORDER_COLOR:
+                return new Box.SameEdges(color == null ? BoxElement.EMPTY : color);
+            case BORDER_STYLE:
+                return new Box.SameEdges(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem);
+            case BORDER_WIDTH:
+                return new Box.SameEdges(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem);
+            default:
+                return null;
+        }
     }
-
+    
     @Override
     public boolean isValid() {
         //at least one value must be defined
         return color != null || borderWidthItem != null || borderStyleItem != null;
     }
 
-    
 }

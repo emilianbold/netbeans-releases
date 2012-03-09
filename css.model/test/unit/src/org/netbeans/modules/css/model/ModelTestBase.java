@@ -47,12 +47,11 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.PrintableModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModel;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**
@@ -98,8 +97,12 @@ public class ModelTestBase extends NbTestCase {
         return new Model(result);
     }
 
-    protected void assertBox(Box<? extends PrintableModel> box, String top, String right, String bottom, String left) {
-        PrintableModel e = box.getEdge(Edge.TOP);
+    protected void assertBox(Box box, String all) {
+        assertBox(box, all, all, all, all);
+    }
+    
+    protected void assertBox(Box box, String top, String right, String bottom, String left) {
+        BoxElement e = box.getEdge(Edge.TOP);
         assertEquals("unexpected top value", top, e == null ? null : e.asText());
 
         e = box.getEdge(Edge.RIGHT);
@@ -112,7 +115,54 @@ public class ModelTestBase extends NbTestCase {
         assertEquals("unexpected left value", left, e == null ? null : e.asText());
 
     }
+    
+    protected BoxType getBoxType() {
+        return null; 
+    }
 
+    protected void assertBox(String declarations, final String all) {
+        assertBox(declarations, getBoxType(), all, all, all, all);
+    }
+    
+    protected void assertBox(String declarations, final String top, final String right, final String bottom, final String left) {
+        assertBox(declarations, getBoxType(), top, right, bottom, left);
+    }
+    
+    protected void assertBox(String declarations, BoxType boxType, final String all) {
+        assertBox(declarations, boxType, all, all, all, all);
+    }
+    
+    protected void assertBox(String declarations, final BoxType boxType, final String top, final String right, final String bottom, final String left) {
+        StringBuilder ruleCode = new StringBuilder();
+        
+        ruleCode.append("div {\n");
+        ruleCode.append(declarations);
+        ruleCode.append("\n");
+        ruleCode.append("}");
+        
+        final Model model = createModel(ruleCode.toString());
+
+        model.runReadTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+
+                Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+                assertNotNull(ds);
+
+                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                EditableBox box = dbm.getBox(boxType);
+                assertNotNull(box);
+//                Utils.dumpBox(margin);
+
+                assertBox(box, top, right, bottom, left);
+
+            }
+        });
+        
+    }
+    
+    
     protected void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {
         PrintWriter pw = new PrintWriter(System.out);
         dump(node, 0, pw);
@@ -129,4 +179,7 @@ public class ModelTestBase extends NbTestCase {
             dump(c, level + 1, pw);
         }
     }
+    
+    
+    
 }

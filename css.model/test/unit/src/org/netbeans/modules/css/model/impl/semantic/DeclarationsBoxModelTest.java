@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declarations;
@@ -52,20 +51,21 @@ import org.netbeans.modules.css.model.api.StyleSheet;
  *
  * @author marekfukala
  */
-public class DeclarationsMarginModelTest extends ModelTestBase {
+public class DeclarationsBoxModelTest extends ModelTestBase {
 
-    public DeclarationsMarginModelTest(String name) {
+    public DeclarationsBoxModelTest(String name) {
         super(name);
     }
 
-    public void testModifySemanticModel() {
+    public void testModel() {
 
         String code =
                 "div { \n"
-                + "\tcolor: red;\n"
                 + "\tmargin : 3px;\n"
-                + "\tfont: cursive;\n"
-                + "\tmargin-left: 10px\n"
+                + "\tmargin-left: 10px;\n"
+                + "\tborder: solid 2px;\n"
+                + "\tborder-color: red green;\n"
+                + "\tborder-top-style: dashed;\n"
                 + "}";
 
         final Model model = createModel(code);
@@ -78,45 +78,37 @@ public class DeclarationsMarginModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
-                EditableBox margin = dbm.getBox(BoxType.MARGIN);
+                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
                 
-                assertNotNull(margin);
-//                Utils.dumpBox(margin);
-
-                assertBox(margin, "3px", "3px", "3px", "10px");
-
-                //edit the box 
-                BoxEdgeSize newMarginWidth = BoxEdgeSize.parseValue("10px");
-
-                margin.setEdge(Edge.RIGHT, newMarginWidth);
-//                assertBox(margin, "3px", "10px", "3px", "10px");
-
-                margin.setEdge(Edge.TOP, BoxEdgeSize.parseValue("auto"));
-//                assertBox(margin, "auto", "10px", "3px", "10px");
-
-//                Utils.dumpBox(margin);
+                EditableBox box;
+                
+                box = dmodel.getBox(BoxType.MARGIN);
+                assertBox(box, "3px", "3px", "3px", "10px");
+                
+                box = dmodel.getBox(BoxType.BORDER_COLOR);
+                assertBox(box, "red", "green", "red", "green");
+                
+                box = dmodel.getBox(BoxType.BORDER_STYLE);
+                assertBox(box, "dashed", "solid", "solid", "solid");
+                
+                box = dmodel.getBox(BoxType.BORDER_WIDTH);
+                assertBox(box, "2px");
 
             }
         });
 
-//        System.out.println("Original source:");
-//        System.out.println(model.getOriginalSource());
-//
-//        System.out.println("Modified source:");
-//        System.out.println(model.getModelSource());
-
-//        Model model2 = createModel(model.getModelSource().toString());
-//        Declarations ds = model2.getStyleSheet().getBody().getRules().get(0).getDeclarations();
-//        EditableBox<MarginWidth> margin = new DeclarationsMarginBoxModel(ds);
-//
-//        Utils.dumpBox(margin);
-//
-
     }
+    
+    public void testModel2() {
 
-    public void testSetBottomEdge() {
-        final Model model = createModel("div { margin: 1px 3em 3em 1px; }");
+        String code =
+                "div { \n"
+                + "\tmargin-left: 10px;\n"
+                + "\tmargin : 3px;\n"
+                + "}";
+
+        final Model model = createModel(code);
+
         model.runWriteTask(new Model.ModelTask() {
 
             @Override
@@ -125,21 +117,49 @@ public class DeclarationsMarginModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
-                EditableBox margin = dbm.getBox(BoxType.MARGIN);
+                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
                 
-                assertNotNull(margin);
-                assertBox(margin, "1px", "3em", "3em", "1px");
-
-                BoxEdgeSize newMarginWidth = BoxEdgeSize.parseValue("1px");
-                margin.setEdge(Edge.BOTTOM, newMarginWidth);
-//                assertBox(margin, "1px", "3em", "1px", "1px");
+                EditableBox box;
                 
-
+                box = dmodel.getBox(BoxType.MARGIN);
+                assertBox(box, "3px", "3px", "3px", "3px");
             }
         });
 
-        System.out.println(model.getModelSource());
+    }
+    
+    public void testModelModify1() {
+
+        String code =
+                "div { \n"
+                + "\tmargin-left: 10px;\n"
+                + "\tmargin : 3px;\n"
+                + "}";
+
+        final Model model = createModel(code);
+
+        model.runWriteTask(new Model.ModelTask() {
+
+            @Override
+            public void run(StyleSheet styleSheet) {
+
+                Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+                assertNotNull(ds);
+
+                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
+                
+                EditableBox box;
+                
+                box = dmodel.getBox(BoxType.MARGIN);
+                assertBox(box, "3px", "3px", "3px", "3px");
+                
+                BoxElement be = BoxElementFactory.Factory.getFactory(BoxType.MARGIN).createBoxElement("5cm");
+                box.setEdge(Edge.TOP, be);
+                
+            }
+        });
 
     }
+
+
 }

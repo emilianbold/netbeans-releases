@@ -43,6 +43,8 @@ package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElementFactory;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 
@@ -50,13 +52,27 @@ import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
  *
  * @author marekfukala
  */
-public class Color extends NodeModel {
+public class Color extends NodeModel implements BoxElement {
 
+    private String value; //user set value
+
+    public Color(String value) {
+        this.value = value;
+    }
+    
     public Color(Node node) {
         super(node);
     }
     
+    public static Color parseValue(CharSequence text) {
+        return new Color(text.toString());
+    }
+    
     public String getValue() {
+        if(value != null) {
+            return value;
+        }
+        
         //just gather all token nodes and join to an image
         final StringBuilder builder = new StringBuilder();
 
@@ -78,6 +94,12 @@ public class Color extends NodeModel {
         
         return builder.toString();
     }
+
+    @Override
+    public String asText() {
+        return getValue();
+    }
+
 
     
 }

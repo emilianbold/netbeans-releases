@@ -42,16 +42,14 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
+import org.netbeans.modules.css.lib.api.properties.model.BoxProvider;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderBottom extends BorderDefiningEachEdge implements Box<BoxEdgeBorder> {
+public class BorderBottom extends BorderSingleEdgeBase implements BoxProvider {
 
     public BorderBottom(Node node) {
         super(node);

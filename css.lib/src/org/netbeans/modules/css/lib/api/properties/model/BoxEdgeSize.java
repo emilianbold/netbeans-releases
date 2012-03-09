@@ -54,7 +54,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class BoxEdgeSize extends NodeModel {
+public class BoxEdgeSize extends NodeModel implements BoxElement {
 
     public TokenNodeModel auto;
     public Length length;
@@ -116,16 +116,6 @@ public class BoxEdgeSize extends NodeModel {
         return percentage;
     }
 
-    public CharSequence getTextRepresentation() {
-        if (auto != null) {
-            return auto.getValue();
-        } else if (getLength() != null) {
-            return getLength().getLength().getValue();
-        } else {
-            return getPercentage().getValue();
-        }
-    }
-
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -173,4 +163,16 @@ public class BoxEdgeSize extends NodeModel {
         b.append(")");
         return b.toString();
     }
+
+    @Override
+    public String asText() {
+        if (auto != null) {
+            return auto.getValue().toString();
+        } else if (getLength() != null) {
+            return getLength().getLength().getValue().toString();
+        } else {
+            return getPercentage().getValue().toString();
+        }
+    }
+
 }
