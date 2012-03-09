@@ -30,6 +30,7 @@
  */
 package org.netbeans.modules.java.hints;
 
+import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
