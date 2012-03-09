@@ -45,7 +45,6 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.services.CsmStandaloneFileProvider;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
@@ -116,12 +115,12 @@ public final class ParserThread implements Runnable {
                         for (APTPreprocHandler.State state : states) {
                             if (!project.isDisposing()) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
-                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states " + states; //NOI18N
+                                    assert states.size() == 1 : "Dummy state sould never be mixed with normal states"; //NOI18N
                                     preprocHandlers = FileImpl.DUMMY_HANDLERS;
                                     parseCase = ": ONE FILE Reparsing "; // NOI18N
                                     break;
                                 } else if (state == FileImpl.PARTIAL_REPARSE_STATE) {
-                                    assert states.size() == 1 : "reparse Dummy state sould never be mixed with normal states \n" + states; //NOI18N
+                                    assert states.size() == 1 : "reparse Dummy state sould never be mixed with normal states"; //NOI18N
                                     preprocHandlers = FileImpl.PARTIAL_REPARSE_HANDLERS;
                                     parseCase = ": PARTIAL Reparsing "; // NOI18N
                                     break;
