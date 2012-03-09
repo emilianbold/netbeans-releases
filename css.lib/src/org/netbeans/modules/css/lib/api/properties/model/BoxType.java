@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.lib.api.properties.model;
 
-import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
-import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
-import org.netbeans.modules.css.lib.properties.model.Color;
+import org.openide.util.NbBundle;
 
 /**
- * Representation of border edge.
- * 
- * If isDefiningXXX returns true and getXXX() null it means that this 
- * BoxEdgeBorder clears the XXX property value.
  *
  * @author marekfukala
  */
-public interface BoxEdgeBorder extends PrintableModel {
+@NbBundle.Messages({
+    "CTL_Margin_DN=Margin", // NOI18N
+    "CTL_Padding_DN=Padding", // NOI18N
+    "CTL_BorderColor_DN=Border Color", // NOI18N
+    "CTL_BorderWidth_DN=Border Width", // NOI18N
+    "CTL_BorderStyle_DN=Border Style" // NOI18N  
+})
+public enum BoxType {
+    
+    MARGIN(Bundle.CTL_Margin_DN()), 
+    PADDING(Bundle.CTL_Padding_DN()), 
+    BORDER_COLOR(Bundle.CTL_BorderColor_DN()),
+    BORDER_STYLE(Bundle.CTL_BorderStyle_DN()),
+    BORDER_WIDTH(Bundle.CTL_BorderWidth_DN()); 
 
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningColor();
-
-    /**
-     * If isDefiningColor returns true and getColor() null it means that this 
-     * BoxEdgeBorder clears the color value
-     * 
-     * @return instance of Color or null if the value is not defined
-     */
-    public Color getColor();
-
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningWidth();
-
-    /**
-     * @return instance BorderWidthItem of Width or null if the value is not defined
-     */
-    public BorderWidthItem getWidth();
-
-    /**
-     * Returns true if this instance defines the property.
-     *
-     */
-    public boolean isDefiningStyle();
-
-    /**
-     * @return instance of BorderStyleItem or null if the value is not defined
-     */
-    public BorderStyleItem getStyle();
+    private String displayName;
+    
+    private BoxType(String displayName) {
+        this.displayName = displayName;
+    }
+    
+    public String getDisplayName() {
+        return displayName;
+    }
+    
 }

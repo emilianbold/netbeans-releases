@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.visual.v2;
 
-import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.openide.nodes.Node.Property;
 
@@ -56,7 +55,7 @@ public class SemanticModelPERegistry {
     public static Property getProperty(RuleNode ruleNode, SemanticModel model) {
         String mName = model.getName();
         if(mName.equals("margin") || mName.equals("padding")) {
-            return new BoxEdgeSizeModelProperty(ruleNode, (EditableBox)model);
+            return new EditableBoxModelProperty(ruleNode, model);
         }
         return null;
     }

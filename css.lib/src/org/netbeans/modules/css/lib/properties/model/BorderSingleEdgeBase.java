@@ -41,25 +41,42 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginB extends AbstractBEBox {
+public abstract class BorderSingleEdgeBase extends NodeModel implements BoxProvider {
 
-    public MarginB(Node node) {
+    public BorderWidthItem borderWidthItem;
+    public BorderStyleItem borderStyleItem;
+    public Color color;
+
+    public BorderSingleEdgeBase(Node node) {
         super(node);
     }
 
+    protected abstract Edge getDefiningEdge();
+
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return Collections.singleton(Edge.BOTTOM);
+    public Box getBox(BoxType boxType) {
+        switch (boxType) {
+            case BORDER_COLOR:
+                return new Box.SingleEdge(color == null ? BoxElement.EMPTY : color, getDefiningEdge());
+            case BORDER_STYLE:
+                return new Box.SingleEdge(borderStyleItem == null ? BoxElement.EMPTY : borderStyleItem, getDefiningEdge());
+            case BORDER_WIDTH:
+                return new Box.SingleEdge(borderWidthItem == null ? BoxElement.EMPTY : borderWidthItem, getDefiningEdge());
+            default:
+                return null;
+        }
     }
 
+    @Override
+    public boolean isValid() {
+        //at least one value must be defined
+        return color != null || borderWidthItem != null || borderStyleItem != null;
+    }
 }

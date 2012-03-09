@@ -41,89 +41,32 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderWidthTest extends BorderTestBase {
+public class BorderWidthTest extends BoxTestBase {
 
     public BorderWidthTest(String name) {
         super(name);
     }
-
+    
     public void testBoxOneArg() {
-        PropertyModel model = Properties.getPropertyModel("border-width");
-        ResolvedProperty val = new ResolvedProperty(model, "medium");
-
-        Node root = val.getParseTree();
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderWidth borderColor = (BorderWidth) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "medium", "medium", "medium", "medium");
+        assertBox("border-width", "medium", BoxType.BORDER_WIDTH, "medium");
     }
     
     public void testBoxTwoArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-width");
-        ResolvedProperty val = new ResolvedProperty(model, "thin 2px");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderWidth borderColor = (BorderWidth) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "thin", "2px", "thin", "2px");
+        assertBox("border-width", "thin 2px", BoxType.BORDER_WIDTH, "thin", "2px", "thin", "2px");
     }
     
     public void testBoxThreeArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-width");
-        ResolvedProperty val = new ResolvedProperty(model, "thin thick 20px");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderWidth borderColor = (BorderWidth) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "thin", "thick", "20px", "thick");
+        assertBox("border-width", "thin thick 20px", BoxType.BORDER_WIDTH, "thin", "thick", "20px", "thick");
     }
     
     public void testBoxFourArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-width");
-        ResolvedProperty val = new ResolvedProperty(model, "10px 20cm thin thick");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderWidth borderColor = (BorderWidth) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "10px", "20cm", "thin", "thick");
+        assertBox("border-width", "10px 20cm thin thick", BoxType.BORDER_WIDTH, "10px", "20cm", "thin", "thick");
     }
 
-   
 }

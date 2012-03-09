@@ -41,90 +41,32 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.List;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderStyleTest extends BorderTestBase {
+public class BorderStyleTest extends BoxTestBase {
 
     public BorderStyleTest(String name) {
         super(name);
     }
 
     public void testBoxOneArg() {
-        PropertyModel model = Properties.getPropertyModel("border-style");
-        ResolvedProperty val = new ResolvedProperty(model, "solid");
-
-        Node root = val.getParseTree();
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderStyle borderColor = (BorderStyle) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "solid", "solid", "solid", "solid");
+        assertBox("border-style", "solid", BoxType.BORDER_STYLE, "solid");
     }
     
     public void testBoxTwoArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-style");
-        ResolvedProperty val = new ResolvedProperty(model, "solid dotted");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderStyle borderColor = (BorderStyle) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "solid", "dotted", "solid", "dotted");
+        assertBox("border-style", "solid dotted", BoxType.BORDER_STYLE, "solid", "dotted", "solid", "dotted");
     }
     
     public void testBoxThreeArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-style");
-        ResolvedProperty val = new ResolvedProperty(model, "solid dotted none");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderStyle borderColor = (BorderStyle) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "solid", "dotted", "none", "dotted");
+        assertBox("border-style", "solid dotted none", BoxType.BORDER_STYLE, "solid", "dotted", "none", "dotted");
     }
     
     public void testBoxFourArgs() {
-        PropertyModel model = Properties.getPropertyModel("border-style");
-        ResolvedProperty val = new ResolvedProperty(model, "solid dotted none dashed");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
-        root.accept(modelvisitor);
-
-        BorderStyle borderColor = (BorderStyle) modelvisitor.getModel();
-        assertNotNull(borderColor);
-
-//        dumpBox(borderColor);
-        assertBox(borderColor, "solid", "dotted", "none", "dashed");
+        assertBox("border-style", "solid dotted none dashed", BoxType.BORDER_STYLE, "solid", "dotted", "none", "dashed");
     }
 
-   
 }

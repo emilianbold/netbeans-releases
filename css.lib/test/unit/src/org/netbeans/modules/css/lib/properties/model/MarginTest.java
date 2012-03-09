@@ -41,199 +41,31 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.api.properties.*;
-import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 
 
 /**
  *
  * @author marekfukala
  */
-public class MarginTest extends CssTestBase {
+public class MarginTest extends BoxTestBase {
 
     public MarginTest(String name) {
         super(name);
     }
-
-    public void testBasic() {
-//        PropertyModel model = Properties.getPropertyModel("border");
-//        PropertyValue val = new PropertyValue(model, "1px solid gray");
-        PropertyModel model = Properties.getPropertyModel("margin");
-        ResolvedProperty val = new ResolvedProperty(model, "1px 20% 3px");
-
-        Node root = val.getParseTree();
-//        dumpTree(root);
-
-        PropertyModel model2 = Properties.getPropertyModel("margin-left");
-        ResolvedProperty val2 = new ResolvedProperty(model2, "1px");
-
-        Node root2 = val2.getParseTree();
-        dumpTree(root2);
-
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
-
-        root2.accept(modelvisitor);
-
-
-    }
-
-    public void testCreateMarginModel() {
-        PropertyModel model = Properties.getPropertyModel("margin");
-        ResolvedProperty val = new ResolvedProperty(model, "1px 20% auto");
-
-        Node root = val.getParseTree();
-        dumpTree(root);
-
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
-        root.accept(modelvisitor);
-
-        Margin margin = (Margin)modelvisitor.getModel();
-        assertNotNull(margin);
-
-        {
-            MarginT mt = margin.getMarginT();
-            assertNotNull(mt);
-
-            BoxEdgeSize mw = mt.getBoxEdgeSize();
-
-            assertNotNull(mw);
-
-            Length len = mw.getLength();
-            assertNotNull(len);
-
-            String sval = len.getLength().getValue().toString();
-
-            assertEquals("1px", sval);
-        }
-        {
-            MarginLr mt = margin.getMarginLr();
-            assertNotNull(mt);
-
-            BoxEdgeSize mw = mt.getBoxEdgeSize();
-
-            assertNotNull(mw);
-
-            Text value = mw.getPercentage();
-            String sval = value.getValue().toString();
-
-            assertEquals("20%", sval);
-        }
-        {
-            MarginB mt = margin.getMarginB();
-            assertNotNull(mt);
-
-            BoxEdgeSize mw = mt.getBoxEdgeSize();
-
-            assertNotNull(mw);
-
-            Text value = mw.getAuto();
-            String sval = value.getValue().toString();
-
-            assertEquals("auto", sval);
-            
-        }
-
-        PaddingTest.dumpBox(margin);
-     
-    }
-    
-    public void testMarginLeft() {
-        Box<BoxEdgeSize> mbox1 = getBoxModel("margin-left", "2px");
-        PaddingTest.assertBox(mbox1, null, null, null, "2px");
-    }
-    public void testMarginRight() {
-        Box<BoxEdgeSize> mbox1 = getBoxModel("margin-right", "2px");
-        PaddingTest.assertBox(mbox1, null, "2px", null, null);
-    }
-    public void testMarginTop() {
-        Box<BoxEdgeSize> mbox1 = getBoxModel("margin-top", "2px");
-        PaddingTest.assertBox(mbox1, "2px", null, null, null);
-    }
-    public void testMarginBottom() {
-        Box<BoxEdgeSize> mbox1 = getBoxModel("margin-bottom", "2px");
-        PaddingTest.assertBox(mbox1, null, null, "2px", null);
+  
+    public void testSingleEdge() {
+        assertBox("margin-top", "2px", BoxType.MARGIN, "2px", null, null, null); 
+        assertBox("margin-right", "2px", BoxType.MARGIN, null, "2px", null, null); 
+        assertBox("margin-bottom", "2px", BoxType.MARGIN, null, null, "2px", null); 
+        assertBox("margin-left", "2px", BoxType.MARGIN, null, null, null, "2px"); 
     }
     
     public void testMarginBox() {
-        dumpMargin("20px");
-        dumpMargin("30% 50%");
-        dumpMargin("30% auto 20%");
-        dumpMargin("1px 2px 3px 4px");
+        assertBox("margin", "2px", BoxType.MARGIN, "2px"); 
+        assertBox("margin", "30% 50%", BoxType.MARGIN, "30%", "50%", "30%", "50%"); 
+        assertBox("margin", "30% auto 50%", BoxType.MARGIN, "30%", "auto", "50%", "auto"); 
+        assertBox("margin", "1px 2px 3px 4px", BoxType.MARGIN, "1px", "2px", "3px", "4px");
     }
-    
-    public void testCascade() {
-        
-        Box<BoxEdgeSize> mbox1 = getBoxModel("margin", "2px 3px 4px 5px");
-//        PaddingTest.dumpBox(mbox1);
-        
-        Box<BoxEdgeSize> mbox2 = getBoxModel("margin-left", "2px");
-//        PaddingTest.dumpBox(mbox2);
-        
-        Box<BoxEdgeSize> mbox3 = getBoxModel("margin-right", "1px");
-//        PaddingTest.dumpBox(mbox3);
-        
-        CascadedBox<BoxEdgeSize> cbox = new CascadedBox<BoxEdgeSize> ();
-        cbox.addBox(mbox1);
-        cbox.addBox(mbox2);
-        cbox.addBox(mbox3);
-        
-//        PaddingTest.dumpBox(cbox);
-        
-        PaddingTest.assertBox(cbox, "2px", "1px", "4px", "2px");
-        
-        
-    }
-    
-    /*
-     * 
-     * a. margin: 2px 3px; //reset - set TBLR
-     * 
-     * //aT2 aB2 aL3 aR3
-     * 
-     * b. margin-left: 1px; //       set L
-     * 
-     * //aT2 aB2 bL1 aR3
-     * 
-     * c. margin-top: 4px;  //       set T
-     * 
-     * //cT4 aB2 bL1 aR3
-     * 
-     * 
-     * 
-     */
-    
-    public Box<BoxEdgeSize> getBoxModel(String propertyName, String text) {
-        PropertyModel model = Properties.getPropertyModel(propertyName);
-        ResolvedProperty val = new ResolvedProperty(model, text);
-
-        dumpTree(val.getParseTree());
-        
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
-        val.getParseTree().accept(modelvisitor);
-
-        Box<BoxEdgeSize> mbox = (Box<BoxEdgeSize>)modelvisitor.getModel();
-        
-        return mbox;
-    }
-    
-    public void dumpMargin(String value) {
-        PropertyModel model = Properties.getPropertyModel("margin");
-        ResolvedProperty val = new ResolvedProperty(model, value);
-
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.MARGIN);
-        val.getParseTree().accept(modelvisitor);
-
-        Margin margin = (Margin)modelvisitor.getModel();
-        assertNotNull(margin);
-        
-        System.out.println("margin: " + value);
-        System.out.println("-------------------------------");
-        dumpTree(val.getParseTree());
-        System.out.println("");
-        PaddingTest.dumpBox(margin);
-    }
-    
     
 }

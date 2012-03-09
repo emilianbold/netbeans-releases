@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
+import java.util.Collection;
 import org.netbeans.modules.css.lib.CssTestBase;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
@@ -52,18 +53,22 @@ import org.netbeans.modules.css.lib.api.properties.model.*;
  *
  * @author marekfukala
  */
-public class BorderTestBase extends CssTestBase {
+public abstract class BoxTestBase extends CssTestBase {
 
-    public BorderTestBase(String testName) {
+    public BoxTestBase(String testName) {
         super(testName);
     }
 
-    protected void dumpBox(Box<BoxEdgeBorder> box) {
+    protected void dumpBox(Box box) {
         Utils.dumpBox(box);
     }
-
-    protected void assertBox(Box<BoxEdgeBorder> box, String top, String right, String bottom, String left) {
-        BoxEdgeBorder e = box.getEdge(Edge.TOP);
+    
+    protected void assertBox(BoxProvider provider, BoxType boxType, 
+            String top, String right, String bottom, String left) {
+        Box box = provider.getBox(boxType);
+        assertNotNull(box);
+        
+        BoxElement e = box.getEdge(Edge.TOP);
         assertEquals(top, e == null ? null : e.asText());
 
         e = box.getEdge(Edge.RIGHT);
@@ -77,11 +82,13 @@ public class BorderTestBase extends CssTestBase {
 
     }
 
-    protected void assertBox(String propertyName, CharSequence value, String trbl) {
-        assertBox(propertyName, value, trbl, trbl, trbl, trbl);
+    protected void assertBox(String propertyName, CharSequence value, BoxType type, String trbl) {
+        assertBox(propertyName, value, type, trbl, trbl, trbl, trbl);
     }
     
-    protected void assertBox(String propertyName, CharSequence value, String top, String right, String bottom, String left) {
+    protected void assertBox(String propertyName, CharSequence value, BoxType boxType, 
+            String top, String right, String bottom, String left) {
+        
         PropertyModel model = Properties.getPropertyModel(propertyName);
         ResolvedProperty val = new ResolvedProperty(model, value);
 
@@ -90,20 +97,32 @@ public class BorderTestBase extends CssTestBase {
             dumpTree(root);
         }
         
-        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BORDER);
+        ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BOX);
         root.accept(modelvisitor);
 
-        Box<BoxEdgeBorder> bsem = (Box<BoxEdgeBorder>) modelvisitor.getModel();
-        assertNotNull(bsem);
-
-        if(isDebugMode()) {
-            dumpBox(bsem);
+        Collection<NodeModel> nodeModels = modelvisitor.getModels();
+        assertNotNull(nodeModels);
+        assertTrue(nodeModels.size() > 0);
+        
+        for(NodeModel nm : nodeModels) {
+            BoxProvider provider = (BoxProvider) nm;
+            Box box = provider.getBox(boxType);
+            if(box != null) {
+                assertBox(provider, boxType, top, right, bottom, left);
+                return ;
+            }
+            
         }
-        assertBox(bsem, top, right, bottom, left);
+        
+        //if we get here something is wrong
+        assertTrue(String.format("No box model found for box type %s", boxType.name()), false); 
+        
     }
     
     
     protected boolean isDebugMode() {
         return false;
     }
+
+    
 }

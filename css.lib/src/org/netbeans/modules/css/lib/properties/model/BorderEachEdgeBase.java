@@ -41,24 +41,44 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.Collection;
-import java.util.EnumSet;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class PaddingLr extends AbstractBEBox {
-    
-    public PaddingLr(Node node) {
+public abstract class BorderEachEdgeBase extends NodeModel implements BoxProvider {
+
+    protected List<BoxElement> models = new ArrayList<BoxElement>();
+
+    public BorderEachEdgeBase(Node node) {
         super(node);
     }
 
+    protected abstract BoxType getBoxType();
+    
     @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return EnumSet.of(Edge.LEFT, Edge.RIGHT);
+    public Box getBox(BoxType boxType) {
+        if (boxType == getBoxType()) {
+            return new Box.EachEdge(getElement(Edge.TOP), getElement(Edge.RIGHT),
+                    getElement(Edge.BOTTOM), getElement(Edge.LEFT));
+        } else {
+            return null;
+        }
+    }
+
+    private BoxElement getElement(Edge edge) {
+        int values = models.size();
+        int index = BoxPropertySupport.getParameterIndex(values, edge);
+        return models.get(index);
+    }
+
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
     }
     
 }

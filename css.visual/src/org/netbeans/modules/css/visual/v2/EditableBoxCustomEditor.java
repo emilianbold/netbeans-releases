@@ -51,6 +51,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 
 /**
@@ -120,8 +121,8 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
     }
     
     private ComboBoxModel modelFor(Edge e) {
-        BoxEdgeSize mw = editor.editableBox.getEdge(e);
-        String value = mw != null ? mw.getTextRepresentation().toString() : "";
+        BoxElement mw = editor.editableBox.getEdge(e);
+        String value = mw != null ? mw.asText() : "";
         
         Set<String> set = new TreeSet<String>();
         set.add(value);

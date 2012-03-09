@@ -41,34 +41,27 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.MarginB;
-
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class MarginBottom extends NodeModel implements Box<BoxEdgeSize> {
+public class MarginBottom extends NodeModel implements BoxProvider {
 
-    public MarginB marginB;
-    
+    public BoxEdgeSize boxEdgeSize;
+
     public MarginBottom(Node node) {
         super(node);
     }
 
     @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        switch(edge) {
-            case BOTTOM:
-                return marginB.getBoxEdgeSize();
-            default:
-                return null;
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.MARGIN) {
+            return new Box.SingleEdge(boxEdgeSize, Edge.BOTTOM);
+        } else {
+            return null;
         }
     }
-    
 }

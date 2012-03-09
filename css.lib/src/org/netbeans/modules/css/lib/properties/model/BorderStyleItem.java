@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
@@ -49,7 +50,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-public class BorderStyleItem extends NodeModel {
+public class BorderStyleItem extends NodeModel implements BoxElement {
 
     private TokenNodeModel fixedValue;
 
@@ -119,23 +120,14 @@ public class BorderStyleItem extends NodeModel {
     }
 
     @Override
-    public CharSequence asText() {
+    public String asText() {
         for (FixedValue fv : FixedValue.values()) {
             TokenNodeModel tnm = getFixedValueModel(fv);
             if (tnm != null) {
-                return tnm.getValue();
+                return tnm.getValue().toString();
             }
         }
-        return null;
+        return INVALID_VALUE;
     }
-
-    @Override
-    public String toString() {
-        StringBuilder b = new StringBuilder();
-        b.append(getClass().getSimpleName());
-        b.append("(");
-        b.append(asText());
-        b.append(")");
-        return b.toString();
-    }
+    
 }

@@ -44,18 +44,13 @@ package org.netbeans.modules.css.lib.properties.model;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
-
-    List<Color> models = new ArrayList<Color>();
+public class BorderColor extends BorderEachEdgeBase implements BoxProvider {
 
     public BorderColor(Node node) {
         super(node);
@@ -77,17 +72,7 @@ public class BorderColor extends NodeModel implements Box<BoxEdgeBorder> {
     }
 
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        Color color = models.get(index);
-        return new BoxEdgeBorderImpl.ColorOnly(color);
+    protected BoxType getBoxType() {
+        return BoxType.BORDER_COLOR;
     }
-
-    @Override
-    public boolean isValid() {
-        return models.size() > 0 && models.size() <= 4;
-    }
-    
-    
 }

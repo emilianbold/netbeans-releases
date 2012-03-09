@@ -41,91 +41,56 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.properties.model.*;
-
-
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class Padding extends NodeModel implements Box<BoxEdgeSize> {
+public class Padding extends NodeModel implements BoxProvider {
 
-    public PaddingTblr paddingTblr;
-    public PaddingTb paddingTb;
-    public PaddingLr paddingLr;
-    public PaddingT paddingT;
-    public PaddingB paddingB;
-    public PaddingL paddingL;
-    public PaddingR paddingR;
+    protected List<BoxEdgeSize> models = new ArrayList<BoxEdgeSize>();
 
-    public Padding(Node padding) {
-        super(padding);
-    }
-
-    private Collection<? extends Box<BoxEdgeSize>> getDefinedBoxes() {
-        List<AbstractBEBox> sorted = new ArrayList<AbstractBEBox>();
-        for (NodeModel model : getSubmodels()) {
-            sorted.add((AbstractBEBox) model);
-        }
-        Collections.sort(sorted, new Comparator<AbstractBEBox>() {
-
-            @Override
-            public int compare(AbstractBEBox t, AbstractBEBox t1) {
-                return t.getRepresentedEdges().size() - t1.getRepresentedEdges().size();
-            }
-        });
-
-        return sorted;
+    public Padding(Node node) {
+        super(node);
     }
 
     @Override
-    public BoxEdgeSize getEdge(Edge edge) {
-        //bit cryptic so ... it takes the padding models sorted by the number of accepted edges
-        //and use the one which resolves the given edge
-        for (Box<BoxEdgeSize> box : getDefinedBoxes()) {
-            BoxEdgeSize mw = box.getEdge(edge);
-            if (mw != null) {
-                return mw;
-            }
+    protected Class getModelClassForSubNode(String nodeName) {
+        if (nodeName.equals("@box-edge-size")) { //NOI18N
+            return BoxEdgeSize.class;
         }
         return null;
     }
-    
-    //possibly remove following methods
-    
-    PaddingB getPaddingB() {
-        return paddingB;
+
+    @Override
+    public void setSubmodel(String submodelClassName, NodeModel model) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+        if (model instanceof BoxEdgeSize) {
+            models.add((BoxEdgeSize) model);
+        }
     }
 
-    PaddingL getPaddingL() {
-        return paddingL;
+    @Override
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.PADDING) {
+            return new Box.EachEdge(getElement(Edge.TOP), getElement(Edge.RIGHT),
+                    getElement(Edge.BOTTOM), getElement(Edge.LEFT));
+        } else {
+            return null;
+        }
     }
 
-    PaddingLr getPaddingLr() {
-        return paddingLr;
+    private BoxElement getElement(Edge edge) {
+        int values = models.size();
+        int index = BoxPropertySupport.getParameterIndex(values, edge);
+        return models.get(index);
     }
 
-    PaddingR getPaddingR() {
-        return paddingR;
+    @Override
+    public boolean isValid() {
+        return models.size() > 0 && models.size() <= 4;
     }
-
-    PaddingT getPaddingT() {
-        return paddingT;
-    }
-
-    PaddingTb getPaddingTb() {
-        return paddingTb;
-    }
-
-    PaddingTblr getPaddingTblr() {
-        return paddingTblr;
-    }
-
 }

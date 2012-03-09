@@ -46,6 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.lib.api.properties.model.CustomModelFactory;
 import org.openide.util.lookup.ServiceProvider;
 
 /**

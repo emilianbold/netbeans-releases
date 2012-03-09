@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
+import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
+import org.netbeans.modules.css.lib.properties.model.Color;
 
 /**
  *
  * @author marekfukala
  */
-public class PaddingTblr extends AbstractBEBox {
+public interface BoxElementFactory {
 
-    public PaddingTblr(Node node) {
-        super(node);
-    }
+    public BoxElement createBoxElement(CharSequence text);
 
-    @Override
-    public Collection<Edge> getRepresentedEdges() {
-        return EnumSet.allOf(Edge.class);
+    public static class Factory {
+
+        public static BoxElementFactory getFactory(final BoxType boxType) {
+            return new BoxElementFactory() {
+
+                @Override
+                public BoxElement createBoxElement(CharSequence text) {
+                    switch (boxType) {
+                        case BORDER_COLOR:
+                            return Color.parseValue(text);
+                        case BORDER_STYLE:
+                            return BorderStyleItem.parseValue(text);
+                        case BORDER_WIDTH:
+                            return BorderWidthItem.parseValue(text);
+                        case MARGIN:
+                            return BoxEdgeSize.parseValue(text);
+                        default:
+                            return null;
+                    }
+                }
+            };
+
+        }
     }
-    
 }

@@ -41,21 +41,16 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.BoxProvider;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderWidth extends NodeModel implements Box<BoxEdgeBorder> {
-
-    List<BorderWidthItem> models = new ArrayList<BorderWidthItem>();
+public class BorderWidth extends BorderEachEdgeBase implements BoxProvider {
 
     public BorderWidth(Node node) {
         super(node);
@@ -75,17 +70,10 @@ public class BorderWidth extends NodeModel implements Box<BoxEdgeBorder> {
             models.add((BorderWidthItem) model);
         }
     }
-
+    
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        BorderWidthItem bwi = models.get(index);
-        return new BoxEdgeBorderImpl.WidthOnly(bwi);
+    protected BoxType getBoxType() {
+        return BoxType.BORDER_WIDTH;
     }
-
-    @Override
-    public boolean isValid() {
-        return models.size() > 0 && models.size() <= 4;
-    }
+    
 }

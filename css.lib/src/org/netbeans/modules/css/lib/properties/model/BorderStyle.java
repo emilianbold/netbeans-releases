@@ -41,21 +41,16 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.BoxProvider;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderStyle extends NodeModel implements Box<BoxEdgeBorder> {
-
-    private List<BorderStyleItem> models = new ArrayList<BorderStyleItem>();
+public class BorderStyle extends BorderEachEdgeBase implements BoxProvider {
 
     public BorderStyle(Node node) {
         super(node);
@@ -75,17 +70,9 @@ public class BorderStyle extends NodeModel implements Box<BoxEdgeBorder> {
             models.add((BorderStyleItem) model);
         }
     }
-
+    
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        int values = models.size();
-        int index = BoxPropertySupport.getParameterIndex(values, edge);
-        BorderStyleItem bsi = models.get(index);
-        return new BoxEdgeBorderImpl.StyleOnly(bsi);
-    }
-
-    @Override
-    public boolean isValid() {
-        return models.size() > 0 && models.size() <= 4;
+    protected BoxType getBoxType() {
+        return BoxType.BORDER_STYLE;
     }
 }

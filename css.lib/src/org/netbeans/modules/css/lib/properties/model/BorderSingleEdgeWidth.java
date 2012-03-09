@@ -42,39 +42,33 @@
 package org.netbeans.modules.css.lib.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderSingleEdgeWidth extends NodeModel implements Box<BoxEdgeBorder> {
+public class BorderSingleEdgeWidth extends NodeModel implements BoxProvider {
 
     public BorderWidthItem borderWidthItem;
-    
     private Edge edge;
 
     public BorderSingleEdgeWidth(Edge edge, Node node) {
         super(node);
         this.edge = edge;
     }
-    
+
     @Override
-    public BoxEdgeBorder getEdge(Edge edge) {
-        if(this.edge == edge) {
-            return new BoxEdgeBorderImpl.WidthOnly(borderWidthItem);
+    public Box getBox(BoxType boxType) {
+        if (boxType == BoxType.BORDER_WIDTH) {
+            return new Box.SingleEdge(borderWidthItem, edge);
+        } else {
+            return null;
         }
-        return null;
-        
     }
 
     @Override
     public boolean isValid() {
         return borderWidthItem != null;
     }
-    
-    
 }

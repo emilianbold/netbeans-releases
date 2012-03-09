@@ -43,6 +43,8 @@ package org.netbeans.modules.css.lib.api.properties.model;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Stack;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
@@ -55,16 +57,30 @@ import org.openide.util.Exceptions;
  */
 public class ModelBuilderNodeVisitor implements NodeVisitor {
 
-    private NodeModel model;
+    private Collection<NodeModel> models = new ArrayList<NodeModel>();
+    
+    private NodeModel currentModel;
+    
     private PropertyModelId propertyModel;
+    
     private Stack<NodeModel> current = new Stack<NodeModel>();
 
     public ModelBuilderNodeVisitor(PropertyModelId propertyModel) {
         this.propertyModel = propertyModel;
     }
 
-    public SemanticModel getModel() {
-        return model;
+    public Collection<NodeModel> getModels() {
+        return models;
+    }
+    
+    public <T> Collection<T> getModels(Class<T> type) {
+        Collection<T> tmodels = new ArrayList<T>();
+        for(NodeModel m : getModels()) {
+            if(type.isAssignableFrom(m.getClass())) {
+                tmodels.add(type.cast(m));
+            }
+        }
+        return tmodels;
     }
 
     static String getModelClassNameForNodeName(String nodeName) {
@@ -116,18 +132,20 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
         String modelClassName = getModelClassNameForNodeName(node.name());
         if (current.isEmpty()) {
             //first try custom model 
-            model = createModelInstance(node);
+            currentModel = createModelInstance(node);
+            
             
             //if no model created then use the class mechanism
-            if(model == null) {
+            if(currentModel == null) {
                 Class modelClass = getModelClass(modelClassName);
                 if (modelClass != null) {
-                    model = createModelInstance(modelClass, node);
+                    currentModel = createModelInstance(modelClass, node);
                 }
             }
             
-            if(model != null) {
-                current.push(model);
+            if(currentModel != null) {
+                current.push(currentModel);
+                models.add(currentModel);
             }
             
             return true;
@@ -233,8 +251,8 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
                  * IllegalArgumentException | InvocationTargetException |
                  * NoSuchMethodException | SecurityException
                  */ ex) {
-            Exceptions.printStackTrace(ex);
+            throw new IllegalStateException(String.format("Cannot create an instance of class %s "
+                    + "by invoking its constructor with Node argument", modelClass.getName()), ex);
         }
-        return null;
     }
 }

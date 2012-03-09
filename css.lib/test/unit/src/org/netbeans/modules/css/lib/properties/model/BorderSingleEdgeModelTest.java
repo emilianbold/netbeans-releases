@@ -41,44 +41,42 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeBorder;
-import org.netbeans.modules.css.lib.api.properties.model.ModelBuilderNodeVisitor;
+import org.netbeans.junit.MockServices;
+import org.netbeans.modules.css.lib.api.properties.model.BoxType;
 import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderSingleEdgeModelTest extends BorderTestBase {
+public class BorderSingleEdgeModelTest extends BoxTestBase {
 
     public BorderSingleEdgeModelTest(String name) {
         super(name);
     }
 
     public void testBorderXXXColor() {
-        assertBox("border-top-color", "red", "red", null, null, null);
-        assertBox("border-right-color", "yellow", null, "yellow", null, null);
-        assertBox("border-bottom-color", "blue", null, null, "blue", null);
-        assertBox("border-left-color", "green", null, null, null, "green");
+        BoxType t = BoxType.BORDER_COLOR;
+        assertBox("border-top-color", "red", t,"red", null, null, null);
+        assertBox("border-right-color", "yellow", t, null, "yellow", null, null);
+        assertBox("border-left-color", "green", t, null, null, null, "green");
+        assertBox("border-bottom-color", "blue", t, null, null, "blue", null);
     }
     
     public void testBorderXXXStyle() {
-        assertBox("border-top-style", "dotted", "dotted", null, null, null);
-        assertBox("border-right-style", "dashed", null, "dashed", null, null);
-        assertBox("border-bottom-style", "none", null, null, "none", null);
-        assertBox("border-left-style", "solid", null, null, null, "solid");
+        BoxType t = BoxType.BORDER_STYLE;
+        assertBox("border-top-style", "dotted", t, "dotted", null, null, null);
+        assertBox("border-right-style", "dashed", t, null, "dashed", null, null);
+        assertBox("border-bottom-style", "none", t, null, null, "none", null);
+        assertBox("border-left-style", "solid", t, null, null, null, "solid");
     }
     
     public void testBorderXXXWidth() {
-        assertBox("border-top-width", "2px", "2px", null, null, null);
-        assertBox("border-right-width", "thick", null, "thick", null, null);
-        assertBox("border-bottom-width", "5cm", null, null, "5cm", null);
-        assertBox("border-left-width", "thin", null, null, null, "thin");
+        BoxType t = BoxType.BORDER_WIDTH;
+        assertBox("border-top-width", "2px", t, "2px", null, null, null);
+        assertBox("border-right-width", "thick", t, null, "thick", null, null);
+        assertBox("border-bottom-width", "5cm", t, null, null, "5cm", null);
+        assertBox("border-left-width", "thin", t, null, null, null, "thin");
     }
     
    
