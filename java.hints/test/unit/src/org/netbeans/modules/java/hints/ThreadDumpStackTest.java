@@ -39,46 +39,47 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints;
 
 import org.junit.Test;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Jancura
  */
-public class ThreadDumpStackTest extends TestBase {
+public class ThreadDumpStackTest extends NbTestCase {
 
-    public ThreadDumpStackTest (String name) {
-        super (name, ThreadDumpStack.class);
+    public ThreadDumpStackTest(String name) {
+        super(name);
     }
 
     @Test
-    public void test1 () throws Exception {
-        performFixTest (
-            "test/Test.java",
-            "package test;\n" +
-            "class Test {\n" +
-            "    void test () {\n" +
-            "        Thread.dumpStack ();\n" +
-            "    }\n" +
-            "}",
-            "3:15-3:24:verifier:Thread Dump Stack",
-            "FixImpl",
-            (
+    public void test1() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    void test () {\n" +
+                       "        Thread.dumpStack ();\n" +
+                       "    }\n" +
+                       "}")
+                .run(ThreadDumpStack.class)
+                .findWarning("3:15-3:24:verifier:Thread Dump Stack")
+                .applyFix("MSG_ThreadDumpStack_fix")
+                .assertCompilable()
+                .assertOutput(
                 "package test;\n" +
                 "class Test {\n" +
                 "    void test () {\n" +
                 "    }\n" +
-                "}"
-            ).replaceAll ("[ \t\n]+", " ")
-        );
+                "}");
     }
-    
+
     static {
-        NbBundle.setBranding ("test");
+        NbBundle
+                .setBranding("test");
     }
 }

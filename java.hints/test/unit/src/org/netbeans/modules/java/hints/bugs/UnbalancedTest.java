@@ -37,227 +37,284 @@
  */
 package org.netbeans.modules.java.hints.bugs;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class UnbalancedTest extends TestBase {
+public class UnbalancedTest extends NbTestCase {
 
     public UnbalancedTest(String name) {
-        super(name, Unbalanced.Array.class, Unbalanced.Collection.class);
+        super(name);
     }
 
     public void testArrayWriteOnly() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr;\n" +
-                            "    private void t() { arr[0] = 0; }\n" +
-                            "}\n",
-                            "2:19-2:22:verifier:ERR_UnbalancedArrayWRITE arr");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr;\n" +
+                       "    private void t() { arr[0] = 0; }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings("2:19-2:22:verifier:ERR_UnbalancedArrayWRITE arr");
     }
 
     public void testArrayReadOnly1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr;\n" +
-                            "    private void t() { System.err.println(arr[0]); }\n" +
-                            "}\n",
-                            "2:19-2:22:verifier:ERR_UnbalancedArrayREAD arr");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr;\n" +
+                       "    private void t() { System.err.println(arr[0]); }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings("2:19-2:22:verifier:ERR_UnbalancedArrayREAD arr");
     }
 
     public void testArrayReadOnly2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr = new byte[0];\n" +
-                            "    private void t() { System.err.println(arr[0]); }\n" +
-                            "}\n",
-                            "2:19-2:22:verifier:ERR_UnbalancedArrayREAD arr");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr = new byte[0];\n" +
+                       "    private void t() { System.err.println(arr[0]); }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings("2:19-2:22:verifier:ERR_UnbalancedArrayREAD arr");
     }
 
     public void testArrayNeg1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr;\n" +
-                            "    private void t() { arr[0] = 0; System.err.println(arr[0]); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr;\n" +
+                       "    private void t() { arr[0] = 0; System.err.println(arr[0]); }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings();
     }
 
     public void testArrayNeg2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr;\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr;\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings();
     }
 
     public void testArrayNeg3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr;\n" +
-                            "    private void t() { System.err.println(arr[0]); }\n" +
-                            "    private Object g() { return arr; }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr;\n" +
+                       "    private void t() { System.err.println(arr[0]); }\n" +
+                       "    private Object g() { return arr; }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings();
     }
 
     public void testArrayNeg4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private byte[] arr = {1, 2, 3};\n" +
-                            "    private void t() { System.err.println(arr[0]); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private byte[] arr = {1, 2, 3};\n" +
+                       "    private void t() { System.err.println(arr[0]); }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings();
     }
 
     public void testArrayNeg206855() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "  private final int aa[][] = new int[3][3];\n" +
-                            "  public Test() {\n" +
-                            "    aa[0][0] = 1;\n" +
-                            "  }\n" +
-                            "  public int get() {\n" +
-                            "    return aa[0][0];\n" +
-                            "  }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "  private final int aa[][] = new int[3][3];\n" +
+                       "  public Test() {\n" +
+                       "    aa[0][0] = 1;\n" +
+                       "  }\n" +
+                       "  public int get() {\n" +
+                       "    return aa[0][0];\n" +
+                       "  }\n" +
+                       "}\n")
+                .run(Unbalanced.Array.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionWriteOnly1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { coll.add(\"a\"); }\n" +
-                            "}\n",
-                            "2:35-2:39:verifier:ERR_UnbalancedCollectionWRITE coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { coll.add(\"a\"); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:35-2:39:verifier:ERR_UnbalancedCollectionWRITE coll");
     }
 
     public void testCollectionWriteOnly2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { coll.add(\"a\"); coll.iterator(); }\n" +
-                            "}\n",
-                            "2:35-2:39:verifier:ERR_UnbalancedCollectionWRITE coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { coll.add(\"a\"); coll.iterator(); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:35-2:39:verifier:ERR_UnbalancedCollectionWRITE coll");
     }
 
     public void testCollectionReadOnly1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { String str = coll.get(0); }\n" +
-                            "}\n",
-                            "2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { String str = coll.get(0); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
     }
 
     public void testCollectionReadOnly2() throws Exception {//XXX ?
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { String str = coll.remove(0); }\n" +
-                            "}\n",
-                            "2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { String str = coll.remove(0); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
     }
 
     public void testCollectionReadOnly3() throws Exception {//XXX ?
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll = new java.util.ArrayList<String>(1);\n" +
-                            "    private void t() { String str = coll.remove(0); }\n" +
-                            "}\n",
-                            "2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll = new java.util.ArrayList<String>(1);\n" +
+                       "    private void t() { String str = coll.remove(0); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:35-2:39:verifier:ERR_UnbalancedCollectionREAD coll");
     }
 
     public void testMapReadOnly1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Map<String, String> map;\n" +
-                            "    private void t() { String str = map.get(\"a\"); }\n" +
-                            "}\n",
-                            "2:42-2:45:verifier:ERR_UnbalancedCollectionREAD map");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Map<String, String> map;\n" +
+                       "    private void t() { String str = map.get(\"a\"); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:42-2:45:verifier:ERR_UnbalancedCollectionREAD map");
     }
 
     public void testCollectionNeg1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { coll.add(\"a\"); System.err.println(coll.get(0)); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { coll.add(\"a\"); System.err.println(coll.get(0)); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionNeg2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionNeg3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll;\n" +
-                            "    private void t() { System.err.println(coll.get(0)); }\n" +
-                            "    private Object g() { return coll; }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll;\n" +
+                       "    private void t() { System.err.println(coll.get(0)); }\n" +
+                       "    private Object g() { return coll; }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionNeg4() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll = new java.util.ArrayList<String>(java.util.Arrays.asList(\"foo\"));\n" +
-                            "    private void t() { System.err.println(coll.get(0)); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll = new java.util.ArrayList<String>(java.util.Arrays.asList(\"foo\"));\n" +
+                       "    private void t() { System.err.println(coll.get(0)); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionNegAddTested() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
-                            "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
+                       "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionLocalVariable() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private void t() { java.util.List<String> coll = new java.util.ArrayList<String>(); String str = coll.get(0); }\n" +
-                            "}\n",
-                            "2:46-2:50:verifier:ERR_UnbalancedCollectionREAD coll");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void t() { java.util.List<String> coll = new java.util.ArrayList<String>(); String str = coll.get(0); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings("2:46-2:50:verifier:ERR_UnbalancedCollectionREAD coll");
     }
 
     public void testCollectionNegNonPrivate() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
-                            "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    java.util.List<String> coll = new java.util.ArrayList<String>();\n" +
+                       "    public void t1(String str) { if (coll.add(str)) System.err.println(\"\"); }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 
     public void testCollectionNegEnhForLoop() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "import java.util.List;\n" +
-                            "public class Test {\n" +
-                            "    public int t1(List<List<String>> ll) { int total = 0; for (List<String> l : ll) total += l.size(); return total; }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.List;\n" +
+                       "public class Test {\n" +
+                       "    public int t1(List<List<String>> ll) { int total = 0; for (List<String> l : ll) total += l.size(); return total; }\n" +
+                       "}\n")
+                .run(Unbalanced.Collection.class)
+                .assertContainsWarnings();
     }
 }

@@ -46,13 +46,14 @@ import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -60,7 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-@Hint(id="org.netbeans.modules.java.hints.DoubleCheck", category="thread")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.DoubleCheck", description = "#DESC_org.netbeans.modules.java.hints.DoubleCheck", id="org.netbeans.modules.java.hints.DoubleCheck", category="thread")
 public class DoubleCheck {
 
     @TriggerTreeKind(Kind.SYNCHRONIZED)
@@ -90,11 +91,11 @@ public class DoubleCheck {
             return null;
         }
 
-        Fix fix = JavaFix.toEditorFix(new FixImpl(
-            TreePathHandle.create(treePath, compilationInfo),
-            TreePathHandle.create(outer, compilationInfo),
-            compilationInfo.getFileObject()
-        ));
+        Fix fix = new FixImpl(
+TreePathHandle.create(treePath, compilationInfo),
+TreePathHandle.create(outer, compilationInfo),
+compilationInfo.getFileObject()
+).toEditorFix();
 
         int span = (int)compilationInfo.getTrees().getSourcePositions().getStartPosition(
             compilationInfo.getCompilationUnit(),
@@ -206,7 +207,9 @@ public class DoubleCheck {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath ifTreePath, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath ifTreePath = ctx.getPath();
             Tree syncTree = synchHandle.resolve(wc).getLeaf();
             wc.rewrite(ifTreePath.getLeaf(), syncTree);
         }

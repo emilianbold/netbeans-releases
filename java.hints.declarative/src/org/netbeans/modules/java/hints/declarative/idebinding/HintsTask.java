@@ -54,7 +54,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintTokenId;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.HintTextDescription;
-import org.netbeans.modules.java.hints.jackpot.impl.Utilities;
+import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;

@@ -1,0 +1,64 @@
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
+
+package ${PACKAGE_NAME};
+
+<#if GENERATE_FIX??>
+import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CompilationInfo;
+</#if>
+import org.netbeans.spi.editor.hints.ErrorDescription;
+<#if GENERATE_FIX??>
+import org.netbeans.spi.editor.hints.Fix;
+</#if>
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.HintContext;
+<#if GENERATE_FIX??>
+import org.netbeans.spi.java.hints.JavaFix;
+</#if>
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.openide.util.NbBundle.Messages;
+
+@Hint(displayName="DN_${PACKAGE_NAME}.${CLASS_NAME}",
+      description="DESC_${PACKAGE_NAME}.${CLASS_NAME}",
+      category = "general") //NOI18N
+@Messages({"DN_${PACKAGE_NAME}.${CLASS_NAME}=${DISPLAY_NAME}",
+           "DESC_${PACKAGE_NAME}.${CLASS_NAME}=${DESCRIPTION}"})
+public class ${CLASS_NAME} {
+
+    @TriggerPattern(value = "$str.equals(\"\")", //Specify a pattern as needed
+                    constraints = @ConstraintVariableType(variable = "$str", type = "java.lang.String"))
+    @Messages("ERR_${PACKAGE_NAME}.${CLASS_NAME}=${WARNING_MESSAGE}")
+    public static ErrorDescription computeWarning(HintContext ctx) {
+<#if GENERATE_FIX??>
+        Fix fix = new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix();
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}(), fix);
+<#else>
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
+</#if>
+    }
+
+<#if GENERATE_FIX??>
+    private static final class FixImpl extends JavaFix {
+
+        public FixImpl(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
+
+        @Override
+        @Messages("FIX_${PACKAGE_NAME}.${CLASS_NAME}=${FIX_MESSAGE}")
+        protected String getText() {
+            return Bundle.FIX_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}();
+        }
+
+        @Override
+        protected void performRewrite(TransformationContext ctx) {
+            //perform the required transformation
+        }
+    }
+</#if>
+}

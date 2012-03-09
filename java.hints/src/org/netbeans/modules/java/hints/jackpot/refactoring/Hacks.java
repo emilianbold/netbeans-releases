@@ -49,12 +49,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchUtilities;
-import org.netbeans.modules.java.hints.jackpot.impl.hints.HintsInvoker;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
+import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
+import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.util.Exceptions;
 
 /**
@@ -73,7 +74,7 @@ public class Hacks {
         List<MessageImpl> problems = new LinkedList<MessageImpl>();
 
         try {
-            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, problems)) {
+            if (BatchUtilities.applyFixes(copy, Collections.<Project, Set<String>>emptyMap(), errs, null, new ArrayList<RefactoringElementImplementation>(), problems)) {
                 throw new IllegalStateException();
             }
         } catch (IllegalStateException ex) {

@@ -64,23 +64,24 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Pattern;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="rules15")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.JoinCatches", description = "#DESC_org.netbeans.modules.java.hints.jdk.JoinCatches", category="rules15")
 public class JoinCatches {
 
     @TriggerPatterns({
@@ -121,7 +122,7 @@ public class JoinCatches {
 
             for (int j = i + 1; j < catches.size(); j++) {
                 Pattern pattern = Pattern.createPatternWithRemappableVariables(new TreePath(toTestPath, toTest.getBlock()), Collections.singleton(excVar), false);
-                Iterable<? extends OccurrenceDescription> found = Matcher.create(ctx.getInfo(), new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
+                Iterable<? extends Occurrence> found = Matcher.create(ctx.getInfo()).setCancel(new AtomicBoolean()).setPresetVariable(ctx.getVariables(), ctx.getMultiVariables(), ctx.getVariableNames()).setSearchRoot(new TreePath(new TreePath(ctx.getPath(), catches.get(j)), ((CatchTree)catches.get(j)).getBlock())).setTreeTopSearch().match(pattern);
 
                 if (found.iterator().hasNext()) {
                     TreePath catchPath = new TreePath(ctx.getPath(), catches.get(j));
@@ -157,7 +158,7 @@ public class JoinCatches {
             if (duplicates.size() >= 2) {
                 String displayName = NbBundle.getMessage(JoinCatches.class, "ERR_JoinCatches");
 
-                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, JavaFix.toEditorFix(new FixImpl(ctx.getInfo(), ctx.getPath(), new ArrayList<Integer>(duplicates.values()))));
+                return ErrorDescriptionFactory.forName(ctx, toTest.getParameter().getType(), displayName, new FixImpl(ctx.getInfo(), ctx.getPath(), new ArrayList<Integer>(duplicates.values())).toEditorFix());
             }
         }
 
@@ -188,7 +189,9 @@ public class JoinCatches {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             List<Tree> disjointTypes = new LinkedList<Tree>();
             TryTree tt = (TryTree) tp.getLeaf();
             int first = duplicates.iterator().next();

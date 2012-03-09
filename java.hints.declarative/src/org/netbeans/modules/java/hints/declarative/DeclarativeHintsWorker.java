@@ -49,14 +49,15 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.declarative.Condition.Otherwise;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
-//import org.netbeans.modules.java.hints.spi.support.FixFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext.MessageKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.HintContext.MessageKind;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -90,6 +91,8 @@ class DeclarativeHintsWorker implements Worker {
         return fixes;
     }
 
+    @Messages("FIX_RemoveFromParent=Remove {0} from parent")
+    @Override
     public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
         Context context = new Context(ctx);
 
@@ -136,20 +139,20 @@ class DeclarativeHintsWorker implements Worker {
                     if (   (   !fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_ERROR)
                             && !fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_WARNING))
                         || fix.getOptions().containsKey(DeclarativeHintsOptions.OPTION_REMOVE_FROM_PARENT)) {
-                        editorFixes.add(JavaFix.removeFromParent(ctx, ctx.getPath()));
+                        editorFixes.add(JavaFixUtilities.removeFromParent(ctx, Bundle.FIX_RemoveFromParent(/*TODO: better short name:*/ctx.getPath().getLeaf().toString()), ctx.getPath()));
                     }
                     //not realizing empty fixes
                 } else {
-                    editorFixes.add(JavaFix.rewriteFix(ctx.getInfo(),
-                                                       fix.getDisplayName(),
-                                                       ctx.getPath(),
-                                                       fix.getPattern(),
-                                                       APIAccessor.IMPL.getVariables(context),
-                                                       APIAccessor.IMPL.getMultiVariables(context),
-                                                       APIAccessor.IMPL.getVariableNames(context),
-                                                       ctx.getConstraints(),
-                                                       fix.getOptions(),
-                                                       imports));
+                    editorFixes.add(JavaFixImpl.Accessor.INSTANCE.rewriteFix(ctx.getInfo(),
+                                                                             fix.getDisplayName(),
+                                                                             ctx.getPath(),
+                                                                             fix.getPattern(),
+                                                                             APIAccessor.IMPL.getVariables(context),
+                                                                             APIAccessor.IMPL.getMultiVariables(context),
+                                                                             APIAccessor.IMPL.getVariableNames(context),
+                                                                             ctx.getConstraints(),
+                                                                             fix.getOptions(),
+                                                                             imports));
                 }
             } finally {
                 context.leaveScope();

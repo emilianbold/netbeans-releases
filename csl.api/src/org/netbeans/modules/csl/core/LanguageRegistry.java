@@ -335,7 +335,7 @@ public final class LanguageRegistry implements Iterable<Language> {
         FileObject registryFolder = sfs.findResource(FOLDER);
 
         if (registryFolder == null) {
-            LOG.info("No " + FOLDER + " folder"); //NOI18N
+            LOG.fine("No " + FOLDER + " folder"); //NOI18N
             return Collections.<String, Language>emptyMap();
         }
 

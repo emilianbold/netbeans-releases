@@ -60,18 +60,21 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.UseOptions;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -80,12 +83,14 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    static final String SC_IGNORE_SUBSTRING = "ignore.substring";
     static final boolean SC_IGNORE_SUBSTRING_DEFAULT = true;
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.perf.Tiny.SC_IGNORE_SUBSTRING", tooltip = "#TP_org.netbeans.modules.java.hints.perf.Tiny.SC_IGNORE_SUBSTRING", defaultValue=SC_IGNORE_SUBSTRING_DEFAULT)
+    static final String SC_IGNORE_SUBSTRING = "ignore.substring";
     
-    @Hint(category="performance", customizerProvider=StringConstructorCustomizerProviderImpl.class, suppressWarnings="RedundantStringConstructorCall")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringConstructor", category="performance", suppressWarnings="RedundantStringConstructorCall")
+    @UseOptions(SC_IGNORE_SUBSTRING)
     @TriggerPattern(value="new java.lang.String($original)",
-                    constraints=@Constraint(variable="$original", type="java.lang.String"))
+                    constraints=@ConstraintVariableType(variable="$original", type="java.lang.String"))
     public static ErrorDescription stringConstructor(HintContext ctx) {
         TreePath original = ctx.getVariables().get("$original");
 
@@ -109,57 +114,46 @@ public class Tiny {
         }
 
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_StringConstructor");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$original");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$original");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_StringConstructor");
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
-    private static final String CONF_SC_CHECKBOX_LABEL = NbBundle.getMessage(SizeEqualsZero.class, "CONF_LBL_SizeEqualsZero");
-    private static final String CONF_SC_CHECKBOX_TP = NbBundle.getMessage(SizeEqualsZero.class, "CONF_TP_SizeEqualsZero");
 
-    public static final class StringConstructorCustomizerProviderImpl extends OneCheckboxCustomizerProvider {
-
-        public StringConstructorCustomizerProviderImpl() {
-            super(CONF_SC_CHECKBOX_LABEL, CONF_SC_CHECKBOX_TP, SC_IGNORE_SUBSTRING, SC_IGNORE_SUBSTRING_DEFAULT);
-        }
-
-    }
-
-
-    @Hint(category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.stringEqualsEmpty", category="performance", enabled=false, suppressWarnings="StringEqualsEmpty")
     @TriggerPattern(value="$string.equals(\"\")",
-                    constraints=@Constraint(variable="$string", type="java.lang.String"))
+                    constraints=@ConstraintVariableType(variable="$string", type="java.lang.String"))
     public static ErrorDescription stringEqualsEmpty(HintContext ctx) {
         Fix f;
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_6) >= 0) {
             String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_StringEqualsEmpty16");
-            f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$string.isEmpty()");
+            f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$string.isEmpty()");
         } else {
             boolean not = ctx.getPath().getParentPath().getLeaf().getKind() == Kind.LOGICAL_COMPLEMENT;
             String fixDisplayName = NbBundle.getMessage(Tiny.class, not ? "FIX_StringEqualsEmptyNeg" : "FIX_StringEqualsEmpty");
-            f = JavaFix.rewriteFix(ctx, fixDisplayName, not ? ctx.getPath().getParentPath() : ctx.getPath(), not ? "$string.length() != 0" : "$string.length() == 0");
+            f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, not ? ctx.getPath().getParentPath() : ctx.getPath(), not ? "$string.length() != 0" : "$string.length() == 0");
         }
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_StringEqualsEmpty");
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
 
-    @Hint(category="performance", enabled=false, suppressWarnings="SingleCharacterStringConcatenation")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.lengthOneStringIndexOf", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.lengthOneStringIndexOf", category="performance", enabled=false, suppressWarnings="SingleCharacterStringConcatenation")
     @TriggerPatterns({
         @TriggerPattern(value="$string.indexOf($toSearch)",
-                        constraints={@Constraint(variable="$string", type="java.lang.String"),
-                                     @Constraint(variable="$toSeach", type="java.lang.String")}),
+                        constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String")}),
         @TriggerPattern(value="$string.lastIndexOf($toSearch)",
-                        constraints={@Constraint(variable="$string", type="java.lang.String"),
-                                     @Constraint(variable="$toSeach", type="java.lang.String")}),
+                        constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String")}),
         @TriggerPattern(value="$string.indexOf($toSearch, $index)",
-                        constraints={@Constraint(variable="$string", type="java.lang.String"),
-                                     @Constraint(variable="$toSeach", type="java.lang.String"),
-                                     @Constraint(variable="$index", type="int")}),
+                        constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$index", type="int")}),
         @TriggerPattern(value="$string.lastIndexOf($toSearch, $index)",
-                        constraints={@Constraint(variable="$string", type="java.lang.String"),
-                                     @Constraint(variable="$toSeach", type="java.lang.String"),
-                                     @Constraint(variable="$index", type="int")})
+                        constraints={@ConstraintVariableType(variable="$string", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$toSeach", type="java.lang.String"),
+                                     @ConstraintVariableType(variable="$index", type="int")})
     })
     public static ErrorDescription lengthOneStringIndexOf(HintContext ctx) {
         TreePath toSearch = ctx.getVariables().get("$toSearch");
@@ -179,31 +173,33 @@ public class Tiny {
         int end   = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getInfo().getCompilationUnit(), toSearch.getLeaf());
         final String literal = ctx.getInfo().getText().substring(start, end);
 
-        Fix f = JavaFix.toEditorFix(new JavaFix(ctx.getInfo(), toSearch) {
-            @Override protected String getText() {
-                return NbBundle.getMessage(Tiny.class, "FIX_LengthOneStringIndexOf");
-            }
-            @Override protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
-                String content;
+        Fix f = new JavaFix(ctx.getInfo(), toSearch) {
+@Override protected String getText() {
+return NbBundle.getMessage(Tiny.class, "FIX_LengthOneStringIndexOf");
+}
+@Override protected void performRewrite(TransformationContext ctx) {
+WorkingCopy wc = ctx.getWorkingCopy();
+TreePath tp = ctx.getPath();
+String content;
 
-                if ("'".equals(data)) content = "\\'";
-                else if ("\"".equals(data)) content = "\"";
-                else {
-                    content = literal;
-                    if (content.length() > 0 && content.charAt(0) == '"') content = content.substring(1);
-                    if (content.length() > 0 && content.charAt(content.length() - 1) == '"') content = content.substring(0, content.length() - 1);
-                }
+if ("'".equals(data)) content = "\\'";
+else if ("\"".equals(data)) content = "\"";
+else {
+content = literal;
+if (content.length() > 0 && content.charAt(0) == '"') content = content.substring(1);
+if (content.length() > 0 && content.charAt(content.length() - 1) == '"') content = content.substring(0, content.length() - 1);
+}
 
-                wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
-            }
-        });
+wc.rewrite(tp.getLeaf(), wc.getTreeMaker().Identifier("'" + content + "'"));
+}
+}.toEditorFix();
         
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_LengthOneStringIndexOf", literal);
         
         return ErrorDescriptionFactory.forTree(ctx, toSearch, displayName, f);
     }
 
-    @Hint(category="performance", enabled=false, suppressWarnings="InstantiatingObjectToGetClassObject")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.getClassInsteadOfDotClass", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.getClassInsteadOfDotClass", category="performance", enabled=false, suppressWarnings="InstantiatingObjectToGetClassObject")
     @TriggerPattern(value="new $O($params$).getClass()")
     public static ErrorDescription getClassInsteadOfDotClass(HintContext ctx) {
         TreePath O = ctx.getVariables().get("$O");
@@ -212,7 +208,7 @@ public class Tiny {
         }
         ctx.getVariables().put("$OO", O);//XXX: hack
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_GetClassInsteadOfDotClass");
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$OO.class");
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$OO.class");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_GetClassInsteadOfDotClass");
 
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
@@ -220,9 +216,9 @@ public class Tiny {
 
     private static final Set<Kind> KEEP_PARENTHESIS = EnumSet.of(Kind.MEMBER_SELECT);
     
-    @Hint(category="performance", enabled=false, suppressWarnings="ConstantStringIntern")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.constantIntern", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.constantIntern", category="performance", enabled=false, suppressWarnings="ConstantStringIntern")
     @TriggerPattern(value="$str.intern()",
-                    constraints=@Constraint(variable="$str", type="java.lang.String"))
+                    constraints=@ConstraintVariableType(variable="$str", type="java.lang.String"))
     public static ErrorDescription constantIntern(HintContext ctx) {
         TreePath str = ctx.getVariables().get("$str");
         TreePath constant;
@@ -241,13 +237,13 @@ public class Tiny {
             target = "$constant";
             ctx.getVariables().put("$constant", constant);//XXX: hack
         }
-        Fix f = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), target);
+        Fix f = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), target);
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_ConstantIntern");
 
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, f);
     }
 
-    @Hint(category="performance", suppressWarnings="SetReplaceableByEnumSet", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.enumSet", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.enumSet", category="performance", suppressWarnings="SetReplaceableByEnumSet", options=Options.QUERY)
     @TriggerPatterns({
         @TriggerPattern("new $coll<$param>($params$)")
     })
@@ -255,7 +251,7 @@ public class Tiny {
         return enumHint(ctx, "java.util.Set", null, "ERR_Tiny_enumSet");
     }
 
-    @Hint(category="performance", suppressWarnings="MapReplaceableByEnumMap")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.Tiny.enumMap", description = "#DESC_org.netbeans.modules.java.hints.perf.Tiny.enumMap", category="performance", suppressWarnings="MapReplaceableByEnumMap")
     @TriggerPatterns({
         @TriggerPattern("new $coll<$param, $to>($params$)")
     })
@@ -267,7 +263,7 @@ public class Tiny {
             String displayName = NbBundle.getMessage(Tiny.class, "FIX_Tiny_enumMap");
 
             fixes = new Fix[] {
-                JavaFix.rewriteFix(ctx, displayName, ctx.getPath(), "new java.util.EnumMap<$param, $to>($param.class)")
+                JavaFixUtilities.rewriteFix(ctx, displayName, ctx.getPath(), "new java.util.EnumMap<$param, $to>($param.class)")
             };
         } else {
             fixes = new Fix[0];

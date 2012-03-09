@@ -42,8 +42,9 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
+import org.netbeans.modules.java.hints.spiimpl.TestBase;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *
@@ -67,7 +68,7 @@ public class DefaultRuleUtilitiesTest extends TestBase {
         Map<String, TreePath> variables = Collections.<String, TreePath>emptyMap();
         Map<String, Collection<? extends TreePath>> multiVariables = Collections.<String, Collection<? extends TreePath>>emptyMap();
         Map<String, String> variables2Names = Collections.emptyMap();
-        Context ctx = new Context(HintContext.create(info, null, tp, variables, multiVariables, variables2Names));
+        Context ctx = new Context(SPIAccessor.getINSTANCE().createHintContext(info, null, tp, variables, multiVariables, variables2Names));
         DefaultRuleUtilities utils = new DefaultRuleUtilities(ctx, new Matcher(ctx));
 
         assertTrue(utils.inClass("test.Test.X"));

@@ -39,39 +39,43 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.finalize;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
+
 /**
  *
  * @author Tomas Zezula
  */
-public class FinalizeDeclaredTest extends TestBase {
+public class FinalizeDeclaredTest extends NbTestCase {
 
     public FinalizeDeclaredTest(final String name) {
-        super (name,FinalizeDeclared.class);
+        super(name);
     }
 
-
     public void testFinalizeDeclared() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    protected final void finalize() {\n" +
-                            "    }\n" +
-                            "}",
-                            "2:25-2:33:verifier:finalize() declared");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDeclared.class)
+                .assertWarnings("2:25-2:33:verifier:finalize() declared");
     }
 
     public void testSuppressed() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    @SuppressWarnings(\"FinalizeDeclaration\")\n\n"+
-                            "    protected final void finalize() {\n" +
-                            "    }\n" +
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    @SuppressWarnings(\"FinalizeDeclaration\")\n\n" +
+                       "    protected final void finalize() {\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDeclared.class)
+                .assertWarnings();
     }
-
 }

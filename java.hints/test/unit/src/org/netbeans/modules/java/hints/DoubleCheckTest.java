@@ -43,158 +43,193 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Jaroslav Tulach
  */
-public class DoubleCheckTest extends TestBase {
-    
+public class DoubleCheckTest extends NbTestCase {
+
     public DoubleCheckTest(String testName) {
-        super(testName, DoubleCheck.class);
+        super(testName);
     }
 
     public void testClassWithOnlyStaticMethods() throws Exception {
         String before = "package test; public class Test {" +
-            "  private static Test INST;" +
-            "public static Test factory() {" +
-            "  if (INST == null) {" +
-            "    synchro";
+                        "  private static Test INST;" +
+                        "public static Test factory() {" +
+                        "  if (INST == null) {" +
+                        "    synchro";
         String after = "nized (Test.class) {" +
-            "      if (INST == null) {" +
-            "        INST = new Test();" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "  return INST;" +
-            "}";
-        
-        performAnalysisTest("test/Test.java", before + after, 
-            "0:115-0:127:verifier:ERR_DoubleCheck"
-        );
+                       "      if (INST == null) {" +
+                       "        INST = new Test();" +
+                       "      }" +
+                       "    }" +
+                       "  }" +
+                       "  return INST;" +
+                       "}" +
+                       "}";
+
+        HintTest
+                .create()
+                .input(before + after)
+                .run(DoubleCheck.class)
+                .assertWarnings("0:115-0:127:verifier:ERR_DoubleCheck");
     }
+
     public void testSomeCodeAfterTheOuterIf() throws Exception {
         String before = "package test; public class Test {" +
-            "  private static Test INST;" +
-            "  private static int cnt;" +
-            "public static Test factory() {" +
-            "  if (INST == null) {" +
-            "    synchro";
+                        "  private static Test INST;" +
+                        "  private static int cnt;" +
+                        "public static Test factory() {" +
+                        "  if (INST == null) {" +
+                        "    synchro";
         String after = "nized (Test.class) {" +
-            "      if (INST == null) {" +
-            "        INST = new Test();" +
-            "      }" +
-            "    }" +
-            "    cnt++;" +
-            "  }" +
-            "  return INST;" +
-            "}";
+                       "      if (INST == null) {" +
+                       "        INST = new Test();" +
+                       "      }" +
+                       "    }" +
+                       "    cnt++;" +
+                       "  }" +
+                       "  return INST;" +
+                       "}" +
+                       "}";
         // no hint, probably
-        performAnalysisTest("test/Test.java", before + after);
+        HintTest
+                .create()
+                .input(before + after)
+                .run(DoubleCheck.class)
+                .assertWarnings();
     }
+
     public void testDifferentVariable() throws Exception {
         String before = "package test; public class Test {" +
-            "  private static Test INST;" +
-            "  private static Object cnt;" +
-            "public static Test factory() {" +
-            "  if (cnt == null) {" +
-            "    synchro";
+                        "  private static Test INST;" +
+                        "  private static Object cnt;" +
+                        "public static Test factory() {" +
+                        "  if (cnt == null) {" +
+                        "    synchro";
         String after = "nized (Test.class) {" +
-            "      if (INST == null) {" +
-            "        INST = new Test();" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "  return INST;" +
-            "}";
+                       "      if (INST == null) {" +
+                       "        INST = new Test();" +
+                       "      }" +
+                       "    }" +
+                       "  }" +
+                       "  return INST;" +
+                       "}" +
+                       "}";
         // no hint, for sure
-        performAnalysisTest("test/Test.java", before + after);
+        HintTest
+                .create()
+                .input(before + after)
+                .run(DoubleCheck.class)
+                .assertWarnings();
     }
+
     public void testNoNPEWhenBrokenCondition() throws Exception {
         String before = "package test; public class Test {" +
-            "  private static Test INST;" +
-            "  private static Object cnt;" +
-            "public static Test factory() {" +
-            "  if (INST == nu) {" +
-            "    synchro";
+                        "  private static Test INST;" +
+                        "  private static Object cnt;" +
+                        "public static Test factory() {" +
+                        "  if (INST == nu) {" +
+                        "    synchro";
         String after = "nized (Test.class) {" +
-            "      if (INST == nu) {" +
-            "        INST = new Test();" +
-            "      }" +
-            "    }" +
-            "  }" +
-            "  return INST;" +
-            "}";
+                       "      if (INST == nu) {" +
+                       "        INST = new Test();" +
+                       "      }" +
+                       "    }" +
+                       "  }" +
+                       "  return INST;" +
+                       "}" +
+                       "}";
         // no hint, for sure
-        performAnalysisTest("test/Test.java", before + after);
+        HintTest
+                .create()
+                .input(before + after, false)
+                .run(DoubleCheck.class)
+                .assertWarnings();
     }
+
     public void testApplyClassWithOnlyStaticMethods() throws Exception {
         String before1 = "package test; public class Test {\n" +
-            "private static Test INST;\n" +
-            "public static Test factory() {\n";
-        String before2 = 
-              "if (INST == null) {\n";
+                         "private static Test INST;\n" +
+                         "public static Test factory() {\n";
+        String before2 =
+                "if (INST == null) {\n";
         String before3 =
                 "synchro";
         String after1 = "nized (INST) {\n" +
-                  "if (INST == null) {\n" +
-                    "INST = new test.Test();\n" +
-                  "}\n" +
-                "}\n";
+                        "if (INST == null) {\n" +
+                        "INST = new test.Test();\n" +
+                        "}\n" +
+                        "}\n";
         String after2 =
-               "}\n";
+                "}\n";
         String after3 =
-              "return INST;\n" +
-            "}\n";
+                "return INST;\n" +
+                "}" +
+                "}\n";
         String after4 = "\n";
-        
+
         String before = before1 + before2 + before3;
-        String after = after1 + after2 + after3 + after4; 
-        
-        String golden = (before1 + before3 + after1 + after3).replace("\n", " ");
-        performFixTest("test/Test.java", before + after,
-            "4:0-4:12:verifier:ERR_DoubleCheck",
-            "FixImpl",
-            golden
-        );
+        String after = after1 + after2 + after3 + after4;
+
+        String golden = (before1 + before3 + after1 + after3)
+                .replace("\n", " ");
+        HintTest
+                .create()
+                .input(before + after)
+                .run(DoubleCheck.class)
+                .findWarning("4:0-4:12:verifier:ERR_DoubleCheck")
+                .applyFix("FIX_DoubleCheck")
+                .assertCompilable()
+                .assertOutput(golden);
     }
+
     public void testVolatileJDK5IZ153334() throws Exception {
         String code = "package test; public class Test {\n" +
-            "private static volatile Test INST;\n" +
-            "public static Test factory() {\n" +
-              "if (INST == null) {\n" +
-                "synchro|nized (INST) {\n" +
-                  "if (INST == null) {\n" +
-                    "INST = new test.Test();\n" +
-                  "}\n" +
-                "}\n" +
-               "}\n" +
-              "return INST;\n" +
-            "}\n";
-        
-        performAnalysisTest("test/Test.java", code);
+                      "private static volatile Test INST;\n" +
+                      "public static Test factory() {\n" +
+                      "if (INST == null) {\n" +
+                      "synchronized (INST) {\n" +
+                      "if (INST == null) {\n" +
+                      "INST = new test.Test();\n" +
+                      "}\n" +
+                      "}\n" +
+                      "}\n" +
+                      "return INST;\n" +
+                      "}" +
+                      "}\n";
+
+        HintTest
+                .create()
+                .input(code)
+                .run(DoubleCheck.class)
+                .assertWarnings();
     }
 
     public void testVolatileJDK4IZ153334() throws Exception {
-        setSourceLevel("1.4");
-        
         String code = "package test; public class Test {\n" +
-            "private static volatile Test INST;\n" +
-            "public static Test factory() {\n" +
-              "if (INST == null) {\n" +
-                "synchronized (INST) {\n" +
-                  "if (INST == null) {\n" +
-                    "INST = new test.Test();\n" +
-                  "}\n" +
-                "}\n" +
-               "}\n" +
-              "return INST;\n" +
-            "}\n";
+                      "private static volatile Test INST;\n" +
+                      "public static Test factory() {\n" +
+                      "if (INST == null) {\n" +
+                      "synchronized (INST) {\n" +
+                      "if (INST == null) {\n" +
+                      "INST = new test.Test();\n" +
+                      "}\n" +
+                      "}\n" +
+                      "}\n" +
+                      "return INST;\n" +
+                      "}" +
+                      "}\n";
 
-        performAnalysisTest("test/Test.java",
-                            code,
-                            "4:0-4:12:verifier:ERR_DoubleCheck");
+        HintTest
+                .create()
+                .input(code)
+                .sourceLevel("1.4")
+                .run(DoubleCheck.class)
+                .assertWarnings("4:0-4:12:verifier:ERR_DoubleCheck");
     }
-
 }

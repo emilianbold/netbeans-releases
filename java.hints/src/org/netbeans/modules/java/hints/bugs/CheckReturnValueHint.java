@@ -48,10 +48,10 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author lahvac
  */
-@Hint(category="bugs", suppressWarnings="ResultOfMethodCallIgnored")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.CheckReturnValueHint", description = "#DESC_org.netbeans.modules.java.hints.bugs.CheckReturnValueHint", category="bugs", suppressWarnings="ResultOfMethodCallIgnored")
 public class CheckReturnValueHint {
 
     @TriggerPattern("$method($params$);")

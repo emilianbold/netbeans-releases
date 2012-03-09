@@ -53,9 +53,10 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +76,7 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         TreePath path = info.getTreeUtilities().pathFor(offset + 1);
         
         if (path != null && path.getLeaf().getKind() == Kind.TYPE_CAST) {
-            return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, path)));
+            return Collections.singletonList(new FixImpl(info, path).toEditorFix());
         }
         
         return Collections.<Fix>emptyList();
@@ -108,17 +109,19 @@ public final class RemoveUselessCast implements ErrorRule<Void> {
         }
         
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath path, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath path = ctx.getPath();
             TypeCastTree tct = (TypeCastTree) path.getLeaf();
             ExpressionTree expression = tct.getExpression();
 
             while (expression.getKind() == Kind.PARENTHESIZED
-                   && !requiresParenthesis(((ParenthesizedTree) expression).getExpression(), tct, path.getParentPath().getLeaf())) {
+                   && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) expression).getExpression(), tct, path.getParentPath().getLeaf())) {
                 expression = ((ParenthesizedTree) expression).getExpression();
             }
 
             while (path.getParentPath().getLeaf().getKind() == Kind.PARENTHESIZED
-                   && !requiresParenthesis(expression, path.getLeaf(), path.getParentPath().getParentPath().getLeaf())) {
+                   && !JavaFixUtilities.requiresParenthesis(expression, path.getLeaf(), path.getParentPath().getParentPath().getLeaf())) {
                 path = path.getParentPath();
             }
 
