@@ -475,6 +475,16 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         assertEquals("VALUE2", pref.get("KEY2", null));
     }
     
+    public void testRemoveNode () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        pref.put("key", "value");
+        assertEquals("value", pref.get("key", null));
+        pref.removeNode();
+        assertNotNull(pref);
+        pref.put("key1", "value1");
+    }
+    
     @Override
     protected int timeOut() {
         return 20000;
