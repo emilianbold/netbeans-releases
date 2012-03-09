@@ -544,7 +544,7 @@ public class GrammarResolver {
                         backupInputState(successState);
                         if (LOG) {
                             if(bestBranches.size() > 1) {
-                                log(String.format(" !cannot decide what branch to choose from %s - decided to use first best match %s, %s", bestBranches.size(), bestMatchElement.path(), successState));                                
+                                log(String.format(" !cannot decide what branch to choose from %s - decided to use first best match %s, %s", bestBranches.size(), bestMatchElement.path(), successState));
                             } else {
                                 log(String.format("  decided to use best match %s, %s", bestMatchElement.path(), successState));
                             }

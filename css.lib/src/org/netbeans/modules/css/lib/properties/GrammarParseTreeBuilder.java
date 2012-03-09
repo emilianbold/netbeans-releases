@@ -68,7 +68,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
      * is the unit tests.
      */
     private final boolean skipAnonymousElements;
-    public static boolean DEBUG = false;
+    public static boolean DEBUG = true;
     private int indent = 0;
 
     public GrammarParseTreeBuilder(boolean skipAnonymousElements) {
@@ -189,11 +189,13 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
             }
         }
 
+        Entry peek = stack.peek();
+        
         if (DEBUG) {
             System.out.println(String.format("%s group %s: choosen branch %s", getIndent(), base, element));
+            System.out.println(String.format("(in group %s)", peek.grammarElement));
         }
 
-        Entry peek = stack.peek();
         Node.GrammarElementNode group = (Node.GrammarElementNode) peek.node;
 
         peek.choosenBranches.add(element);

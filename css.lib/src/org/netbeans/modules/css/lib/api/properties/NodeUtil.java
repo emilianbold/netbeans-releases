@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,37 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxType;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import java.io.PrintWriter;
 
 /**
- *
+ * temporary - to be removed
+ * 
+ * 
  * @author marekfukala
  */
-public class BorderTest extends BoxTestBase {
+public class NodeUtil {
 
-    public BorderTest(String name) {
-        super(name);
+    private NodeUtil() {
     }
     
-//    @Override
-//    protected boolean isDebugMode() {
-//        return true;
-//    }
-
-    public void testBorder() {
-       assertBox("border", "red", BoxType.BORDER_COLOR, "red"); 
-       assertBox("border", "red solid", BoxType.BORDER_COLOR, "red"); 
-       assertBox("border", "red solid", BoxType.BORDER_STYLE, "solid");
-       
-       assertBox("border", "red solid 2px", BoxType.BORDER_COLOR, "red");
-       assertBox("border", "red solid 2px", BoxType.BORDER_WIDTH, "2px");
-       assertBox("border", "red solid 2px", BoxType.BORDER_STYLE, "solid");
-       
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_COLOR, "green");
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_WIDTH, "1cm");
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_STYLE, "dashed");
-       
-       assertBox("border", "2cm", BoxType.BORDER_WIDTH, "2cm");
+    public static void dumpTree(org.netbeans.modules.css.lib.api.properties.Node node) {
+        PrintWriter pw = new PrintWriter(System.out);
+        dump(node, 0, pw);
+        pw.flush();
     }
-    
+
+    public static void dump(org.netbeans.modules.css.lib.api.properties.Node tree, int level, PrintWriter pw) {
+        for (int i = 0; i < level; i++) {
+            pw.print("    ");
+        }
+        pw.print(tree.toString());
+        pw.println();
+        for (org.netbeans.modules.css.lib.api.properties.Node c : tree.children()) {
+            dump(c, level + 1, pw);
+        }
+    }
 }

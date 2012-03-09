@@ -53,8 +53,8 @@ public class SemanticModelPERegistry {
     
     //XXX use lookup
     public static Property getProperty(RuleNode ruleNode, SemanticModel model) {
-        String mName = model.getName();
-        if(mName.equals("margin") || mName.equals("padding")) {
+        String catName = model.getCategoryName();
+        if(catName.equals("Box")) {
             return new EditableBoxModelProperty(ruleNode, model);
         }
         return null;

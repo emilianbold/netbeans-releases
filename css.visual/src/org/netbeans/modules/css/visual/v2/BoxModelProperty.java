@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,61 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.visual.v2;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxType;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
+import java.beans.PropertyEditor;
+import java.lang.reflect.InvocationTargetException;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
+import org.openide.nodes.Node;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderTest extends BoxTestBase {
+public class BoxModelProperty extends Node.Property<EditableBox> {
 
-    public BorderTest(String name) {
-        super(name);
+    EditableBox model;
+    private RuleNode ruleNode;
+
+    public BoxModelProperty(RuleNode ruleNode, EditableBox model) {
+        super(EditableBox.class);
+        this.ruleNode = ruleNode;
+        this.model = model;
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+//        return model.getDisplayName();
+        return null;
+    }
+
+    @Override
+    public PropertyEditor getPropertyEditor() {
+//        return new EditableBoxPropertyEditor(this);
+        return null;
     }
     
-//    @Override
-//    protected boolean isDebugMode() {
-//        return true;
-//    }
-
-    public void testBorder() {
-       assertBox("border", "red", BoxType.BORDER_COLOR, "red"); 
-       assertBox("border", "red solid", BoxType.BORDER_COLOR, "red"); 
-       assertBox("border", "red solid", BoxType.BORDER_STYLE, "solid");
-       
-       assertBox("border", "red solid 2px", BoxType.BORDER_COLOR, "red");
-       assertBox("border", "red solid 2px", BoxType.BORDER_WIDTH, "2px");
-       assertBox("border", "red solid 2px", BoxType.BORDER_STYLE, "solid");
-       
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_COLOR, "green");
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_WIDTH, "1cm");
-       assertBox("border", "dashed 1cm green", BoxType.BORDER_STYLE, "dashed");
-       
-       assertBox("border", "2cm", BoxType.BORDER_WIDTH, "2cm");
+    @Override
+    public boolean canRead() {
+        return true;
     }
+
+    @Override
+    public boolean canWrite() {
+        return true;
+    }
+
+    @Override
+    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
+        return model;
+    }
+
+    @Override
+    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        ruleNode.applyModelChanges();
+    }
+
     
 }

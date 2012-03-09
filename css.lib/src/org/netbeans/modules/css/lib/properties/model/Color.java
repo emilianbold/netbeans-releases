@@ -44,7 +44,6 @@ package org.netbeans.modules.css.lib.properties.model;
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
-import org.netbeans.modules.css.lib.api.properties.model.BoxElementFactory;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 

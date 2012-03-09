@@ -42,17 +42,19 @@
 package org.netbeans.modules.css.visual.v2;
 
 import java.awt.Component;
-import java.beans.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyEditorSupport;
+import java.beans.PropertyVetoException;
+import java.beans.VetoableChangeListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.css.lib.api.properties.model.Edge;
-import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
+import org.netbeans.modules.css.lib.api.properties.model.Edge;
+import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
-import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.Exceptions;
 

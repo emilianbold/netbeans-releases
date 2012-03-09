@@ -39,59 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.v2;
+package org.netbeans.modules.css.lib.properties;
 
-import java.beans.PropertyEditor;
-import java.lang.reflect.InvocationTargetException;
-import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
-import org.openide.nodes.Node;
+import java.util.Arrays;
+import java.util.Collection;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.api.properties.*;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author marekfukala
  */
-public class BoxEdgeBorderModelProperty extends Node.Property<EditableBox> {
+public class GrammarParseTreeBuilderTest extends CssTestBase {
 
-    EditableBox model;
-    private RuleNode ruleNode;
-
-    public BoxEdgeBorderModelProperty(RuleNode ruleNode, EditableBox model) {
-        super(EditableBox.class);
-        this.ruleNode = ruleNode;
-        this.model = model;
+    public GrammarParseTreeBuilderTest(String testName) {
+        super(testName);
     }
 
     @Override
-    public String getHtmlDisplayName() {
-//        return model.getDisplayName();
-        return null;
+    protected void setUp() throws Exception {
+        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+//        GrammarParseTreeBuilder.DEBUG = true;
     }
 
-    @Override
-    public PropertyEditor getPropertyEditor() {
-//        return new EditableBoxPropertyEditor(this);
-        return null;
+    public void testAnotherNiceFundamentalDesignFlaw() {
+        //REQUIRES: TestPropertyDefinitionProvider installed as system service
+        String grammar = "<ref>";
+        
+        GroupGrammarElement tree = GrammarParser.parse(grammar);
+        GrammarResolver resolver = new GrammarResolver(tree);
+        resolver.setFeature(GrammarResolver.Feature.keepAnonymousElementsInParseTree, true);
+        
+        ResolvedProperty rp = new ResolvedProperty(resolver, "a");
+        Node parseTree = rp.getParseTree();
+        
+        assertNotNull(parseTree);
+        
+        NodeUtil.dumpTree(parseTree);
+
     }
     
-    @Override
-    public boolean canRead() {
-        return true;
-    }
+    @ServiceProvider(service=PropertyDefinitionProvider.class)
+    public static class TestPropertyDefinitionProvider implements PropertyDefinitionProvider {
 
-    @Override
-    public boolean canWrite() {
-        return true;
+        @Override
+        public Collection<PropertyDefinition> getProperties() {
+            PropertyDefinition ref = new PropertyDefinition("ref", "[ [ a | b ] | [ a | b ] ]", null);
+            return Arrays.asList(new PropertyDefinition[]{ref});
+        }
+        
     }
-
-    @Override
-    public EditableBox getValue() throws IllegalAccessException, InvocationTargetException {
-        return model;
-    }
-
-    @Override
-    public void setValue(EditableBox val) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        ruleNode.applyModelChanges();
-    }
-
-    
 }

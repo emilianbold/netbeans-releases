@@ -44,7 +44,6 @@ package org.netbeans.modules.css.visual.v2;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
 import org.openide.nodes.Node;
 
