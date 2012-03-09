@@ -558,18 +558,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     @Override
-    public void visit(ReflectionVariable node) {
-        Expression name = node.getName();
-        while (name instanceof ReflectionVariable) {
-            ReflectionVariable refName = (ReflectionVariable) name;
-            name = refName.getName();
-        }
-        if (name instanceof Variable) {
-            scan(name);
-        }
-    }
-
-    @Override
     public void visit(Variable node) {
         String varName = CodeUtils.extractVariableName(node);
         if (varName == null) {
