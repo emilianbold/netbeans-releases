@@ -49,6 +49,46 @@ made subject to such option by the copyright holder.
     <apidef name="lookup">Lookup API</apidef>
 </apidefs>
 <changes>
+    <change id="lazy.proxy.lookup">
+        <api name="lookup"/>
+        <summary><code>ProxyLookup</code> computes results lazily</summary>
+        <version major="8" minor="13"/>
+        <date day="10" month="3" year="2010"/>
+        <author login="jtulach"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="incompatible" source="compatible"
+        >
+            <p>
+            Calling <a href="@TOP@/org/openide/util/lookup/ProxyLookup.html">
+            ProxyLookup.lookupAll()</a> and other methods that compute
+            aggregate results delays computation of the result. This
+            may affect code which called 
+            <a href="@TOP@/org/openide/util/lookup/Lookup.Result.html">Lookup.Result</a>.<code>allItems</code>, 
+            <code>allInstances</code> or <code>allClasses</code> and relied
+            on side effect of such call. In case you want to trigger the 
+            computation call some method on the returned
+            <a href="@JDK@/java/util/Collection.html">Collection</a> 
+            (other than <code>iterator()</code>) like <code>size()</code>
+            or <code>isEmpty</code>.
+            </p>
+        </compatibility>
+        <description>
+            <p>
+                <a href="@TOP@/org/openide/util/lookup/ProxyLookup.html">
+                ProxyLookup.lookupAll().iterator()</a> is now incremental.
+                E.g. you can use traverse part of the results without
+                waiting for or creating all of them:
+            </p>
+           <pre>
+for (<a href="@JDK@/java/net/URLStreamHandlerFactory.html">URLStreamHandlerFactory</a> first : <a href="@TOP@/org/openide/util/Lookup.html#getDefault()">Lookup.getDefault()</a>.lookupAll(<a href="@JDK@/java/net/URLStreamHandlerFactory.html">URLStreamHandlerFactory</a>.class)) {
+    return first;
+}
+           </pre>
+        </description>
+        <issue number="179289"/>
+    </change>
     <change id="named.services.provider">
         <api name="lookup"/>
         <summary>Introducing semihidden SPI</summary>
