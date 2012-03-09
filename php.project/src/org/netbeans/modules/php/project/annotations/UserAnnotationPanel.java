@@ -109,9 +109,7 @@ public class UserAnnotationPanel extends JPanel {
         docTextArea.getDocument().addDocumentListener(defaultDocumentListener);
     }
 
-    @NbBundle.Messages({
-        "UserAnnotationPanel.title=Custom Annotation",
-    })
+    @NbBundle.Messages("UserAnnotationPanel.title=Custom Annotation")
     public boolean open() {
         assert EventQueue.isDispatchThread();
         descriptor = new DialogDescriptor(
