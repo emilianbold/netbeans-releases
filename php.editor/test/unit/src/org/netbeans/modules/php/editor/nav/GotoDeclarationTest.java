@@ -712,6 +712,38 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
     }
 
+    public void testIssue209308_01() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Om^g\\AliasedClassName */", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_02() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_03() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Om^g\\AliasedClassName", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_04() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Om^g\\AliasedClassName $p", "use \\Foo\\Bar as ^Omg;");
+    }
+
+    public void testIssue209308_05() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Cl^s */", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_06() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_07() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Cl^s $a", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
+    public void testIssue209308_08() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

@@ -121,17 +121,18 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
 
     static Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
+        final PHPParseResult parseResult = (PHPParseResult) parameter;
         Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
             @Override
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
             }
         });
-        final TokenHierarchy<?> tokenHierarchy = parameter.getSnapshot().getTokenHierarchy();
+        final TokenHierarchy<?> tokenHierarchy = parseResult.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> tokenSequence = tokenHierarchy != null ? LexUtilities.getPHPTokenSequence( tokenHierarchy, offset) : null;
-        OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset) : OffsetRange.NONE;
+        OffsetRange referenceSpan = tokenSequence != null ? DeclarationFinderImpl.getReferenceSpan(tokenSequence, offset, parseResult.getModel()) : OffsetRange.NONE;
         if (!referenceSpan.equals(OffsetRange.NONE)) {
-            Model model = ((PHPParseResult) parameter).getModel();
+            Model model = parseResult.getModel();
             OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
             Occurence caretOccurence = occurencesSupport.getOccurence();
             if (caretOccurence != null) {
@@ -153,7 +154,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         } else {
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
-                Model model = ((PHPParseResult) parameter).getModel();
+                Model model = parseResult.getModel();
                 OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpanForCodeMarkers);
                 CodeMarker codeMarker = occurencesSupport.getCodeMarker();
                 if (codeMarker != null) {
