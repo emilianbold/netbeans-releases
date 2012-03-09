@@ -117,13 +117,6 @@ public class NewJavaHintIterator extends BasicWizardIterator {
 
         cmf.add(cmf.createFileWithSubstitutions(testPath, testTemplate, replaceTokens));
 
-        //bundle keys:
-        cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle_test.properties", true, true), "ERR_" + model.getPackageName() + "." + className, "ERR_" + model.getPackageName() + "." + className));
-
-        if (model.isDoFix()) {
-            cmf.add(cmf.bundleKey(model.getDefaultPackagePath("Bundle_test.properties", true, true), "FIX_" + model.getPackageName() + "." + className, "FIX_" + model.getPackageName() + "." + className));
-        }
-
         //at the end
         model.setCreatedModifiedFiles(cmf);
     }

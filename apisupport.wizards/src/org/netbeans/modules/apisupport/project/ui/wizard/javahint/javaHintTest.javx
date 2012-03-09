@@ -29,7 +29,7 @@ public class ${CLASS_NAME}Test {
                        "    }\n" +
                        "}\n")
                 .run(${CLASS_NAME}.class)
-                .assertWarnings("3:23-3:29:verifier:ERR_${PACKAGE_NAME}.${CLASS_NAME}");
+                .assertWarnings("3:23-3:29:verifier:" + Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}());
     }
 
 <#if GENERATE_FIX??>
@@ -43,7 +43,7 @@ public class ${CLASS_NAME}Test {
                        "    }\n" +
                        "}\n")
                 .run(${CLASS_NAME}.class)
-                .findWarning("3:23-3:29:verifier:ERR_${PACKAGE_NAME}.${CLASS_NAME}")
+                .findWarning("3:23-3:29:verifier:" + Bundle.ERR_${PACKAGE_NAME_UNDERSCORES}_${CLASS_NAME}())
                 .applyFix()
                 .assertCompilable()
                 //TODO: change to match expected output
