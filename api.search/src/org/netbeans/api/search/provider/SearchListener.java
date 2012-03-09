@@ -57,12 +57,6 @@ public abstract class SearchListener {
     protected SearchListener() {}
 
     /**
-     * Called when the search is starting.
-     */
-    public void searchStarted() {
-    }
-
-    /**
      * Called when a file is skipped - filtered out by a filter.
      *
      * @param fileObject the skipped file object.
@@ -120,11 +114,5 @@ public abstract class SearchListener {
      * @param t Error description.
      */
     public void generalError(@NonNull Throwable t) {
-    }
-    
-    /**
-     * Called when the search is finishing.
-     */
-    public void searchFinished() {
     }
 }

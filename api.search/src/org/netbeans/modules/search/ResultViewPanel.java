@@ -202,7 +202,7 @@ class ResultViewPanel extends JPanel{
         resultsPanel.add(displayer.getVisualComponent(), "outline");
     }
 
-    public SearchListener createListener() {
+    public GraphicalSearchListener createListener() {
         return new GraphicalSearchListener(searchComposition, this);
     }
 

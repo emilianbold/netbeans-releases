@@ -84,7 +84,6 @@ class GraphicalSearchListener<R> extends SearchListener {
         this.resultViewPanel = resultViewPanel;
     }
 
-    @Override
     public void searchStarted() {
 
         progressHandle = ProgressHandleFactory.createHandle(
@@ -101,7 +100,6 @@ class GraphicalSearchListener<R> extends SearchListener {
         searchComposition.getSearchResultsDisplayer().searchStarted();
     }
 
-    @Override
     public void searchFinished() {
         if (progressHandle != null) {
             progressHandle.finish();

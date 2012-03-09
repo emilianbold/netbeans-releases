@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.search;
 
-import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.LifecycleManager;
@@ -102,7 +101,8 @@ final class SearchTask implements Runnable, Cancellable {
             this.resultViewPanel = ResultView.getInstance().addTab(
                     searchComposition);
         }
-        SearchListener searchListener = this.resultViewPanel.createListener();
+        GraphicalSearchListener searchListener =
+                this.resultViewPanel.createListener();
         try {
             searchListener.searchStarted();
             searchComposition.start(searchListener);

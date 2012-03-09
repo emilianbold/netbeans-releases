@@ -388,15 +388,11 @@ public class SearchPerformanceComparator extends javax.swing.JFrame {
             updateTime();
         }
 
-        @Override
         public void searchStarted() {
-            super.searchStarted();
             start = System.currentTimeMillis();
         }
 
-        @Override
         public void searchFinished() {
-            super.searchFinished();
             end = System.currentTimeMillis();
             timeLabel.setText((end - start) + " / " + matcher.getTotalTime()
                     + " ms (ended)");
