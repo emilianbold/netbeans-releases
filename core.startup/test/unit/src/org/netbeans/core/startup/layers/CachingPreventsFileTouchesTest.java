@@ -132,15 +132,15 @@ public class CachingPreventsFileTouchesTest extends NbTestCase {
             fo.delete();
         }
         assertEnabled("org.netbeans.core.windows");
-        // initializes counting, but waits till netbeans.dirs are provided
-        // by NbModuleSuite
+        System.setProperty("counting.off", "true");
         initCheckReadAccess();
     }
 
-    public void testInMiddle() {
+    public void testInMiddle() throws IOException {
         String p = System.getProperty("manifestParsing");
         assertNotNull("Parsing of manifests during first run is natural", p);
         System.getProperties().remove("manifestParsing");
+        System.setProperty("counting.off", "false");
     }
 
     public void testReadAccess() throws Exception {
