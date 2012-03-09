@@ -62,10 +62,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.*;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -77,6 +74,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -103,7 +101,7 @@ import org.openide.xml.XMLUtil;
 /**
  * Various utilies related to Php refactoring; the generic ones are based
  * on the ones from the Java refactoring module.
- * 
+ *
  * @author Jan Becicka, Tor Norbye, Jan Lahoda, Radek Matous
  */
 public class RefactoringUtils {
@@ -303,7 +301,7 @@ public class RefactoringUtils {
     }
 
     /**
-     * creates or finds FileObject according to 
+     * creates or finds FileObject according to
      * @param url
      * @return FileObject
      */
@@ -364,20 +362,29 @@ public class RefactoringUtils {
 //        return cpInfo;
 //    }
     public static boolean isOutsidePhp(Lookup lookup, FileObject fo) {
+        return isOutsideLanguage(lookup, fo, PHPTokenId.language());
+    }
+
+    public static boolean isOutsidePHPDoc(Lookup lookup, FileObject fo) {
+        return isOutsideLanguage(lookup, fo, PHPDocCommentTokenId.language());
+    }
+
+    public static boolean isOutsideLanguage(Lookup lookup, FileObject fo, Language<? extends TokenId> language) {
+        boolean result = false;
         if (FileUtils.isPhpFile(fo)) {
             EditorCookie ec = lookup.lookup(EditorCookie.class);
             if (isFromEditor(ec)) {
                 JTextComponent textC = ec.getOpenedPanes()[0];
                 Document d = textC.getDocument();
                 if (!(d instanceof BaseDocument)) {
-                    return true;
+                    result = true;
+                } else {
+                    int caret = textC.getCaretPosition();
+                    result = LexUtilities.getMostEmbeddedTokenSequence(d, caret, true).language() != language;
                 }
-                int caret = textC.getCaretPosition();
-                return LexUtilities.getMostEmbeddedTokenSequence(d, caret, true).language() != PHPTokenId.language();
             }
         }
-
-        return false;
+        return result;
     }
 
     public static boolean isFromEditor(EditorCookie ec) {
@@ -389,7 +396,7 @@ public class RefactoringUtils {
         }
         return false;
     }
-    
+
     public static List<ASTNode> underCaret(ParserResult info, final int offset) {
         class Result extends Error {
 

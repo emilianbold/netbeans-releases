@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.nav;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,6 +58,11 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
@@ -65,6 +71,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
@@ -78,6 +85,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -93,11 +101,24 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, caretOffset);
-        return getReferenceSpan(ts, caretOffset);
+        final Model[] model = new Model[1];
+        try {
+            ParserManager.parse(Collections.singletonList(Source.create(doc)), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    PHPParseResult parserResult = (PHPParseResult) resultIterator.getParserResult();
+                    model[0] = parserResult.getModel();
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return getReferenceSpan(ts, caretOffset, model[0]);
     }
 
-    public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
-        return new ReferenceSpanFinder().getReferenceSpan(ts, caretOffset);
+    public static OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset, final Model model) {
+        return new ReferenceSpanFinder(model).getReferenceSpan(ts, caretOffset);
     }
 
     public static DeclarationLocation findDeclarationImpl(ParserResult info, int caretOffset) {
@@ -156,6 +177,11 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         private static final int RECURSION_LIMIT = 100;
         private int recursionCounter = 0;
         private static final Logger LOGGER = Logger.getLogger(DeclarationFinderImpl.class.getName());
+        private final Model model;
+
+        public ReferenceSpanFinder(final Model model) {
+            this.model = model;
+        }
 
         public OffsetRange getReferenceSpan(TokenSequence<PHPTokenId> ts, final int caretOffset) {
             if (ts == null) {
@@ -183,7 +209,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                 } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
                     PHPDocCommentParser docParser = new PHPDocCommentParser();
-                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length()-3, token.toString());
+                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
                     PHPDocTypeTag typeTag = null;
@@ -191,16 +217,21 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         if (hierarchy[0] instanceof PHPDocTypeTag) {
                             typeTag = (PHPDocTypeTag) hierarchy[0];
                             if (typeTag.getStartOffset() < caretOffset && caretOffset < typeTag.getEndOffset()) {
-                                List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS);
+                                VariableScope scope = model.getVariableScope(caretOffset);
+                                List<? extends PhpDocTypeTagInfo> tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.CLASS, scope);
                                 for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
                                     if (typeTagInfo.getKind().equals(Kind.CLASS)
                                             && typeTagInfo.getRange().containsInclusive(caretOffset)) {
                                         node = typeTagInfo;
                                         break;
                                     }
+                                    if (typeTagInfo.getKind().equals(Kind.USE_ALIAS) && typeTagInfo.getRange().containsInclusive(caretOffset)) {
+                                        node = typeTagInfo;
+                                        break;
+                                    }
                                 }
                                 if (node == null || !node.getRange().containsInclusive(caretOffset)) {
-                                    tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE);
+                                    tagInfos = PhpDocTypeTagInfo.create(typeTag, Kind.VARIABLE, scope);
                                     for (PhpDocTypeTagInfo typeTagInfo : tagInfos) {
                                         if (typeTagInfo.getKind().equals(Kind.VARIABLE)) {
                                             node = typeTagInfo;

@@ -91,32 +91,7 @@ import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
-import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
-import org.netbeans.modules.php.editor.parser.astnodes.Expression;
-import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
-import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
-import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.Include;
-import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
-import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
-import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
-import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
-import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
-import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.Variable;
-import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.openide.util.Union2;
 
 /**
@@ -682,6 +657,7 @@ class OccurenceBuilder {
                     break;
                 case USE_ALIAS:
                     if (elementInfo.setDeclarations(getUseAliasesDeclarations(elementInfo))) {
+                        buildDocTagsForUseAliases(elementInfo, fileScope, cachedOccurences);
                         buildUseAliases(elementInfo, fileScope, cachedOccurences);
                     }
                     break;
@@ -1215,6 +1191,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticFieldAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
+                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")) {
                             clzName = ((TypeScope) scope).getFullyQualifiedName();
@@ -1277,9 +1254,10 @@ class OccurenceBuilder {
                 Exact methodName = NameKind.exact(phpElement.getName());
                 for (Entry<ASTNodeInfo<StaticMethodInvocation>, Scope> entry : staticMethodInvocations.entrySet()) {
                     ASTNodeInfo<StaticMethodInvocation> nodeInfo = entry.getKey();
-                    QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
+                    QualifiedName qualifiedClzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue().getInScope();
-                    if (clzName != null) {
+                    if (qualifiedClzName != null) {
+                        QualifiedName clzName = VariousUtils.getFullyQualifiedName(qualifiedClzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                             if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equals("static")) {  //NOI18N
                                 clzName = ((TypeScope) scope).getFullyQualifiedName();
@@ -1343,6 +1321,7 @@ class OccurenceBuilder {
                     ASTNodeInfo<StaticConstantAccess> nodeInfo = entry.getKey();
                     QualifiedName clzName = QualifiedName.create(nodeInfo.getOriginalNode().getClassName());
                     final Scope scope = entry.getValue() instanceof TypeScope ? entry.getValue() : entry.getValue().getInScope();
+                    clzName = VariousUtils.getFullyQualifiedName(clzName, nodeInfo.getOriginalNode().getStartOffset(), scope);
                     if (clzName != null && clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
                         if (clzName.getName().equalsIgnoreCase("self")  //NOI18N
                                 || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
@@ -1394,12 +1373,24 @@ class OccurenceBuilder {
         }
     }
 
+    private void buildDocTagsForUseAliases(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
+        Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
+        for (PhpElement phpElement : elements) {
+            for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
+                final PhpDocTypeTagInfo nodeInfo = entry.getKey();
+                if (phpElement.getName().equals(nodeInfo.getName())) {
+                    occurences.add(new OccurenceImpl(phpElement, nodeInfo.getRange()));
+                }
+            }
+        }
+    }
+
     private void buildDocTagsForClasses(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
         Set<? extends PhpElement> elements = nodeCtxInfo.getDeclarations();
         for (PhpElement phpElement : elements) {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = nodeInfo.getQualifiedName();
+                final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 final String name = nodeInfo.getName();
                 if (!name.isEmpty() && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName()) &&
                         NameKind.exact(qualifiedName).matchesName(phpElement)) {
