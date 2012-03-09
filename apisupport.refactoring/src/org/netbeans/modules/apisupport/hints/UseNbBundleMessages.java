@@ -217,7 +217,7 @@ public class UseNbBundleMessages {
             @Override protected String getText() {
                 return UseNbBundleMessages_displayName();
             }
-            @Override protected void performRewrite(JavaFix.TransformationContext ctx) {
+            @Override protected void performRewrite(JavaFix.TransformationContext ctx) throws Exception {
                 WorkingCopy wc = ctx.getWorkingCopy();
                         TreeMaker make = wc.getTreeMaker();
                         if (mit != null) {
@@ -258,7 +258,6 @@ public class UseNbBundleMessages {
                             default:
                                 modifiers = ((ClassTree) enclosing).getModifiers();
                             }
-                try {
                             EditableProperties ep = new EditableProperties(true);
                             InputStream is = ctx.getResourceContent(bundleProperties);
                             try {
@@ -279,10 +278,6 @@ public class UseNbBundleMessages {
                         } finally {
                             os.close();
                         }
-                } catch (IOException x) {
-                    // XXX how to handle? cannot roll back (#207577 JG13)
-                    Exceptions.printStackTrace(x);
-                }
                     }
                 // XXX after JavaFix rewrite, Savable.save (on DataObject.find(src)) no longer works (JG13 again)
             }
