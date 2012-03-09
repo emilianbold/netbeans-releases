@@ -744,6 +744,26 @@ public class GotoDeclarationTest extends TestBase {
         checkDeclaration(getTestPath(), "* @return Cl^s", "use \\Foo\\Bar\\AliasedClassName as ^Cls;");
     }
 
+    public void testIssue209308_09() throws Exception {
+        checkDeclaration(getTestPath(), "/** @var Omg\\Aliased^ClassName */", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_10() throws Exception {
+        checkDeclaration(getTestPath(), "* @return Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_11() throws Exception {
+        checkDeclaration(getTestPath(), "* @throws Omg\\Aliased^ClassName", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_12() throws Exception {
+        checkDeclaration(getTestPath(), "* @param Omg\\Aliased^ClassName $p", "class ^AliasedClassName {}");
+    }
+
+    public void testIssue209308_13() throws Exception {
+        checkDeclaration(getTestPath(), "* @param \\Foo\\Bar\\Aliased^ClassName $name Description", "class ^AliasedClassName {}");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //         public void testImplementsInterface() throws Exception {
 //        String gotoTest2 = prepareTestFile(

@@ -27,9 +27,10 @@ namespace {
         /**
          * @param Omg\AliasedClassName $p
          * @param Cls $a
+         * @param \Foo\Bar\AliasedClassName $name Description
          * @return Cls
          */
-        function bar(Omg\AliasedClassName $p, Cls $a) {}
+        function bar(Omg\AliasedClassName $p, Cls $a, \Foo\Bar\AliasedClassName $name) {}
     }
 }
 ?>

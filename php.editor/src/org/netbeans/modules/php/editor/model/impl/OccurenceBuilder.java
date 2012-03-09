@@ -1387,7 +1387,7 @@ class OccurenceBuilder {
         for (PhpElement phpElement : elements) {
             for (Entry<PhpDocTypeTagInfo, Scope> entry : docTags.entrySet()) {
                 PhpDocTypeTagInfo nodeInfo = entry.getKey();
-                final QualifiedName qualifiedName = nodeInfo.getQualifiedName();
+                final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 final String name = nodeInfo.getName();
                 if (!name.isEmpty() && NameKind.exact(name).matchesName(PhpElementKind.CLASS, phpElement.getName()) &&
                         NameKind.exact(qualifiedName).matchesName(phpElement)) {
