@@ -183,7 +183,7 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
-        checkPopuplateCache();
+        checkPopulateCache();
         
         synchronized (this) {
             if (worker.isProcessing(cache)) {
@@ -571,7 +571,7 @@ public final class Stamps {
         return new File(fallbackCache[0], cache);
     }
     
-    static void checkPopuplateCache() {
+    static void checkPopulateCache() {
         if (populated) {
             return;
         }
