@@ -52,13 +52,16 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.RepositoryQuery;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.Format;
 import org.netbeans.modules.bugtracking.vcs.VCSHooksConfig.PushOperation;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,14 +84,12 @@ class HookImpl {
     }
     
     public String beforeCommit(File[] files, String msg) throws IOException {
-        RepositoryProvider selectedRepository = getSelectedRepository();
+        Repository selectedRepository = getSelectedRepository();
 
         if(files.length == 0) {
 
             if (selectedRepository != null) {
-                BugtrackingOwnerSupport.getInstance().setLooseAssociation(
-                        BugtrackingOwnerSupport.ContextType.MAIN_OR_SINGLE_PROJECT,
-                        selectedRepository);
+                OwnerUtils.setLooseAssociation(selectedRepository, true);
             }
 
             LOG.warning("calling beforeCommit for zero files");              // NOI18N
@@ -96,7 +97,7 @@ class HookImpl {
         }
 
         if (selectedRepository != null) {
-            BugtrackingOwnerSupport.getInstance().setFirmAssociations(
+            OwnerUtils.setFirmAssociations(
                     files,
                     selectedRepository);
         }
@@ -110,7 +111,7 @@ class HookImpl {
             String formatString = format.getFormat();
             formatString = HookUtils.prepareFormatString(formatString, supportedIssueInfoVariables);
             
-            IssueProvider issue = getIssue();
+            Issue issue = getIssue();
             if (issue == null) {
                 LOG.log(Level.FINE, " no issue set for {0}", file);             // NOI18N
                 return null;
@@ -145,7 +146,7 @@ class HookImpl {
         File file = files[0];
         LOG.log(Level.FINE, "afterCommit start for {0}", file);              // NOI18N
 
-        IssueProvider issue = getIssue();
+        Issue issue = getIssue();
         if (issue == null) {
             LOG.log(Level.FINE, " no issue set for {0}", file);                 // NOI18N
             return;
@@ -200,7 +201,7 @@ class HookImpl {
         File file = files[0];
         LOG.log(Level.FINE, "push hook start for {0}", file);                   // NOI18N
 
-        RepositoryProvider repo = null;
+        Repository repo = null;
         for (String changeset : changesets) {
 
             PushOperation operation = config.popPushAction(changeset);
@@ -210,7 +211,7 @@ class HookImpl {
             }
 
             if(repo == null) { // don't go for the repository until we really need it
-                repo = BugtrackingOwnerSupport.getInstance().getRepository(file, true); // true -> ask user if repository unknown
+                repo = RepositoryQuery.getInstance().getRepository(FileUtil.toFileObject(file), true); // true -> ask user if repository unknown
                                                                                         //         might have deleted in the meantime
                 if(repo == null) {
                     LOG.log(Level.WARNING, " could not find issue tracker for {0}", file);      // NOI18N
@@ -218,7 +219,7 @@ class HookImpl {
                 }
             }
 
-            IssueProvider issue = repo.getIssue(operation.getIssueID());
+            Issue issue = repo.getIssue(operation.getIssueID());
             if(issue == null) {
                 LOG.log(Level.FINE, " no issue found with id {0}", operation.getIssueID());  // NOI18N
                 continue;
@@ -289,11 +290,11 @@ class HookImpl {
         return (panel != null) && panel.commitRadioButton.isSelected();
     }
 
-    private RepositoryProvider getSelectedRepository() {
+    private Repository getSelectedRepository() {
         return (panel != null) ? panel.getSelectedRepository() : null;
     }
 
-    private IssueProvider getIssue() {
+    private Issue getIssue() {
         return (panel != null) ? panel.getIssue() : null;
     }
 }

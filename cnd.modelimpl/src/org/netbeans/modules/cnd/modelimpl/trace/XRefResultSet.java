@@ -161,11 +161,11 @@ public final class XRefResultSet<T> {
         return out;
     }
     
-    public T getIndexedEntry(RefLink link) {
+    T getIndexedEntry(RefLink link) {
         return indexed.get(link);
     }
 
-    public T addIndexedEntry(RefLink link, T value) {
+    T addIndexedEntry(RefLink link, T value) {
         T prev = indexed.putIfAbsent(link, value);
         return prev == null ? value : prev;
     }

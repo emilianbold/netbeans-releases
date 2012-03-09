@@ -313,6 +313,11 @@ made subject to such option by the copyright holder.
                 <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Remote.displayName"/>
                 <attr name="position" intvalue="200"/>
             </file>
+            <file name="Annotations">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/php/project/annotations.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.php.project.resources.Bundle#Php.Options.Export.Annotations.displayName"/>
+                <attr name="position" intvalue="210"/>
+            </file>
         </folder>
     </folder>
 </filesystem>

@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.kenai;
 import java.util.List;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -160,7 +161,7 @@ public class KenaiQueryController extends QueryController {
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
-        BugtrackingUtil.logAutoRefreshEvent(
+        LogUtils.logAutoRefreshEvent(
             BugzillaConnector.getConnectorName(),
             query.getDisplayName(),
             true,

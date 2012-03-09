@@ -45,8 +45,6 @@ package org.netbeans.modules.bugtracking.ui.selectors;
 import javax.swing.GroupLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -56,12 +54,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
-import static org.netbeans.modules.bugtracking.spi.BugtrackingController.EVENT_COMPONENT_DATA_CHANGED;
+import org.netbeans.modules.bugtracking.APIAccessor;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 
 /**
@@ -72,7 +69,7 @@ public class RepositoryFormPanel extends JPanel {
 
     private Collection<String> cardNames = new ArrayList<String>(6);
 
-    private RepositoryProvider selectedRepository = null;
+    private RepositoryImpl selectedRepository = null;
     private RepositoryController selectedFormController = null;
 
     private boolean isValidData = false;
@@ -90,7 +87,7 @@ public class RepositoryFormPanel extends JPanel {
         initComponents();
     }
 
-    public RepositoryFormPanel(RepositoryProvider repository, String initialErrorMessage) {
+    public RepositoryFormPanel(RepositoryImpl repository, String initialErrorMessage) {
         this();
 
         displayForm(repository, initialErrorMessage);
@@ -119,7 +116,7 @@ public class RepositoryFormPanel extends JPanel {
         layout.setHonorsVisibility(false);  //keep space for errorLabel
     }
 
-    public boolean displayForm(RepositoryProvider repository, String initialErrMsg) {
+    public boolean displayForm(RepositoryImpl repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -139,7 +136,7 @@ public class RepositoryFormPanel extends JPanel {
         updateErrorMessage(message);
     }
 
-    public RepositoryProvider getSelectedRepository() {
+    public RepositoryImpl getSelectedRepository() {
         return selectedRepository;
     }
 
@@ -180,7 +177,7 @@ public class RepositoryFormPanel extends JPanel {
         }
     }
 
-    private boolean displayFormPanel(RepositoryProvider repository, String initialErrMsg) {
+    private boolean displayFormPanel(RepositoryImpl repository, String initialErrMsg) {
         if (repository == selectedRepository) {
             return false;
         }
@@ -247,7 +244,7 @@ public class RepositoryFormPanel extends JPanel {
         stopListeningOnController();
     }
 
-    private static String getCardName(RepositoryProvider repository) {
+    private static String getCardName(RepositoryImpl repository) {
         return Integer.toString(System.identityHashCode(repository), MAX_RADIX);
     }
 

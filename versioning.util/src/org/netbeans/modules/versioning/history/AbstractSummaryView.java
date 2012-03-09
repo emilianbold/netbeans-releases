@@ -280,6 +280,9 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     }
 
     File getRoot() {
+        if(master.getRoots() == null || master.getRoots().length == 0) {
+            return null;
+        }
         return master.getRoots()[0];
     }
 
@@ -341,6 +344,14 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
 
     public interface SummaryViewMaster {
         public JComponent getComponent();
+        /**
+         * Returns the roots on which the view was invoked. 
+         * Note that the value is used only to retrieve an assotiated bugtracking 
+         * system for the need of issue hyperlinks in commit messages. 
+         * Thus in case the roots can't be provided it is ok to return null. 
+         * 
+         * @return 
+         */
         public File[] getRoots();
         public Collection<SearchHighlight> getSearchHighlights ();
         public Map<String, String> getActionColors();
@@ -445,7 +456,6 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
         public static abstract class Event {
             public abstract String getPath();
             public abstract String getOriginalPath ();
-            public abstract File getFile();
             public abstract String getAction();
             public abstract Action[] getUserActions();
             public abstract boolean isVisibleByDefault ();

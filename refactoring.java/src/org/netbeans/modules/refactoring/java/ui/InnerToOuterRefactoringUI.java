@@ -81,6 +81,7 @@ public class InnerToOuterRefactoringUI implements RefactoringUI, JavaRefactoring
      */
     private InnerToOuterRefactoringUI(TreePathHandle sourceType, CompilationInfo info) {
         refactoring = new InnerToOuterRefactoring(sourceType);
+        refactoring.setReferenceName("outer"); //NOI18N
         Element temp = sourceType.resolveElement(info);
         className = temp.getSimpleName().toString();
         disableDeclareFields = temp.getModifiers().contains(Modifier.STATIC) || temp.getKind() !=ElementKind.CLASS;

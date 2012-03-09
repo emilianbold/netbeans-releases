@@ -77,6 +77,7 @@ import javax.swing.event.*;
 import javax.swing.plaf.metal.MetalScrollBarUI;
 import javax.swing.table.*;
 import javax.swing.tree.*;
+import org.openide.awt.QuickSearch;
 import org.openide.explorer.view.TreeView.PopupAdapter;
 import org.openide.explorer.view.TreeView.PopupSupport;
 import org.openide.explorer.view.TreeView.TreePropertyListener;
@@ -500,9 +501,8 @@ public class TreeTableView extends BeanTreeView {
         TreeTable tt = new TreeTable(treeModel, tableModel);
         treeTable = tt;
         tree = ((TreeTable) treeTable).getTree();
-        quickSearch = QuickSearch.attach(this, searchConstraints);
-        TableQuickSearchSupport tqss = new TableQuickSearchSupport(tt, tt, tt.getQuickSearchSettings());
-        quickSearch.addQuickSearchListener(tqss);
+        TableQuickSearchSupport tqss = new TableQuickSearchSupport(tt, tt.getQuickSearchTableFilter(), tt.getQuickSearchSettings());
+        quickSearch = QuickSearch.attach(this, searchConstraints, tqss, tqss.createSearchPopupMenu());
         tt.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -517,7 +517,6 @@ public class TreeTableView extends BeanTreeView {
                 quickSearch.processKeyEvent(e);
             }
         });
-        quickSearch.setPopupMenu(tqss.createSearchPopupMenu());
         
         defaultHeaderRenderer = treeTable.getTableHeader().getDefaultRenderer();
         treeTable.getTableHeader().setDefaultRenderer(new SortingHeaderRenderer());

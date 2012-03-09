@@ -42,20 +42,28 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.openide.nodes.Node;
@@ -94,8 +102,8 @@ public class KenaiUtil {
      * @param repo
      * @return
      */
-    public static boolean isKenai(RepositoryProvider repo) {
-        return repo.getLookup().lookup(KenaiProject.class) != null;
+    public static boolean isKenai(Repository repo) {
+        return APIAccessor.IMPL.getImpl(repo).getLookup().lookup(KenaiProject.class) != null;
     }
 
     /**
@@ -123,7 +131,7 @@ public class KenaiUtil {
      * @return
      * @throws IOException
      */
-    public static RepositoryProvider getRepository(String repositoryUrl) throws IOException {
+    public static Repository getRepository(String repositoryUrl) throws IOException {
         KenaiProject project = getKenaiProjectForRepository(repositoryUrl);
         return (project != null)
                ? getRepository(project)
@@ -139,7 +147,7 @@ public class KenaiUtil {
      * @return
      * @throws IOException
      */
-    public static RepositoryProvider getRepository(String url, String projectName) throws IOException {
+    public static Repository getRepository(String url, String projectName) throws IOException {
         KenaiProject p = getKenaiProject(url, projectName);
         return p != null ? getRepository(p) : null;
     }
@@ -147,22 +155,29 @@ public class KenaiUtil {
     /**
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject)
      */
-    public static RepositoryProvider getRepository(KenaiProject project) {
-        return KenaiRepositories.getInstance().getRepository(project);
+    public static Repository getRepository(KenaiProject project) {
+        RepositoryImpl impl = KenaiRepositories.getInstance().getRepository(project);
+        return impl != null ? impl.getRepository() : null;
     }
 
     /**
      * @see KenaiRepositories#getRepository(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject, boolean)
      */
-    public static RepositoryProvider getRepository(KenaiProject project, boolean forceCreate) {
-        return KenaiRepositories.getInstance().getRepository(project, forceCreate);
+    public static Repository getRepository(KenaiProject project, boolean forceCreate) {
+        RepositoryImpl impl = KenaiRepositories.getInstance().getRepository(project, forceCreate);
+        return impl != null ? impl.getRepository() : null;
     }
 
     /**
      * @see KenaiRepositories#getRepositories()
      */
-    public static RepositoryProvider[] getRepositories(boolean pingOpenProjects) {
-        return KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+    public static Collection<Repository> getRepositories(boolean pingOpenProjects) {
+        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects);
+        List<Repository> ret = new ArrayList<Repository>(impls.size());
+        for (RepositoryImpl impl : impls) {
+            ret.add(impl.getRepository());
+        }
+        return ret;
     }
 
     /**
@@ -178,8 +193,8 @@ public class KenaiUtil {
         }
     }
 
-    public static String getChatLink(IssueProvider issue) {
-        return "ISSUE:" + issue.getID(); // NOI18N
+    public static String getChatLink(String id) {
+        return "ISSUE:" + id; // NOI18N
     }
     
     /**
@@ -259,19 +274,115 @@ public class KenaiUtil {
         return ka != null? ka.getDashboardProjects() : new KenaiProject[0];
     }
 
-    public static RepositoryProvider findNBRepository() {
-        BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
-        for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
-            if (support != null && support.getType() == KenaiSupport.BugtrackingType.BUGZILLA) {
-                return support.findNBRepository(); // ensure repository exists
+    public static Repository findNBRepository() {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector c : connectors) {
+            BugtrackingConnector bugtrackingConnector = c.getDelegate();
+            if ((bugtrackingConnector instanceof KenaiBugtrackingConnector)) {
+                KenaiBugtrackingConnector kenaiConnector = (KenaiBugtrackingConnector) bugtrackingConnector;
+                if(kenaiConnector.getType() == BugtrackingType.BUGZILLA) {
+                    return kenaiConnector.findNBRepository(); // ensure repository exists
+                }
             }
         }
         return null;
     }
-
-    public static void addRepository(RepositoryProvider repository) {
-        RepositoryRegistry.getInstance().addRepository(repository);
+    
+    public static void addRepository(Repository repository) {
+        RepositoryRegistry.getInstance().addRepository(APIAccessor.IMPL.getImpl(repository));
     }
     
+    public static KenaiProject getKenaiProject(Repository repository) {
+        return APIAccessor.IMPL.getImpl(repository).getLookup().lookup(KenaiProject.class);
+    }
+
+    public static Query getAllIssuesQuery(Repository repository) {
+        return APIAccessor.IMPL.getImpl(repository).getAllIssuesQuery();
+    }
+    
+    public static Query getMyIssuesQuery(Repository repository) {
+        return APIAccessor.IMPL.getImpl(repository).getMyIssuesQuery();
+    }
+
+    public static boolean needsLogin(Query query) {
+        return APIAccessor.IMPL.getImpl(query).needsLogin();
+    }
+
+    public static void setFilter(Query query, Filter filter) {
+        APIAccessor.IMPL.getImpl(query).setFilter(filter);
+    }
+
+    public static BugtrackingType getType(Repository repo) {
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+        for (DelegatingConnector delegatingConnector : connectors) {
+            if (delegatingConnector.getID().equals(APIAccessor.IMPL.getImpl(repo).getConnectorId())) {
+                BugtrackingConnector bugtrackignConnector = delegatingConnector.getDelegate();
+                assert bugtrackignConnector instanceof KenaiBugtrackingConnector;
+                return ((KenaiBugtrackingConnector)bugtrackignConnector).getType();
+            }
+        }
+        assert false : "no KenaiSupport available for repository [" + repo.getDisplayName() + "]";  // NOI18N
+        return null;
+    }
+
+    public static Filter getAllFilter(Query query) {
+        return Filter.getAllFilter(APIAccessor.IMPL.getImpl(query));
+    }
+
+    public static Filter getNotSeenFilter(Query query) {
+        return Filter.getNotSeenFilter(APIAccessor.IMPL.getImpl(query));
+    }
+
+    public static Filter getNewFilter(Query query) {
+        return Filter.getNewFilter(APIAccessor.IMPL.getImpl(query));
+    }
+
+    public static void closeQuery(Query query) {
+        QueryAction.closeQuery(APIAccessor.IMPL.getImpl(query));
+    }
+
+    public static void createIssue(Repository repo) {
+        IssueAction.createIssue(APIAccessor.IMPL.getImpl(repo));
+    }
+
+    public static void openQuery(final Query query, final Repository repository, final boolean suggestedSelectionOnly) {
+        QueryAction.openQuery(
+                query != null ? APIAccessor.IMPL.getImpl(query) : null, 
+                repository != null ? APIAccessor.IMPL.getImpl(repository) : null, 
+                suggestedSelectionOnly);
+    }
+
+    public static Collection<Issue> getRecentIssues(Repository repo) {
+        Collection<IssueImpl> c = BugtrackingUtil.getRecentIssues(APIAccessor.IMPL.getImpl(repo));
+        List<Issue> ret = new ArrayList<Issue>(c.size());
+        for (IssueImpl impl : c) {
+            ret.add(impl.getIssue());
+        }
+        return ret;
+    }
+
+    public static Collection<Repository> getKnownRepositories(boolean b) {
+        Collection<RepositoryImpl> c = BugtrackingUtil.getKnownRepositories(b);
+        List<Repository> ret = new ArrayList<Repository>(c.size());
+        for (RepositoryImpl impl : c) {
+            ret.add(impl.getRepository());
+        }
+        return ret;
+    }
+
+    public static void addCacheListener(Issue issue, PropertyChangeListener l) {
+        IssueCacheUtils.addCacheListener(APIAccessor.IMPL.getImpl(issue), l);
+    }
+    
+    public static void removeCacheListener(Issue issue, PropertyChangeListener l) {
+        IssueCacheUtils.removeCacheListener(APIAccessor.IMPL.getImpl(issue), l);
+    }
+
+    public static boolean isOpen(Issue issue) {
+        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+    }
+    
+    public static boolean isShowing(Issue issue) {
+        return BugtrackingUtil.isOpened(APIAccessor.IMPL.getImpl(issue));
+    }
 }

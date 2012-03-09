@@ -61,7 +61,7 @@ import javax.swing.MenuSelectionManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.text.Position;
+import org.openide.awt.QuickSearch;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -70,7 +70,7 @@ import org.openide.util.NbPreferences;
  * 
  * @author Martin Entlicher
  */
-class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
+class TableQuickSearchSupport implements QuickSearch.Callback {
     
     private int quickSearchInitialRow = -1;     // The search was initiated here
     private int quickSearchInitialColumn = -1;  // The search was initiated here
@@ -79,15 +79,20 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
     private String lastSearchText;
     
     private JTable table;
-    private StringValuedTable svTable;
+    //private StringValuedTable svTable;
+    private QuickSearchTableFilter quickSearchTableFilter;
     private QuickSearchSettings qss;
     
-    TableQuickSearchSupport(JTable table, StringValuedTable svTable, QuickSearchSettings qss) {
+    TableQuickSearchSupport(JTable table, QuickSearchTableFilter quickSearchTableFilter, QuickSearchSettings qss) {
         this.table = table;
-        this.svTable = svTable;
+        this.quickSearchTableFilter = quickSearchTableFilter;
         this.qss = qss;
     }
     
+    public void setQuickSearchTableFilter(QuickSearchTableFilter quickSearchTableFilter, boolean asynchronous) {
+        this.quickSearchTableFilter = quickSearchTableFilter;
+    }
+
     @Override
     public void quickSearchUpdate(String searchText) {
         lastSearchText = searchText;
@@ -103,12 +108,12 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
         }
         quickSearchLastRow = quickSearchInitialRow;
         quickSearchLastColumn = quickSearchInitialColumn;
-        doSearch(searchText, Position.Bias.Forward);
+        doSearch(searchText, true);
     }
 
     @Override
-    public void showNextSelection(Position.Bias bias) {
-        if (bias == Position.Bias.Forward) {
+    public void showNextSelection(boolean forward) {
+        if (forward) {
             if (++quickSearchLastColumn >= table.getColumnCount()) {
                 quickSearchLastColumn = 0;
                 if (++quickSearchLastRow >= table.getRowCount()) {
@@ -116,7 +121,7 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
                 }
             }
         }
-        doSearch(lastSearchText, bias);
+        doSearch(lastSearchText, forward);
     }
 
     @Override
@@ -134,7 +139,7 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
         String maxPrefix = null;
         for (int row = row1; row < row2; row++) {
             for (int col = col1; col < col2; col++) {
-                String str = svTable.getStringValueAt(row, col);
+                String str = quickSearchTableFilter.getStringValueAt(row, col);
                 String strUp;
                 if (qss.isMatchCase()) {
                     strUp = str;
@@ -145,7 +150,7 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
                     if (maxPrefix == null) {
                         maxPrefix = str;
                     } else {
-                        maxPrefix = QuickSearch.findMaxCommonSubstring(maxPrefix, str, !qss.isMatchCase());
+                        maxPrefix = QuickSearch.findMaxPrefix(maxPrefix, str, !qss.isMatchCase());
                     }
                 }
             }
@@ -170,26 +175,26 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
         quickSearchInitialColumn = -1;
     }
 
-    private void doSearch(String searchText, Position.Bias bias) {
+    private void doSearch(String searchText, boolean forward) {
         if (!qss.isMatchCase()) {
             searchText = searchText.toUpperCase();
         }
         int n = table.getRowCount();
-        boolean backward = bias == Position.Bias.Backward;
+        //boolean backward = bias == Position.Bias.Backward;
         int row1 = quickSearchLastRow;
         int row2 = quickSearchLastRow + n;
         boolean lineStartSearch = true;
         Set<String> columnsIgnoredToSearch = qss.getColumnsIgnoredToSearch();
         do {
             int col1 = quickSearchLastColumn;
-            int col2 = (backward) ? 0 : table.getColumnCount();
-            for (int row = (backward) ? (row2 - 1) : row1; (backward) ? row >= row1 : row < row2; row = (backward) ? --row : ++row) {
-                for (int col = col1; (backward) ? col >= col2 : col < col2; col = (backward) ? --col : ++col) {
+            int col2 = (forward) ? table.getColumnCount() : 0;
+            for (int row = (forward) ? row1 : (row2 - 1); (forward) ? row < row2 : row >= row1; row = (forward) ? ++row : --row) {
+                for (int col = col1; (forward) ? col < col2 : col >= col2; col = (forward) ? ++col : --col) {
                     String cName = table.getColumnName(col);
                     if (columnsIgnoredToSearch.contains(cName)) {
                         continue;
                     }
-                    String str = svTable.getStringValueAt(row % n, col);
+                    String str = quickSearchTableFilter.getStringValueAt(row % n, col);
                     if (str == null) {
                         continue;
                     }
@@ -208,7 +213,7 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
                         }
                     }
                 }
-                col1 = (backward) ? table.getColumnCount() - 1 : 0;
+                col1 = (forward) ? 0 : table.getColumnCount() - 1;
             }
             lineStartSearch = !lineStartSearch;
         } while (!lineStartSearch);
@@ -234,7 +239,7 @@ class TableQuickSearchSupport implements QuickSearch.QuickSearchListener {
                 return TableQuickSearchSupport.getSearchPopupMenu(qss, table.getColumnModel(), new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        doSearch(lastSearchText, Position.Bias.Forward);
+                        doSearch(lastSearchText, true);
                     }
                 });
             }

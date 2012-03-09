@@ -705,19 +705,20 @@ public class Annotator {
         return ret;
     }
 
+    private boolean clientInitStarted;
     private boolean checkClientAvailable (String methodName, final File[] files) {
         boolean available = true;
-        if (!SvnClientFactory.isInitialized()) {
-            Subversion.getInstance().getRequestProcessor().post(new Runnable() {
-                @Override
-                public void run() {
-                    if (SvnClientFactory.isInitialized()) {
-                        return;
+        if (!SvnClientFactory.isInitialized() && EventQueue.isDispatchThread()) {
+            if (!clientInitStarted) {
+                clientInitStarted = true;
+                Subversion.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        SvnClientFactory.init();
+                        Subversion.getInstance().refreshAllAnnotations();
                     }
-                    SvnClientFactory.init();
-                    Subversion.getInstance().refreshAllAnnotations();
-                }
-            });
+                });
+            }
             Subversion.LOG.log(Level.FINE, " skipping {0} due to not yet initialized client", methodName); //NOI18N
             available = false;
         } else if(!SvnClientFactory.isClientAvailable()) {

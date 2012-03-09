@@ -68,8 +68,13 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
     // Constructors
     public CCCompilerConfiguration(String baseDir, CCCompilerConfiguration master, MakeConfiguration owner) {
         super(baseDir, master, owner);
-        cppStandard = new IntConfiguration(null, STANDARD_DEFAULT, STANDARD_NAMES, null);
+        cppStandard = new IntConfiguration(master != null ? master.getCppStandard() : null, STANDARD_DEFAULT, STANDARD_NAMES, null);
     }
+    
+    public void fixupMasterLinks(CCCompilerConfiguration compilerConfiguration) {
+        super.fixupMasterLinks(compilerConfiguration);
+        getCppStandard().setMaster(compilerConfiguration.getCppStandard());
+    }    
     
     public IntConfiguration getCppStandard() {
         return cppStandard;
@@ -85,6 +90,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         super.assign(conf);
         getCppStandard().assign(conf.getCppStandard());
     }
+    
+    @Override
+    public boolean getModified() {
+        return super.getModified() || getCppStandard().getModified();
+    }    
     
     // Cloning
     @Override
@@ -229,13 +239,14 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
         Sheet sheet = new Sheet();
         CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
         AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-        
+
+        IntNodeProp standardProp = new IntNodeProp(getCppStandard(), true, "CPPStandard", getString("CPPStandardTxt"), getString("CPPStandardHint"));  // NOI18N
         Sheet.Set set0 = getSet();
         sheet.put(set0);
         if (conf.isCompileConfiguration() && folder == null) {
             Sheet.Set bset = getBasicSet();
             sheet.put(bset);
-            bset.put(new IntNodeProp(getCppStandard(), true, "CPPStandard", getString("CPPStandardTxt"), getString("CPPStandardHint"))); // NOI18N
+            bset.put(standardProp);
             if (compilerSet !=null && compilerSet.getCompilerFlavor().isSunStudioCompiler()) { // FIXUP: should be moved to SunCCompiler
                 Sheet.Set set2 = new Sheet.Set();
                 set2.setName("OtherOptions"); // NOI18N
@@ -284,6 +295,8 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration {
                     }
                 }
             }
+        } else if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE && item == null && folder == null) {
+            set0.put(standardProp);
         }
         
         return sheet;

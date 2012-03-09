@@ -266,7 +266,7 @@ public class VCSInterceptorTestCase extends AbstractFSTestCase {
         
         // XXX listFiles called twice on adding the listener. is this realy necessary
         assertInterceptedCalls(
-            2, 
+            1, 2, 
             f(listFilesFormat, proxy)
         );            
     }

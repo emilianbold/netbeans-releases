@@ -60,6 +60,12 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingConfig;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingConnector;
+import org.netbeans.modules.bugtracking.dummies.DummyRepository;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache.IssueEntry;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -101,14 +107,15 @@ public class StorageTest extends NbTestCase {
 
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
-        IssueProvider i1 = new DummyIssue(id1, attr1);
-        IssueProvider i2 = new DummyIssue(id2, attr2);
+        DummyIssue i1 = new DummyIssue(id1, attr1);
+        DummyIssue i2 = new DummyIssue(id2, attr2);
 
         storage.storeQuery(url, qName, new String[] {id1, id2});
 
         long lm = System.currentTimeMillis();
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr1, -1, -1, false, lm);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr2, -1, -1, false, lm);
+        IssueCache<DummyIssue, Object> cache = getCache();
+        IssueEntry ie1 = cache.new IssueEntry(i1, i1.id, attr1, -1, -1, false, lm);
+        IssueEntry ie2 = cache.new IssueEntry(i2, i2.id, attr2, -1, -1, false, lm);
         
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -117,8 +124,8 @@ public class StorageTest extends NbTestCase {
         assertTrue(issues.contains(id1));
         assertTrue(issues.contains(id2));
 
-        ie1 = new IssueCache.IssueEntry(i1, null, -1, -1, false, lm);
-        ie2 = new IssueCache.IssueEntry(i2, null, -1, -1, false, lm);
+        ie1 = cache.new IssueEntry(i1, i1.id, null, -1, -1, false, lm);
+        ie2 = cache.new IssueEntry(i2, i2.id, null, -1, -1, false, lm);
         storage.readIssue(url, ie1);
         if(ie1.getSeenAttributes() == null) fail("missing issue id [" + id1 + "]");
         assertAttribute(ie1.getSeenAttributes(), "dummy1", "dummy3");
@@ -188,11 +195,13 @@ public class StorageTest extends NbTestCase {
         String url = "http://test/bugzilla";
         String qName = "SomeQuery";
 
-        IssueProvider i1 = new DummyIssue(id1, attr);
-        IssueProvider i2 = new DummyIssue(id2, attr);
+        DummyIssue i1 = new DummyIssue(id1, attr);
+        DummyIssue i2 = new DummyIssue(id2, attr);
+        
         long lm = System.currentTimeMillis();
-        IssueCache.IssueEntry ie1 = new IssueCache.IssueEntry(i1, attr, -1, -1, false, lm);
-        IssueCache.IssueEntry ie2 = new IssueCache.IssueEntry(i2, attr, -1, -1, false, lm);
+        IssueCache<DummyIssue, Object> cache = getCache();
+        IssueEntry ie1 = cache. new IssueEntry(i1, i1.id, attr, -1, -1, false, lm);
+        IssueEntry ie2 = cache. new IssueEntry(i2, i2.id, attr, -1, -1, false, lm);
 
         storage.storeIssue(url, ie1);
         storage.storeIssue(url, ie2);
@@ -252,12 +261,11 @@ public class StorageTest extends NbTestCase {
         if(!v.equals(value)) fail("value [" + v + "] for attribute [" + attr + "] instead of [" + value + "]");
     }
 
-    private static class DummyIssue extends IssueProvider {
+    private static class DummyIssue extends TestIssue {
         private Map<String, String> m;
         private String id;
 
         public DummyIssue(String id, Map<String, String> m) {
-            super(null);
             this.m = m;
             this.id = id;
         }
@@ -333,5 +341,51 @@ public class StorageTest extends NbTestCase {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
+        @Override
+        public TestIssue createFor(String id) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    
+    private IssueCache<DummyIssue, Object> getCache() {
+        IssueCache.IssueAccessor ia = new IssueCache.IssueAccessor() {
+
+            @Override
+            public String getID(Object issueData) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public Object createIssue(Object issueData) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public void setIssueData(Object issue, Object issueData) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public Map getAttributes(Object issue) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public String getRecentChanges(Object issue) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public long getLastModified(Object issue) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+
+            @Override
+            public long getCreated(Object issue) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        };
+        RepositoryImpl impl = TestKit.getRepository(new DummyRepository(DummyBugtrackingConnector.instance, "dummy"));
+        return new IssueCache<DummyIssue, Object>("dummy", ia, null, impl.getRepository());
     }
 }

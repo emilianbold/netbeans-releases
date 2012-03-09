@@ -80,13 +80,7 @@ import java.util.logging.Logger;
 import javax.accessibility.Accessible;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.ActionMap;
-import javax.swing.JComponent;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.plaf.basic.BasicHTML;
 import javax.swing.text.Keymap;
 import org.openide.awt.ActionID;
@@ -1000,6 +994,17 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         return displayName;
     }
     
+    /**
+     * Short version of TopComponent's name that doesn't include the name of
+     * activated Node.
+     * @return Short version of TopComponent's display name. The default implementation
+     * returns null.
+     * @since 6.52
+     */
+    public String getShortName() {
+        return null;
+    }
+
     /** Sets localized html display name of this <code>TopComponent</code>.
      * Hmtl name usually contains basic html tags for text coloring and style.
      * Html name may be null if not needed.
@@ -1033,7 +1038,7 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     public String getHtmlDisplayName() {
         return htmlDisplayName;
     }
-    
+
 
     /** Sets toolTip for this <code>TopComponent</code>, adds notification
      * about the change to its <code>WindowManager.TopComponentManager</code>. */
@@ -1394,6 +1399,19 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         this.nodeName = nodeName;
     }
 
+    /**
+     * Retrieves sub-components this TopComponent contains. The resulting array
+     * is a snapshot valid at the time of the call and shouldn't be held for too long.
+     * This method can be called from EDT only.
+     * 
+     * @return Array of internal sub-components or an empty array if the TopComponent
+     * has no internal sub-components.
+     * @since 6.52
+     */
+    public SubComponent[] getSubComponents() {
+        return new SubComponent[0];
+    }
+
     /** Each top component that wishes to be cloned should implement
     * this interface, so CloneAction can check it and call the cloneComponent
     * method.
@@ -1537,6 +1555,70 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         * @param l the listener to remove
         */
         public void removePropertyChangeListener(PropertyChangeListener l);
+    }
+
+    /**
+     * Representation of a visual sub-component displayed in a TopComponent,
+     * for example sub-tabs in a multiview window.
+     *
+     * @see #getSubComponents()
+     * @since 6.52
+     */
+    public static final class SubComponent {
+        private final String displayName;
+        private final String description;
+        private final boolean active;
+        private final ActionListener activator;
+
+        /**
+         * C'tor
+         * @param displayName Subcomponent's display name.
+         * @param activator ActionListener to invoke when the sub-component needs
+         * to be actived.
+         * @param active True if the given sub-component is currently active,
+         * e.g. multiview sub-tab is selected.
+         */
+        public SubComponent( String displayName, ActionListener activator, boolean active ) {
+            this( displayName, null, activator, active );
+        }
+
+        /**
+         * C'tor
+         * @param displayName Subcomponent's display name.
+         * @param description Short description to show in a tooltip.
+         * @param activator ActionListener to invoke when the sub-component needs
+         * to be actived.
+         * @param active True if the given sub-component is currently active,
+         * e.g. multiview sub-tab is selected.
+         */
+        public SubComponent( String displayName, String description, ActionListener activator, boolean active ) {
+            this.displayName = displayName;
+            this.description = description;
+            this.active = active;
+            this.activator = activator;
+        }
+
+        /**
+         * @return True if this sub-component is the active/selected one.
+         */
+        public final boolean isActive() {
+            return active;
+        }
+
+        public final String getDescription() {
+            return description;
+        }
+
+        public final String getDisplayName() {
+            return displayName;
+        }
+
+        /**
+         * Make this sub-component the active/selected one.
+         */
+        public final void activate() {
+            activator.actionPerformed( new ActionEvent( this, 0, "activate") ); //NOI18N
+        }
     }
 
     private class AttentionGetter implements ActionListener {

@@ -45,7 +45,6 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 
 import java.util.Enumeration;
-import org.netbeans.modules.bugtracking.spi.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +53,7 @@ import java.util.NoSuchElementException;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestSetup;
+import org.netbeans.modules.bugtracking.api.Query;
 
 /**
  *
@@ -66,9 +66,9 @@ public abstract class IssuetableTestFactory extends NbTestSetup {
         registerMap (test);
     }
 
-    public abstract QueryProvider createQuery();
-    public abstract void setSaved(QueryProvider q);
-    public abstract IssueTable getTable(QueryProvider q);
+    public abstract Query createQuery();
+    public abstract void setSaved(Query q);
+    public abstract IssueTable getTable(Query q);
     public abstract int getColumnsCountBeforeSave();
     public abstract int getColumnsCountAfterSave();
 

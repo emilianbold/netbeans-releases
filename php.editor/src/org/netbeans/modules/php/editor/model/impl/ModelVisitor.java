@@ -355,8 +355,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(UseStatementPart statementPart) {
         ASTNodeInfo<UseStatementPart> astNodeInfo = ASTNodeInfo.create(statementPart);
         modelBuilder.getCurrentNameSpace().createUseStatementPart(astNodeInfo);
-        if (statementPart.getAlias() == null) {
-            occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), modelBuilder.getCurrentScope());
+        occurencesBuilder.prepare(Kind.CLASS, statementPart.getName(), modelBuilder.getCurrentScope());
+        if (statementPart.getAlias() != null) {
+            occurencesBuilder.prepare(Kind.USE_ALIAS, statementPart.getAlias(), modelBuilder.getCurrentScope());
         }
         super.visit(statementPart);
     }
@@ -436,10 +437,15 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     @Override
     public void visit(ClassInstanceCreation node) {
-        if (node.getClassName().getName() instanceof Variable) {
-            scan(node.getClassName().getName());
+        Expression className = node.getClassName().getName();
+        if (className instanceof Variable) {
+            scan(className);
         } else {
-            occurencesBuilder.prepare(node, modelBuilder.getCurrentScope());
+            ScopeImpl currentScope = modelBuilder.getCurrentScope();
+            occurencesBuilder.prepare(node, currentScope);
+            if (className instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className, currentScope);
+            }
         }
         scan(node.ctorParams());
     }
@@ -454,7 +460,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 occurencesBuilder.prepare((Variable)expression, modelBuilder.getCurrentScope());
             }
         } else {
-            occurencesBuilder.prepare(node.getClassName(), modelBuilder.getCurrentScope());
+            if (className.getName() instanceof NamespaceName) {
+                occurencesBuilder.prepare((NamespaceName) className.getName(), modelBuilder.getCurrentScope());
+            }
             String clsName = CodeUtils.extractClassName(node.getClassName());
             if (clsName != null) {
                 if (expression instanceof Variable) {
@@ -497,27 +505,32 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        } else if (className instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         scan(node.getMethod().getParameters());
-
     }
 
     @Override
     public void visit(ClassName node) {
-        if (!(node.getName() instanceof Variable)) {
+        if (!(node.getName() instanceof Variable) && !(node.getName() instanceof FieldAccess)) {
             Scope scope = modelBuilder.getCurrentScope();
             occurencesBuilder.prepare(node, scope);
         }
+        scan(node.getName());
     }
 
     @Override
     public void visit(StaticConstantAccess node) {
         Scope scope = modelBuilder.getCurrentScope();
         occurencesBuilder.prepare(node, scope);
-        occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
-        occurencesBuilder.prepare(Kind.IFACE, node.getClassName(), scope);
+        Expression className = node.getClassName();
+        if (className instanceof Variable) {
+            scan(className);
+        } else if (className instanceof NamespaceName) {
+            Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+            occurencesBuilder.prepare(kinds, (NamespaceName) className, scope);
+        }
     }
 
     @Override
@@ -838,9 +851,10 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
 
         if (parameterName instanceof Variable) {
-            //Identifier paramId = parameterType != null ? CodeUtils.extractUnqualifiedIdentifier(parameterType) : null;
-            occurencesBuilder.prepare(Kind.CLASS, parameterType, fncScope);
-            occurencesBuilder.prepare(Kind.IFACE, parameterType, fncScope);
+            if (parameterType instanceof NamespaceName) {
+                Kind[] kinds = {Kind.CLASS, Kind.IFACE};
+                occurencesBuilder.prepare(kinds, (NamespaceName) parameterType, fncScope);
+            }
             occurencesBuilder.prepare((Variable) parameterName, fncScope);
         }
         super.visit(node);
@@ -970,8 +984,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         Expression className = node.getClassName();
         if (className instanceof Variable) {
             scan(className);
-        } else {
-            occurencesBuilder.prepare(Kind.CLASS, node.getClassName(), scope);
+        } else if (className instanceof NamespaceName) {
+            occurencesBuilder.prepare((NamespaceName) className, scope);
         }
         Variable field = node.getField();
         if (field instanceof ArrayAccess) {
@@ -1202,13 +1216,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
     public ModelElement findDeclaration(PhpElement element) {
         final int offset = element.getOffset();
-        List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
+        final List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
+        ModelElement possibleElement = null;
+        final OffsetRange nameOffsetRange = new OffsetRange(offset,offset+element.getName().length());
         for (ModelElement modelElement : elements) {
-            if (modelElement.getNameRange().overlaps(new OffsetRange(offset,offset+element.getName().length()))) {
-                return modelElement;
+            if (modelElement.getNameRange().overlaps(nameOffsetRange)) {
+                if (possibleElement == null || contains(possibleElement.getNameRange(), modelElement.getNameRange())) {
+                    possibleElement = modelElement;
+                }
             }
         }
-        return null;
+        return possibleElement;
+    }
+
+    private static boolean contains(final OffsetRange outer, final OffsetRange inner) {
+        return inner.getStart() >= outer.getStart() && inner.getEnd() <= outer.getEnd();
     }
 
     public VariableScope getNearestVariableScope(int offset) {

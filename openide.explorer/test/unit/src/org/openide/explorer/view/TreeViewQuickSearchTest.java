@@ -219,9 +219,9 @@ public class TreeViewQuickSearchTest extends NbTestCase {
 
                 if (phase[0] != 0) {
                     if (btv.isQuickSearchAllowed()) {
-                        assertNotNull("Quick Search enabled ", btv.searchpanel);
+                        assertNotNull("Quick Search enabled ", btv.getSearchPanel());
                     } else {
-                        assertNull("Quick Search disable", btv.searchpanel);
+                        assertNull("Quick Search disabled", btv.getSearchPanel());
                     }
                 }
             }
