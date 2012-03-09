@@ -1937,6 +1937,7 @@ public final class ModuleManager extends Modules {
                     continue;
                 }
                 Stamps.writeRelativePath(path.getPath(), os);
+                os.writeBoolean(m.isNetigso());
                 
                 ByteArrayOutputStream data = new ByteArrayOutputStream();
                 ObjectOutputStream dos = new ObjectOutputStream(data);

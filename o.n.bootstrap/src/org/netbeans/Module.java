@@ -169,9 +169,10 @@ public abstract class Module extends ModuleInfo {
             if (is != null) {
                 try {
                     ObjectInputStream ois = new ObjectInputStream(is);
-                    ModuleData mine =  createData(ois, null);
+                    ModuleData mine = createData(ois, null);
                     ois.close();
-                    assert mine == data;
+                    assert data == null;
+                    data = mine;
                     return mine;
                 } catch (IOException ex) {
                     Util.err.log(Level.INFO, "Cannot read cache for " + getJarFile(), ex); // NOI18N

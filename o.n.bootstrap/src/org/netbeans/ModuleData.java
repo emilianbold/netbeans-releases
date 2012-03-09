@@ -422,7 +422,7 @@ class ModuleData {
     }
     private String[] readStrings(ObjectInput dis) throws IOException {
         List<String> arr = new ArrayList<String>();
-        readStrings(dis, new HashSet<String>(), false);
+        readStrings(dis, arr, false);
         return arr.toArray(new String[0]);
     }
     private void writeStrings(DataOutput dos, Collection<String> set) 
