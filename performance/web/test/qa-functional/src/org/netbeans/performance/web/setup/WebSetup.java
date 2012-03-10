@@ -44,14 +44,12 @@
 
 package org.netbeans.performance.web.setup;
 
-import org.netbeans.modules.performance.utilities.CommonUtilities;
-
-import org.netbeans.jellytools.JellyTestCase;
-
 import java.io.IOException;
+import org.netbeans.modules.performance.utilities.CommonUtilities;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase2;
 import org.openide.util.Exceptions;
 
-public class WebSetup extends JellyTestCase {
+public class WebSetup extends PerformanceTestCase2 {
     
 
     public WebSetup(String testName) {
@@ -94,5 +92,4 @@ public class WebSetup extends JellyTestCase {
     public void testCloseTaskWindow() {
         CommonUtilities.closeTaskWindow();
     }
-    
-}
+}        

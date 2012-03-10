@@ -1582,7 +1582,8 @@ public class AbstractLookupBaseHid extends NbTestCase {
                 this.ic = ic;
             }
 
-            protected @Override void beforeLookup(Template template) {
+            // override the same method as MetaInfServicesLookup overrides
+            @Override void beforeLookupResult(Template template) {
                 if (ic != null) {
                     ic.add(am);
                     ic = null;
@@ -1595,7 +1596,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
         // adding different Before, but returning the same instance
         // this happens with metaInfServices lookup often, moreover
         // it adds the instance in beforeLookup, which confuses a lot
-        p.setLookups(new Lookup[]{ lookup, new Before() });
+        p.setLookups(new Lookup[]{ lookup, s });
         assertEquals("No change in ActionMap 5", 0, ll.getCount());
         
         
@@ -1618,7 +1619,7 @@ public class AbstractLookupBaseHid extends NbTestCase {
             result.addLookupListener(listeners[i]);
         }
         // initialize listening
-        result.allItems();
+        result.allItems().toArray();
         
         ic.remove(object);
         

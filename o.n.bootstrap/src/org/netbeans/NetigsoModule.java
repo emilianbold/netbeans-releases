@@ -69,6 +69,7 @@ final class NetigsoModule extends Module {
     private final String codeName;
     private final int release;
     private final SpecificationVersion version;
+    private InvalidException problem;
 
     public NetigsoModule(Manifest mani, File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
         super(mgr, ev, history, reloadable, autoload, eager);
@@ -188,6 +189,17 @@ final class NetigsoModule extends Module {
             throw new IllegalArgumentException("No classloader for " + getCodeNameBase()); // NOI18N
         }
         return classloader;
+    }
+
+    @Override
+    public Set<Object> getProblems() {
+        InvalidException ie = problem;
+        return ie == null ? Collections.emptySet() :
+            Collections.<Object>singleton(ie);
+    }
+    
+    final void setProblem(InvalidException ie) {
+        problem = ie;
     }
 
     @Override

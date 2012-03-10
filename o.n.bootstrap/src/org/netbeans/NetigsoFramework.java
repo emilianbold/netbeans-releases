@@ -214,7 +214,7 @@ public abstract class NetigsoFramework {
         getDefault().prepare(lkp, allModules);
         toEnable.clear();
         toEnable.trimToSize();
-        delayedInit();
+        delayedInit(mgr);
         Set<String> cnbs = framework.start(allModules);
         if (cnbs == null) {
             return Collections.emptySet();
@@ -229,7 +229,7 @@ public abstract class NetigsoFramework {
         return additional;
     }
 
-    private static boolean delayedInit() throws InvalidException {
+    private static boolean delayedInit(ModuleManager mgr) throws InvalidException {
         List<NetigsoModule> init;
         synchronized (NetigsoFramework.class) {
             init = toInit;
@@ -238,25 +238,22 @@ public abstract class NetigsoFramework {
                 return true;
             }
         }
-        InvalidException thrw = null;
+        Set<NetigsoModule> problematic = new HashSet<NetigsoModule>();
         for (NetigsoModule nm : init) {
             try {
                 nm.start();
             } catch (IOException ex) {
                 nm.setEnabled(false);
                 InvalidException invalid = new InvalidException(nm, ex.getMessage());
-                if (thrw == null) {
-                    invalid.initCause(ex);
-                } else {
-                    invalid.initCause(thrw);
-                }
-                thrw = invalid;
+                nm.setProblem(invalid);
+                problematic.add(nm);
             }
         }
-        if (thrw != null) {
-            throw thrw;
+        if (!problematic.isEmpty()) {
+            mgr.getEvents().log(Events.FAILED_INSTALL_NEW, problematic);
         }
-        return false;
+        
+        return problematic.isEmpty();
     }
 
     static synchronized void classLoaderUp(NetigsoModule nm) throws IOException {

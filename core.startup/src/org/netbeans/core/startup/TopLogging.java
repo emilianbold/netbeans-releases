@@ -144,14 +144,25 @@ public final class TopLogging {
 
         Collection<Logger> keep = new LinkedList<Logger>();
         for (Map.Entry<?, ?> e: System.getProperties().entrySet()) {
-            String key = (String)e.getKey();
+            Object objKey = e.getKey();
+            String key;
+            if (objKey instanceof String) {
+                key = (String)objKey;
+            } else {
+                continue;
+            }
 
             if ("sun.os.patch.level".equals(key)) { // NOI18N
                 // skip this property as it does not mean level of logging
                 continue;
             }
 
-            String v = (String)e.getValue();
+            String v;
+            if (e.getValue() instanceof String) {
+                v = (String)e.getValue();
+            } else {
+                continue;
+            }
 
             if (key.endsWith(".level")) {
                 ps.print(key);
@@ -934,6 +945,7 @@ public final class TopLogging {
         public LookupDel() {
             handlers = Lookup.getDefault().lookupResult(Handler.class);
             instances = handlers.allInstances();
+            instances.size(); // initialize
             handlers.addLookupListener(this);
         }
 
