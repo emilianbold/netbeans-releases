@@ -281,11 +281,16 @@ public class LockForFile extends FileLock {
 
     @Override
     public void releaseLock() {
+        releaseLock(true);
+    }
+    final void releaseLock(boolean notify) {
         LockForFile.deregisterLock(this);
         super.releaseLock();
-        FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-        if (fo instanceof BaseFileObj) {
-            ((BaseFileObj) fo).getProvidedExtensions().fileUnlocked(fo);
+        if (notify) {
+            FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fo instanceof BaseFileObj) {
+                ((BaseFileObj) fo).getProvidedExtensions().fileUnlocked(fo);
+            }
         }
     }
 

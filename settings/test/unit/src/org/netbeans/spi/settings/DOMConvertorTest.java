@@ -70,10 +70,14 @@ public class DOMConvertorTest extends NbTestCase {
     public DOMConvertorTest(String name) {
         super(name);
     }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
+    @Override
     protected void setUp() throws Exception {
-        super.setUp();
-        
         Lookup.getDefault().lookup(ModuleInfo.class);
     }
     

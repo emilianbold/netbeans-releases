@@ -86,7 +86,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File two = new File(one, "two");
         File three = new File(two, "three");
         three.mkdirs();
-        int res = Runtime.getRuntime().exec("ln -s " + two + " lnk", null, getWorkDir()).waitFor();
+        int res = makeSymlink(two, getWorkDir()).waitFor();
         assertEquals("Symlink is OK", 0, res);
         
         File l = new File(new File(getWorkDir(), "lnk"), "three");
@@ -106,7 +106,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File two = new File(one, "two");
         File three = new File(two, "three");
         three.mkdirs();
-        int res = Runtime.getRuntime().exec("ln -s " + three + " lnk", null, getWorkDir()).waitFor();
+        int res = makeSymlink(three, getWorkDir()).waitFor();
         assertEquals("Symlink is OK", 0, res);
         
         File l = new File(getWorkDir(), "lnk");
@@ -134,7 +134,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         File two = new File(one, "two");
         File three = new File(two, "three");
         three.mkdirs();
-        int res = Runtime.getRuntime().exec("ln -s " + two + " lnk", null, getWorkDir()).waitFor();
+        int res = makeSymlink(two, getWorkDir()).waitFor();
         assertEquals("Symlink is OK", 0, res);
         
         File l = new File(new File(getWorkDir(), "lnk"), "three");
@@ -160,7 +160,6 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
@@ -180,7 +179,7 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         StringBuilder up = new StringBuilder("../..");
         lnk = new File(three, "lnk");
         three.mkdirs();
-        int res = Runtime.getRuntime().exec("ln -s " + up + " lnk", null, three).waitFor();
+        int res = makeSymlink(up.toString(), three).waitFor();
         assertEquals("Symlink is OK", 0, res);
         assertTrue("It is directory", lnk.isDirectory());
         
@@ -188,9 +187,9 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         
         File newTxt = new File(two, "new.txt");
         newTxt.createNewFile();
-        
+
         FileUtil.toFileObject(two).getFileSystem().refresh(true);
-        
+
         assertEquals("One data created event", 1, cnt);
     }
 
@@ -203,17 +202,23 @@ public class CyclicSymlinkTest extends NbTestCase implements FileChangeListener 
         three.mkdirs();
         independent.mkdirs();
         
-        int res = Runtime.getRuntime().exec("ln -s " + independent + " lnk", null, three).waitFor();
+        int res = makeSymlink( independent, three).waitFor();
         assertEquals("Symlink is OK", 0, res);
         assertTrue("It is directory", lnk.isDirectory());
         
         FileUtil.addRecursiveListener(this, one);
-
         File newTxt = new File(independent, "new.txt");
         newTxt.createNewFile();
-        
+
         FileUtil.toFileObject(two).getFileSystem().refresh(true);
-        
+
         assertEquals("One data created event", 1, cnt);
+    }
+
+    private Process makeSymlink(File orig, File where) throws IOException {
+        return makeSymlink(orig.getPath(), where);
+    }
+    private Process makeSymlink(String orig, File where) throws IOException {
+        return Runtime.getRuntime().exec("/bin/ln -s " + orig + " lnk", null, where);
     }
 }

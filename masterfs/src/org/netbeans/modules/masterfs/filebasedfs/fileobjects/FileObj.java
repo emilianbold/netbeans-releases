@@ -357,8 +357,13 @@ public class FileObj extends BaseFileObj {
             FSException.io("EXC_CannotLock", me);
         }
         try {            
-            final FileLock result = LockForFile.tryLock(me);
-            getProvidedExtensions().fileLocked(this);
+            LockForFile result = LockForFile.tryLock(me);
+            try {
+                getProvidedExtensions().fileLocked(this);
+            } catch (IOException ex) {
+                result.releaseLock(false);
+                throw ex;
+            }
             return result;
         } catch (FileNotFoundException ex) {
             FileNotFoundException fex = ex;                        

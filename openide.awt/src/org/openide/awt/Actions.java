@@ -1775,6 +1775,7 @@ public class Actions {
         @Override
         public void resultChanged(LookupEvent ev) {
             all = result.allInstances();
+            all.iterator().hasNext();
         }
 
     }

@@ -45,21 +45,19 @@
 package org.netbeans.performance.mobility.actions;
 
 import java.io.IOException;
-import org.openide.util.Exceptions;
-
-import org.netbeans.modules.performance.utilities.PerformanceTestCase;
-import org.netbeans.performance.mobility.setup.MobilitySetup;
-
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.ProjectsTabOperator;
+import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
-import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.performance.utilities.PerformanceTestCase;
+import org.netbeans.performance.mobility.setup.MobilitySetup;
+import org.openide.util.Exceptions;
 
 /**
  * Test Open Mobile project

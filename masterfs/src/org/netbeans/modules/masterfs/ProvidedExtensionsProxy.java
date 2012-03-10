@@ -58,6 +58,7 @@ import org.netbeans.modules.masterfs.providers.InterceptionListener;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions.IOHandler;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 
 /**
  *
@@ -249,16 +250,18 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
         }
     }
 
-    public void fileLocked(final FileObject fo) {
+    @Override
+    public void fileLocked(final FileObject fo) throws IOException {
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
             if (iListener instanceof ProvidedExtensions) {
-                runCheckCode(new Runnable() {
-                    public void run() {
-                        ((ProvidedExtensions)iListener).fileLocked(fo);
+                runCheckCode(new FileSystem.AtomicAction() {
+                    @Override
+                    public void run() throws IOException {
+                        ((ProvidedExtensions) iListener).fileLocked(fo);
                     }
-                });                                                
+                });
             }
         }
     }
@@ -461,6 +464,14 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
         
     private static void runCheckCode(Runnable code) {
+        try {
+            reentrantCheck.set(Boolean.TRUE);
+            code.run();
+        } finally {
+            reentrantCheck.set(null);
+        }
+    }
+    private static void runCheckCode(FileSystem.AtomicAction code) throws IOException {
         try {
             reentrantCheck.set(Boolean.TRUE);
             code.run();
