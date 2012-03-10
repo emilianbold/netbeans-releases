@@ -43,10 +43,14 @@
  */
 package org.netbeans.modules.cnd.refactoring.plugins;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
@@ -82,6 +86,8 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -110,7 +116,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         if (referencedObject == null) {
             return null;
         }
-        Collection<RefactoringElementImplementation> res = doPrepareElements(referencedObject);
+        Collection<RefactoringElementImplementation> res = doPrepareElements(referencedObject, elements);
         if (res != null) {
             elements.addAll(refactoring, res);
         }
@@ -118,7 +124,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         return null;
     }
 
-    /*package*/ Collection<RefactoringElementImplementation> doPrepareElements(CsmObject referencedObject) {
+    /*package*/ Collection<RefactoringElementImplementation> doPrepareElements(CsmObject referencedObject, RefactoringElementsBag bagToAdd) {
         Collection<RefactoringElementImplementation> res = null;
         referencedObject = CsmRefactoringUtils.convertToCsmObjectIfNeeded(referencedObject);
         if (referencedObject == null) {
@@ -142,7 +148,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 }
                 LOG.log(Level.INFO, "preparing files took {0}ms", System.currentTimeMillis() - time);
                 fireProgressListenerStart(ProgressEvent.START, files.size() + 2);
-                res = processObjectUsagesQuery(referencedObjects, files);
+                res = processObjectUsagesQuery(referencedObjects, files, bagToAdd);
             }
         } else if (isFindDirectSubclassesOnly() || isFindSubclasses()) {
             assert CsmKindUtilities.isClass(referencedObject) : "must be class";
@@ -311,11 +317,11 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
     
     private Collection<RefactoringElementImplementation> processObjectUsagesQuery(
                                                             final Collection<CsmObject> csmObjects,            
-                                                            final Collection<CsmFile> files) {
+                                                            final Collection<CsmFile> files,
+                                                            final RefactoringElementsBag bagToAdd) {
         assert isFindUsages() : "must be find usages mode";
         final boolean onlyUsages = !isFindOverridingMethods();
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
-        final Collection<RefactoringElementImplementation> elements = new ConcurrentLinkedQueue<RefactoringElementImplementation>();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
         final CsmObject[] objs = csmObjects.toArray(new CsmObject[csmObjects.size()]);
@@ -326,45 +332,121 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             }
         };
         RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
-        final CountDownLatch waitFinished = new CountDownLatch(files.size());
-        for (final CsmFile file : files) {
-            Runnable task = new Runnable() {
-                @Override
-                public void run() {
+        
+        List<CsmFile> sortedFiles = new ArrayList<CsmFile>(files);
+        Collections.sort(sortedFiles, new Comparator<CsmFile>() {
+            @Override
+            public int compare(CsmFile o1, CsmFile o2) {
+                CsmProject prj1 = o1.getProject();
+                CsmProject prj2 = o2.getProject();
+                if (prj1 == null || prj2 == null || prj1.equals(prj2)) {
+                    return CharSequences.comparator().compare(o1.getName(), o2.getName());
+                } else {
+                    return CharSequences.comparator().compare(prj1.getName(), prj2.getName());
+                }
+            }
+        });
+        long time = System.currentTimeMillis();
+        LOG.log(Level.FINE, "sorting {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
+        final List<OneFileWorker> work = new ArrayList<OneFileWorker>(sortedFiles.size());
+        for (final CsmFile file : sortedFiles) {
+            OneFileWorker task = new OneFileWorker(interrupter, file, onlyUsages, xRef, kinds, objs);
+            work.add(task);
+            rp.post(task);
+        }
+
+        final Collection<RefactoringElementImplementation> elements = new ArrayList<RefactoringElementImplementation>(work.size()*2);
+        int indexNonEmpty = 0;
+        int total = 0;
+        // wait files one by one
+        // we need sorted output to support Background mode without insertions between tree nodes
+        for (OneFileWorker workUnit : work) {
+            if (isCancelled()) {
+                break;
+            }
+            Collection<RefactoringElementImplementation> exposedElements = workUnit.exposedElements;
+            while (exposedElements == null) {
+                if (isCancelled()) {
+                    break;
+                }
+                synchronized (workUnit) {
+                    exposedElements = workUnit.exposedElements;
+                    if (exposedElements == null) {
+                        try {
+                            workUnit.wait();
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            assert exposedElements != null || isCancelled();
+            if (exposedElements != null && !exposedElements.isEmpty()) {
+                if (bagToAdd == null) {
+                    elements.addAll(exposedElements);
+                } else {
+                    synchronized (bagToAdd) {
+                        bagToAdd.addAll(refactoring, exposedElements);
+                    }
+                }
+                total += exposedElements.size();
+                LOG.log(Level.FINE, "[{0}/{1}] {2}", new Object[] {++indexNonEmpty, total, workUnit.file.getAbsolutePath()});
+            }
+        }
+        return elements;
+    }
+    
+    private final class OneFileWorker implements Runnable {
+        final Interrupter interrupter;
+        private final CsmFile file;
+        private volatile Collection<RefactoringElementImplementation> exposedElements = null;
+        private final boolean onlyUsages;
+        private final CsmReferenceRepository xRef;
+        private final Set<CsmReferenceKind> kinds;
+        private final CsmObject[] objs;
+
+        public OneFileWorker(Interrupter interrupter, CsmFile file, boolean onlyUsages, CsmReferenceRepository xRef, Set<CsmReferenceKind> kinds, CsmObject[] objs) {
+            this.interrupter = interrupter;
+            this.file = file;
+            this.onlyUsages = onlyUsages;
+            this.xRef = xRef;
+            this.kinds = kinds;
+            this.objs = objs;
+        }
+
+        @Override
+        public void run() {
+            Collection<RefactoringElementImplementation> fileElems = Collections.emptyList();
+            try {
+                if (!isCancelled()) {
+                    String oldName = Thread.currentThread().getName();
                     try {
-                        if (!isCancelled()) {
-                            String oldName = Thread.currentThread().getName();
-                            try {
-                                Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
-                                Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
-                                for (CsmReference csmReference : refs) {
-                                    boolean accept = true;
-                                    if (onlyUsages) {
-                                        accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
-                                    }
-                                    if (accept) {
-                                        elements.add(CsmRefactoringElementImpl.create(csmReference, true));
-                                    }
-                                }
-                            } finally {
-                                Thread.currentThread().setName(oldName);
+                        Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                        Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
+                        fileElems = new ArrayList<RefactoringElementImplementation>(refs.size());
+                        for (CsmReference csmReference : refs) {
+                            boolean accept = true;
+                            if (onlyUsages) {
+                                accept = !CsmReferenceResolver.getDefault().isKindOf(csmReference, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
                             }
-                            synchronized (CsmWhereUsedQueryPlugin.this) {
-                                fireProgressListenerStep();
+                            if (accept) {
+                                fileElems.add(CsmRefactoringElementImpl.create(csmReference, true));
                             }
                         }
                     } finally {
-                        waitFinished.countDown();
+                        Thread.currentThread().setName(oldName);
+                    }
+                    synchronized (CsmWhereUsedQueryPlugin.this) {
+                        fireProgressListenerStep();
                     }
                 }
-            };
-            rp.post(task);
+            } finally {
+                synchronized (this) {
+                    this.exposedElements = fileElems;
+                    notifyAll();
+                }
+            }
         }
-        try {
-            waitFinished.await();
-        } catch (InterruptedException ex) {
-        }
-        return elements;
     }
     
     private Collection<RefactoringElementImplementation> processOverridenMethodsQuery(final CsmMethod startMethod) {
