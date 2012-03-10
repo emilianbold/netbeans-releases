@@ -117,20 +117,20 @@ public final class DeepReparsingUtils {
      * Reparse including/included files at fileImpl content changed.
      */
     public static void tryPartialReparseOnChangedFile(final ProjectBase project, final FileImpl fileImpl) {
-        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-            LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            reparseOnlyOneFile(project, fileImpl);
-        } else {
-            if (true) {
-                reparseOnChangedFileImpl(project, fileImpl, true);
-                return;
-            }
+        if (TraceFlags.USE_PARTIAL_REPARSE) {
             if (TRACE) {
                 LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             }
             project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
             fileImpl.markReparseNeeded(false);
             ParserQueue.instance().addForPartialReparse(fileImpl);
+        } else {
+            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+                reparseOnlyOneFile(project, fileImpl);
+            } else {
+                reparseOnChangedFileImpl(project, fileImpl, true);
+            }
         }
     }
 
@@ -140,6 +140,10 @@ public final class DeepReparsingUtils {
                 LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
             }
             return true;
+        } else if (TRACE) {
+            LOG.log(Level.INFO, "partial reparseOnChangedFile results in changed signature for {0}:\n{1}", 
+                    new Object[] { fileImpl.getAbsolutePath(), FileContentSignature.testDifference(newSignature, lastFileBasedSignature)}
+                    );
         }
         // signature have changed => full reparse is needed
         DeepReparsingUtils.fullReparseOnChangedFile(fileImpl.getProjectImpl(true), fileImpl);
