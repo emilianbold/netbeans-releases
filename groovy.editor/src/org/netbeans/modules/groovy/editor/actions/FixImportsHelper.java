@@ -41,31 +41,31 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
-import java.util.MissingResourceException;
-import javax.swing.text.BadLocationException;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.logging.Level;
-import org.openide.filesystems.FileObject;
-import java.util.List;
-import org.netbeans.api.java.source.ClasspathInfo;
-import java.util.ArrayList;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import java.util.Set;
-import java.util.EnumSet;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,7 +73,7 @@ import org.netbeans.modules.groovy.editor.api.NbUtilities;
  */
 public class FixImportsHelper {
 
-    private final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
 
     public static class ImportCandidate {
 
@@ -123,7 +123,7 @@ public class FixImportsHelper {
     }
 
     public List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
-        LOG.log(Level.FINEST, "Looking for class: " + missingClass);
+        LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
         
@@ -134,6 +134,28 @@ public class FixImportsHelper {
             return result;
         }
 
+        if (fo != null) {
+            GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                    Collections.singleton(ClassPath.SOURCE),
+                    Collections.<String>emptyList(),
+                    Collections.<String>emptyList()));
+            if (index != null) {
+                Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
+                for (IndexedClass indexedClass : classes) {
+                    if (!indexedClass.getName().equals(missingClass)) {
+                        continue;
+                    }
+
+                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
+                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.CLASS, result);
+                    }
+                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.INTERFACE) {
+                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.INTERFACE, result);
+                    }
+                }
+            }
+        }
+
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
                 missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
@@ -141,35 +163,29 @@ public class FixImportsHelper {
             ElementKind ek = typeName.getKind();
 
             if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
-                String fqnName = typeName.getQualifiedName();
-                LOG.log(Level.FINEST, "Found     : " + fqnName);
-
-                Icon icon = ElementIcons.getElementIcon(ek, null);
-                int level = getImportanceLevel(fqnName);
-
-                ImportCandidate candidate = new ImportCandidate(missingClass, fqnName, icon, level);
-                result.add(candidate);
+                addAsImportCandidate(missingClass, typeName.getQualifiedName(), ek, result);
             }
-
         }
 
         return result;
+    }
 
+    private void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
+        int level = getImportanceLevel(fqnName);
+        Icon icon = ElementIcons.getElementIcon(kind, null);
+        
+        result.add(new ImportCandidate(missingClass, fqnName, icon, level));
     }
 
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
-        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
-        {
+        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) { // NOI18N
             weight -= 10;
-        } else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) // NOI18N
-        {
+        } else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) { // NOI18N
             weight += 10;
-        } else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) // NOI18N
-        {
+        } else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) { // NOI18N
             weight += 20;
-        } else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
-        {
+        } else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) { // NOI18N
             weight += 30;
         }
         return weight;
@@ -257,22 +273,19 @@ public class FixImportsHelper {
         }
 
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
-
     }
 
     public void doImport(FileObject fo, String fqnName) throws MissingResourceException {
-        int firstFreePosition = 0;
         BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
 
-        firstFreePosition = getImportPosition(baseDoc);
-
+        int firstFreePosition = getImportPosition(baseDoc);
         if (firstFreePosition != -1) {
             if (baseDoc == null) {
                 return;
             }
 
             EditList edits = new EditList(baseDoc);
-            LOG.log(Level.FINEST, "Importing here: " + firstFreePosition);
+            LOG.log(Level.FINEST, "Importing here: {0}", firstFreePosition);
 
             edits.replace(firstFreePosition, 0, "import " + fqnName + "\n", false, 0);
             edits.apply();

@@ -44,8 +44,7 @@ package org.netbeans.modules.bugtracking.issuetable;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import org.netbeans.modules.bugtracking.issuetable.Filter;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -91,8 +90,8 @@ final class SummaryTextFilter extends Filter {
     }
 
     @Override
-    public boolean accept(IssueProvider issue) {
-        return pattern.matcher(issue.getSummary()).find();
+    public boolean accept(IssueNode node) {
+        return pattern.matcher(node.getIssue().getSummary()).find();
     }
 
     boolean isHighLightingOn() {

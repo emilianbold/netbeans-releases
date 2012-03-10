@@ -65,7 +65,7 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.declarative.APIAccessor;
 import org.netbeans.modules.java.hints.declarative.Hacks;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *

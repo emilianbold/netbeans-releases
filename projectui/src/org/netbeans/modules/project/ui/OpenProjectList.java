@@ -83,6 +83,7 @@ import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -119,6 +120,7 @@ import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -606,17 +608,24 @@ public final class OpenProjectList {
         "# {0} - project path", "OpenProjectList.deleted_project={0} seems to have been deleted."
     })
     public void open(Project[] projects, boolean openSubprojects, ProgressHandle handle, AtomicBoolean canceled) {
-        assert !Arrays.asList(projects).contains(null) : "Projects can't be null";
         LOAD.waitFinished();
             
+        List<Project> toHandle = new LinkedList<Project>();
+
         pchSupport.firePropertyChange(PROPERTY_WILL_OPEN_PROJECTS, null, projects);
-        for (int i = 0; i < projects.length; i++) {
+        for (Project p : projects) {
+            Parameters.notNull("projects", p);
             try {
-                projects[i] = ProjectManager.getDefault().findProject(projects[i].getProjectDirectory());
+                Project p2 = ProjectManager.getDefault().findProject(p.getProjectDirectory());
+                if (p2 != null) {
+                    toHandle.add(p2);
+                } else {
+                    LOGGER.log(Level.WARNING, "Project in {0} disappeared", p.getProjectDirectory());
+                }
             } catch (IOException ex) {
-                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+                LOGGER.log(Level.INFO, "Cannot convert " + p.getProjectDirectory(), ex);
             } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.INFO, "Cannot convert " + projects[i].getProjectDirectory(), ex);
+                LOGGER.log(Level.INFO, "Cannot convert " + p.getProjectDirectory(), ex);
             }
         }
             
@@ -635,8 +644,6 @@ public final class OpenProjectList {
         
         Map<Project,Set<? extends Project>> subprojectsCache = new HashMap<Project,Set<? extends Project>>(); // #59098
 
-        List<Project> toHandle = new LinkedList<Project>(Arrays.asList(projects));
-        
         while (!toHandle.isEmpty()) {
             if (canceled != null && canceled.get()) {
                 break;
@@ -1309,8 +1316,8 @@ public final class OpenProjectList {
                
     }
 
-    static boolean isRecommended (String[] recommendedTypes, FileObject primaryFile) {
-        if (recommendedTypes == null || recommendedTypes.length == 0) {
+    static boolean isRecommended(@NonNull String[] recommendedTypes, @NonNull FileObject primaryFile) {
+        if (recommendedTypes.length == 0) {
             // if no recommendedTypes are supported (i.e. freeform) -> disaply all templates
             return true;
         }
@@ -1337,12 +1344,12 @@ public final class OpenProjectList {
      * loop because it may scan project files to resolve its type which is time
      * consuming.
      */
-    static String[] getRecommendedTypes(Project project) {
+    static @NonNull String[] getRecommendedTypes(@NullAllowed Project project) {
         if (project == null) {
-            return null;
+            return new String[0];
         }
         RecommendedTemplates rt = project.getLookup().lookup(RecommendedTemplates.class);
-        return rt == null ? null :rt.getRecommendedTypes();
+        return rt == null ? new String[0] : rt.getRecommendedTypes();
     }
     
     private static List<String> getCategories (String source) {

@@ -281,7 +281,8 @@ Other names may be trademarks of their respective owners.
 <mapID target="org.netbeans.modules.search.SearchPanel.false" url="files/csh/search_projects.html" />    
 <mapID target="org.netbeans.modules.search.SearchPanel.true" url="files/csh/replace_in_projects.html" /> 
 
-        
+     <!--ID for Select The Diff Patch dialog box (Tools > Apply Diff patch); issue 208834:-->
+<mapID target="org.netbeans.modules.diff.PatchAction" url="files/csh/select_diff_patch_db.html" /> 
     
     
   <!--Remove ID; issue 54895:-->

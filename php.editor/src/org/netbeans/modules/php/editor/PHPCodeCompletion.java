@@ -41,19 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
-import org.netbeans.modules.php.editor.api.AliasedName;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -66,50 +54,30 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport.Kind;
-import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
-import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
+import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
+import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToASTOffset;
+import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.PHPCompletionItem.FieldItem;
+import org.netbeans.modules.php.editor.PHPCompletionItem.MethodElementItem;
 import org.netbeans.modules.php.editor.PHPCompletionItem.TypeConstantItem;
-import org.netbeans.modules.php.editor.api.ElementQueryFactory;
-import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Prefix;
-import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.elements.ClassElement;
-import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
-import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-import org.netbeans.modules.php.editor.api.elements.PhpElement;
-import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.model.ModelElement;
-import org.netbeans.modules.php.editor.model.ModelUtils;
-import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.ParameterInfoSupport;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.QualifiedNameKind;
+import org.netbeans.modules.php.editor.api.*;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
-import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.api.elements.FunctionElement;
-import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.api.elements.VariableElement;
+import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
-import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.VariableName;
-import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.indent.CodeStyle;
+import org.netbeans.modules.php.editor.lexer.LexUtilities;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.options.CodeCompletionPanel.VariablesScope;
 import org.netbeans.modules.php.editor.options.OptionsUtils;
@@ -118,11 +86,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
-import static org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
-import static org.netbeans.modules.php.editor.CompletionContextFinder.lexerToASTOffset;
-import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 
 /**
  *
@@ -355,7 +318,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     autoCompleteInterfaceNames(completionResult, request);
                     break;
                 case USE_KEYWORD:
-                    autoCompleteAfterUses(completionResult, request, QualifiedNameKind.QUALIFIED, false);
+                    CodeStyle codeStyle = CodeStyle.get(request.result.getSnapshot().getSource().getDocument(caseSensitive));
+                    autoCompleteAfterUses(completionResult, request, codeStyle.startUseWithNamespaceSeparator() ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.QUALIFIED, false);
                     break;
                 case TYPE_NAME:
                     autoCompleteNamespaces(completionResult, request);
@@ -724,11 +688,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             if (enclosingClass != null) {
                 List<ElementFilter> superTypeIndices = createTypeFilter(enclosingClass);
                 String clsName = enclosingClass.getName().getName();
-                if (clsName != null) {
+                NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(request.result.getModel().getFileScope(), request.anchor);
+                String fullyQualifiedClassName = VariousUtils.qualifyTypeNames(clsName, request.anchor, namespaceScope);
+                if (fullyQualifiedClassName != null) {
                     final FileObject fileObject = request.result.getSnapshot().getSource().getFileObject();
                     final ElementFilter classFilter = ElementFilter.allOf(
                             ElementFilter.forFiles(fileObject), ElementFilter.allOf(superTypeIndices));
-                    Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(clsName)));
+                    Set<ClassElement> classes = classFilter.filter(request.index.getClasses(NameKind.exact(fullyQualifiedClassName)));
                     for (ClassElement classElement : classes) {
                         ElementFilter methodFilter = ElementFilter.allOf(
                                 ElementFilter.forExcludedNames(toNames(request.index.getDeclaredMethods(classElement)), PhpElementKind.METHOD),
@@ -789,12 +755,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             Model model = request.result.getModel();
-            Collection<? extends TypeScope> types = Collections.emptyList();
 
             if (staticContext && varName.startsWith("$")) {
                 return;
             }
-            types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
+            Collection<? extends TypeScope> types = ModelUtils.resolveTypeAfterReferenceToken(model, tokenSequence, request.anchor);
             boolean selfContext  = false;
             boolean staticLateBindingContext = false;
             if (varName.equals("self")) { //NOI18N
@@ -1248,10 +1213,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (ts == null) {
             return QueryType.STOP;
         }
-       Token t = null;
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
-            t = ts.token();
+            Token t = ts.token();
             if (OptionsUtils.autoCompletionTypes()) {
                 if (lastChar == ' ' || lastChar == '\t'){
                     if (ts.movePrevious()

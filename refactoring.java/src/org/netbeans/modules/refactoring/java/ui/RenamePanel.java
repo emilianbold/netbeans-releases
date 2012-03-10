@@ -119,7 +119,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return;
         }
 
-        if (handle!=null && (handle.getElementHandle().getKind() == ElementKind.FIELD
+        if (handle!=null && handle.getElementHandle() != null && (handle.getElementHandle().getKind() == ElementKind.FIELD
                 || handle.getElementHandle().getKind() == ElementKind.CLASS)) {
             JavaSource source = JavaSource.forFileObject(handle.getFileObject());
             CancellableTask<CompilationController> task = new CancellableTask<CompilationController>() {

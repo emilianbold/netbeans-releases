@@ -77,7 +77,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         setExplicit(_explicit);
     }
 
-    public static<T> MethodImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
+    public static <T> MethodImpl<T> create(AST ast, final CsmFile file, FileContent fileContent, ClassImpl cls, CsmVisibility visibility, boolean global) throws AstRendererException {
         CsmScope scope = cls;
         
         int startOffset = getStartOffset(ast);
@@ -111,7 +111,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         scope = AstRenderer.FunctionRenderer.getScope(scope, file, _static, false);
 
-        MethodImpl methodImpl = new MethodImpl(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);        
+        MethodImpl<T> methodImpl = new MethodImpl<T>(name, rawName, cls, visibility, _virtual, _explicit, _static, _const, file, startOffset, endOffset, global);
         temporaryRepositoryRegistration(global, methodImpl);
         
         StringBuilder clsTemplateSuffix = new StringBuilder();

@@ -62,7 +62,6 @@ import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpProgram;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.Pair;
-import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -244,7 +243,17 @@ class ConfigActionTest extends ConfigAction {
         if (!fileObj.isValid()) {
             return null;
         }
-        return new PhpUnitTestRunInfo(fileObj.getParent(), fileObj, fileObj.getName());
+        final FileObject workDir;
+        final String name;
+        if (fileObj.isFolder()) {
+            // #195525 - run tests in folder
+            workDir = fileObj;
+            name = fileObj.getNameExt();
+        } else {
+            workDir = fileObj.getParent();
+            name = fileObj.getName();
+        }
+        return new PhpUnitTestRunInfo(workDir, fileObj, name);
     }
 
     private class RunScriptProvider implements RunScript.Provider {

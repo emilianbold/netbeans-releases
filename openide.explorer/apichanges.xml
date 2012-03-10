@@ -50,6 +50,25 @@ made subject to such option by the copyright holder.
 <apidef name="explorer">Explorer API</apidef>
 </apidefs>
 <changes>
+    <change id="OutlineView_with_quicksearch">
+        <api name="explorer"/>
+        <summary>QuickSearch attached to OutlineView</summary>
+        <version major="6" minor="43"/>
+        <date day="8" month="3" year="2012"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" deprecation="no" deletion="no" addition="yes"/>
+        <description>
+            Added <a href="@TOP@/org/openide/explorer/view/OutlineView.html#isQuickSearchAllowed()">OutlineView.isQuickSearchAllowed()</a>,
+            <a href="@TOP@/org/openide/explorer/view/OutlineView.html#setQuickSearchAllowed(boolean)">OutlineView.setQuickSearchAllowed()</a>
+            and <a href="@TOP@/org/openide/explorer/view/OutlineView.html#setQuickSearchTableFilter(org.openide.explorer.view.QuickSearchTableFilter, boolean)">OutlineView.setQuickSearchTableFilter()</a>
+            methods to control quick search functionality on OutlineView.
+            Interface <a href="@TOP@/org/openide/explorer/view/QuickSearchTableFilter.html">QuickSearchTableFilter</a>
+            introduced to provide custom table cell data for quick search.
+        </description>
+        <class package="org.openide.explorer.view" name="OutlineView"/>
+        <class package="org.openide.explorer.view" name="QuickSearchTableFilter"/>
+        <issue number="110686"/>
+    </change>
     <change id="PropertyEnv.create">
         <api name="explorer"/>
         <summary>API method for creating a PropertyEnv instance</summary>

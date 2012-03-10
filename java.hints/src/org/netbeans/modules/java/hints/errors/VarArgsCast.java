@@ -58,10 +58,11 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -104,8 +105,8 @@ public class VarArgsCast implements ErrorRule<Void> {
         ArrayType targetArray = (ArrayType) methodType.getParameterTypes().get(methodType.getParameterTypes().size() - 1);
         TreePath target = new TreePath(call, mit.getArguments().get(mit.getArguments().size() - 1));
         
-        return Arrays.asList(JavaFix.toEditorFix(new FixImpl(info, target, targetArray.getComponentType())),
-                             JavaFix.toEditorFix(new FixImpl(info, target, targetArray)));
+        return Arrays.asList(new FixImpl(info, target, targetArray.getComponentType()).toEditorFix(),
+                             new FixImpl(info, target, targetArray).toEditorFix());
     }
 
     @Override
@@ -142,7 +143,9 @@ public class VarArgsCast implements ErrorRule<Void> {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             TypeMirror targetType = this.type.resolve(wc);
             
             if (targetType == null) {
@@ -153,7 +156,7 @@ public class VarArgsCast implements ErrorRule<Void> {
             TreeMaker make = wc.getTreeMaker();
             ExpressionTree nue = make.TypeCast(make.Type(targetType), (ExpressionTree) tp.getLeaf());
             
-            if (requiresParenthesis(tp.getLeaf(), tp.getLeaf(), nue)) {
+            if (JavaFixUtilities.requiresParenthesis(tp.getLeaf(), tp.getLeaf(), nue)) {
                 nue = make.TypeCast(make.Type(targetType), make.Parenthesized((ExpressionTree) tp.getLeaf()));
             }
             

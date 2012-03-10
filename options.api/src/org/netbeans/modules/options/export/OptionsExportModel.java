@@ -59,16 +59,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.*;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  * Model for export/import options. It reads {@code OptionsExport/<category>/<item>}
@@ -174,6 +175,45 @@ public final class OptionsExportModel {
     void doImport(File targetUserdir) throws IOException {
         LOGGER.fine("Copying from: " + source + "\n    to: " + targetUserdir);  //NOI18N
         this.targetUserdir = targetUserdir;
+        FileUtil.getConfigRoot().addRecursiveListener(new FileChangeListener() {
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = Preferences.userRoot().node(path);
+            }
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+            }
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+            }
+
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                String path = fe.getFile().getPath();
+                Preferences pref = NbPreferences.root().node("config").node(path);
+                try {
+                    pref.removeNode();
+                } catch (BackingStoreException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+            @Override
+            public void fileRenamed(FileRenameEvent fe) {
+            }
+
+            @Override
+            public void fileAttributeChanged(FileAttributeEvent fe) {
+            }
+        });
         copyFiles();
     }
 

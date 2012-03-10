@@ -58,6 +58,7 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.Preferences;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -125,6 +126,8 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private transient JToggleButton logicalViewButton = null;
     private transient JToggleButton physicalViewButton = null;
     private transient JToggleButton customViewButton = null;
+    private JButton stopButton;
+
     private transient ProgressListener progressListener;
 
     private transient JButton prevMatch = null;
@@ -132,6 +135,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     private WeakReference<TopComponent> refCallerTC;
     private boolean inited = false;
     private Component customComponent;
+    private AtomicBoolean cancelRequest = new AtomicBoolean();
 
     
     static Image PACKAGE_BADGE = ImageUtilities.loadImage( "org/netbeans/spi/java/project/support/ui/packageBadge.gif" ); // NOI18N
@@ -323,6 +327,18 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
             NbBundle.getMessage(RefactoringPanel.class, "HINT_prevMatch") // NOI18N
         );
         prevMatch.addActionListener(getButtonListener());
+
+                stopButton = new JButton(
+            ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/stop.png", false));
+        
+        stopButton.setMaximumSize(dim);
+        stopButton.setMinimumSize(dim);
+        stopButton.setPreferredSize(dim);
+        stopButton.setToolTipText(
+            NbBundle.getMessage(RefactoringPanel.class, "HINT_stop") // NOI18N
+        );
+        stopButton.addActionListener(getButtonListener());
+        
         
         toolBar.add(refreshButton);
         toolBar.add(expandButton);
@@ -333,6 +349,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         }
         toolBar.add(prevMatch);
         toolBar.add(nextMatch);
+        toolBar.add(stopButton);
         
         return toolBar;
     }
@@ -488,7 +505,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
     }
     
     private boolean isInstant() {
-        return ParametersPanel.isInstant() && isQuery;
+        return parametersPanel!=null &&  parametersPanel.isBackgroundQuery();
     }
 
     /**
@@ -657,6 +674,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
         
         initialize();
 
+        cancelRequest.set(false);
+        stopButton.setVisible(isInstant());
+        stopButton.setEnabled(true);
         final String description = ui.getDescription();
         setToolTipText("<html>" + description + "</html>"); // NOI18N
         final Collection<RefactoringElement> elements = session.getRefactoringElements();
@@ -691,7 +711,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                             }
                         }
                     }
-                    StringBuffer errorsDesc = getErrorDesc(errorsNum);
+                    StringBuffer errorsDesc = getErrorDesc(errorsNum, isInstant()?0:elements.size());
                     final CheckNode root = new CheckNode(ui, description + errorsDesc.toString(),ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/api/resources/" + (isQuery ? "findusages.png" : "refactoring.gif"), false));
                     final Map<Object, CheckNode> nodes = new HashMap<Object, CheckNode>();
                     
@@ -713,6 +733,9 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                 createNode(TreeElementFactory.getTreeElement(e), nodes, root);
                                 
                                 if (isInstant() && showParametersPanel) {
+                                    if (cancelRequest.get()) {
+                                        break;
+                                    }
                                     tree.expandRow(0);
 
                                     final int in = i;
@@ -737,12 +760,19 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                                             Exceptions.printStackTrace(ex);
                                         }
                                     }
-                                    if (i % 50 == 0) {
+                                    final boolean last = !it.hasNext();
+                                    if (i % 10 == 0 || last) {
+                                        final int occurrences = i;
                                         SwingUtilities.invokeLater(new Runnable() {
 
                                             @Override
                                             public void run() {
-                                                root.setNodeLabel(description + getErrorDesc(0));
+                                                root.setNodeLabel(description + getErrorDesc(0, occurrences));
+                                                if (last) {
+                                                    stopButton.setEnabled(false);
+                                                    tree.repaint();
+                                                }
+                                                
                                             }
                                         });
                                     }
@@ -778,8 +808,7 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                     
                 }
 
-                private StringBuffer getErrorDesc(int errorsNum) throws MissingResourceException {
-                    int occurencesNum = elements.size();
+                private StringBuffer getErrorDesc(int errorsNum, int occurencesNum) throws MissingResourceException {
                     StringBuffer errorsDesc = new StringBuffer();
                     errorsDesc.append(" [" + occurencesNum); // NOI18N
                     errorsDesc.append(' ');
@@ -1009,6 +1038,10 @@ public class RefactoringPanel extends JPanel implements InvalidationListener {
                 selectNextUsage();
             } else if (o == prevMatch) {
                 selectPrevUsage();
+            } else if (o == stopButton) {
+                stopButton.setEnabled(false);
+                cancelRequest.set(true);
+                ui.getRefactoring().cancelRequest();
             }
         }
     } // end ButtonL

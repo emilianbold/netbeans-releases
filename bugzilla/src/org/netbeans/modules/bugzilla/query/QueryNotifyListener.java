@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 
 /**
  * Notifies changes on a query
@@ -59,7 +59,7 @@ public interface QueryNotifyListener {
      *
      * @param issue
      */
-    public void notifyData(IssueProvider issue);
+    public void notifyData(BugzillaIssue issue);
 
     /**
      * Query execution was finished

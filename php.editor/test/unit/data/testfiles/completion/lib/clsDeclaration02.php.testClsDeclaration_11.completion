@@ -13,6 +13,7 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
@@ -43,6 +44,7 @@ PACKAGE    XUser                           [PUBLIC]   null
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
+PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit

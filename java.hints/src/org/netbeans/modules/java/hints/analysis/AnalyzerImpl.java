@@ -54,21 +54,21 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JPanel;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
-import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Folder;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.Resource;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.ProgressHandleWrapper;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
-import org.netbeans.modules.java.hints.jackpot.impl.refactoring.Utilities.ClassPathBasedHintWrapper;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Kind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Folder;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.Resource;
+import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
+import org.netbeans.modules.java.hints.spiimpl.batch.Scopes;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
+import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
@@ -88,9 +88,9 @@ public class AnalyzerImpl implements Analyzer {
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
 
-        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
+        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
             //XXX: should check settings, whether this hint is enabled or not
-            if (e.getKey().kind != Kind.HINT) continue;
+            if (e.getKey().kind != Kind.INSPECTION) continue;
             if (e.getKey().options.contains(Options.NO_BATCH)) continue;
             if (!HintsSettings.isEnabled(e.getKey())) continue;
 
@@ -127,7 +127,7 @@ public class AnalyzerImpl implements Analyzer {
     public Iterable<? extends WarningDescription> getWarnings() {
         List<WarningDescription> result = new ArrayList<WarningDescription>();
 
-        for (Entry<HintMetadata, Collection<? extends HintDescription>> e : RulesManager.getInstance().allHints.entrySet()) {
+        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
             String displayName = e.getKey().displayName;
             String category = e.getKey().category;
             FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);

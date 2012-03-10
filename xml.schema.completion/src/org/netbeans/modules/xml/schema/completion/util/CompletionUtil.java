@@ -69,8 +69,7 @@ import org.netbeans.modules.xml.schema.model.SchemaComponent;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.visitor.FindSubstitutions;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.windows.TopComponent;
+import org.openide.util.Lookup;
 
 /**
  * Utility class containing methods to query the model for completion suggestions.
@@ -844,7 +843,7 @@ public class CompletionUtil {
      * and for those who do not declare namespaces in root tag.
      */
     public static boolean canProvideCompletion(BaseDocument doc) {
-        FileObject file = getPrimaryFile();
+        FileObject file = getPrimaryFile(doc);
         if(file == null)
             return false;
         
@@ -860,15 +859,16 @@ public class CompletionUtil {
         return true;
     }
     
-    public static FileObject getPrimaryFile() {
-        TopComponent activatedTC = TopComponent .getRegistry().getActivated();
-        if(activatedTC == null)
+    public static FileObject getPrimaryFile(Document doc) {
+        Object o = doc.getProperty(Document.StreamDescriptionProperty);
+        if (o instanceof FileObject) {
+            return (FileObject) o;
+        } else if (o instanceof Lookup.Provider) {
+            //Note: DataObject is a Lookup.Provider
+            return ((Lookup.Provider) o).getLookup().lookup(FileObject.class);
+        } else {
             return null;
-        DataObject activeFile = activatedTC.getLookup().lookup(DataObject.class);
-        if(activeFile == null)
-            return null;
-        
-        return activeFile.getPrimaryFile();
+        }        
     }
 
     /*

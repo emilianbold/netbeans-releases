@@ -91,7 +91,7 @@ public class BackoutPanel extends ChangesetPickerPanel {
         commitMsgField = new javax.swing.JTextField();
         commitLabel = new javax.swing.JLabel();
         commitLabel.setLabelFor(commitMsgField);
-        commitMsgField.setText(NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text") + BackoutAction.HG_BACKOUT_REVISION); // NOI18N
+        commitMsgField.setText(NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitMsgField.text", BackoutAction.HG_BACKOUT_REVISION)); //NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(commitLabel, org.openide.util.NbBundle.getMessage(BackoutPanel.class, "BackoutPanel.commitLabel.text")); // NOI18N
         commitMsgField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(BackoutPanel.class, "ACSD_commitMsgField")); // NOI18N
 

@@ -45,6 +45,11 @@ package org.netbeans.modules.bugtracking.dummies;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.bugtracking.TestIssue;
+import org.netbeans.modules.bugtracking.TestKit;
+import org.netbeans.modules.bugtracking.TestQuery;
+import org.netbeans.modules.bugtracking.TestRepository;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -53,7 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Marian Petras
  */
-public class DummyRepository extends RepositoryProvider {
+public class DummyRepository extends TestRepository {
 
     private static final Image icon = ImageUtilities.loadImage(
             "org/netbeans/modules/bugtracking/dummies/DummyRepositoryIcon.png");
@@ -79,14 +84,14 @@ public class DummyRepository extends RepositoryProvider {
     }
 
     @Override
-    public IssueProvider getIssue(String id) {
+    public TestIssue getIssue(String id) {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
     public void remove() {
-        connector.removeRepository(this);
+        connector.removeRepository(TestKit.getRepository(this));
     }
 
     @Override
@@ -96,27 +101,27 @@ public class DummyRepository extends RepositoryProvider {
     }
 
     @Override
-    public QueryProvider createQuery() {
+    public TestQuery createQuery() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public IssueProvider createIssue() {
+    public TestIssue createIssue() {
         assert false : "This was assumed to be never called.";
         return null;
     }
 
     @Override
-    public QueryProvider[] getQueries() {
+    public Collection<TestQuery> getQueries() {
         assert false : "This was assumed to be never called.";
-        return new QueryProvider[0];
+        return Collections.emptyList();
     }
     
     @Override
-    public IssueProvider[] simpleSearch(String criteria) {
+    public Collection<TestIssue> simpleSearch(String criteria) {
         assert false : "This was assumed to be never called.";
-        return new IssueProvider[0];
+        return Collections.emptyList();
     }
 
     public Lookup getLookup() {

@@ -75,16 +75,16 @@ import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.modules.java.hints.errors.Utilities.Visibility;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.UseOptions;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -99,37 +99,38 @@ public class FieldEncapsulation {
     private static final Logger LOG = Logger.getLogger(FieldEncapsulation.class.getName());
     private static final String KW_THIS = "this";
 
-    static final String ALLOW_ENUMS_KEY = "allow.enums";
     static final boolean ALLOW_ENUMS_DEFAULT = false;
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.ALLOW_ENUMS_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.ALLOW_ENUMS_KEY", defaultValue=ALLOW_ENUMS_DEFAULT)
+    static final String ALLOW_ENUMS_KEY = "allow.enums";
 
-    @Hint(category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.protectedField", category="encapsulation", suppressWarnings={"ProtectedField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription protectedField(final HintContext ctx) {
         return create(ctx,
             Visibility.PROTECTED,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"),
-            "ProtectedField");  //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_ProtectedField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.publicField", category="encapsulation", suppressWarnings={"PublicField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription publicField(final HintContext ctx) {
         return create(ctx,
             Visibility.PUBLIC,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"),
-            "PublicField"); //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PublicField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, customizerProvider=CustomizerImpl.class, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.packageField", category="encapsulation", suppressWarnings={"PackageVisibleField"}, enabled=false, options=Options.QUERY) //NOI18N
+    @UseOptions(ALLOW_ENUMS_KEY)
     @TriggerTreeKind(Kind.VARIABLE)
     public static ErrorDescription packageField(final HintContext ctx) {
         return create(ctx,
             Visibility.PACKAGE_PRIVATE,
-            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"),
-            "PackageVisibleField"); //NOI18N
+            NbBundle.getMessage(FieldEncapsulation.class, "TXT_PackageField"));
     }
 
-    @Hint(category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField", description = "#DESC_org.netbeans.modules.java.hints.encapsulation.FieldEncapsulation.privateField", category="encapsulation", suppressWarnings={"AccessingNonPublicFieldOfAnotherObject"}, enabled=false, options=Options.QUERY) //NOI18N
     @TriggerTreeKind(Kind.MEMBER_SELECT)
     public static ErrorDescription privateField(final HintContext ctx) {
         assert ctx != null;
@@ -153,8 +154,7 @@ public class FieldEncapsulation {
         }
         SourceUtils.getOutermostEnclosingTypeElement(selectElement);
         return ErrorDescriptionFactory.forName(ctx, tp,
-                NbBundle.getMessage(FieldEncapsulation.class, "TXT_OtherPrivateField"),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, "AccessingNonPublicFieldOfAnotherObject")); //NOI18N
+                NbBundle.getMessage(FieldEncapsulation.class, "TXT_OtherPrivateField"));
     }
 
     private static TypeElement getEnclosingClass (TreePath path, final Trees trees) {
@@ -169,11 +169,9 @@ public class FieldEncapsulation {
 
     private static ErrorDescription create (final HintContext ctx,
                                             final Visibility visibility,
-                                            final String message,
-                                            final String suppressWarnings) {
+                                            final String message) {
         assert ctx != null;
         assert message != null;
-        assert suppressWarnings != null;
         final TreePath tp = ctx.getPath();
         final Tree parent = tp.getParentPath().getLeaf();
         if (!TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()) ||
@@ -196,8 +194,7 @@ public class FieldEncapsulation {
             return null;
         }
         return ErrorDescriptionFactory.forName(ctx, tp, message,
-                new FixImpl(TreePathHandle.create(tp, ctx.getInfo())),
-                FixFactory.createSuppressWarningsFix(ctx.getInfo(), tp, suppressWarnings)); //NOI18N
+                new FixImpl(TreePathHandle.create(tp, ctx.getInfo())));
     }
 
     private static boolean hasRequiredVisibility(final Set<Modifier> mods, final Modifier reqMod) {
@@ -285,12 +282,4 @@ public class FieldEncapsulation {
         }
     }
     
-    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
-        public CustomizerImpl() {
-            super(NbBundle.getMessage(FieldEncapsulation.class, "DN_IgnoreEnumForField"),
-                  NbBundle.getMessage(FieldEncapsulation.class, "TP_IgnoreEnumForField"),
-                  ALLOW_ENUMS_KEY,
-                  ALLOW_ENUMS_DEFAULT);
-        }
-    }
 }

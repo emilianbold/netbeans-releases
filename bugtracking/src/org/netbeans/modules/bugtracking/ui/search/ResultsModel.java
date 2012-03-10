@@ -44,15 +44,11 @@ package org.netbeans.modules.bugtracking.ui.search;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.swing.AbstractListModel;
 import javax.swing.Timer;
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  * Model of search results. Works as ListModel for JList which is displaying
@@ -75,7 +71,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
      * changes to listeners. */
     static final int COALESCE_TIME = 200;
 
-    private Map<RepositoryProvider, Set<IssueProvider>> issuesCached = new HashMap<RepositoryProvider, Set<IssueProvider>>();
+    private Map<RepositoryImpl, Set<IssueImpl>> issuesCached = new HashMap<RepositoryImpl, Set<IssueImpl>>();
 
     /** Singleton */
     private ResultsModel () {
@@ -93,21 +89,21 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         maybeFireChanges();
     }
 
-    synchronized void cacheIssues(RepositoryProvider repo, IssueProvider[] issues) {
-        HashSet<IssueProvider> s = new HashSet<IssueProvider>();
-        for (IssueProvider issue : issues) {
+    synchronized void cacheIssues(RepositoryImpl repo, Collection<IssueImpl> issues) {
+        HashSet<IssueImpl> s = new HashSet<IssueImpl>();
+        for (IssueImpl issue : issues) {
             assert issue != null;
             s.add(issue);
         }
         issuesCached.put(repo, s);
     }
 
-    synchronized IssueProvider[] getCachedIssues(RepositoryProvider repo) {
+    synchronized Collection<IssueImpl> getCachedIssues(RepositoryImpl repo) {
         if(issuesCached != null) {
-            Set<IssueProvider> s = issuesCached.get(repo);
-            if(s != null) return s.toArray(new IssueProvider[s.size()]);
+            Set<IssueImpl> s = issuesCached.get(repo);
+            if(s != null) return s;
         }
-        return new IssueProvider[0];
+        return Collections.emptyList();
     }
     /******* AbstractListModel impl ********/
 

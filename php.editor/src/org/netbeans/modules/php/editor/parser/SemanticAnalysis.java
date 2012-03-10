@@ -83,18 +83,21 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         semanticHighlights = null;
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
-    public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
+    private Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
         return unusedUsesOffsetRanges;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
 
+    @Override
     public void run(Result r, SchedulerEvent event) {
         resume();
 
@@ -127,11 +130,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         cancelled = false;
     }
 
-    public @Override int getPriority() {
+    @Override
+    public int getPriority() {
         return 0;
     }
 
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
@@ -191,11 +196,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         @Override
         public void visit(Program program) {
             scan(program.getStatements());
-            for (Comment comment : program.getComments()) {
-                if (comment.getCommentType() == Comment.Type.TYPE_VARTYPE) {
-                    scan(comment);
-                }
-            }
+            scan(program.getComments());
             for (ASTNodeColoring item : unusedUses.values()) {
                 addOffsetRange(item.identifier, item.coloring);
             }
@@ -413,6 +414,18 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
 
         @Override
+        public void visit(PHPDocTypeNode node) {
+            if (isCancelled()) {
+                return;
+            }
+            QualifiedName typeName = QualifiedName.create(node.getValue());
+            if (unusedUses.size() > 0 && !typeName.getKind().isFullyQualified()) {
+                String firstSegmentName = typeName.getSegments().getFirst();
+                processFirstSegmentName(firstSegmentName);
+            }
+        }
+
+        @Override
         public void visit(NamespaceName node) {
             if (isCancelled()) {
                 return;
@@ -420,17 +433,21 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (unusedUses.size() > 0 && !node.isGlobal()) {
                 Identifier firstSegment = node.getSegments().get(0);
                 String firstSegmentName = firstSegment.getName();
-                Set<String> namesToRemove = new HashSet<String>();
-                for (String name : unusedUses.keySet()) {
-                    QualifiedName qualifiedUseName = QualifiedName.create(name);
-                    if (qualifiedUseName.getSegments().getLast().equals(firstSegmentName)) {
-                        namesToRemove.add(name);
-                    }
+                processFirstSegmentName(firstSegmentName);
+            }
+        }
+
+        private void processFirstSegmentName(final String firstSegmentName) {
+            Set<String> namesToRemove = new HashSet<String>();
+            for (String name : unusedUses.keySet()) {
+                QualifiedName qualifiedUseName = QualifiedName.create(name);
+                if (qualifiedUseName.getSegments().getLast().equals(firstSegmentName)) {
+                    namesToRemove.add(name);
                 }
-                for (String nameToRemove : namesToRemove) {
-                    unusedUses.remove(nameToRemove);
-                    unusedUsesOffsetRanges.remove(nameToRemove);
-                }
+            }
+            for (String nameToRemove : namesToRemove) {
+                unusedUses.remove(nameToRemove);
+                unusedUsesOffsetRanges.remove(nameToRemove);
             }
         }
 

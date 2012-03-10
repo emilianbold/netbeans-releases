@@ -11,37 +11,36 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.monitor.ui.dummy</code-name-base>
+                    <code-name-base>javax.activation</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.eclipse.core.runtime</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>              
-                <dependency>
-                    <code-name-base>org.eclipse.equinox.common</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>           
+                </dependency>
                 <dependency>
                     <code-name-base>javax.mail</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>           
-                <dependency>
-                    <code-name-base>javax.activation</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>           
+                </dependency>
                 <dependency>
                     <code-name-base>javax.wsdl</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
-                </dependency>           
+                </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
+                    <code-name-base>org.apache.commons.logging</code-name-base>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.core.runtime</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.equinox.common</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -49,7 +48,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.eclipse.mylyn.commons.net</code-name-base>
+                    <code-name-base>org.eclipse.mylyn.monitor.ui.dummy</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.mylyn.tasks.core</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
@@ -63,18 +67,6 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.13</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.apache.commons.logging</code-name-base>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -98,7 +90,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -108,6 +100,14 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.22</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

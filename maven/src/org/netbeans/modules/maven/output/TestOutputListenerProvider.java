@@ -189,7 +189,8 @@ public class TestOutputListenerProvider implements OutputProcessor {
          */
         @Messages({
             "MSG_CannotFollowLink1=Cannot follow link. Test output directory is missing.",
-            "MSG_CannotFollowLink2=Cannot follow link. Test report file is missing."
+            "MSG_CannotFollowLink2=Cannot follow link. Test report file is missing.",
+            "MSG_CannotFollowLink3=Cannot follow link. Report file now owned by a maven project."
         })
         @Override
         public void outputLineAction(OutputEvent ev) {
@@ -209,6 +210,11 @@ public class TestOutputListenerProvider implements OutputProcessor {
             Project prj = FileOwnerQuery.getOwner(outDir);
             if (prj != null) {
                 NbMavenProjectImpl nbprj = prj.getLookup().lookup(NbMavenProjectImpl.class);
+                if (nbprj == null) {
+                    LOG.log(Level.INFO, "Cannot find owning maven project for {0} to follow link in Output Window.", outputDir); //NOI18N
+                    StatusDisplayer.getDefault().setStatusText(MSG_CannotFollowLink3());                    
+                    return;
+                }
                 String tsd = nbprj.getOriginalMavenProject().getBuild().getTestSourceDirectory();
                 if (tsd == null) {
                     //#205722 while we were executing tests, someone broke the pom and we don't get the proper test source directory.

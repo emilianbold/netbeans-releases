@@ -112,7 +112,7 @@ public class RefactoringTestBase extends NbTestCase {
         todo.add(sourceRoot);
 
         Map<String, String> content = new HashMap<String, String>();
-        
+
         FileUtil.refreshFor(FileUtil.toFile(sourceRoot));
 
         while (!todo.isEmpty()) {
@@ -186,121 +186,121 @@ public class RefactoringTestBase extends NbTestCase {
         TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
         MimeTypes.setAllMimeTypes(new HashSet<String>());
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",
-            "org/netbeans/modules/java/source/resources/layer.xml",
-            "org/netbeans/modules/java/editor/resources/layer.xml",
+                    "org/netbeans/modules/java/source/resources/layer.xml",
+                    "org/netbeans/modules/java/editor/resources/layer.xml",
             "org/netbeans/modules/refactoring/java/test/resources/layer.xml", "META-INF/generated-layer.xml"}, new Object[] {
-            new ClassPathProvider() {
-            @Override
-                public ClassPath findClassPath(FileObject file, String type) {
+                    new ClassPathProvider() {
+                        @Override
+                        public ClassPath findClassPath(FileObject file, String type) {
                     if (sourcePath != null && sourcePath.contains(file)){
-                        if (ClassPath.BOOT.equals(type)) {
-                            return ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path"));
-                        }
-                        if (ClassPath.COMPILE.equals(type)) {
-                            return ClassPathSupport.createClassPath(new FileObject[0]);
-                        }
-                        if (ClassPath.SOURCE.equals(type)) {
-                            return sourcePath;
-                        }
-                    }
+                                if (ClassPath.BOOT.equals(type)) {
+                                    return ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path"));
+                                }
+                                if (ClassPath.COMPILE.equals(type)) {
+                                    return ClassPathSupport.createClassPath(new FileObject[0]);
+                                }
+                                if (ClassPath.SOURCE.equals(type)) {
+                                    return sourcePath;
+                                }
+                            }
 
-                    return null;
-                }
-            },
-            new ProjectFactory() {
-            @Override
-            public boolean isProject(FileObject projectDirectory) {
-                return src != null && src.getParent() == projectDirectory;
-            }
-            @Override
-            public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
+                            return null;
+                        }
+                    },
+                    new ProjectFactory() {
+                        @Override
+                        public boolean isProject(FileObject projectDirectory) {
+                            return src != null && src.getParent() == projectDirectory;
+                        }
+                        @Override
+                        public Project loadProject(final FileObject projectDirectory, ProjectState state) throws IOException {
                 if (!isProject(projectDirectory)) return null;
-                return new Project() {
-                    @Override
-                    public FileObject getProjectDirectory() {
-                        return projectDirectory;
-                    }
-                    @Override
-                    public Lookup getLookup() {
-                        final Project p = this;
-                        return Lookups.singleton(new Sources() {
+                            return new Project() {
+                                @Override
+                                public FileObject getProjectDirectory() {
+                                    return projectDirectory;
+                                }
+                                @Override
+                                public Lookup getLookup() {
+                                    final Project p = this;
+                                    return Lookups.singleton(new Sources() {
 
-                            @Override
-                            public SourceGroup[] getSourceGroups(String type) {
+                                        @Override
+                                        public SourceGroup[] getSourceGroups(String type) {
                                 return new SourceGroup[] {GenericSources.group(p, src.getParent(), "source", "Java Sources", null, null),
-                                                          GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
-                            }
+                                                        GenericSources.group(p, test, "testsources", "Test Sources", null, null)};
+                                        }
 
-                            @Override
-                            public void addChangeListener(ChangeListener listener) {
-                            }
+                                        @Override
+                                        public void addChangeListener(ChangeListener listener) {
+                                        }
 
-                            @Override
-                            public void removeChangeListener(ChangeListener listener) {
-                            }
-                        });
-                    }
-                };
-            }
-            @Override
+                                        @Override
+                                        public void removeChangeListener(ChangeListener listener) {
+                                        }
+                                    });
+                                }
+                            };
+                        }
+                        @Override
             public void saveProject(Project project) throws IOException, ClassCastException {}
-            },
-            new TestLocator() {
+                    },
+                    new TestLocator() {
 
-            @Override
-            public boolean appliesTo(FileObject fo) {
-                return true;
-            }
+                        @Override
+                        public boolean appliesTo(FileObject fo) {
+                            return true;
+                        }
 
-            @Override
-            public boolean asynchronous() {
-                return false;
-            }
+                        @Override
+                        public boolean asynchronous() {
+                            return false;
+                        }
 
-            @Override
-            public LocationResult findOpposite(FileObject fo, int caretOffset) {
-                ClassPath srcCp;
-        
-                if ((srcCp = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null) {
-                    return new LocationResult("File not found"); //NOI18N
-                }
+                        @Override
+                        public LocationResult findOpposite(FileObject fo, int caretOffset) {
+                            ClassPath srcCp;
 
-                String baseResName = srcCp.getResourceName(fo, '/', false);
-                String testResName = getTestResName(baseResName, fo.getExt());
-                assert testResName != null;
-                FileObject fileObject = test.getFileObject(testResName);
+                            if ((srcCp = ClassPath.getClassPath(fo, ClassPath.SOURCE)) == null) {
+                                return new LocationResult("File not found"); //NOI18N
+                            }
+
+                            String baseResName = srcCp.getResourceName(fo, '/', false);
+                            String testResName = getTestResName(baseResName, fo.getExt());
+                            assert testResName != null;
+                            FileObject fileObject = test.getFileObject(testResName);
                 if(fileObject != null) {
-                    return new LocationResult(fileObject, -1);
-                }
-                
-                return new LocationResult("File not found"); //NOI18N
-            }
+                                return new LocationResult(fileObject, -1);
+                            }
 
-            @Override
-            public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
-                throw new UnsupportedOperationException("This should not be called on synchronous locators.");
-            }
+                            return new LocationResult("File not found"); //NOI18N
+                        }
 
-            @Override
-            public FileType getFileType(FileObject fo) {
+                        @Override
+                        public void findOpposite(FileObject fo, int caretOffset, LocationListener callback) {
+                            throw new UnsupportedOperationException("This should not be called on synchronous locators.");
+                        }
+
+                        @Override
+                        public FileType getFileType(FileObject fo) {
                 if(FileUtil.isParentOf(test, fo)) {
-                    return FileType.TEST;
+                                return FileType.TEST;
                 } else if(FileUtil.isParentOf(src, fo)) {
-                    return FileType.TESTED;
-                }
-                return FileType.NEITHER;
-            }
-            
-            private String getTestResName(String baseResName, String ext) {
+                                return FileType.TESTED;
+                            }
+                            return FileType.NEITHER;
+                        }
+
+                        private String getTestResName(String baseResName, String ext) {
                 StringBuilder buf
                         = new StringBuilder(baseResName.length() + ext.length() + 10);
-                buf.append(baseResName).append("Test");                         //NOI18N
-                if (ext.length() != 0) {
-                    buf.append('.').append(ext);
-                }
-                return buf.toString();
-            }
-        }});
+                            buf.append(baseResName).append("Test");                         //NOI18N
+                            if (ext.length() != 0) {
+                                buf.append('.').append(ext);
+                            }
+                            return buf.toString();
+                        }
+                    }});
         Main.initializeURLFactory();
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         prepareTest();
@@ -349,12 +349,16 @@ public class RefactoringTestBase extends NbTestCase {
         }
         
     }
-    
+
     protected static boolean problemIsFatal(List<Problem> problems) {
         for (Problem problem : problems) {
-            if (problem.isFatal()) {
-                return true;
-            }
+            Problem next = problem;
+            do {
+                if (next.isFatal()) {
+                    return true;
+                }
+                next = next.getNext();
+            } while (next != null);
         }
         return false;
     }

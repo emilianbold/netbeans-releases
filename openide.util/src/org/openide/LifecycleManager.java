@@ -86,6 +86,19 @@ public abstract class LifecycleManager {
      */
     public abstract void exit();
 
+    /** Exit NetBeans with the given exit code.
+     * This method will return only if {@link java.lang.System#exit} fails, or if at least one component of the
+     * system refuses to exit (because it cannot be properly shut down). The
+     * default implementation calls {@link #exit()} for compatibility reasons,
+     * but subclasses are encouraged to provide better implementation.
+     * 
+     * @param status the exit code of the application
+     * @since 8.23
+     */
+    public void exit(int status) {
+        exit();
+    }
+
     /**
      * Request that the application restart immediately after next being shut down.
      * You may want to then call {@link #exit} to go ahead and restart now.
@@ -103,6 +116,10 @@ public abstract class LifecycleManager {
 
         public void exit() {
             System.exit(0);
+        }
+
+        public void exit(int status) {
+            System.exit(status);
         }
 
         public void saveAll() {

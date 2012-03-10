@@ -39,26 +39,25 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ManualArrayCopyTest extends TestBase {
+public class ManualArrayCopyTest extends NbTestCase {
 
     public ManualArrayCopyTest(String name) {
-        super(name, ManualArrayCopy.class);
+        super(name);
     }
 
     public void testArrayCopy1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        int[] source = new int[3];\n" +
@@ -69,24 +68,27 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[o + i] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "7:8-7:11:verifier:ERR_manual-array-copy",
-                       "FIX_manual-array-copy",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        int[] source = new int[3];\n" +
-                        "        int[] target = new int[6];\n" +
-                        "        int o = 3;\n" +
-                        "\n" +
-                        "        System.arraycopy(source, 0, target, o, source.length);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("7:8-7:11:verifier:ERR_manual-array-copy")
+                .applyFix("FIX_manual-array-copy")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        int[] source = new int[3];\n" +
+                              "        int[] target = new int[6];\n" +
+                              "        int o = 3;\n" +
+                              "\n" +
+                              "        System.arraycopy(source, 0, target, o, source.length);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testArrayCopy2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        int[] source = new int[3];\n" +
@@ -97,24 +99,27 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[o + i] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "7:8-7:11:verifier:ERR_manual-array-copy",
-                       "FIX_manual-array-copy",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        int[] source = new int[3];\n" +
-                        "        int[] target = new int[6];\n" +
-                        "        int o = 3;\n" +
-                        "\n" +
-                        "        System.arraycopy(source, 2, target, o + 2, source.length - 2);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("7:8-7:11:verifier:ERR_manual-array-copy")
+                .applyFix("FIX_manual-array-copy")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        int[] source = new int[3];\n" +
+                              "        int[] target = new int[6];\n" +
+                              "        int o = 3;\n" +
+                              "\n" +
+                              "        System.arraycopy(source, 2, target, o + 2, source.length - 2);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testArrayCopy3() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        int[] source = new int[3];\n" +
@@ -125,24 +130,27 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[i + o] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "7:8-7:11:verifier:ERR_manual-array-copy",
-                       "FIX_manual-array-copy",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        int[] source = new int[3];\n" +
-                        "        int[] target = new int[6];\n" +
-                        "        int o = 3;\n" +
-                        "\n" +
-                        "        System.arraycopy(source, 2, target, 2 + o, source.length - 2);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("7:8-7:11:verifier:ERR_manual-array-copy")
+                .applyFix("FIX_manual-array-copy")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        int[] source = new int[3];\n" +
+                              "        int[] target = new int[6];\n" +
+                              "        int o = 3;\n" +
+                              "\n" +
+                              "        System.arraycopy(source, 2, target, 2 + o, source.length - 2);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testArrayCollectionCopy1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        java.util.List<String> l = null;\n" +
@@ -151,23 +159,26 @@ public class ManualArrayCopyTest extends TestBase {
                        "            l.add(args[c]);\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:8-5:11:verifier:ERR_manual-array-copy-coll",
-                       "FIX_manual-array-copy-coll",
-                       ("package test;\n" +
-                        "import java.util.Arrays;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        java.util.List<String> l = null;\n" +
-                        "\n" +
-                        "        l.addAll(Arrays.asList(args));\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("5:8-5:11:verifier:ERR_manual-array-copy-coll")
+                .applyFix("FIX_manual-array-copy-coll")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Arrays;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        java.util.List<String> l = null;\n" +
+                              "\n" +
+                              "        l.addAll(Arrays.asList(args));\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testArrayCollectionCopy2() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        java.util.List<String> l = null;\n" +
@@ -176,39 +187,45 @@ public class ManualArrayCopyTest extends TestBase {
                        "            l.add(s);\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "5:8-5:11:verifier:ERR_manual-array-copy-coll",
-                       "FIX_manual-array-copy-coll",
-                       ("package test;\n" +
-                        "import java.util.Arrays;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                        "        java.util.List<String> l = null;\n" +
-                        "\n" +
-                        "        l.addAll(Arrays.asList(args));\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("5:8-5:11:verifier:ERR_manual-array-copy-coll")
+                .applyFix("FIX_manual-array-copy-coll")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.Arrays;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        java.util.List<String> l = null;\n" +
+                              "\n" +
+                              "        l.addAll(Arrays.asList(args));\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testNoBoxing188830() throws Exception {
-        performAnalysisTest("test/Test.java",
-                           "package test;\n" +
-                           "public class Test {\n" +
-                           "    public void test(String[] args) {\n" +
-                           "        int[] source = new int[3];\n" +
-                           "        Integer[] target = new Integer[6];\n" +
-                           "        int o = 3;\n" +
-                           "\n" +
-                           "        for (int i = 0; i < source.length; i++) {\n" +
-                           "            target[o + i] = source[i];\n" +
-                           "        }\n" +
-                           "    }\n" +
-                           "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(String[] args) {\n" +
+                       "        int[] source = new int[3];\n" +
+                       "        Integer[] target = new Integer[6];\n" +
+                       "        int o = 3;\n" +
+                       "\n" +
+                       "        for (int i = 0; i < source.length; i++) {\n" +
+                       "            target[o + i] = source[i];\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .assertWarnings();
     }
 
     public void testArrayCopySubType1() throws Exception {
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        String[] source = new String[3];\n" +
@@ -219,24 +236,27 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[o + i] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n",
-                       "7:8-7:11:verifier:ERR_manual-array-copy",
-                       "FIX_manual-array-copy",
-                       ("package test;\n" +
-                        "public class Test {\n" +
-                        "    public void test(String[] args) {\n" +
-                       "        String[] source = new String[3];\n" +
-                       "        Object[] target = new Object[6];\n" +
-                        "        int o = 3;\n" +
-                        "\n" +
-                        "        System.arraycopy(source, 0, target, o, source.length);\n" +
-                        "     }\n" +
-                        "}\n").replaceAll("[\t\n ]+", " "));
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .findWarning("7:8-7:11:verifier:ERR_manual-array-copy")
+                .applyFix("FIX_manual-array-copy")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public void test(String[] args) {\n" +
+                              "        String[] source = new String[3];\n" +
+                              "        Object[] target = new Object[6];\n" +
+                              "        int o = 3;\n" +
+                              "\n" +
+                              "        System.arraycopy(source, 0, target, o, source.length);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testArrayCopySubType2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        Object[] source = new Object[6];\n" +
@@ -247,12 +267,15 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[o + i] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n");
+                       "}\n", false)
+                .run(ManualArrayCopy.class)
+                .assertWarnings();
     }
 
     public void testArrayCopy191435() throws Exception {
-        performAnalysisTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    public void test(String[] args) {\n" +
                        "        int[] source = new int[6];\n" +
@@ -263,12 +286,8 @@ public class ManualArrayCopyTest extends TestBase {
                        "            target[o + i] = source[i];\n" +
                        "        }\n" +
                        "    }\n" +
-                       "}\n");
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .assertWarnings();
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 }

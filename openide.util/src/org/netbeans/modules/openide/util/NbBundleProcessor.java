@@ -273,9 +273,11 @@ public class NbBundleProcessor extends AbstractProcessor {
                             restored.add(identifier);
                         }
                     }
+                    /*
                     if (!restored.isEmpty()) {
                         processingEnv.getMessager().printMessage(Kind.NOTE, "loaded " + pkg + ".Bundle identifiers " + restored + " from earlier run");
                     }
+                    */
                 } catch (IOException x) {
                     // OK, not there
                 }

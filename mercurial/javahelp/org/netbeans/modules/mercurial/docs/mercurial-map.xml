@@ -41,6 +41,8 @@
 	
 	<mapID target="org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction" url="csh/mercurial-create-patch.html" />
 	<mapID target="org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction" url="csh/mercurial-refresh-patch.html" />
+	<mapID target="org.netbeans.modules.mercurial.ui.queues.GoToPatch" url="csh/mercurial-go-patch.html" />
+        <mapID target="org.netbeans.modules.mercurial.ui.queues.FinishPatch" url="csh/mercurial-finish-patch.html" />
 </map>
 
 

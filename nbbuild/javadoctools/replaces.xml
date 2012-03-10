@@ -204,5 +204,11 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-api-progress-transactional@" value="${javadoc.docs.org-netbeans-api-progress-transactional}"/>
 <replacefilter token="@org-netbeans-core@" value="${javadoc.docs.org-netbeans-core}"/>
 <replacefilter token="@org-netbeans-modules-versioning@" value="${javadoc.docs.org-netbeans-modules-versioning}"/>
+<replacefilter token="@org-netbeans-spi-java-hints@" value="${javadoc.docs.org-netbeans-spi-java-hints}"/>
 <replacefilter token="@org-netbeans-modules-versioning-core@" value="${javadoc.docs.org-netbeans-modules-versioning-core}"/>
+<replacefilter token="@org-netbeans-modules-java-hints-declarative-test@" value="${javadoc.docs.org-netbeans-modules-java-hints-declarative-test}"/>
+<replacefilter token="@org-netbeans-modules-java-hints-legacy-spi@" value="${javadoc.docs.org-netbeans-modules-java-hints-legacy-spi}"/>
+<replacefilter token="@org-netbeans-modules-java-hints-providers-spi@" value="${javadoc.docs.org-netbeans-modules-java-hints-providers-spi}"/>
+<replacefilter token="@org-netbeans-modules-java-hints-test@" value="${javadoc.docs.org-netbeans-modules-java-hints-test}"/>
 <replacefilter token="@org-netbeans-libs-git@" value="${javadoc.docs.org-netbeans-libs-git}"/>
+<replacefilter token="@org-netbeans-modules-sampler@" value="${javadoc.docs.org-netbeans-modules-sampler}"/>

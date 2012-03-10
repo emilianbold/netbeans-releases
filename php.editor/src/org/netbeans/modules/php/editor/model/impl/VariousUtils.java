@@ -75,7 +75,7 @@ import org.netbeans.modules.php.editor.model.IndexScope;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
@@ -844,7 +844,7 @@ public class VariousUtils {
 
     public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
         int commasCount = 0;
-        String possibleClassName = null;
+        String possibleClassName = ""; //NOI18N
         int anchor = -1;
         int leftBraces = 0;
         int rightBraces = State.PARAMS.equals(state) ? 1 : 0;
@@ -918,7 +918,7 @@ public class VariousUtils {
                         } else if (isRightBracket(token)) {
                             rightBraces++;
                         } else if (isString(token)) {
-                            possibleClassName = token.text().toString();
+                            possibleClassName = fetchPossibleClassName(tokenSequence);
                         }
                         if (leftBraces == rightBraces) {
                             state = State.FUNCTION;
@@ -991,7 +991,7 @@ public class VariousUtils {
                         metaAll.insert(0, "@" + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
-                } else if (state.equals(State.PARAMS) && possibleClassName != null && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
                     state = State.STOP;
                     metaAll.insert(0, "@" + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
@@ -1005,6 +1005,15 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static String fetchPossibleClassName(final TokenSequence<PHPTokenId> tokenSequence) {
+        String result = isString(tokenSequence.token()) ? tokenSequence.token().text().toString() : ""; //NOI18N
+        while (tokenSequence.movePrevious() && (isString(tokenSequence.token()) || isNamespaceSeparator(tokenSequence.token()))) {
+            result = tokenSequence.token().text().toString() + result;
+        }
+        tokenSequence.moveNext();
+        return result;
     }
 
     private static StringBuilder transformToFullyQualifiedType(final StringBuilder metaAll, final TokenSequence<PHPTokenId> tokenSequence, final Scope varScope) {
@@ -1177,8 +1186,8 @@ public class VariousUtils {
     }
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
-        for (UseElement useElement : declaredUses) {
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
+        for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
             if (proposedName != null) {
                 namesProposals.add(proposedName);
@@ -1202,14 +1211,14 @@ public class VariousUtils {
     }
 
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
-        Collection<? extends UseElement> declaredUses = contextNamespace.getDeclaredUses();
+        Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         if (!name.getKind().isFullyQualified()) {
             QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
             if (proposedName != null) {
                 namesProposals.add(proposedName);
             }
-            for (UseElement useElement : declaredUses) {
+            for (UseScope useElement : declaredUses) {
                 final QualifiedName useQName = QualifiedName.create(useElement.getName());
                 proposedName = useQName.toNamespaceName().append(name).toFullyQualified();
                 if (proposedName != null) {
@@ -1274,9 +1283,9 @@ public class VariousUtils {
             namespaces.add(name);
             resolved = true;
         } else {
-            Collection<? extends UseElement> uses = contextNamespace.getDeclaredUses();
+            Collection<? extends UseScope> uses = contextNamespace.getDeclaredUses();
             if (uses.size() > 0) {
-                for(UseElement useDeclaration : contextNamespace.getDeclaredUses()) {
+                for(UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName = null;
@@ -1311,6 +1320,61 @@ public class VariousUtils {
         return namespaces;
     }
 
+    public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        boolean result = false;
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
+                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    @CheckForNull
+    public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
+        AliasedName result = null;
+        if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
+                && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
+            Scope scope = inScope;
+            while (scope != null && !(scope instanceof NamespaceScope)) {
+                scope = scope.getInScope();
+            }
+            if (scope != null) {
+                NamespaceScope namespaceScope = (NamespaceScope) scope;
+                String firstSegmentName = qualifiedName.getSegments().getFirst();
+                for (UseScope useElement : namespaceScope.getDeclaredUses()) {
+                    if (useElement.getOffset() < offset) {
+                        AliasedName aliasName = useElement.getAliasedName();
+                        if (aliasName != null) {
+                            if (firstSegmentName.equals(aliasName.getAliasName())) {
+                                result = aliasName;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public static QualifiedName getFullyQualifiedName(QualifiedName qualifiedName, int offset, Scope inScope) {
         if(qualifiedName.getKind() != QualifiedNameKind.FULLYQUALIFIED && !qualifiedName.getName().equalsIgnoreCase("self")
                 && !qualifiedName.getName().equalsIgnoreCase("static") && !qualifiedName.getName().equalsIgnoreCase("parent")) { //NOI18N
@@ -1321,9 +1385,9 @@ public class VariousUtils {
                 NamespaceScope namespace = (NamespaceScope) inScope;
                 // needs to count
                 String firstSegmentName = qualifiedName.getSegments().getFirst();
-                UseElement matchedUseElement = null;
+                UseScope matchedUseElement = null;
                 int lastOffset = -1; // remember offset of the last use declaration, that fits
-                for (UseElement useElement : namespace.getDeclaredUses()) {
+                for (UseScope useElement : namespace.getDeclaredUses()) {
                     if (useElement.getOffset() < offset) {
                         AliasedName aliasName = useElement.getAliasedName();
                         if (aliasName != null) {

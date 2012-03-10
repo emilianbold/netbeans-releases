@@ -50,20 +50,21 @@ import com.sun.source.util.TreePathScanner;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author lahvac
  */
-@Hint(category="performance", suppressWarnings="StringBufferMayBeStringBuilder")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", description = "#DESC_org.netbeans.modules.java.hints.perf.StringBuffer2Builder", category="performance", suppressWarnings="StringBufferMayBeStringBuilder")
 public class StringBuffer2Builder {
 
     @TriggerPattern(value="java.lang.StringBuffer $buffer = new java.lang.StringBuffer($args$);")
@@ -121,7 +122,7 @@ public class StringBuffer2Builder {
 
         String fixDisplayName = NbBundle.getMessage(StringBuffer2Builder.class, "FIX_StringBuffer2Builder");
         TreePath origType = new TreePath(ctx.getPath(), ((VariableTree) ctx.getPath().getLeaf()).getType());
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "java.lang.StringBuilder $buffer = new java.lang.StringBuilder($args$);");
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "java.lang.StringBuilder $buffer = new java.lang.StringBuilder($args$);");
         String displayName = NbBundle.getMessage(StringBuffer2Builder.class, "ERR_StringBuffer2Builder");
         
         return ErrorDescriptionFactory.forName(ctx, origType, displayName, fix);

@@ -39,244 +39,292 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.encapsulation;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class ParamEncapsulationTest extends TestBase {
+public class ParamEncapsulationTest extends NbTestCase {
 
     public ParamEncapsulationTest(final String name) {
-        super (name, ParamEncapsulation.class);
+        super(name);
     }
 
     public void testAssignToCollectionField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Collection l;\n"+
-                            "    public void setList(java.util.Collection p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Collection Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Collection l;\n" +
+                       "    public void setList(java.util.Collection p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Collection Field from Parameter");
     }
 
     public void testAssignToListField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.List l;\n"+
-                            "    public void setList(java.util.List p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Collection Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.List l;\n" +
+                       "    public void setList(java.util.List p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Collection Field from Parameter");
     }
 
     public void testAssignToSetField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Set l;\n"+
-                            "    public void setList(java.util.Set p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Collection Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Set l;\n" +
+                       "    public void setList(java.util.Set p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Collection Field from Parameter");
     }
 
     public void testAssignToMapField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Map l;\n"+
-                            "    public void setList(java.util.Map p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Collection Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Map l;\n" +
+                       "    public void setList(java.util.Map p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Collection Field from Parameter");
     }
 
     public void testAssignToCollectionLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void setList(java.util.Map p) {\n"+
-                            "        java.util.Map l;\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void setList(java.util.Map p) {\n" +
+                       "        java.util.Map l;\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToCollectionFromLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Map l;\n"+
-                            "    public void setList(java.util.Map p) {\n"+
-                            "        java.util.Map x;\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Map l;\n" +
+                       "    public void setList(java.util.Map p) {\n" +
+                       "        java.util.Map x = null;\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToCollectionFromColection() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Map l;\n"+
-                            "    private java.util.Map x;\n"+
-                            "    public void setList(java.util.Map p) {\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Map l;\n" +
+                       "    private java.util.Map x;\n" +
+                       "    public void setList(java.util.Map p) {\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToArrayField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private Object[] l;\n"+
-                            "    public void setArray(Object[] p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Array Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private Object[] l;\n" +
+                       "    public void setArray(Object[] p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Array Field from Parameter");
     }
 
     public void testAssignToArrayLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void setArray(Object[] p) {\n"+
-                            "        Object[] l;\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void setArray(Object[] p) {\n" +
+                       "        Object[] l;\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToArrayFromLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private Object[] l;\n"+
-                            "    public void setArray(Object[] p) {\n"+
-                            "        Object[] x;\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private Object[] l;\n" +
+                       "    public void setArray(Object[] p) {\n" +
+                       "        Object[] x = null;\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToArrayFromArray() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private Object[] l;\n"+
-                            "    private Object[] x;\n"+
-                            "    public void setArray(Object[] p) {\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private Object[] l;\n" +
+                       "    private Object[] x;\n" +
+                       "    public void setArray(Object[] p) {\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToDateField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Date l;\n"+
-                            "    public void setDate(java.util.Date p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Date or Calendar Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Date l;\n" +
+                       "    public void setDate(java.util.Date p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Date or Calendar Field from Parameter");
     }
 
     public void testAssignToDateLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void setDate(java.util.Date p) {\n"+
-                            "        java.util.Date l;\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void setDate(java.util.Date p) {\n" +
+                       "        java.util.Date l;\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToDateFromLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Date l;\n"+
-                            "    public void setDate(java.util.Date p) {\n"+
-                            "        java.util.Date x;\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Date l;\n" +
+                       "    public void setDate(java.util.Date p) {\n" +
+                       "        java.util.Date x = null;\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToDateFromDate() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Date l;\n"+
-                            "    private java.util.Date x;\n"+
-                            "    public void setDate(java.util.Date p) {\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Date l;\n" +
+                       "    private java.util.Date x;\n" +
+                       "    public void setDate(java.util.Date p) {\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToCalendarField() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Calendar l;\n"+
-                            "    public void setCalendar(java.util.Calendar p) {\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}",
-                            "4:8-4:9:verifier:Assignment to Date or Calendar Field from Parameter");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Calendar l;\n" +
+                       "    public void setCalendar(java.util.Calendar p) {\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings("4:8-4:9:verifier:Assignment to Date or Calendar Field from Parameter");
     }
 
     public void testAssignToCalendarLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    public void setCalendar(java.util.Calendar p) {\n"+
-                            "        java.util.Calendar l;\n"+
-                            "        l=p;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void setCalendar(java.util.Calendar p) {\n" +
+                       "        java.util.Calendar l;\n" +
+                       "        l=p;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToCalendarFromLocal() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Calendar l;\n"+
-                            "    public void setCalendar(java.util.Calendar p) {\n"+
-                            "        java.util.Calendar x;\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Calendar l;\n" +
+                       "    public void setCalendar(java.util.Calendar p) {\n" +
+                       "        java.util.Calendar x = null;\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
 
     public void testAssignToCalendarFromCalendar() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.Calendar l;\n"+
-                            "    private java.util.Calendar x;\n"+
-                            "    public void setCalendar(java.util.Calendar p) {\n"+
-                            "        l=x;\n"+
-                            "    }\n"+
-                            "}");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.Calendar l;\n" +
+                       "    private java.util.Calendar x;\n" +
+                       "    public void setCalendar(java.util.Calendar p) {\n" +
+                       "        l=x;\n" +
+                       "    }\n" +
+                       "}")
+                .run(ParamEncapsulation.class)
+                .assertWarnings();
     }
-
 }

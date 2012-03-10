@@ -42,8 +42,8 @@ package org.netbeans.modules.java.hints.declarative;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
 import org.netbeans.modules.java.hints.jackpot.spi.PatternConvertor;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.openide.util.lookup.ServiceProvider;
 
 /**

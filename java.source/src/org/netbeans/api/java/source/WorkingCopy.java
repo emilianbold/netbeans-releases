@@ -63,7 +63,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -76,7 +75,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Position.Bias;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -95,16 +93,15 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
+import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**XXX: extends CompilationController now, finish method delegation
@@ -298,27 +295,6 @@ public class WorkingCopy extends CompilationController {
     
     // Package private methods -------------------------------------------------        
     
-    private static void commit(CompilationUnitTree topLevel, List<Diff> diffs, Rewriter out) throws IOException, BadLocationException {
-        String s = codeForCompilationUnit(topLevel);
-        char[] buf = s.toCharArray();
-
-        // Copy any leading comments.
-        for (Diff d : diffs) {
-            switch (d.type) {
-                case INSERT:
-                    out.copyTo(d.getPos());
-                    out.writeTo(d.getText());
-                    break;
-                case DELETE:
-                    out.copyTo(d.getPos());
-                    out.skipThrough(buf, d.getEnd());
-                    break;
-                default:
-                    throw new AssertionError("unknown CasualDiff type: " + d.type);
-            }
-        }
-    }
-
     private static String codeForCompilationUnit(CompilationUnitTree topLevel) throws IOException {
         return ((JCTree.JCCompilationUnit) topLevel).sourcefile.getCharContent(true).toString();
     }
@@ -530,17 +506,8 @@ public class WorkingCopy extends CompilationController {
         
         userInfo.putAll(this.userInfo);
         
-        Collections.sort(diffs, new Comparator<Diff>() {
-            public int compare(Diff o1, Diff o2) {
-                return o1.getPos() - o2.getPos();
-            }
-        });
-
         try {
-            Rewriter r = new Rewriter(diffContext.file, diffContext.positionConverter, userInfo);
-            commit(diffContext.origUnit, diffs, r);
-
-            return r.diffs;
+            return DiffUtilities.diff2ModificationResultDifference(diffContext.file, diffContext.positionConverter, userInfo, codeForCompilationUnit(diffContext.origUnit), diffs);
         } catch (IOException ex) {
             if (!diffContext.file.isValid()) {
                 Logger.getLogger(WorkingCopy.class.getName()).log(Level.FINE, null, ex);
@@ -675,54 +642,4 @@ public class WorkingCopy extends CompilationController {
         return;
     }
     
-    // Innerclasses ------------------------------------------------------------
-    private static class Rewriter {
-
-        private int offset = 0;
-        private CloneableEditorSupport ces;
-        private PositionConverter converter;
-        private List<Difference> diffs = new LinkedList<Difference>();
-        private Map<Integer, String> userInfo;
-
-        public Rewriter(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo) throws IOException {
-            this.converter = converter;
-            this.userInfo = userInfo;
-            if (fo != null) {
-                DataObject dObj = DataObject.find(fo);
-                ces = dObj != null ? (CloneableEditorSupport)dObj.getCookie(EditorCookie.class) : null;
-            }
-            if (ces == null)
-                throw new IOException("Could not find CloneableEditorSupport for " + FileUtil.getFileDisplayName (fo)); //NOI18N
-        }
-
-        public void writeTo(String s) throws IOException, BadLocationException {                
-            Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
-            if (diff != null && diff.getKind() == Difference.Kind.REMOVE && diff.getEndPosition().getOffset() == offset) {
-                diff.kind = Difference.Kind.CHANGE;
-                diff.newText = s;
-            } else {
-                int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(new Difference(Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off, Bias.Backward), null, s, userInfo.get(offset)));
-            }
-        }
-
-        public void skipThrough(char[] in, int pos) throws IOException, BadLocationException {
-            String origText = new String(in, offset, pos - offset);
-            Difference diff = diffs.size() > 0 ? diffs.get(diffs.size() - 1) : null;
-            if (diff != null && diff.getKind() == Difference.Kind.INSERT && diff.getStartPosition().getOffset() == offset) {
-                diff.kind = Difference.Kind.CHANGE;
-                diff.oldText = origText;
-            } else {
-                int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(new Difference(Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset)));
-            }
-            offset = pos;
-        }
-
-        public void copyTo(int pos) throws IOException {
-            offset = pos;
-        }
-    }
 }

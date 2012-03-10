@@ -37,39 +37,47 @@
  */
 package org.netbeans.modules.java.hints;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class AnnotationAsSuperInterfaceTest extends TestBase {
+public class AnnotationAsSuperInterfaceTest extends NbTestCase {
 
     public AnnotationAsSuperInterfaceTest(String name) {
-        super(name, AnnotationAsSuperInterface.class);
+        super(name);
     }
 
     public void testAnalysis1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test implements Deprecated {\n" +
-                       "}\n",
-                       "1:29-1:39:verifier:HNT_AnnotationAsSuperInterface (Deprecated)");
+                       "}\n", false)
+                .run(AnnotationAsSuperInterface.class)
+                .assertWarnings("1:29-1:39:verifier:HNT_AnnotationAsSuperInterface (Deprecated)");
     }
 
     public void testAnalysis2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test implements Runnable {\n" +
-                       "}\n");
+                       "}\n", false)
+                .run(AnnotationAsSuperInterface.class)
+                .assertWarnings();
     }
 
     public void testAnalysis3() throws Exception {
-        performAnalysisTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test implements Deprecated, SuppressWarnings {\n" +
-                       "}\n",
-                       "1:29-1:39:verifier:HNT_AnnotationAsSuperInterface (Deprecated)",
-                       "1:41-1:57:verifier:HNT_AnnotationAsSuperInterface (SuppressWarnings)");
+                       "}\n", false)
+                .run(AnnotationAsSuperInterface.class)
+                .assertWarnings("1:29-1:39:verifier:HNT_AnnotationAsSuperInterface (Deprecated)",
+                                "1:41-1:57:verifier:HNT_AnnotationAsSuperInterface (SuppressWarnings)");
     }
 }

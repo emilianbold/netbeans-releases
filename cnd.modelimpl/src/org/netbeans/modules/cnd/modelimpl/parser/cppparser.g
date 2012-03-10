@@ -952,7 +952,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef enum_specifier)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
 /*    |
         // IZ#145071: forward declarations marked as error
@@ -966,7 +966,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? (LCURLY)
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
         ) =>
         {action.enum_declaration(LT(1));}
         (LITERAL___extension__!)?
@@ -979,7 +979,25 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
         {action.end_enum_declaration(LT(1));}
         SEMICOLON! //{end_of_stmt();}
         { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
-	|
+    |
+        // Enum definition (don't want to backtrack over this in other alts)
+        (   (LITERAL___extension__!)?
+            (   storage_class_specifier
+            |   cv_qualifier
+            )*
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? SEMICOLON
+        ) =>
+        {action.enum_declaration(LT(1));}
+        (LITERAL___extension__!)?
+            (   sc = storage_class_specifier
+            |   tq = cv_qualifier
+        )*
+        {if (statementTrace>=1) printf("external_declaration_3[%d]: Enum definition\n",LT(1).getLine());}
+        enum_specifier (init_declarator_list[declOther])? 
+        {action.end_enum_declaration(LT(1));}
+        SEMICOLON! //{end_of_stmt();}
+        { #external_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration); }
+    |
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
 		((template_head)? dtor_head[true] LCURLY)=>
@@ -1326,7 +1344,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = builtin_cv_type_specifier[ts])? LCURLY)=>
+		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (LCURLY | SEMICOLON) )=>
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
 		{if (statementTrace>=1) 
@@ -1339,7 +1357,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef enum_specifier)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|
 		// Constructor declarator
@@ -1694,7 +1712,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   (LITERAL_auto declarator[declOther, 0]) => 
+    (   ( (LITERAL_constexpr)? LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr)?
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
@@ -1911,24 +1930,33 @@ fix_fake_enum_members
     ;
 
 enum_specifier
-{int ts = 0;}
+{int ts = 0;
+ String qid;}
 :   LITERAL_enum
     (LITERAL_class! | LITERAL_struct!)?    
     (   (COLON ts = builtin_cv_type_specifier[ts])?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
-    |   id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
-        {action.enum_name(id);}
-
+    |   
+        ( (IDENT SCOPE) =>
+            qid = qualified_id
+        |
+            id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
+            {action.enum_name(id);}
+            {beginEnumDefinition(id.getText());}
+        )
                      // elaborated_type_specifier        
-        {beginEnumDefinition(id.getText());}
-        (   (COLON ts = builtin_cv_type_specifier[ts])?
-            {action.enum_body(LT(1));}
-            LCURLY enumerator_list 
-            {action.end_enum_body(LT(1));}
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | RCURLY )
+        (   (options {greedy=true;} : 
+                COLON ts = type_specifier[dsInvalid, false]
+            )?
+            (options {greedy=true;} :
+                {action.enum_body(LT(1));}
+                LCURLY enumerator_list 
+                {action.end_enum_body(LT(1));}
+                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                | RCURLY )
+            )?
         )
         {endEnumDefinition();}
     )
@@ -2389,10 +2417,13 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 	;
         
 trailing_type
-{int ts = tsInvalid;}
+{int ts = tsInvalid; TypeQualifier tq;}
     :
         POINTERTO 
+        (tq=cv_qualifier)*
         ts=type_specifier[dsInvalid, false]
+        (options {greedy=true;} : ptr_operator)*
+        (LSQUARE (constant_expression)? RSQUARE)*
     ;
 
 protected
@@ -2480,7 +2511,7 @@ ctor_head
 
 ctor_decl_spec returns [boolean friend = false]
 	:
-    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} )*
+    ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_explicit|LITERAL_friend {friend = true;} | LITERAL_constexpr )*
 	;
 
 ctor_declarator[boolean definition]
@@ -3419,7 +3450,7 @@ asm_block
 
 static_assert_declaration
     :
-        LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
+        LITERAL_static_assert LPAREN constant_expression COMMA (STRING_LITERAL)+ RPAREN SEMICOLON
     ;
 
 pro_c_statement
@@ -3550,12 +3581,19 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
 
             |   balanceParensInExpression 
             |   balanceSquaresInExpression 
-                (options {greedy = true;}:  
-                    (balanceParensInExpression)? 
-                    (trailing_type)? 
-                    compound_statement
-                )?
-
+                (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                    (
+                        (
+                            (LPAREN (parameter_list[false])? RPAREN)? 
+                            (LITERAL_mutable)?
+                        )
+                        (trailing_type)?
+                        compound_statement
+                        {#lazy_expression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #lazy_expression);}
+                    )
+                    {#lazy_expression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #lazy_expression);}
+                |
+                )
             |   constant
 
             |   LITERAL_typename
@@ -3610,10 +3648,10 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
-            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression
-            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression
+            |   {(!inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
+            |   {(inTemplateParams && !searchingGreaterthen)}? (IDENT balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => IDENT balanceLessthanGreaterthanInExpression (balanceCurlies)?
             |   SCOPE
-            |   id:IDENT {action.id(id);}
+            |   id:IDENT {action.id(id);} (balanceCurlies)?
             )
         )+
 
@@ -3640,6 +3678,19 @@ balanceParensInExpression
                     balanceParensInExpression
                 |
                     balanceSquaresInExpression
+                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                        (
+                            (
+                                (LPAREN (parameter_list[false])? RPAREN)? 
+                                (LITERAL_mutable)?
+                            )
+                            (trailing_type)?
+                            compound_statement
+                            {#balanceParensInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceParensInExpression);}
+                        )
+                        {#balanceParensInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceParensInExpression);}
+                    |
+                    )
                 |
                     ~(SEMICOLON | RCURLY | LCURLY | LPAREN | LSQUARE | RSQUARE)
                 |
@@ -3657,6 +3708,19 @@ balanceSquaresInExpression
                     balanceCurlies
                 |
                     balanceSquaresInExpression
+                    (   ((balanceParensInExpression)? (LITERAL_mutable)? (trailing_type)? LCURLY) =>                    
+                        (
+                            (
+                                (LPAREN (parameter_list[false])? RPAREN)? 
+                                (LITERAL_mutable)?
+                            )
+                            (trailing_type)?
+                            compound_statement
+                            {#balanceSquaresInExpression = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #balanceSquaresInExpression);}
+                        )
+                        {#balanceSquaresInExpression = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #balanceSquaresInExpression);}
+                    |
+                    )
                 |
                     balanceParensInExpression
                 |

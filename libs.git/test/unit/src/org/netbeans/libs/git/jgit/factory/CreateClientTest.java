@@ -74,7 +74,7 @@ public class CreateClientTest extends AbstractGitTestCase {
         String content = read(new File(gitFolder, "config"));
         write(new File(gitFolder, "config"), content + "[remote \"origin\"]\n	puttykeyfile = ");
         try {
-            GitRepository.getInstance(newLocation).getClient();
+            GitRepository.getInstance(newLocation).createClient();
             fail("Should fail");
         } catch (GitException ex) {
             assertEquals("It seems the config file for the repository at [" + newLocation.getAbsolutePath() + "] is corrupted.\nEnsure it ends with empty line.", ex.getMessage());

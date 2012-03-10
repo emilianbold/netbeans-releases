@@ -46,7 +46,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  *

@@ -157,9 +157,8 @@ public class JavaEvaluator implements Evaluator<JavaExpression> {
                 TreeEvaluator.class, "CTL_EvalError_disconnected"));
         } catch (InvalidStackFrameExceptionWrapper e) {
             JPDAThreadImpl t = (JPDAThreadImpl) csf.getThread();
-            String msg = "Thread "+t+", isSuspended = "+t.isSuspended()+", isSuspendedNoFire = "+t.isSuspendedNoFire()+
-                    ", isThreadSuspended = "+t.isThreadSuspended()+", isInStep = "+t.isInStep()+", isMethodInvoking = "+t.isMethodInvoking();
-            Exceptions.printStackTrace(Exceptions.attachMessage(e, msg)); // Should not occur
+            e = Exceptions.attachMessage(e, t.getThreadStateLog());
+            Exceptions.printStackTrace(Exceptions.attachMessage(e, "During evaluation of '"+expression.getExpression()+"'")); // Should not occur
             throw new InvalidExpressionException (NbBundle.getMessage(
                     JPDAThreadImpl.class, "MSG_NoCurrentContext"));
         } catch (EvaluationException e) {

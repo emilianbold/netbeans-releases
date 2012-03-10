@@ -57,6 +57,9 @@ import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.*;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.*;
@@ -111,8 +114,8 @@ public class IssueAccessorTest extends NbTestCase {
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-        if(TestConnector.kolibaRepository == null) {
-            TestConnector.kolibaRepository = new TestRepository("nb-jnet-test");
+        if(IATestConnector.kolibaRepository == null) {
+            IATestConnector.kolibaRepository = TestKit.getRepository(new IATestRepository("nb-jnet-test")).getRepository();
 //            TestConnector.goldenProjectRepository = new TestRepository("golden-project-1");
         }
     }
@@ -128,9 +131,10 @@ public class IssueAccessorTest extends NbTestCase {
 //    }
 
     public void testRecentIssuesOnOpen() throws MalformedURLException, CoreException, IOException, InterruptedException {
-        TestIssue issue1 = new TestIssue(TestConnector.kolibaRepository, "1");
-        TestIssue issue2 = new TestIssue(TestConnector.kolibaRepository, "2");
-        TestIssue issue3 = new TestIssue(TestConnector.kolibaRepository, "3");
+        
+        Issue issue1 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("1")).getIssue();
+        Issue issue2 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("2")).getIssue();
+        Issue issue3 = TestKit.getIssue(IATestConnector.kolibaRepository, new IATestIssue("3")).getIssue();
 
         KenaiIssueAccessor accessor = getIssueAccessor();
 
@@ -207,12 +211,12 @@ public class IssueAccessorTest extends NbTestCase {
         return kenai.getProject(name);
     }
 
-    private static class TestRepository extends RepositoryProvider {
-        private final RepositoryProvider delegate;
+    private static class IATestRepository extends TestRepository {
+        private final RepositoryImpl delegate;
 
-        public TestRepository(String name) throws IOException {
+        public IATestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
-            delegate = KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName());
+            delegate = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
         }
 
         @Override
@@ -224,13 +228,13 @@ public class IssueAccessorTest extends NbTestCase {
             return delegate.getLookup();
         }
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public IssueProvider getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
         public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
         public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
-        public QueryProvider createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
-        public IssueProvider createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public QueryProvider[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public IssueProvider[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
+        public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
+        public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
+        public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
@@ -243,11 +247,11 @@ public class IssueAccessorTest extends NbTestCase {
         }
     }
 
-    private static class TestIssue extends IssueProvider {
+    private static class IATestIssue extends TestIssue {
         private final String name;
         private final TestIssueController controller = new TestIssueController();
-        public TestIssue(RepositoryProvider repository, String name) {
-            super(repository);
+
+        public IATestIssue(String name) {
             this.name = name;
         }
         public String getDisplayName() {
@@ -288,6 +292,11 @@ public class IssueAccessorTest extends NbTestCase {
         public void addPropertyChangeListener(PropertyChangeListener listener) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
+
+        @Override
+        public TestIssue createFor(String id) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
     }
 
     private static class TestIssueController extends BugtrackingController {
@@ -305,16 +314,17 @@ public class IssueAccessorTest extends NbTestCase {
     }
 
     @BugtrackingConnector.Registration(
-            displayName=TestConnector.ID,
-            tooltip=TestConnector.ID,
-            id=TestConnector.ID
+            displayName=IATestConnector.ID,
+            tooltip=IATestConnector.ID,
+            id=IATestConnector.ID
     )
-    public static class TestConnector extends BugtrackingConnector {
+    public static class IATestConnector extends BugtrackingConnector {
         public final static String ID = "KenaiCconector";
-        static TestRepository kolibaRepository;
+        static Repository kolibaRepository;
 //        static TestRepository goldenProjectRepository;
+        private static IATestConnector instance;
 
-        public TestConnector() {
+        public IATestConnector() {
         }
         public String getDisplayName() {
             return ID;
@@ -322,17 +332,28 @@ public class IssueAccessorTest extends NbTestCase {
         public String getTooltip() {
             return ID;
         }
-        public RepositoryProvider createRepository(RepositoryInfo info) {
+        public Repository createRepository(RepositoryInfo info) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
-        public RepositoryProvider createRepository() {
+        public Repository createRepository() {
                 throw new UnsupportedOperationException("Not supported yet.");
         }
-        public RepositoryProvider[] getRepositories() {
-            return new RepositoryProvider[] {kolibaRepository /*, goldenProjectRepository*/};
+        public Repository[] getRepositories() {
+            return new Repository[] {kolibaRepository /*, goldenProjectRepository*/};
         }
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+        static IATestConnector getInstance() {
+            if(instance == null) {
+                DelegatingConnector[] conns = BugtrackingManager.getInstance().getConnectors();
+                for (DelegatingConnector dc : conns) {
+                    if(IATestConnector.ID.equals(dc.getID())) {
+                        instance = (IATestConnector) dc.getDelegate();
+                    }
+                }
+            }
+            return instance;
         }
     }  
 

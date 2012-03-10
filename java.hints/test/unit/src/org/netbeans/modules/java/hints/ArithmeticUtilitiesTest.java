@@ -47,8 +47,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.regex.Pattern;
-import static org.junit.Assert.*;
-import org.netbeans.modules.java.hints.jackpot.impl.TestBase;
+import org.netbeans.modules.java.hints.spiimpl.TestBase;
 
 /**
  *

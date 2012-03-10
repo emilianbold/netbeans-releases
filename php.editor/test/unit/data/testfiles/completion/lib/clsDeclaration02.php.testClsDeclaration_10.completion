@@ -13,6 +13,7 @@ PACKAGE    Data                            [PUBLIC]   null
 PACKAGE    Extra                           [PUBLIC]   null
 PACKAGE    ExtraThrow                      [PUBLIC]   null
 PACKAGE    Foo                             [PUBLIC]   null
+PACKAGE    FrontSpace                      [PUBLIC]   null
 PACKAGE    MC                              [PUBLIC]   null
 PACKAGE    MySpace                         [PUBLIC]   null
 PACKAGE    MySpaceThrow                    [PUBLIC]   null
@@ -46,6 +47,7 @@ CLASS      ClsDeclarationTest              [PUBLIC]   clsDeclaration02.php
 ------------------------------------
 PACKAGE    Application                     [PUBLIC]   Nette
 PACKAGE    BNS                             [PUBLIC]   ANS
+PACKAGE    Bar                             [PUBLIC]   Foo
 PACKAGE    Base                            [PUBLIC]   Brite
 PACKAGE    Controller                      [PUBLIC]   Brite
 PACKAGE    Data                            [PUBLIC]   Shit
@@ -80,6 +82,7 @@ CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin
 CLASS      AdminPresenter                  [PUBLIC,   AdminModule
+CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
@@ -89,7 +92,9 @@ CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   issue191666.php
+CLASS      BaseClass                       [PUBLIC]   FrontSpace
 CLASS      BaseClass                       [PUBLIC]   traits.php
+CLASS      BaseFrontClass                  [PUBLIC]   FrontSpace
 CLASS      BasePresenter                   [PUBLIC]   issue208784.php
 CLASS      Basic142234                     [PUBLIC]   issue142234.php
 CLASS      Blah                            [PUBLIC]   Testing\Ns
@@ -162,6 +167,7 @@ CLASS      MethodExample                   [PUBLIC]   test201870.php
 CLASS      Mine                            [PUBLIC]   tests144653.php
 CLASS      MockClass                       [PUBLIC]   MC
 CLASS      MyAbstractClass                 [PUBLIC,   issue200795.php
+CLASS      MyCls                           [PUBLIC]   anonymousObjectVariablesNs.php
 CLASS      MyNonAbstractClass              [PUBLIC]   issue200795.php
 CLASS      MyTable                         [PUBLIC]   MyTable.php
 CLASS      MyTextException                 [PUBLIC]   catchinstanceof.php

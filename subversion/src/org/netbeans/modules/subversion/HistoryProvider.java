@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.subversion;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
@@ -159,7 +160,7 @@ public class HistoryProvider implements VCSHistoryProvider {
 
             return ret.toArray(new HistoryEntry[ret.size()]);
         } catch (SVNClientException e) {
-            Subversion.LOG.log(Level.WARNING, null, e);
+            Subversion.LOG.log(SvnClientExceptionHandler.isCancelledAction(e.getMessage()) ? Level.FINE : Level.WARNING, null, e);
         }
         return null;
     }
@@ -223,17 +224,23 @@ public class HistoryProvider implements VCSHistoryProvider {
             openHistory(files);
         }
 
-        public void openHistory(File[] files) {
+        public void openHistory(final File[] files) {
             if(files == null || files.length == 0) {
                 return;
             }
-            // XXX do not use searchsupport, it diff against local state instead of previous revision
-            SvnSearchHistorySupport support = new SvnSearchHistorySupport(files[0]);
-            try {
-                support.searchHistory(-1);
-            } catch (IOException ex) {
-                Subversion.LOG.log(Level.WARNING, null, ex);
+            if(!org.netbeans.modules.subversion.api.Subversion.isClientAvailable(true)) {
+                org.netbeans.modules.subversion.Subversion.LOG.log(Level.WARNING, "Subversion client is unavailable");
+                return;
             }
+
+            /**
+            * Open in AWT
+            */
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    SearchHistoryAction.openHistory(files);
+                }
+            });
         }
     }
     

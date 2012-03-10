@@ -39,56 +39,64 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.perf;
 
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class InitialCapacityTest extends TestBase {
+public class InitialCapacityTest extends NbTestCase {
 
     public InitialCapacityTest(String name) {
-        super(name, InitialCapacity.class);
+        super(name);
     }
 
     public void testCollections1() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "import java.util.HashMap;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test(Map m, List l) {\n" +
-                            "         new HashMap();\n" +
-                            "         new HashMap(m);\n" +
-                            "         new HashMap(1);\n" +
-                            "         new ArrayList();\n" +
-                            "         new ArrayList(l);\n" +
-                            "         new ArrayList(1);\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:9-3:22:verifier:ERR_InitialCapacity_collections",
-                            "6:9-6:24:verifier:ERR_InitialCapacity_collections");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.util.ArrayList;\n" +
+                       "import java.util.List;\n" +
+                       "import java.util.HashMap;\n" +
+                       "import java.util.Map;\n" +
+                       "public class Test {\n" +
+                       "     private void test(Map m, List l) {\n" +
+                       "         new HashMap();\n" +
+                       "         new HashMap(m);\n" +
+                       "         new HashMap(1);\n" +
+                       "         new ArrayList();\n" +
+                       "         new ArrayList(l);\n" +
+                       "         new ArrayList(1);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(InitialCapacity.class)
+                .assertWarnings("6:9-6:22:verifier:ERR_InitialCapacity_collections",
+                                "9:9-9:24:verifier:ERR_InitialCapacity_collections");
     }
 
     public void testCollections2() throws Exception {
-        performAnalysisTest("test/Test.java",
-                            "package test;" +
-                            "import java.util.HashMap;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test(Map m, List l) {\n" +
-                            "         new HashMap<Object, Object>();\n" +
-                            "         new HashMap<Object, Object>(m);\n" +
-                            "         new HashMap<Object, Object>(1);\n" +
-                            "         new ArrayList<Object>();\n" +
-                            "         new ArrayList<Object>(l);\n" +
-                            "         new ArrayList<Object>(1);\n" +
-                            "     }\n" +
-                            "}\n",
-                            "3:9-3:38:verifier:ERR_InitialCapacity_collections",
-                            "6:9-6:32:verifier:ERR_InitialCapacity_collections");
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.util.ArrayList;\n" +
+                       "import java.util.HashMap;\n" +
+                       "import java.util.List;\n" +
+                       "import java.util.Map;\n" +
+                       "public class Test {\n" +
+                       "     private void test(Map m, List l) {\n" +
+                       "         new HashMap<Object, Object>();\n" +
+                       "         new HashMap<Object, Object>(m);\n" +
+                       "         new HashMap<Object, Object>(1);\n" +
+                       "         new ArrayList<Object>();\n" +
+                       "         new ArrayList<Object>(l);\n" +
+                       "         new ArrayList<Object>(1);\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(InitialCapacity.class)
+                .assertWarnings("6:9-6:38:verifier:ERR_InitialCapacity_collections",
+                                "9:9-9:32:verifier:ERR_InitialCapacity_collections");
     }
 }

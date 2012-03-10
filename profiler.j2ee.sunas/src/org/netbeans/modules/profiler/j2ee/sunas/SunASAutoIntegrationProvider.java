@@ -799,7 +799,7 @@ public abstract class SunASAutoIntegrationProvider extends AbstractScriptIntegra
     private String getProfilerAgentCommandLineArgsForDomainScript(String targetOS, boolean isRemote, int portNumber) {
         if (!IntegrationUtils.isWindowsPlatform(targetOS)
                 || (IntegrationUtils.getNativeLibrariesPath(targetOS, getTargetJava(), isRemote).indexOf(' ') == -1)) {
-            return IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS, getTargetJava(), isRemote, portNumber); // NOI18N
+            return IntegrationUtils.getProfilerAgentCommandLineArgsWithoutQuotes(targetOS, getTargetJava(), isRemote, portNumber, "&nbsp;"); // NOI18N
         }
 
         return getWinSpecificCommandLineArgs(targetOS, isRemote, portNumber);

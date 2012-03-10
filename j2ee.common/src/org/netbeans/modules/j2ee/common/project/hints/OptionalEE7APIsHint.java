@@ -42,33 +42,35 @@
 
 package org.netbeans.modules.j2ee.common.project.hints;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spi.AbstractHint;
+import static org.netbeans.modules.j2ee.common.project.hints.Bundle.*;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
-import org.openide.util.NbBundle;
-
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.openide.util.NbBundle.Messages;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.spi.java.hints.HintContext;
 
 /**
  * Warn user when implementation of EJBContainer is missing.
  */
-public class OptionalEE7APIsHint extends AbstractHint {
+@Hint(id="OptionalEE7APIsHint", category="api", displayName="#OptionalEE7APIsHint_DisplayName", description="#OptionalEE7APIsHint_Description", options=Hint.Options.QUERY)
+@Messages({
+    "OptionalEE7APIsHint_DisplayName=Be aware that this API will be optional in Java EE 7 platform.",
+    "OptionalEE7APIsHint_Description=Warn user about usage of APIs from technologies which will be made optional in Java EE 7 specification. These APIs are not deprecated and can be used but because they will be optional they may or may not be available in future Java EE 7 compliant platforms."
+})
+public class OptionalEE7APIsHint {
 
-    private static final Set<Tree.Kind> TREE_KINDS =
-            EnumSet.<Tree.Kind>of(Kind.MEMBER_SELECT, Kind.IDENTIFIER);
-    
     // these packages will be optional after EE6
     private static final List<String> optionalPackages = Arrays.asList(
             "javax.enterprise.deploy.model.",
@@ -90,22 +92,10 @@ public class OptionalEE7APIsHint extends AbstractHint {
             "javax.xml.rpc.soap."
             );
     
-    public OptionalEE7APIsHint() {
-        super(true, true, AbstractHint.HintSeverity.WARNING);
-    }
-    
-    @Override
-    public String getDescription() {
-        return NbBundle.getMessage(OptionalEE7APIsHint.class, "OptionalEE7APIsHint_Description"); // NOI18N
-    }
-
-    @Override
-    public Set<Kind> getTreeKinds() {
-        return TREE_KINDS;
-    }
-
-    @Override
-    public List<org.netbeans.spi.editor.hints.ErrorDescription> run(CompilationInfo info, TreePath treePath) {
+    @TriggerTreeKind({Kind.MEMBER_SELECT, Kind.IDENTIFIER})
+    public static List<ErrorDescription> run(HintContext context) {
+        CompilationInfo info = context.getInfo();
+        TreePath treePath = context.getPath();
         Element el = info.getTrees().getElement(treePath);
         if (el == null) {
             return null;
@@ -133,26 +123,14 @@ public class OptionalEE7APIsHint extends AbstractHint {
         List<Fix> fixes = new ArrayList<Fix>();
         return Collections.<ErrorDescription>singletonList(
                 ErrorDescriptionFactory.createErrorDescription(
-                getSeverity().toEditorSeverity(),
-                getDisplayName(),
+                context.getSeverity(),
+                OptionalEE7APIsHint_DisplayName(),
                 fixes,
                 info.getFileObject(),
                 (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), t),
                 (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), t)));
     }
 
-    @Override
-    public String getId() {
-        return "OptionalEE7APIsHint"; // NOI18N
-    }
-
-    @Override
-    public String getDisplayName() {
-        return NbBundle.getMessage(OptionalEE7APIsHint.class, "OptionalEE7APIsHint_DisplayName"); // NOI18N
-    }
-
-    @Override
-    public void cancel() {
-    }
+    private OptionalEE7APIsHint() {}
 
 }

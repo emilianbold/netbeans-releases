@@ -150,6 +150,11 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         }
     }
 
+    @Override
+    public String getShortName() {
+        return NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator"); //NOI18N
+    }
+
     /** Singleton accessor, finds instance in winsys structures */
     public static final NavigatorTC getInstance () {
         NavigatorTC navTC = (NavigatorTC)WindowManager.getDefault().
