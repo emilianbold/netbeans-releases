@@ -333,6 +333,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         };
         RequestProcessor rp = new RequestProcessor("FindUsagesQuery", CndUtils.getNumberCndWorkerThreads() + 1); // NOI18N
         
+        long time = System.currentTimeMillis();
         List<CsmFile> sortedFiles = new ArrayList<CsmFile>(files);
         Collections.sort(sortedFiles, new Comparator<CsmFile>() {
             @Override
@@ -346,8 +347,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
                 }
             }
         });
-        long time = System.currentTimeMillis();
-        LOG.log(Level.FINE, "sorting {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
+        LOG.log(Level.INFO, "creation of sorted {0} files took {1}ms", new Object[] {sortedFiles.size(), System.currentTimeMillis()-time});
         final List<OneFileWorker> work = new ArrayList<OneFileWorker>(sortedFiles.size());
         for (final CsmFile file : sortedFiles) {
             OneFileWorker task = new OneFileWorker(interrupter, file, onlyUsages, xRef, kinds, objs);
