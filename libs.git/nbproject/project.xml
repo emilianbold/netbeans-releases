@@ -78,12 +78,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.git</friend>
+            <public-packages>
                 <package>org.netbeans.libs.git</package>
                 <package>org.netbeans.libs.git.progress</package>
-                <package>org.netbeans.libs.git.utils</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>
