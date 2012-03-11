@@ -137,6 +137,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private final class InputStreamWrapper extends InputStream {
 
         private final InputStream is;
+        private boolean closed;
 
         public InputStreamWrapper(InputStream is) {
             this.is = is;
@@ -154,8 +155,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
             try {
                 is.close();
+                closed = true;
             } finally {
                 if (rwl.getReadLockCount() > 0) {
                     rwl.readLock().unlock();
@@ -353,6 +358,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
+        private boolean closed;
 
         public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
@@ -373,6 +379,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
             try {
                 delegate.close();
                 FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), true);
@@ -413,6 +422,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                         }
                     }
                 }
+                closed = true;
             } finally {
                 if (rwl.isWriteLocked()) {
                     rwl.writeLock().unlock();
