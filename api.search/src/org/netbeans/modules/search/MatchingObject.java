@@ -65,6 +65,7 @@ import static java.util.logging.Level.FINEST;
 import static java.util.logging.Level.SEVERE;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -73,6 +74,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,8 +84,8 @@ import org.openide.util.NbBundle;
  * @author  Marian Petras
  * @author  Tim Boudreau
  */
-public final class MatchingObject
-        implements Comparable<MatchingObject>, PropertyChangeListener {
+public final class MatchingObject implements Comparable<MatchingObject>,
+        PropertyChangeListener, Selectable {
 
     /** */
     private static final Logger LOG =
@@ -156,7 +158,7 @@ public final class MatchingObject
     private boolean valid = true;
     /** */
     private StringBuilder text;
-    
+    private ChangeSupport changeSupport = new ChangeSupport(this);
     /**
      * Creates a new {@code MatchingObject} with a reference to the found
      * object (returned by {@code SearchGroup}).
@@ -245,18 +247,34 @@ public final class MatchingObject
     
     /**
      */
-    void setSelected(boolean selected) {
+    @Override
+    public void setSelected(boolean selected) {
         if (selected == this.selected) {
             return;
         }
         
         this.selected = selected;
         matchesSelection = null;
+        fireChange();
     }
-    
+
+    @Override
+    public void setSelectedRecursively(boolean selected) {
+        if (this.selected == selected) {
+            return;
+        }
+        if (textDetails != null) {
+            for (TextDetail td : getTextDetails()) {
+                td.setSelectedRecursively(selected);
+            }
+        }
+        setSelected(selected);
+    }
+
     /**
      */
-    boolean isSelected() {
+    @Override
+    public boolean isSelected() {
         return selected;
     }
     
@@ -457,14 +475,14 @@ public final class MatchingObject
 
         List<Node> detailNodes = new ArrayList<Node>(textDetails.size());
         for (TextDetail txtDetail : textDetails) {
-            detailNodes.add(new TextDetail.DetailNode(txtDetail));
+            detailNodes.add(new TextDetail.DetailNode(txtDetail, false));
         }
 
         return detailNodes.toArray(new Node[detailNodes.size()]);
     }
 
-    public Children getDetailsChildren() {
-        return new DetailsChildren();
+    public Children getDetailsChildren(boolean replacing) {
+        return new DetailsChildren(replacing);
     }
 
     /**
@@ -553,6 +571,18 @@ public final class MatchingObject
 
     public DataObject getDataObject() {
         return dataObject;
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 
     /**
@@ -703,10 +733,10 @@ public final class MatchingObject
 
         int offsetShift = 0;
         for (int i=0; i < textMatches.size(); i++) {
-            if ((matchesSelection != null) && !matchesSelection[i]){
+            TextDetail textDetail = textMatches.get(i);
+            if (!textDetail.isSelected()){
                 continue;
             }
-            TextDetail textDetail = textMatches.get(i);
             String matchedSubstring = content.substring(textDetail.getStartOffset() + offsetShift, textDetail.getEndOffset() + offsetShift);
             if (!matchedSubstring.equals(textDetail.getMatchedText())) {
                 log(SEVERE, "file match part differs from the expected match");  //NOI18N
@@ -927,13 +957,16 @@ public final class MatchingObject
 
     private class DetailsChildren extends Children.Keys<TextDetail> {
 
-        public DetailsChildren() {
+        private boolean replacing;
+
+        public DetailsChildren(boolean replacing) {
+            this.replacing = replacing;
             setKeys(getTextDetails());
         }
 
         @Override
         protected Node[] createNodes(TextDetail key) {
-            return new Node[]{new TextDetail.DetailNode(key)};
+            return new Node[]{new TextDetail.DetailNode(key, replacing)};
         }
     }
 }

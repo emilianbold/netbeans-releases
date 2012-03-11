@@ -39,29 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search.ui;
-
-import java.util.List;
-import org.netbeans.modules.search.BasicComposition;
-import org.netbeans.modules.search.ResultModel;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.search;
 
 /**
  *
  * @author jhavlin
  */
-public class BasicSearchResultsPanel extends BasicAbstractResultsPanel {
+public interface Selectable {
 
-    public BasicSearchResultsPanel(ResultModel resultModel,
-            BasicComposition composition, boolean details,
-            List<FileObject> rootFiles) {
-        super(resultModel, composition, details, rootFiles,
-                new ResultsOutlineSupport(false, details, resultModel,
-                rootFiles));
-        init();
-    }
+    public boolean isSelected();
 
-    private void init() {
-        getContentPanel().add(resultsOutlineSupport.getOutlineView());
-    }
+    public void setSelected(boolean selected);
+
+    public void setSelectedRecursively(boolean selected);
 }

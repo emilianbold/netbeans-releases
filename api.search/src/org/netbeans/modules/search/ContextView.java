@@ -49,6 +49,9 @@ import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Rectangle;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import static java.lang.Thread.NORM_PRIORITY;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JEditorPane;
@@ -60,18 +63,17 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import javax.swing.tree.TreePath;
 import org.openide.ErrorManager;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import static java.lang.Thread.NORM_PRIORITY;
 
 /**
  * Panel for displaying context of a matching string within a file.
@@ -84,7 +86,7 @@ import static java.lang.Thread.NORM_PRIORITY;
  * @author  Tim Boudreau
  * @author  Marian Petras
  */
-final class ContextView extends JPanel implements TreeSelectionListener {
+public final class ContextView extends JPanel {
     
     /** */
     private static final String FILE_VIEW = "file view";                //NOI18N
@@ -124,13 +126,15 @@ final class ContextView extends JPanel implements TreeSelectionListener {
     private String msgMultipleFilesSelected = null;
     /** the current MIME-type set for the {@link #editorPane} */
     private String editorMimeType = null;
+    ExplorerManager explorerManager;
     
     /**
      * 
      * @author  Tim Boudreau
      * @author  Marian Petras
      */
-    public ContextView(ResultModel resultModel) {
+    public ContextView(ResultModel resultModel,
+            ExplorerManager explorerManager) {
         Border b = BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(        //outside border
                                 0, 0, 1, 0, 
@@ -164,6 +168,16 @@ final class ContextView extends JPanel implements TreeSelectionListener {
         add(messagePanel, MESSAGE_VIEW);
         
         setResultModel(resultModel);
+
+        this.explorerManager = explorerManager;
+        explorerManager.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt.getPropertyName().equals("selectedNodes")) {
+                    updateForSelection();
+                }
+            }
+        });
     }
     
     @Override
@@ -191,37 +205,6 @@ final class ContextView extends JPanel implements TreeSelectionListener {
             }
         }
         this.resultModel = resultModel;
-    }
-    
-    /**
-     */
-    void bindToTreeSelection(final JTree tree) {
-        assert EventQueue.isDispatchThread();
-        
-        displaySelectedFiles(tree);
-        tree.addTreeSelectionListener(this);
-    }
-    
-    /**
-     */
-    void unbindFromTreeSelection(final JTree tree) {
-        assert EventQueue.isDispatchThread();
-        
-        tree.removeTreeSelectionListener(this);
-        
-        synchronized (this) {           //PENDING - review synchronization
-            if (textFetcher != null) {
-                textFetcher.cancel();
-                textFetcher = null;
-            }
-        }
-    }
-
-    /**
-     * Called when selection of nodes in the result tree changes.
-     */
-    public void valueChanged(TreeSelectionEvent e) {
-        displaySelectedFiles((JTree) e.getSource());
     }
     
     /**
@@ -355,6 +338,41 @@ final class ContextView extends JPanel implements TreeSelectionListener {
         }
     }
 
+    private void updateForSelection() {
+        Node[] nodes = explorerManager.getSelectedNodes();
+        if (nodes.length == 0) {
+            displayNoFileSelected();
+        } else if (nodes.length == 1) {
+            Node n = nodes[0];
+            MatchingObject mo = n.getLookup().lookup(MatchingObject.class);
+            if (mo != null) {
+                displayFile(mo, -1);
+            } else {
+                Node parent = n.getParentNode();
+                TextDetail td = n.getLookup().lookup(TextDetail.class);
+                if (td != null && parent != null) {
+                    mo = parent.getLookup().lookup(
+                            MatchingObject.class);
+                    if (mo != null) {
+                        // TODO pass TextDetail directly
+                        int index = -1;
+                        for (int i = 0; i < mo.getTextDetails().size(); i++) {
+                            if (mo.getTextDetails().get(i) == td) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        displayFile(mo, index);
+                    }
+                } else {
+                    displayNoFileSelected();
+                }
+            }
+        } else {
+            displayMultipleItemsSelected();
+        }
+    }
+
     /**
      * Implementation of {@code TextDisplayer} which is passed to get the text
      * of an item.  The text is fetched from the file asynchronously, and then
@@ -372,6 +390,7 @@ final class ContextView extends JPanel implements TreeSelectionListener {
         /**
          * @author  Tim Boudreau
          */
+        @Override
         public void setText(final String text,
                             String mimeType,
                             final TextDetail location) {

@@ -65,7 +65,7 @@ import org.openide.util.UserQuestionException;
  * @author  Tim Boudreau
  * @author  Marian Petras
  */
-final class ReplaceTask implements Runnable {
+public final class ReplaceTask implements Runnable {
     
     /**
      * maximum number of errors detected before replacing
@@ -88,7 +88,7 @@ final class ReplaceTask implements Runnable {
     
     /**
      */
-    ReplaceTask(List<MatchingObject> matchingObjects) {
+    public ReplaceTask(List<MatchingObject> matchingObjects) {
         this.matchingObjects = matchingObjects;
         
         problems = new ArrayList<String>(4);

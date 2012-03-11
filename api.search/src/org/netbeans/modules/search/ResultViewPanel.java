@@ -75,7 +75,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
-import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.TextDetail.DetailNode;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
@@ -488,7 +487,7 @@ class ResultViewPanel extends JPanel{
         rememberInput(null, null);
 
         if (contextView != null) {
-            contextView.unbindFromTreeSelection(tree);
+            //contextView.unbindFromTreeSelection(tree);
             contextView = null;
         }
         if (splitPane != null) {
@@ -845,7 +844,7 @@ class ResultViewPanel extends JPanel{
              */
             resultsPanel.add(treeView, cardName);
             if (contextView != null) {
-                contextView.unbindFromTreeSelection(tree);
+                //contextView.unbindFromTreeSelection(tree);
                 rememberDividerLocation();
             }
         } else {
@@ -853,7 +852,7 @@ class ResultViewPanel extends JPanel{
 
             cardName = "tree and context";                              //NOI18N
             if (splitPane == null) {
-                contextView = new ContextView(resultModel);
+                contextView = new ContextView(resultModel, null);
                 splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,
                                            true,     //continuous layout
                                            treeView,         //left pane
@@ -873,7 +872,7 @@ class ResultViewPanel extends JPanel{
                 splitPane.setLeftComponent(treeView);
             }
             setDividerLocation();
-            contextView.bindToTreeSelection(tree);
+            //contextView.bindToTreeSelection(tree);
         }
         /*
          * Changing cards hides the component that represented the previous

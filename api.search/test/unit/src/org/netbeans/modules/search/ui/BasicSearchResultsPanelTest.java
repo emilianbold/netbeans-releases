@@ -107,11 +107,11 @@ public class BasicSearchResultsPanelTest {
     }
 
     private Node next(Node fromNode) {
-        return BasicSearchResultsPanel.findTextDetailNode(fromNode, 1);
+        return BasicAbstractResultsPanel.findTextDetailNode(fromNode, 1);
     }
 
     private Node prev(Node fromNode) {
-        return BasicSearchResultsPanel.findTextDetailNode(fromNode, -1);
+        return BasicAbstractResultsPanel.findTextDetailNode(fromNode, -1);
     }
 
     private static class RootNode extends AbstractNode {

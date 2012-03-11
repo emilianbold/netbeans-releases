@@ -45,6 +45,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.search.ui.BasicAbstractResultsPanel;
+import org.netbeans.modules.search.ui.BasicReplaceResultsPanel;
 import org.netbeans.modules.search.ui.BasicSearchResultsPanel;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.filesystems.FileObject;
@@ -60,7 +62,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     private ResultModel resultModel;
     private BasicSearchCriteria criteria;
     private BasicComposition composition;
-    private BasicSearchResultsPanel resultPanel;
+    private BasicAbstractResultsPanel resultPanel;
 
     public ResultDisplayer(BasicSearchCriteria criteria,
             BasicComposition composition) {
@@ -75,10 +77,13 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
 
     @Override
     public JComponent getVisualComponent() {
-
-        resultPanel = new BasicSearchResultsPanel(resultModel, composition,
-                criteria.isSearchAndReplace(), criteria.isFullText(),
-                composition.getRootFiles());
+        if (criteria.isSearchAndReplace()) {
+            resultPanel = new BasicReplaceResultsPanel(resultModel, composition,
+                    composition.getRootFiles());
+        } else {
+            resultPanel = new BasicSearchResultsPanel(resultModel, composition,
+                    criteria.isFullText(), composition.getRootFiles());
+        }
         return resultPanel;
     }
 

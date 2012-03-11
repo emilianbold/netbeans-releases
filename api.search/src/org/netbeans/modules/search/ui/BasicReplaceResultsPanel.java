@@ -41,8 +41,18 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JSplitPane;
 import org.netbeans.modules.search.BasicComposition;
+import org.netbeans.modules.search.ContextView;
+import org.netbeans.modules.search.Manager;
+import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.openide.filesystems.FileObject;
 
@@ -50,18 +60,46 @@ import org.openide.filesystems.FileObject;
  *
  * @author jhavlin
  */
-public class BasicSearchResultsPanel extends BasicAbstractResultsPanel {
+public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
-    public BasicSearchResultsPanel(ResultModel resultModel,
-            BasicComposition composition, boolean details,
-            List<FileObject> rootFiles) {
-        super(resultModel, composition, details, rootFiles,
-                new ResultsOutlineSupport(false, details, resultModel,
-                rootFiles));
+    private JButton replaceButton;
+
+    public BasicReplaceResultsPanel(ResultModel resultModel,
+            BasicComposition composition, List<FileObject> rootFiles) {
+        super(resultModel, composition, true, rootFiles,
+                new ResultsOutlineSupport(true, true, resultModel, rootFiles));
         init();
     }
 
     private void init() {
-        getContentPanel().add(resultsOutlineSupport.getOutlineView());
+        JPanel leftPanel = new JPanel();
+        replaceButton = new JButton("Replace");  //TODO I18N
+        replaceButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                replace();
+            }
+        });
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.PAGE_AXIS));
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new FlowLayout(FlowLayout.LEADING, 2, 1));
+        buttonPanel.add(replaceButton);
+        replaceButton.setMaximumSize(replaceButton.getPreferredSize());
+        leftPanel.add(resultsOutlineSupport.getOutlineView());
+        leftPanel.add(buttonPanel);
+
+        JSplitPane splitPane = new JSplitPane();
+        splitPane.setLeftComponent(leftPanel);
+        splitPane.setRightComponent(new ContextView(resultModel,
+                getExplorerManager()));
+
+        getContentPanel().add(splitPane);
+    }
+
+    private void replace() {
+        ReplaceTask taskReplace =
+                new ReplaceTask(resultModel.getMatchingObjects());
+        replaceButton.setEnabled(false);
+        Manager.getInstance().scheduleReplaceTask(taskReplace);
     }
 }

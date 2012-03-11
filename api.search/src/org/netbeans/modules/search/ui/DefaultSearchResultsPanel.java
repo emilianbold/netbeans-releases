@@ -48,6 +48,7 @@ import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer.NodeDisplayer;
+import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -73,6 +74,8 @@ public class DefaultSearchResultsPanel<T> extends AbstractSearchResultsPanel {
         getExplorerManager().setRootContext(resultsNode);
         this.nodeDisplayer = nodeDisplayer;
         resultsNode.update();
+        getContentPanel().add(new OutlineView(UiUtils.getText(
+                "BasicSearchResultsPanel.outline.nodes")));             //NOI18N
     }
 
     public void addMatchingObject(T object) {

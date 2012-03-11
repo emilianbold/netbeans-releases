@@ -150,7 +150,7 @@ public final class Manager {
     
     /**
      */
-    synchronized void scheduleReplaceTask(ReplaceTask task) {
+    public synchronized void scheduleReplaceTask(ReplaceTask task) {
         assert EventQueue.isDispatchThread();
         
         pendingTasks.add(task);

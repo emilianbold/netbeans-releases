@@ -48,13 +48,13 @@ import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import org.netbeans.api.search.SearchControl;
 import org.netbeans.spi.search.provider.SearchComposition;
 import org.netbeans.spi.search.provider.SearchProvider;
 import org.netbeans.spi.search.provider.SearchProvider.Presenter;
 import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.OutlineView;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -106,7 +106,7 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
 
         jPanel1 = new javax.swing.JPanel();
         toolBar = new javax.swing.JToolBar();
-        outline = createOutlineView();
+        contentPanel = new javax.swing.JPanel();
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -128,17 +128,18 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         toolBar.setRequestFocusEnabled(false);
         add(toolBar, java.awt.BorderLayout.WEST);
 
-        outline.setBorder(null);
-        add(outline, java.awt.BorderLayout.CENTER);
+        contentPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(153, 153, 153)));
+        contentPanel.setLayout(new javax.swing.BoxLayout(contentPanel, javax.swing.BoxLayout.LINE_AXIS));
+        add(contentPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel contentPanel;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane outline;
     private javax.swing.JToolBar toolBar;
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public ExplorerManager getExplorerManager() {
+    public final ExplorerManager getExplorerManager() {
         return explorerManager;
     }
 
@@ -187,8 +188,8 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
         button.setPreferredSize(dim);
     }
 
-    protected OutlineView getOutlineView() {
-        return (OutlineView) outline;
+    protected JPanel getContentPanel() {
+        return contentPanel;
     }
 
     protected SearchComposition getSearchComposition() {
@@ -221,10 +222,5 @@ public abstract class AbstractSearchResultsPanel extends javax.swing.JPanel
      */
     protected AbstractButton[] createButtons() {
         return new AbstractButton[] {};
-    }
-
-    private OutlineView createOutlineView() {
-        return new OutlineView(UiUtils.getText(
-                "BasicSearchResultsPanel.outline.nodes"));              //NOI18N
     }
 }

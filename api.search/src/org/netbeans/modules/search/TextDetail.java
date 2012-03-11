@@ -50,9 +50,13 @@ import java.io.CharConversionException;
 import javax.swing.Action;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.Caret;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
+import org.netbeans.modules.search.ui.ReplaceCheckableNode;
+import org.netbeans.modules.search.ui.ResultsOutlineSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.loaders.DataObject;
@@ -62,6 +66,7 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
@@ -77,7 +82,7 @@ import org.openide.xml.XMLUtil;
  * @author Tomas Pavek
  * @author Marian Petras
  */
-public final class TextDetail {
+public final class TextDetail implements Selectable {
 
     /** Property name which indicates this detail to show. */
     public static final int DH_SHOW = 1;
@@ -106,7 +111,10 @@ public final class TextDetail {
     private int endOffset;
     /** Whole matched text */
     private String matchedText;
+    /** Selected flag */
+    private boolean selected = true;
 
+    private ChangeSupport changeSupport = new ChangeSupport(this);
     /** Constructor using data object. 
      * @param pattern  SearchPattern used to create the hit of this DetailNode 
      */
@@ -341,6 +349,36 @@ public final class TextDetail {
         return from;
     }
 
+    @Override
+    public boolean isSelected() {
+        return selected;
+    }
+
+    @Override
+    public void setSelected(boolean selected) {
+        if (this.selected != selected) {
+            this.selected = selected;
+            fireChange();
+        }
+    }
+
+    @Override
+    public void setSelectedRecursively(boolean selected) {
+        setSelected(selected); // always leaf
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
+    }
+
+    public void fireChange() {
+        changeSupport.fireChange();
+    }
+
     /**
      * Node that represents information about one occurence of a matching
      * string.
@@ -359,8 +397,9 @@ public final class TextDetail {
          *
          * @param txtDetail  information to be represented by this node
          */
-        public DetailNode(TextDetail txtDetail) {
-            super(Children.LEAF, Lookups.singleton(txtDetail));
+        public DetailNode(TextDetail txtDetail, boolean replacing) {
+            super(Children.LEAF, Lookups.fixed(txtDetail,
+                    new ReplaceCheckableNode(txtDetail, replacing)));
             
             this.txtDetail = txtDetail;
             
@@ -372,6 +411,13 @@ public final class TextDetail {
             // changes it and saves - the Line objects are not created for the
             // original set of lines.
             txtDetail.prepareLine();
+            txtDetail.addChangeListener(new ChangeListener() {
+                @Override
+                public void stateChanged(ChangeEvent e) {
+                    fireIconChange();
+                    ResultsOutlineSupport.toggleParentSelected(DetailNode.this);
+                }
+            });
         }
         
         /** {@inheritDoc} */

@@ -43,6 +43,8 @@ package org.netbeans.modules.search.ui;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.MatchingObject;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
@@ -58,10 +60,25 @@ public class MatchingObjectNode extends FilterNode {
 
     public MatchingObjectNode(Node original,
             org.openide.nodes.Children children,
-            MatchingObject matchingObject) {
-        super(original, children, Lookups.fixed());
+            MatchingObject matchingObject, final boolean replacing) {
+        this(original, children, matchingObject,
+                new ReplaceCheckableNode(matchingObject, replacing));
+    }
 
+    private MatchingObjectNode(Node original,
+            org.openide.nodes.Children children,
+            MatchingObject matchingObject,
+            ReplaceCheckableNode checkableNode) {
+        super(original, children, Lookups.fixed(matchingObject, checkableNode));
         this.matchingObject = matchingObject;
+        matchingObject.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                fireIconChange();
+                ResultsOutlineSupport.toggleParentSelected(
+                        MatchingObjectNode.this);
+            }
+        });
     }
 
     @Override
