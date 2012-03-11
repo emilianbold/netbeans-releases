@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
@@ -1457,7 +1458,7 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public CharSequence getName() {
-        return CharSequences.create(fileBuffer.getFileObject().getNameExt());
+        return CharSequences.create(PathUtilities.getBaseName(getAbsolutePath().toString()));
     }
 
     @Override
