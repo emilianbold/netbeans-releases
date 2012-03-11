@@ -101,8 +101,7 @@ public final class WebBrowser {
      * showing rendered view of the HTML document.
      */
     public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent) {
-        return new WebBrowserPane(factoryDesc.getFactory().createHtmlBrowserImpl(), 
-                factoryDesc.getFactory(), wrapEmbeddedBrowserInTopComponent);
+        return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent);
     }
 
     

@@ -60,11 +60,10 @@ import org.openide.util.Lookup;
 public final class WebBrowserPane {
 
     private HtmlBrowser.Impl impl;
-    private HtmlBrowser.Factory fact;
+    private WebBrowserFactoryDescriptor descriptor;
     private final List<WebBrowserPaneListener> listeners = 
         new CopyOnWriteArrayList<WebBrowserPaneListener>();
     private PropertyChangeListener listener;
-    private boolean embedded;
     private HtmlBrowserComponent topComponent;
     private boolean wrapEmbeddedBrowserInTopComponent;
     private boolean createTopComponent = false;
@@ -73,17 +72,16 @@ public final class WebBrowserPane {
 //        this(comp.getBrowserImpl(), null, false, comp);
 //    }
     
-    WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, 
+    WebBrowserPane(WebBrowserFactoryDescriptor desc, 
             boolean wrapEmbeddedBrowserInTopComponent) 
     {
-        this(impl, fact, wrapEmbeddedBrowserInTopComponent, null);
+        this(desc, wrapEmbeddedBrowserInTopComponent, null);
     }
     
-    private WebBrowserPane(HtmlBrowser.Impl impl, HtmlBrowser.Factory fact, 
+    private WebBrowserPane(WebBrowserFactoryDescriptor descriptor, 
             boolean wrapEmbeddedBrowserInTopComponent, HtmlBrowserComponent comp) 
     {
-        this.impl = impl;
-        this.fact = fact;
+        this.descriptor = descriptor;
         this.wrapEmbeddedBrowserInTopComponent = wrapEmbeddedBrowserInTopComponent;
         listener = new PropertyChangeListener() {
             @Override
@@ -98,14 +96,24 @@ public final class WebBrowserPane {
                 }
             }
         };
-        impl.addPropertyChangeListener(listener);
-        embedded = impl.getComponent() != null;
+        /*
+         * That's bad practice: HtmlBrowserComponent will create other impl 
+         * to work with it internally. So there will be two different
+         * not related impls with different Swing Components.
+         * embedded = impl.getComponent() != null;
+         */
+        
         if (comp != null) {
             topComponent = comp;
-        } else {
+        } 
+        else {
             if (isEmbedded() && wrapEmbeddedBrowserInTopComponent) {
                 // this needs to happen in AWT thread so let's do it later
                 createTopComponent = true;
+            }
+            else {
+                impl = descriptor.getFactory().createHtmlBrowserImpl();
+                impl.addPropertyChangeListener(listener);
             }
         }
     }
@@ -114,16 +122,21 @@ public final class WebBrowserPane {
         if (topComponent == null && createTopComponent) {
             // below constructor sets some TopComponent properties and needs
             // to be therefore called in AWT thread:
-            topComponent = new HtmlBrowserComponent(fact, false, false);
+            topComponent = new HtmlBrowserComponent(descriptor.getFactory(), 
+                    false, false);
         }
         return topComponent;
     }
-
+    
     /**
      * Is this embedded or external browser.
      */
     public boolean isEmbedded() {
-        return embedded;
+        /*
+         *  XXX : that's handle only WebView case in a hacky way. But there is 
+         *  no currently API to determine embedded browser in appropriate way. 
+         */
+        return descriptor.getId()!= null && descriptor.getId().contains("webviewBrowser");  // NOI18N
     }
 
     /**
@@ -168,6 +181,10 @@ public final class WebBrowserPane {
                 HtmlBrowserComponent comp = getTopComponent();
                 if (comp != null) {
                     comp.setURLAndOpen(u);
+                    impl = topComponent.getBrowserImpl();
+                    if ( impl!= null){
+                        impl.addPropertyChangeListener(listener);
+                    }
                 } else {
                     impl.setURL(u);
                 }
@@ -188,7 +205,21 @@ public final class WebBrowserPane {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                impl.reloadDocument();
+                if (impl != null ) {
+                    impl.reloadDocument();
+                }
+                else {
+                    HtmlBrowserComponent comp = getTopComponent();
+                    if (comp != null) {
+                        impl = comp.getBrowserImpl();
+                        if ( impl == null ){
+                            comp.setURLAndOpen( comp.getDocumentURL());
+                        }
+                        else {
+                            impl.reloadDocument();
+                        }
+                    }
+                }
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -202,6 +233,9 @@ public final class WebBrowserPane {
      * Lookup associated with this browser pane.
      */
     public Lookup getLookup() {
+        if ( impl == null ){
+            return Lookup.EMPTY;
+        }
         return impl.getLookup();
     }
 

@@ -183,7 +183,7 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
     public HelpCtx getHelpCtx () {
         return new HelpCtx(HtmlBrowserComponent.class);
     }
-
+    
     @Override
     protected void componentActivated () {
         if( null == browserComponent ) {
@@ -391,6 +391,10 @@ public class HtmlBrowserComponent extends CloneableTopComponent implements Prope
             open();
             requestActive();
         }
+    }
+    
+    public HtmlBrowser.Impl getBrowserImpl(){
+        return browserComponent.getBrowserImpl();
     }
     
 public static final class BrowserReplacer implements java.io.Externalizable {
