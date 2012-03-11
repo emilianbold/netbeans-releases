@@ -48,7 +48,9 @@ import java.io.Serializable;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
+import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.CharSequences;
 import org.openide.util.Parameters;
 
 /**
@@ -60,6 +62,7 @@ public final class APTFileNode extends APTContainerNode
     private static final long serialVersionUID = -6182803432699849825L;
     transient private FileSystem fileSystem;
     private final CharSequence path;
+    private volatile CharSequence guard = CharSequences.empty();
     transient private boolean tokenized;
     
     /** Copy constructor */
@@ -67,7 +70,8 @@ public final class APTFileNode extends APTContainerNode
         super(orig);
         this.fileSystem = orig.fileSystem;
         this.path = orig.path;
-        this.tokenized = false;        
+        this.tokenized = false;
+        this.guard = orig.guard;
     }
     
     /** Creates a new instance of APTFileNode */
@@ -75,7 +79,12 @@ public final class APTFileNode extends APTContainerNode
         Parameters.notNull("null fileSystem", fileSystem); //NOI18N
         this.fileSystem = fileSystem;
         this.path = FilePathCache.getManager().getString(path);
+        this.guard = TextCache.getManager().getString(guard);
         tokenized = true;
+    }
+
+    /**package*/void setGuard(CharSequence guard) {
+        this.guard = TextCache.getManager().getString(guard);
     }
     
     @Override
@@ -147,5 +156,10 @@ public final class APTFileNode extends APTContainerNode
     @Override
     public final void setNextSibling(APT next) {
         assert(false):"Illegal to add siblings to file node"; // NOI18N
+    }
+
+    @Override
+    public CharSequence getGuardMacro() {
+        return guard;
     }
 }
