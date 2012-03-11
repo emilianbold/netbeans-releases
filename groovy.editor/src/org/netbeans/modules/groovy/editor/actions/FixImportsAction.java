@@ -43,21 +43,14 @@ package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.ModificationResult;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -71,7 +64,6 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -93,10 +85,6 @@ public class FixImportsAction extends BaseAction {
     private final List<String> missingNames;
     private final AtomicBoolean cancel;
     
-    private DataObject dob;
-    private FileObject fo;
-    private Source source;
-    
 
     public FixImportsAction() {
         super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
@@ -114,7 +102,8 @@ public class FixImportsAction extends BaseAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-        init(target.getDocument());
+        final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
+        final Source source = Source.create(fo);
 
         try {
             ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask());
@@ -155,12 +144,6 @@ public class FixImportsAction extends BaseAction {
                 }
             }, "Fix All Imports", cancel, false);
         }
-    }
-
-    private void init(Document document) {
-        dob = NbEditorUtilities.getDataObject(document);
-        fo = dob.getPrimaryFile();
-        source = Source.create(fo);
     }
 
     private class CollectMissingImportsTask extends UserTask {
