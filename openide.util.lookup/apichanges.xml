@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
             ProxyLookup.lookupAll()</a> and other methods that compute
             aggregate results delays computation of the result. This
             may affect code which called 
-            <a href="@TOP@/org/openide/util/lookup/Lookup.Result.html">Lookup.Result</a>.<code>allItems</code>, 
+            <a href="@TOP@/org/openide/util/Lookup.Result.html">Lookup.Result</a>.<code>allItems</code>, 
             <code>allInstances</code> or <code>allClasses</code> and relied
             on side effect of such call. In case you want to trigger the 
             computation call some method on the returned
