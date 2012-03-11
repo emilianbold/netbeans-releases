@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.websocket;
+package org.netbeans.modules.netserver;
 
 import java.io.IOException;
 import java.nio.channels.SelectionKey;

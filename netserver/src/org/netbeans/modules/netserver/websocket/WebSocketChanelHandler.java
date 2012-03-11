@@ -40,42 +40,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.websocket;
+package org.netbeans.modules.netserver.websocket;
 
-import java.nio.channels.SelectionKey;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 
 
 /**
- * Handler of data read (and connections accepted/closed)
- * by a WebSocket server.
- * 
  * @author ads
- * @author Jan Stola
+ *
  */
-public interface WebSocketReadHandler {
+interface WebSocketChanelHandler {
+    
+    String HTTP_RESPONSE = "HTTP/1.1 101 Web Socket Protocol Handshake";    // NOI18N
+    
+    String WS_UPGRADE = "Upgrade: WebSocket";                               // NOI18N
+    
+    String CONN_UPGRADE = "Connection: Upgrade";                            // NOI18N
+    
+    String CRLF = "\r\n";                                                   // NOI18N
+    
+    String HOST = "Host";                                                   // NOI18N
 
-    /**
-     * Invoked when a new connection is accepted.
-     * 
-     * @param key selection key corresponding to the connected channel/socket.
-     */
-    void accepted(SelectionKey key);
+    void sendHandshake( );
 
-    /**
-     * Invoked when some data are received from the peer.
-     * 
-     * @param key selection key corresponding to the channel/socket
-     * from which the data were read.
-     * @param message data received from the peer.
-     * @param dataType type of the data.
-     */
-    void read( SelectionKey key , byte[] message , Integer dataType );
+    void read( ByteBuffer byteBuffer ) throws IOException ;
 
-    /**
-     * Invoked when some connection is closed.
-     * 
-     * @param key selection key corresponding to the closed channel/socket.
-     */
-    void closed(SelectionKey key);
-
+    byte[] createTextFrame( String message );
 }
