@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.websocket;
+package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -55,6 +55,9 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.netserver.ReadHandler;
+import org.netbeans.modules.netserver.SocketServer;
 
 
 /**
@@ -66,6 +69,8 @@ public class WebSocketServer extends SocketServer {
     public static final String UTF_8 = "UTF-8";                    // NOI18N
     static final int BYTES = 1000;  
     private static final char NEW_LINE = '\n';
+    
+    protected static final Logger LOG = SocketServer.LOG;
     
     static final String VERSION = "Sec-WebSocket-Version";  // NOI18N
     static final String KEY = "Sec-WebSocket-Key";          // NOI18N
@@ -104,6 +109,11 @@ public class WebSocketServer extends SocketServer {
     @Override
     protected Queue<ByteBuffer> getWriteQueue( SelectionKey key ) {
         return getContext(key).getQueue();
+    }
+
+    @Override
+    protected SocketAddress getAddress() {
+        return super.getAddress();
     }
     
     /* (non-Javadoc)

@@ -192,7 +192,6 @@
                 <friend>org.netbeans.modules.css.lib</friend>
                 <friend>org.netbeans.modules.css.model</friend>
                 <friend>org.netbeans.modules.css.visual</friend>
-                <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
@@ -211,13 +210,9 @@
                 <friend>org.netbeans.modules.web.jsfapi</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.common.api</package>
-                <package>org.netbeans.modules.web.common.api.browser</package>
                 <package>org.netbeans.modules.web.common.refactoring</package>
                 <package>org.netbeans.modules.web.common.spi</package>
-                <package>org.netbeans.modules.web.common.spi.browser</package>
-                <package>org.netbeans.modules.web.common.spi.clientproject</package>
                 <package>org.netbeans.modules.web.common.taginfo</package>
-                <package>org.netbeans.modules.web.common.websocket</package>
             </friend-packages>
         </data>
     </configuration>

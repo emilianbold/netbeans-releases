@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.common.websocket;
+package org.netbeans.modules.netserver.websocket;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -52,6 +52,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 
 import javax.xml.bind.DatatypeConverter;
+import org.netbeans.modules.netserver.SocketServer;
 
 
 /**
@@ -218,7 +219,7 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
         byteBuffer.flip();
         byte masknLength = byteBuffer.get();
         if ( masknLength>=0 ){   // first bit is not set
-            SocketServer.LOG.log(Level.WARNING, 
+            WebSocketServer.LOG.log(Level.WARNING, 
                     "Unexpected client data. Frame is not masked"); // NOI18N
             close( key );
             return false;
@@ -352,7 +353,7 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
                             Charset.forName(WebSocketServer.UTF_8))));
         }
         catch (NoSuchAlgorithmException e) {
-            SocketServer.LOG.log(Level.WARNING, null , e);
+            WebSocketServer.LOG.log(Level.WARNING, null , e);
             return null;
         } 
     }
@@ -362,7 +363,7 @@ class WebSocketHandler7 implements WebSocketChanelHandler {
             server.close(key);
         }
         catch( IOException e ){
-            SocketServer.LOG.log( Level.WARNING , null , e);
+            WebSocketServer.LOG.log( Level.WARNING , null , e);
         }
     }
 
