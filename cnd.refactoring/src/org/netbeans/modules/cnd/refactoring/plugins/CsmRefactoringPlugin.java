@@ -76,6 +76,8 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
 
     @Override
     public Problem preCheck() {
+        // reset cancelled state to support refresh action of cancelled/stopped refactorings
+        cancelRequest = false;
         return null;
     }
 
