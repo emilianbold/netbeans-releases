@@ -37,37 +37,37 @@ function Ridic(name, surname){
     }
 }
 
-function Kolo () {
+function Kolo() {
     var ctverec = "ctverect in kolo";
     this.trojuhelnik = "trojuhelnik";
 
-    this.description = function () {
+    this.description = function() {
         println(obdelnik);
         println("kulate kolo " + // trailing comment
                 ctverec);
     }
 }
 
-Kolo.prototype.getColor = function () {
+Kolo.prototype.getColor = function() {
     println("Kolo.getColor is called:");
     println(addSpace(4) + ctverec);
     println(addSpace(4) + this.trojuhelnik);
     return "black";
 }
 
-Kolo.prototype.isEmpty = function () {
+Kolo.prototype.isEmpty = function() {
     return "is not empty";
 }
 
 
-Ridic.prototype.getSurname = function () {
+Ridic.prototype.getSurname = function() {
     return this.surname;
 }
 
 var motor = {
     pocetValcu : 8,
     vykon: "22kfdafa",
-    getDescription: function () {
+    getDescription: function() {
         println ('Pocet valcu: ' + this.pocetValcu + ' s vykonem: ' + this.vykon);
     }
 }

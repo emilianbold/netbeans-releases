@@ -6,7 +6,7 @@ function Car (color, maker) {
         return this.color;
     }
 
-    this.getMaker = function () {
+    this.getMaker = function() {
         return this.maker;
     }
 }

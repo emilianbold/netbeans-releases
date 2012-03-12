@@ -221,6 +221,10 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceAroundTernaryOps());
                             break;
+                        case BEFORE_FUNCTION_DECLARATION:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeMethodDeclParen());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

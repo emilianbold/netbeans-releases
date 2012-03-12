@@ -1,12 +1,12 @@
 var test = 3;
-function Car (color, maker) {
+function Car(color, maker) {
     this.color = color;
     this.maker = maker;
 
-    this.getColor = function () {
+    this.getColor = function() {
         return this.color;
     }
-    this.getMaker = function () {
+    this.getMaker = function() {
         //test
         return 2
                 + 3
@@ -14,7 +14,7 @@ function Car (color, maker) {
 }
 
 // fsdfsdfsd
-function Address (street, town, country) {
+function Address(street, town, country) {
     this.street = street;
     this.town = town;
     this.country = country;
