@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import com.sun.source.util.TreePath;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementHeaders;
@@ -54,6 +55,7 @@ import org.netbeans.modules.refactoring.java.api.ExtractInterfaceRefactoring;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -61,20 +63,24 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Matula, Jan Becicka, Jan Pokorsky
  */
-public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
+public final class ExtractInterfaceRefactoringUI implements RefactoringUI, JavaRefactoringUIFactory {
     // reference to extract interface refactoring this UI object corresponds to
-    private final ExtractInterfaceRefactoring refactoring;
+    private ExtractInterfaceRefactoring refactoring;
     // source type
-    private final TreePathHandle sourceType;
+    private TreePathHandle sourceType;
     // UI panel for collecting parameters
     private ExtractInterfacePanel panel;
     private String name;
+
+    private ExtractInterfaceRefactoringUI() {
+    }
     
     /** Creates a new instance of ExtractInterfaceRefactoringUI
      * @param selectedElement Elements the refactoring action was invoked on.
      */
-    public static ExtractInterfaceRefactoringUI create(TreePathHandle selectedElement, CompilationInfo info) {
-        TreePath path = selectedElement.resolve(info);
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+        TreePath path = handles[0].resolve(info);
 
         path = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
 
@@ -154,5 +160,10 @@ public final class ExtractInterfaceRefactoringUI implements RefactoringUI {
     private void captureParameters() {
         panel.storeSettings();
     }
+    
+    public static JavaRefactoringUIFactory factory() {
+        return new ExtractInterfaceRefactoringUI();
+    }
+
     
 }

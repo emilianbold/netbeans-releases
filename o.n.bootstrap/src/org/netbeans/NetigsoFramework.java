@@ -57,6 +57,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 public abstract class NetigsoFramework {
+    private ModuleManager mgr;
+    
     protected NetigsoFramework() {
         if (!getClass().getName().equals("org.netbeans.core.netigso.Netigso")) { // NOI18N
             throw new IllegalStateException();
@@ -152,6 +154,26 @@ public abstract class NetigsoFramework {
         return JarClassLoader.archive.getData(resources, name);
     }
 
+    /** Creates a delegating loader for given module. The loader is suitable
+     * for use as a delegating loader for a fake OSGi bundle.
+     * @param cnb name of the bundle/module
+     * @return classloader or null if the module does not exist
+     * @since 2.50
+     */
+    protected final ClassLoader createClassLoader(String cnb) {
+        Module m = findModule(cnb);
+        return m == null ? null : new NetigsoLoader(m);
+    }
+    
+    /** Finds module for given name.
+     * @param cnb code name base of the module
+     * @return the module or null
+     * @since 2.50
+     */
+    protected final Module findModule(String cnb) {
+        return mgr.get(cnb);
+    }
+
     //
     // Implementation
     //
@@ -168,7 +190,7 @@ public abstract class NetigsoFramework {
         toEnable.addAll(newlyEnabling);
     }
 
-    static Set<Module> turnOn(ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
+    static Set<Module> turnOn(ModuleManager mgr, ClassLoader findNetigsoFrameworkIn, Collection<Module> allModules) throws InvalidException {
         boolean found = false;
         if (framework == null) {
             for (Module m : toEnable) {
@@ -188,10 +210,11 @@ public abstract class NetigsoFramework {
         if (framework == null) {
             throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
         }
+        framework.mgr = mgr;
         getDefault().prepare(lkp, allModules);
         toEnable.clear();
         toEnable.trimToSize();
-        delayedInit();
+        delayedInit(mgr);
         Set<String> cnbs = framework.start(allModules);
         if (cnbs == null) {
             return Collections.emptySet();
@@ -206,7 +229,7 @@ public abstract class NetigsoFramework {
         return additional;
     }
 
-    private static boolean delayedInit() throws InvalidException {
+    private static boolean delayedInit(ModuleManager mgr) throws InvalidException {
         List<NetigsoModule> init;
         synchronized (NetigsoFramework.class) {
             init = toInit;
@@ -215,25 +238,22 @@ public abstract class NetigsoFramework {
                 return true;
             }
         }
-        InvalidException thrw = null;
+        Set<NetigsoModule> problematic = new HashSet<NetigsoModule>();
         for (NetigsoModule nm : init) {
             try {
                 nm.start();
             } catch (IOException ex) {
                 nm.setEnabled(false);
                 InvalidException invalid = new InvalidException(nm, ex.getMessage());
-                if (thrw == null) {
-                    invalid.initCause(ex);
-                } else {
-                    invalid.initCause(thrw);
-                }
-                thrw = invalid;
+                nm.setProblem(invalid);
+                problematic.add(nm);
             }
         }
-        if (thrw != null) {
-            throw thrw;
+        if (!problematic.isEmpty()) {
+            mgr.getEvents().log(Events.FAILED_INSTALL_NEW, problematic);
         }
-        return false;
+        
+        return problematic.isEmpty();
     }
 
     static synchronized void classLoaderUp(NetigsoModule nm) throws IOException {

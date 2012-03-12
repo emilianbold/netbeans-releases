@@ -54,6 +54,8 @@ import java.util.regex.Pattern;
 import org.netbeans.spi.queries.VisibilityQueryImplementation2;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbPreferences;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 // XXX - one would expect this class in core but there is problem that 
 //core can't depened on project/queries at the moment 
@@ -65,9 +67,11 @@ import org.openide.util.NbPreferences;
  * 
  * This class has hidden dependency on IgnoredFilesPreferences module org.netbeans.core.ui.
  */ 
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
+@ServiceProviders({
+    @ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class),
+    @ServiceProvider(service=GlobalVisibilityQueryImpl.class)
+})
 public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2 {
-    static GlobalVisibilityQueryImpl INSTANCE;
     private final ChangeSupport cs = new ChangeSupport(this);
     
     /**
@@ -78,7 +82,6 @@ public class GlobalVisibilityQueryImpl implements VisibilityQueryImplementation2
 
     /** Default instance for lookup. */
     public GlobalVisibilityQueryImpl() {
-        INSTANCE = this;
     }
 
     private static Preferences getPreferences() {

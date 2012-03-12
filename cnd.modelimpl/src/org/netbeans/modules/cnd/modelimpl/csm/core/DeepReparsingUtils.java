@@ -61,7 +61,8 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
-import org.netbeans.modules.cnd.modelimpl.csm.core.GraphContainer.ParentFiles;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
+import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -73,34 +74,94 @@ import org.openide.filesystems.FileObject;
  * @author Alexander Simon
  */
 public final class DeepReparsingUtils {
-    private static final boolean TRACE = false;
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
+    private static final boolean TRACE = LOG.isLoggable(Level.FINE);
 
     private DeepReparsingUtils() {
     }
 
     /**
-     * Reparse one file when fileImpl content changed.
+     * Reparse one file when fileImpl content changed. It could be
+     * File->Document, Document->Document, Document->File, File->File
      */
-    static void reparseOnEditingFile(ProjectImpl project, FileImpl fileImpl) {
+    private static void reparseOnlyOneFile(ProjectBase project, FileImpl fileImpl) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+            LOG.log(Level.INFO, "reparseOnlyOneFile {0}", fileImpl.getAbsolutePath());
         }
         project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
         fileImpl.markReparseNeeded(false);
-        ParserQueue.instance().add(fileImpl, Collections.singleton(FileImpl.DUMMY_STATE),
-                ParserQueue.Position.HEAD, false, ParserQueue.FileAction.NOTHING);
+        ParserQueue.instance().addToBeParsedNext(fileImpl);
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of Undo operation.
+     */
+    static void reparseOnUndoEditedFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnUndoEditedFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
+    }
+
+    /**
+     * Reparse one file when fileImpl content changed as result of typing in editor.
+     */
+    static void reparseOnEditingFile(ProjectBase project, FileImpl fileImpl) {
+        if (TRACE) {
+            LOG.log(Level.INFO, "reparseOnEditingFile {0}", fileImpl.getAbsolutePath());
+        }
+        reparseOnlyOneFile(project, fileImpl);
     }
 
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void reparseOnChangedFile(FileImpl fileImpl, ProjectBase project) {
+    public static void tryPartialReparseOnChangedFile(final ProjectBase project, final FileImpl fileImpl) {
+        if (TraceFlags.USE_PARTIAL_REPARSE) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            }
+            project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
+            fileImpl.markReparseNeeded(false);
+            ParserQueue.instance().addForPartialReparse(fileImpl);
+        } else {
+            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+                reparseOnlyOneFile(project, fileImpl);
+            } else {
+                reparseOnChangedFileImpl(project, fileImpl, true);
+            }
+        }
+    }
+
+    static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
+        if (newSignature.equals(lastFileBasedSignature)) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
+            }
+            return true;
+        } else if (TRACE) {
+            LOG.log(Level.INFO, "partial reparseOnChangedFile results in changed signature for {0}:\n{1}", 
+                    new Object[] { fileImpl.getAbsolutePath(), FileContentSignature.testDifference(newSignature, lastFileBasedSignature)}
+                    );
+        }
+        // signature have changed => full reparse is needed
+        DeepReparsingUtils.fullReparseOnChangedFile(fileImpl.getProjectImpl(true), fileImpl);
+        return false;
+    }
+
+    static void fullReparseOnChangedFile(final ProjectBase project, final FileImpl fileImpl) {
+        reparseOnChangedFileImpl(project, fileImpl, false);
+    }
+
+    private static void reparseOnChangedFileImpl(final ProjectBase project, final FileImpl fileImpl, boolean contentChanged) {
         if (TRACE) {
-            LOG.log(Level.INFO, "reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+            LOG.log(Level.INFO, "full reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
         // content of file was changed => invalidate cache
-        APTDriver.invalidateAPT(fileImpl.getBuffer());        
+        if (contentChanged) {
+            APTDriver.invalidateAPT(fileImpl.getBuffer());
+        }
         boolean scheduleParsing = true;
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();

@@ -44,7 +44,6 @@ package org.netbeans.modules.bugtracking.ui.issue.cache;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.bugtracking.spi.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,13 +53,18 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class IssueCache<T> {
+public class IssueCache<I, D> {
 
     /**
      * No information available
@@ -105,7 +109,9 @@ public class IssueCache<T> {
 
     private final Object CACHE_LOCK = new Object();
     private long referenceTime;
-    private final IssueAccessor<T> issueAccessor;
+    private final IssueAccessor<I, D> issueAccessor;
+    private final IssueProvider<I> issueProvider;
+    private final RepositoryImpl repository;
 
     /**
      *
@@ -114,7 +120,7 @@ public class IssueCache<T> {
      *
      * @param <T>
      */
-    public interface IssueAccessor<T> {
+    public interface IssueAccessor<I, T> {
 
         /**
          * Returns the id given by the issueData
@@ -129,7 +135,7 @@ public class IssueCache<T> {
          * @param taskData
          * @return
          */
-        public Issue createIssue(T issueData);
+        public I createIssue(T issueData);
 
         /**
          * Sets new task data in the issue.
@@ -137,13 +143,13 @@ public class IssueCache<T> {
          * @param issue
          * @param taskData
          */
-        public void setIssueData(Issue issue, T issueData);
+        public void setIssueData(I issue, T issueData);
 
         /**
          * Returns attributes for the given Issue
          * @return
          */
-        public Map<String, String> getAttributes(Issue issue);
+        public Map<String, String> getAttributes(I issue);
 
         /**
          * Returns a description summarizing the changes made
@@ -151,7 +157,7 @@ public class IssueCache<T> {
          *
          * @return
          */
-        public String getRecentChanges(Issue issue);
+        public String getRecentChanges(I issue);
 
         /**
          * Returns the last modification time for the given issue
@@ -159,7 +165,7 @@ public class IssueCache<T> {
          * @issue issue
          * @return the last modification time
          */
-        public long getLastModified(Issue issue);
+        public long getLastModified(I issue);
 
         /**
          * Returns the time the issue was created
@@ -167,7 +173,7 @@ public class IssueCache<T> {
          * @issue issue
          * @return the last modification time
          */
-        public long getCreated(Issue issue);
+        public long getCreated(I issue);
 
 
     }
@@ -178,10 +184,12 @@ public class IssueCache<T> {
      * @param nameSpace
      * @param issueAccessor
      */
-    public IssueCache(String nameSpace, IssueAccessor<T> issueAccessor) {
+    public IssueCache(String nameSpace, IssueAccessor<I, D> issueAccessor, IssueProvider<I> issueProvider, Repository repository) {
         assert issueAccessor != null;
         this.nameSpace = nameSpace;
         this.issueAccessor = issueAccessor;
+        this.issueProvider = issueProvider;
+        this.repository = APIAccessor.IMPL.getImpl(repository);
 
         try {
             this.referenceTime = IssueStorage.getInstance().getReferenceTime(nameSpace);
@@ -207,7 +215,7 @@ public class IssueCache<T> {
         IssueStorage.getInstance().cleanup(IssueCache.this.nameSpace);
     }
 
-    IssueAccessor<T> getIssueAccessor() {
+    IssueAccessor<I, D> getIssueAccessor() {
         return issueAccessor;
     }
 
@@ -220,7 +228,7 @@ public class IssueCache<T> {
      * @return the {@link Issue} with the given id
      * @throws IOException
      */
-    public Issue setIssueData(String id, T issueData) throws IOException {
+    public I setIssueData(String id, D issueData) throws IOException {
         assert issueData != null;
         assert id != null && !id.equals("");
         return setIssueData(id, null, issueData);
@@ -233,21 +241,34 @@ public class IssueCache<T> {
      * @param issueData data representing an issue
      * @throws IOException
      */
-    public void setIssueData(Issue issue, T issueData) throws IOException {
+    public void setIssueData(I issue, D issueData) throws IOException {
         assert issueData != null;
         assert issue != null;
 
         String id;
-        if(issue.getID() == null) {
+//        if(issueProvider.isNew(issue)) {
             id = issueAccessor.getID(issueData);
-        } else {
-            id = issue.getID();
-        }
+//        } else {
+//            id = issue.getID();
+//        }
         assert id != null && !id.equals("");
         setIssueData(id, issue, issueData);
     }
 
-    private Issue setIssueData(String id, Issue issue, T issueData) throws IOException {
+    String getRecentChanges(String id) {
+        IssueEntry entry;
+        synchronized(CACHE_LOCK) {
+            entry = getCache().get(id);
+            if(entry == null) {
+                assert !SwingUtilities.isEventDispatchThread();
+                entry = createNewEntry(id);
+                readIssue(entry);
+            }
+            return getIssueAccessor().getRecentChanges(entry.issue);
+        }
+    }
+
+    private I setIssueData(String id, I issue, D issueData) throws IOException {
         assert issueData != null;
 
         synchronized(CACHE_LOCK) {
@@ -354,7 +375,8 @@ public class IssueCache<T> {
             entry.seen = seen;
             storeIssue(entry);
         }
-        fireSeenChanged(entry.issue, oldValue, seen);
+        Issue issue = getIssue(entry.issue);
+        fireSeenChanged(issue, oldValue, seen);
     }
 
     /**
@@ -397,12 +419,12 @@ public class IssueCache<T> {
     }
 
     /**
-     * Returns a {@link Issue} with the given id
+     * Returns a the issue instance with the given id
      *
      * @param id issue id
      * @return the {@link Issue} with the given id or null if not known yet
      */
-    public Issue getIssue(String id) {
+    public I getIssue(String id) {
         synchronized(CACHE_LOCK) {
             IssueEntry entry = getCache().get(id);
             return (entry == null) ? null : entry.issue;
@@ -528,6 +550,22 @@ public class IssueCache<T> {
         }
     }
 
+    /**
+     * for testing purposes
+     */
+    void setEntryValues(String id, int status, boolean seen) {
+        synchronized(CACHE_LOCK) {
+            IssueEntry entry = getCache().get(id);
+            assert entry != null;
+            entry.status = status;
+            entry.seen = seen;
+        }
+    }
+    
+    private Issue getIssue(I issue) {
+        return repository.getIssue(issue).getIssue();
+    }
+    
     private IssueEntry createNewEntry(String id) {
         IssueEntry entry = new IssueEntry();
         entry.id = id;
@@ -562,11 +600,24 @@ public class IssueCache<T> {
         IssueStorage.getInstance().storeIssue(nameSpace, entry);
     }
 
-    void addPropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
+    public void addPropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
         PropertyChangeSupport support = getChangeSupport(issue, true);
         support.addPropertyChangeListener(propertyChangeListener);
+        
+    }
+    public void addPropertyChangeListener(I i, PropertyChangeListener l) {
+        addPropertyChangeListener(getIssue(i), l);
     }
 
+    public void removePropertyChangeListener(I i, PropertyChangeListener l) {
+        removePropertyChangeListener(getIssue(i), l);
+    }
+    
+    public void removePropertyChangeListener(Issue issue, PropertyChangeListener l) {
+        PropertyChangeSupport support = getChangeSupport(issue, true);
+        support.removePropertyChangeListener(l);
+    }
+    
     private PropertyChangeSupport getChangeSupport(Issue issue, boolean forceCreate) {
         PropertyChangeSupport support = supports.get(issue.getID());
         if (support == null && forceCreate) {
@@ -576,10 +627,6 @@ public class IssueCache<T> {
         return support;
     }
 
-    void removePropertyChangeListener(Issue issue, PropertyChangeListener propertyChangeListener) {
-        PropertyChangeSupport support = getChangeSupport(issue, true);
-        support.removePropertyChangeListener(propertyChangeListener);
-    }
 
     /**
      * Notify listeners on this issue that the seen state has chaged
@@ -609,8 +656,8 @@ public class IssueCache<T> {
         return false;
     }
 
-    static class IssueEntry {
-        private Issue issue;
+    class IssueEntry {
+        private I issue;
         private Map<String, String> seenAttributes;
         private int status;
         private boolean seen = false;
@@ -620,9 +667,9 @@ public class IssueCache<T> {
 
         IssueEntry() { }
 
-        IssueEntry(Issue issue, Map<String, String> seenAttributes, int status, int lastUnseenStatus, boolean seen, long lastKnownModified) {
+        IssueEntry(I issue, String id, Map<String, String> seenAttributes, int status, int lastUnseenStatus, boolean seen, long lastKnownModified) {
             this.issue = issue;
-            this.id = issue.getID();
+            this.id = id;
             this.seenAttributes = seenAttributes;
             this.status = status;
             this.seen = seen;

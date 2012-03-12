@@ -35,14 +35,14 @@ import java.io.IOException;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -51,7 +51,7 @@ import org.openide.util.NbBundle;
  *
  * @author phrebejk, jlahoda
  */
-@Hint(category="general", id="AssignmentToItself", suppressWarnings="SillyAssignment", options=Options.QUERY)
+@Hint(displayName = "#DN_AssignmentToItself", description = "#DESC_AssignmentToItself", category="general", id="AssignmentToItself", suppressWarnings="SillyAssignment", options=Options.QUERY)
 public class AssignmentToItself {
 
     @TriggerPattern(value="$var = $var")

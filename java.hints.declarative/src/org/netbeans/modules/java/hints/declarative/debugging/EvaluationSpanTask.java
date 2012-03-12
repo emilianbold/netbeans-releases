@@ -74,15 +74,12 @@ import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTex
 import org.netbeans.modules.java.hints.declarative.conditionapi.Context;
 import org.netbeans.modules.java.hints.declarative.conditionapi.Matcher;
 import org.netbeans.modules.java.hints.declarative.test.TestTokenId;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
+import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
+import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -94,7 +91,7 @@ import org.openide.util.Exceptions;
 public class EvaluationSpanTask extends JavaParserResultTask<Result> {
 
     public EvaluationSpanTask() {
-        super(Phase.RESOLVED);
+        super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     @Override
@@ -210,7 +207,7 @@ public class EvaluationSpanTask extends JavaParserResultTask<Result> {
 
             variables.put("$_", tp);
 
-            HintContext ctx = new HintContext(info, null, tp, variables, multiVariables, variableNames);
+            HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, null, tp, variables, multiVariables, variableNames);
             String pattern = d.spec.substring(d.desc.textStart, d.desc.textEnd);
             Context context = new Context(ctx);
 

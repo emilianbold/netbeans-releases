@@ -45,11 +45,13 @@ package org.netbeans.modules.bugtracking.kenai;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
+import java.util.Collection;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiSupport;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
+import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.kenai.ui.spi.QueryResultHandle;
@@ -60,7 +62,6 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 class QueryResultHandleImpl extends QueryResultHandle implements ActionListener {
-
 
     private final Query query;
     private final String label;
@@ -102,35 +103,34 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
         // XXX this is a hack for now - filter should be set only for the one relevant support
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
-            KenaiSupport support = c.getLookup().lookup(KenaiSupport.class);
-            support.setFilter(query, filter);
+            KenaiUtil.setFilter(query, filter);
         }
-        BugtrackingUtil.openQuery(query, null, true);
+        KenaiUtil.openQuery(query, null, true);
     }
 
     static QueryResultHandleImpl forStatus(Query query, int status) {
-        Issue[] issues;
+        Collection<Issue> issues;
         switch(status) {
 
             case IssueCache.ISSUE_STATUS_ALL:
 
                 issues = query.getIssues(status);
-                int issueCount = issues != null ? issues.length : 0;
+                int issueCount = issues != null ? issues.size() : 0;
                 return new QueryResultHandleImpl(
                         query,
                         totalFormat.format(new Object[] {issueCount}, new StringBuffer(), null).toString(),
                         getTotalTooltip(issueCount),
-                        Filter.getAllFilter(query),
+                        KenaiUtil.getAllFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NOT_SEEN:
 
                 int unseenIssues = 0;
                 issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
-                if(issues == null || issues.length == 0) {
+                if(issues == null || issues.isEmpty()) {
                     return null;
                 }
-                unseenIssues = issues.length;
+                unseenIssues = issues.size();
 
                 String label = unseenFormat.format(new Object[] {unseenIssues}, new StringBuffer(), null).toString();
                 String tooltip = getUnseenTooltip(unseenIssues);
@@ -139,17 +139,17 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                         query,
                         label,
                         tooltip,
-                        Filter.getNotSeenFilter(query),
+                        KenaiUtil.getNotSeenFilter(query),
                         ResultType.NAMED_RESULT);
 
             case IssueCache.ISSUE_STATUS_NEW:
 
                 int newIssues = 0;
                 issues = query.getIssues(IssueCache.ISSUE_STATUS_NEW);
-                if(issues == null || issues.length == 0) {
+                if(issues == null || issues.isEmpty()) {
                     return null;
                 }
-                newIssues = issues.length;
+                newIssues = issues.size();
 
                 tooltip = getNewTooltip(newIssues);
                 label = newFormat.format(new Object[] {newIssues}, new StringBuffer(), null).toString();
@@ -159,7 +159,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
                         query,
                         label,
                         tooltip,
-                        Filter.getNewFilter(query),
+                        KenaiUtil.getNewFilter(query),
                         ResultType.NAMED_RESULT);
 
             default:
@@ -169,14 +169,14 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
     static QueryResultHandle getAllChangedResult(Query query) {
         int notIssues = 0;
-        Issue[] issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
-        notIssues = issues != null ? issues.length : 0;
+        Collection<Issue> issues = query.getIssues(IssueCache.ISSUE_STATUS_NOT_SEEN);
+        notIssues = issues != null ? issues.size() : 0;
         
         return new QueryResultHandleImpl(
                 query,
                 Integer.toString(notIssues),
                 getUnseenTooltip(notIssues),
-                Filter.getNotSeenFilter(query),
+                KenaiUtil.getNotSeenFilter(query),
                 ResultType.ALL_CHANGES_RESULT);
     }
 

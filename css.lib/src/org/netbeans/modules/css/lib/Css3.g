@@ -197,6 +197,49 @@ package org.netbeans.modules.css.lib;
         }
     }
     
+    /**
+         * synces to next RBRACE "}" taking nesting into account
+         */
+        protected void syncToRBRACE(int nest)
+        {
+            //create error-recovery node
+            dbg.enterRule(getGrammarFileName(), "recovery");
+
+            try {
+                
+                for(;;) {
+                    //read char
+                    int c = input.LA(1);
+                    
+                    switch(c) {
+                        case Token.EOF:
+                            input.rewind();
+                            return ;
+                        case Css3Lexer.LBRACE:
+                            nest++;
+                            break;
+                        case Css3Lexer.RBRACE:
+                            nest--;
+                            if(nest == 0) {
+                                //do not eat the final RBRACE
+                                return ;
+                            }
+                    }
+                    
+                    input.consume();
+                                        
+                }
+
+            } catch (Exception e) {
+
+              // Just ignore any errors here, we will just let the recognizer
+              // try to resync as normal - something must be very screwed.
+              //
+            }
+            finally {
+                dbg.exitRule(getGrammarFileName(), "recovery");
+            }
+        }
     
 }
 
@@ -342,10 +385,24 @@ bodyset
         | counterStyle
         | fontFace
         | moz_document
+        | generic_at_rule
       )
       WS*
     ;
+
+//    	catch[ RecognitionException rce] {
+//        reportError(rce);
+//        syncToRBRACE(0); //nesting aware, initial nest == 0
+//        input.consume(); //consume the RBRACE as well
+//        }
     
+    
+generic_at_rule
+    : GENERIC_AT_RULE WS* ( ( IDENT | STRING ) WS* )? 
+        LBRACE 
+        	syncTo_RBRACE
+        RBRACE
+	;    
 moz_document
 	: 
 	MOZ_DOCUMENT_SYM WS* ( moz_document_function WS*) ( COMMA WS* moz_document_function WS* )*
@@ -441,6 +498,11 @@ ruleSet
             declarations
         RBRACE
     ;
+    	catch[ RecognitionException rce] {
+        reportError(rce);
+        consumeUntil(input, BitSet.of(RBRACE));
+        input.consume(); //consume the RBRACE as well
+        }
     
 declarations
     :
@@ -623,6 +685,13 @@ syncTo_IDENT_RBRACE
     }
     	:	
     	;
+    	
+syncTo_RBRACE
+    @init {
+        syncToRBRACE(1); //initial nest == 1
+    }
+    	:	
+    	;    	
 
 //synct to computed follow set in the rule
 syncToFollow
@@ -1071,6 +1140,8 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 //
 HASH            : '#' NAME              ;
 
+IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
+
 IMPORT_SYM          : '@' I M P O R T       ;
 PAGE_SYM            : '@' P A G E           ;
 MEDIA_SYM           : '@' M E D I A         ;
@@ -1078,9 +1149,6 @@ NAMESPACE_SYM       : '@' N A M E S P A C E ;
 CHARSET_SYM         : '@charset'           ;
 COUNTER_STYLE_SYM   : '@counter-style';
 FONT_FACE_SYM       : '@font-face';
-
-
-IMPORTANT_SYM   : '!' (WS|COMMENT)* I M P O R T A N T   ;
 
 TOPLEFTCORNER_SYM     :'@top-left-corner';
 TOPLEFT_SYM           :'@top-left';
@@ -1100,6 +1168,9 @@ RIGHTMIDDLE_SYM       :'@right-middle';
 RIGHTBOTTOM_SYM       :'@right-bottom';
 
 MOZ_DOCUMENT_SYM      : '@-moz-document';
+
+//this generic at rule must be after the last of the specific at rule tokens
+GENERIC_AT_RULE	    : '@' NMCHAR+;	
 
 //I cannot figure out how to use the fragment tokens to generate the following tokens.
 //the parser generator cycles itself indefinitely.

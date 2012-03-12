@@ -46,6 +46,7 @@ package org.netbeans.modules.mercurial.ui.log;
 import java.awt.EventQueue;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -56,7 +57,12 @@ import org.netbeans.modules.mercurial.WorkingCopyInfo;
 import org.netbeans.modules.mercurial.ui.branch.HgBranch;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,11 +85,38 @@ public class LogAction extends SearchHistoryAction {
     }
 
     private void openHistory (final VCSContext context, final String title) {
+        File repositoryRoot = getRepositoryRoot(context);
+        final File[] files = replaceCopiedFiles(getFiles(context, repositoryRoot));
+        openHistory(repositoryRoot, files, title);
+    }
+    
+    public static void openHistory (File repositoryRoot, File[] files) {
+        List<Node> nodes = new ArrayList<Node>(files.length);
+        for (File file : files) {
+            FileObject fo = FileUtil.toFileObject(file);
+            if(fo == null) continue;
+            DataObject dao;
+            try {
+                dao = DataObject.find(fo);
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+                continue;
+            }
+            nodes.add(dao.getNodeDelegate());
+        }
+        if(nodes.isEmpty()) return;
+        
+        String title = NbBundle.getMessage(
+                LogAction.class, 
+                "MSG_Log_TabTitle", // NOI18N
+                Utils.getContextDisplayName(VCSContext.forNodes(nodes.toArray(new Node[nodes.size()]))));
+        openHistory(repositoryRoot, files, title);
+    }
+    
+    private static void openHistory (final File repositoryRoot, final File[] files, final String title) {
         Utils.postParallel(new Runnable() {
             @Override
             public void run () {
-                File repositoryRoot = getRepositoryRoot(context);
-                final File[] files = replaceCopiedFiles(getFiles(context, repositoryRoot));
                 if (files == null) {
                     return;
                 }
@@ -114,7 +147,11 @@ public class LogAction extends SearchHistoryAction {
                 });
             }
 
-            private File[] replaceCopiedFiles (File[] files) {
+            
+        }, 0);
+    }    
+
+    private static File[] replaceCopiedFiles (File[] files) {
                 if (files == null) {
                     return null;
                 }
@@ -129,8 +166,6 @@ public class LogAction extends SearchHistoryAction {
                 }
                 return originalFiles.toArray(new File[originalFiles.size()]);
             }
-        }, 0);
-    }
 
     /**
      * Opens search panel with a diff view fixed on a line

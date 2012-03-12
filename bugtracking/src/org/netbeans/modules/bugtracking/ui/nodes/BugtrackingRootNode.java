@@ -48,20 +48,18 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.*;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.RepositoryImplComparator;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
@@ -120,6 +118,7 @@ public class BugtrackingRootNode extends AbstractNode {
     public Action[] getActions(boolean context) {
         return new Action[] {
             new AbstractAction(NbBundle.getMessage(BugtrackingRootNode.class, "LBL_CreateRepository")) { // NOI18N
+            @Override
                 public void actionPerformed(ActionEvent e) {
                     BugtrackingUtil.createRepository();
                 }
@@ -127,48 +126,38 @@ public class BugtrackingRootNode extends AbstractNode {
         };
     }
     
-    private static class RootNodeChildren extends ChildFactory<Repository> implements PropertyChangeListener  {
+    private static class RootNodeChildren extends ChildFactory<RepositoryImpl> implements PropertyChangeListener  {
 
         /**
          * Creates a new instance of RootNodeChildren
          */
         public RootNodeChildren() {
-            BugtrackingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-            for (BugtrackingConnector c : connectors) {
-                c.addPropertyChangeListener(this);
-            }
+            RepositoryRegistry.getInstance().addPropertyChangeListener(this);
         }
 
         @Override
-        protected Node createNodeForKey(Repository key) {
+        protected Node createNodeForKey(RepositoryImpl key) {
             return key.getNode();
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(BugtrackingConnector.EVENT_REPOSITORIES_CHANGED)) {
+            if(evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
                 refresh(false);
             }
         }
 
         @Override
-        protected boolean createKeys(List<Repository> toPopulate) {
-            toPopulate.addAll(Arrays.asList(BugtrackingManager.getInstance().getRepositories()));
-            Collections.sort(toPopulate, new RepositoryComparator());
+        protected boolean createKeys(List<RepositoryImpl> toPopulate) {
+            toPopulate.addAll(RepositoryRegistry.getInstance().getRepositories());
+            Collections.sort(toPopulate, new RepositoryImplComparator());
             return true;
         }
     }
 
-    private static class RepositoryComparator implements Comparator<Repository> {
-        public int compare(Repository r1, Repository r2) {
-            if(r1 == null && r2 == null) return 0;
-            if(r1 == null) return -1;
-            if(r2 == null) return 1;
-            return r1.getDisplayName().compareTo(r2.getDisplayName());
-        }
-    }
-    
     public static void selectNode(final String... path) {
         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
             public void run() {
                 TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
                 if (tab == null) {
@@ -185,6 +174,7 @@ public class BugtrackingRootNode extends AbstractNode {
                 final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
                 final Node root = mgr.getRootContext();
                 RequestProcessor.getDefault().post(new Runnable() {
+                    @Override
                     public void run() {
                         Node repository = NodeOp.findChild(root, BUGTRACKING_NODE_NAME);
                         if (repository == null) {
@@ -200,6 +190,7 @@ public class BugtrackingRootNode extends AbstractNode {
                         }
                         final Node selected = _selected;
                         Mutex.EVENT.readAccess(new Runnable() {
+                            @Override
                             public void run() {
                                 try {
                                     mgr.setSelectedNodes(new Node[] {selected});

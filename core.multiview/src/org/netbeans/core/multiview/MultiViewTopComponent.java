@@ -44,13 +44,17 @@
 
 package org.netbeans.core.multiview;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.multiview.MultiViewModel.ActionRequestObserverFactory;
 import org.netbeans.core.spi.multiview.CloseOperationHandler;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.openide.awt.Actions;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -275,6 +279,28 @@ public final class MultiViewTopComponent
     @Override
     public void requestFocus() {
         peer.requestFocus();
+    }
+
+    @Override
+    public SubComponent[] getSubComponents() {
+        return getSubComponents( peer );
+    }
+
+    static SubComponent[] getSubComponents( final MultiViewPeer peer ) {
+        MultiViewModel model = peer.getModel();
+        MultiViewPerspective[] perspectives = model.getPerspectives();
+        SubComponent[] res = new SubComponent[perspectives.length];
+        for( int i=0; i<perspectives.length; i++ ) {
+            final MultiViewPerspective mvp = perspectives[i];
+            res[i] = new SubComponent( Actions.cutAmpersand(mvp.getDisplayName()), new ActionListener() {
+
+                @Override
+                public void actionPerformed( ActionEvent e ) {
+                    peer.getMultiViewHandlerDelegate().requestActive( mvp );
+                }
+            }, mvp == model.getSelectedPerspective() );
+        }
+        return res;
     }
     
 //    public Lookup getLookup() {

@@ -39,324 +39,328 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jdk;
 
-import java.util.prefs.Preferences;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ThrowableInitCauseTest extends TestBase {
+public class ThrowableInitCauseTest extends NbTestCase {
 
     public ThrowableInitCauseTest(String name) {
-        super(name, ThrowableInitCause.class);
+        super(name);
     }
 
     public void testSimple1() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:19-6:95:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             throw (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(ThrowableInitCause.class)
+                .findWarning("6:19-6:95:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimple2() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw (IllegalStateException) new IllegalStateException(\"a\").initCause(e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:19-6:86:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(\"a\", e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             throw (IllegalStateException) new IllegalStateException(\"a\").initCause(e);\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(ThrowableInitCause.class)
+                .findWarning("6:19-6:86:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(\"a\", e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimple3() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             IllegalStateException ex = new IllegalStateException(e.toString());\n" +
-                            "             ex.initCause(e);" +
-                            "             throw ex;\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:13-6:80:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             IllegalStateException ex = new IllegalStateException(e.toString());\n" +
+                       "             ex.initCause(e);" +
+                       "             throw ex;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(ThrowableInitCause.class)
+                .findWarning("6:13-6:80:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimpleNoStringArgNotStrict() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             IllegalStateException ex = new IllegalStateException();\n" +
-                            "             ex.initCause(e);" +
-                            "             throw ex;\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:13-6:68:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             IllegalStateException ex = new IllegalStateException();\n" +
+                       "             ex.initCause(e);" +
+                       "             throw ex;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(ThrowableInitCause.STRICT_KEY, false)
+                .run(ThrowableInitCause.class)
+                .findWarning("6:13-6:68:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimpleNoStringArgNotStrict2() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         Exception[] blex = null;\n" +
-                            "         IOException ioe = new IOException(blex[0].getMessage());\n" +
-                            "         ioe.initCause(blex[0]);\n" +
-                            "         throw ioe;\n" +
-                            "     }\n" +
-                            "}\n",
-                            "4:9-4:65:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         Exception[] blex = null;\n" +
-                            "         throw new IOException(blex[0]);\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() throws IOException {\n" +
+                       "         Exception[] blex = null;\n" +
+                       "         IOException ioe = new IOException(blex[0].getMessage());\n" +
+                       "         ioe.initCause(blex[0]);\n" +
+                       "         throw ioe;\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(ThrowableInitCause.STRICT_KEY, false)
+                .run(ThrowableInitCause.class)
+                .findWarning("4:9-4:65:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() throws IOException {\n" +
+                              "         Exception[] blex = null;\n" +
+                              "         throw new IOException(blex[0]);\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testSimpleNoStringArgStrict() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, true);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             IllegalStateException ex = new IllegalStateException();\n" +
-                            "             ex.initCause(e);" +
-                            "             throw ex;\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:13-6:68:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(null, e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             IllegalStateException ex = new IllegalStateException();\n" +
+                       "             ex.initCause(e);" +
+                       "             throw ex;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(ThrowableInitCause.STRICT_KEY, true)
+                .run(ThrowableInitCause.class)
+                .findWarning("6:13-6:68:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(null, e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testFinalVariable() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, true);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             final IllegalStateException ex = new IllegalStateException();\n" +
-                            "             ex.initCause(e);" +
-                            "             throw ex;\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:13-6:74:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             throw new IllegalStateException(null, e);\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             final IllegalStateException ex = new IllegalStateException();\n" +
+                       "             ex.initCause(e);" +
+                       "             throw ex;\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(ThrowableInitCause.STRICT_KEY, true)
+                .run(ThrowableInitCause.class)
+                .findWarning("6:13-6:74:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             throw new IllegalStateException(null, e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     public void testExpression() throws Exception {
-        Preferences p = RulesManager.getPreferences("org.netbeans.modules.java.hints.jdk.ThrowableInitCause", HintsSettings.getCurrentProfileId());
-
-        p.putBoolean(ThrowableInitCause.STRICT_KEY, false);
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private Expression test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             return (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);\n" +
-                            "         }\n" +
-                            "         return null;\n" +
-                            "     }\n" +
-                            "}\n",
-                            "6:20-6:96:verifier:ERR_ThrowableInitCause",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private Expression test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             return new IllegalStateException(e);\n" +
-                            "         }\n" +
-                            "         return null;\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private Object test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             return (IllegalStateException) new IllegalStateException(e.toString()).initCause(e);\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .preference(ThrowableInitCause.STRICT_KEY, false)
+                .run(ThrowableInitCause.class)
+                .findWarning("6:20-6:96:verifier:ERR_ThrowableInitCause")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private Object test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             return new IllegalStateException(e);\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
 
     //TODO:
     public void XtestMoreStatementsNoThrow() throws Exception {
-        performFixTest("test/Test.java",
-                            "package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             IllegalStateException ex = new IllegalStateException(e.toString());\n" +
-                            "             ex.initCause(e);" +
-                            "             ex.printStackTrace();\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n",
-                            "TODO",
-                            "FIX_ThrowableInitCause",
-                            ("package test;" +
-                            "import java.io.IOException;" +
-                            "import java.util.ArrayList;\n" +
-                            "public class Test {\n" +
-                            "     private void test() {\n" +
-                            "         try {\n" +
-                            "             throw new IOException(\"a\");\n" +
-                            "         } catch (IOException e) {\n" +
-                            "             IllegalStateException ex = new IllegalStateException(e);\n" +
-                            "             ex.printStackTrace();\n" +
-                            "         }\n" +
-                            "     }\n" +
-                            "}\n").replaceAll("[ \t\n]+", " "));
+        HintTest
+                .create()
+                .input("package test;" +
+                       "import java.io.IOException;" +
+                       "import java.util.ArrayList;\n" +
+                       "public class Test {\n" +
+                       "     private void test() {\n" +
+                       "         try {\n" +
+                       "             throw new IOException(\"a\");\n" +
+                       "         } catch (IOException e) {\n" +
+                       "             IllegalStateException ex = new IllegalStateException(e.toString());\n" +
+                       "             ex.initCause(e);" +
+                       "             ex.printStackTrace();\n" +
+                       "         }\n" +
+                       "     }\n" +
+                       "}\n")
+                .run(ThrowableInitCause.class)
+                .findWarning("TODO")
+                .applyFix("FIX_ThrowableInitCause")
+                .assertCompilable()
+                .assertOutput("package test;" +
+                              "import java.io.IOException;" +
+                              "import java.util.ArrayList;\n" +
+                              "public class Test {\n" +
+                              "     private void test() {\n" +
+                              "         try {\n" +
+                              "             throw new IOException(\"a\");\n" +
+                              "         } catch (IOException e) {\n" +
+                              "             IllegalStateException ex = new IllegalStateException(e);\n" +
+                              "             ex.printStackTrace();\n" +
+                              "         }\n" +
+                              "     }\n" +
+                              "}\n");
     }
-
-    @Override
-    protected String toDebugString(CompilationInfo info, Fix f) {
-        return f.getText();
-    }
-
 }

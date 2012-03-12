@@ -101,7 +101,7 @@ import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.NamespaceScope;
-import org.netbeans.modules.php.editor.model.UseElement;
+import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -140,8 +140,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     private void initAliases(final Model model) {
         for (final NamespaceScope namespaceScope : model.getFileScope().getDeclaredNamespaces()) {
             if (namespaceScope != null) {
-                Collection<? extends UseElement> declaredUses = namespaceScope.getDeclaredUses();
-                for (UseElement useElement : declaredUses) {
+                Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
+                for (UseScope useElement : declaredUses) {
                     AliasedName aliasedName = useElement.getAliasedName();
                     if (aliasedName != null) {
                         aliases.add(aliasedName);

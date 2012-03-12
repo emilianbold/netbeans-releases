@@ -239,7 +239,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             FileObject colonFO = getFileObject(tempDirFO, withColon);
         } finally {
             if (tempDir != null) {
-                CommonTasksSupport.rmFile(execEnv, tempDir, new OutputStreamWriter(System.err));
+                CommonTasksSupport.rmDir(execEnv, tempDir, true, new OutputStreamWriter(System.err));
             }
         }
     }
@@ -265,7 +265,7 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             assertEquals("content of " + fo2.getPath(), refText, text2);
         } finally {
             if (tempDir != null) {
-                CommonTasksSupport.rmFile(execEnv, tempDir, new OutputStreamWriter(System.err));
+                CommonTasksSupport.rmDir(execEnv, tempDir, true, new OutputStreamWriter(System.err));
             }
         }
     }    

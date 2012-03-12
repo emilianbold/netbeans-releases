@@ -184,11 +184,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.java.hints.processor</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.hints.legacy.spi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <release-version>1</release-version>
+                        <implementation-version/>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -333,6 +334,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.spi.java.hints</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <implementation-version/>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.actions</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -369,7 +378,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.19</specification-version>
+                        <specification-version>7.57</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -463,6 +472,10 @@ made subject to such option by the copyright holder.
                         <test/>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.netbeans.modules.editor.settings</code-name-base>
                     </test-dependency>
                     <test-dependency>
@@ -478,6 +491,10 @@ made subject to such option by the copyright holder.
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.hints.declarative</code-name-base>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.hints.test</code-name-base>
+                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
@@ -503,19 +520,16 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.netbeans.modules.projectui</code-name-base>
                     </test-dependency>
                     <test-dependency>
+                        <code-name-base>org.netbeans.spi.java.hints</code-name-base>
+                        <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
                         <code-name-base>org.openidex.util</code-name-base>
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.apisupport.refactoring</friend>
-                <friend>org.netbeans.modules.javadoc</friend>
-                <friend>org.netbeans.modules.maven.hints</friend>
-                <friend>org.netbeans.modules.maven.j2ee</friend>
-                <friend>org.netbeans.modules.web.beans</friend>
-                <friend>org.netbeans.modules.j2ee.common</friend>
-                <package>org.netbeans.modules.java.hints.spi</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>

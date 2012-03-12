@@ -45,24 +45,22 @@
 
 package org.netbeans.core.windows.actions;
 
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
+import javax.swing.Action;
 import javax.swing.KeyStroke;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.TopComponentTracker;
 import org.netbeans.core.windows.WindowManagerImpl;
-import org.netbeans.core.windows.view.ui.KeyboardPopupSwitcher;
-import org.netbeans.swing.popupswitcher.SwitcherTableItem;
+import org.netbeans.core.windows.view.ui.popupswitcher.KeyboardPopupSwitcher;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -75,17 +73,46 @@ import org.openide.windows.TopComponent;
  */
 public final class RecentViewListAction extends AbstractAction
         implements PropertyChangeListener {
-    
+
+    private final boolean documentsOnly;
+
     /** Creates a new instance of RecentViewListAction */
     public RecentViewListAction() {
-        putValue(NAME, NbBundle.getMessage(RecentViewListAction.class, "CTL_RecentViewListAction"));
+        this( false );
+    }
+
+    public static Action createDocumentsOnlyInstance() {
+        return new RecentViewListAction( true );
+    }
+
+    private RecentViewListAction( boolean documentsOnly ) {
+        this.documentsOnly = documentsOnly;
+        putValue(NAME, NbBundle.getMessage(RecentViewListAction.class,
+                documentsOnly ? "CTL_RecentViewListAction" : "CTL_RecentDocumentListAction"));
         TopComponent.getRegistry().addPropertyChangeListener(
                 WeakListeners.propertyChange(this, TopComponent.getRegistry()));
         updateEnabled();
     }
     
+    @Override
     public void actionPerformed(ActionEvent evt) {
-        TopComponent[] documents = getRecentDocuments();
+        boolean editors = true;
+        boolean views = !documentsOnly;
+        if( "immediately".equals( evt.getActionCommand() ) ) {
+            TopComponent activeTc = TopComponent.getRegistry().getActivated();
+            if( null != activeTc ) {
+                if( TopComponentTracker.getDefault().isEditorTopComponent( activeTc ) ) {
+                    //switching in a document, go to some other document
+                    views = false;
+                } else {
+                    //switching in a view, go to some other view
+                    editors = false;
+                    views = true;
+                }
+            }
+        }
+        
+        TopComponent[] documents = getRecentWindows(editors, views);
         
         if (documents.length < 2) {
             return;
@@ -112,15 +139,13 @@ public final class RecentViewListAction extends AbstractAction
                 
                 if(releaseKey != 0) {
                     if (!KeyboardPopupSwitcher.isShown()) {
-                        KeyboardPopupSwitcher.selectItem(
-                                createSwitcherItems(documents),
-                                releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
+                        KeyboardPopupSwitcher.showPopup(documentsOnly, releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
                     }
                     return;
                 }
             }
         }
-        
+
         int documentIndex = (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0 ? 1 : documents.length-1;
         TopComponent tc = documents[documentIndex];
         // #37226 Unmaximized the other mode if needed.
@@ -133,46 +158,7 @@ public final class RecentViewListAction extends AbstractAction
         tc.requestActive();
     }
     
-    private SwitcherTableItem[] createSwitcherItems(TopComponent[] tcs) {
-        SwitcherTableItem[] items = new SwitcherTableItem[tcs.length];
-        for (int i = 0; i < tcs.length; i++) {
-            TopComponent tc = tcs[i];
-            String name = tc.getDisplayName();
-            if (name == null || name.trim().length() == 0) {
-                name = tc.getName();
-            }
-            String htmlName = tc.getHtmlDisplayName();
-            if (htmlName == null) {
-                htmlName = name;
-            }
-            Image image = tc.getIcon();
-            String description = tc.getToolTipText();
-            ImageIcon imageIcon = (image != null ? new ImageIcon(image) : null);
-            items[i] = new SwitcherTableItem(
-                    new ActivatableTC(tc),
-                    name,
-                    htmlName,
-                    imageIcon,
-                    false,
-                    description != null ? description : name);
-        }
-        return items;
-    }
-    
-    private class ActivatableTC implements SwitcherTableItem.Activatable {
-        private WeakReference<TopComponent> wtc;
-        private ActivatableTC(TopComponent tc) {
-            this.wtc = new WeakReference<TopComponent>(tc);
-        }
-        public void activate() {
-            TopComponent tc = wtc.get();
-            if (tc != null) {
-                tc.requestActive();
-            }
-        }
-    }
-    
-    
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if(TopComponent.Registry.PROP_OPENED.equals(evt.getPropertyName())) {
             updateEnabled();
@@ -196,10 +182,13 @@ public final class RecentViewListAction extends AbstractAction
      * Update enable state of this action.
      */
     private void updateEnabled() {
-        setEnabled(isMoreThanOneDocOpened());
+        setEnabled(isMoreThanOneViewOpened());
     }
     
-    private boolean isMoreThanOneDocOpened() {
+    private boolean isMoreThanOneViewOpened() {
+        if( !documentsOnly ) {
+            return TopComponent.getRegistry().getOpened().size() > 1;
+        }
         for(Iterator it = WindowManagerImpl.getInstance().getModes().iterator(); it.hasNext(); ) {
             ModeImpl mode = (ModeImpl)it.next(); {
                 if (mode.getKind() == Constants.MODE_KIND_EDITOR)
@@ -209,9 +198,10 @@ public final class RecentViewListAction extends AbstractAction
         return false;
     }
     
-    private TopComponent[] getRecentDocuments() {
+    private static TopComponent[] getRecentWindows( boolean editors, boolean views) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         TopComponent[] documents = wm.getRecentViewList();
+        TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         
         List<TopComponent> docsList = new ArrayList<TopComponent>();
         for (int i = 0; i < documents.length; i++) {
@@ -224,7 +214,8 @@ public final class RecentViewListAction extends AbstractAction
                 continue;
             }
             
-            if (mode.getKind() == Constants.MODE_KIND_EDITOR) {
+            if( (editors && tcTracker.isEditorTopComponent( tc ))
+                    || (views && tcTracker.isViewTopComponent( tc )) ) {
                 docsList.add(tc);
             }
         }

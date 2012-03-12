@@ -38,19 +38,19 @@ import java.util.List;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author phrebejk
  */
-@Hint(category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
+@Hint(displayName = "#DN_AnnotationAsSuperInterface", description = "#DESC_AnnotationAsSuperInterface", category="rules15", id="AnnotationAsSuperInterface", suppressWarnings="AnnotationAsSuperInterface", options=Options.QUERY)
 public class AnnotationAsSuperInterface {
 
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})

@@ -43,6 +43,7 @@
 package org.netbeans.modules.bugtracking;
 
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -53,13 +54,11 @@ import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
-import org.netbeans.modules.bugtracking.spi.BugtrackingController;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
-import org.netbeans.modules.bugtracking.spi.Repository;
-import org.netbeans.modules.bugtracking.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.spi.*;
+import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
 /**
@@ -91,27 +90,29 @@ public class RecentIssuesTest extends NbTestCase {
         Map<String, List<RecentIssue>> ri = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(ri);
         assertEquals(0, ri.size());
-
-        Collection<Issue> ri2 = BugtrackingManager.getInstance().getRecentIssues(new TestRepository("test repo"));
+        
+        List<IssueImpl> ri2 = BugtrackingManager.getInstance().getRecentIssues(getRepository(new RITestRepository("test repo")));
         assertNotNull(ri2);
         assertEquals(0, ri.size());        
     }
 
     public void testAddRecentIssues() throws MalformedURLException, CoreException, IOException {
-        TestRepository repo = new TestRepository("test repo");
-        TestIssue issue1 = new TestIssue(repo, "1");
-        TestIssue issue2 = new TestIssue(repo, "2");
+        final RITestRepository riTestRepo = new RITestRepository("test repo");
+        RepositoryImpl repo = getRepository(riTestRepo);
+        IssueImpl issue1 = getIssue(repo, new RITestIssue(riTestRepo, "1"));
+        IssueImpl issue2 = getIssue(repo, new RITestIssue(riTestRepo, "2"));
 
         // add issue1
         BugtrackingManager.getInstance().addRecentIssue(repo, issue1);
 
         // test for another repo -> nothing is returned
-        List<Issue>  issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(new TestRepository("test repo 2"));
+        RepositoryImpl repo2 = getRepository(new RITestRepository("test repo 2"));
+        List<IssueImpl>  issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo2);
         assertNotNull(issues);
         assertEquals(0, issues.size());
 
         // getIssues for repo -> issue1 is returned
-        issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
         assertNotNull(issues);
         assertEquals(1, issues.size());
         assertEquals(issue1.getID(), issues.iterator().next().getID());
@@ -120,14 +121,14 @@ public class RecentIssuesTest extends NbTestCase {
         Map<String, List<RecentIssue>> allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(allIssues);
         assertEquals(1, allIssues.size());
-        assertTrue(allIssues.containsKey(repo.getID()));
-        assertEquals(issue1.getID(), allIssues.get(repo.getID()).iterator().next().getIssue().getID());
+        assertTrue(allIssues.containsKey(repo.getId()));
+        assertEquals(issue1.getID(), allIssues.get(repo.getId()).iterator().next().getIssue().getID());
 
         // add issue2
         BugtrackingManager.getInstance().addRecentIssue(repo, issue2);
 
         // getIssues -> issue1 & issue2 are returned
-        issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo);
+        issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo);
         assertNotNull(issues);
         assertEquals(2, issues.size());
         assertEquals(issue2.getID(), issues.get(0).getID());
@@ -137,19 +138,20 @@ public class RecentIssuesTest extends NbTestCase {
         allIssues = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(allIssues);
         assertEquals(1, allIssues.size());
-        assertTrue(allIssues.containsKey(repo.getID()));
-        assertRecentIssues(allIssues.get(repo.getID()), new Issue[] {issue2, issue1});
+        assertTrue(allIssues.containsKey(repo.getId()));
+        assertRecentIssues(allIssues.get(repo.getId()), new IssueImpl[] {issue2, issue1});
     }
 
     public void testAddRecentIssuesMoreThan5() throws MalformedURLException, CoreException, IOException {
-        TestRepository repo1 = new TestRepository("test repo");
-        TestIssue repo1issue1 = new TestIssue(repo1, "r1i1");
-        TestIssue repo1issue2 = new TestIssue(repo1, "r1i2");
-        TestIssue repo1issue3 = new TestIssue(repo1, "r1i3");
-        TestIssue repo1issue4 = new TestIssue(repo1, "r1i4");
-        TestIssue repo1issue5 = new TestIssue(repo1, "r1i5");
-        TestIssue repo1issue6 = new TestIssue(repo1, "r1i6");
-        TestIssue repo1issue7 = new TestIssue(repo1, "r1i7");
+        RITestRepository riTestRepo1 = new RITestRepository("test repo");
+        RepositoryImpl repo1 = getRepository(new RITestRepository("test repo"));
+        IssueImpl repo1issue1 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i1"));
+        IssueImpl repo1issue2 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i2"));
+        IssueImpl repo1issue3 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i3"));
+        IssueImpl repo1issue4 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i4"));
+        IssueImpl repo1issue5 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i5"));
+        IssueImpl repo1issue6 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i6"));
+        IssueImpl repo1issue7 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i7"));
 
         // add repo1 issues 1, 2, 3, 4, 5, 6, 7,
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue1);
@@ -161,7 +163,7 @@ public class RecentIssuesTest extends NbTestCase {
         BugtrackingManager.getInstance().addRecentIssue(repo1, repo1issue7);
 
         // getIssues for repo1 -> repo1 issues 1..7 are returned
-        List<Issue> issues = (List<Issue>) BugtrackingManager.getInstance().getRecentIssues(repo1);
+        List<IssueImpl> issues = (List<IssueImpl>) BugtrackingManager.getInstance().getRecentIssues(repo1);
         assertNotNull(issues);
         assertEquals(7, issues.size());
         assertEquals(repo1issue7.getID(), issues.get(0).getID());
@@ -172,14 +174,15 @@ public class RecentIssuesTest extends NbTestCase {
         assertEquals(repo1issue2.getID(), issues.get(5).getID());
         assertEquals(repo1issue1.getID(), issues.get(6).getID());
 
-        TestRepository repo2 = new TestRepository("test repo2");
-        TestIssue repo2issue1 = new TestIssue(repo2, "r2i1");
-        TestIssue repo2issue2 = new TestIssue(repo2, "r2i2");
-        TestIssue repo2issue3 = new TestIssue(repo2, "r2i3");
-        TestIssue repo2issue4 = new TestIssue(repo2, "r2i4");
-        TestIssue repo2issue5 = new TestIssue(repo2, "r2i5");
-        TestIssue repo2issue6 = new TestIssue(repo2, "r2i6");
-        TestIssue repo2issue7 = new TestIssue(repo2, "r2i7");
+        RITestRepository riTestrepo2 = new RITestRepository("test repo2");
+        RepositoryImpl repo2 = getRepository(riTestrepo2);
+        IssueImpl repo2issue1 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i1"));
+        IssueImpl repo2issue2 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i2"));
+        IssueImpl repo2issue3 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i3"));
+        IssueImpl repo2issue4 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i4"));
+        IssueImpl repo2issue5 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i5"));
+        IssueImpl repo2issue6 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i6"));
+        IssueImpl repo2issue7 = getIssue(repo2, new RITestIssue(riTestrepo2, "r2i7"));
 
         // add repo2 issues 1, 2, 3, 4, 5, 6, 7,
         BugtrackingManager.getInstance().addRecentIssue(repo2, repo2issue1);
@@ -204,58 +207,52 @@ public class RecentIssuesTest extends NbTestCase {
 
         // getAll -> repo1 issues 1..7 are returned and repo2 issues 1..7 are returned
         Map<String, List<RecentIssue>> map = BugtrackingManager.getInstance().getAllRecentIssues();
-        List<RecentIssue> ri = map.get(repo1.getID());
-        assertRecentIssues(ri, new Issue[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
+        List<RecentIssue> ri = map.get(repo1.getId());
+        assertRecentIssues(ri, new IssueImpl[] {repo1issue7, repo1issue6, repo1issue5, repo1issue4, repo1issue3, repo1issue2, repo1issue1});
 
-        ri = map.get(repo2.getID());
-        assertRecentIssues(ri, new Issue[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
+        ri = map.get(repo2.getId());
+        assertRecentIssues(ri, new IssueImpl[] {repo2issue7, repo2issue6, repo2issue5, repo2issue4, repo2issue3, repo2issue2, repo2issue1});
     }
 
-    private void assertRecentIssues(List<RecentIssue> recent, Issue[] issues) {
+    private void assertRecentIssues(List<RecentIssue> recent, IssueImpl[] issues) {
         assertEquals(recent.size(), issues.length);
         for (int i = 0; i < issues.length; i++) {
             assertEquals(issues[i].getID(), recent.get(i).getIssue().getID());
         }
     }
 
-    private class TestRepository extends Repository {
+    private class RITestRepository extends TestRepository {
         private final String name;
+        private RepositoryInfo info;
 
-        public TestRepository(String name) {
+        public RITestRepository(String name) {
             this.name = name;
+            info = new RepositoryInfo(name, name, null, name, name, null, null, null, null);
         }
-        public String getDisplayName() {
-            return name;
-        }
-        public String getTooltip() {
-            return name;
-        }
-        public String getID() {
-            return getDisplayName();
-        }
-
-        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
-        public String getUrl() { throw new UnsupportedOperationException("Not supported yet."); }
-        public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
-        public Issue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
-        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
-        public BugtrackingController getController() { throw new UnsupportedOperationException("Not supported yet.");}
-        public Query createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Query[] getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
-        public Issue[] simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
 
         @Override
-        public Collection<RepositoryUser> getUsers() {
-            throw new UnsupportedOperationException("Not supported yet.");
+        public RepositoryInfo getInfo() {
+            return info;
         }
-
+        
+        public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
+        public Lookup getLookup() { throw new UnsupportedOperationException("Not supported yet."); }
+        public TestIssue getIssue(String id) { throw new UnsupportedOperationException("Not supported yet."); }
+        public void remove() { throw new UnsupportedOperationException("Not supported yet."); }
+        public RepositoryController getController() { throw new UnsupportedOperationException("Not supported yet.");}
+        public TestQuery createQuery() { throw new UnsupportedOperationException("Not supported yet.");}
+        public TestIssue createIssue() {throw new UnsupportedOperationException("Not supported yet.");}
+        public Collection<TestQuery> getQueries() {throw new UnsupportedOperationException("Not supported yet.");}
+        public Collection<TestIssue> simpleSearch(String criteria) {throw new UnsupportedOperationException("Not supported yet.");}
+        public void removePropertyChangeListener(PropertyChangeListener listener) { throw new UnsupportedOperationException("Not supported yet."); }
+        public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
-    private class TestIssue extends Issue {
+    private class RITestIssue extends TestIssue {
         private final String name;
-        public TestIssue(Repository repository, String name) {
-            super(repository);
+        private final RITestRepository repository;
+        public RITestIssue(RITestRepository repository, String name) {
+            this.repository = repository;
             this.name = name;
         }
         public String getDisplayName() {
@@ -279,6 +276,29 @@ public class RecentIssuesTest extends NbTestCase {
         public BugtrackingController getController() {throw new UnsupportedOperationException("Not supported yet.");}
         public IssueNode getNode() {throw new UnsupportedOperationException("Not supported yet.");}
         public Map<String, String> getAttributes() {throw new UnsupportedOperationException("Not supported yet.");}
+        public void setContext(Node[] nodes) {throw new UnsupportedOperationException("Not supported yet.");}
+        public void removePropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
+        public void addPropertyChangeListener(PropertyChangeListener listener) {throw new UnsupportedOperationException("Not supported yet.");}
+        public TestIssue createFor(String id) {throw new UnsupportedOperationException("Not supported yet.");}
     }
 
+    private class RITestConector extends BugtrackingConnector {
+        @Override
+        public Repository createRepository(RepositoryInfo info) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+        @Override
+        public Repository createRepository() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+    }
+    
+    private RepositoryImpl getRepository(RITestRepository repo) {
+        return TestKit.getRepository(repo);
+    }
+    
+    private IssueImpl getIssue(RepositoryImpl repo2, RITestIssue riTestIssue) {
+        return TestKit.getIssue(repo2, riTestIssue);
+    }
+    
 }

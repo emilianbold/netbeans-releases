@@ -5,6 +5,7 @@ CONSTRUCTO A($var)                         [PUBLIC]   A
 CONSTRUCTO A($var, $var2 = 10)             [PUBLIC]   A
 PACKAGE    ANS                             [PUBLIC]   null
 PACKAGE    Admin                           [PUBLIC]   null
+PACKAGE    AdminModule                     [PUBLIC]   null
 PACKAGE    App                             [PUBLIC]   null
 ------------------------------------
 CONSTRUCTO A()                             [PUBLIC]   A
@@ -17,6 +18,7 @@ PACKAGE    a                               [PUBLIC]   Test204925_08_P
 CLASS      A135618                         [PUBLIC]   issue135618.php
 CLASS      AA                              [PUBLIC]   Test197084.php
 CLASS      Admin                           [PUBLIC]   Admin
+CLASS      AliasedClassName                [PUBLIC]   Foo\Bar
 CLASS      AnonymousObject                 [PUBLIC]   anonymousObjectVariables.php
 CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php

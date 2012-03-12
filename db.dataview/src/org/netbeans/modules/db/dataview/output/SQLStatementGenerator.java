@@ -184,6 +184,9 @@ class SQLStatementGenerator {
             if (value != null && DataViewUtils.isSQLConstantString(value)) {
                 String constStr = ((String) value).substring(1, ((String) value).length() - 1);
                 updateStmt.append(" = ").append(constStr);
+            // NULL ist reported as an SQL constant, so treat it as such
+            } else if ( value == null ) {
+                updateStmt.append(" = NULL"); // NOI18N
             } else { // ELSE literals
                 updateStmt.append(" = ?"); // NOI18N
                 values.add(value);

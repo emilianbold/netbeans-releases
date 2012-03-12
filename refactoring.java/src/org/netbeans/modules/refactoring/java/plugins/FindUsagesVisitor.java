@@ -54,8 +54,8 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -67,7 +67,7 @@ public class FindUsagesVisitor extends FindVisitor {
 
     private boolean findInComments = false;
     private Collection<UsageInComment> usagesInComments = Collections.<UsageInComment>emptyList();
-    public FindUsagesVisitor(WorkingCopy workingCopy) {
+    public FindUsagesVisitor(CompilationController workingCopy) {
         super(workingCopy);
     }
 
@@ -75,7 +75,7 @@ public class FindUsagesVisitor extends FindVisitor {
         return usagesInComments;
     }
 
-    public FindUsagesVisitor(WorkingCopy workingCopy, boolean findInComments) {
+    public FindUsagesVisitor(CompilationController workingCopy, boolean findInComments) {
         super(workingCopy);
         this.findInComments = findInComments;
         if (findInComments) {

@@ -62,6 +62,8 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.LookupBasedJavaSourceTaskFactory;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceTaskFactoryManager;
+import org.netbeans.modules.parsing.spi.TaskIndexingMode;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -86,6 +88,7 @@ public abstract class JavaSourceTaskFactory {
             
     private final Phase phase;
     private final Priority priority;
+    private final TaskIndexingMode taskIndexingMode;
 
     /**Construct the JavaSourceTaskFactory with given {@link Phase} and {@link Priority}.
      *
@@ -95,6 +98,31 @@ public abstract class JavaSourceTaskFactory {
     protected JavaSourceTaskFactory(@NonNull Phase phase, @NonNull Priority priority) {
         this.phase = phase;
         this.priority = priority;
+        this.taskIndexingMode = TaskIndexingMode.DISALLOWED_DURING_SCAN;
+        this.file2Task = new HashMap<FileObject, CancellableTask<CompilationInfo>>();
+        this.file2JS = new HashMap<FileObject, JavaSource>();
+    }
+    
+    /**Construct the JavaSourceTaskFactory with given {@link Phase}, {@link Priority}
+     * and {@link TaskIndexingMode}.
+     *
+     * @param phase phase to use for tasks created by {@link #createTask}
+     * @param priority priority to use for tasks created by {@link #createTask}
+     * @param taskIndexingMode the awareness of indexing. For tasks which can run
+     * during indexing use {@link TaskIndexingMode#ALLOWED_DURING_SCAN} for tasks
+     * which cannot run during indexing use {@link TaskIndexingMode#DISALLOWED_DURING_SCAN}.
+     * @since 0.94
+     */
+    protected JavaSourceTaskFactory(
+            @NonNull final Phase phase,
+            @NonNull final Priority priority,
+            @NonNull final TaskIndexingMode taskIndexingMode) {
+        Parameters.notNull("phase", phase); //NOI18N
+        Parameters.notNull("priority", priority);   //NOI18N
+        Parameters.notNull("taskIndexingMode", taskIndexingMode);   //NOI18N
+        this.phase = phase;
+        this.priority = priority;
+        this.taskIndexingMode = taskIndexingMode;
         this.file2Task = new HashMap<FileObject, CancellableTask<CompilationInfo>>();
         this.file2JS = new HashMap<FileObject, JavaSource>();
     }
@@ -184,7 +212,7 @@ public abstract class JavaSourceTaskFactory {
                     if (task == null) {
                         throw new IllegalStateException("createTask(FileObject) returned null for factory: " + getClass().getName());
                     }                    
-                    ACCESSOR2.addPhaseCompletionTask(js, task, phase, priority);                    
+                    ACCESSOR2.addPhaseCompletionTask(js, task, phase, priority, taskIndexingMode);                    
                     file2Task.put(a, task);
                     file2JS.put(a, js);
                 }
@@ -230,8 +258,8 @@ public abstract class JavaSourceTaskFactory {
             }
         };
         ACCESSOR2 = new Accessor2() {
-            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority) {
-                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js, task, phase, priority);                
+            public void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority, TaskIndexingMode taskIndexingMode) {
+                JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask (js, task, phase, priority, taskIndexingMode);
             }
 
             public void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task) {
@@ -245,7 +273,7 @@ public abstract class JavaSourceTaskFactory {
     }
 
     static interface Accessor2 {
-        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority );
+        public abstract void addPhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task, Phase phase, Priority priority, TaskIndexingMode taskIndexingMode );
         public abstract void removePhaseCompletionTask(JavaSource js, CancellableTask<CompilationInfo> task );
         public abstract void rescheduleTask(JavaSource js, CancellableTask<CompilationInfo> task);
     }

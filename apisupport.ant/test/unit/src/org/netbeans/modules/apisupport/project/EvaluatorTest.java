@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectManagerTest;
 import org.netbeans.junit.Log;
 import org.netbeans.modules.apisupport.project.queries.ClassPathProviderImplTest;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.ModuleProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -143,14 +144,14 @@ public class EvaluatorTest extends TestBase {
         String origbootcp = bootcp;
         assertNotNull(bootcp); // who knows what actual value will be inside a unit test - probably empty
         ep = p.getHelper().getProperties("nbproject/platform.properties");
-        ep.setProperty("nbjdk.active", "testjdk");
+        ep.setProperty(ModuleProperties.JAVA_PLATFORM_PROPERTY, "testjdk");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
         assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();
         bootcp = eval.getProperty(Evaluator.NBJDK_BOOTCLASSPATH);
         assertEquals("correct bootcp", new File(testjdk, "jre/lib/rt.jar".replace('/', File.separatorChar)).getAbsolutePath(), bootcp);
         ep = p.getHelper().getProperties("nbproject/platform.properties");
-        ep.setProperty("nbjdk.active", "default");
+        ep.setProperty(ModuleProperties.JAVA_PLATFORM_PROPERTY, "default");
         p.getHelper().putProperties("nbproject/platform.properties", ep);
         assertTrue("got a change in bootcp", l.changed.contains(Evaluator.NBJDK_BOOTCLASSPATH));
         l.reset();

@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,36 +34,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.groovy.editor.actions;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import java.util.logging.Level;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import javax.swing.text.Document;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseAction;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
+import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -71,178 +61,130 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author schmidtm
+ * @author schmidtm, Martin Janicek
  */
-public class FixImportsAction extends BaseAction implements Runnable {
+@EditorActionRegistration(
+    name             = FixImportsAction.ACTION_NAME,
+    mimeType         = "text/x-groovy",
+    shortDescription = "Fixes import statements.",
+    popupText        = "Fix Imports..."
+)
+public class FixImportsAction extends BaseAction {
 
-    private final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
-    Document doc = null;
-    private FixImportsHelper helper = new FixImportsHelper();
+    protected static final String ACTION_NAME = "fix-groovy-imports"; //NOI18N
+    private static final Logger LOG = Logger.getLogger(FixImportsAction.class.getName());
+
+    private final List<String> missingNames;
+    private final AtomicBoolean cancel;
+    
 
     public FixImportsAction() {
-        super(NbBundle.getMessage(FixImportsAction.class, "fix-groovy-imports"), 0); // NOI18N
+        super(MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+        
+        missingNames = new ArrayList<String>();
+        cancel = new AtomicBoolean();
     }
 
     @Override
     public boolean isEnabled() {
-        // here should go all the logic whether there are in fact missing 
+        // here should go all the logic whether there are in fact missing
         // imports we're able to fix.
         return true;
     }
 
-    public void actionPerformed(ActionEvent evt, JTextComponent comp) {
-        LOG.log(Level.FINEST, "actionPerformed(final JTextComponent comp)");
+    @Override
+    public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+        final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
+        final Source source = Source.create(fo);
 
-        assert comp != null;
-        doc = comp.getDocument();
-
-        if (doc != null) {
-            RequestProcessor.getDefault().post(this);
-        }
-    }
-
-    public void run() {
-        DataObject dob = NbEditorUtilities.getDataObject(doc);
-
-        if (dob == null) {
-            LOG.log(Level.FINEST, "Could not get DataObject for document");
-            return;
-        }
-
-        final List<String> missingNames = new ArrayList<String>();
-
-        FileObject fo = dob.getPrimaryFile();
         try {
-            Source source = Source.create(fo);
-            // FIXME can we move this out of task (?)
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
-                @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
-                    if (result != null) {
-                        ErrorCollector errorCollector = result.getErrorCollector();
-                        if (errorCollector == null) {
-                            LOG.log(Level.FINEST, "Could not get error collector");
-                            return;
-                        }
-                        List errList = errorCollector.getErrors();
-
-                        if (errList == null) {
-                            LOG.log(Level.FINEST, "Could not get list of errors");
-                            return;
-                        }
-
-                        // loop over the list of errors, remove duplicates and
-                        // populate list of missing imports.
-
-                        for (Object error : errList) {
-                            if (error instanceof SyntaxErrorMessage) {
-                                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
-                                if (se != null) {
-                                    String missingClassName = helper.getMissingClassName(se.getMessage());
-
-                                    if (missingClassName != null) {
-                                        if (!missingNames.contains(missingClassName)) {
-                                            missingNames.add(missingClassName);
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-//            SourceUtils.runUserActionTask(fo, new CancellableTask<GroovyParserResult>() {
-//                public void run(GroovyParserResult result) throws Exception {
-//                    if (result != null) {
-//                        ErrorCollector errorCollector = result.getErrorCollector();
-//                        if (errorCollector == null) {
-//                            LOG.log(Level.FINEST, "Could not get error collector");
-//                            return;
-//                        }
-//                        List errList = errorCollector.getErrors();
-//
-//                        if (errList == null) {
-//                            LOG.log(Level.FINEST, "Could not get list of errors");
-//                            return;
-//                        }
-//
-//                        // loop over the list of errors, remove duplicates and
-//                        // populate list of missing imports.
-//
-//                        for (Object error : errList) {
-//                            if (error instanceof SyntaxErrorMessage) {
-//                                SyntaxException se = ((SyntaxErrorMessage) error).getCause();
-//                                if (se != null) {
-//                                    String missingClassName = helper.getMissingClassName(se.getMessage());
-//
-//                                    if (missingClassName != null) {
-//                                        if (!missingNames.contains(missingClassName)) {
-//                                            missingNames.add(missingClassName);
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//
-//                public void cancel() {}
-//            });
+            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask());
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        // go over list of missing imports, fix it - if there is only one 
-        // candidate or populate choosers input list.
+        // go over list of missing imports, fix it - if there is only one candidate
+        // or populate choosers input list if there is more than one candidate.
 
-        Map<String, List<FixImportsHelper.ImportCandidate>> multipleCandidates = new HashMap<String, List<FixImportsHelper.ImportCandidate>>();
+        final List<String> singleCandidates = new ArrayList<String>();
+        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = helper.getImportCandidate(fo, name);
+            List<ImportCandidate> importCandidates = FixImportsHelper.getImportCandidate(fo, name);
 
-            if (importCandidates.isEmpty()) {
-                // nothing to import
-                return;
-            }
-
-            int size = importCandidates.size();
-
-            if (size == 1) {
-                helper.doImport(fo, importCandidates.get(0).getFqnName());
-            } else {
-                LOG.log(Level.FINEST, "Adding to multipleCandidates: " + name);
-                multipleCandidates.put(name, importCandidates);
+            switch (importCandidates.size()) {
+                case 0: continue;
+                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
+                default: multipleCandidates.put(name, importCandidates);
             }
         }
 
-        // do we have multiple candidate? In this case we need to present a
-        // chooser
-
-        List<String> listToFix = null;
+        // do we have multiple candidate? In this case we need to present a chooser
 
         if (!multipleCandidates.isEmpty()) {
-            LOG.log(Level.FINEST, "multipleCandidates.size(): " + multipleCandidates.size());
-            listToFix = presentChooser(multipleCandidates);
+            List<String> choosenCandidates = showFixImportChooser(multipleCandidates);
+            singleCandidates.addAll(choosenCandidates);
         }
 
-        if (listToFix != null && !listToFix.isEmpty()) {
-            LOG.log(Level.FINEST, "listToFix.size(): " + listToFix.size());
-            for (String fqn : listToFix) {
-                helper.doImport(fo, fqn);
+        if (!singleCandidates.isEmpty()) {
+            Collections.sort(singleCandidates);
+            ProgressUtils.runOffEventDispatchThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    FixImportsHelper.doImports(fo, singleCandidates);
+                }
+            }, "Fix All Imports", cancel, false);
+        }
+    }
+
+    private class CollectMissingImportsTask extends UserTask {
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            GroovyParserResult result = AstUtilities.getParseResult(resultIterator.getParserResult());
+            if (result != null) {
+                ErrorCollector errorCollector = result.getErrorCollector();
+                if (errorCollector == null) {
+                    return;
+                }
+                List errors = errorCollector.getErrors();
+                if (errors == null) {
+                    return;
+                }
+
+                collectMissingImports(errors);
             }
         }
 
-        return;
+        private void collectMissingImports(List errors) {
+            for (Object error : errors) {
+                if (error instanceof SyntaxErrorMessage) {
+                    SyntaxException se = ((SyntaxErrorMessage) error).getCause();
+
+                    if (se != null) {
+                        String missingClassName = FixImportsHelper.getMissingClassName(se.getMessage());
+
+                        if (missingClassName != null) {
+                            if (!missingNames.contains(missingClassName)) {
+                                missingNames.add(missingClassName);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
-    private List<String> presentChooser(Map<String, List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
-        LOG.log(Level.FINEST, "presentChooser()");
+    private List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
         List<String> result = new ArrayList<String>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
 
@@ -258,7 +200,6 @@ public class FixImportsAction extends BaseAction implements Runnable {
         if (dd.getValue() == DialogDescriptor.OK_OPTION) {
             result = panel.getSelections();
         }
-
         return result;
     }
 }

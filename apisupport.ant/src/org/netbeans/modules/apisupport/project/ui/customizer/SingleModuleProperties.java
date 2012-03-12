@@ -194,7 +194,6 @@ public final class SingleModuleProperties extends ModuleProperties {
     private DefaultListModel wrappedJarsListModel;
     private boolean wrappedJarsChanged; // #171125
     public static final String NB_PLATFORM_PROPERTY = "nbPlatform"; // NOI18N
-    public static final String JAVA_PLATFORM_PROPERTY = "nbjdk.active"; // NOI18N
     public static final String DEPENDENCIES_PROPERTY = "moduleDependencies"; // NOI18N
 
     /**
@@ -264,13 +263,7 @@ public final class SingleModuleProperties extends ModuleProperties {
             }
             originalPlatform = activePlatform = plaf;
         }
-        String activeJdk = getEvaluator().getProperty("nbjdk.active"); // NOI18N
-        if (activeJdk != null) {
-            activeJavaPlatform = ModuleProperties.findJavaPlatformByID(activeJdk); // NOI18N
-        } else {
-            String activeJdkHome = getEvaluator().getProperty("nbjdk.home"); // NOI18N
-            activeJavaPlatform = ModuleProperties.findJavaPlatformByLocation(activeJdkHome);
-        }
+        activeJavaPlatform = getJavaPlatform();
         javaPlatformChanged = false;
         getPublicPackagesModel().reloadData(loadPublicPackages());
         requiredTokens = Collections.unmodifiableSortedSet(
@@ -309,7 +302,8 @@ public final class SingleModuleProperties extends ModuleProperties {
     }
 
     String getJarFile() {
-        return getHelper().resolveFile(getEvaluator().evaluate("${cluster}/${module.jar}")).getAbsolutePath(); // NOI18N
+        String v = getEvaluator().evaluate("${cluster}/${module.jar}");
+        return getHelper().resolveFile(v != null ? v : "unknown").getAbsolutePath(); // NOI18N
     }
 
     @CheckForNull String getSuiteDirectoryPath() {
@@ -1109,7 +1103,8 @@ public final class SingleModuleProperties extends ModuleProperties {
 
     // package provide for unit test
     File getManifestFile() {
-        return getHelper().resolveFile(getEvaluator().getProperty("manifest.mf")); // NOI18N
+        String v = getEvaluator().getProperty("manifest.mf");
+        return getHelper().resolveFile(v != null ? v : "unknown");
     }
 
     /**

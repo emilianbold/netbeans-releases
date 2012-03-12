@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.remote.impl;
 
+import java.text.MessageFormat;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 
@@ -50,15 +51,17 @@ public class RemoteLogger {
             java.util.logging.Logger.getLogger("remote.support.logger"); // NOI18N
     
     private static boolean assertionsEnabled = false;
+
+    private static final boolean THROW_ASSERTIONS = Boolean.getBoolean("remote.throw.assertions");
     
     /** for test purposes */
-    private static volatile Exception lastAssertion;
+    private static volatile AssertionError lastAssertion;
 
     static {
         assert (assertionsEnabled = true);
     }
 
-    public static Exception getLastAssertion() {
+    public static AssertionError getLastAssertion() {
         return lastAssertion;
     }
     
@@ -73,54 +76,46 @@ public class RemoteLogger {
         return instance;
     }
 
-    public static void assertTrueInConsole(boolean value, String message) {
+    public static void assertTrueInConsole(boolean value, String message, Object... params) {
         if (assertionsEnabled && !value) {
-            instance.log(Level.INFO, message);
+            instance.log(Level.INFO, format(message, params));
         }
     }
 
     public static void assertTrue(boolean value) {
-        if (assertionsEnabled && !value) {
-            String message = "Assertion error"; //NOI18N
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
-        }
+        assertTrue(value, "AssertionError");
     }
 
-    public static void assertTrue(boolean value, String message) {
+    public static void assertTrue(boolean value, String message, Object... params) {
         if (assertionsEnabled && !value) {
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
+            message = format(message, params);
+            lastAssertion = new AssertionError(message);
+            if (THROW_ASSERTIONS) {
+                throw lastAssertion;
+            } else {
+                instance.log(Level.SEVERE, message, lastAssertion);
+            }
         }
     }
     
-    public static void assertNotNull(Object value, String message) {
-        if (assertionsEnabled && value == null) {
-            instance.log(Level.SEVERE, message + " should not be null", lastAssertion = new Exception(message));
-        }
+    public static void assertNotNull(Object value, String message, Object... params) {
+        assertTrue(value != null, message, params);
     }
 
-    public static void assertNull(Object value, String message) {
-        if (assertionsEnabled && value != null) {
-            instance.log(Level.SEVERE, message + " should be null", lastAssertion = new Exception(message));
-        }
+    public static void assertNull(Object value, String message, Object... params) {
+        assertTrue(value == null, message, params);
     }
 
     public static void assertFalse(boolean value) {
-        if (assertionsEnabled && value) {
-            String message = "Assertion error"; //NOI18N
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
-        }
+        assertTrue(!value, "Assertion error"); //NOI18N
     }
 
-    public static void assertFalse(boolean value, String message) {
-        if (assertionsEnabled && value) {
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
-        }
+    public static void assertFalse(boolean value, String message, Object... params) {
+        assertTrue(!value, message, params);
     }
 
     public static void assertNonUiThread(String message) {
-        if (assertionsEnabled && SwingUtilities.isEventDispatchThread()) {
-            instance.log(Level.SEVERE, message, lastAssertion = new Exception(message));
-        }
+        assertFalse(SwingUtilities.isEventDispatchThread());
     }
 
     public static void assertNonUiThread() {
@@ -170,4 +165,57 @@ public class RemoteLogger {
             instance.log(Level.WARNING, "Exception occurred:", exception);
         }
     }
+    
+    private static String format(String message, Object... params) {
+        try {
+            return MessageFormat.format(message, params);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return message;
+        }  
+    }
+            
+    public static void logException(Level level, String msg, Object... params) {
+        if (instance.isLoggable(level)) {
+            String formattedMessage = format(msg, params);
+            Exception ex = new Exception(formattedMessage);
+            instance.log(level, formattedMessage, ex);
+        }        
+    }
+    
+    public static void severeException(String msg, Object... params) {
+        logException(Level.SEVERE, msg, params);
+    }
+
+    public static void warningException(String msg, Object... params) {
+        logException(Level.WARNING, msg, params);
+    }
+
+    public static void innfoException(String msg, Object... params) {
+        logException(Level.INFO, msg, params);
+    }
+
+    public static void severe(String msg, Object... params) {
+        log(Level.SEVERE, msg, params);
+    }
+
+    public static void warning(String msg, Object... params) {
+        log(Level.WARNING, msg, params);
+    }
+
+    public static void info(String msg, Object... params) {
+        log(Level.INFO, msg, params);
+    }
+
+    public static void fine(String msg, Object... params) {
+        log(Level.FINE, msg, params);
+    }
+
+    public static void finer(String msg, Object... params) {
+        log(Level.FINER, msg, params);
+    }
+    
+    public static void finest(String msg, Object... params) {
+        log(Level.FINER, msg, params);
+    }    
 }

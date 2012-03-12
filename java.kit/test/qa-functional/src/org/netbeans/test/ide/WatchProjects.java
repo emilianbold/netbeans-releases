@@ -42,37 +42,32 @@
 
 package org.netbeans.test.ide;
 
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Frame;
-import java.awt.Toolkit;
+import com.sun.management.HotSpotDiagnosticMXBean;
+import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JEditorPane;
-import javax.swing.JFrame;
-import javax.swing.JTextArea;
-import javax.swing.JTree;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.Log;
+import org.openide.cookies.EditorCookie;
+import org.openide.explorer.view.TreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
-import org.netbeans.api.project.ui.OpenProjects;
-import org.openide.cookies.EditorCookie;
-import org.openide.explorer.view.TreeView;
+import sun.management.ManagementFactory;
 
 /**
  *
@@ -203,8 +198,18 @@ public final class WatchProjects {
             }
 
         };
-        OpenProjects.getDefault().open(new Project[] { p }, false);
-        OpenProjects.getDefault().setMainProject(p);
+        try {
+            OpenProjects.getDefault().open(new Project[] { p }, false);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during creation of fake project:");
+            ae.printStackTrace();
+        }
+        try {
+            OpenProjects.getDefault().setMainProject(p);
+        } catch (AssertionError ae) {
+            System.out.println("Excepton during setting of fake project as main:");
+            ae.printStackTrace();
+        }
         
         for (int i = 0; i < 10; i++) {
             EventQueue.invokeAndWait(new Runnable() {
@@ -240,6 +245,12 @@ public final class WatchProjects {
                         throw t;
                     }
                 } finally {
+                    HotSpotDiagnosticMXBean hdmxb = ManagementFactory.getDiagnosticMXBean();
+                    try {
+                        hdmxb.dumpHeap(System.getProperty("nbjunit.workdir")+File.separator+"Heapdump.hprof", true);
+                    } catch (IOException ioe) {
+                        System.out.println("Taking of heap dump failed: " + ioe.getMessage());
+                    }
                     try {
                         printTreeView(Frame.getFrames());
                     } catch (Exception ex) {

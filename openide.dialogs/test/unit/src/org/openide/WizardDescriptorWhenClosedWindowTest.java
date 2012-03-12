@@ -74,6 +74,11 @@ public class WizardDescriptorWhenClosedWindowTest extends NbTestCase {
         d.setVisible (true);
     }
 
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
+
     /** Run all tests in AWT thread */
     @Override
     protected boolean runInEQ() {

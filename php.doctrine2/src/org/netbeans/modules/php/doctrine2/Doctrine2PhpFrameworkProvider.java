@@ -42,14 +42,19 @@
 package org.netbeans.modules.php.doctrine2;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import org.netbeans.modules.php.api.phpmodule.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.doctrine2.annotations.odm.Doctrine2OdmAnnotationsProvider;
+import org.netbeans.modules.php.doctrine2.annotations.orm.Doctrine2OrmAnnotationsProvider;
 import org.netbeans.modules.php.doctrine2.commands.Doctrine2CommandSupport;
 import org.netbeans.modules.php.doctrine2.preferences.Doctrine2Preferences;
 import org.netbeans.modules.php.doctrine2.ui.actions.Doctrine2PhpModuleActionsExtender;
 import org.netbeans.modules.php.doctrine2.ui.customizer.Doctrine2PhpModuleCustomizerExtender;
 import org.netbeans.modules.php.doctrine2.ui.wizards.Doctrine2PhpModuleExtender;
+import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
 import org.netbeans.modules.php.spi.commands.FrameworkCommandSupport;
 import org.netbeans.modules.php.spi.editor.EditorExtender;
 import org.netbeans.modules.php.spi.phpmodule.PhpFrameworkProvider;
@@ -135,6 +140,13 @@ public final class Doctrine2PhpFrameworkProvider extends PhpFrameworkProvider {
     @Override
     public PhpModuleCustomizerExtender createPhpModuleCustomizerExtender(PhpModule phpModule) {
         return new Doctrine2PhpModuleCustomizerExtender(phpModule);
+    }
+
+    @Override
+    public List<PhpAnnotationsProvider> getAnnotationsProviders(PhpModule phpModule) {
+        return Arrays.asList(
+                new Doctrine2OrmAnnotationsProvider(),
+                new Doctrine2OdmAnnotationsProvider());
     }
 
 }

@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
 @NbBundle.Messages({
     "ResetResultsProfilingPointFactory_PpType=Reset Results",
     "ResetResultsProfilingPointFactory_PpDescr=Resets currently collected profiling results similarly to Reset Results action in Profiler UI. You may use this Profiling Point for collecting results deltas when combined with Take Snapshot Profiling Point.",
+    "ResetResultsProfilingPointFactory_PpHint=", // #207680 Do not remove, custom brandings may provide wizard hint here!!!
 //# Reset Results at Anagrams.java:32
     "ResetResultsProfilingPointFactory_PpDefaultName={0} at {1}:{2}"
 })
@@ -72,6 +73,10 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
 
     public String getDescription() {
         return Bundle.ResetResultsProfilingPointFactory_PpDescr();
+    }
+    
+    public String getHint() {
+        return Bundle.ResetResultsProfilingPointFactory_PpHint();
     }
 
     public Icon getIcon() {

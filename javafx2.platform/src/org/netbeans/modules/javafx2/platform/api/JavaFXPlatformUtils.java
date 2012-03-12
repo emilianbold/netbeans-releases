@@ -204,10 +204,9 @@ public final class JavaFXPlatformUtils {
      * @return instance of created JavaFX Platform, or null if creation was
      * not successful: such platform already exists or IO exception has occurred
      * @throws IOException if the platform was invalid or its definition could not be stored
-     * @throws IllegalArgumentException if a default JavaFX Platform already exists
      */
     @CheckForNull
-    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException, IllegalArgumentException {
+    public static JavaPlatform createDefaultJavaFXPlatform() throws IOException {
         String sdkPath = null;
         String runtimePath = null;
         String javadocPath = null;

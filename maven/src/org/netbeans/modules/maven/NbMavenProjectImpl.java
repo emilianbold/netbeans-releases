@@ -51,7 +51,6 @@ import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -99,7 +98,6 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -144,7 +142,7 @@ public final class NbMavenProjectImpl implements Project {
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
         }
     }
 
@@ -164,8 +162,8 @@ public final class NbMavenProjectImpl implements Project {
         fileObject = projectFO;
         folderFileObject = folder;
         watcher = ACCESSOR.createWatcher(this);
-        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml");
-        userFolderUpdater = new Updater("settings.xml");
+        projectFolderUpdater = new Updater("nb-configuration.xml", "pom.xml"); //NOI18N
+        userFolderUpdater = new Updater("settings.xml");//NOI18N
         problemReporter = new ProblemReporterImpl(this);
         M2AuxilaryConfigImpl auxiliary = new M2AuxilaryConfigImpl(this);
         auxprops = new MavenProjectPropsImpl(auxiliary, this);
@@ -173,7 +171,7 @@ public final class NbMavenProjectImpl implements Project {
         configProvider = new M2ConfigProvider(this, auxiliary, profileHandler);
         // @PSP's and the like, and PackagingProvider impls, may check project lookup for e.g. NbMavenProject, so init lookup in two stages:
         basicLookup = createBasicLookup(projectState, auxiliary);
-        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");
+        lookup = LookupProviderSupport.createCompositeLookup(new PackagingTypeDependentLookup(watcher, basicLookup), "Projects/org-netbeans-modules-maven/Lookup");//NOI18N
     }
 
     public File getPOMFile() {
@@ -475,13 +473,7 @@ public final class NbMavenProjectImpl implements Project {
             // XXX for a few purposes (listening) it is desirable to list these even before they exist, but usually it is just noise (cf. #196414 comment #2)
             FileObject root = getProjectDirectory().getFileObject("src/" + (test ? "test" : "main") + "/" + rp.kind());
             if (root != null && root.isFolder()) {
-                try {
-                    uris.add(root.getURL().toURI());
-                } catch (FileStateInvalidException x) {
-                    LOG.log(Level.WARNING, null, x);
-                } catch (URISyntaxException x) {
-                    LOG.log(Level.WARNING, null, x);
-                }
+                uris.add(root.toURI());
             }
         }
         return uris.toArray(new URI[uris.size()]);

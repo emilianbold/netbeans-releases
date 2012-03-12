@@ -183,7 +183,7 @@ public final class TestCreator implements TestabilityJudge {
                                  final AbstractTestGenerator testGenerator)
                                                             throws IOException {
         final JavaSource javaSource = JavaSource.forFileObject(testFileObj);
-        Future<Void> future = javaSource.runWhenScanFinished(
+        javaSource.runUserActionTask(
                 new Task<CompilationController>() {
                     public void run(CompilationController parameter) throws Exception {
                         ModificationResult result
@@ -191,23 +191,7 @@ public final class TestCreator implements TestabilityJudge {
                         result.commit();
                     }
                 },
-                true);
-        try {
-            future.get();
-        } catch (ExecutionException ex) {
-            Throwable cause = ex.getCause();
-            if (cause != null) {
-                if (cause instanceof RuntimeException) {
-                    throw (RuntimeException) cause;
-                }
-                if (cause instanceof IOException) {
-                    throw (IOException) cause;
-                }
-            }
-            Exceptions.printStackTrace(ex);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+            true);
 
     }
     

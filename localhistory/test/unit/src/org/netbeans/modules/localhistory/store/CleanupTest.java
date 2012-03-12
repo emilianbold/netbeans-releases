@@ -34,8 +34,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.localhistory.LocalHistorySettings;
 import org.netbeans.modules.localhistory.LogHandler;
+import org.netbeans.modules.versioning.ui.history.HistorySettings;
 
 /**
  *
@@ -243,7 +243,7 @@ public class CleanupTest extends LHTestCase {
         // check the files created in storage
         assertFile(file1, store, ts2days, -1, 3, 1, "data1.2", TOUCHED, true);
         
-        LocalHistorySettings.getInstance().setCleanUpLabeled(false);
+        HistorySettings.getInstance().setCleanUpLabeled(false);
         
         // run clean up - time to live = 3 days 
         long ttl = 3 * 24 * 60 * 60 * 1000;
@@ -253,7 +253,7 @@ public class CleanupTest extends LHTestCase {
         // only the versions ts5days are to be deleted
         assertFile(file1, store, ts2days, -1, 2, 0, "data1.2", TOUCHED, true); // still 2 revision there
 
-        LocalHistorySettings.getInstance().setCleanUpLabeled(true);
+        HistorySettings.getInstance().setCleanUpLabeled(true);
         
         // run clean up - time to live = 3 days 
         store.cleanUp(ttl); 

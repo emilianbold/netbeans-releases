@@ -114,6 +114,15 @@ public abstract class VersioningSystem {
     }
 
     /**
+     * Retrieves a VCSHistoryProvider implementation if this versioning system provides one.
+     * 
+     * @return a VCSHistoryProvider implementation or null
+     */
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return null;
+    }
+    
+    /**
      * Get the original (unmodified) copy of a file. If the versioning system cannot provide it then this method should do nothing.
      * For version control systems that support keyword expansion, the original file must expand all keywords so the
      * diff sidebar support will not report any differences in keywords.

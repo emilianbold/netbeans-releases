@@ -50,16 +50,20 @@ import org.netbeans.modules.bugzilla.*;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCorePlugin;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Query;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -79,6 +83,10 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     @Override
     protected void setUp() throws Exception {
         super.setUp();
+        
+        MockLookup.setLayersAndInstances();
+        BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
+        
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         cleanupStoredIssues();
     }
@@ -99,13 +107,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         nl.reset();
         q.refresh();
-        Issue[] is = q.getIssues();
-        assertEquals(1, is.length);
+        Collection<BugzillaIssue> is = q.getIssues();
+        assertEquals(1, is.size());
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -119,7 +127,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
         is = q.getIssues();
-        assertEquals(1, is.length);
+        assertEquals(1, is.size());
     }
 
     public void testGetIssues() throws MalformedURLException, CoreException {
@@ -133,8 +141,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
         BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
-
-        Issue[] issues = q.getIssues();
+        
+        Collection<BugzillaIssue> bugzillaIssues = q.getIssues();
         assertEquals(0, nl.issues.size());
 
         nl.reset();
@@ -142,8 +150,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
-        assertEquals(1, q.getIssues().length);
-        Issue i = q.getIssues()[0];
+        assertEquals(1, q.getIssues().size());
+        BugzillaIssue i = q.getIssues().iterator().next();
         assertEquals(summary1, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -152,8 +160,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(1, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
-        assertEquals(1, q.getIssues().length);
-        i = q.getIssues()[0];
+        assertEquals(1, q.getIssues().size());
+        i = q.getIssues().iterator().next();
         assertEquals(summary1, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -161,14 +169,14 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         p =  MessageFormat.format(PARAMETERS_FORMAT, ts);
         nl.reset();
         q.refresh(p, false);
-        issues = q.getIssues();
+        bugzillaIssues = q.getIssues();
         assertTrue(nl.started);
         assertTrue(nl.finished);
         assertEquals(2, nl.getIssues(IssueCache.ISSUE_STATUS_ALL).size());
-        assertEquals(2, issues.length);
+        assertEquals(2, bugzillaIssues.size());
         List<String> summaries = new ArrayList<String>();
         List<String> ids = new ArrayList<String>();
-        for(Issue issue : issues) {
+        for(BugzillaIssue issue : bugzillaIssues) {
             summaries.add(issue.getSummary());
             ids.add(issue.getID());
         }
@@ -177,23 +185,23 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(ids.contains(id1));
         assertTrue(ids.contains(id2));
 
-        issues = q.getIssues("" + ts); // shoud return both issues
-        assertEquals(2, issues.length);
-        summaries = new ArrayList<String>();
-        ids = new ArrayList<String>();
-        for(Issue issue : issues) {
-            summaries.add(issue.getSummary());
-            ids.add(issue.getID());
-        }
-        assertTrue(summaries.contains(summary1));
-        assertTrue(summaries.contains(summary2));
-        assertTrue(ids.contains(id1));
-        assertTrue(ids.contains(id2));
-
-        issues = q.getIssues(summary1); // shoud return 1st issue
-        assertEquals(1, issues.length);
-        assertEquals(id1, issues[0].getID());
-        assertEquals(summary1, issues[0].getSummary());
+//        Collection<Issue> is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), "" + ts); // shoud return both issues
+//        assertEquals(2, is.size());
+//        summaries = new ArrayList<String>();
+//        ids = new ArrayList<String>();
+//        for(Issue issue : is) {
+//            summaries.add(issue.getSummary());
+//            ids.add(issue.getID());
+//        }
+//        assertTrue(summaries.contains(summary1));
+//        assertTrue(summaries.contains(summary2));
+//        assertTrue(ids.contains(id1));
+//        assertTrue(ids.contains(id2));
+//        
+//        is = BugtrackingUtil.getByIdOrSummary(BugzillaUtil.getQuery(q).getIssues(), summary1); // shoud return 1st issue
+//        assertEquals(1, is.size());
+//        assertEquals(id1, is.iterator().next().getID());
+//        assertEquals(summary1, is.iterator().next().getSummary());
     }
 
     // XXX test obsolete status
@@ -256,9 +264,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
 
@@ -271,9 +279,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(q.isSaved());
         // create a new repo instance and check if our query is between them
         repository = QueryTestUtil.getRepository();
-        Query[] queries = repository.getQueries();
+        Collection<BugzillaQuery> queries = repository.getQueries();
         boolean bl = false;
-        for (Query query : queries) {
+        for (BugzillaQuery query : queries) {
             bl = query.getDisplayName().equals(name);
             if(bl) break;
         }
@@ -310,9 +318,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         assertTrue(nl.started);
         assertTrue(nl.finished);
-        List<Issue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
+        List<BugzillaIssue> il = nl.getIssues(IssueCache.ISSUE_STATUS_ALL);
         assertEquals(1, il.size());
-        Issue i = il.get(0);
+        BugzillaIssue i = il.get(0);
         assertEquals(summary, i.getSummary());
         assertEquals(id1, i.getID());
     }
@@ -327,9 +335,8 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         // get controler and wait until populated with default values
         QueryController c = q.getController();
         h.waitUntilDone();
-
-        Query[] qs = QueryTestUtil.getRepository().getQueries();
-        int queriesCount = qs.length;
+        Collection<BugzillaQuery> qs = QueryTestUtil.getRepository().getQueries();
+        int queriesCount = qs.size();
 
         QueryListener ql = new QueryListener();
         q.addPropertyChangeListener(ql);
@@ -340,13 +347,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(1, ql.saved);
 
         qs = QueryTestUtil.getRepository().getQueries();
-        assertEquals(queriesCount + 1, qs.length);
+        assertEquals(queriesCount + 1, qs.size());
 
         // remove
         remove(c);
         assertEquals(1, ql.removed);
         qs = QueryTestUtil.getRepository().getQueries();
-        assertEquals(queriesCount, qs.length);
+        assertEquals(queriesCount, qs.size());
     }
 
     private void save(QueryController c, String name) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -382,10 +389,10 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         int saved = 0;
         int removed = 0;
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_REMOVED)) {
                 removed++;
             }
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
+            if(evt.getPropertyName().equals(QueryProvider.EVENT_QUERY_SAVED)) {
                 saved++;
             }
         }

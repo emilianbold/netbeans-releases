@@ -55,6 +55,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.TypeElement;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -114,6 +116,7 @@ public class MainClassChooser extends JPanel {
         jMainClassList.setCellRenderer(new MainClassRenderer());
         initClassesView();
         initClassesModel(sourcesRoots, mainClass);
+        scanningLabel.setVisible(false);
     }
     
     public MainClassChooser (final Collection<ElementHandle<TypeElement>> mainClassesInFile) {
@@ -171,6 +174,49 @@ public class MainClassChooser extends JPanel {
         }
     }
     
+    private class SearchTask implements Task<CompilationController> {
+        final FileObject[] sourcesRoots;
+        final String mainClass;
+        final AtomicBoolean stillEnabled;
+        boolean incomplete;
+
+        public SearchTask(FileObject[] sourcesRoots, String mainClass, AtomicBoolean flag, boolean incomplete) {
+            this.sourcesRoots = sourcesRoots;
+            this.mainClass = mainClass;
+            this.stillEnabled = flag;
+            this.incomplete = incomplete;
+        }
+        
+        @Override
+        public void run(CompilationController parameter) throws Exception {
+            // TODO-PERF: main class search may even work without attribution
+            parameter.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+            possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
+            if (possibleMainClasses.isEmpty()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        jMainClassList.setListData(new String[]{NbBundle.getMessage(MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")}); // NOI18N
+                        scanningLabel.setVisible(incomplete);
+                    }
+                });
+            } else {
+                final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(possibleMainClasses);
+                // #46861, sort name of classes
+                Collections.sort(sortedMainClasses, new MainClassComparator());
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        jMainClassList.setListData(sortedMainClasses.toArray());
+                        int index = getMainClassIndex(sortedMainClasses, mainClass);
+                        jMainClassList.setSelectedIndex(index);                                
+                        scanningLabel.setVisible(incomplete);
+                    }
+                });
+            }
+        }
+    }
+    
     private void initClassesModel (
             final FileObject[] sourcesRoots,
             final String mainClass) {
@@ -178,31 +224,32 @@ public class MainClassChooser extends JPanel {
                                                           ClassPathSupport.createClassPath(new URL[0]),
                                                           ClassPathSupport.createClassPath(new URL[0]));
         final JavaSource dummyJs = JavaSource.create(cpInfo);
+        final AtomicBoolean flag = new AtomicBoolean(true);
+        
+        SearchTask afterScan = new SearchTask(sourcesRoots, mainClass, flag, false) {
+
+            @Override
+            public void run(CompilationController parameter) throws Exception {
+                stillEnabled.set(false);
+                super.run(parameter);
+            }
+        };
+        
         try {
-            dummyJs.runWhenScanFinished(new Task<CompilationController>() {
+            Future<Void> task = dummyJs.runWhenScanFinished(afterScan, true);
+            if (task.isDone()) {
+                // scanning done, info updated & up-to-date
+                return;
+            }
+            task.cancel(true);
+            dummyJs.runUserActionTask(new SearchTask(sourcesRoots, mainClass, flag, true) {
                 @Override
                 public void run(CompilationController parameter) throws Exception {
-                    possibleMainClasses = SourceUtils.getMainClasses(sourcesRoots);
-                    if (possibleMainClasses.isEmpty()) {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                jMainClassList.setListData(new String[]{NbBundle.getMessage(MainClassChooser.class, "LBL_ChooseMainClass_NO_CLASSES_NODE")}); // NOI18N
-                            }
-                        });
-                    } else {
-                        final List<ElementHandle<TypeElement>> sortedMainClasses = new ArrayList<ElementHandle<TypeElement>>(possibleMainClasses);
-                        // #46861, sort name of classes
-                        Collections.sort(sortedMainClasses, new MainClassComparator());
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                jMainClassList.setListData(sortedMainClasses.toArray());
-                                int index = getMainClassIndex(sortedMainClasses, mainClass);
-                                jMainClassList.setSelectedIndex(index);                                
-                            }
-                        });
+                    if (!stillEnabled.getAndSet(false)) {
+                        // do not execute if the after-scan task was already executed
+                        return;
                     }
+                    super.run(parameter);
                 }
             }, true);
         } catch (IOException ex) {
@@ -278,6 +325,7 @@ public class MainClassChooser extends JPanel {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jMainClassList = new javax.swing.JList();
+        scanningLabel = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(380, 300));
         setLayout(new java.awt.GridBagLayout());
@@ -302,13 +350,24 @@ public class MainClassChooser extends JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.RELATIVE;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         add(jScrollPane1, gridBagConstraints);
+
+        scanningLabel.setFont(new java.awt.Font("Dialog", 2, 12)); // NOI18N
+        scanningLabel.setText(org.openide.util.NbBundle.getBundle(MainClassChooser.class).getString("LBL_ChooseMainClass_SCANNING_MESSAGE")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
+        add(scanningLabel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getBundle(MainClassChooser.class).getString("AD_MainClassChooser")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -318,6 +377,7 @@ public class MainClassChooser extends JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JList jMainClassList;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel scanningLabel;
     // End of variables declaration//GEN-END:variables
 
     private static int getMainClassIndex(final List<? extends ElementHandle<TypeElement>> handles, final String mainClass) {

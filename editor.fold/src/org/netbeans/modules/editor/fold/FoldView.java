@@ -108,7 +108,6 @@ public class FoldView extends EditorView {
         int offset = fold.getStartOffset();
         int len = fold.getEndOffset() - offset;
         assert (len > 0) : "length=" + len + " <= 0"; // NOI18N
-        this.rawEndOffset = offset + len;
         this.length = len;
         this.textComponent = textComponent;
         this.fold = fold;
@@ -267,6 +266,7 @@ public class FoldView extends EditorView {
                     // Set the same kit and document
                     tooltipPane.setEditorKit(kit);
                     tooltipPane.setDocument(doc);
+                    tooltipPane.setEditable(false);
                     return new FoldToolTip(editorPane, tooltipPane);
                 } catch (BadLocationException e) {
                     // => return null

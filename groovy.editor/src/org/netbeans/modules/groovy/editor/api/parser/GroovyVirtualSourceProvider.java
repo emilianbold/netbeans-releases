@@ -321,6 +321,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     if (setter != null) {
                         genMethod(classNode, setter, out, false);
                     }
+                    MethodNode isMethod = classNode.getDeclaredMethod("is" + name, new Parameter[0]); // NOI18N
+                    if (isMethod != null) {
+                        genMethod(classNode, isMethod, out, false);
+                    }
                 }
             }
             // </netbeans>

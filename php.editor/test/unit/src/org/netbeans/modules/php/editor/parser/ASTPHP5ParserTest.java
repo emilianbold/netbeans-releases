@@ -310,6 +310,38 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("arrayDereferencing_09");
     }
 
+    public void testBinaryNotation_01() throws Exception {
+        performTest("binaryNotation_01");
+    }
+
+    public void testBinaryNotation_02() throws Exception {
+        performTest("binaryNotation_02");
+    }
+
+    public void testBinaryNotation_03() throws Exception {
+        performTest("binaryNotation_03");
+    }
+
+    public void testBinaryNotation_04() throws Exception {
+        performTest("binaryNotation_04");
+    }
+
+    public void testStaticExpressionCall_01() throws Exception {
+        performTest("staticExpressionCall_01");
+    }
+
+    public void testStaticExpressionCall_02() throws Exception {
+        performTest("staticExpressionCall_02");
+    }
+
+    public void testCfunction() throws Exception {
+        performTest("cfunction");
+    }
+
+    public void testInstanceOfExpression() throws Exception {
+        performTest("instanceOfExpression");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

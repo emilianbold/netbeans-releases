@@ -60,8 +60,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.text.MessageFormat;
 import java.util.List;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -77,8 +78,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import org.netbeans.lib.profiler.ui.SwingWorker;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.modules.profiler.api.ProfilingRoots;
+import org.netbeans.modules.profiler.api.ProgressDisplayer;
 import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.project.ProjectContentsSupport;
 import org.netbeans.modules.profiler.stp.ui.FilterSetsPanel;
@@ -86,6 +89,7 @@ import org.netbeans.modules.profiler.stp.ui.GlobalFiltersPanel;
 import org.netbeans.modules.profiler.stp.ui.HyperlinkLabel;
 import org.netbeans.modules.profiler.stp.ui.PreferredInstrFilterPanel;
 import org.netbeans.modules.profiler.stp.ui.QuickFilterPanel;
+import org.netbeans.modules.profiler.ui.ProfilerProgressDisplayer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
@@ -97,16 +101,15 @@ import org.openide.util.RequestProcessor;
  * @author Jiri Sedlacek
  */
 @NbBundle.Messages({
-    "CPUSettingsBasicPanel_NoRootsString=<font color=\"{0}\">No profiling roots, </font><a href=\"#\" {1}>define...</a>",
-    "CPUSettingsBasicPanel_OneRootString=<font color=\"{0}\">1 root method, </font><a href=\"#\" {1}>edit...</a>",
-    "CPUSettingsBasicPanel_MoreRootsString=<font color=\"{0}\">{1} profiling root, </font><a href=\"#\" {2}>edit...</a>",
     "CPUSettingsBasicPanel_DefaultRootsString=<font color=\"{0}\">default profiling roots, </font><a href=\"#\" {1}>customize...</a>",
+    "CPUSettingsBasicPanel_DefaultRootsToolTip=Click the link to define custom profiling roots.",
     "CPUSettingsBasicPanel_CustomRootsString=<font color=\"{0}\">custom profiling roots, </font><a href=\"#\" {1}>edit...</a>",
+    "CPUSettingsBasicPanel_CustomRootsToolTip=Click the link to customize defined profiling roots.",
     "CPUSettingsBasicPanel_QuickFilterDialogCaption=Set Quick Filter",
     "CPUSettingsBasicPanel_FilterSetsDialogCaption=Customize Filter Sets",
     "CPUSettingsBasicPanel_GlobalFiltersDialogCaption=Edit Global Filters",
-    "CPUSettingsBasicPanel_SampleAppRadioText=&Sample application",
-    "CPUSettingsBasicPanel_ProfileAppRadioText=&Profile application",
+    "CPUSettingsBasicPanel_SampleAppRadioText=&Quick (sampled)",
+    "CPUSettingsBasicPanel_ProfileAppRadioText=&Advanced (instrumented)",
     "CPUSettingsBasicPanel_StopwatchRadioText=Stopwatch",
     "CPUSettingsBasicPanel_FilterLabelText=&Filter:",
     "CPUSettingsBasicPanel_ShowFilterString=Show filter value",
@@ -166,7 +169,6 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         this.project = project;
         this.profilingPointsDisplayer = profilingPointsDisplayer;
         this.preferredInstrFilters = preferredInstrFilters;
-        profilingPointsCheckbox.setEnabled(project != null);
     }
 
     public HelpCtx getHelpCtx() {
@@ -189,6 +191,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_ENTIRE ||
                                        profilingType == ProfilingSettings.PROFILE_CPU_PART);
         stopwatchRadio.setSelected(profilingType == ProfilingSettings.PROFILE_CPU_STOPWATCH);
+        profilingPointsCheckbox.setEnabled(project != null && profileAppRadio.isSelected());
     }
 
     public int getProfilingType() {
@@ -219,7 +222,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
     }
 
     public void setUseProfilingPoints(boolean use) {
-        profilingPointsCheckbox.setSelected(use);
+        profilingPointsCheckbox.setSelected(use && profilingPointsCheckbox.isEnabled());
         updateEnabling();
     }
 
@@ -346,17 +349,18 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         Color linkColor = Color.RED;
         String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
         String textColorText = "rgb(" + Color.GRAY.getRed() + "," + Color.GRAY.getGreen() + "," + Color.GRAY.getBlue() + ")"; //NOI18N
-        String labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_OneRootString(textColorText, "" ) + "</nobr>"; //NOI18N
-        String labelFocusedText = "<nobr>"
-                                  + Bundle.CPUSettingsBasicPanel_OneRootString(textColorText, "color=\"" + colorText + "\"" )
-                                  + "</nobr>"; //NOI18N
+        String labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
+        String labelFocusedText = "<nobr>" //NOI18N
+                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
+                                   + "</nobr>"; //NOI18N
         partOfAppHintLink = new HyperlinkLabel(labelText, labelFocusedText,
                                                new Runnable() {
                 public void run() {
                     performRootMethodsAction();
                 }
             });
-        partOfAppHintLink.setVisible(false);
+        partOfAppHintLink.setToolTipText(Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip());
+//        partOfAppHintLink.setVisible(false);
         constraints = new GridBagConstraints();
         constraints.gridx = 1;
         constraints.gridy = 0;
@@ -364,7 +368,7 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         constraints.gridwidth = 1;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 10, 0, 0);
+        constraints.insets = new Insets(0, 0, 0, 0);
         partOfAppContainer.add(partOfAppHintLink, constraints);
 
         // partOfAppContainer - customization
@@ -711,27 +715,54 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
         filterCombo.requestFocus();
     }
 
+    final private AtomicBoolean rootMethodsActionExecuting = new AtomicBoolean(false);
+    @NbBundle.Messages({
+        "MSG_DefaultRoots=Computing default project profiling roots"
+    })
     private void performRootMethodsAction() {
-//        JOptionPane.showMessageDialog(null, Arrays.toString(rootMethods));
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-//                if (defaultRootMethods == null)
-//                    // TODO: provide FileObject if defined!
-//                    // TODO: include also subprojects according to the selected filter!
-//                    defaultRootMethods = ProjectContentsSupport.get(project).getProfilingRoots(null, false);
-//                if (rootMethods.length == 0)
-//                    rootMethods = defaultRootMethods;
-                ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(
-                        rootMethods.length == 0 ? ProjectContentsSupport.get(project).
-                        getProfilingRoots(null, ProjectUtilities.hasSubprojects(project)) :
-                        rootMethods, project);
-//                JOptionPane.showMessageDialog(null, Arrays.toString(roots));
-                if (roots != null) {
-                    rootMethods = roots;
-                    updateControls();
+        if (rootMethodsActionExecuting.compareAndSet(false, true)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    new SwingWorker(false) {
+                        private ProgressDisplayer pd = ProfilerProgressDisplayer.getDefault();
+                        final private AtomicBoolean cancelled = new AtomicBoolean(false);
+                        private ClientUtils.SourceCodeSelection[] rms;
+
+                        @Override
+                        protected void doInBackground() {
+                            if (rootMethods.length == 0) {
+                                rms = ProjectContentsSupport.get(project).getProfilingRoots(null, ProjectUtilities.hasSubprojects(project));
+                            } else {
+                                rms = rootMethods;
+                            }
+                        }
+
+                        @Override
+                        protected void nonResponding() {
+                            pd.showProgress(Bundle.MSG_DefaultRoots(), new ProgressDisplayer.ProgressController() {
+                                @Override
+                                public boolean cancel() {
+                                    cancelled.set(true);
+                                    return true;
+                                }
+                            });
+                        }
+
+                        @Override
+                        protected void done() {
+                            pd.close();
+                            ClientUtils.SourceCodeSelection[] roots = ProfilingRoots.selectRoots(rms, project);
+                            if (roots != null) {
+                                rootMethods = roots;
+                                updateControls();
+                            }
+                            rootMethodsActionExecuting.set(false);
+                        }
+
+                    }.execute();
                 }
-            }
-        });
+            });
+        }
     }
 
     private void performShowFilterAction() {
@@ -838,50 +869,30 @@ public class CPUSettingsBasicPanel extends DefaultSettingsPanel implements Actio
             Color linkColor = Color.RED;
             String colorText = "rgb(" + linkColor.getRed() + "," + linkColor.getGreen() + "," + linkColor.getBlue() + ")"; //NOI18N
             String textColorText = "rgb(" + Color.GRAY.getRed() + "," + Color.GRAY.getGreen() + "," + Color.GRAY.getBlue() + ")"; //NOI18N
-            String labelText = ""; // NOI18N
-            String labelFocusedText = ""; // NOI18N
+            
+            String labelText;
+            String labelFocusedText;
+            String labelToolTip;
 
-////            if (rootMethods.length == 0) {
-////                labelText = "<nobr>" + MessageFormat.format(NO_ROOTS_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
-////                labelFocusedText = "<nobr>"
-////                                   + MessageFormat.format(NO_ROOTS_STRING,
-////                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
-////                                   + "</nobr>"; //NOI18N
-////                rootMethodsSubmitOK = false;
-//            } else if (rootMethods.length == 1) {
-//                labelText = "<nobr>" + MessageFormat.format(ONE_ROOT_STRING, new Object[] { textColorText, "" }) + "</nobr>"; //NOI18N
-//                labelFocusedText = "<nobr>"
-//                                   + MessageFormat.format(ONE_ROOT_STRING,
-//                                                          new Object[] { textColorText, "color=\"" + colorText + "\"" })
-//                                   + "</nobr>"; //NOI18N
-//                rootMethodsSubmitOK = true;
-//            } else {
-//                labelText = "<nobr>"
-//                            + MessageFormat.format(MORE_ROOTS_STRING, new Object[] { textColorText, rootMethods.length, "" })
-//                            + "</nobr>"; //NOI18N
-//                labelFocusedText = "<nobr>"
-//                                   + MessageFormat.format(MORE_ROOTS_STRING,
-//                                                          new Object[] {
-//                                                              textColorText, rootMethods.length, "color=\"" + colorText + "\""
-//                                                          }) + "</nobr>"; //NOI18N
-//                rootMethodsSubmitOK = true;
-//            }
-            /*} else*/ if (rootMethods.length == 0) {
+            if (rootMethods.length == 0) {
                 labelText = "<nobr>" + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "") + "</nobr>"; //NOI18N
-                labelFocusedText = "<nobr>"
-                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"")
+                labelFocusedText = "<nobr>" //NOI18N
+                                   + Bundle.CPUSettingsBasicPanel_DefaultRootsString(textColorText, "color=\"" + colorText + "\"") //NOI18N
                                    + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_DefaultRootsToolTip();
                 rootMethodsSubmitOK = true;
             } else {
-                labelText = "<nobr>"
-                            + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "")
+                labelText = "<nobr>" //NOI18N
+                            + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "") //NOI18N
                             + "</nobr>"; //NOI18N
-                labelFocusedText = "<nobr>"
+                labelFocusedText = "<nobr>" //NOI18N
                                    + Bundle.CPUSettingsBasicPanel_CustomRootsString(textColorText, "color=\"" + colorText + "\"") + "</nobr>"; //NOI18N
+                labelToolTip = Bundle.CPUSettingsBasicPanel_CustomRootsToolTip();
                 rootMethodsSubmitOK = true;
             }
 
             partOfAppHintLink.setText(labelText, labelFocusedText);
+            partOfAppHintLink.setToolTipText(labelToolTip);
         }
 
         if (quickFilter != null && quickFilter.equals(filterCombo.getSelectedItem())

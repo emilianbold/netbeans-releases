@@ -45,6 +45,9 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -52,6 +55,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -61,6 +65,8 @@ import org.openide.util.RequestProcessor;
 public abstract class NbPreferences extends AbstractPreferences implements  ChangeListener {
     private static Preferences USER_ROOT;
     private static Preferences SYSTEM_ROOT;
+    private ThreadLocal<Boolean> localThread = new ThreadLocal<Boolean>();
+    private ArrayList<String> keyEntries = new ArrayList<String>();
     
     /*private*/EditableProperties properties;
     /*private*/FileStorage fileStorage;
@@ -146,6 +152,9 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     @Override
     protected final void putSpi(String key, String value) {
         putProperty(key, value);
+        if (Boolean.TRUE.equals(localThread.get())) {
+            return;
+        }        
         fileStorage.markModified();
         asyncInvocationOfFlushSpi();
     }
@@ -161,6 +170,9 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         String oldValue = getSpi(key);
         if (value.equals(oldValue)) {return;}
         try {
+            if (super.isRemoved()) {
+                return;
+            }
             super.put(key, value);
         } catch (IllegalArgumentException iae) {
             if (iae.getMessage().contains("too long")) {
@@ -175,6 +187,10 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     @Override
     protected final void removeSpi(String key) {
         removeProperty(key);
+        keyEntries.remove(key);
+        if (Boolean.TRUE.equals(localThread.get())) {
+            return;
+        }
         fileStorage.markModified();
         asyncInvocationOfFlushSpi();
     }
@@ -279,7 +295,32 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
 
     public @Override void stateChanged(ChangeEvent e) {
         synchronized(lock){
-                properties = null;
+            Boolean previewState = localThread.get();
+            EditableProperties ep = null;
+            ArrayList<String> entries2add = new ArrayList<String>();
+            try {
+                localThread.set(Boolean.TRUE);
+                ep = fileStorage.load();
+                Iterator<Entry<String, String>> iter = ep.entrySet().iterator();
+                while(iter.hasNext()) {
+                    Entry entry = iter.next();
+                    if (keyEntries.isEmpty() || keyEntries.contains(entry.getKey().toString())) {
+                        put(entry.getKey().toString(), entry.getValue().toString());
+                        entries2add.add(entry.getKey().toString());
+                    }
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                for(String key : keyEntries) {
+                    if(!entries2add.contains(key)) {
+                        remove(key);
+                    }
+                }
+                keyEntries.clear();
+                keyEntries.addAll(entries2add);
+                localThread.set(previewState);
+            }
         }
     }
 

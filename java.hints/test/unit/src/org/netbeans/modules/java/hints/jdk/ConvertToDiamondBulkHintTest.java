@@ -39,254 +39,276 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.java.hints.jdk;
 
-
-import java.util.prefs.Preferences;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TestBase;
-import org.netbeans.modules.java.hints.jackpot.impl.RulesManager;
-import org.netbeans.modules.java.hints.options.HintsSettings;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
 
 /**
  *
  * @author lahvac
  */
-public class ConvertToDiamondBulkHintTest extends TestBase {
+public class ConvertToDiamondBulkHintTest extends NbTestCase {
 
     public ConvertToDiamondBulkHintTest(String name) {
-        super(name, ConvertToDiamondBulkHint.class);
+        super(name);
     }
 
-    private String oldPrefs;
-
-    @Override
-    protected void setUp() throws Exception {
-        super.setUp();
-
-        Preferences prefs = RulesManager.getPreferences(ConvertToDiamondBulkHint.ID, HintsSettings.getCurrentProfileId());
-
-        oldPrefs = ConvertToDiamondBulkHint.getConfiguration(prefs);
-    }
-
-    @Override
-    protected void tearDown() throws Exception {
-        setPrefs(oldPrefs);
-        super.tearDown();
-    }
-
-    private void setPrefs(String settings) {
-        Preferences prefs = RulesManager.getPreferences(ConvertToDiamondBulkHint.ID, HintsSettings.getCurrentProfileId());
-
-        ConvertToDiamondBulkHint.putConfiguration(prefs, settings);
-    }
-
-    private void allBut(String key) {
-        setPrefs(("," + ConvertToDiamondBulkHint.ALL + ",").replace("," + key + ",", ","));
+    private String allBut(String key) {
+        return ("," + ConvertToDiamondBulkHint.ALL + ",")
+                .replace("," + key + ",", ",");
     }
 
     public void testSimple1() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "public class Test {\n" +
                        "    private java.util.LinkedList<String> l = new java.util.LinkedList<String>();\n" +
-                       "}\n",
-                       "2:49-2:77:verifier:redundant type arguments in new expression (use diamond operator instead).",
-                       "FixImpl",
-                       ("package test;\n" +
-                       "public class Test {\n" +
-                       "    private java.util.LinkedList<String> l = new java.util.LinkedList<>();\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .findWarning("2:49-2:77:verifier:redundant type arguments in new expression (use diamond operator instead).")
+                .applyFix("FIX_ConvertToDiamond")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    private java.util.LinkedList<String> l = new java.util.LinkedList<>();\n" +
+                              "}\n");
     }
 
     public void testSimple2() throws Exception {
-        setSourceLevel("1.7");
-        performFixTest("test/Test.java",
-                       "package test;\n" +
+        HintTest
+                .create()
+                .input("package test;\n" +
                        "import java.util.LinkedList;\n" +
                        "public class Test {\n" +
                        "    private LinkedList<String> l = new LinkedList<String>();\n" +
-                       "}\n",
-                       "3:39-3:57:verifier:redundant type arguments in new expression (use diamond operator instead).",
-                       "FixImpl",
-                       ("package test;\n" +
-                       "import java.util.LinkedList;\n" +
-                       "public class Test {\n" +
-                       "    private LinkedList<String> l = new LinkedList<>();\n" +
-                       "}\n").replaceAll("[ \t\n]+", " "));
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .findWarning("3:39-3:57:verifier:redundant type arguments in new expression (use diamond operator instead).")
+                .applyFix("FIX_ConvertToDiamond")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.LinkedList;\n" +
+                              "public class Test {\n" +
+                              "    private LinkedList<String> l = new LinkedList<>();\n" +
+                              "}\n");
     }
 
     public void testConfiguration1() throws Exception {
-        setSourceLevel("1.7");
-        allBut("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.LinkedList<String> l = new java.util.LinkedList<String>();\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.LinkedList<String> l = new java.util.LinkedList<String>();\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration2() throws Exception {
-        setSourceLevel("1.7");
-        allBut("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration2a() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
-                            "}\n",
-                            "2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration2b() throws Exception {
-        setSourceLevel("1.7");
-        setPrefs("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
-                            "}\n",
-                            "2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:43-2:71:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration2c() throws Exception {
-        setSourceLevel("1.7");
-        allBut("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { java.util.LinkedList<java.util.LinkedList<?>> l = new java.util.LinkedList<java.util.LinkedList<?>>(); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { java.util.LinkedList<java.util.LinkedList<?>> l = new java.util.LinkedList<java.util.LinkedList<?>>(); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration3() throws Exception {
-        setSourceLevel("1.7");
-        allBut("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { final java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { final java.util.LinkedList<String> l = new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration4() throws Exception {
-        setSourceLevel("1.7");
-        allBut("initializer");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.LinkedList<String> l() { return new java.util.LinkedList<String>(); }\n" +
-                            "}\n",
-                            "2:58-2:86:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.LinkedList<String> l() { return new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("initializer"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:58-2:86:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration5() throws Exception {
-        setSourceLevel("1.7");
-        allBut("return");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    private java.util.LinkedList<String> l() { return new java.util.LinkedList<String>(); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private java.util.LinkedList<String> l() { return new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("return"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration6a() throws Exception {
-        setSourceLevel("1.7");
-        allBut("argument");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    private void l(java.util.LinkedList<? extends CharSequence> a) { l(new Test<CharSequence>()); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    private void l(java.util.LinkedList<? extends CharSequence> a) { l(new Test<CharSequence>()); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("argument"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration6b() throws Exception {
-        setSourceLevel("1.7");
-        allBut("argument");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    private void l(java.util.LinkedList<? extends CharSequence> a) { this.l(new Test<CharSequence>()); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    private void l(java.util.LinkedList<? extends CharSequence> a) { this.l(new Test<CharSequence>()); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("argument"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration6c() throws Exception {
-        setSourceLevel("1.7");
-        allBut("argument");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test(new Test<CharSequence>(null)); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test(new Test<CharSequence>(null)); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("argument"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
-    
+
     public void testConfiguration6d() throws Exception {
-        setSourceLevel("1.7");
-        allBut("argument");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test<String>(new Test<CharSequence>(null)); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test<String>(new Test<CharSequence>(null)); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("argument"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
 
     public void testConfiguration7a() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    private void l(java.util.LinkedList<? extends CharSequence> a) { l(new Test<CharSequence>()); }\n" +
-                            "}\n",
-                            "2:75-2:93:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    private void l(java.util.LinkedList<? extends CharSequence> a) { l(new Test<CharSequence>()); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:75-2:93:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7b() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    private void l(java.util.LinkedList<? extends CharSequence> a) { this.l(new Test<CharSequence>()); }\n" +
-                            "}\n",
-                            "2:80-2:98:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    private void l(java.util.LinkedList<? extends CharSequence> a) { this.l(new Test<CharSequence>()); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:80-2:98:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7c() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test(new Test<CharSequence>(null)); }\n" +
-                            "}\n",
-                            "2:79-2:97:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test(new Test<CharSequence>(null)); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:79-2:97:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration7d() throws Exception {
-        setSourceLevel("1.7");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
-                            "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test<String>(new Test<CharSequence>(null)); }\n" +
-                            "}\n",
-                            "2:87-2:105:verifier:redundant type arguments in new expression (use diamond operator instead).");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test<T extends CharSequence> extends java.util.LinkedList<T> {\n" +
+                       "    public Test(java.util.LinkedList<? extends CharSequence> a) { new Test<String>(new Test<CharSequence>(null)); }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings("2:87-2:105:verifier:redundant type arguments in new expression (use diamond operator instead).");
     }
 
     public void testConfiguration8() throws Exception {
-        setSourceLevel("1.7");
-        allBut("assignment");
-        performAnalysisTest("test/Test.java",
-                            "package test;\n" +
-                            "public class Test {\n" +
-                            "    { java.util.LinkedList<String> l; l = new java.util.LinkedList<String>(); }\n" +
-                            "}\n");
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    { java.util.LinkedList<String> l; l = new java.util.LinkedList<String>(); }\n" +
+                       "}\n")
+                .preference(ConvertToDiamondBulkHint.KEY, allBut("assignment"))
+                .sourceLevel("1.7")
+                .run(ConvertToDiamondBulkHint.class)
+                .assertWarnings();
     }
-
 }

@@ -47,12 +47,8 @@ import com.sun.source.tree.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
-import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.JavaSource;
-import static org.netbeans.api.java.source.JavaSource.*;
-import org.netbeans.api.java.source.TestUtilities;
-import org.netbeans.api.java.source.TreeMaker;
-import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.*;
 import org.netbeans.junit.NbTestSuite;
 
 /**
@@ -84,6 +80,10 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar3"));
 //        suite.addTest(new MethodTypeParametersTest("testRenameTypePar4"));
 //        suite.addTest(new MethodTypeParametersTest("testWhitespaceAfterTypeParamInMethodInvocation170340"));
+//        suite.addTest(new MethodTypeParametersTest("testAddTypeParamInMethodInvocation"));
+//        suite.addTest(new MethodTypeParametersTest("testRemoveTypeParamInMethodInvocation"));
+//        suite.addTest(new MethodTypeParametersTest("testAddTypeParamInMethodInvocationIdent"));
+//        suite.addTest(new MethodTypeParametersTest("testRemoveTypeParamInMethodInvocationIdent"));
         return suite;
     }
     
@@ -673,6 +673,166 @@ public class MethodTypeParametersTest extends GeneratorTestMDRCompat {
                 MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
 
                 workingCopy.rewrite(mit.getMethodSelect(), make.setLabel(mit.getMethodSelect(), "bar"));
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testAddTypeParamInMethodInvocation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.foo(); }\n" +
+            "}");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.<String>foo(); }\n" +
+            "}";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                BlockTree init = (BlockTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) init.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.singletonList((ExpressionTree)make.Type("String")), mit.getMethodSelect(), mit.getArguments());
+
+                workingCopy.rewrite(mit, methodInvocation);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveTypeParamInMethodInvocation() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.<String>foo(); }\n" +
+            "}");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    { Test.foo(); }\n" +
+            "}";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                BlockTree init = (BlockTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) init.getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.EMPTY_LIST, mit.getMethodSelect(), mit.getArguments());
+
+                workingCopy.rewrite(mit, methodInvocation);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+     public void testAddTypeParamInMethodInvocationIdent() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    void main() { foo(); }\n" +
+            "}");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    static <T> T foo() { return null; }\n" +
+            "    void main() { <String>foo(); }\n" +
+            "}";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree init = (MethodTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) init.getBody().getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.singletonList((ExpressionTree)make.Type("String")), mit.getMethodSelect(), mit.getArguments());
+
+                workingCopy.rewrite(mit, methodInvocation);
+            }
+
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testRemoveTypeParamInMethodInvocationIdent() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    <T> T foo() { return null; }\n" +
+            "    void main() { this.<String>foo(); }\n" +
+            "}");
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "class Test {\n" +
+            "    <T> T foo() { return null; }\n" +
+            "    void main() { this.foo(); }\n" +
+            "}";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree init = (MethodTree) clazz.getMembers().get(2);
+                ExpressionStatementTree est = (ExpressionStatementTree) init.getBody().getStatements().get(0);
+                MethodInvocationTree mit = (MethodInvocationTree) est.getExpression();
+                MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.EMPTY_LIST, mit.getMethodSelect(), mit.getArguments());
+
+                workingCopy.rewrite(mit, methodInvocation);
             }
 
         };

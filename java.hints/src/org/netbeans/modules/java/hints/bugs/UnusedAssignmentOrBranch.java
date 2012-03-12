@@ -59,13 +59,12 @@ import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.modules.java.hints.introduce.Flow.Cancel;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
@@ -91,7 +90,7 @@ public class UnusedAssignmentOrBranch {
 
     private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
 
-    @Hint(category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY})
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.unusedAssignment", category="bugs", id=UNUSED_ASSIGNMENT_ID, options={Options.QUERY})
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> unusedAssignment(final HintContext ctx) {
         final String unusedAssignmentLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_UNUSED_ASSIGNMENT_LABEL");
@@ -179,7 +178,7 @@ public class UnusedAssignmentOrBranch {
         return result;
     }
 
-    @Hint(category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY})
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", description = "#DESC_org.netbeans.modules.java.hints.bugs.UnusedAssignmentOrBranch.deadBranch", category="bugs", id=DEAD_BRANCH_ID, options={Options.NO_BATCH, Options.QUERY})
     @TriggerTreeKind(Tree.Kind.COMPILATION_UNIT)
     public static List<ErrorDescription> deadBranch(HintContext ctx) {
         String deadBranchLabel = NbBundle.getMessage(UnusedAssignmentOrBranch.class, "LBL_DEAD_BRANCH");

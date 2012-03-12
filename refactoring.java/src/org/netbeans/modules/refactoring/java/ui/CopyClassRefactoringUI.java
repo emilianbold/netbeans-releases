@@ -46,7 +46,15 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import javax.lang.model.element.Element;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.SingleCopyRefactoring;
@@ -58,7 +66,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.*;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -66,23 +76,24 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jan Becicka
  */
-public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypass {
+public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypass, JavaRefactoringUIFactory {
     // reference to pull up refactoring this UI object corresponds to
 
-    private final SingleCopyRefactoring refactoring;
+    private SingleCopyRefactoring refactoring;
     // UI panel for collecting parameters
     private MoveClassPanel panel;
     private FileObject resource;
     private FileObject targetFolder;
+    private Lookup lookup;
 
-    public CopyClassRefactoringUI(FileObject resource) {
-        this(resource, null);
-    }
-
-    public CopyClassRefactoringUI(FileObject resource, FileObject target) {
+    private CopyClassRefactoringUI(FileObject resource, FileObject target) {
         refactoring = new SingleCopyRefactoring(Lookups.singleton(resource));
         this.resource = resource;
         this.targetFolder = target;
+    }
+    
+    private CopyClassRefactoringUI(Lookup lookup) {
+        this.lookup = lookup;
     }
 
     // --- IMPLEMENTATION OF RefactoringUI INTERFACE ---------------------------
@@ -186,5 +197,44 @@ public class CopyClassRefactoringUI implements RefactoringUI, RefactoringUIBypas
                 }
             }
         });
+    }
+
+    @Override
+    public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
+
+        PasteType paste = RefactoringActionsProvider.getPaste(lookup);
+        FileObject tar = RefactoringActionsProvider.getTarget(lookup);
+        if (files.length > 1 || files.length == 1 && files[0].isFolder()) {
+            Set<FileObject> s = new HashSet<FileObject>();
+            s.addAll(Arrays.asList(files));
+            return new CopyClassesUI(s, tar, paste);
+        }
+        
+        
+        TreePathHandle selectedElement = handles[0];           
+        Element e = selectedElement.resolveElement(info);
+        if (e == null) {
+            return null;
+        }
+        if ((e.getKind().isClass() || e.getKind().isInterface())
+                && SourceUtils.getOutermostEnclosingTypeElement(e) == e) {
+            try {
+                FileObject fo = SourceUtils.getFile(e, info.getClasspathInfo());
+                if (fo != null) {
+                    DataObject d = DataObject.find(SourceUtils.getFile(e, info.getClasspathInfo()));
+                    if (d.getName().equals(e.getSimpleName().toString())) {
+                        return new CopyClassRefactoringUI(d.getPrimaryFile(), tar);
+                    }
+                }
+            } catch (DataObjectNotFoundException ex) {
+                throw new RuntimeException(ex);
+            }
+        }
+        return new CopyClassRefactoringUI(info.getFileObject(), tar);
+
+    }
+    
+    public static JavaRefactoringUIFactory factory(Lookup lookup) {
+        return new CopyClassRefactoringUI(lookup);
     }
 }

@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 
 /**
  * Cache containing paragraph-view references of lines where text layouts
- * are actively held.
+ * are actively held or where children are actively maintained.
  * <br/>
  * This class is not multi-thread safe.
  * 
@@ -65,7 +65,7 @@ public final class TextLayoutCache {
     private static final Logger LOG = Logger.getLogger(TextLayoutCache.class.getName());
 
     /**
-     * Cache text layouts for the following number of paragraph views.
+     * Cache text layouts and pView children for the following number of paragraph views.
      * These should be both visible lines and possibly lines where model-to-view
      * translations are being done.
      */
@@ -102,13 +102,21 @@ public final class TextLayoutCache {
         return paragraph2entry.size();
     }
     
+    int capacity() {
+        return capacity;
+    }
+    
     /**
-     * Possibly increase the capacity.
+     * Possibly increase the capacity against default size.
+     * When shrinking the cache exceeding items are dropped.
      *
      * @param capacity 
      */
-    void ensureCapacity(int capacity) {
-        this.capacity = Math.max(this.capacity, capacity);
+    void setCapacityOrDefault(int capacity) {
+        this.capacity = Math.max(capacity, DEFAULT_CAPACITY);
+        for (int i = size() - this.capacity; i >= 0; i--) {
+            removeTailEntry();
+        }
     }
 
     boolean contains(ParagraphView paragraphView) {
@@ -131,10 +139,7 @@ public final class TextLayoutCache {
             entry = new Entry(paragraphView);
             paragraph2entry.put(paragraphView, entry);
             if (paragraph2entry.size() >= capacity) { // Cache full => remove LRU
-                Entry tailEntry = paragraph2entry.remove(tail.paragraphView);
-                assert (tailEntry == tail);
-                removeChainEntry(tailEntry);
-                tailEntry.release();
+                removeTailEntry();
             }
             addChainEntryFirst(entry);
         }
@@ -142,6 +147,29 @@ public final class TextLayoutCache {
             removeChainEntry(entry); // Do not release text layouts
             addChainEntryFirst(entry);
         }
+    }
+    
+    private void removeTailEntry() {
+        Entry tailEntry = paragraph2entry.remove(tail.paragraphView);
+        assert (tailEntry == tail);
+        removeChainEntry(tailEntry);
+        tailEntry.release();
+    }
+
+    /**
+     * Replace paragraph view in an existing entry without activating the entry.
+     *
+     * @param origPView original view to be abandoned.
+     * @param newPView new view to be used.
+     */
+    void replace(ParagraphView origPView, ParagraphView newPView) {
+        assert (origPView != null);
+        Entry entry = paragraph2entry.get(origPView);
+        if (entry == null) {
+            throw new IllegalStateException("origPView=" + origPView + " not cached!"); // NOI18N
+        }
+        entry.paragraphView = newPView;
+        paragraph2entry.put(newPView, entry);
     }
 
     void remove(ParagraphView paragraphView, boolean clearTextLayouts) {
@@ -155,22 +183,21 @@ public final class TextLayoutCache {
     }
     
     String findIntegrityError() {
-        int cnt = 0;
         HashSet<Entry> entries = new HashSet<Entry>(paragraph2entry.values());
         Entry entry = head;
         while (entry != null) {
-            if (!entries.contains(entry)) {
-                return "TextLayoutCache: Chain entry[" + cnt + "] not contained in map: " + // NOI18N 
-                        entry.paragraphView + ", parent=" + entry.paragraphView.getParent(); // NOI18N
+            ParagraphView pView = entry.paragraphView;
+            if (!entries.remove(entry)) {
+                return "TextLayoutCache: Chain entry not contained (or double contained) in map: " + // NOI18N 
+                        pView + ", parent=" + pView.getParent(); // NOI18N
             }
-            if (entry.paragraphView.getParent() == null) {
-                return "TextLayoutCache: Null parent for " + entry.paragraphView; // NOI18N
+            if (pView.getParent() == null) {
+                return "TextLayoutCache: Null parent for " + pView; // NOI18N
             }
             entry = entry.next;
-            cnt++;
         }
-        if (cnt != entries.size()) {
-            return "TextLayoutCache: cnt=" + cnt + " != entryCount=" + entries.size(); // NOI18N
+        if (0 != entries.size()) {
+            return "TextLayoutCache: unchained entryCount=" + entries.size(); // NOI18N
         }
         return null;
     }
@@ -206,7 +233,7 @@ public final class TextLayoutCache {
 
     private static final class Entry {
 
-        final ParagraphView paragraphView;
+        ParagraphView paragraphView;
 
         Entry previous;
 
@@ -220,6 +247,16 @@ public final class TextLayoutCache {
             paragraphView.releaseTextLayouts();
         }
 
+        @Override
+        public String toString() {
+            return "Entry: pView=" + paragraphView + "\n" + "previous=" + // NOI18N
+                    previous.toStringSuper() + ", next=" + next.toStringSuper();
+        }
+        
+        public String toStringSuper() {
+            return super.toString();
+        }
+        
     }
 
 }

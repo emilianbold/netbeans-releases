@@ -95,8 +95,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     
     @Override
     public FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
-        if (baseFileObject instanceof RemoteFileObjectBase) {
-            ExecutionEnvironment execEnv = ((RemoteFileObjectBase) baseFileObject).getExecutionEnvironment();
+        if (baseFileObject instanceof RemoteFileObject) {
+            ExecutionEnvironment execEnv = ((RemoteFileObject) baseFileObject).getExecutionEnvironment();
             if (isPathAbsolute(relativeOrAbsolutePath)) {
                 relativeOrAbsolutePath = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).normalizeAbsolutePath(relativeOrAbsolutePath);
                 try {
@@ -135,7 +135,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public boolean isMine(FileObject fileObject) {
-        return fileObject instanceof RemoteFileObjectBase;
+        return fileObject instanceof RemoteFileObject;
     }
 
     @Override
@@ -153,6 +153,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return RemoteFileSystemUtils.getCanonicalFileObject(fileObject).getPath();
     }
 
+    @Override
     public String getCanonicalPath(FileSystem fs, String absPath) throws IOException {        
         FileObject fo = fs.findResource(absPath);
         if (fo != null) {
@@ -165,6 +166,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return PathUtilities.normalizeUnixPath(absPath);
     }
     
+    @Override
     public String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException {
         RemoteLogger.assertTrueInConsole(env.isRemote(), getClass().getSimpleName() + ".getCanonicalPath is called for LOCAL env: " + env); //NOI18N
         FileSystem fs = RemoteFileSystemManager.getInstance().getFileSystem(env);
@@ -282,8 +284,8 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
 
     @Override
     public String toURL(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            ExecutionEnvironment env =((RemoteFileObjectBase) fileObject).getExecutionEnvironment();
+        if (fileObject instanceof RemoteFileObject) {
+            ExecutionEnvironment env =((RemoteFileObject) fileObject).getExecutionEnvironment();
             return getUrlPrefix(env) + fileObject.getPath();
         }
         return null;
@@ -304,6 +306,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         }
     }
 
+    @Override
     public FileObject fileToFileObject(File file) {
         if (file instanceof FileObjectBasedFile) {
             return ((FileObjectBasedFile) file).getFileObject();
@@ -311,15 +314,16 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return null;
     }
 
+    @Override
     public boolean isMine(File file) {
         return file instanceof FileObjectBasedFile;
     }
     
     @Override
     public void scheduleRefresh(FileObject fileObject) {
-        if (fileObject instanceof RemoteFileObjectBase) {
-            RemoteFileObjectBase fo = (RemoteFileObjectBase) fileObject;
-            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo));
+        if (fileObject instanceof RemoteFileObject) {
+            RemoteFileObject fo = (RemoteFileObject) fileObject;
+            fo.getFileSystem().getRefreshManager().scheduleRefresh(Arrays.asList(fo.getImplementor()));
         } else {
             RemoteLogger.getInstance().log(Level.WARNING, "Unexpected fileObject class: {0}", fileObject.getClass());
         }
@@ -362,19 +366,21 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         RemoteFileSystemManager.getInstance().getFileSystem(env).getFactory().addFileChangeListener(path, listener);
     }
 
+    @Override
     public void addFileChangeListener(FileChangeListener listener) {
         RemoteFileSystemManager.getInstance().addFileChangeListener(listener);
     }
 
+    @Override
     public void removeFileChangeListener(FileChangeListener listener) {
         RemoteFileSystemManager.getInstance().removeFileChangeListener(listener);
     }
     
     @Override
     public boolean canExecute(FileObject fileObject) {
-        RemoteLogger.assertTrue(fileObject instanceof RemoteFileObjectBase, "Unexpected file object class: " + fileObject); // NOI18N
-        if (fileObject instanceof RemoteFileObjectBase) {
-            return ((RemoteFileObjectBase) fileObject).canExecute();
+        RemoteLogger.assertTrue(fileObject instanceof RemoteFileObject, "Unexpected file object class: " + fileObject); // NOI18N
+        if (fileObject instanceof RemoteFileObject) {
+            return ((RemoteFileObject) fileObject).getImplementor().canExecute();
         }
         return false;
     }    
@@ -384,10 +390,12 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return '/';
     }
 
+    @Override
     public void addFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).addFileSystemProblemListener(listener);
     }
 
+    @Override
     public void removeFileSystemProblemListener(FileSystemProblemListener listener, FileSystem fileSystem) {
         ((RemoteFileSystem) fileSystem).removeFileSystemProblemListener(listener);
     }

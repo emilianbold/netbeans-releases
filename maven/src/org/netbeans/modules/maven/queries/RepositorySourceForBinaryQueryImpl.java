@@ -45,9 +45,7 @@ package org.netbeans.modules.maven.queries;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
@@ -56,6 +54,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
@@ -65,14 +64,10 @@ import org.openide.util.Exceptions;
  * 
  * @author  Milos Kleint
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=999)
+@ServiceProvider(service=SourceForBinaryQueryImplementation.class, position=999)
 public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
     
-    /** Creates a new instance of RepositorySourceForBinaryQueryImpl */
-    public RepositorySourceForBinaryQueryImpl() {
-    }
-
-    public SourceForBinaryQuery.Result findSourceRoots(URL url) {
+    @Override public SourceForBinaryQuery.Result findSourceRoots(URL url) {
         File stored = SourceJavadocByHash.find(url, false);
         if (stored != null) {
             return new SrcResult(stored);
@@ -112,29 +107,20 @@ public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryI
                 
     }
     
-    private class SrcResult implements SourceForBinaryQuery.Result  {
+    private static class SrcResult implements SourceForBinaryQuery.Result  {
         private static final String ATTR_PATH = "lastRootCheckPath"; //NOI18N
         private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private File file;
-        private final List<ChangeListener> listeners;
         
-        public SrcResult(File src) {
+        SrcResult(File src) {
             file = src;
-            listeners = new ArrayList<ChangeListener>();
         }
-        public void addChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.add(changeListener);
-            }
-        }
+
+        @Override public void addChangeListener(ChangeListener changeListener) {}
         
-        public void removeChangeListener(ChangeListener changeListener) {
-            synchronized (listeners) {
-                listeners.remove(changeListener);
-            }
-        }
+        @Override public void removeChangeListener(ChangeListener changeListener) {}
         
-        public FileObject[] getRoots() {
+        @Override public FileObject[] getRoots() {
             if (file.exists()) {
                 FileObject fo = FileUtil.toFileObject(file);
                 FileObject jarRoot = FileUtil.getArchiveRoot(fo);

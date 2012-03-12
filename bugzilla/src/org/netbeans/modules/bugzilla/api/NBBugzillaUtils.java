@@ -45,14 +45,11 @@ package org.netbeans.modules.bugzilla.api;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
-import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.bugtracking.spi.Issue;
-import org.netbeans.modules.bugtracking.spi.Repository;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
-import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -73,7 +70,7 @@ public class NBBugzillaUtils {
      * @param issueID issue identifier
      */
     public static void openIssue(String issueID) {
-        BugzillaRepository nbRepo = NBRepositorySupport.findNbRepository();
+        Repository nbRepo = NBRepositorySupport.getInstance().getNBRepository();
         assert nbRepo != null;
         if(nbRepo == null) {
             Bugzilla.LOG.warning("No bugzilla repository available for netbeans.org"); // NOI18N
@@ -89,8 +86,7 @@ public class NBBugzillaUtils {
      * @return username
      */
     public static String getNBUsername() {
-        String user = getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
-        return user.equals("") ? null : user;                         // NOI18N
+        return BugtrackingUtil.getNBUsername();
     }
 
     /**
@@ -100,7 +96,7 @@ public class NBBugzillaUtils {
      * @return password
      */
     public static char[] getNBPassword() {
-        return Keyring.read(NB_BUGZILLA_PASSWORD);
+        return BugtrackingUtil.getNBPassword();
     }
 
     /**
@@ -108,7 +104,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
-        getPreferences().put(NB_BUGZILLA_USERNAME, username);
+        BugtrackingUtil.saveNBUsername(username);
     }
 
     /**
@@ -116,17 +112,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBPassword(char[] password) {
-        if(password == null) {
-            Keyring.delete(NB_BUGZILLA_PASSWORD);
-        } else {
-            Keyring.save(
-                NB_BUGZILLA_PASSWORD,
-                password,
-                NbBundle.getMessage(
-                    NBBugzillaUtils.class,
-                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
-
-        }
+        BugtrackingUtil.saveNBPassword(password);
     }
 
     /**
@@ -147,15 +133,8 @@ public class NBBugzillaUtils {
         return url.toString().startsWith(nbUrl);
     }
 
-    private static Preferences getPreferences() {
-        if (preferences == null) {
-            preferences = NbPreferences.forModule(NBBugzillaUtils.class);
-        }
-        return preferences;
-    }
-    
     public static Repository findNBRepository() {
-        return NBRepositorySupport.findNbRepository();
+        return NBRepositorySupport.getInstance().getNBRepository();
     }
     
 }

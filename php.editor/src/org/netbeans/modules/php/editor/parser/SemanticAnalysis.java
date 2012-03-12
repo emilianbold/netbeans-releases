@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
+import java.util.*;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -54,8 +49,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.*;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -69,41 +66,59 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> UNUSED_METHOD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD, ColoringAttributes.UNUSED);
+    public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
+    private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    private Set<UnusedOffsetRanges> unusedUsesOffsetRanges;
+
+    public static Set<UnusedOffsetRanges> computeUnusedUsesOffsetRanges(PHPParseResult r) {
+        SemanticAnalysis semanticAnalysis = new SemanticAnalysis();
+        semanticAnalysis.process(r);
+        return semanticAnalysis.getUnusedUsesOffsetRanges();
+    }
 
     public SemanticAnalysis() {
         semanticHighlights = null;
     }
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
+    private Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
+        return unusedUsesOffsetRanges;
+    }
+
+    @Override
     public void cancel() {
         cancelled = true;
     }
 
+    @Override
     public void run(Result r, SchedulerEvent event) {
         resume();
 
         if (isCancelled()) {
             return;
         }
+        process(r);
+    }
 
+    void process(Result r) {
         PHPParseResult result = (PHPParseResult) r;
-        Map<OffsetRange, Set<ColoringAttributes>> highlights =
-                new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
-
+        Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         if (result.getProgram() != null) {
-            result.getProgram().accept(new SemanticHighlightVisitor(highlights, result.getSnapshot()));
-
+            SemanticHighlightVisitor semanticHighlightVisitor = new SemanticHighlightVisitor(highlights, result.getSnapshot());
+            result.getProgram().accept(semanticHighlightVisitor);
             if (highlights.size() > 0) {
                 semanticHighlights = highlights;
             } else {
                 semanticHighlights = null;
             }
+            unusedUsesOffsetRanges = semanticHighlightVisitor.getUnusedUsesOffsetRanges();
         }
     }
 
@@ -115,21 +130,23 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         cancelled = false;
     }
 
-    public @Override int getPriority() {
+    @Override
+    public int getPriority() {
         return 0;
     }
 
-    public @Override Class<? extends Scheduler> getSchedulerClass() {
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     private class SemanticHighlightVisitor extends DefaultVisitor {
 
-        private class IdentifierColoring {
-            public Identifier identifier;
+        private class ASTNodeColoring {
+            public ASTNode identifier;
             public Set<ColoringAttributes> coloring;
 
-            public IdentifierColoring(Identifier identifier, Set<ColoringAttributes> coloring) {
+            public ASTNodeColoring(ASTNode identifier, Set<ColoringAttributes> coloring) {
                 this.identifier = identifier;
                 this.coloring = coloring;
             }
@@ -138,19 +155,33 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         Map<OffsetRange, Set<ColoringAttributes>> highlights;
         // for unused private fields: name, varible
         // if isused, then it's deleted from the list and marked as the field
-        private final Map<String, IdentifierColoring> privateFieldsUsed;
+        private final Map<String, ASTNodeColoring> privateFieldsUsed;
         // for unsed private method: name, identifier
-        private final Map<String, IdentifierColoring> privateMethod;
+        private final Map<String, ASTNodeColoring> privateMethod;
         // this is holder of blocks, which has to be scanned for usages in the class.
         private List<Block> needToScan = new ArrayList<Block>();
 
+        private final Map<String, ASTNodeColoring> unusedUses;
+
         private final Snapshot snapshot;
+
+        private final Map<String, UnusedOffsetRanges> unusedUsesOffsetRanges;
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot) {
             this.highlights = highlights;
-            privateFieldsUsed = new HashMap<String, IdentifierColoring>();
-            privateMethod = new HashMap<String, IdentifierColoring>();
+            privateFieldsUsed = new HashMap<String, ASTNodeColoring>();
+            unusedUses = new HashMap<String, ASTNodeColoring>();
+            privateMethod = new HashMap<String, ASTNodeColoring>();
+            unusedUsesOffsetRanges = new HashMap<String, UnusedOffsetRanges>();
             this.snapshot = snapshot;
+        }
+
+        public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
+            HashSet<UnusedOffsetRanges> result = new HashSet<UnusedOffsetRanges>();
+            for (UnusedOffsetRanges unusedOffsetRanges : unusedUsesOffsetRanges.values()) {
+                result.add(unusedOffsetRanges);
+            }
+            return result;
         }
 
         private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
@@ -165,10 +196,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         @Override
         public void visit(Program program) {
             scan(program.getStatements());
-            for (Comment comment : program.getComments()) {
-                if (comment.getCommentType() == Comment.Type.TYPE_VARTYPE) {
-                    scan(comment);
-                }
+            scan(program.getComments());
+            for (ASTNodeColoring item : unusedUses.values()) {
+                addOffsetRange(item.identifier, item.coloring);
             }
         }
 
@@ -177,6 +207,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            scan(cldec.getSuperClass());
+            scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
             needToScan = new ArrayList<Block>();
@@ -188,7 +220,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     block.accept(this);
                 }
                 // are there unused private fields?
-                for (IdentifierColoring item : privateFieldsUsed.values()) {
+                for (ASTNodeColoring item : privateFieldsUsed.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
                     }
@@ -199,7 +231,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 }
 
                 // are there unused private methods?
-                for(IdentifierColoring item : privateMethod.values()) {
+                for(ASTNodeColoring item : privateMethod.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
                     }
@@ -212,6 +244,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         @Override
         public void visit(MethodDeclaration md) {
+            scan(md.getFunction().getFormalParameters());
             boolean isPrivate = Modifier.isPrivate(md.getModifier());
             EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
 
@@ -223,7 +256,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             String name = identifier.getName();
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
-                privateMethod.put(identifier.getName(), new IdentifierColoring(identifier, coloring));
+                privateMethod.put(identifier.getName(), new ASTNodeColoring(identifier, coloring));
             }
             else {
                 // color now only non private method
@@ -253,7 +286,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
 
             if (identifier != null) {
-                IdentifierColoring item = privateMethod.remove(identifier.getName());
+                ASTNodeColoring item = privateMethod.remove(identifier.getName());
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
                 }
@@ -268,7 +301,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
-            node.getBody().accept(this);
+            super.visit(node);
         }
 
         @Override
@@ -278,7 +311,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             Identifier name = node.getName();
             addOffsetRange(name, ColoringAttributes.CLASS_SET);
-            node.getBody().accept(this);
+            super.visit(node);
         }
 
         @Override
@@ -302,7 +335,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();
-                        privateFieldsUsed.put(identifier.getName(), new IdentifierColoring(identifier, coloring));
+                        privateFieldsUsed.put(identifier.getName(), new ASTNodeColoring(identifier, coloring));
                     }
                 }
             }
@@ -328,7 +361,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             FunctionName fnName = node.getMethod().getFunctionName();
             if (fnName.getName() instanceof Identifier) {
                 String name = ((Identifier) fnName.getName()).getName();
-                IdentifierColoring item = privateMethod.remove(name);
+                ASTNodeColoring item = privateMethod.remove(name);
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
                 }
@@ -360,6 +393,116 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         }
 
+        @Override
+        public void visit(ConstantDeclaration node) {
+            List<Identifier> names = node.getNames();
+            if (!names.isEmpty()) {
+                for (Identifier identifier : names) {
+                    addOffsetRange(identifier, ColoringAttributes.STATIC_FIELD_SET);
+                }
+            }
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(StaticConstantAccess node) {
+            Identifier constant = node.getConstant();
+            if (constant != null) {
+                addOffsetRange(constant, ColoringAttributes.STATIC_FIELD_SET);
+            }
+            super.visit(node);
+        }
+
+        @Override
+        public void visit(PHPDocTypeNode node) {
+            if (isCancelled()) {
+                return;
+            }
+            QualifiedName typeName = QualifiedName.create(node.getValue());
+            if (unusedUses.size() > 0 && !typeName.getKind().isFullyQualified()) {
+                String firstSegmentName = typeName.getSegments().getFirst();
+                processFirstSegmentName(firstSegmentName);
+            }
+        }
+
+        @Override
+        public void visit(NamespaceName node) {
+            if (isCancelled()) {
+                return;
+            }
+            if (unusedUses.size() > 0 && !node.isGlobal()) {
+                Identifier firstSegment = node.getSegments().get(0);
+                String firstSegmentName = firstSegment.getName();
+                processFirstSegmentName(firstSegmentName);
+            }
+        }
+
+        private void processFirstSegmentName(final String firstSegmentName) {
+            Set<String> namesToRemove = new HashSet<String>();
+            for (String name : unusedUses.keySet()) {
+                QualifiedName qualifiedUseName = QualifiedName.create(name);
+                if (qualifiedUseName.getSegments().getLast().equals(firstSegmentName)) {
+                    namesToRemove.add(name);
+                }
+            }
+            for (String nameToRemove : namesToRemove) {
+                unusedUses.remove(nameToRemove);
+                unusedUsesOffsetRanges.remove(nameToRemove);
+            }
+        }
+
+        @Override
+        public void visit(UseStatement node) {
+            if (isCancelled()) {
+                return;
+            }
+            List<UseStatementPart> parts = node.getParts();
+            if (parts.size() == 1) {
+                UseStatementPart useStatementPart = parts.get(0);
+                String correctName = getCorrectName(useStatementPart);
+                unusedUses.put(correctName, new ASTNodeColoring(node, UNUSED_USES_SET));
+                OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+                unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(offsetRange, offsetRange));
+            } else {
+                processUseStatementsParts(parts);
+            }
+        }
+
+        private void processUseStatementsParts(final List<UseStatementPart> parts) {
+            int lastStartOffset = 0;
+            for (int i = 0; i < parts.size(); i++) {
+                UseStatementPart useStatementPart = parts.get(i);
+                int endOffset = useStatementPart.getEndOffset();
+                if (i == 0) {
+                    lastStartOffset = useStatementPart.getStartOffset();
+                    assert i + 1 < parts.size();
+                    UseStatementPart nextPart = parts.get(i + 1);
+                    endOffset = nextPart.getStartOffset();
+                }
+                String correctName = getCorrectName(useStatementPart);
+                unusedUses.put(correctName, new ASTNodeColoring(useStatementPart, UNUSED_USES_SET));
+                OffsetRange rangeToVisualise = new OffsetRange(useStatementPart.getStartOffset(), useStatementPart.getEndOffset());
+                OffsetRange rangeToReplace = new OffsetRange(lastStartOffset, endOffset);
+                unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(rangeToVisualise, rangeToReplace));
+                lastStartOffset = useStatementPart.getEndOffset();
+            }
+        }
+
+        private String getCorrectName(UseStatementPart useStatementPart) {
+            Identifier alias = useStatementPart.getAlias();
+            String identifierName;
+            if (alias != null) {
+                identifierName = alias.getName();
+            } else {
+                NamespaceName name = useStatementPart.getName();
+                identifierName = CodeUtils.extractQualifiedName(name);
+                if (name.isGlobal()) {
+                    identifierName = NAMESPACE_SEPARATOR + identifierName;
+                }
+            }
+            return identifierName;
+        }
+
         private class FieldAccessVisitor extends DefaultVisitor {
             private final Set<ColoringAttributes> coloring;
 
@@ -376,7 +519,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             @Override
             public void visit(Identifier identifier) {
                 //remove the field, because is used
-                IdentifierColoring removed = privateFieldsUsed.remove(identifier.getName());
+                ASTNodeColoring removed = privateFieldsUsed.remove(identifier.getName());
                 if (removed != null) {
                     // if it was removed, marked as normal field
                     addOffsetRange(removed.identifier, removed.coloring);

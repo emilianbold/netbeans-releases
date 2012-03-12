@@ -69,7 +69,7 @@ public class RefreshAction extends AbstractAction implements ContextAwareAction 
         this(Lookup.EMPTY);
     }
 
-    @Messages("ACT_Reload_Projects=Reload {0} POMs")
+    @Messages({"# {0} - count", "ACT_Reload_Projects=Reload {0} POMs"})
     private RefreshAction(Lookup lkp) {
         context = lkp;
         Collection<? extends NbMavenProjectImpl> col = context.lookupAll(NbMavenProjectImpl.class);

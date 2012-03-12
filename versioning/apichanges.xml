@@ -111,6 +111,20 @@ is the proper place.
         
         <change>
             <api name="versioning_spi"/>
+            <summary>Added VCSHistoryProvider</summary>
+            <version major="1" minor="29"/>
+            <date day="30" month="1" year="2012"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                New type <code>VCSHistoryProvider</code> makes it possible for versionig systems to 
+                provide information about a files history which is then used in that files editor history tab.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VersioningSupport"/>
+            <issue number="207126"/>
+        </change>
+        <change>
+            <api name="versioning_spi"/>
             <summary>isExcluded() added to VersioningSupport</summary>
             <version major="1" minor="25"/>
             <date day="19" month="7" year="2011"/>

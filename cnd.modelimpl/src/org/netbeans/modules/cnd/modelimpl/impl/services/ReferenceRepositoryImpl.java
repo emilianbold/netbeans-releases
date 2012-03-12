@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ReferencesIndex;
+import org.netbeans.modules.cnd.modelimpl.content.file.ReferencesIndex;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
@@ -359,7 +359,7 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                 while (!APTUtils.isEOF(token)) {
                     if (token.getOffset() >= startOffset) {
                         int id = token.getType();
-                        if ((id == APTTokenTypes.ID || id == APTTokenTypes.ID_DEFINED) &&
+                        if ((id == APTTokenTypes.IDENT || id == APTTokenTypes.ID_DEFINED) &&
                                 name.equals(token.getTextID())) {
                             // this is candidate to resolve
                             if (!destructor || (prev != null && prev.getType() == APTTokenTypes.TILDE)) {

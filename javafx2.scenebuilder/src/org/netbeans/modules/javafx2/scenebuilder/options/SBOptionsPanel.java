@@ -48,6 +48,9 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
+import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 final class SBOptionsPanel extends javax.swing.JPanel {    
@@ -100,7 +103,7 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     final private List<HomeDef> predefinedSBHomes = new ArrayList<HomeDef>();
     
     @NbBundle.Messages({
-        "MSG_InvalidHome=Please, select a valid SceneBuilder home...",
+        "MSG_InvalidHome=Please, select a valid Scene Builder home...",
         "LBL_Browse=Browse..."
     })
     SBOptionsPanel(SBOptionsPanelController controller) {
@@ -242,7 +245,10 @@ final class SBOptionsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel sbHomeLabel;
     // End of variables declaration//GEN-END:variables
 
-    @NbBundle.Messages("LBL_BrowseSBHome=Select a Valid SceneBuilder Home")
+    @NbBundle.Messages({
+        "LBL_BrowseSBHome=Select a Valid Scene Builder Home",
+        "MSG_InvalidSBHome=<html>Selected location <p><b>{0}</b></p> does not represent a valid JavaFX Scene Builder installation."
+    })
     private void browseAddNewRuntime() {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(Bundle.LBL_BrowseSBHome());
@@ -259,10 +265,15 @@ final class SBOptionsPanel extends javax.swing.JPanel {
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File f = chooser.getSelectedFile();
             String newRuntimePath = f.getAbsolutePath();
-            String version = "?"; // TODO use a well known approach to determine the version here
-            HomeDef newHd = new HomeDef(new Home(newRuntimePath, version));
-            sbHome.getModel().addUserDefined(newHd);
-            sbHome.getModel().setSelectedItem(newHd);
+            Home h = SBHomeFactory.getDefault().loadHome(newRuntimePath);
+            if (h != null) {
+                HomeDef newHd = new HomeDef(h);
+                sbHome.getModel().addUserDefined(newHd);
+                sbHome.getModel().setSelectedItem(newHd);
+            } else {
+                NotifyDescriptor nd = new NotifyDescriptor.Message(Bundle.MSG_InvalidSBHome(newRuntimePath), NotifyDescriptor.ERROR_MESSAGE);
+                DialogDisplayer.getDefault().notifyLater(nd);
+            }
         }
     }
 }

@@ -127,7 +127,15 @@ public class ActionProcessorTest extends NbTestCase {
             cnt += e.getID();
         }
     }
-
+    
+    @ActionReferences({
+        @ActionReference(
+            path="Loaders/text/x-my/Actions", 
+            id=@ActionID(category="System", id="org.openide.actions.OpenAction"),
+            position=100, 
+            separatorAfter=200
+        )
+    })
     public void testAlwaysEnabledAction() throws Exception {
         assertEquals("Not created yet", 0, Always.created);
         Action a = Actions.forID("Tools", "my.test.Always");
@@ -750,7 +758,7 @@ public class ActionProcessorTest extends NbTestCase {
             "import org.openide.awt.ActionReferences;\n" +
             "import java.awt.event.*;\n" +
             "@ActionReferences({\n" +
-            "  @ActionReference(path=\"manka\", position=11, id=@ActionID(category=\"Cat\",id=\"x.y.z\"))" +
+            "  @ActionReference(path=\"manka\", position=11)" +
             "})\n" +
             "public class A implements ActionListener {\n" +
             "    public void actionPerformed(ActionEvent e) {}" +

@@ -533,10 +533,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
         if (!patterns.isEmpty()) {
             List<String> itemsList = new ArrayList<String>(patterns.size());
             for (SearchPattern pattern : patterns) {
-                String searchExpression = pattern.getSearchExpression();
-                if (!itemsList.contains(searchExpression)) {
-                    itemsList.add(searchExpression);
-                }
+                itemsList.add(pattern.getSearchExpression());
             }
             cboxTextToFind.setModel(new ListComboBoxModel(itemsList));
         }

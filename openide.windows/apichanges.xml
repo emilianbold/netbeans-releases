@@ -50,6 +50,65 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="topcomponent.subcomponents">
+    <api name="winsys"/>
+    <summary>Added method TopComponent.getSubComponents.</summary>
+    <version major="6" minor="52"/>
+    <date day="7" month="3" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new method can be used to access for example inner tabs in a
+        multiview window.</p>
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="209051"/>
+</change>
+<change id="topcomponent.shortname">
+    <api name="winsys"/>
+    <summary>Added method TopComponent.getShortName()</summary>
+    <version major="6" minor="52"/>
+    <date day="7" month="3" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new method can be used to retrieve a short version of TopComponent's
+        display name, i.e. display name that does no include the name of activated
+        Node.</p>
+    </description>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="209059"/>
+</change>
+<change id="topcomponent.busy">
+    <api name="winsys"/>
+    <summary>Added method TopComponent.makeBusy(boolean).</summary>
+    <version major="6" minor="51"/>
+    <date day="14" month="2" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>The new method can be used to inform user that some (possibly lengthy)
+        process is being run in given <code>TopComponent.</code></p>
+    </description>
+    <class package="org.openide.windows" name="WindowManager"/>
+    <class package="org.openide.windows" name="TopComponent"/>
+    <issue number="208026"/>
+</change>
+<change id="jtabbedpane.replacement.for.tabbedcontainer">
+    <api name="winsys"/>
+    <summary>Added branding options to replace the custom TabbedContainer with
+    plain Swing JTabbedPane.</summary>
+    <version major="6" minor="50"/>
+    <date day="25" month="1" year="2012"/>
+    <author login="saubrecht"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>By branding of core.windows module it is possible to use plain JTabbedPane
+        component to display window tabs instead of the custom TabbedContainer.
+        The property name is <code>WinSys.TabControl.SimpleTabs.Enabled</code></p>
+    </description>
+    <issue number="150393"/>
+</change>
 <change id="turn.copy.dnd.cloneable.TC.off">
     <api name="winsys"/>
     <summary>Added a client property to turn copy drag and drop of clonable TopComponents off.</summary>

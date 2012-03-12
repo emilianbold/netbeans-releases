@@ -43,9 +43,11 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.hints.jackpot.refactoring.RefTestBase;
-import org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorRefactoring;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.openide.filesystems.FileObject;
@@ -77,7 +79,7 @@ public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
 
 
     private void performTest(final String factoryName) throws Exception {
-        final ReplaceConstructorRefactoring[] r = new ReplaceConstructorRefactoring[1];
+        final ReplaceConstructorWithFactoryRefactoring[] r = new ReplaceConstructorWithFactoryRefactoring[1];
         FileObject testFile = src.getFileObject("test/Test.java");
         
         JavaSource.forFileObject(testFile).runUserActionTask(new Task<CompilationController>() {
@@ -89,11 +91,13 @@ public class ReplaceConstructorRefactoringPluginImplTest extends RefTestBase {
                 MethodTree var = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(0);
 
                 TreePath tp = TreePath.getPath(cut, var);
-                r[0] = new ReplaceConstructorRefactoring(TreePathHandle.create(tp, parameter), factoryName);
+                r[0] = new ReplaceConstructorWithFactoryRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setFactoryName(factoryName);
             }
         }, true);
 
         RefactoringSession rs = RefactoringSession.create("Session");
+        Thread.sleep(1000);
         r[0].prepare(rs);
         rs.doRefactoring(true);
 

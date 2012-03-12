@@ -64,11 +64,12 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -183,10 +184,10 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
                 return null;
             }
         }
-        List<Fix> fixes = Collections.<Fix>singletonList(JavaFix.toEditorFix(new FixImpl(
-            clazz,
-            TreePathHandle.create(e, compilationInfo)
-            )));
+        List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(
+clazz,
+TreePathHandle.create(e, compilationInfo)
+).toEditorFix());
 
         int[] span = null;
 
@@ -300,7 +301,9 @@ public class UtilityClass extends AbstractHint implements ElementVisitor<Boolean
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             Element e = wc.getTrees().getElement(tp);
             if (e == null) {
                 return;

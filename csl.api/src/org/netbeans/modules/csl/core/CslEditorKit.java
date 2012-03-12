@@ -227,6 +227,7 @@ public final class CslEditorKit extends NbEditorKit {
 
     private final class GsfDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
         private JTextComponent currentTarget;
+        private String replacedText = null;
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
@@ -263,6 +264,9 @@ public final class CslEditorKit extends NbEditorKit {
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
             String str, boolean overwrite) throws BadLocationException {
+            if (str.equals("")) {
+                return;
+            }
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();
 

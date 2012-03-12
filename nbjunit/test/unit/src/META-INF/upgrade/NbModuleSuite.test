@@ -1,0 +1,14 @@
+%%TestCase suite
+package test;
+public class SomeTest extends org.netbeans.junit.NbTestCase {
+    public static junit.framework.Test suite() {
+        return org.netbeans.junit.NbModuleSuite.create(org.netbeans.junit.NbModuleSuite.createConfiguration(SomeTest.class).gui(false));
+    }
+}
+%%=>
+package test;
+public class SomeTest extends org.netbeans.junit.NbTestCase {
+    public static junit.framework.Test suite() {
+        return org.netbeans.junit.NbModuleSuite.createConfiguration(SomeTest.class).gui(false).suite();
+    }
+}

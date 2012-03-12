@@ -43,15 +43,17 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.lang.ref.WeakReference;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
+import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FilesystemInterceptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -69,6 +71,25 @@ implements FileChangeListener {
         this.fcl = fcl;
         this.kept = keep ? new HashSet<FileObject>() : null;
         addAll(source);
+        try {
+            init(source, -1, false);
+        } catch (FileStateInvalidException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private void init(FileObject source, long previous, boolean expected) throws FileStateInvalidException {
+        if (RemoteFileObjectBase.USE_VCS) {
+            FilesystemInterceptor interseptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(source.getFileSystem());
+            LinkedList<FileProxyI> list = new LinkedList<FileProxyI>();
+            if (interseptor != null) {
+                long tc = interseptor.listFiles(FilesystemInterceptorProvider.toFileProxy(source), previous, list);
+            }
+            for (FileProxyI proxy : list) {
+                FileObject fo = source.getFileSystem().findResource(proxy.getPath());
+                // TODO what should be fire?
+            }
+        }
     }
 
     private void addAll(FileObject folder) {
@@ -82,6 +103,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileRenamed(FileRenameEvent fe) {
         FileObject thisFo = this.get();
         if (thisFo != null && isParentOf(thisFo, fe.getFile())) {
@@ -89,6 +111,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileFolderCreated(FileEvent fe) {
         FileObject thisFo = this.get();
         final FileObject file = fe.getFile();
@@ -98,6 +121,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileDeleted(FileEvent fe) {
         FileObject thisFo = this.get();
         final FileObject file = fe.getFile();
@@ -109,6 +133,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject thisFo = this.get();
         final FileObject file = fe.getFile();
@@ -120,6 +145,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileChanged(FileEvent fe) {
         FileObject thisFo = this.get();
         if (thisFo != null && isParentOf(thisFo, fe.getFile())) {
@@ -127,6 +153,7 @@ implements FileChangeListener {
         }
     }
 
+    @Override
     public void fileAttributeChanged(FileAttributeEvent fe) {
         FileObject thisFo = this.get();
         if (thisFo != null && isParentOf(thisFo, fe.getFile())) {

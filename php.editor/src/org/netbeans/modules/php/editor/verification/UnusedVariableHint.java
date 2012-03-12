@@ -356,6 +356,7 @@ public class UnusedVariableHint extends AbstractRule implements PHPRuleWithPrefe
         public void visit(InstanceOfExpression node) {
             forceVariableAsUsed = true;
             scan(node.getExpression());
+            scan(node.getClassName());
             forceVariableAsUsed = false;
         }
 

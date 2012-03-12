@@ -72,7 +72,9 @@ public class Installer extends ModuleInstall {
     private static final Logger LOG = Logger.getLogger (Installer.class.getName ());
     // XXX: copy from o.n.upgrader
     private static final List<String> VERSION_TO_CHECK =
-            Arrays.asList (".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9"); //NOI18N
+            Arrays.asList (".netbeans/7.1.1", ".netbeans/7.1", ".netbeans/7.0", ".netbeans/6.9"); //NOI18N
+    private static final List<String> NEWER_VERSION_TO_CHECK =
+            Arrays.asList (/*"7.2, ..."*/); //NOI18N
     private static final String IMPORTED = "imported"; // NOI18N
 
     @Override
@@ -110,7 +112,12 @@ public class Installer extends ModuleInstall {
                 // was remind later
                 importFrom = new File (pref.get (KEY_IMPORT_FROM, "")); // NOI18N
             } else {
-                importFrom = checkPrevious (VERSION_TO_CHECK);
+                // try OS specific place for userdir (see issue 196075)
+                importFrom = checkPreviousOnOsSpecificPlace (NEWER_VERSION_TO_CHECK);
+                if (importFrom == null) {
+                    // try former root
+                    importFrom = checkPrevious (VERSION_TO_CHECK);
+                }
 
                 // check if the userdir was imported already
                 boolean imported = au_pref.getBoolean (IMPORTED, false);
@@ -206,6 +213,22 @@ public class Installer extends ModuleInstall {
         File sourceFolder = null;
         if (userHome != null) {
             File userHomeFile = new File (userHome);
+            for (String ver : versionsToCheck) {
+                sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
+                if (sourceFolder.exists () && sourceFolder.isDirectory ()) {
+                    return sourceFolder;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static File checkPreviousOnOsSpecificPlace (final List<String> versionsToCheck) {
+        String defaultUserdirRoot = System.getProperty ("netbeans.default_userdir_root"); // NOI18N
+        LOG.log (Level.FINER, "netbeans.default_userdir_root: " + defaultUserdirRoot);
+        File sourceFolder = null;
+        if (defaultUserdirRoot != null) {
+            File userHomeFile = new File (defaultUserdirRoot);
             for (String ver : versionsToCheck) {
                 sourceFolder = new File (userHomeFile.getAbsolutePath (), ver);
                 if (sourceFolder.exists () && sourceFolder.isDirectory ()) {

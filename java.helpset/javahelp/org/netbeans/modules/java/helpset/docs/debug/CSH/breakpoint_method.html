@@ -7,27 +7,24 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Breakpoint Dialog Box: Method</title>
+<title>Breakpoint Properties: Method</title>
 	<link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
 
-<h2>Breakpoint Dialog Box: Method</h2>
+<h2>Breakpoint Properties: Method</h2>
 <p><small><a href="#seealso">See Also</a></small></p>
-<p>You use this dialog box to set the properties of an method breakpoint.</p>
-<p>You can set method breakpoint properties when you set a new breakpoint or when modifying an
-existing breakpoint.</p>
-<ul>
-    <li>To set a new method breakpoint, choose Debug &gt; New Breakpoint 
-    (Ctrl-Shift-F8) from the main menu, then select Method from the Breakpoint Type drop-down list.</li>
-    <li>To customize an existing exception breakpoint, right-click the method breakpoint in the
-    Breakpoints window and choose Customize.</li>
-</ul>
+<p>You use this dialog box to set the properties of a method breakpoint.
+You set method breakpoint properties when setting a new method breakpoint or 
+when modifying an existing method breakpoint.
+You open this dialog box by right-clicking a method breakpoint in the Breakpoints 
+window and choosing Properties.</p>
+
 <ul class="note">
 	<li>If the fields in the dialog box are already filled in, the information is based on the location of the insertion point in the Source Editor.</li>
 </ul>
 
-<p>You can set the following values:</p>
+<p>You can set the following values in this dialog box.</p>
 <ul>
 	<li><b>Settings.</b>
             <ul>
@@ -53,6 +50,11 @@ existing breakpoint.</p>
                 You can specify no threads, all threads, or the breakpoint 
                 thread. The breakpoint thread is the thread that is current 
                 when the breakpoint is reached.</li>
+                <li><b>Enable Group.</b> Select a group of breakpoints in the dropdown list to enable all the breakpoints in the group.
+                The dropdown list contains all named groups and default groups of breakpoints organized by file, project and type.
+                For more about named breakpoint groups, see <a href="../breakpoint_group.html">Organizing Breakpoints Into a Group</a>.
+                </li>
+                <li><b>Disable Group.</b> Select a group of breakpoints in the dropdown list to disable all the breakpoints in the group.</li>
                 <li><b>Print Text.</b> The specified message is printed in the Debugger Console view of the Output window. For information on the tags you can include in the message, see 
                 <a href="../debug_print_breakpoint_message.html">Printing a Breakpoint Message</a>.</li>
           </ul>
@@ -60,10 +62,12 @@ existing breakpoint.</p>
 </ul>
 
 <dl>
-	<dt><a name="seealso">See Also</a></dt>
-	<dd><a href="breakpoint_window.html">New Breakpoint Dialog Box</a></dd>
-            <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
-   <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+    <dt><a name="seealso">See Also</a></dt>
+    <dd><a href="../breakpoint_setting.html">Setting a Java Breakpoint</a></dd>
+    <dd><a href="../breakpoint_about.html">Breakpoints in the IDE</a></dd>
+    <dd><a href="breakpoint_view.html">Breakpoints Window</a></dd>
+    <dd><a href="../breakpoint_group.html">Organizing Breakpoints Into a Group</a></dd>
+    <dd><a href="debug_window.html">Debugger Windows</a></dd>
 </dl>
 <hr>
 <small><a href="../../credits.html">Legal Notices</a></small>

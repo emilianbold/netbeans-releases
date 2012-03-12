@@ -31,11 +31,10 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
-import static org.junit.Assert.*;
 
 /**
  * The following shell script was used to generate the code snippets
@@ -44,7 +43,7 @@ import static org.junit.Assert.*;
  */
 public class SerialVersionUIDTest extends ErrorHintsTestBase {
 
-    private static final String HINT_SUPPRESS = NbBundle.getMessage(FixFactory.class, "LBL_FIX_Suppress_Waning", "serial");
+    private static final String HINT_SUPPRESS = NbBundle.getMessage(ErrorDescriptionFactory.class, "LBL_FIX_Suppress_Waning", "serial");
     private static final String HINT_DEFAULT = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID");
     private static final String HINT_GENERATED = NbBundle.getMessage(SerialVersionUID.class, "HINT_SerialVersionUID_Generated");
 

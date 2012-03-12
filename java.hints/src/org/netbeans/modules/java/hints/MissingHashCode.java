@@ -49,14 +49,14 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.codegen.EqualsHashCodeGenerator;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav tulach
  */
-@Hint(id="org.netbeans.modules.java.hints.MissingHashCode", category="general", enabled=true, options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.MissingHashCode", description = "#DESC_org.netbeans.modules.java.hints.MissingHashCode", id="org.netbeans.modules.java.hints.MissingHashCode", category="general", enabled=true, options=Options.QUERY)
 public class MissingHashCode {
 
     @TriggerTreeKind(Kind.CLASS)
@@ -117,7 +117,7 @@ public class MissingHashCode {
 
             if (span != null) {
                 ErrorDescription ed = ErrorDescriptionFactory.createErrorDescription(
-                    ctx.getSeverity().toEditorSeverity(),
+                    ctx.getSeverity(),
                     NbBundle.getMessage(MissingHashCode.class, addHint), 
                     fixes, 
                     compilationInfo.getFileObject(),

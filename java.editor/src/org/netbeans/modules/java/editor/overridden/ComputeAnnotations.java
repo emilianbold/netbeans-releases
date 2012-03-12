@@ -61,11 +61,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
@@ -78,7 +75,7 @@ public class ComputeAnnotations extends JavaParserResultTask<Result> {
     private final AtomicBoolean cancel = new AtomicBoolean();
     
     public ComputeAnnotations() {
-        super(Phase.RESOLVED);
+        super(Phase.RESOLVED, TaskIndexingMode.ALLOWED_DURING_SCAN);
     }
 
     @Override

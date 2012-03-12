@@ -399,16 +399,17 @@ public class SchemaImpl extends SchemaComponentImpl implements Schema {
     }
 
     /**
-     * Helps to impove performance because the targetNamespace is asked too frequently.
+     * Helps to improve performance because the targetNamespace is asked too frequently.
      * See the issue #169435
      */
     private static class CachedTargetNamespace {
+        
+        // deliberately using new String, to prevent sharing
+        private static final String NO_NAMESPACE_PLACEHOLDER = new String("<null>");
 
-        private Schema mSchema;
-        // This separate flag is required because the targetNamespace can be null
-        // so it can't be used as a flag for initialization state.
-        private boolean mCached = false; 
-        private String mTargetNamespace;
+        private final Schema mSchema;
+        
+        private volatile String mTargetNamespace = null;
 
         public CachedTargetNamespace(Schema schema) {
             mSchema = schema;
@@ -427,19 +428,35 @@ public class SchemaImpl extends SchemaComponentImpl implements Schema {
         }
 
         public synchronized void discardCache() {
-            mCached = false;
+            mTargetNamespace = null;
+        }
+        
+       private static String translateNamespace(String s) {
+            // == comparison is deliberate
+            return s == NO_NAMESPACE_PLACEHOLDER ? null : s;
         }
 
-        public synchronized String getTargetNamespace() {
-            if (!mCached || mSchema.getModel().isIntransaction()) {
-                //
-                // Use ordinary way if the model in transaction because
-                // the cached value remains unchanged before transaction is commited.
-                //
-                mTargetNamespace = mSchema.getAttribute(SchemaAttributes.TARGET_NS);
-                mCached = true;
+        public String getTargetNamespace() {
+            String ns = mTargetNamespace;
+            boolean inTransaction = mSchema.getModel().isIntransaction();
+            if (ns != null && !inTransaction) {
+                    return translateNamespace(ns);
             }
-            return mTargetNamespace;
+
+            //
+            // Use ordinary way if the model in transaction because
+            // the cached value remains unchanged before transaction is commited.
+            
+            // TODO sdedic: not sure about the above comment. The original code changed the cached
+            // value if model was inTransaction(). I retain the behaviour, but it seems to contradict the comment.
+            String tns = mSchema.getAttribute(SchemaAttributes.TARGET_NS);
+
+            if (tns == null) {
+                mTargetNamespace = NO_NAMESPACE_PLACEHOLDER;
+            } else {
+                mTargetNamespace = tns;
+            }
+            return tns;
         }
 
     }

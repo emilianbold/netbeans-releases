@@ -44,10 +44,18 @@
 
 package org.netbeans.modules.xml.jaxb;
 
+import org.openide.filesystems.MIMEResolver;
+
 /**
  * A place holder class
  * @author lgao
  */
+@MIMEResolver.ExtensionRegistration(
+    displayName="#JAXBResolver",
+    extension="xjb",
+    mimeType="text/x-jaxb-binding+xml",
+    position=490
+)
 public class JAXBWizard {
 
     /** Creates a new instance of JAXBWizard */

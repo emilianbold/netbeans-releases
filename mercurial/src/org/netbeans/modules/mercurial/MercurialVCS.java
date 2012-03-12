@@ -52,6 +52,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import org.netbeans.spi.queries.CollocationQueryImplementation;
 import org.netbeans.modules.versioning.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 
@@ -84,6 +85,12 @@ public class MercurialVCS extends VersioningSystem implements PropertyChangeList
         return collocationQueryImplementation;
     }
 
+    @Override
+    public VCSHistoryProvider getVCSHistoryProvider() {
+        return Mercurial.getInstance().getMercurialHistoryProvider();
+    }
+
+    
     private final CollocationQueryImplementation collocationQueryImplementation = new CollocationQueryImplementation() {
         @Override
         public boolean areCollocated(File a, File b) {

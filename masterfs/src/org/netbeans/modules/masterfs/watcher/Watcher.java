@@ -151,10 +151,10 @@ public final class Watcher extends AnnotationProvider {
         return ext;
     }
     
-    public void shutdown() {
-        if (ext != null) {
+    public static void shutdown() {
+        if (isEnabled()) {
             try {
-                ext.shutdown();
+                ext().shutdown();
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Error on shutdown", ex);
             } catch (InterruptedException ex) {
@@ -245,7 +245,7 @@ public final class Watcher extends AnnotationProvider {
         }
         
         final void unregister(FileObject fo) {
-            assert fo.isFolder() : "Should be a folder: " + fo;
+            assert !fo.isValid() || fo.isFolder() : "If valid, it should be a folder: " + fo;
             synchronized (LOCK) {
                 final NotifierKeyRef[] equalOne = new NotifierKeyRef[1];
                 NotifierKeyRef<KEY> kr = new NotifierKeyRef<KEY>(fo, null, null, impl) {

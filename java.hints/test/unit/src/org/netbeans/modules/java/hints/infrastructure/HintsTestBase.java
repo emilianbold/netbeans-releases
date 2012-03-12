@@ -80,21 +80,21 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.LazyFixList;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.EnhancedFix;
+import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.LifecycleManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -127,6 +127,7 @@ public class HintsTestBase extends NbTestCase {
     }
     
     protected void doSetUp(String resource) throws Exception {
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml", resource}, new Object[] {
             JavaDataLoader.class,
             new MimeDataProvider() {
@@ -146,7 +147,8 @@ public class HintsTestBase extends NbTestCase {
                         InputAttributes inputAttributes) {
                     return null;
                 }
-            }
+            },
+            new JavaCustomIndexer.Factory()
         });
 
         clearWorkDir();
@@ -198,8 +200,6 @@ public class HintsTestBase extends NbTestCase {
         packageRoot = FileUtil.createFolder(sourceRoot, DATA_EXTENSION);
 
         SourceUtilsTestUtil.setSourceLevel(packageRoot, sourceLevel);
-        SourceUtilsTestUtil.prepareTest(new String[0], new Object[]{
-                    new JavaCustomIndexer.Factory()});
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO);
         

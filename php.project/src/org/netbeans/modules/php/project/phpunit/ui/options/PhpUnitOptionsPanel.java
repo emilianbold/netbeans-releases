@@ -97,7 +97,11 @@ public class PhpUnitOptionsPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.phpUnit.hint=Full path of PHPUnit script (typically {0} or {1}).",
+        "# {0} - short script name",
+        "# {1} - long script name",
         "PhpUnitOptionsPanel.skelGen.hint=Full path of Skeleton Generator script (typically {0} or {1})."
     })
     private void init() {
@@ -236,80 +240,36 @@ public class PhpUnitOptionsPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(phpUnitLabel)
-                    .addComponent(skelGenLabel))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpUnitHintLabel)
-                        .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                            .addComponent(skelGenTextField, Alignment.TRAILING)
-                            .addComponent(phpUnitTextField, Alignment.TRAILING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(skelGenHintLabel)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addPreferredGap(ComponentPlacement.RELATED)))
-                .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(phpUnitBrowseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(phpUnitSearchButton))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(skelGenBrowseButton)
-                        .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(skelGenSearchButton))))
-            .addComponent(errorLabel)
-            .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-            .addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING).addComponent(errorLabel).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(phpUnitPhp53InfoLabel)
-                    .addComponent(installationInfoLabel)
-                    .addComponent(phpUnitLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(skelGenLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(phpUnitPhp53InfoLabel).addComponent(installationInfoLabel).addComponent(phpUnitLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(skelGenLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(phpUnitLabel).addComponent(skelGenLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                        .addComponent(skelGenHintLabel)
+
+                        .addGap(0, 0, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                                .addComponent(phpUnitHintLabel)
+
+                                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(skelGenTextField, Alignment.TRAILING).addComponent(phpUnitTextField, Alignment.TRAILING)).addPreferredGap(ComponentPlacement.RELATED))).addGroup(layout.createParallelGroup(Alignment.TRAILING).addGroup(layout.createSequentialGroup()
+                                .addComponent(phpUnitBrowseButton)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(phpUnitSearchButton)).addGroup(layout.createSequentialGroup()
+                                .addComponent(skelGenBrowseButton)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(skelGenSearchButton))))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {phpUnitBrowseButton, phpUnitSearchButton, skelGenBrowseButton, skelGenSearchButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(phpUnitLabel)
-                    .addComponent(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(phpUnitSearchButton)
-                    .addComponent(phpUnitBrowseButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpUnitHintLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
-                    .addComponent(skelGenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(skelGenLabel)
-                    .addComponent(skelGenSearchButton)
-                    .addComponent(skelGenBrowseButton))
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(skelGenHintLabel)
-                .addGap(18, 18, 18)
-                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(phpUnitPhp53InfoLabel)
-                .addGap(18, 18, 18)
-                .addComponent(installationInfoLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(phpUnitLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(skelGenLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(errorLabel)
-                .addGap(0, 0, 0))
+            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(phpUnitLabel).addComponent(phpUnitTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(phpUnitSearchButton).addComponent(phpUnitBrowseButton)).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpUnitHintLabel).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(skelGenTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(skelGenLabel).addComponent(skelGenSearchButton).addComponent(skelGenBrowseButton)).addPreferredGap(ComponentPlacement.RELATED).addComponent(skelGenHintLabel).addGap(18, 18, 18).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpUnitInfoLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(phpUnitPhp53InfoLabel).addGap(18, 18, 18).addComponent(installationInfoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(phpUnitLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(skelGenLearnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(errorLabel).addGap(0, 0, 0))
         );
 
         phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleName_1"));         phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitLabel.AccessibleContext.accessibleDescription_1"));         phpUnitTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleName_1"));         phpUnitTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitTextField.AccessibleContext.accessibleDescription_1"));         phpUnitBrowseButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleName_1"));         phpUnitBrowseButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitBrowseButton.AccessibleContext.accessibleDescription_1"));         phpUnitSearchButton.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleName_1"));         phpUnitSearchButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitSearchButton.AccessibleContext.accessibleDescription_1"));         phpUnitHintLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleName"));         phpUnitHintLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.scriptInfoLabel.AccessibleContext.accessibleDescription"));         noteLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleName"));         noteLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.noteLabel.AccessibleContext.accessibleDescription"));         phpUnitInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleName"));         phpUnitInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitInfoLabel.AccessibleContext.accessibleDescription"));         phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleName"));         phpUnitPhp53InfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.phpUnitPhp53InfoLabel.AccessibleContext.accessibleDescription"));         installationInfoLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleName"));         installationInfoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.installationInfoLabel.AccessibleContext.accessibleDescription"));         phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleName"));         phpUnitLearnMoreLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.learnMoreLabel.AccessibleContext.accessibleDescription"));         errorLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleName"));         errorLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(PhpUnitOptionsPanel.class, "PhpUnitOptionsPanel.errorLabel.AccessibleContext.accessibleDescription")); 

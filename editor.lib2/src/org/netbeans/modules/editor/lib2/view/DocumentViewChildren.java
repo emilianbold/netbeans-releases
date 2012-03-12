@@ -180,40 +180,26 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         }
     }
     
-    /**
-     * Check height change between start and end indexes and possibly update gap (or rest of views).
-     * Also notify repaint of whole area between start and end indexes.
-     *
-     * @param docView
-     * @param index
-     * @param endIndex
-     * @param docViewAlloc 
-     */
-    void checkChildrenSpanChange(DocumentView docView, int index) {
-        if (docView.op.isChildWidthChange()) {
-            docView.op.resetChildWidthChange();
-            ParagraphView pView = get(index);
-            float newWidth = pView.getPreferredSpan(View.X_AXIS);
-            if (newWidth > childrenWidth) {
-                childrenWidth = newWidth;
-                docView.op.notifyWidthChange();
-            }
+    void childWidthUpdated(DocumentView docView, int index, float newWidth) {
+        if (newWidth > childrenWidth) {
+            childrenWidth = newWidth;
+            docView.op.notifyWidthChange();
         }
-        if (docView.op.isChildHeightChange()) {
-            docView.op.resetChildHeightChange();
+    }
+    
+     void childHeightUpdated(DocumentView docView, int index, float newHeight, Rectangle2D pViewRect) {
+        double startY = startVisualOffset(index);
+        double endY = endVisualOffset(index);
+        double deltaY = newHeight - (endY - startY);
+        if (deltaY != 0d) {
             ParagraphView pView = get(index);
-            double startY = startVisualOffset(index);
-            double endY = endVisualOffset(index);
-            float newHeight = pView.getPreferredSpan(View.Y_AXIS);
-            double deltaY = newHeight - (endY - startY);
-            if (deltaY != 0d) {
-                index++; // Move to nex view
-                moveVisualGap(index, endY);
-                endY += deltaY;
-                pView.setRawEndVisualOffset(endY);
-                heightChangeUpdate(index, endY, deltaY);
-                docView.op.notifyHeightChange();
-            }
+            index++; // Move to next view
+            moveVisualGap(index, endY);
+            endY += deltaY;
+            pView.setRawEndVisualOffset(endY); // pView at index
+            heightChangeUpdate(index, endY, deltaY);
+            docView.validChange().addChangeY(pViewRect.getY(), pViewRect.getMaxY(), deltaY);
+            docView.op.notifyHeightChange();
         }
     }
     
@@ -272,78 +258,93 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         return viewIndexFirstVisual(y, size());
     }
 
-    /**
-     * Get view at given index and if that view is a box view then make sure
-     * its children are initialized.
-     *
-     * @param index
-     * @return view with its children initialized.
-     */
-    ParagraphView getParagraphViewChildrenValid(DocumentView docView, int index) {
-        ParagraphView pView = get(index);
-        if (pView.children == null) {
-            // Init the children; Do not init children before the index since it could in theory remove
-            // the pView at index completely so the caller would have to do a lot of checks again.
-            // Possibly init next 5 pViews after index since invoking ViewBuilder's has some overhead.
-            docView.op.ensureChildrenValid(index, index + 1, 0, 5);
+    boolean ensureParagraphViewChildrenValid(DocumentView docView, int pIndex, ParagraphView pView) {
+        if (!pView.isChildrenValid()) {
+            // Init the children; Do not init children before the index since rebuilding could lead
+            // to complete removal of the pView at index (and possibly some views in front of it too)
+            // so the caller would have to do a lot of checks again.
+            // Possibly init next several pViews above index since invoking of ViewBuilder has some overhead.
+            ensureParagraphsChildrenAndLayoutValid(docView, pIndex, pIndex + 1, 0 /*do-not-change*/, 5);
             // Reget the view since the rebuild could replace its instance
-            pView = get(index);
-            assert (pView.children != null);
+            pView = get(pIndex);
+            assert (pView.isChildrenValid());
+            return true;
         }
-        return pView;
+        return false;
     }
     
     public Shape modelToViewChecked(DocumentView docView, int offset, Shape docViewAlloc, Position.Bias bias) {
         int pIndex = viewIndexFirstByStartOffset(offset, 0); // Ignore bias since these are paragraph views
         Shape ret = docViewAlloc;
         if (pIndex >= 0) { // When at least one child the index will fit one of them
-            // First find valid child (can lead to change of child allocation bounds)
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            docView.op.getTextLayoutCache().activate(pView);
-            Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-            // Update the bounds with child.modelToView()
-            ret = pView.modelToViewChecked(offset, childAlloc, bias);
-            checkChildrenSpanChange(docView, pIndex);
+            ParagraphView pView = get(pIndex);
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (pView.isChildrenNull()) {
+                // Perf.optimization: if pView.children == null returns default char's width from pView's begining.
+                // It may be disabled if it causes problems but computing children
+                // requires much more processing (especially when offsets for model2view are spread across the document).
+                Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
+                pRect.width = docView.op.getDefaultCharWidth();
+                ret = pRect;
+            } else { // pView.children != null
+                if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                    pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+                }
+                docView.op.getTextLayoutCache().activate(pView);
+                // Update the bounds with child.modelToView()
+                ret = pView.modelToViewChecked(offset, pAlloc, bias);
+            }
         }
         return ret;
     }
 
     public int viewToModelChecked(DocumentView docView, double x, double y, Shape docViewAlloc, Position.Bias[] biasReturn) {
         int pIndex = viewIndexAtY(y, docViewAlloc);
-        int offset;
+        int offset = 0;
         if (pIndex >= 0) {
-            if (x > 0d) {
-                // First find valid child (can lead to change of child allocation bounds)
-                ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-                docView.op.getTextLayoutCache().activate(pView);
-                Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
-                // forward to the child view
-                offset = pView.viewToModelChecked(x, y, childAlloc, biasReturn);
-                checkChildrenSpanChange(docView, pIndex);
-            } else { // Optimization for x <= 0d to not compute children of pView
-                ParagraphView pView = get(pIndex);
-                offset = pView.getStartOffset();
+            ParagraphView pView = get(pIndex);
+            // Build the children if they are null.
+            // As perf.optimization it could return default char's width from pView's begining
+            // but clients that request measurements in not yet visible area would not get expected result:
+            // e.g. PgDn/Up would not be respecting magic caret pos etc.
+            // All these clients would be required to pre-build area in which they want to perform view-to-model.
+            if (ensureParagraphViewChildrenValid(docView, pIndex, pView)) {
+                pView = get(pIndex);
             }
-        } else { // at the end
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
+            docView.op.getTextLayoutCache().activate(pView);
+            if (x == 0d && !pView.children.isWrapped()) {
+                offset = pView.getStartOffset();
+            } else {
+                offset = pView.viewToModelChecked(x, y, pAlloc, biasReturn);
+            }
+        } else { // no pViews
             offset = docView.getStartOffset();
         }
         return offset;
     }
 
-    int getNextVisualPositionY(DocumentView docView, int offset, Bias bias, Shape alloc, boolean southDirection, Bias[] biasRet) {
-        double x = HighlightsViewUtils.getMagicX(docView, docView, offset, bias, alloc);
+    int getNextVisualPositionY(DocumentView docView, int offset, Bias bias, Shape docViewAlloc, boolean southDirection, Bias[] biasRet) {
+        double x = HighlightsViewUtils.getMagicX(docView, docView, offset, bias, docViewAlloc);
         int pIndex = docView.getViewIndex(offset, bias);
         int viewCount = size();
         int increment = southDirection ? 1 : -1;
         int retOffset = -1;
         for (; retOffset == -1 && pIndex >= 0 && pIndex < viewCount; pIndex += increment) {
             // Get paragraph view with valid children
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            Shape pAlloc = getChildAllocation(docView, pIndex, alloc);
-            if (pView.children.ensureIndexMeasured(pView, pView.getViewCount(), ViewUtils.shapeAsRect(pAlloc))) {
-                checkChildrenSpanChange(docView, pIndex);
-                pAlloc = getChildAllocation(docView, pIndex, alloc);
+            ParagraphView pView = get(pIndex);
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (ensureParagraphViewChildrenValid(docView, pIndex, pView)) {
+                pView = get(pIndex);
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             }
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
+            docView.op.getTextLayoutCache().activate(pView);
             retOffset = pView.children.getNextVisualPositionY(pView, offset, bias, pAlloc, southDirection, biasRet, x);
             if (retOffset == -1) {
                 offset = -1; // Continue by entering the paragraph from outside
@@ -352,18 +353,21 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         return retOffset;
     }
 
-    int getNextVisualPositionX(DocumentView docView, int offset, Bias bias, Shape alloc, boolean eastDirection, Bias[] biasRet) {
+    int getNextVisualPositionX(DocumentView docView, int offset, Bias bias, Shape docViewAlloc, boolean eastDirection, Bias[] biasRet) {
         int pIndex = docView.getViewIndex(offset, bias);
         int viewCount = size();
         int increment = eastDirection ? 1 : -1;
         int retOffset = -1;
         for (; retOffset == -1 && pIndex >= 0 && pIndex < viewCount; pIndex += increment) {
             // Get paragraph view with valid children
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
-            Shape pAlloc = getChildAllocation(docView, pIndex, alloc);
-            if (pView.children.ensureIndexMeasured(pView, pView.getViewCount(), ViewUtils.shapeAsRect(pAlloc))) {
-                checkChildrenSpanChange(docView, pIndex);
-                pAlloc = getChildAllocation(docView, pIndex, alloc);
+            ParagraphView pView = get(pIndex);
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (ensureParagraphViewChildrenValid(docView, pIndex, pView)) {
+                pView = get(pIndex);
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             }
             retOffset = pView.children.getNextVisualPositionX(pView, offset, bias, pAlloc, eastDirection, biasRet);
             if (retOffset == -1) {
@@ -378,12 +382,17 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         String toolTipText = null;
         if (pIndex >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
+            ParagraphView pView = get(pIndex);
+            if (pView.isChildrenNull()) { // Area likely not visible => return null; possibly change if necessary
+                return null;
+            }
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
             docView.op.getTextLayoutCache().activate(pView);
-            Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // forward to the child view
-            toolTipText = pView.getToolTipTextChecked(x, y, childAlloc);
-            checkChildrenSpanChange(docView, pIndex);
+            toolTipText = pView.getToolTipTextChecked(x, y, pAlloc);
         }
         return toolTipText;
     }
@@ -393,14 +402,138 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         JComponent toolTip = null;
         if (pIndex >= 0) {
             // First find valid child (can lead to change of child allocation bounds)
-            ParagraphView pView = getParagraphViewChildrenValid(docView, pIndex);
+            ParagraphView pView = get(pIndex);
+            if (pView.isChildrenNull()) { // Area likely not visible => return null; possibly change if necessary
+                return null;
+            }
+            Shape pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            if (pView.checkLayoutUpdate(pIndex, pAlloc)) {
+                pAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
+            }
             docView.op.getTextLayoutCache().activate(pView);
             Shape childAlloc = getChildAllocation(docView, pIndex, docViewAlloc);
             // forward to the child view
             toolTip = pView.getToolTip(x, y, childAlloc);
-            checkChildrenSpanChange(docView, pIndex);
         }
         return toolTip;
+    }
+
+    void ensureLayoutValidForInitedChildren(DocumentView docView) {
+        int pCount = size();
+        for (int pIndex = 0; pIndex < pCount; pIndex++) {
+            ParagraphView pView = get(pIndex);
+            if (!pView.isChildrenNull() && !pView.isLayoutValid()) {
+                Shape pAlloc = docView.getChildAllocation(pIndex);
+                pView.updateLayoutAndScheduleRepaint(pIndex, pAlloc);
+            }
+        }
+    }
+
+    /**
+     * Ensure that all paragraph views in the given range have their children valid (build them if necessary)
+     * and also make their layout valid.
+     *
+     * @param startIndex lower bound (can possibly be < 0)
+     * @param endIndex upper bound (can possibly be >= viewCount).
+     * @param extraStartCount extra paragraphs to initialize before startIndex in case the first paragraph
+     *  needs to be rebuilt. If the rebuild is not necessary these view are not checked. Note that extra views
+     *  at beginning may lead to significant changes (current pViews removal and replacement by new pViews
+     *  with possibly totally different bounds).
+     * @param extraEndCount number of paragraphs to initialize at the endIndex in case the last paragraph
+     *  needs to be rebuilt. If the rebuild is not necessary these view are not checked.
+     * @return true if there was any view rebuild necessary (or layout update necessary if requested)
+     *  or false if all children views in requested range were already up-to-date.
+     */
+    boolean ensureParagraphsChildrenAndLayoutValid(DocumentView docView, int startIndex, int endIndex,
+            int extraStartCount, int extraEndCount)
+    {
+        int pCount = size();
+        assert (startIndex < endIndex) : "startIndex=" + startIndex + " >= endIndex=" + endIndex; // NOI18N
+        assert (endIndex <= pCount) : "endIndex=" + endIndex + " > pCount=" + pCount; // NOI18N
+        int rStartIndex = startIndex;
+        int rEndIndex = endIndex;
+        int origEndIndex = endIndex; // For error tracing only
+        boolean updated = false;
+        TextLayoutCache tlCache = docView.op.getTextLayoutCache();
+        if (pCount > 0) {
+            // Ensure that the cache will fit all the necessary items (including possible extra ones).
+            // Normally the cache's limit should be big enough but for a stress testing this is necessary
+            // and it must be done before particular pViews inspection since changing capacity may throw
+            // some pViews out of the cache.
+            tlCache.setCapacityOrDefault(endIndex - startIndex + extraStartCount + extraEndCount);
+
+            // Find out what needs to be rebuilt
+            ParagraphView pView = get(rStartIndex);
+            if (pView.isChildrenValid()) { // First pView has valid children (will not use extraStartCount)
+                tlCache.activate(pView);
+                // Search for first which has null children
+                while (++rStartIndex < rEndIndex && (pView = get(rStartIndex)).isChildrenValid()) {
+                    tlCache.activate(pView);
+                }
+
+            } else { // pView.children == null
+                for (; rStartIndex > 0 && extraStartCount > 0; extraStartCount--) {
+                    pView = get(--rStartIndex);
+                    // Among extraStart pViews only go back until first pView with valid children is found
+                    if (pView.isChildrenValid()) {
+                        tlCache.activate(pView);
+                        rStartIndex++;
+                        break;
+                    }
+                }
+            }
+            // Here the startIndex points to first index to be built or to endIndex
+            // Go back till startIndex + 1 and search for first pView with null 
+            if (rStartIndex < rEndIndex) {
+                // There will be at least one view to rebuild
+                pView = get(rEndIndex - 1);
+                if (pView.isChildrenValid()) {
+                    tlCache.activate(pView);
+                    rEndIndex--;
+                    while (rEndIndex > rStartIndex && (pView = get(rEndIndex - 1)).isChildrenValid()) {
+                        tlCache.activate(pView);
+                        rEndIndex--;
+                    }
+
+                } else {
+                    for (;rEndIndex < pCount && extraEndCount > 0; extraEndCount--) {
+                        pView = get(rEndIndex++);
+                        if (pView.isChildrenValid()) {
+                            tlCache.activate(pView);
+                            break;
+                        }
+                    }
+                }
+
+                docView.op.initParagraphs(rStartIndex, rEndIndex);
+                updated = true;
+                // recompute endIndex since rebuilding could change number of paragraphs
+                endIndex = Math.min(endIndex, docView.getViewCount());
+            }
+
+            // Now update layout of all requested children
+            Rectangle2D docViewRect = docView.getAllocation();
+            for (int pIndex = startIndex; pIndex < endIndex; pIndex++) {
+                pView = get(pIndex);
+                if (!pView.isChildrenValid()) {
+                    StringBuilder sb = new StringBuilder(200);
+                    sb.append("Null children of pView[").append(pIndex). // NOI18N
+                            append("] from <").append(startIndex).append(",").append(endIndex). // NOI18N
+                            append("> origEndIndex=").append(origEndIndex).append(", rebuild<"). // NOI18N
+                            append(rStartIndex).append(",").append(rEndIndex). // NOI18N
+                            append(">. cache integrity: ").append(tlCache.findIntegrityError()). // NOI18N
+                            append(" docView:\n"); // NOI18N
+                    docView.appendViewInfo(sb, 4, "", pIndex);
+                    throw new IllegalStateException(sb.toString());
+                }
+                if (!pView.isLayoutValid()) {
+                    Shape pAlloc = docView.getChildAllocation(pIndex, docViewRect);
+                    pView.updateLayoutAndScheduleRepaint(pIndex, ViewUtils.shapeAsRect(pAlloc));
+                    updated = true;
+                }
+            }
+        }
+        return updated;
     }
 
     protected void paint(DocumentView docView, Graphics2D g, Shape docViewAlloc, Rectangle clipBounds) {
@@ -422,35 +555,7 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                 // Ensure valid children
                 // Possibly build extra 5 lines in each direction to speed up possible scrolling
                 // If there was any update then recompute indices since rebuilding might change vertical spans
-            } while (docView.op.ensureChildrenValid(startIndex, endIndex, 10, 10));
-
-            // Ensure that the (inited) children are all measured
-            // Text layout cache must be able to contain TLs for all painted views.
-            // Otherwise firstly processed views would start to forget their TLs because of tlCache.activate()
-            TextLayoutCache tlCache = docView.op.getTextLayoutCache();
-            tlCache.ensureCapacity(endIndex - startIndex);
-            endIndex = size(); // will likely be lowered inside the loop
-            for (int i = startIndex; i < endIndex; i++) {
-                ParagraphView pView = get(i);
-                if (pView.children == null) { // Views shrinked their vertical span during ensureIndexMeasured()
-                    // Init next batch of pViews
-                    int extraEndIndex = Math.min(i + 20, size());
-                    docView.op.ensureChildrenValid(i, extraEndIndex, 0, 0);
-                    tlCache.ensureCapacity(extraEndIndex - startIndex);
-                    endIndex = size(); // total number of pViews may change by ensureChildrenValid()
-                    pView = get(i);
-                }
-                tlCache.activate(pView);
-                Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
-                Rectangle2D childRect = ViewUtils.shapeAsRect(childAlloc);
-                if (pView.children.ensureYMeasured(pView, endY, childRect)) {
-                    checkChildrenSpanChange(docView, i);
-                }
-                if (childRect.getMaxY() >= endY) { // Recompute of children height may make painting endIndex lower
-                    endIndex = i + 1;
-                    break;
-                }
-            }
+            } while (ensureParagraphsChildrenAndLayoutValid(docView, startIndex, endIndex, 5, 5));
 
             // Paint children in <startIndex,endIndex>
             boolean logPaintTime = ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINE);
@@ -498,17 +603,20 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
                     "phEndOffset=" + phEndOffset + " != endOffset"; // NOI18N
             // Paint hilghlights will serve all the child views being painted
             viewPaintHighlights = new ViewPaintHighlights(paintHighlights);
-            // Do children painting
-            for (int i = startIndex; i < endIndex; i++) {
-                ParagraphView pView = get(i);
-                Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
-                if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
-                    ViewHierarchyImpl.PAINT_LOG.finer("    pView[" + i + "]: pAlloc=" + // NOI18N
-                            ViewUtils.toString(childAlloc) + "\n"); // NOI18N
+            try {
+                // Do children painting
+                for (int i = startIndex; i < endIndex; i++) {
+                    ParagraphView pView = get(i);
+                    Shape childAlloc = getChildAllocation(docView, i, docViewAlloc);
+                    if (ViewHierarchyImpl.PAINT_LOG.isLoggable(Level.FINER)) {
+                        ViewHierarchyImpl.PAINT_LOG.finer("    pView[" + i + "]: pAlloc=" + // NOI18N
+                                ViewUtils.toString(childAlloc) + "\n"); // NOI18N
+                    }
+                    pView.paint(g, childAlloc, clipBounds);
                 }
-                pView.paint(g, childAlloc, clipBounds);
-            }
-            viewPaintHighlights = null;
+            } finally {
+                viewPaintHighlights = null;
+            }                
             if (logPaintTime) {
                 nanoTime = System.nanoTime() - nanoTime;
                 ViewHierarchyImpl.PAINT_LOG.fine("Painted " + (endIndex-startIndex) + // NOI18N
@@ -519,18 +627,35 @@ public class DocumentViewChildren extends ViewChildren<ParagraphView> {
         }
     }
     
+    /**
+     * Get paint highlights for the given child view.
+     *
+     * @param view child view for which the highlights are obtained.
+     * @param shift shift inside the view where the returned highlights should start.
+     * @return highlights sequence containing the merged highlights of the view and painting highlights.
+     */
     ViewPaintHighlights getPaintHighlights(EditorView view, int shift) {
         assert (viewPaintHighlights != null) : "ViewPaintHighlights is null. Not in paint()?"; // NOI18N
         viewPaintHighlights.reset(view, shift);
         return viewPaintHighlights;
     }
 
-    void recomputeChildrenWidths() {
+    void markChildrenLayoutInvalid() {
         int viewCount = size();
         for (int i = 0; i < viewCount; i++) {
             ParagraphView pView = get(i);
-            pView.resetWidth();
+            pView.markLayoutInvalid();
         }
+    }
+
+    @Override
+    protected String checkSpanIntegrity(double span, ParagraphView view) {
+        String err = null;
+        float prefSpan = view.getHeight();
+        if (span != prefSpan) {
+            err = "PVChildren: span=" + span + " != prefSpan=" + prefSpan; // NOI18N
+        }
+        return err;
     }
 
     public StringBuilder appendChildrenInfo(DocumentView docView, StringBuilder sb, int indent, int importantIndex) {

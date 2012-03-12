@@ -48,6 +48,7 @@ import java.awt.AWTEvent;
 import java.awt.Toolkit;
 import java.lang.reflect.*;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Utilities;
 
 /** Module installer that installs an com.apple.eawt.ApplicationListener on
  * the com.apple.eawt.Application object for this session, which will interpret
@@ -62,7 +63,7 @@ public class Install extends ModuleInstall {
     public void restored () {
         listener = new CtrlClickHack();
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.FOCUS_EVENT_MASK);
-        if (System.getProperty("mrj.version") != null) { // NOI18N
+        if (Utilities.isMac() ) { // NOI18N
 //            FontReferenceQueue.install();
             try {
                 Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");

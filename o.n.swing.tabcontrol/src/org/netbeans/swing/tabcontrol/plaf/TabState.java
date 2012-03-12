@@ -203,12 +203,18 @@ public abstract class TabState {
      * less one
      */
     public static final int BEFORE_ARMED = 32768;
-    
+
+    /**
+     * Indicates the given tab is 'busy', i.e. the editor is still loading its data
+     * or there's some lengthy process running in that tab.
+     * @since 1.34
+     */
+    public static final int BUSY = 2*32768;
     /**
      * Indicates the last constant defined - renderers that wish to add their
      * own bitmasks should use multiples of this number
      */
-    public static int STATE_LAST = MOUSE_PRESSED_IN_CLOSE_BUTTON;
+    public static int STATE_LAST = BUSY;
 
 
     private int pressedIndex = -1;

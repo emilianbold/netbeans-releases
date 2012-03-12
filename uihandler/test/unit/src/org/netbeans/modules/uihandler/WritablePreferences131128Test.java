@@ -49,9 +49,10 @@ import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JDialog;
-import junit.framework.TestCase;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,7 +66,11 @@ import org.openide.util.NbPreferences;
  * 
  * @author Jiri Skrivanek
  */
-public class WritablePreferences131128Test extends TestCase {
+public class WritablePreferences131128Test extends NbTestCase {
+
+    public WritablePreferences131128Test(String name) {
+        super(name);
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -75,6 +80,7 @@ public class WritablePreferences131128Test extends TestCase {
         new TopLogging();
     }
 
+    @RandomlyFails // NB-Core-Build #7956
     public void testPreferencies() throws Exception {
         UIHandler.registerExceptionHandler(true);
         Installer o = Installer.findObject(Installer.class, true);

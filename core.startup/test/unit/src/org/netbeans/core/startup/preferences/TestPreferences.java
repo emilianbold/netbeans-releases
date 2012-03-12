@@ -44,6 +44,7 @@
 
 package org.netbeans.core.startup.preferences;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
@@ -51,6 +52,8 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.junit.Ignore;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -450,7 +453,37 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         assertEquals("value", pref.get("key", null));
         pref.sync();
         assertEquals("value", pref.get("key", null));
-    }    
+    }  
+    
+    public void testUnsavedChangesDropped () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        FileObject fo = ((PropertiesStorage) pref.fileStorage).toPropertiesFile(true);
+        InputStream is = fo.getInputStream();
+        // first change made to prefs
+        pref.put("KEY1", "VALUE1");
+        // wait until the async task persisting the props starts
+        Thread.sleep(300);
+        // now let the async task finish it's job
+        is.close();
+        // make the second change before the map in memory is nulled
+        pref.put("KEY2", "VALUE2");
+        // wait for the finilizing stage of the async task - property map should be nulled
+        Thread.sleep(300);
+        // now time for tests, first value should be OK
+        assertEquals("VALUE1", pref.get("KEY1", null));
+        // but where's the second value?? it nulled
+        assertEquals("VALUE2", pref.get("KEY2", null));
+    }
+    
+    public void testRemoveNode () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        pref.put("key", "value");
+        assertEquals("value", pref.get("key", null));
+        pref.removeNode();
+        assertNotNull(pref);
+        pref.put("key1", "value1");
+    }
     
     @Override
     protected int timeOut() {

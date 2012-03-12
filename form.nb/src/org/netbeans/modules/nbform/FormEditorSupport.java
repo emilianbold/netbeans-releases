@@ -92,9 +92,12 @@ import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -1271,6 +1274,18 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         return null; // nothing else than FileObject is needed in NB
     }
 
+    @Override
+    public int getCodeIndentSize() {
+        CodeStyle cs = CodeStyle.getDefault(getFormDataObject().getPrimaryFile());
+        return cs != null ? cs.getIndentSize() : 4;
+    }
+
+    @Override
+    public boolean getCodeBraceOnNewLine() {
+        CodeStyle cs = CodeStyle.getDefault(getFormDataObject().getPrimaryFile());
+        return cs != null ? cs.getMethodDeclBracePlacement() != CodeStyle.BracePlacement.SAME_LINE : false;
+    }
+
     public SimpleSection getVariablesSection() {
         return getGuardedSectionManager().findSimpleSection(SECTION_VARIABLES);
     }
@@ -1309,6 +1324,20 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
         } catch (IOException ex) {
             throw new IllegalStateException("cannot open document", ex); // NOI18N
         }
+    }
+
+    @Override
+    public boolean canGenerateNBMnemonicsCode() {
+        FileObject srcFile = getFormDataObject().getPrimaryFile();
+        return isNBMProject(srcFile)
+            || ClassPathUtils.checkUserClass("org.openide.awt.Mnemonics", srcFile); // NOI18N
+    }
+
+    private static boolean isNBMProject(FileObject srcFile) {
+        // hack: checking project impl. class name, is there a better way?
+        Project p = FileOwnerQuery.getOwner(srcFile);
+        return p != null && p.getClass().getName().startsWith("org.netbeans.modules.apisupport.") // NOI18N
+               && p.getClass().getName().endsWith("Project"); // NOI18N
     }
 
     private final class FormGEditor implements GuardedEditorSupport {

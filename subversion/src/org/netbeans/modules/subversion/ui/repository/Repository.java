@@ -371,7 +371,6 @@ public class Repository implements ActionListener, DocumentListener, ItemListene
         }
         
         setValid(valid, message);
-        currentPanel.setEnabled(valid);
         repositoryPanel.removeButton.setEnabled(rc != null && rc.getUrl().length() > 0);
     }
     

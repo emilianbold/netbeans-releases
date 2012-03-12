@@ -101,6 +101,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
@@ -118,7 +119,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                         ret.add(gen);
                 }
             } catch (IOException ioe) {
-                ioe.printStackTrace();
+                Exceptions.printStackTrace(ioe);
             }
             return ret;
         }
@@ -140,6 +141,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         this.beanClass = beanClass;
     }
 
+    @Override
     public void invoke() {
        try {           
             final Project enterpriseProject = FileOwnerQuery.getOwner(srcFile);
@@ -152,7 +154,6 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     provider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations(),
-                    SendJMSMessageUiSupport.getMdbs(),
                     erc.getServiceLocatorName(),
                     ClasspathInfo.create(srcFile));
             final DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -164,15 +165,24 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
                     DialogDescriptor.DEFAULT_ALIGN,
                     new HelpCtx(SendJMSMessageCodeGenerator.class),
                     null);
-            NotificationLineSupport statusLine = dialogDescriptor.createNotificationLineSupport();
-            sendJmsMessagePanel.setNotificationLine(statusLine);
+            final NotificationLineSupport notificationSupport = dialogDescriptor.createNotificationLineSupport();
             
-            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID,
-                    new PropertyChangeListener() {
+            sendJmsMessagePanel.addPropertyChangeListener(SendJmsMessagePanel.IS_VALID, new PropertyChangeListener() {
+                        @Override
                         public void propertyChange(PropertyChangeEvent evt) {
                             Object newvalue = evt.getNewValue();
                             if ((newvalue != null) && (newvalue instanceof Boolean)) {
-                                dialogDescriptor.setValid(((Boolean)newvalue).booleanValue());
+                                boolean isValid = ((Boolean) newvalue).booleanValue();
+                                dialogDescriptor.setValid(isValid);
+                                if (isValid) {
+                                    if (sendJmsMessagePanel.getWarningMessage() == null) {
+                                        notificationSupport.clearMessages();
+                                    } else {
+                                        notificationSupport.setWarningMessage(sendJmsMessagePanel.getWarningMessage());
+                                    }
+                                } else {
+                                    notificationSupport.setErrorMessage(sendJmsMessagePanel.getErrorMessage());
+                                }
                             }
                         }
                     });
@@ -201,6 +211,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
             //http://www.netbeans.org/issues/show_bug.cgi?id=164834
             //http://www.netbeans.org/nonav/issues/showattachment.cgi/82529/error.log
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
                     try {
                         generator.genMethods(erc, beanClass.getQualifiedName().toString(), sendJmsMessagePanel.getConnectionFactory(), srcFile, serviceLocatorStrategy, enterpriseProject.getLookup().lookup(J2eeModuleProvider.class));
@@ -259,6 +270,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         return false;
     }
     
+    @Override
     public String getDisplayName() {
         return NbBundle.getMessage(SendJMSMessageCodeGenerator.class, "LBL_SendJMSMessageAction");
     }

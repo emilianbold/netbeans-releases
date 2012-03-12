@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.Issue;
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
- * Container for a recently opened Issue and it's last open time
+ * Container for a recently opened IssueProvider and it's last open time
  *
  * @author Tomas Stupka
  */

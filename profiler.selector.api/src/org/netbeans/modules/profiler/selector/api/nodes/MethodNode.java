@@ -52,6 +52,7 @@ import org.netbeans.modules.profiler.api.icons.Icons;
 import org.netbeans.modules.profiler.api.icons.LanguageIcons;
 import org.netbeans.modules.profiler.api.java.SourceMethodInfo;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -73,7 +74,7 @@ public class MethodNode extends SelectorNode {
 
     /** Creates a new instance of MethodNode */
     public MethodNode(SourceMethodInfo method, MethodsNode parent) {
-        super(method != null ? method.getName() : Bundle.LBL_Unknown(), method != null ? method.getName() : Bundle.LBL_Unknown(), null, SelectorChildren.LEAF, parent); // NOI18N
+        super(method != null ? method.getName() : Bundle.LBL_Unknown(), method != null ? method.getName() : Bundle.LBL_Unknown(), null, SelectorChildren.LEAF, parent, Lookups.singleton(method)); // NOI18N
         
         this.method = method;
 
@@ -133,5 +134,9 @@ public class MethodNode extends SelectorNode {
     @Override
     final public SourceCodeSelection getSignature() {
         return signature;
+    }
+    
+    final public SourceMethodInfo getMethodInfo() {
+        return method;
     }
 }

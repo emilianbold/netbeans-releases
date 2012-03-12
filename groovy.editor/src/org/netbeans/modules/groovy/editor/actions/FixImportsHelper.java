@@ -41,31 +41,31 @@
  */
 package org.netbeans.modules.groovy.editor.actions;
 
-import java.util.MissingResourceException;
-import javax.swing.text.BadLocationException;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.logging.Level;
-import org.openide.filesystems.FileObject;
-import java.util.List;
-import org.netbeans.api.java.source.ClasspathInfo;
-import java.util.ArrayList;
-import org.netbeans.api.java.source.ClassIndex;
-import org.netbeans.api.java.source.ClassIndex.NameKind;
-import java.util.Set;
-import java.util.EnumSet;
+import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClassIndex;
+import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
-import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -73,57 +73,14 @@ import org.netbeans.modules.groovy.editor.api.NbUtilities;
  */
 public class FixImportsHelper {
 
-    private final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
+    private static final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
 
-    public static class ImportCandidate {
-
-        String name;
-        String fqnName;
-        Icon icon;
-        int importantsLevel;
-
-        public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
-            this.name = name;
-            this.fqnName = fqnName;
-            this.icon = icon;
-            this.importantsLevel = importantsLevel;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String Name) {
-            this.name = Name;
-        }
-
-        public String getFqnName() {
-            return fqnName;
-        }
-
-        public void setFqnName(String fqnName) {
-            this.fqnName = fqnName;
-        }
-
-        public Icon getIcon() {
-            return icon;
-        }
-
-        public void setIcon(Icon icon) {
-            this.icon = icon;
-        }
-
-        public int getImportantsLevel() {
-            return importantsLevel;
-        }
-
-        public void setImportantsLevel(int importantsLevel) {
-            this.importantsLevel = importantsLevel;
-        }
+    
+    private FixImportsHelper() {
     }
 
-    public List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
-        LOG.log(Level.FINEST, "Looking for class: " + missingClass);
+    public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
+        LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
         
@@ -134,6 +91,28 @@ public class FixImportsHelper {
             return result;
         }
 
+        if (fo != null) {
+            GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                    Collections.singleton(ClassPath.SOURCE),
+                    Collections.<String>emptyList(),
+                    Collections.<String>emptyList()));
+            if (index != null) {
+                Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
+                for (IndexedClass indexedClass : classes) {
+                    if (!indexedClass.getName().equals(missingClass)) {
+                        continue;
+                    }
+
+                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
+                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.CLASS, result);
+                    }
+                    if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.INTERFACE) {
+                        addAsImportCandidate(missingClass, indexedClass.getFqn(), ElementKind.INTERFACE, result);
+                    }
+                }
+            }
+        }
+
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
                 missingClass, NameKind.SIMPLE_NAME, EnumSet.allOf(ClassIndex.SearchScope.class));
 
@@ -141,35 +120,29 @@ public class FixImportsHelper {
             ElementKind ek = typeName.getKind();
 
             if (ek == ElementKind.CLASS || ek == ElementKind.INTERFACE) {
-                String fqnName = typeName.getQualifiedName();
-                LOG.log(Level.FINEST, "Found     : " + fqnName);
-
-                Icon icon = ElementIcons.getElementIcon(ek, null);
-                int level = getImportanceLevel(fqnName);
-
-                ImportCandidate candidate = new ImportCandidate(missingClass, fqnName, icon, level);
-                result.add(candidate);
+                addAsImportCandidate(missingClass, typeName.getQualifiedName(), ek, result);
             }
-
         }
 
         return result;
+    }
 
+    private static void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
+        int level = getImportanceLevel(fqnName);
+        Icon icon = ElementIcons.getElementIcon(kind, null);
+        
+        result.add(new ImportCandidate(missingClass, fqnName, icon, level));
     }
 
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
-        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
-        {
+        if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) { // NOI18N
             weight -= 10;
-        } else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) // NOI18N
-        {
+        } else if (fqn.startsWith("org.omg") || fqn.startsWith("org.apache")) { // NOI18N
             weight += 10;
-        } else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) // NOI18N
-        {
+        } else if (fqn.startsWith("com.sun") || fqn.startsWith("com.ibm") || fqn.startsWith("com.apple")) { // NOI18N
             weight += 20;
-        } else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
-        {
+        } else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) { // NOI18N
             weight += 30;
         }
         return weight;
@@ -192,10 +165,8 @@ public class FixImportsHelper {
         return missingClass;
     }
 
-    int getImportPosition(BaseDocument doc) {
+    private static int getImportPosition(BaseDocument doc) {
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
-
-        // LOG.setLevel(Level.FINEST);
 
         int importEnd = -1;
         int packageOffset = -1;
@@ -257,25 +228,27 @@ public class FixImportsHelper {
         }
 
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
-
     }
 
-    public void doImport(FileObject fo, String fqnName) throws MissingResourceException {
-        int firstFreePosition = 0;
+    public static void doImport(FileObject fo, String fqnName) throws MissingResourceException {
+        doImports(fo, Collections.singletonList(fqnName));
+    }
+
+    public static void doImports(FileObject fo, List<String> fqnNames) throws MissingResourceException {
         BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-
-        firstFreePosition = getImportPosition(baseDoc);
-
-        if (firstFreePosition != -1) {
-            if (baseDoc == null) {
-                return;
-            }
-
-            EditList edits = new EditList(baseDoc);
-            LOG.log(Level.FINEST, "Importing here: " + firstFreePosition);
-
-            edits.replace(firstFreePosition, 0, "import " + fqnName + "\n", false, 0);
-            edits.apply();
+        if (baseDoc == null) {
+            return;
         }
+
+        EditList edits = new EditList(baseDoc);
+
+        for (String fqnName : fqnNames) {
+            int importPosition = getImportPosition(baseDoc);
+            if (importPosition != -1) {
+                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
+                edits.replace(importPosition, 0, "import " + fqnName + "\n", false, 0);
+            }
+        }
+        edits.apply();
     }
 }

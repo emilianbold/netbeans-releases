@@ -60,16 +60,17 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.ArithmeticUtilities;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPatterns;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.TriggerPatterns;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -78,21 +79,21 @@ import org.openide.util.NbBundle;
  */
 public class Tiny {
 
-    @Hint(category="bugs", suppressWarnings="ReplaceAllDot")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.stringReplaceAllDot", category="bugs", suppressWarnings="ReplaceAllDot")
     @TriggerPattern(value="$str.replaceAll(\".\", $to)",
-                    constraints=@Constraint(variable="$str", type="java.lang.String"))
+                    constraints=@ConstraintVariableType(variable="$str", type="java.lang.String"))
     public static ErrorDescription stringReplaceAllDot(HintContext ctx) {
         Tree constant = ((MethodInvocationTree) ctx.getPath().getLeaf()).getArguments().get(0);
         TreePath constantTP = new TreePath(ctx.getPath(), constant);
 
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_string-replace-all-dot");
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, constantTP, "\"\\\\.\"");
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, constantTP, "\"\\\\.\"");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_string-replace-all-dot");
 
         return ErrorDescriptionFactory.forTree(ctx, constant, displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.newObject", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.newObject", category="bugs", suppressWarnings="ResultOfObjectAllocationIgnored", options=Options.QUERY)
     //TODO: anonymous innerclasses?
     @TriggerPatterns({
         @TriggerPattern(value="new $type($params$);"),
@@ -104,7 +105,7 @@ public class Tiny {
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName);
     }
 
-    @Hint(category="bugs", suppressWarnings="SuspiciousSystemArraycopy", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.systemArrayCopy", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.systemArrayCopy", category="bugs", suppressWarnings="SuspiciousSystemArraycopy", options=Options.QUERY)
     @TriggerPattern(value="java.lang.System.arraycopy($src, $srcPos, $dest, $destPos, $length)")
     public static List<ErrorDescription> systemArrayCopy(HintContext ctx) {
         List<ErrorDescription> result = new LinkedList<ErrorDescription>();
@@ -137,21 +138,21 @@ public class Tiny {
     }
 
 
-    @Hint(category="bugs", suppressWarnings="ObjectEqualsNull")
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.equalsNull", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.equalsNull", category="bugs", suppressWarnings="ObjectEqualsNull")
     @TriggerPattern(value="$obj.equals(null)")
     public static ErrorDescription equalsNull(HintContext ctx) {
         String fixDisplayName = NbBundle.getMessage(Tiny.class, "FIX_equalsNull");
-        Fix fix = JavaFix.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$obj == null");
+        Fix fix = JavaFixUtilities.rewriteFix(ctx, fixDisplayName, ctx.getPath(), "$obj == null");
         String displayName = NbBundle.getMessage(Tiny.class, "ERR_equalsNull");
 
         return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), displayName, fix);
     }
 
-    @Hint(category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet", options=Options.QUERY)
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.Tiny.resultSet", description = "#DESC_org.netbeans.modules.java.hints.bugs.Tiny.resultSet", category="bugs", suppressWarnings="UseOfIndexZeroInJDBCResultSet", options=Options.QUERY)
     @TriggerPattern(value="$set.$method($columnIndex, $other$)",
                     constraints={
-                        @Constraint(variable="$set", type="java.sql.ResultSet"),
-                        @Constraint(variable="$columnIndex", type="int")
+                        @ConstraintVariableType(variable="$set", type="java.sql.ResultSet"),
+                        @ConstraintVariableType(variable="$columnIndex", type="int")
                     })
     public static ErrorDescription resultSet(HintContext ctx) {
         TypeElement resultSet = ctx.getInfo().getElements().getTypeElement("java.sql.ResultSet");

@@ -19,6 +19,7 @@ apisupport.harness,\
 apisupport.osgidemo,\
 apisupport.paintapp,\
 apisupport.project,\
+apisupport.refactoring,\
 apisupport.wizards,\
 autoupdate.services,\
 autoupdate.ui,\
@@ -59,6 +60,7 @@ maven.junit,\
 maven.model,\
 maven.osgi,\
 nbjunit,\
+netbinox,\
 o.apache.tools.ant.module,\
 o.n.bootstrap,\
 o.n.core,\

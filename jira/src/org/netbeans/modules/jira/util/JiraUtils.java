@@ -61,8 +61,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.jira.Jira;
+import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraCommand;
+import org.netbeans.modules.jira.issue.NbJiraIssue;
+import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -348,4 +354,32 @@ public class JiraUtils {
         return null;
     }
 
+    public static Repository getRepository(JiraRepository jiraRepository) {
+        Repository repository = Jira.getInstance().getBugtrackingFactory().getRepository(JiraConnector.ID, jiraRepository.getID());
+        if(repository == null) {
+            repository = Jira.getInstance().getBugtrackingFactory().createRepository(
+                    jiraRepository, 
+                    Jira.getInstance().getRepositoryProvider(),
+                    Jira.getInstance().getQueryProvider(), 
+                    Jira.getInstance().getIssueProvider());
+        }
+        return repository;
+    }
+    
+    public static Issue getIssue(NbJiraIssue jiraIssue) {
+        return Jira.getInstance().getBugtrackingFactory().getIssue(getRepository(jiraIssue.getRepository()), jiraIssue);
+    }
+
+    public static void openIssue(NbJiraIssue jiraIssue) {
+        Issue issue = Jira.getInstance().getBugtrackingFactory().getIssue(getRepository(jiraIssue.getRepository()), jiraIssue);
+        issue.open();
+    }
+    
+    public static Query getQuery(JiraQuery jiraQuery) {
+        return Jira.getInstance().getBugtrackingFactory().getQuery(getRepository(jiraQuery.getRepository()), jiraQuery);
+    }
+
+    public static void openQuery(JiraQuery jiraQuery) {
+        getQuery(jiraQuery).open(false);
+    }    
 }

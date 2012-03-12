@@ -593,7 +593,7 @@ implements CloneableEditorSupport.Env {
         assertEquals ("Content is new", "Newcontent", doc.getText (0, newLen));
 
         // getUndoRedo().discardAllEdits(); in CES around line 1848 uses doc.runAtomic() => may call notifyModify()
-        int expectedCount = supportsModificationListener() ? 2 : 1;
+        int expectedCount = 1;
         assertEquals ("Modified", expectedCount, support.notifyModified);
         assertEquals ("Unmodified", expectedCount, support.notifyUnmodified);
     }

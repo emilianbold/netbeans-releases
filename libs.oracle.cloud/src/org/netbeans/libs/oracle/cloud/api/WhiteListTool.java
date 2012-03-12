@@ -74,10 +74,9 @@ public class WhiteListTool {
     }
     
     public static boolean execute(File file, String displayName) {
-        File jarFo = InstalledFileLocator.getDefault().locate(
-                "modules/ext/whitelist.jar", "org.netbeans.libs.oracle.cloud", false); // NOI18N
-        if (jarFo == null) {
-            LOGGER.log(Level.WARNING, "Could not invoke whitelist tool");
+        File jarFo = new File(CloudSDKHelper.getSDKFolder(), "lib/whitelist.jar");
+        if (!jarFo.exists()) {
+            LOGGER.log(Level.WARNING, "Could not invoke whitelist tool. It does not exist at: "+jarFo.getAbsolutePath());
             return true;
         }
 

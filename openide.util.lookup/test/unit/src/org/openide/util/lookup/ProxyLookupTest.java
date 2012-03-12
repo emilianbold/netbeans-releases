@@ -274,6 +274,52 @@ implements AbstractLookupBaseHid.Impl {
         doProxyLookupTemplateCaching(lookups, true);
     }
     
+    public void testIterativeIterator() {
+        InstanceContent ic = new InstanceContent();
+        AbstractLookup l1 = new AbstractLookup(ic);
+        
+        class AL extends AbstractLookup {
+            @Override
+            protected void beforeLookup(Template<?> template) {
+                fail("Don't call me! Called for: " + template.getType());
+            }
+        }
+        AL l2 = new AL();
+        
+        ProxyLookup pl = new ProxyLookup(l1, l2);
+        
+        ic.add(Integer.valueOf(10));
+        
+        for (Integer i : pl.lookupAll(Integer.class)) {
+            assertEquals(Integer.valueOf(10), i);
+            break;
+        }
+    }
+    
+    public void testConfuseIterativeIterator() {
+        InstanceContent ic1 = new InstanceContent();
+        AbstractLookup l1 = new AbstractLookup(ic1);
+        InstanceContent ic2 = new InstanceContent();
+        AbstractLookup l2 = new AbstractLookup(ic2);
+        InstanceContent ic3 = new InstanceContent();
+        AbstractLookup l3 = new AbstractLookup(ic3);
+        
+        ProxyLookup pl = new ProxyLookup(l1, l2, l3);
+        Result<Number> res = pl.lookupResult(Number.class);
+        
+        ic1.add(1);
+        ic2.add(2f);
+        ic3.add(3d);
+        
+        int cnt = 0;
+        for (Number n : res.allInstances()) {
+            cnt += n.intValue();
+        }
+        assertEquals("Six", 6, cnt);
+        final Collection<? extends Number> all = res.allInstances();
+        assertEquals("Three numbers: " + all, 3, all.size());
+    }
+    
     /** Index 0 of lookups will be modified, the rest is up to the 
      * setup code.
      */

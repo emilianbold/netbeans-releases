@@ -94,246 +94,197 @@ public class OccurrencesFinderImplTest extends TestBase {
     }
 
     public void testGotoConstructTest() throws Exception {
-//testfiles/markoccurences/testGotoConstructTest/testGotoConstructTest.php
         checkOccurrences(getTestPath(), "$a = new MyCla^ssConstr(", true);
     }
 
     public void testGotoConstructTest_2() throws Exception {
-//testfiles/markoccurences/testGotoConstructTest/testGotoConstructTest.php
         checkOccurrences(getTestPath(), "$b = new MyClass^Constr2(", true);
     }
 
     public void testParamVarPropInPhpDocTest() throws Exception {
-//testfiles/markoccurences/testParamVarPropInPhpDocTest/testParamVarPropInPhpDocTest.php
         checkOccurrences(getTestPath(), "* @param Book $he^llo", true);
     }
 
     public void testMarkReturnsOnConstructorTest() throws Exception {
-//testfiles/markoccurences/testMarkReturnsOnConstructorTest/testMarkReturnsOnConstructorTest.php
         checkOccurrences(getTestPath(), "funct^ion __construct() {}//Auth", true);
     }
 
     public void testMarkReturnsOnConstructorTest_2() throws Exception {
-//testfiles/markoccurences/testMarkReturnsOnConstructorTest/testMarkReturnsOnConstructorTest.php
         checkOccurrences(getTestPath(), "funct^ion __construct() {}//Bo", true);
     }
 
     public void testClsVarPropInPhpDocTest() throws Exception {
-//testfiles/markoccurences/testClsVarPropInPhpDocTest/testClsVarPropInPhpDocTest.php
         checkOccurrences(getTestPath(), "* @return Aut^hor", true);
     }
 
     public void testIfaceTest() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "class mycls implements my^face", true);
     }
 
     public void testIfaceTest_2() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "const REC^OVER_ORIG = ", true);
     }
 
     public void testIfaceTest_3() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "class my^cls implements myface", true);
     }
 
     public void testIfaceTest_4() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "const RECOV^ER_ORIG = ", true);
     }
 
     public void testMarkClsIface() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDecla^ration implements ifaceDeclaration ", true);
     }
 
     public void testMarkClsIface_2() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration3 extends clsDec^laration ", true);
     }
 
     public void testMarkClsIface_3() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDec^laration ", true);
     }
 
     public void testMarkClsIface_4() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDeclaration2 extends ifaceDecl^aration  ", true);
     }
 
     public void testMarkClsIface_5() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration implements ifaceDeclara^tion ", true);
     }
 
     public void testMarkClsIface_6() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration2 implements ifaceDecla^ration, ifaceDeclaration2 ", true);
     }
 
     public void testMarkClsIface_7() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDecl^aration2 extends ifaceDeclaration  ", true);
     }
 
     public void testMarkClsIface_8() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration2 implements ifaceDeclaration, ifaceDecl^aration2 ", true);
     }
 
     public void testMarkClsIface_9() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$ifaceDec^laration = ", true);
     }
 
     public void testMarkClsIface_10() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$ifaceDeclarati^on2 = ", true);
     }
 
     public void testMarkClsIface_11() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$iface^Declaration4 = ", true);
     }
 
     public void testMarkClsIface_12() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration  = ", true);
     }
 
     public void testMarkClsIface_13() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration2 = ", true);
     }
 
     public void testMarkClsIface_14() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration4 = ", true);
     }
 
     public void testMarkClsIface_15() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDeclar^ation3 = ", true);
     }
 
     public void testMarkClsIface_16() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration()", true);
     }
 
     public void testMarkClsIface_17() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration2() ", true);
     }
 
     public void testMarkClsIface_18() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration4() ", true);
     }
 
     public void testMarkClsIface_19() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration() ", true);
     }
 
     public void testMarkClsIface_20() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration2() ", true);
     }
 
     public void testMarkClsIface_21() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration3() ", true);
     }
 
     public void testMarkClsIface_22() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration4() ", true);
     }
 
     public void testMarkArray() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "private static $stat^ic_array = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_2() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= self::$st^atic_array[$instance_array[$idx]", true);
     }
 
     public void testMarkArray_3() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "private $fi^eld_array = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_4() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= $this->fiel^d_array[$instance_array[$idx]", true);
     }
 
     public void testMarkArray_5() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_a^rray = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_6() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= self::$static_array[$instanc^e_array[$idx]", true);
     }
 
     public void testMarkArray_7() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx = ", true);
     }
 
     public void testMarkArray_8() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array[$i^dx", true);
     }
 
     public void testMarkArray_9() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx2 = ", true);
     }
 
     public void testMarkArray_10() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array2[$id^x2", true);
     }
 
     public void testMarkArray_11() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx3 = ", true);
     }
 
     public void testMarkArray_12() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array3[$id^x3", true);
     }
 
     public void testMarkArray_13() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array2 = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_14() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array2[$idx2", true);
     }
 
     public void testMarkArray_15() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array3 = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testVardoc166660() throws Exception {
-        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $testClass Test^Class", true);
     }
     public void testVardoc166660_1() throws Exception {
-        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
     }
 
@@ -485,27 +436,381 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "$static_clas^sname::$static_property;", true);
     }
 
-    //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
-    // and maybe fixed (NOT URGENT)
-    //caused by got to declaration, mark occurences rewrite
-    /*public void testOccurrences5() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "$^name^ = \"test\";\n" +
-                               "function foo() {\n" +
-                               "    echo $GLOBALS['^na|me^'];\n" +
-                               "}\n" +
-                               "?>");
+    public void testStaticMethodCall() throws Exception {
+        checkOccurrences(getTestPath(), "Presenter::staticFun^ctionName($param);", true);
     }
 
-    public void test132230() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "function a() {\n" +
-                               "    global $^f^;\n" +
-                               "    $^|f^['s']();\n" +
-                               "}\n" +
-                               "?>",
-                               true);
-    }*/
+    public void testIssue209187_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue209187_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue209187_03() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
+    public void testIssue208826_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Mo^del {}", true);
+    }
+
+    public void testIssue208826_02() throws Exception {
+        checkOccurrences(getTestPath(), "* @var \\Mo^del", true);
+    }
+
+    public void testIssue208826_03() throws Exception {
+        checkOccurrences(getTestPath(), "* @return \\Mo^del", true);
+    }
+
+    public void testIssue208826_04() throws Exception {
+        checkOccurrences(getTestPath(), "class B^ag {}", true);
+    }
+
+    public void testIssue208826_05() throws Exception {
+        checkOccurrences(getTestPath(), "* @param B\\B^ag $param", true);
+    }
+
+    public void testIssue208826_06() throws Exception {
+        checkOccurrences(getTestPath(), "function functionName1(B\\B^ag $param) {", true);
+    }
+
+    public void testIssue200596_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Class^Name {", true);
+    }
+
+    public void testIssue200596_02() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {", true);
+    }
+
+    public void testIssue200596_03() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as O^mg;", true);
+    }
+
+    public void testIssue200596_04() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue200596_05() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as C^ls;", true);
+    }
+
+    public void testIssue200596_06() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Class^Name;", true);
+    }
+
+    public void testIssue200596_07() throws Exception {
+        checkOccurrences(getTestPath(), "(new O^mg\\AliasedClassName())->bar();", true);
+    }
+
+    public void testIssue200596_08() throws Exception {
+        checkOccurrences(getTestPath(), "(new Omg\\Aliased^ClassName())->bar();", true);
+    }
+
+    public void testIssue200596_09() throws Exception {
+        checkOccurrences(getTestPath(), "(new C^ls())->bar();", true);
+    }
+
+    public void testIssue200596_10() throws Exception {
+        checkOccurrences(getTestPath(), "(new Class^Name())->bar();", true);
+    }
+
+    public void testIssue200596_11() throws Exception {
+        checkOccurrences(getTestPath(), "new O^mg\\AliasedClassName();", true);
+    }
+
+    public void testIssue200596_12() throws Exception {
+        checkOccurrences(getTestPath(), "new Omg\\Aliased^ClassName();", true);
+    }
+
+    public void testIssue200596_13() throws Exception {
+        checkOccurrences(getTestPath(), "new C^ls();", true);
+    }
+
+    public void testIssue200596_14() throws Exception {
+        checkOccurrences(getTestPath(), "new Class^Name();", true);
+    }
+
+    public void testIssue200596_15() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::foo();", true);
+    }
+
+    public void testIssue200596_16() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::foo();", true);
+    }
+
+    public void testIssue200596_17() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::foo();", true);
+    }
+
+    public void testIssue200596_18() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::bar();", true);
+    }
+
+    public void testIssue200596_19() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::FOO;", true);
+    }
+
+    public void testIssue200596_20() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::FOO;", true);
+    }
+
+    public void testIssue200596_21() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::FOO;", true);
+    }
+
+    public void testIssue200596_22() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::BAR;", true);
+    }
+
+    public void testIssue200596_23() throws Exception {
+        checkOccurrences(getTestPath(), "O^mg\\AliasedClassName::$foo;", true);
+    }
+
+    public void testIssue200596_24() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\Aliased^ClassName::$foo;", true);
+    }
+
+    public void testIssue200596_25() throws Exception {
+        checkOccurrences(getTestPath(), "C^ls::$foo;", true);
+    }
+
+    public void testIssue200596_26() throws Exception {
+        checkOccurrences(getTestPath(), "Class^Name::$bar;", true);
+    }
+
+    public void testIssue200596_27() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof O^mg\\AliasedClassName) {}", true);
+    }
+
+    public void testIssue200596_28() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof Omg\\Aliased^ClassName) {}", true);
+    }
+
+    public void testIssue200596_29() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof C^ls) {}", true);
+    }
+
+    public void testIssue200596_30() throws Exception {
+        checkOccurrences(getTestPath(), "if ($x instanceof Class^Name) {}", true);
+    }
+
+    public void testFieldAccessInInstanceOf_01() throws Exception {
+        checkOccurrences(getTestPath(), "if ($a instanceof $this->bb^bbb) {}", true);
+    }
+
+    public void testFieldAccessInInstanceOf_02() throws Exception {
+        checkOccurrences(getTestPath(), "public $bb^bbb;", true);
+    }
+
+    public void testIssue209309_01() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {}", true);
+    }
+
+    public void testIssue209309_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as O^mg;", true);
+    }
+
+    public void testIssue209309_03() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue209309_04() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as C^ls;", true);
+    }
+
+    public void testIssue209309_05() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(O^mg\\AliasedClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_06() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a) {}", true);
+    }
+
+    public void testIssue209309_07() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, C^ls $a) {}", true);
+    }
+
+    public void testIssue209308_01() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar as Om^g;", true);
+    }
+
+    public void testIssue209308_02() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\AliasedClassName as Cl^s;", true);
+    }
+
+    public void testIssue209308_03() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Cl^s */", true);
+    }
+
+    public void testIssue209308_04() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Om^g\\AliasedClassName */", true);
+    }
+
+    public void testIssue209308_05() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Om^g\\AliasedClassName", true);
+    }
+
+    public void testIssue209308_06() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Om^g\\AliasedClassName", true);
+    }
+
+    public void testIssue209308_07() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Cl^s", true);
+    }
+
+    public void testIssue209308_08() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Om^g\\AliasedClassName $p", true);
+    }
+
+    public void testIssue209308_09() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Cl^s $a", true);
+    }
+
+    public void testIssue209308_010() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Cl^s", true);
+    }
+
+    public void testIssue209308_011() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Om^g\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_012() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cl^s $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_013() throws Exception {
+        checkOccurrences(getTestPath(), "class Aliased^ClassName {}", true);
+    }
+
+    public void testIssue209308_014() throws Exception {
+        checkOccurrences(getTestPath(), "use \\Foo\\Bar\\Aliased^ClassName as Cls;", true);
+    }
+
+    public void testIssue209308_015() throws Exception {
+        checkOccurrences(getTestPath(), "/** @var Omg\\Aliased^ClassName */", true);
+    }
+
+    public void testIssue209308_016() throws Exception {
+        checkOccurrences(getTestPath(), "* @return Omg\\Aliased^ClassName", true);
+    }
+
+    public void testIssue209308_017() throws Exception {
+        checkOccurrences(getTestPath(), "* @throws Omg\\Aliased^ClassName", true);
+    }
+
+    public void testIssue209308_018() throws Exception {
+        checkOccurrences(getTestPath(), "* @param Omg\\Aliased^ClassName $p", true);
+    }
+
+    public void testIssue209308_019() throws Exception {
+        checkOccurrences(getTestPath(), "* @param \\Foo\\Bar\\Aliased^ClassName $name Description", true);
+    }
+
+    public void testIssue209308_020() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\Aliased^ClassName $p, Cls $a, \\Foo\\Bar\\AliasedClassName $name) {}", true);
+    }
+
+    public void testIssue209308_021() throws Exception {
+        checkOccurrences(getTestPath(), "function bar(Omg\\AliasedClassName $p, Cls $a, \\Foo\\Bar\\Aliased^ClassName $name) {}", true);
+    }
+
+    public void testStaticAccessWithNs_01() throws Exception {
+        checkOccurrences(getTestPath(), "const B^AR = 2;", true);
+    }
+
+    public void testStaticAccessWithNs_02() throws Exception {
+        checkOccurrences(getTestPath(), "public static $b^ar;", true);
+    }
+
+    public void testStaticAccessWithNs_03() throws Exception {
+        checkOccurrences(getTestPath(), "static function b^ar() {}", true);
+    }
+
+    public void testStaticAccessWithNs_04() throws Exception {
+        checkOccurrences(getTestPath(), "const F^OO = 1;", true);
+    }
+
+    public void testStaticAccessWithNs_05() throws Exception {
+        checkOccurrences(getTestPath(), "public static $f^oo;", true);
+    }
+
+    public void testStaticAccessWithNs_06() throws Exception {
+        checkOccurrences(getTestPath(), "static function f^oo() {}", true);
+    }
+
+    public void testStaticAccessWithNs_07() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\AliasedClassName::f^oo();", true);
+    }
+
+    public void testStaticAccessWithNs_08() throws Exception {
+        checkOccurrences(getTestPath(), "Cls::f^oo();", true);
+    }
+
+    public void testStaticAccessWithNs_09() throws Exception {
+        checkOccurrences(getTestPath(), "ClassName::b^ar();", true);
+    }
+
+    public void testStaticAccessWithNs_10() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\AliasedClassName::F^OO;", true);
+    }
+
+    public void testStaticAccessWithNs_11() throws Exception {
+        checkOccurrences(getTestPath(), "Cls::F^OO;", true);
+    }
+
+    public void testStaticAccessWithNs_12() throws Exception {
+        checkOccurrences(getTestPath(), "ClassName::B^AR;", true);
+    }
+
+    public void testStaticAccessWithNs_13() throws Exception {
+        checkOccurrences(getTestPath(), "Omg\\AliasedClassName::$f^oo;", true);
+    }
+
+    public void testStaticAccessWithNs_14() throws Exception {
+        checkOccurrences(getTestPath(), "Cls::$f^oo;", true);
+    }
+
+    public void testStaticAccessWithNs_15() throws Exception {
+        checkOccurrences(getTestPath(), "ClassName::$b^ar;", true);
+    }
+
+    public void testStaticAccessWithNs_16() throws Exception {
+        checkOccurrences(getTestPath(), "\\Foo\\Bar\\ClassName::$b^ar;", true);
+    }
+
+    public void testStaticAccessWithNs_17() throws Exception {
+        checkOccurrences(getTestPath(), "\\Foo\\Bar\\ClassName::b^ar();", true);
+    }
+
+    public void testStaticAccessWithNs_18() throws Exception {
+        checkOccurrences(getTestPath(), "\\Foo\\Bar\\ClassName::B^AR;", true);
+    }
+
+    public void testIssue207971_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld1;", true);
+    }
+
+    public void testIssue207971_02() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld3;", true);
+    }
+
+    public void testIssue207971_03() throws Exception {
+        checkOccurrences(getTestPath(), "private $obj^ect2;", true);
+    }
+
+    public void testIssue207971_04() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->fie^ld1} {$this->object2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_05() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->obj^ect2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_06() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", true);
+    }
 
     @Override
     protected FileObject[] createSourceClassPathsForTest() {

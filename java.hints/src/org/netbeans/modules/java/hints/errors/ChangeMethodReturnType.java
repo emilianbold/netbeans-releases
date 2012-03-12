@@ -56,9 +56,10 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -114,7 +115,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         if (targetType == null) return null;
 
-        return Collections.singletonList(JavaFix.toEditorFix(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString())));
+        return Collections.singletonList(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString()).toEditorFix());
     }
 
     private TypeMirror purify(CompilationInfo info, TypeMirror targetType) {
@@ -140,7 +141,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
     @Override
     public void cancel() {}
 
-    private static final class FixImpl extends JavaFix {
+    static final class FixImpl extends JavaFix {
 
         private final TypeMirrorHandle targetTypeHandle;
         private final String targetTypeDN;
@@ -157,7 +158,9 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             TypeMirror targetType = targetTypeHandle.resolve(wc);
 
             if (targetType == null) {

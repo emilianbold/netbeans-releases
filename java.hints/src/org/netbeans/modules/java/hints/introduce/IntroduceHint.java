@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Pattern;
+import org.netbeans.api.java.source.matching.Pattern;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.BreakTree;
 import com.sun.source.tree.CaseTree;
@@ -104,6 +104,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyleConstants;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
@@ -121,13 +122,9 @@ import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.infrastructure.JavaHintsPositionRefresher;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.spi.editor.highlighting.HighlightsLayer;
 import org.netbeans.spi.editor.highlighting.HighlightsLayerFactory;
 import org.netbeans.spi.editor.highlighting.ZOrder;
@@ -138,6 +135,8 @@ import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -354,9 +353,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             HintsController.setErrors(info.getFileObject(), IntroduceHint.class.getName(), computeError(info, selection[0], selection[1], null, new EnumMap<IntroduceKind, String>(IntroduceKind.class), cancel));
 
             Document doc = info.getSnapshot().getSource().getDocument(false);
-            long version = doc != null ? DocumentUtilities.getDocumentVersion(doc) : 0;
-            
-            JavaHintsPositionRefresher.introduceHintsUpdated(doc, version, selection[0], selection[1]);
+
+            if (doc != null) {
+                MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
+                MimeLookup.getLookup("text/x-java").lookup(PositionRefresherHelperImpl.class).setVersion(doc, selection[0], selection[1]);
+            }
         }
     }
 
@@ -495,7 +496,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(resolved, scanner.usedLocalVariables.keySet(), true);
-                        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
+                        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
@@ -683,7 +684,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         boolean declareVariableForReturnValue;
 
         Pattern p = Pattern.createPatternWithRemappableVariables(pathsOfStatementsToWrap, scanner.usedLocalVariables.keySet(), true);
-        int duplicatesCount = Matcher.create(info, cancel).match(p).size();
+        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
 
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
@@ -1481,7 +1482,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 expressionStatement = true;
                             }
                             
-                            ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, constant);
+                            ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), constant);
 
                             parameter.rewrite(pathToClass.getLeaf(), nueClass);
 
@@ -1675,7 +1676,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         toRemoveFromParent = resolved;
                     }
                     
-                    ClassTree nueClass = GeneratorUtils.insertClassMember(parameter, pathToClass, field);
+                    ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember((ClassTree)pathToClass.getLeaf(), field);
 
                     TreePath method        = findMethod(resolved);
 
@@ -1738,7 +1739,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 BlockTree nueBlock = make.Block(nueStatements, false);
                                 MethodTree nueConstr = make.Method(constrMods, "<init>", null, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), nueBlock, null); //NOI18N
 
-                                nueClass = GeneratorUtils.insertClassMember(parameter, new TreePath(new TreePath(parameter.getCompilationUnit()), nueClass), nueConstr);
+                                nueClass = GeneratorUtilities.get(parameter).insertClassMember(nueClass, nueConstr);
 
                                 nueClass = make.removeClassMember(nueClass, constructor.getLeaf());
                                 break;
@@ -2016,7 +2017,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(statementsPaths, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             List<? extends StatementTree> parentStatements = getStatements(new TreePath(new TreePath(firstLeaf.getParentPath().getParentPath(), resolveRewritten(rewritten, firstLeaf.getParentPath().getLeaf())), firstLeaf.getLeaf()));
                             int dupeStart = parentStatements.indexOf(firstLeaf.getLeaf());
@@ -2116,12 +2117,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
                     
                     Tree parent = findMethod(firstStatement).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
                 }
@@ -2264,12 +2260,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     assert pathToClass != null;
 
                     Tree parent = findMethod(expression).getLeaf();
-                    ClassTree nueClass = null;
-                    if (parent.getKind() == Kind.METHOD) {
-                        nueClass = GeneratorUtils.insertMethodAfter(copy, pathToClass, method, (MethodTree) parent);
-                    } else {
-                        nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
-                    }
+                    ClassTree nueClass = GeneratorUtilities.get(copy).insertClassMember((ClassTree)pathToClass.getLeaf(), method);
                     
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
 
@@ -2282,7 +2273,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         Document doc = copy.getDocument();
                         Pattern p = Pattern.createPatternWithRemappableVariables(expression, parameters, true);
 
-                        for (OccurrenceDescription desc : Matcher.create(copy, new AtomicBoolean()).match(p)) {
+                        for (Occurrence desc : Matcher.create(copy).setCancel(new AtomicBoolean()).match(p)) {
                             TreePath firstLeaf = desc.getOccurrenceRoot();
                             int startOff = (int) copy.getTrees().getSourcePositions().getStartPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());
                             int endOff = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), firstLeaf.getLeaf());

@@ -44,15 +44,16 @@
 
 package org.netbeans.modules.cnd.apt.impl.structure;
 
+import java.util.LinkedList;
+import java.util.logging.Level;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.antlr.TokenStreamException;
 import org.netbeans.modules.cnd.antlr.TokenStreamRecognitionException;
-import java.util.LinkedList;
-import java.util.logging.Level;
-import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTToken;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.openide.filesystems.FileSystem;
@@ -62,9 +63,10 @@ import org.openide.filesystems.FileSystem;
  * @author Vladimir Voskresensky
  */
 public final class APTBuilderImpl {
-    
+    private final GuardDetector guardDetector;
     /** Creates a new instance of APTBuilder */
     public APTBuilderImpl() {
+        this.guardDetector = new GuardDetector();
     }
 
     public APTFile buildAPT(FileSystem fileSystem, CharSequence path, TokenStream ts) {
@@ -121,8 +123,11 @@ public final class APTBuilderImpl {
         assert (isRootNode(outApt));
         return outApt;
     }
-    
+
     private void buildFileAPT(APTFileNode aptFile, TokenStream ts) throws TokenStreamException {
+        if (ts instanceof APTLexer) {
+            ((APTLexer)ts).setCallback(guardDetector);
+        }
         APTToken lastToken = nonRecursiveBuild(aptFile, ts);
         assert (APTUtils.isEOF(lastToken));
     }
@@ -323,5 +328,38 @@ public final class APTBuilderImpl {
             node = node.getNextSibling();
         }
         return null;
+    }
+
+    private static final class GuardDetector implements APTLexer.APTLexerCallback {
+        private boolean valid = true;
+        private APT guardNode = null;
+
+        public GuardDetector() {
+        }
+
+        @Override
+        public void onMakeToken(int t) {
+            
+        }
+        
+        public void onTopLevelIf(APT ifNode) {
+        }
+
+        public void onTopLevelIfndef(APT ifndefNode) {
+
+        }
+
+        public void onPragma(APT pragmaNode) {
+
+        }
+
+        public void onOtherTopLevelCondition(APT node) {
+
+        }
+
+        public void exitTopLevelCondition(APT endifNode) {
+
+        }
+        
     }
 }

@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
  */
 public interface NamespaceScope extends VariableScope, FullyQualifiedElement {
     QualifiedName getQualifiedName();
-    Collection<? extends UseElement> getDeclaredUses();
+    Collection<? extends UseScope> getDeclaredUses();
     Collection<? extends TypeScope> getDeclaredTypes();
     Collection<? extends ClassScope> getDeclaredClasses();
     Collection<? extends InterfaceScope> getDeclaredInterfaces();

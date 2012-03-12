@@ -46,19 +46,22 @@ import java.io.File;
 
 /**
  * Entry point for VCS specific functionality accesed from the issuetracking modules
+ * 
  * @author Tomas Stupka
+ * 
+ * @deprecated use o.n.m.versioning.spi.VCSHIstoryProvider instead
  */
 public abstract class VCSAccessor {
 
     /**
-     * Opens search a VCS history panel with a specific DiffResultsView, which
-     * does not moves accross differences but initially fixes on the given line.
-     * Right panel shows current local changes if the file, left panel shows
-     * revisions in the file's repository. </br>
+     * Opens the search VCS history panel with a specific DiffResultsView, which
+     * does not move accross differences but is initially fixed on the given line.
+     * Right panel shows current local changes in the file, left panel shows
+     * revisions from the file's repository. </br>
      * Do not run in AWT, IllegalStateException is thrown.
      * Validity of the arguments is checked and result is returned as a return value
      *
-     * @param path requested file absolute path. Must be a versioned file (not a folder), 
+     * @param path requested files absolute path. Must be a versioned file (not a folder), 
      *        otherwise false is returned and the panel won't be opened
      * @param lineNumber requested line number to fix on
      * @return true if parameters are valid and the search panel is opened, otherwise false
