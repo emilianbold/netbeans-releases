@@ -60,6 +60,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.analysis.spi.Analyzer;
@@ -149,7 +150,7 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.gridheight = 1;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
@@ -167,6 +168,8 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         configurationRadio.setSelected(true);
         updateEnableDisable();
+
+        setBorder(new EmptyBorder(12, 12, 12, 12));
     }
 
     void started() {
