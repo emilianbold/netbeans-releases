@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project.annotations;
 
+import java.util.EnumSet;
 import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
 import org.openide.util.NbBundle;
 
@@ -72,31 +73,26 @@ public class UserAnnotationTag extends PhpAnnotationTag {
             return title;
         }
 
-        @Override
-        public String toString() {
-            return title;
-        }
-
     }
 
-    private final Type type;
+    private final EnumSet<Type> types;
 
 
-    public UserAnnotationTag(Type type, String name, String insertTemplate, String documentation) {
+    public UserAnnotationTag(EnumSet<Type> types, String name, String insertTemplate, String documentation) {
         super(name, insertTemplate, documentation);
 
-        assert type != null;
-        this.type = type;
+        assert types != null;
+        this.types = types;
     }
 
-    public Type getType() {
-        return type;
+    public EnumSet<Type> getTypes() {
+        return types;
     }
 
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 37 * hash + type.hashCode();
+        hash = 37 * hash + types.hashCode();
         return hash + super.hashCode();
     }
 
@@ -109,7 +105,7 @@ public class UserAnnotationTag extends PhpAnnotationTag {
             return false;
         }
         final UserAnnotationTag other = (UserAnnotationTag) obj;
-        if (type != other.type) {
+        if (!types.equals(other.types)) {
             return false;
         }
         return super.equals(obj);

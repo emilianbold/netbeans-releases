@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.php.project.annotations;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.NbPreferences;
 
 public final class UserAnnotations {
@@ -58,10 +61,13 @@ public final class UserAnnotations {
     private static final String TAG_KEY = "tag.%d.%s"; // NOI18N
 
     // tag attributes
-    private static final String ATTR_TYPE = "type"; // NOI18N
+    private static final String ATTR_TYPES = "types"; // NOI18N
     private static final String ATTR_NAME = "name"; // NOI18N
     private static final String ATTR_INSERT_TEMPLATE = "insertTemplate"; // NOI18N
     private static final String ATTR_DOCUMENTATION = "documentation"; // NOI18N
+
+    // value delimiter
+    private static final String DELIMITER = ","; // NOI18N
 
 
     public static UserAnnotations getInstance() {
@@ -73,14 +79,14 @@ public final class UserAnnotations {
         Preferences preferences = getPreferences();
         int i = 0;
         for (;;) {
-            String type = preferences.get(getTypeKey(i), null);
-            if (type == null) {
+            String types = preferences.get(getTypesKey(i), null);
+            if (types == null) {
                 return annotations;
             }
             String name = preferences.get(getNameKey(i), null);
             String insertTemplate = preferences.get(getInsertTemplateKey(i), null);
             String documentation = preferences.get(getDocumentationKey(i), null);
-            annotations.add(new UserAnnotationTag(UserAnnotationTag.Type.valueOf(type), name, insertTemplate, documentation));
+            annotations.add(new UserAnnotationTag(unmarshallTypes(types), name, insertTemplate, documentation));
             i++;
         }
     }
@@ -90,7 +96,7 @@ public final class UserAnnotations {
         Preferences preferences = getPreferences();
         int i = 0;
         for (UserAnnotationTag annotation : annotations) {
-            preferences.put(getTypeKey(i), annotation.getType().name());
+            preferences.put(getTypesKey(i), marshallTypes(annotation.getTypes()));
             preferences.put(getNameKey(i), annotation.getName());
             preferences.put(getInsertTemplateKey(i), annotation.getInsertTemplate());
             preferences.put(getDocumentationKey(i), annotation.getDocumentation());
@@ -103,11 +109,11 @@ public final class UserAnnotations {
         Preferences preferences = getPreferences();
         int i = 0;
         for (;;) {
-            String type = preferences.get(getTypeKey(i), null);
+            String type = preferences.get(getTypesKey(i), null);
             if (type == null) {
                 return;
             }
-            preferences.remove(getTypeKey(i));
+            preferences.remove(getTypesKey(i));
             preferences.remove(getNameKey(i));
             preferences.remove(getInsertTemplateKey(i));
             preferences.remove(getDocumentationKey(i));
@@ -115,8 +121,8 @@ public final class UserAnnotations {
         }
     }
 
-    private String getTypeKey(int i) {
-        return getKey(i, ATTR_TYPE);
+    private String getTypesKey(int i) {
+        return getKey(i, ATTR_TYPES);
     }
 
     private String getNameKey(int i) {
@@ -133,6 +139,25 @@ public final class UserAnnotations {
 
     private String getKey(int i, String attr) {
         return String.format(TAG_KEY, i, attr);
+    }
+
+    // for unit tests
+    String marshallTypes(EnumSet<UserAnnotationTag.Type> types) {
+        ArrayList<String> list = new ArrayList<String>(types.size());
+        for (UserAnnotationTag.Type type : types) {
+            list.add(type.name());
+        }
+        return StringUtils.implode(list, DELIMITER);
+    }
+
+    // for unit tests
+    EnumSet<UserAnnotationTag.Type> unmarshallTypes(String types) {
+        List<String> list = StringUtils.explode(types, DELIMITER);
+        EnumSet<UserAnnotationTag.Type> result = EnumSet.noneOf(UserAnnotationTag.Type.class);
+        for (String type : list) {
+            result.add(UserAnnotationTag.Type.valueOf(type));
+        }
+        return result;
     }
 
     private Preferences getPreferences() {
