@@ -323,7 +323,7 @@ public class PhpAnnotationsPanel extends JPanel {
         }
 
         @NbBundle.Messages("PhpAnnotationsPanel.value.delimiter=, ")
-        private Object getTypes(EnumSet<UserAnnotationTag.Type> types) {
+        private String getTypes(EnumSet<UserAnnotationTag.Type> types) {
             ArrayList<String> list = new ArrayList<String>(types.size());
             for (UserAnnotationTag.Type type : types) {
                 list.add(type.getTitle());
