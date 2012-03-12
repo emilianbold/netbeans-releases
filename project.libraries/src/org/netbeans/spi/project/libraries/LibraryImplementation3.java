@@ -42,13 +42,27 @@
 package org.netbeans.spi.project.libraries;
 
 import java.util.Properties;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * LibraryImplementation extension allowing library to expose additional 
- * readonly properties.
+ * properties.
+ * 
+ * @author David Konecny
+ * @since 1.34
  */
-public interface LibraryImplementation3 extends LibraryImplementation {
+public interface LibraryImplementation3 extends NamedLibraryImplementation {
     
+    /**
+     * Returns library properties
+     * @return the {@link Properties}
+     */
+    @NonNull
     Properties getProperties();
     
+    /**
+     * Sets  the library properties
+     * @param properties the properties to be set
+     */
+    void setProperties(@NonNull Properties properties);
 }

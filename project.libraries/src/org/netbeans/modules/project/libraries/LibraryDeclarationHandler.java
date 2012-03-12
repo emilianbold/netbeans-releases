@@ -119,5 +119,14 @@ public interface LibraryDeclarationHandler {
 
     public void handle_displayName (String data, Attributes meta) throws SAXException;
 
+    public void start_properties(final Attributes meta) throws SAXException;;
+    
+    public void end_properties() throws SAXException;
+    
+    public void start_property(final Attributes meta) throws SAXException;;
+    
+    public void end_property() throws SAXException;
+    
+    public void handle_value (String data, Attributes meta) throws SAXException;
 }
 

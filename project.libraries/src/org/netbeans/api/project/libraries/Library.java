@@ -54,6 +54,7 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.project.libraries.LibraryAccessor;
 import org.netbeans.modules.project.libraries.Util;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
@@ -150,21 +151,6 @@ public final class Library {
     } // end getContent
 
     /**
-     * Returns properties associated with this library. Returned properties
-     * object should be considered readonly and any changes to it will not be 
-     * propagated back to the library itself.
-     * @return never null but can be empty if library does not have any properties
-     * or does not support concept of properties
-     */
-    public Properties getProperties() {
-        if (impl instanceof LibraryImplementation3) {
-            return new Properties(((LibraryImplementation3)impl).getProperties());
-        } else {
-            return new Properties();
-        }
-    }
-
-    /**
      * Get library binding name. The name identifies library
      * in scope of one libraries storage.
      * <p>
@@ -175,6 +161,22 @@ public final class Library {
         return impl.getName();
     } // end getName
 
+    /**
+     * Returns properties associated with this library. Returned properties
+     * object should be considered readonly and any changes to it will not be 
+     * propagated back to the library itself.
+     * @return never null but can be empty if library does not have any properties
+     * or does not support concept of properties
+     * @since 1.34
+     */
+    @NonNull
+    public Properties getProperties() {
+        if (impl instanceof LibraryImplementation3) {
+            return new Properties(((LibraryImplementation3)impl).getProperties());
+        } else {
+            return new Properties();
+        }
+    }
 
     /**
      * Returns description of the library.

@@ -51,9 +51,8 @@ import java.beans.PropertyChangeEvent;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 
-public final class DefaultLibraryImplementation implements NamedLibraryImplementation, LibraryImplementation3 {
+public final class DefaultLibraryImplementation implements LibraryImplementation3 {
 
     private String description;
 
@@ -70,7 +69,7 @@ public final class DefaultLibraryImplementation implements NamedLibraryImplement
 
     private List<PropertyChangeListener> listeners;
     
-    private Properties properties;
+    private volatile Properties properties;
 
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
@@ -206,10 +205,11 @@ public final class DefaultLibraryImplementation implements NamedLibraryImplement
     }
 
     @Override
-    public synchronized Properties getProperties() {
-        if (properties == null) {
-            properties = new Properties();
-        }
+    public Properties getProperties() {
         return properties;
+    }
+    
+    public void setProperties(Properties props) {
+        properties = props;
     }
 }

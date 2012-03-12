@@ -52,11 +52,13 @@ import java.util.HashMap;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.util.Properties;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.Util;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.WeakListeners;
 
@@ -64,7 +66,7 @@ import org.openide.util.WeakListeners;
  *
  * @author  tom
  */
-public class ProxyLibraryImplementation implements NamedLibraryImplementation, PropertyChangeListener  {
+public class ProxyLibraryImplementation implements LibraryImplementation3, PropertyChangeListener  {
 
     private final LibraryImplementation original;
     private final LibrariesModel model;
@@ -233,7 +235,20 @@ public class ProxyLibraryImplementation implements NamedLibraryImplementation, P
         return "Proxy[" + original + "]"; // NOI18N
     }
 
-    static class ProxyLibraryImplementation2 extends ProxyLibraryImplementation implements LibraryImplementation2, NamedLibraryImplementation {
+    @Override
+    public Properties getProperties() {
+        if (!Util.supportsProperties(original)) {
+            throw new IllegalStateException("Original does not support displayName");   //NOI18N
+        }
+        return Util.getProperties(original);
+    }
+
+    @Override
+    public void setProperties(Properties properties) {
+        //For now no UI to set properties
+    }
+
+    static class ProxyLibraryImplementation2 extends ProxyLibraryImplementation implements LibraryImplementation2, LibraryImplementation3 {
 
         Map<String,List<URI>> newURIContents;
         
