@@ -41,22 +41,33 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.EventQueue;
+import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.MatchingObject;
-import org.openide.nodes.FilterNode;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeEvent;
+import org.openide.nodes.NodeListener;
+import org.openide.nodes.NodeMemberEvent;
+import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.ImageUtilities;
 import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author jhavlin
  */
-public class MatchingObjectNode extends FilterNode {
+public class MatchingObjectNode extends AbstractNode {
 
     private MatchingObject matchingObject;
+    private Node original;
+    private boolean valid = true;
 
     public MatchingObjectNode(Node original,
             org.openide.nodes.Children children,
@@ -67,18 +78,78 @@ public class MatchingObjectNode extends FilterNode {
 
     private MatchingObjectNode(Node original,
             org.openide.nodes.Children children,
-            MatchingObject matchingObject,
+            final MatchingObject matchingObject,
             ReplaceCheckableNode checkableNode) {
-        super(original, children, Lookups.fixed(matchingObject, checkableNode));
+        super(children, Lookups.fixed(matchingObject, checkableNode));
         this.matchingObject = matchingObject;
+        if (matchingObject.isObjectValid()) {
+            this.original = original;
+            setValidOriginal();
+        } else {
+            setInvalidOriginal();
+        }
         matchingObject.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
-                fireIconChange();
-                ResultsOutlineSupport.toggleParentSelected(
-                        MatchingObjectNode.this);
+                if (!matchingObject.isObjectValid() && valid) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setInvalidOriginal();
+                        }
+                    });
+                } else {
+                    fireIconChange();
+                    ResultsOutlineSupport.toggleParentSelected(
+                            MatchingObjectNode.this);
+                }
             }
         });
+        original.addNodeListener(new OrigNodeListener());
+    }
+
+    @Override
+    public Image getIcon(int type) {
+        if (valid) {
+            return original.getIcon(type);
+        } else {
+            return ImageUtilities.loadImage(
+                    "org/netbeans/modules/search/res/invalid.png");     //NOI18N
+        }
+    }
+
+    @Override
+    public Image getOpenedIcon(int type) {
+        return getIcon(type);
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        return original.getHtmlDisplayName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return original.getDisplayName();
+    }
+
+    private void setValidOriginal() {
+        fireIconChange();
+        fireDisplayNameChange(null, null);
+    }
+
+    private void setInvalidOriginal() {
+        valid = false;
+        original = new AbstractNode(Children.LEAF);
+        original.setDisplayName(matchingObject.getFileObject().getNameExt());
+        fireIconChange();
+        fireDisplayNameChange(matchingObject.getDataObject().getName(),
+                matchingObject.getFileObject().getNameExt());
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return false;
     }
 
     @Override
@@ -236,6 +307,40 @@ public class MatchingObjectNode extends FilterNode {
         @Override
         public String getName() {
             return "path";                                              //NOI18N
+        }
+    }
+
+    private class OrigNodeListener implements NodeListener {
+
+        public OrigNodeListener() {
+        }
+
+        @Override
+        public void childrenAdded(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenRemoved(NodeMemberEvent ev) {
+        }
+
+        @Override
+        public void childrenReordered(NodeReorderEvent ev) {
+        }
+
+        @Override
+        public void nodeDestroyed(NodeEvent ev) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    setInvalidOriginal();
+                    original.removeNodeListener(OrigNodeListener.this);
+                }
+            });
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            setValidOriginal();
         }
     }
 }

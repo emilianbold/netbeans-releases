@@ -224,6 +224,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
                 dataObject.removePropertyChangeListener(this);
             }
             resultModel.objectBecameInvalid(this);
+            fireChange();
         }
     }
     
@@ -234,7 +235,7 @@ public final class MatchingObject implements Comparable<MatchingObject>,
      * @return  {@code true} if the {@code DataObject} is valid, false otherwise
      * @see  DataObject#isValid
      */
-    boolean isObjectValid() {
+    public boolean isObjectValid() {
         // #190819
         return valid && dataObject != null ? dataObject.isValid() : false;
     }
