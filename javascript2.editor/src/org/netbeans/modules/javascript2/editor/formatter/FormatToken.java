@@ -183,7 +183,10 @@ public final class FormatToken {
         AFTER_SEMICOLON,
 
         BEFORE_UNARY_OPERATOR,
-        AFTER_UNARY_OPERATOR
+        AFTER_UNARY_OPERATOR,
+
+        BEFORE_TERNARY_OPERATOR,
+        AFTER_TERNARY_OPERATOR
     }
 
 }

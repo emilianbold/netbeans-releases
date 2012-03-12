@@ -225,6 +225,7 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.spaceAroundAssignOps, false);
         options.put(FmtOptions.spaceAroundBinaryOps, false);
         options.put(FmtOptions.spaceAroundUnaryOps, true);
+        options.put(FmtOptions.spaceAroundTernaryOps, false);
         reformatFileContents("testfiles/formatter/operators1.js", options, ".inverted.formatted");
     }
 

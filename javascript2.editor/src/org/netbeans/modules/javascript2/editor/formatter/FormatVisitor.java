@@ -304,6 +304,30 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(unaryNode, onset);
     }
 
+    @Override
+    public Node visit(TernaryNode ternaryNode, boolean onset) {
+        if (onset) {
+            int start = getStart(ternaryNode);
+            FormatToken question = getNextToken(start, JsTokenId.OPERATOR_TERNARY);
+            if (question != null) {
+                FormatToken previous = question.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                }
+                appendToken(question, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                FormatToken colon = getNextToken(question.getOffset(), JsTokenId.OPERATOR_COLON);
+                if (colon != null) {
+                    previous = colon.previous();
+                    if (previous != null) {
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_TERNARY_OPERATOR));
+                    }
+                    appendToken(colon, FormatToken.forFormat(FormatToken.Kind.AFTER_TERNARY_OPERATOR));
+                }
+            }
+        }
+        return super.visit(ternaryNode, onset);
+    }
+
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {

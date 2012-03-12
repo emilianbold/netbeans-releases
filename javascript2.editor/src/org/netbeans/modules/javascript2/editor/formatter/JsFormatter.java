@@ -213,6 +213,14 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceAroundUnaryOps());
                             break;
+                        case BEFORE_TERNARY_OPERATOR:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAroundTernaryOps());
+                            break;
+                        case AFTER_TERNARY_OPERATOR:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceAroundTernaryOps());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

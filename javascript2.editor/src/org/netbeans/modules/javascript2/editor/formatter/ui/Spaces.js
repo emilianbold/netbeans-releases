@@ -29,6 +29,7 @@ function computeColor() {
             color = color / 2;
         } while (isOk());
     }
+    color = color < 1 ? 1 : color
 }
 
 var color = computeColor();

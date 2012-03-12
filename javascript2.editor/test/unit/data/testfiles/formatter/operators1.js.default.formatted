@@ -10,4 +10,7 @@ function computeColor() {
     if (!logic)  {
         test = ~4545 + test2
     }
+    x = test ? a : b;
+    x = 5;
+    test ? a : b
 }
