@@ -2,8 +2,9 @@
     "name": "netbeans-ros-firefox-plugin", 
     "license": "CDDL/GPL 2", 
     "author": "Oracle", 
-    "version": "0.1.3", 
+    "version": "0.2", 
     "fullName": "NetBeans IDE Support Plugin", 
     "id": "ros-firefox-plugin@netbeans.org", 
-    "description": "Support plugin for NetBeans IDE"
+    "description": "Support plugin for NetBeans IDE",
+    "icon": "data/netbeans48.png"
 }

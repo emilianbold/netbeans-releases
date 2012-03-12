@@ -65,6 +65,8 @@ NetBeans.nextId = 0;
 // {element: theActualElement; ... additional element data ... }
 NetBeans.selection = [];
 
+NetBeans.getMatchedCSSRulesAvailable = !!document.defaultView.getMatchedCSSRules;
+
 // Returns XML encoding of document elements.
 // The XML contains name of the elements and
 // NetBeans ID attributes only.
@@ -450,7 +452,7 @@ NetBeans.reloadScript = function(url) {
 NetBeans.getMatchedRules = function(handle) {
     var matchedStyle = [];
     var element = this.getElement(handle);
-    if (document.defaultView.getMatchedCSSRules) {
+    if (this.getMatchedCSSRulesAvailable) {
         var changes = this.preGetMatchedCSSRulesUpdates();
         var rules = document.defaultView.getMatchedCSSRules(element);
         this.postGetMatchedCSSRulesUpdates(changes);
@@ -705,8 +707,10 @@ NetBeans.repaintGlassPane = function() {
     }
 }
 
-// Insert copies of cross-origin stylesheets
-NetBeans.insertCopiesOfCrossOriginStylesheets();
+if (NetBeans.getMatchedCSSRulesAvailable) {
+  // Insert copies of cross-origin stylesheets
+  NetBeans.insertCopiesOfCrossOriginStylesheets();
+}
 
 // Insert glass-pane into the inspected page
 NetBeans.insertGlassPane();
