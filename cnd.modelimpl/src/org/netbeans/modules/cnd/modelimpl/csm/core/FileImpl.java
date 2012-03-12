@@ -833,6 +833,12 @@ public final class FileImpl implements CsmFile,
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
         }
+        if (fileAPT != null && APTUtils.LOG.isLoggable(Level.FINE)) {
+            CharSequence guardMacro = fileAPT.getGuardMacro();
+            if (guardMacro.length() == 0 && !isSourceFile()) {
+                APTUtils.LOG.log(Level.FINE, "FileImpl: file {0} does not have guard", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
+            }
+        }
         return fileAPT;
     }
 

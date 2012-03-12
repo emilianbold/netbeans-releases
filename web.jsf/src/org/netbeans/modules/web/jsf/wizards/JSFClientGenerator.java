@@ -562,6 +562,10 @@ public class JSFClientGenerator {
                 replace.append(find);
                 replace.append(endLine);
                 content = content.replace(find, replace.toString()); //NOI18N
+
+                // reformat document
+                content = reformat(content);
+
                 JSFFrameworkProvider.createFile(indexfl, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
                 return true;
@@ -738,6 +742,15 @@ public class JSFClientGenerator {
                 }
             }
         });
+    }
+
+    private static String reformat(String content) {
+        try {
+            return reformat(content, new BaseDocument(false, JSP_MIME_TYPE));
+        } catch (BadLocationException e) {
+            Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
+            return content;
+        }
     }
 
     private static String reformat(String content, final BaseDocument doc) throws BadLocationException {
