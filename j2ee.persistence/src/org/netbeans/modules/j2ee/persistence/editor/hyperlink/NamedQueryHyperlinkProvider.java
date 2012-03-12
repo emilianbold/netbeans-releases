@@ -66,6 +66,7 @@ import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.NamedQuery;
+import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -285,7 +286,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
                     break;
                 }
                 Token<JavaTokenId> tk = ts.token();
-                if (TokenUtilities.equals("createNamedQuery", tk.text())) {//NOI18N
+                if (TokenUtilities.equals(CCParser.CREATE_NAMEDQUERY, tk.text())) {//NOI18N
                     hasMessage = true;
                 }
             }
