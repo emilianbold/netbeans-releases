@@ -78,6 +78,12 @@ public class FieldCompletion extends BaseCompletion {
         if (request.dotContext != null && request.dotContext.isMethodsOnly()) {
             return false;
         }
+
+        // We are after either implements or extends keyword
+        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
+            return false;
+        }
         
         if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             return false;

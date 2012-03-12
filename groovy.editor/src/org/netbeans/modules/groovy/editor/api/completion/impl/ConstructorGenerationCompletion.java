@@ -102,8 +102,9 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
             return false;
         }
 
-        // We are after implements keyword
-        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) {
+        // We are after either implements or extends keyword
+        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
             return false;
         }
 
