@@ -225,29 +225,29 @@ public final class ExternalBrowserPlugin {
             try {
                 u = new URL(url);
             } catch (MalformedURLException ex) {
-                LOG.log(Level.WARNING, "cannot parse URL: "+url);
+                LOG.log(Level.WARNING, "cannot parse URL: {0}", url); // NOI18N
             }
             ExtBrowserImpl browserImpl = (u == null) ? null : awaitingBrowserResponse.remove(u.toExternalForm());
             
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
-            if (browserImpl == null && url.endsWith("/")) {
+            if (browserImpl == null && url.endsWith("/")) { // NOI18N
                 try {
                     u = new URL(url.substring(0, url.length()-1));
                     browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
                 } catch (MalformedURLException ex) {
-                    LOG.log(Level.WARNING, "cannot parse URL: "+url);   // NOI18N
+                    LOG.log(Level.WARNING, "cannot parse URL: {0}", url);   // NOI18N
                 }
             }
             // XXX: on Mac, file URLs are open with localhost as the host instead of ""
-            if (browserImpl == null && (u != null) && "file".equals(u.getProtocol())
+            if (browserImpl == null && (u != null) && "file".equals(u.getProtocol()) // NOI18N
                     && "localhost".equals(u.getHost()))                 // NOI18N
             {
                 try {
-                    u = new URL(u.getProtocol(), "", u.getPort(), u.getFile());
+                    u = new URL(u.getProtocol(), "", u.getPort(), u.getFile()); // NOI18N
                     browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
                 } catch (MalformedURLException ex) {
-                    LOG.log(Level.WARNING, "cannot parse URL: " + url);// NOI18N
+                    LOG.log(Level.WARNING, "cannot parse URL: {0}", url);// NOI18N
                 }
             }
             if (browserImpl == null) {
@@ -361,7 +361,7 @@ public final class ExternalBrowserPlugin {
         params.put( Message.TAB_ID, tabId );
         if (newURL != null) {
             try {
-                params.put( "url", newURL.toURI().toString() );
+                params.put( "url", newURL.toURI().toString() ); // NOI18N
             } catch (URISyntaxException ex) {
                 Exceptions.printStackTrace(ex);
             }
