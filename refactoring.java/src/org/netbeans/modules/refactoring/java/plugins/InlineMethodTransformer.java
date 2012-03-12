@@ -94,12 +94,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     @Override
     public Tree visitClass(ClassTree node, Element p) {
         final TreePath classPath = getCurrentPath();
-        if (classPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
-            return super.visitClass(node, p);
-        }
-
-        original2Translated = new HashMap<Tree, Tree>();
-        Tree value = super.visitClass(node, p);
         ClassTree classTree = node;
         for (Tree member : classTree.getMembers()) {
             TreePath memberPath = new TreePath(classPath, member);
@@ -109,6 +103,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 break;
             }
         }
+        if (classPath.getParentPath().getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT) {
+            original2Translated.put(node, classTree);
+            return super.visitClass(node, p);
+        }
+
+        original2Translated = new HashMap<Tree, Tree>();
+        Tree value = super.visitClass(node, p);
 
         classTree = (ClassTree) workingCopy.getTreeUtilities().translate(classTree, original2Translated);
         rewrite(node, classTree);
