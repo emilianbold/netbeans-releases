@@ -74,6 +74,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -90,6 +92,8 @@ public final class Stamps {
     private static AtomicLong moduleJARs;
     private static File moduleNewestFile;
     private static String[] dirs;
+    private static File[] fallbackCache;
+    private static boolean populated;
 
     private Worker worker = new Worker();
 
@@ -104,18 +108,21 @@ public final class Stamps {
         if (args.length == 1 && "reset".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             stamp(false);
             return;
         }
         if (args.length == 1 && "init".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             stamp(true);
             return;
         }
         if (args.length == 1 && "clear".equals(args[0])) { // NOI18N
             moduleJARs = null;
             dirs = null;
+            fallbackCache = null;
             return;
         }
     }
@@ -176,6 +183,8 @@ public final class Stamps {
         return asByteBuffer(cache, true, false);
     }
     final File file(String cache, int[] len) {
+        checkPopulateCache();
+        
         synchronized (this) {
             if (worker.isProcessing(cache)) {
                 LOG.log(Level.FINE, "Worker processing when asking for {0}", cache); // NOI18N
@@ -187,7 +196,11 @@ public final class Stamps {
         long last = cacheFile.lastModified();
         if (last <= 0) {
             LOG.log(Level.FINE, "Cache does not exist when asking for {0}", cache); // NOI18N
-            return null;
+            cacheFile = findFallbackCache(cache);
+            if (cacheFile == null || (last = cacheFile.lastModified()) <= 0) {
+                return null;
+            }
+            LOG.log(Level.FINE, "Found fallback cache at {0}", cacheFile);
         }
 
         if (moduleJARs() > last) {
@@ -539,6 +552,69 @@ public final class Stamps {
             if (!tmpFile.delete()) {
                 tmpFile.deleteOnExit();
             } // delete now or later
+        }
+    }
+
+    private static File findFallbackCache(String cache) {
+        if (fallbackCache == null) {
+            fallbackCache = new File[0];
+            if (dirs().length >= 1) {
+                File fallback = new File(new File(new File(dirs()[0]), "var"), "cache"); // NOI18N
+                if (fallback.isDirectory()) {
+                    fallbackCache = new File[]{ fallback };
+                }
+            }
+        }
+        if (fallbackCache.length == 0) {
+            return null;
+        }
+        return new File(fallbackCache[0], cache);
+    }
+    
+    static void checkPopulateCache() {
+        if (populated) {
+            return;
+        }
+        populated = true;
+        
+        File cache = Places.getCacheDirectory();
+        String[] children = cache.list();
+        if (children != null && children.length > 0) {
+            return;
+        }
+        InputStream is = Stamps.getModulesJARs().asStream("populate.zip"); // NOI18N
+        if (is == null) {
+            return;
+        }
+        ZipInputStream zip = null;
+        FileOutputStream os = null;
+        try {
+            byte[] arr = new byte[4096];
+            LOG.log(Level.FINE, "Found populate.zip about to extract it into {0}", cache);
+            zip = new ZipInputStream(is);
+            for (;;) {
+                ZipEntry en = zip.getNextEntry();
+                if (en == null) {
+                    break;
+                }
+                if (en.isDirectory()) {
+                    continue;
+                }
+                File f = new File(cache, en.getName().replace('/', File.separatorChar));
+                f.getParentFile().mkdirs();
+                os = new FileOutputStream(f);
+                for (;;) {
+                    int len = zip.read(arr);
+                    if (len == -1) {
+                        break;
+                    }
+                    os.write(arr, 0, len);
+                }
+                os.close();
+            }
+            zip.close();
+        } catch (IOException ex) {
+            LOG.log(Level.INFO, "Failed to populate {0}", cache);
         }
     }
 
