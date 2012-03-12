@@ -54,6 +54,7 @@ import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.spi.BrowserLookupProvider;
 import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
+import org.netbeans.modules.web.browser.api.EnhancedBrowser;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.util.Lookup;
@@ -65,7 +66,9 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Radim Kubacki
  */
-public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
+public abstract class ExtBrowserImpl extends HtmlBrowser.Impl 
+    implements EnhancedBrowser 
+{
     /** Lookup of this {@code HtmlBrowser.Impl}.  */
     private Lookup lookup;
 
@@ -81,11 +84,29 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     
     private BrowserTabDescriptor browserTabDescriptor = null;
     
+    private boolean enhancedMode;
+    
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
       */
     public ExtBrowserImpl () {
         pcs = new PropertyChangeSupport (this);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#hasEnhancedMode()
+     */
+    @Override
+    public boolean hasEnhancedMode() {
+        return enhancedMode;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.netbeans.modules.web.browser.api.EnhancedBrowser#setEnhancedMode(boolean)
+     */
+    @Override
+    public void setEnhancedMode( boolean mode ) {
+        enhancedMode = mode;
     }
     
     private Lookup createLookup() {
@@ -113,18 +134,26 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     
     
     /** Dummy implementations */
+    @Override
     public boolean isBackward() { return false; }
+    @Override
     public boolean isForward() { return false; }
+    @Override
     public void backward() { }
+    @Override
     public void forward() { }
+    @Override
     public boolean isHistory() { return false; }
+    @Override
     public void showHistory() {}
+    @Override
     public void stopLoading() { }
     
     protected void setTitle (String title) {
         return;
     }
     
+    @Override
     public String getTitle() {
         return "";
     }
@@ -134,6 +163,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @return status message.
      */
+    @Override
     public String getStatusMessage() {
         return "";
     }
@@ -141,21 +171,26 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     /** Call setURL again to force reloading.
      * Browser must be set to reload document and do not cache them.
      */
+    @Override
     public void reloadDocument() {
         if (url == null) {
             return;
         }
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        if (tab != null) {
-            ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
-        } 
-        /*
-         * Do nothing in case there is no possibility to reload browser in the opened tab.
-         * Otherwise each call of this method opens new tab in the browser and 
-         * this has no relation to "reload".
-         * else {
+        if ( hasEnhancedMode() ){
+            BrowserTabDescriptor tab = getBrowserTabDescriptor();
+            if (tab != null) {
+                ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
+            }
+            /*
+             * Do nothing in case there is no possibility to reload browser in the opened tab.
+             * Otherwise each call of this method opens new tab in the browser and 
+             * this has no relation to "reload".
+             * 
+            }*/
+        }
+        else {
             setURL(url);
-        }*/
+        }
     }
         
     
@@ -163,6 +198,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @return current URL.
      */
+    @Override
     public URL getURL() {
         return url;
     }
@@ -173,26 +209,35 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @param url URL to show in the browser.
      */
+    @Override
     final public void setURL(URL url) {
-        BrowserTabDescriptor tab = getBrowserTabDescriptor();
-        if (tab == null) {
-            BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
-            boolean pluginAvailable = ExtensionManager.isInstalled(pluginId);
-            if ( !pluginAvailable ){
-                ExtensionManager.installExtension( pluginId, new PluginLoader() {
-                    
-                    @Override
-                    public void requestPluginLoad( URL url ) {
-                        loadURLInBrowser(url);
-                    }
-                });
+        if (hasEnhancedMode()) {
+            BrowserTabDescriptor tab = getBrowserTabDescriptor();
+            if (tab == null) {
+                BrowserId pluginId = extBrowserFactory.getBrowserFamilyId();
+                boolean pluginAvailable = ExtensionManager
+                        .isInstalled(pluginId);
+                if (!pluginAvailable) {
+                    ExtensionManager.installExtension(pluginId,
+                            new PluginLoader() {
+
+                                @Override
+                                public void requestPluginLoad( URL url ) {
+                                    loadURLInBrowser(url);
+                                }
+                            });
+                }
+                if (pluginAvailable) {
+                    ExternalBrowserPlugin.getInstance().register(url, this);
+                }
+                loadURLInBrowser(url);
             }
-            if ( pluginAvailable ) {
-                ExternalBrowserPlugin.getInstance().register(url, this);
+            else {
+                ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
             }
+        }
+        else {
             loadURLInBrowser(url);
-        } else {
-            ExternalBrowserPlugin.getInstance().showURLInTab(tab, url);
         }
         this.url = url;
     }
@@ -203,6 +248,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @return visual component of html browser.
      */
+    @Override
     public final java.awt.Component getComponent() {
         return null;
     }
@@ -211,6 +257,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @param l Listener to add.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener (l);
     }
@@ -219,6 +266,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
      *
      * @param l Listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
         pcs.removePropertyChangeListener (l);
     }

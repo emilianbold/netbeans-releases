@@ -113,6 +113,9 @@ public final class WebBrowserPane {
             }
             else {
                 impl = descriptor.getFactory().createHtmlBrowserImpl();
+                if ( impl instanceof EnhancedBrowser ){
+                    ((EnhancedBrowser) impl).setEnhancedMode( true );
+                }
                 impl.addPropertyChangeListener(listener);
             }
         }
