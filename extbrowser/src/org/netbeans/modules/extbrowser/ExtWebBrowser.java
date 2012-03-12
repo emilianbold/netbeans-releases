@@ -80,6 +80,8 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     /** Name of DDE server corresponding to Google Chrome */
     public static final String CHROME = "CHROME";   // NOI18N
+    /** Name of DDE server corresponding to Google Chromium */
+    public static final String CHROMIUM = "CHROMIUM";   // NOI18N
     /** Name of DDE server corresponding to Internet Explorer */
     public static final String IEXPLORE = "IEXPLORE";   // NOI18N
     /** Name of DDE server corresponding to Mozilla */

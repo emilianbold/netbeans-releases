@@ -56,10 +56,10 @@ import org.netbeans.modules.extbrowser.plugins.BrowserId;
 
 public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListener {
 
-    private static final long serialVersionUID = -2097024098026706995L;
-
     /** storage for starting browser timeout property */
     //protected int browserStartTimeout = 6000;
+
+    private static final long serialVersionUID = -4553174676787993831L;
 
     /** Creates new ExtWebBrowser */
     public ChromeBrowser() {
