@@ -39,12 +39,10 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.NodeVisitor;
-import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
-import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
 
 
 /**

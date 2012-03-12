@@ -52,8 +52,8 @@ import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxEdgeSizeModel;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelBase;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelProvider;
 import org.netbeans.modules.css.model.impl.semantic.DeclarationsMarginModel;
 import org.netbeans.modules.css.model.impl.semantic.DeclarationsPaddingModel;
 
@@ -86,7 +86,7 @@ public class DeclarationsI extends ModelElement implements Declarations {
         if(isValid()) {
             Collection<SemanticModel> models = new ArrayList<SemanticModel>();
             
-            DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, this);
+            DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, this);
             models.add((SemanticModel)dbm.getBox(BoxType.MARGIN));
             models.add((SemanticModel)dbm.getBox(BoxType.PADDING));
             models.add((SemanticModel)dbm.getBox(BoxType.BORDER_COLOR));

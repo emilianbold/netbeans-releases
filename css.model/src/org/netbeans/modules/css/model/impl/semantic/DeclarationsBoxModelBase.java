@@ -41,27 +41,27 @@
  */
 package org.netbeans.modules.css.model.impl.semantic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
 import org.netbeans.modules.css.lib.api.properties.model.Box;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
-import org.netbeans.modules.css.lib.api.properties.model.PropertyModelId;
 import org.netbeans.modules.css.model.api.*;
 
 /**
  *
  * @author marekfukala
  */
-public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
+public abstract class DeclarationsBoxModelBase implements EditableBox {
 
     private final Model model;
     private final Declarations declarations;
-    private final Collection<Declaration> involved;
-    private final Box box;
+    private Collection<Declaration> involved;
+    private Box box;
     
-    public DeclarationsBoxEdgeSizeModel(Model model, 
+    public DeclarationsBoxModelBase(Model model, 
             Declarations element, 
             Collection<Declaration> involved, 
             Box box) {
@@ -71,7 +71,11 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
         this.box = box;
     }
 
-    protected abstract String getPropertyBaseName();
+    //all edges property like margin
+    protected abstract String getPropertyName();
+
+    //for single edge properties like margin-left
+    protected abstract String getPropertyName(Edge edge);
     
     @Override
     public BoxElement getEdge(Edge edge) {
@@ -97,9 +101,12 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
         for (Declaration d : involved) {
             declarations.removeDeclaration(d);
         }
+        
+        //reinitialize the involved elements
+        involved = new ArrayList<Declaration>();
 
         ElementFactory f = model.getElementFactory();
-        Property p = f.createProperty(getPropertyBaseName()); //NOI18N
+        Property p = f.createProperty(getPropertyName()); //NOI18N
 
         //TODO remove the hardcoding - make the algorithm generic
 
@@ -108,6 +115,9 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
         BoxElement b = map.get(Edge.BOTTOM);
         BoxElement l = map.get(Edge.LEFT);
 
+        //reinitialize the box
+        box = new Box.EachEdge(t, r, b, l);
+        
         if (t == null || r == null || b == null || l == null) {
             //use single properties
             for (Edge e : Edge.values()) {
@@ -117,11 +127,12 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
                     Expression expr = f.createExpression(propVal);
                     PropertyValue pv = f.createPropertyValue(expr);
 
-                    String propertyName = String.format("%s-%s", getPropertyBaseName(), e.name().toLowerCase()); //NOI18N
+                    String propertyName = getPropertyName(edge);
                     Property prop = f.createProperty(propertyName);
                     Declaration newD = f.createDeclaration(prop, pv, false);
 
                     declarations.addDeclaration(newD);
+                    involved.add(newD);
 
                 }
             }
@@ -176,6 +187,7 @@ public abstract class DeclarationsBoxEdgeSizeModel implements EditableBox {
             Declaration newD = f.createDeclaration(p, pv, false);
 
             declarations.addDeclaration(newD);
+            involved.add(newD);
         }
 
     }

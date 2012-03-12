@@ -78,7 +78,7 @@ public class DeclarationsMarginModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, ds);
                 EditableBox margin = dbm.getBox(BoxType.MARGIN);
                 
                 assertNotNull(margin);
@@ -125,7 +125,7 @@ public class DeclarationsMarginModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, ds);
                 EditableBox margin = dbm.getBox(BoxType.MARGIN);
                 
                 assertNotNull(margin);
