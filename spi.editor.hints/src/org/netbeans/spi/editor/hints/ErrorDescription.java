@@ -44,6 +44,7 @@
 package org.netbeans.spi.editor.hints;
 
 import java.io.IOException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 
@@ -78,7 +79,12 @@ public final class ErrorDescription {
         this.file        = file;
     }
 
-    public String getId() {
+    /**
+     * @return the id specified when constructing this {@link ErrorDescription},
+     *         or null if none was specified
+     * @since 1.22
+     */
+    public @CheckForNull String getId() {
         return id;
     }
 
@@ -89,7 +95,12 @@ public final class ErrorDescription {
         return description;
     }
 
-    public CharSequence getDetails() {
+    /**
+     * @return the details specified when constructing this {@link ErrorDescription},
+     *         or null if none was specified
+     * @since 1.22
+     */
+    public @CheckForNull CharSequence getDetails() {
         return details;
     }
 
