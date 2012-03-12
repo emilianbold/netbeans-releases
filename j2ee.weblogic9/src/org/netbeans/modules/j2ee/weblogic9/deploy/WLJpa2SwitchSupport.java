@@ -321,7 +321,7 @@ public final class WLJpa2SwitchSupport {
         if (urls != null) {
             for (URL url : urls) {
                 URL file = FileUtil.getArchiveFile(url);
-                if (file.getFile().endsWith("BUG9923849_WLS103MP4.jar")) { // NOI18N
+                if (file != null && file.getFile().endsWith("BUG9923849_WLS103MP4.jar")) { // NOI18N
                     return true;
                 }
             }

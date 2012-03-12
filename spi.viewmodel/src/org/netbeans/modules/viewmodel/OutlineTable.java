@@ -123,6 +123,8 @@ ExplorerManager.Provider, PropertyChangeListener {
     //private List                expandedPaths = new ArrayList ();
     TreeModelRoot               currentTreeModelRoot; // Accessed from test
     
+    //private TreeTableView       ttv;
+    //private TreeView            tv;
     
     public OutlineTable () {
         setLayout (new BorderLayout ());
@@ -134,6 +136,10 @@ ExplorerManager.Provider, PropertyChangeListener {
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
             treeTable.setTreeHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
+//        ttv = new TreeTableView(); // To test only
+//        add(ttv, "East");
+//        tv = new BeanTreeView(); // To test only
+//        add(tv, "West");
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
             // Track column visibility changes.
