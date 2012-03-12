@@ -74,12 +74,6 @@ public final class ResultModel {
      * limit (number of found files or matches) reached during search
      */
     private Limit limitReached = null;
-    
-    /**
-     * are all search types defined in the {@code SearchGroup} those
-     * defined in the Utilities module?
-     */
-    final boolean isBasicCriteriaOnly = true;
     /** */
     final BasicSearchCriteria basicCriteria;
     /** */
@@ -211,25 +205,10 @@ public final class ResultModel {
     }
     
     /**
-     * Performs a quick check whether
-     * {@linkplain MatchingObject matching objects} contained in this model
-     * can have details.
-     * 
-     * @return  {@code Boolean.TRUE} if all matching objects have details,
-     *          {@code Boolean.FALSE} if no matching object has details,
-     *          {@code null} if matching objects may have details
-     *                         (if more time consuming check would be necessary)
+     * Check whether search results have text details.
      */
-    public Boolean canHaveDetails() {
-        Boolean ret;
-        if (isFullText) {
-            ret = Boolean.TRUE;
-        } else if (isBasicCriteriaOnly) {
-            ret = Boolean.FALSE;
-        } else {
-            ret = null;
-        }
-        return ret;
+     public boolean canHaveDetails() {
+       return isFullText;
     }
     
     /*
@@ -347,7 +326,7 @@ public final class ResultModel {
 
     /**
      */
-    String getLimitDisplayName() {
+    public String getLimitDisplayName() {
         return (limitReached != null) ? limitReached.getDisplayName() : null;
     }
 
@@ -367,7 +346,7 @@ public final class ResultModel {
     
     /**
      */
-    synchronized String getExceptionMsg() {
+    public synchronized String getExceptionMsg() {
         return finishMessage;
     }
 
@@ -383,5 +362,9 @@ public final class ResultModel {
      */
     synchronized void setCommonSearchFolder(FileObject fo) {
         this.commonSearchRoot = fo;
+    }
+
+    public boolean isSearchAndReplace() {
+        return searchAndReplace;
     }
 }

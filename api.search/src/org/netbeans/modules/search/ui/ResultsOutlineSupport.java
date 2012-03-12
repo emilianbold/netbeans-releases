@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.search.ui;
 
+import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -65,6 +66,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 
@@ -73,6 +75,9 @@ import org.openide.util.lookup.Lookups;
  * @author jhavlin
  */
 public class ResultsOutlineSupport {
+
+    private static final String ROOT_NODE_ICON =
+            "org/netbeans/modules/search/res/context.gif";              //NOI18N
 
     OutlineView outlineView;
     private boolean replacing;
@@ -191,6 +196,16 @@ public class ResultsOutlineSupport {
 
         private void expand() {
             outlineView.expandNode(resultsNode);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            return ImageUtilities.loadImage(ROOT_NODE_ICON);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            return getIcon(type);
         }
     }
 
