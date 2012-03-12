@@ -45,15 +45,7 @@
 package org.netbeans.modules.groovy.editor.api;
 
 import java.util.Iterator;
-import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.MethodNode;
-import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.Parameter;
-import org.codehaus.groovy.ast.Variable;
-import org.codehaus.groovy.ast.VariableScope;
+import org.codehaus.groovy.ast.*;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ClosureListExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
@@ -110,7 +102,8 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
             if (token == null) {
                 return;
             }
-            if (!isValidToken(token)) {
+            ts.movePrevious();
+            if (!isValidToken(token, ts.token())) {
                 return;
             }
         } finally {
@@ -184,7 +177,7 @@ public class TypeVisitor extends ClassCodeVisitorSupport {
     /**
      * Children can override this if it has special requirement on selected token.
      */
-    protected boolean isValidToken(Token<? extends GroovyTokenId> token) {
+    protected boolean isValidToken(Token<? extends GroovyTokenId> currentToken, Token<? extends GroovyTokenId> previousToken) {
         return true;
     }
 
