@@ -47,8 +47,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -62,6 +64,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
 import org.netbeans.modules.php.project.phpunit.annotations.AssertTag;
@@ -74,11 +77,11 @@ public class PhpAnnotationsPanel extends JPanel {
 
     @NbBundle.Messages({
         "PhpAnnotationsPanel.table.column.name.title=Name",
-        "PhpAnnotationsPanel.table.column.forType.title=For Type"
+        "PhpAnnotationsPanel.table.column.for.title=For"
     })
     static final String[] TABLE_COLUMNS = {
         Bundle.PhpAnnotationsPanel_table_column_name_title(),
-        Bundle.PhpAnnotationsPanel_table_column_forType_title(),
+        Bundle.PhpAnnotationsPanel_table_column_for_title(),
     };
 
 
@@ -200,7 +203,7 @@ public class PhpAnnotationsPanel extends JPanel {
             // XXX provide better sample
             AssertTag assertTag = new AssertTag();
             return new UserAnnotationTag(
-                    UserAnnotationTag.Type.METHOD,
+                    EnumSet.of(UserAnnotationTag.Type.METHOD),
                     assertTag.getName(),
                     assertTag.getInsertTemplate(),
                     assertTag.getDocumentation());
@@ -297,7 +300,7 @@ public class PhpAnnotationsPanel extends JPanel {
             if (columnIndex == 0) {
                 return annotation.getName();
             } else if (columnIndex == 1) {
-                return annotation.getType().getTitle();
+                return getTypes(annotation.getTypes());
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
@@ -320,6 +323,15 @@ public class PhpAnnotationsPanel extends JPanel {
 
         public void fireAnnotationsChange() {
             fireTableDataChanged();
+        }
+
+        @NbBundle.Messages("PhpAnnotationsPanel.value.delimiter=, ")
+        private Object getTypes(EnumSet<UserAnnotationTag.Type> types) {
+            ArrayList<String> list = new ArrayList<String>(types.size());
+            for (UserAnnotationTag.Type type : types) {
+                list.add(type.getTitle());
+            }
+            return StringUtils.implode(list, Bundle.PhpAnnotationsPanel_value_delimiter());
         }
 
     }

@@ -44,11 +44,14 @@ package org.netbeans.modules.php.project.annotations;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
-import javax.swing.JComboBox;
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -74,37 +77,36 @@ public class UserAnnotationPanel extends JPanel {
     private static final long serialVersionUID = -135764354564L;
 
     // @GuardedBy(EDT)
+    private final EnumMap<UserAnnotationTag.Type, JCheckBox> typeCheckBoxes;
+    // @GuardedBy(EDT)
     private DialogDescriptor descriptor = null;
     // @GuardedBy(EDT)
     private NotificationLineSupport notificationLineSupport = null;
 
 
     public UserAnnotationPanel(UserAnnotationTag annotation) {
+        assert EventQueue.isDispatchThread();
         assert annotation != null;
 
         initComponents();
+        typeCheckBoxes = createTypeCheckBoxes();
         init(annotation);
     }
 
     private void init(UserAnnotationTag annotation) {
-        // types
-        for (UserAnnotationTag.Type type : UserAnnotationTag.Type.values()) {
-            typeComboBox.addItem(type);
-        }
+        assert EventQueue.isDispatchThread();
         // values
         nameTextField.setText(annotation.getName());
-        typeComboBox.setSelectedItem(annotation.getType());
+        selectTypes(annotation.getTypes());
         templateTextField.setText(annotation.getInsertTemplate());
         docTextArea.setText(annotation.getDocumentation());
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
+        ItemListener defaultItemListener = new DefaultItemListener();
         nameTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        typeComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                validateAnnotation();
-            }
-        });
+        for (JCheckBox checkBox : typeCheckBoxes.values()) {
+            checkBox.addItemListener(defaultItemListener);
+        }
         templateTextField.getDocument().addDocumentListener(defaultDocumentListener);
         docTextArea.getDocument().addDocumentListener(defaultDocumentListener);
     }
@@ -134,7 +136,7 @@ public class UserAnnotationPanel extends JPanel {
 
     public UserAnnotationTag getAnnotation() {
         return new UserAnnotationTag(
-                (UserAnnotationTag.Type) typeComboBox.getSelectedItem(),
+                getSelectedTypes(),
                 nameTextField.getText(),
                 templateTextField.getText(),
                 docTextArea.getText());
@@ -142,7 +144,7 @@ public class UserAnnotationPanel extends JPanel {
 
     @NbBundle.Messages({
         "UserAnnotationPanel.error.noName=Name must be set.",
-        "UserAnnotationPanel.error.noType=Type must be set.",
+        "UserAnnotationPanel.error.noFor=At least one target must be set.",
         "UserAnnotationPanel.error.noTemplate=Template must be set."
     })
     void validateAnnotation() {
@@ -150,8 +152,8 @@ public class UserAnnotationPanel extends JPanel {
             setError(Bundle.UserAnnotationPanel_error_noName());
             return;
         }
-        if (typeComboBox.getSelectedIndex() == -1) {
-            setError(Bundle.UserAnnotationPanel_error_noType());
+        if (!anyTypeSelected()) {
+            setError(Bundle.UserAnnotationPanel_error_noFor());
             return;
         }
         if (!StringUtils.hasText(templateTextField.getText())) {
@@ -173,6 +175,59 @@ public class UserAnnotationPanel extends JPanel {
         descriptor.setValid(true);
     }
 
+    private EnumMap<UserAnnotationTag.Type, JCheckBox> createTypeCheckBoxes() {
+        EnumMap<UserAnnotationTag.Type, JCheckBox> map = new EnumMap<UserAnnotationTag.Type, JCheckBox>(UserAnnotationTag.Type.class);
+        for (UserAnnotationTag.Type type : UserAnnotationTag.Type.values()) {
+            JCheckBox checkBox;
+            switch (type) {
+                case FUNCTION:
+                    checkBox = functionCheckBox;
+                    break;
+                case TYPE:
+                    checkBox = typeCheckBox;
+                    break;
+                case METHOD:
+                    checkBox = methodCheckBox;
+                    break;
+                case FIELD:
+                    checkBox = fieldCheckBox;
+                    break;
+                default:
+                    throw new IllegalStateException("Unknown type: " + type);
+            }
+            map.put(type, checkBox);
+        }
+        return map;
+    }
+
+    private void selectTypes(EnumSet<UserAnnotationTag.Type> types) {
+        assert EventQueue.isDispatchThread();
+        for (UserAnnotationTag.Type type : types) {
+            typeCheckBoxes.get(type).setSelected(true);
+        }
+    }
+
+    private boolean anyTypeSelected() {
+        assert EventQueue.isDispatchThread();
+        for (JCheckBox checkBox : typeCheckBoxes.values()) {
+            if (checkBox.isSelected()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private EnumSet<UserAnnotationTag.Type> getSelectedTypes() {
+        assert EventQueue.isDispatchThread();
+        EnumSet<UserAnnotationTag.Type> types = EnumSet.noneOf(UserAnnotationTag.Type.class);
+        for (Map.Entry<UserAnnotationTag.Type, JCheckBox> entry : typeCheckBoxes.entrySet()) {
+            if (entry.getValue().isSelected()) {
+                types.add(entry.getKey());
+            }
+        }
+        return types;
+    }
+
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
      */
@@ -182,8 +237,11 @@ public class UserAnnotationPanel extends JPanel {
 
         nameLabel = new JLabel();
         nameTextField = new JTextField();
-        typeLabel = new JLabel();
-        typeComboBox = new JComboBox();
+        forLabel = new JLabel();
+        functionCheckBox = new JCheckBox();
+        typeCheckBox = new JCheckBox();
+        fieldCheckBox = new JCheckBox();
+        methodCheckBox = new JCheckBox();
         templateLabel = new JLabel();
         templateTextField = new JTextField();
         docLabel = new JLabel();
@@ -195,8 +253,13 @@ public class UserAnnotationPanel extends JPanel {
         nameLabel.setLabelFor(nameTextField);
         Mnemonics.setLocalizedText(nameLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.nameLabel.text")); // NOI18N
 
-        typeLabel.setLabelFor(typeComboBox);
-        Mnemonics.setLocalizedText(typeLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.typeLabel.text")); // NOI18N
+        forLabel.setLabelFor(functionCheckBox);
+
+        Mnemonics.setLocalizedText(forLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.forLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(functionCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.functionCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(typeCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.typeCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(fieldCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.fieldCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(methodCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.methodCheckBox.text")); // NOI18N
 
         templateLabel.setLabelFor(templateTextField);
 
@@ -213,16 +276,18 @@ public class UserAnnotationPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(docLabel).addComponent(templateLabel).addComponent(typeLabel).addComponent(nameLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField).addComponent(typeComboBox, 0, 275, Short.MAX_VALUE).addComponent(templateTextField).addComponent(docScrollPane)).addContainerGap())
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(docLabel).addComponent(templateLabel).addComponent(forLabel).addComponent(nameLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField, GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE).addComponent(templateTextField).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(methodCheckBox).addComponent(fieldCheckBox).addComponent(typeCheckBox).addComponent(functionCheckBox)).addGap(0, 0, Short.MAX_VALUE)).addComponent(docScrollPane)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(typeLabel).addComponent(typeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(templateLabel).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addComponent(functionCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addComponent(typeCheckBox).addPreferredGap(ComponentPlacement.RELATED).addComponent(fieldCheckBox).addPreferredGap(ComponentPlacement.RELATED).addComponent(methodCheckBox).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(templateLabel).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(docLabel)
 
-                        .addContainerGap(255, Short.MAX_VALUE)).addComponent(docScrollPane)))
+                        .addContainerGap(179, Short.MAX_VALUE)).addComponent(docScrollPane)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -230,12 +295,15 @@ public class UserAnnotationPanel extends JPanel {
     private JLabel docLabel;
     private JScrollPane docScrollPane;
     private JTextArea docTextArea;
+    private JCheckBox fieldCheckBox;
+    private JLabel forLabel;
+    private JCheckBox functionCheckBox;
+    private JCheckBox methodCheckBox;
     private JLabel nameLabel;
     private JTextField nameTextField;
     private JLabel templateLabel;
     private JTextField templateTextField;
-    private JComboBox typeComboBox;
-    private JLabel typeLabel;
+    private JCheckBox typeCheckBox;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -258,6 +326,15 @@ public class UserAnnotationPanel extends JPanel {
         }
 
         private void processUpdate() {
+            validateAnnotation();
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
             validateAnnotation();
         }
 
