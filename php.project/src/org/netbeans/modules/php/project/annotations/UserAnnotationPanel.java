@@ -55,9 +55,13 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.php.api.util.StringUtils;
@@ -99,7 +103,7 @@ public class UserAnnotationPanel extends JPanel {
         nameTextField.setText(annotation.getName());
         selectTypes(annotation.getTypes());
         templateTextField.setText(annotation.getInsertTemplate());
-        docTextArea.setText(annotation.getDocumentation());
+        sourceTextArea.setText(annotation.getDocumentation());
         // listeners
         DocumentListener defaultDocumentListener = new DefaultDocumentListener();
         ItemListener defaultItemListener = new DefaultItemListener();
@@ -108,7 +112,13 @@ public class UserAnnotationPanel extends JPanel {
             checkBox.addItemListener(defaultItemListener);
         }
         templateTextField.getDocument().addDocumentListener(defaultDocumentListener);
-        docTextArea.getDocument().addDocumentListener(defaultDocumentListener);
+        sourceTextArea.getDocument().addDocumentListener(defaultDocumentListener);
+        docTabbedPane.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                refreshPreview();
+            }
+        });
     }
 
     @NbBundle.Messages("UserAnnotationPanel.title=Custom Annotation")
@@ -139,7 +149,7 @@ public class UserAnnotationPanel extends JPanel {
                 getSelectedTypes(),
                 nameTextField.getText(),
                 templateTextField.getText(),
-                docTextArea.getText());
+                sourceTextArea.getText());
     }
 
     @NbBundle.Messages({
@@ -173,6 +183,13 @@ public class UserAnnotationPanel extends JPanel {
         assert EventQueue.isDispatchThread();
         notificationLineSupport.clearMessages();
         descriptor.setValid(true);
+    }
+
+    void refreshPreview() {
+        if (docTabbedPane.getSelectedIndex() == 1) {
+            previewTextPane.setText(sourceTextArea.getText());
+            previewTextPane.setCaretPosition(0);
+        }
     }
 
     private EnumMap<UserAnnotationTag.Type, JCheckBox> createTypeCheckBoxes() {
@@ -245,8 +262,11 @@ public class UserAnnotationPanel extends JPanel {
         templateLabel = new JLabel();
         templateTextField = new JTextField();
         docLabel = new JLabel();
-        docScrollPane = new JScrollPane();
-        docTextArea = new JTextArea();
+        docTabbedPane = new JTabbedPane();
+        sourceScrollPane = new JScrollPane();
+        sourceTextArea = new JTextArea();
+        previewScrollPane = new JScrollPane();
+        previewTextPane = new JTextPane();
 
         setPreferredSize(new Dimension(400, 350));
 
@@ -256,19 +276,28 @@ public class UserAnnotationPanel extends JPanel {
         forLabel.setLabelFor(functionCheckBox);
 
         Mnemonics.setLocalizedText(forLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.forLabel.text")); // NOI18N
-        Mnemonics.setLocalizedText(functionCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.functionCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(typeCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.typeCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(fieldCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.fieldCheckBox.text")); // NOI18N
-        Mnemonics.setLocalizedText(methodCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.methodCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(functionCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.functionCheckBox.text"));
+        Mnemonics.setLocalizedText(typeCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.typeCheckBox.text"));
+        Mnemonics.setLocalizedText(fieldCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.fieldCheckBox.text"));
+        Mnemonics.setLocalizedText(methodCheckBox, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.methodCheckBox.text"));
 
         templateLabel.setLabelFor(templateTextField);
-
         Mnemonics.setLocalizedText(templateLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.templateLabel.text")); // NOI18N
+
+        docLabel.setLabelFor(docTabbedPane);
         Mnemonics.setLocalizedText(docLabel, NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.docLabel.text")); // NOI18N
 
-        docTextArea.setTabSize(4);
-        docTextArea.setWrapStyleWord(true);
-        docScrollPane.setViewportView(docTextArea);
+        sourceTextArea.setTabSize(4);
+        sourceTextArea.setWrapStyleWord(true);
+        sourceScrollPane.setViewportView(sourceTextArea);
+
+        docTabbedPane.addTab(NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.sourceScrollPane.TabConstraints.tabTitle"), sourceScrollPane); // NOI18N
+
+        previewTextPane.setContentType("text/html"); // NOI18N
+        previewTextPane.setEditable(false);
+        previewScrollPane.setViewportView(previewTextPane);
+
+        docTabbedPane.addTab(NbBundle.getMessage(UserAnnotationPanel.class, "UserAnnotationPanel.previewScrollPane.TabConstraints.tabTitle"), previewScrollPane); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -278,30 +307,33 @@ public class UserAnnotationPanel extends JPanel {
 
                 .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addComponent(nameLabel)).addGap(80, 80, 80).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField).addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addComponent(nameLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField).addGroup(layout.createSequentialGroup()
 
-                                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(functionCheckBox).addComponent(fieldCheckBox)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(methodCheckBox).addComponent(typeCheckBox)).addGap(0, 0, Short.MAX_VALUE)))).addComponent(templateTextField).addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(functionCheckBox).addComponent(fieldCheckBox)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(methodCheckBox).addComponent(typeCheckBox)).addGap(0, 234, Short.MAX_VALUE)))).addComponent(templateTextField).addGroup(layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(templateLabel).addComponent(docLabel)).addGap(0, 0, Short.MAX_VALUE)).addComponent(docScrollPane)).addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(templateLabel).addComponent(docLabel)).addGap(0, 0, Short.MAX_VALUE)).addComponent(docTabbedPane)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(functionCheckBox).addComponent(typeCheckBox))).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(fieldCheckBox).addComponent(methodCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(docLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(docScrollPane, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(forLabel).addComponent(functionCheckBox).addComponent(typeCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(fieldCheckBox).addComponent(methodCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(docLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(docTabbedPane, GroupLayout.DEFAULT_SIZE, 335, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel docLabel;
-    private JScrollPane docScrollPane;
-    private JTextArea docTextArea;
+    private JTabbedPane docTabbedPane;
     private JCheckBox fieldCheckBox;
     private JLabel forLabel;
     private JCheckBox functionCheckBox;
     private JCheckBox methodCheckBox;
     private JLabel nameLabel;
     private JTextField nameTextField;
+    private JScrollPane previewScrollPane;
+    private JTextPane previewTextPane;
+    private JScrollPane sourceScrollPane;
+    private JTextArea sourceTextArea;
     private JLabel templateLabel;
     private JTextField templateTextField;
     private JCheckBox typeCheckBox;
