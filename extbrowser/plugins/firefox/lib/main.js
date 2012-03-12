@@ -40,9 +40,14 @@
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
 
+// ******************
+// * RELOAD ON SAVE *
+// ******************
+
 var pageWorkers = require("page-worker");
 var self = require("self");
 var tabs = require("tabs");
+var contextMenu = require("context-menu");
 
 var pendingMessages = [];
 var backgroundPageReady = false;
@@ -123,6 +128,10 @@ page.on('message', function (message) {
     }
 });
 
+page.on('error', function (error) {
+    console.log(error.name + ': ' + error.message);
+});
+
 // Register event listeners
 tabs.on('open', function (tab) {
     assignIdIfNeeded(tab);
@@ -152,3 +161,116 @@ for each (var tab in tabs) {
         sendReadyMessage(tab[tabIdKey], url);
     }
 }
+
+// *******************
+// * PAGE INSPECTION *
+// *******************
+
+var PageInspectionContext = function() {
+    this.cleanup();
+};
+
+PageInspectionContext.currentContext = null;
+
+PageInspectionContext.inspect = function() {
+    if (this.currentContext) {
+        this.currentContext.cleanup();
+    }
+    this.currentContext = new PageInspectionContext();
+    this.currentContext.initInspectedPage()
+    this.currentContext.initBackgroundPage();
+}
+
+PageInspectionContext.prototype.cleanup = function() {
+    this.inspectedPageReady = false;
+    this.backgroundPageReady = false;
+    this.pendingMessages = [];
+    if (this.inspectedPage) {
+        this.inspectedPage.destroy();
+        this.inspectedPage = null;
+    }
+    if (this.backgroundPage) {
+        this.backgroundPage.destroy();
+        this.backgroundPage = null;
+    }
+    if (PageInspectionContext.currentContext === this) {
+        PageInspectionContext.currentContext = null;
+    }
+}
+
+PageInspectionContext.prototype.initInspectedPage = function() {
+    var that = this;
+    var tab = tabs.activeTab;
+    this.tabId = tab[tabIdKey];
+    this.inspectedPage = tab.attach({
+        contentScriptFile: self.data.url('eval.js')
+    });
+    this.inspectedPage.on('message', function(message) {
+        if (message.message === 'ready') {
+            that.inspectedPageReady = true;
+            for (var i=0; i<that.pendingMessages; i++) {
+                that.inspectedPage.postMessage(that.pendingMessages[i]);
+            }
+            that.pendingMessages = [];
+        } else {
+            that.backgroundPage.postMessage(message);
+        }
+    });
+    this.inspectedPage.on('detach', function() {
+        that.cleanup();
+    });
+};
+
+PageInspectionContext.prototype.initBackgroundPage = function() {
+    var that = this;
+    this.backgroundPage = pageWorkers.Page({
+        contentURL: self.data.url('main.html'),
+        contentScriptFile : self.data.url('inspect.js')
+    });
+    this.backgroundPage.on('message', function (message) {
+        var type = message.message;
+        if (type === 'ready') {
+            that.backgroundPageReady = true;
+            that.backgroundPage.postMessage({
+                message: 'inspect',
+                tabId: that.tabId
+            });
+        } else if (type === 'detach') {
+            that.cleanup();
+        } else {
+            if (that.inspectedPageReady) {
+                that.inspectedPage.postMessage(message);
+            } else {
+                that.pendingMessages.push(message);
+            }
+        }
+    });
+    this.backgroundPage.on('error', function (error) {
+        console.log(error.name + ': ' + error.message);
+        that.cleanup();
+    });
+};
+
+// Unfortunately, the main script (=this script) doesn't support WebSockets.
+// Hence, we have to start WebSocket communication in some content script.
+// Content script of the inspected page cannot be used for this purpose because
+// FireFox doesn't allow ws: (i.e., unsecured WebSocket connections) from
+// pages with https: schema. Therefore, we use a background page for that.
+contextMenu.Item({
+    label: "Inspect in NetBeans",
+    image: self.data.url('netbeans16.png'),
+    context: [
+        contextMenu.URLContext(["file://*", "http://*", "https://*"]),
+        contextMenu.SelectorContext("*")
+    ],
+    contentScript: 'self.on("click", function () {' +
+                   '  self.postMessage("inspect");' +
+                   '});',
+    onMessage: function(message) {
+        if (message === 'inspect') {
+            PageInspectionContext.inspect();
+        } else {
+            console.log('Unexpected message from the content script of the menu item!');
+        }
+    }
+});
