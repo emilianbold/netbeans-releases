@@ -60,6 +60,7 @@ import org.netbeans.modules.apisupport.project.api.NodeFactoryUtils;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -75,6 +76,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -153,9 +155,10 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         ImportantFilesNode(Project project, Children ch) {
-            super(ch, org.openide.util.lookup.Lookups.singleton(project));
+            super(ch, Lookups.fixed(project,
+                    SearchInfoDefinitionFactory.createSearchInfoBySubnodes(ch)));
         }
-        
+
         public @Override String getName() {
             return IMPORTANT_FILES_NAME;
         }

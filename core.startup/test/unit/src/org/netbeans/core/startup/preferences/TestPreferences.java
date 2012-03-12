@@ -45,6 +45,7 @@
 package org.netbeans.core.startup.preferences;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.NodeChangeEvent;
@@ -52,7 +53,6 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import org.junit.Ignore;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -483,6 +483,29 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         pref.removeNode();
         assertNotNull(pref);
         pref.put("key1", "value1");
+    }
+    
+    public void testRemoveNode2 () throws Exception {
+        NbPreferences pref = (NbPreferences) getPreferencesNode();
+        assertNotNull(pref);
+        pref.put("key0", "value0");
+        pref.flush();        
+        assertEquals("value0", pref.get("key0", null));
+        
+        pref.removeNode();
+        pref.flush();
+        assertNotNull(pref);        
+        PropertiesStorage storage = (PropertiesStorage) pref.fileStorage;        
+        assertNull(storage.toPropertiesFile());
+        assertNull(storage.toFolder());
+        assertFalse(storage.existsNode());
+        
+        storage.toPropertiesFile(true);
+        assertNotNull(storage.toPropertiesFile());
+        
+        OutputStream storageOutputStream = storage.toPropertiesFile().getOutputStream();
+        storageOutputStream.write("key1=value1".getBytes("ISO-8859-1"));
+        storageOutputStream.close();
     }
     
     @Override

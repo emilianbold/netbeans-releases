@@ -93,7 +93,8 @@ public class OpenCLITest extends NbTestCase {
     }
     
     public void testOpenFolder() throws Exception {
-        CommandLine.getDefault().process(new String[] { "--open", dir.getPath() });
+        CommandLine.create(Handler.class).process(
+                new String[] { "--open", dir.getPath()});
 
         assertNotNull("A node has been explored", MockNodeOperation.explored);
         

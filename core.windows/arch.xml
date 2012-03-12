@@ -592,6 +592,12 @@ Action obj = (Action)fo.getAttribute("instanceCreate");
     soon go away - as soon as apisupport is rewritten to have quasi-preview
     editor.
     </api>
+  <api name="org.netbeans.core.WindowSystem.show" category="friend" group="systemproperty"
+    type="export">
+      One can use <code>-Dorg.netbeans.core.WindowSystem.show=false</code>
+      to run all initialization of window system except showing the main
+      window. Used by installer to pre-generate caches.
+    </api>
   </p>
  </answer>
 

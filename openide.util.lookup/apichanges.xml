@@ -87,7 +87,7 @@ for (<a href="@JDK@/java/net/URLStreamHandlerFactory.html">URLStreamHandlerFacto
 }
            </pre>
         </description>
-        <issue number="179289"/>
+        <issue number="209322"/>
     </change>
     <change id="named.services.provider">
         <api name="lookup"/>

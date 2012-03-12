@@ -196,7 +196,7 @@ public class MyNode extends AbstractNode {
    <api group="java"
         name="SearchAPI"
         type="export"
-        category="devel"
+        category="deprecated"
         url="@TOP@index.html">
    defines interfaces <code>SearchInfo</code>, <code>FileObjectFilter</code>
    and a factory class <code>SearchInfoFactory</code>
