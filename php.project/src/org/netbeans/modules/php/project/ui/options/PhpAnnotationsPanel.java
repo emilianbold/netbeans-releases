@@ -201,7 +201,7 @@ public class PhpAnnotationsPanel extends JPanel {
         if (index == null) {
             return new UserAnnotationTag(
                     EnumSet.of(UserAnnotationTag.Type.FUNCTION),
-                    "@sample", // NOI18N
+                    "sample", // NOI18N
                     "@sample(${param1}, ${param2} = ${value1})", // NOI18N
                     NbBundle.getMessage(PhpAnnotationsPanel.class, "SampleTag.documentation"));
         }
