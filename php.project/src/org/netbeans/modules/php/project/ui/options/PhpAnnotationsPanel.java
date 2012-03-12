@@ -67,7 +67,6 @@ import javax.swing.table.AbstractTableModel;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
-import org.netbeans.modules.php.project.phpunit.annotations.AssertTag;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -200,13 +199,11 @@ public class PhpAnnotationsPanel extends JPanel {
     private UserAnnotationTag getAnnotation(Integer index) {
         assert EventQueue.isDispatchThread();
         if (index == null) {
-            // XXX provide better sample
-            AssertTag assertTag = new AssertTag();
             return new UserAnnotationTag(
-                    EnumSet.of(UserAnnotationTag.Type.METHOD),
-                    assertTag.getName(),
-                    assertTag.getInsertTemplate(),
-                    assertTag.getDocumentation());
+                    EnumSet.of(UserAnnotationTag.Type.FUNCTION),
+                    "@sample", // NOI18N
+                    "@sample(${param1}, ${param2} = ${value1})", // NOI18N
+                    NbBundle.getMessage(PhpAnnotationsPanel.class, "SampleTag.documentation"));
         }
         return annotations.get(index.intValue());
     }
