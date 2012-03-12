@@ -41,16 +41,15 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.modules.java.hints.introduce.*;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.spi.editor.hints.Context;
-import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
+import org.netbeans.spi.editor.hints.Context;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
  *
@@ -59,7 +58,7 @@ import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.Doc
 @MimeRegistration(mimeType="text/x-java", service=PositionRefresherHelper.class)
 public class ErrorPositionRefresherHelper extends PositionRefresherHelper<DocumentVersion> {
     public ErrorPositionRefresherHelper() {
-        super(IntroduceHint.class.getName());
+        super(ErrorHintsProvider.class.getName());
     }
     
     @Override
@@ -98,8 +97,13 @@ public class ErrorPositionRefresherHelper extends PositionRefresherHelper<Docume
 
     private static final Object KEY_ERRORS = new Object();
     
-    void setVersion(Document doc, List<ErrorDescription> errors) {
-        setVersion(doc, new DocumentVersion(doc));
+    static void setVersion(Document doc, List<ErrorDescription> errors) {
+        for (PositionRefresherHelper h : MimeLookup.getLookup("text/x-java").lookupAll(ErrorPositionRefresherHelper.class)) {
+            if (h instanceof ErrorPositionRefresherHelper) {
+                ((ErrorPositionRefresherHelper) h).setVersion(doc, new DocumentVersion(doc));
+            }
+        }
+        
         doc.putProperty(KEY_ERRORS, errors);
     }
 
