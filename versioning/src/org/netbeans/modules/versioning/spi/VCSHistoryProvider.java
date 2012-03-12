@@ -367,7 +367,7 @@ public interface VCSHistoryProvider {
     public void removeHistoryChangeListener(HistoryChangeListener l);
 
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#getRevisionFile(java.io.File, java.io.File)}
      * is expected to work.
      * 
@@ -393,7 +393,7 @@ public interface VCSHistoryProvider {
     }
     
     /**
-     * Implement and pass over to {@link HisotryEntry} in case 
+     * Implement and pass over to {@link HistoryEntry} in case 
      * {@link HistoryEntry#setMessage(java.lang.String)}
      * is expected to work.
      * 
