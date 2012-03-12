@@ -126,7 +126,11 @@ final public class Settings {
     }
     
     public void store() {
-        getPreferences().put(SELECTED_HOME, selectedHome.getPath() + "#" + selectedHome.getVersion());
+        if (selectedHome != null) {
+            getPreferences().put(SELECTED_HOME, selectedHome.getPath() + "#" + selectedHome.getVersion());
+        } else {
+            getPreferences().remove(SELECTED_HOME);
+        }
         storeUserDefinedHomes();
         getPreferences().putBoolean(SAVE_BEFORE_LAUNCH, saveBeforeLaunch);
         try {
