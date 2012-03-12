@@ -113,8 +113,8 @@ public class MacBrowserImpl extends ExtBrowserImpl {
      * @see org.netbeans.modules.extbrowser.ExtBrowserImpl#getPluginId(java.net.URL)
      */
     @Override
-    protected BrowserId getPluginId( URL url ) {
-        BrowserId pluginId = super.getPluginId(url);
+    protected BrowserId getSystemDefaultPluginId( URL url ) {
+        BrowserId pluginId = super.getSystemDefaultPluginId(url);
         if (pluginId != BrowserId.UNKNOWN && pluginId != BrowserId.OTHER){
             return pluginId;
         }

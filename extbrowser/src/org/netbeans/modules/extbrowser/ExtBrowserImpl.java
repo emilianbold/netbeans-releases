@@ -96,7 +96,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
                 ));
         
         String arg = extBrowserFactory.getBrowserExecutable().getArguments();
-        ExternalBrowserDescriptor desc = new ExternalBrowserDescriptor(getPluginId(url), arg);
+        ExternalBrowserDescriptor desc = new ExternalBrowserDescriptor(extBrowserFactory.getBrowserFamilyId(), arg);
         for (BrowserLookupProvider prov : Lookup.getDefault().lookupAll(BrowserLookupProvider.class)) {
             Lookup l = prov.createBrowserLookup(desc);
             if (l != null) {
@@ -107,8 +107,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
     }
     
-    protected BrowserId getPluginId(URL url){
-        return extBrowserFactory.getBrowserFamilyId();
+    protected BrowserId getSystemDefaultPluginId(URL url){
+        return BrowserId.UNKNOWN;
     }
     
     

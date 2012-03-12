@@ -178,6 +178,10 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
 
     @Override
     public BrowserId getBrowserFamilyId() {
+        HtmlBrowser.Impl impl = createHtmlBrowserImpl();
+        if (impl != null && impl instanceof ExtBrowserImpl) {
+            return ((ExtBrowserImpl)impl).getSystemDefaultPluginId(null);
+        }
         return BrowserId.UNKNOWN;
     }
 
