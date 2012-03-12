@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,34 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxType;
+import java.util.Collection;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColorTest extends BoxTestBase {
+public class GrammarParseTreeConvertor {
 
-    public BorderColorTest(String name) {
-        super(name);
+    static Node createParseTreeWithOnlyNamedNodes(Node root) {
+        return convert(root);
     }
 
-    @Override
-    protected boolean isDebugMode() {
-        return true;
+    private static Node convert(Node node) {
+        Node converted;
+        if(node instanceof Node.GrammarElementNode) {
+            //create a copy of the grammar node
+            Node.GrammarElementNode gen = (Node.GrammarElementNode)node;
+            Node.GrammarElementNode copy = new Node.GrammarElementNode(gen.getGrammarElement());
+            converted = copy;
+            
+            //and set a modified list of child nodes
+            gatherNonAnonymousNodes(gen, copy.modifiableChildren());
+            
+        } else if(node instanceof Node.ResolvedTokenNode) {
+            //no need to convert
+            converted = node;
+            
+        } else {
+            throw new IllegalStateException();
+        }
+        
+        return converted;
     }
     
-    
+    private static void gatherNonAnonymousNodes(Node node, Collection<Node> children) {
+        for (Node child : node.children()) {
+            if (isAnonymousNode(child)) {
+                gatherNonAnonymousNodes(child, children);
+            } else {
+                children.add(convert(child));
+            }
+        }
+    }
 
-    public void testBorderColor() {
-        assertBox("border-color", "red", BoxType.BORDER_COLOR, "red");
-//        assertBox("border-color", "red green", BoxType.BORDER_COLOR, "red", "green", "red", "green");
-//        assertBox("border-color", "red green blue", BoxType.BORDER_COLOR, "red", "green", "blue", "green");
-//        assertBox("border-color", "red green blue yellow", BoxType.BORDER_COLOR, "red", "green", "blue", "yellow");        
+    private static boolean isAnonymousNode(Node child) {
+        return child.name() == null;
     }
-    
 }

@@ -46,9 +46,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.lib.api.properties.*;
-import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
 import static org.netbeans.modules.css.lib.api.properties.GrammarResolver.Log.*;
+import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
 
@@ -135,8 +134,7 @@ public class GrammarResolver {
         lastResolved = null;
         tokenizer = new Tokenizer(input);
         
-        boolean skipAnonymousElements = !isFeatureEnabled(Feature.keepAnonymousElementsInParseTree);
-        GrammarParseTreeBuilder parseTreeBuilder = new GrammarParseTreeBuilder(skipAnonymousElements);
+        GrammarParseTreeBuilder parseTreeBuilder = new GrammarParseTreeBuilder();
         addGrammarResolverListener(parseTreeBuilder);
         
         fireStarting();
@@ -156,7 +154,13 @@ public class GrammarResolver {
         
         removeGrammarResolverListener(parseTreeBuilder);
         
-        return new GrammarResolverResult(tokenizer, inputResolved, resolvedTokens, getAlternatives(), parseTreeBuilder.getParseTree());
+        boolean skipAnonymousElements = !isFeatureEnabled(Feature.keepAnonymousElementsInParseTree);
+        
+        Node rootNode = skipAnonymousElements 
+                ? GrammarParseTreeConvertor.createParseTreeWithOnlyNamedNodes(parseTreeBuilder.getParseTree())
+                : parseTreeBuilder.getParseTree();
+        
+        return new GrammarResolverResult(tokenizer, inputResolved, resolvedTokens, getAlternatives(), rootNode);
         
     }
     

@@ -94,6 +94,7 @@ public abstract class BoxTestBase extends CssTestBase {
 
         Node root = val.getParseTree();
         if(isDebugMode()) {
+            System.out.println("generated parse tree:");
             dumpTree(root);
         }
         

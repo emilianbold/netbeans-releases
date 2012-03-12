@@ -55,56 +55,39 @@ public interface Node {
 
     public Collection<Node> children();
 
-    public Node parent();
-    
     public void accept(NodeVisitor visitor);
 
     public CharSequence image();
-    
-    
-    
-    
-    static abstract class AbstractNode implements Node {
-        
-        private Node parent;
 
-        void setParent(Node parent) {
-            this.parent = parent;
-        }
-        
-        @Override
-        public Node parent() {
-            return parent;
-        }
+    static abstract class AbstractNode implements Node {
 
         @Override
         public void accept(NodeVisitor visitor) {
-            if(visitor.visit(this)) {
-                for(Node child : children()) {
+            if (visitor.visit(this)) {
+                for (Node child : children()) {
                     child.accept(visitor);
                 }
                 visitor.unvisit(this);
             }
         }
-
     }
-    
+
     static class ResolvedTokenNode extends AbstractNode {
-        
+
         private ResolvedToken resolvedToken = null;
 
         public ResolvedTokenNode() {
         }
-        
+
         public void setResolvedToken(ResolvedToken resolvedToken) {
             this.resolvedToken = resolvedToken;
         }
-        
+
         @Override
         public Collection<Node> children() {
             return Collections.emptyList();
         }
-        
+
         public Token getToken() {
             return resolvedToken.token();
         }
@@ -118,46 +101,49 @@ public interface Node {
         public String toString() {
             return resolvedToken.token().toString();
         }
-       
+
         @Override
         public String name() {
             return resolvedToken.getGrammarElement().value();
         }
-        
     }
-    
-    static class GrammarElementNode extends AbstractNode {
-        
-        private GrammarElement element;
 
+    static class GrammarElementNode extends AbstractNode {
+
+        private GrammarElement element;
         private Collection<Node> children = new ArrayList<Node>();
 
         public GrammarElementNode(GrammarElement group) {
             this.element = group;
         }
+        
+        public GrammarElement getGrammarElement() {
+            return element;
+        }
 
         public <T extends AbstractNode> T addChild(T node) {
             children.add(node);
-            node.setParent(this);
-            
             return node;
         }
-        
+
         public <T extends AbstractNode> boolean removeChild(T node) {
-            node.setParent(null);
             return children.remove(node);
         }
-        
+
         @Override
         public String name() {
             return element.getName();
         }
-        
+
         @Override
         public Collection<Node> children() {
             return children;
         }
 
+        public Collection<Node> modifiableChildren() {
+            return children;
+        }
+        
         @Override
         public String toString() {
             return element.toString();
@@ -166,14 +152,12 @@ public interface Node {
         @Override
         public CharSequence image() {
             StringBuilder sb = new StringBuilder();
-            for(Node child : children()) {
+            for (Node child : children()) {
                 sb.append(child.image());
             }
             return sb.toString();
         }
-
-        
     }
 
-   
+
 }
