@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.java.hints.analysis;
 
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -71,7 +69,6 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -79,11 +76,16 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@ServiceProvider(service=Analyzer.class)
 public class AnalyzerImpl implements Analyzer {
 
+    private final Context ctx;
+
+    private AnalyzerImpl(Context ctx) {
+        this.ctx = ctx;
+    }
+
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
+    public Iterable<? extends ErrorDescription> analyze() {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
@@ -117,72 +119,70 @@ public class AnalyzerImpl implements Analyzer {
     }
 
     @Override
-    public String getDisplayName() {
-        return "NetBeans Java Hints";
+    public boolean cancel() {
+        return false;
     }
 
-    private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
+    @ServiceProvider(service=AnalyzerFactory.class)
+    public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
 
-    @Override
-    public Iterable<? extends WarningDescription> getWarnings() {
-        List<WarningDescription> result = new ArrayList<WarningDescription>();
-
-        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
-            String displayName = e.getKey().displayName;
-            String category = e.getKey().category;
-            FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
-            String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : "Unknown";
-
-            result.add(WarningDescription.create("text/x-java:" + e.getKey().id, displayName, category, categoryDisplayName));
+        public AnalyzerFactoryImpl() {
+            super("java.hints", "NetBeans Java Hints", "org/netbeans/modules/java/hints/analyzer/ui/warning-glyph.gif");
         }
 
-        return result;
-    }
+        private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
 
-    static String getFileObjectLocalizedName( FileObject fo ) {
-        Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
-        if ( o instanceof String ) {
-            String bundleName = (String)o;
-            try {
-                ResourceBundle rb = NbBundle.getBundle(bundleName);
-                String localizedName = rb.getString(fo.getPath());
-                return localizedName;
+        @Override
+        public Iterable<? extends WarningDescription> getWarnings() {
+            List<WarningDescription> result = new ArrayList<WarningDescription>();
+
+            for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
+                String displayName = e.getKey().displayName;
+                String category = e.getKey().category;
+                FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
+                String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : "Unknown";
+
+                result.add(WarningDescription.create("text/x-java:" + e.getKey().id, displayName, category, categoryDisplayName));
             }
-            catch(MissingResourceException ex ) {
-                // Do nothing return file path;
-            }
+
+            return result;
         }
-        return fo.getPath();
-    }
 
-    @Override
-    public Image getIcon() {
-        return ImageUtilities.loadImage("org/netbeans/modules/java/hints/analyzer/ui/warning-glyph.gif");
-    }
-
-    @Override
-    public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public CustomizerProvider<ClassPathBasedHintWrapper, JPanel> getCustomizerProvider() {
-        return new CustomizerProvider<ClassPathBasedHintWrapper, JPanel>() {
-            @Override public ClassPathBasedHintWrapper initialize() {
-                ClassPathBasedHintWrapper w = new ClassPathBasedHintWrapper();
-                
-                w.compute();
-                return w;
+        static String getFileObjectLocalizedName( FileObject fo ) {
+            Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+            if ( o instanceof String ) {
+                String bundleName = (String)o;
+                try {
+                    ResourceBundle rb = NbBundle.getBundle(bundleName);
+                    String localizedName = rb.getString(fo.getPath());
+                    return localizedName;
+                }
+                catch(MissingResourceException ex ) {
+                    // Do nothing return file path;
+                }
             }
-            @Override public JPanel createComponent(CustomizerContext context) {
-                return new JPanel();
-            }
-        };
-    }
+            return fo.getPath();
+        }
 
-    @Override
-    public String getId() {
-        return "java.hints";
-    }
+        @Override
+        public CustomizerProvider<ClassPathBasedHintWrapper, JPanel> getCustomizerProvider() {
+            return new CustomizerProvider<ClassPathBasedHintWrapper, JPanel>() {
+                @Override public ClassPathBasedHintWrapper initialize() {
+                    ClassPathBasedHintWrapper w = new ClassPathBasedHintWrapper();
 
+                    w.compute();
+                    return w;
+                }
+                @Override public JPanel createComponent(CustomizerContext context) {
+                    return new JPanel();
+                }
+            };
+        }
+
+        @Override
+        public Analyzer createAnalyzer(Context context) {
+            return new AnalyzerImpl(context);
+        }
+
+    }
 }

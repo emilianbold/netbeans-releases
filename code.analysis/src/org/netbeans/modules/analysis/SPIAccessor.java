@@ -44,6 +44,7 @@ package org.netbeans.modules.analysis;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
@@ -79,5 +80,9 @@ public abstract class SPIAccessor {
     public abstract String getWarningCategoryDisplayName(WarningDescription description);
 
     public abstract String getSelectedId(CustomizerContext<?, ?> cc);
+
+    public abstract String getAnalyzerId(AnalyzerFactory selected);
+    public abstract String getAnalyzerDisplayName(AnalyzerFactory a);
+    public abstract String getAnalyzerIconPath(AnalyzerFactory analyzer);
 
 }

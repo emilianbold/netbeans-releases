@@ -45,16 +45,13 @@ import edu.umd.cs.findbugs.BugCategory;
 import edu.umd.cs.findbugs.BugPattern;
 import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -62,11 +59,16 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-@ServiceProvider(service=Analyzer.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzer")
 public class AnalyzerImpl implements Analyzer {
 
+    private final Context ctx;
+
+    public AnalyzerImpl(Context ctx) {
+        this.ctx = ctx;
+    }
+
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Context ctx) {
+    public Iterable<? extends ErrorDescription> analyze() {
         Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         int i = 0;
@@ -84,61 +86,60 @@ public class AnalyzerImpl implements Analyzer {
     }
 
     @Override
-    @Messages("DN_FindBugs=FindBugs")
-    public String getDisplayName() {
-        return Bundle.DN_FindBugs();
+    public boolean cancel() {
+        return false;
     }
 
-    @Override
-    public Iterable<? extends WarningDescription> getWarnings() {
-        List<WarningDescription> result = new ArrayList<WarningDescription>();
-        DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
+    @ServiceProvider(service=AnalyzerFactory.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzerFactory")
+    public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
 
-        for (DetectorFactory df : dfc.getFactories()) {
-            for (BugPattern bp : df.getReportedBugPatterns()) {
-                BugCategory c = dfc.getBugCategory(bp.getCategory());
-
-                if (c.isHidden()) continue;
-
-                result.add(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bp.getType(), bp.getShortDescription(), bp.getCategory(), c.getShortDescription()));
-            }
+        @Messages("DN_FindBugs=FindBugs")
+        public AnalyzerFactoryImpl() {
+            super("findbugs", Bundle.DN_FindBugs(), "edu/umd/cs/findbugs/gui2/bugSplash3.png");
         }
 
-        return result;
-    }
+        @Override
+        public Iterable<? extends WarningDescription> getWarnings() {
+            List<WarningDescription> result = new ArrayList<WarningDescription>();
+            DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
 
-    @Override
-    public Image getIcon() {
-        return ImageUtilities.loadImage("edu/umd/cs/findbugs/gui2/bugSplash3.png");
-    }
+            for (DetectorFactory df : dfc.getFactories()) {
+                for (BugPattern bp : df.getReportedBugPatterns()) {
+                    BugCategory c = dfc.getBugCategory(bp.getCategory());
 
-    @Override
-    public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-        return Collections.emptyList();
-    }
+                    if (c.isHidden()) continue;
 
-    @Override
-    public CustomizerProvider<Void, FindBugsPanel> getCustomizerProvider() {
-        return new CustomizerProvider<Void, FindBugsPanel>() {
-            @Override public Void initialize() {
-                return null;
-            }
-            @Override public FindBugsPanel createComponent(CustomizerContext<Void, FindBugsPanel> context) {
-                FindBugsPanel result = context.getPreviousComponent();
-
-                if (result == null) {
-                    result = new FindBugsPanel(null, context);
+                    result.add(WarningDescription.create(RunFindBugs.PREFIX_FINDBUGS + bp.getType(), bp.getShortDescription(), bp.getCategory(), c.getShortDescription()));
                 }
-
-                result.setSettings(context.getSettings());
-                
-                return result;
             }
-        };
-    }
 
-    @Override
-    public String getId() {
-        return "findbugs";
+            return result;
+        }
+
+        @Override
+        public CustomizerProvider<Void, FindBugsPanel> getCustomizerProvider() {
+            return new CustomizerProvider<Void, FindBugsPanel>() {
+                @Override public Void initialize() {
+                    return null;
+                }
+                @Override public FindBugsPanel createComponent(CustomizerContext<Void, FindBugsPanel> context) {
+                    FindBugsPanel result = context.getPreviousComponent();
+
+                    if (result == null) {
+                        result = new FindBugsPanel(null, context);
+                    }
+
+                    result.setSettings(context.getSettings());
+
+                    return result;
+                }
+            };
+        }
+
+        @Override
+        public Analyzer createAnalyzer(Context context) {
+            return new AnalyzerImpl(context);
+        }
+
     }
 }

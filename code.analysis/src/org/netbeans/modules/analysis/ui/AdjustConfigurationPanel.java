@@ -45,11 +45,9 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -61,11 +59,10 @@ import org.netbeans.modules.analysis.Configuration;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.RunAnalysisPanel.ConfigurationRenderer;
 import org.netbeans.modules.analysis.SPIAccessor;
-import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerContext;
 import org.netbeans.modules.analysis.spi.Analyzer.CustomizerProvider;
 import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -73,15 +70,15 @@ import org.openide.util.NbPreferences;
  */
 public class AdjustConfigurationPanel extends javax.swing.JPanel {
 
-    private final Iterable<? extends Analyzer> analyzers;
+    private final Iterable<? extends AnalyzerFactory> analyzers;
     private CustomizerContext<Object, JComponent> currentContext;
-    private final Map<Analyzer, CustomizerProvider> customizers = new IdentityHashMap<Analyzer, CustomizerProvider>();
+    private final Map<AnalyzerFactory, CustomizerProvider> customizers = new IdentityHashMap<AnalyzerFactory, CustomizerProvider>();
     private final Map<CustomizerProvider, Object> customizerData = new IdentityHashMap<CustomizerProvider, Object>();
     private Preferences currentPreferences;
     private ModifiedPreferences currentPreferencesOverlay;
     private final String preselected;
 
-    public AdjustConfigurationPanel(Iterable<? extends Analyzer> analyzers, String preselected) {
+    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, String preselected) {
         this.preselected = preselected;
         initComponents();
 
@@ -112,7 +109,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         this.analyzers = analyzers;
         DefaultComboBoxModel analyzerModel = new DefaultComboBoxModel();
 
-        for (Analyzer a : analyzers) {
+        for (AnalyzerFactory a : analyzers) {
             customizers.put(a, a.getCustomizerProvider());
             analyzerModel.addElement(a);
         }
@@ -146,7 +143,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void updateAnalyzer() {
-        Analyzer selected = (Analyzer) analyzerCombo.getSelectedItem();
+        AnalyzerFactory selected = (AnalyzerFactory) analyzerCombo.getSelectedItem();
         CustomizerProvider customizer = customizers.get(selected);
 
         if (!customizerData.containsKey(customizer)) {
@@ -154,7 +151,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         }
 
         Object data = customizerData.get(customizer);
-        Preferences settings = currentPreferencesOverlay.node(selected.getId());
+        Preferences settings = currentPreferencesOverlay.node(SPIAccessor.ACCESSOR.getAnalyzerId(selected));
 
         analyzerPanel.removeAll();
         currentContext = new CustomizerContext<Object, JComponent>(settings, preselected, null, data);
@@ -237,8 +234,8 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
 
     private static class AnalyzerRenderer extends DefaultListCellRenderer {
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Analyzer a = (Analyzer) value;
-            return super.getListCellRendererComponent(list, a.getDisplayName(), index, isSelected, cellHasFocus);
+            AnalyzerFactory a = (AnalyzerFactory) value;
+            return super.getListCellRendererComponent(list, SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a), index, isSelected, cellHasFocus);
         }
     }
 

@@ -43,12 +43,14 @@ package org.netbeans.modules.analysis.spi;
 
 import java.awt.Image;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.analysis.SPIAccessor;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.Cancellable;
 import org.openide.util.lookup.ServiceProvider;
 
 /**A static analyzer. Called by the infrastructure on a given {@link Scope} to perform
@@ -58,40 +60,53 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author lahvac
  */
-public interface Analyzer {
+public interface Analyzer extends Cancellable {
 
-    /**Perform the analysis over the {@link Scope} defined in the given {@code contextt}.
+    /**Perform the analysis over the {@link Scope} defined in the {@link Context}
+     * given while constructing the {@link Analyzer}.
      *
-     * @param context containing the required {@link Scope}
      * @return the found warnings
      */
-    public Iterable<? extends ErrorDescription> analyze(Context context);
+    public Iterable<? extends ErrorDescription> analyze();
 
-    /**If additional modules are required to run the analysis (for the given {@code context}),
-     * return their description.
-     *
-     * @param context over which the analysis is going to be performed
-     * @return descriptions of the missing plugins, if any
-     */
-    public Collection<? extends MissingPlugin> requiredPlugins(Context context);
+    public static abstract class AnalyzerFactory {
+        private final String id;
+        private final String displayName;
+        private final String iconPath;
 
-    public String getId();
-    
-    /**The name of this analyzer, in the format it should be shown to the user.
-     *
-     * @return the name of this analyzer
-     */
-    public String getDisplayName();
+        /**
+         *
+         * @param id a unique id of the analyzer
+         * @param displayName the display name of the analyzer
+         * @param iconPath a path to icon associated with this analyzer
+         */
+        public AnalyzerFactory(String id, String displayName, String iconPath) {
+            this.id = id;
+            this.displayName = displayName;
+            this.iconPath = iconPath;
+        }
 
-    /**The icon associated with this analyzer.
-     *
-     * @return the icon of this analyzer
-     */
-    public Image  getIcon();
-    
-    public Iterable<? extends WarningDescription> getWarnings();
+        /**If additional modules are required to run the analysis (for the given {@code context}),
+         * return their description.
+         *
+         * @param context over which the analysis is going to be performed
+         * @return descriptions of the missing plugins, if any
+         */
+        public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
+            return Collections.emptyList();
+        }
 
-    public <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider();
+        public abstract Iterable<? extends WarningDescription> getWarnings();
+
+        public abstract <D, C extends JComponent> CustomizerProvider<D, C> getCustomizerProvider();
+
+        /**
+         *
+         * @param context containing the required {@link Scope}
+         * @return
+         */
+        public abstract Analyzer createAnalyzer(Context context);
+    }
 
     public static final class Context {
         private final Scope scope;
@@ -187,6 +202,21 @@ public interface Analyzer {
                 @Override
                 public String getSelectedId(CustomizerContext<?, ?> cc) {
                     return cc.selectedId;
+                }
+
+                @Override
+                public String getAnalyzerId(AnalyzerFactory selected) {
+                    return selected.id;
+                }
+
+                @Override
+                public String getAnalyzerDisplayName(AnalyzerFactory a) {
+                    return a.displayName;
+                }
+
+                @Override
+                public String getAnalyzerIconPath(AnalyzerFactory analyzer) {
+                    return analyzer.iconPath;
                 }
             };
         }

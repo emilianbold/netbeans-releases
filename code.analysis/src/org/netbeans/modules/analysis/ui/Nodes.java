@@ -59,7 +59,7 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.analysis.SPIAccessor;
-import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -80,6 +80,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -90,21 +91,21 @@ import org.openide.util.lookup.Lookups;
  */
 public class Nodes {
 
-    public static Node constructSemiLogicalView(Map<Analyzer, List<ErrorDescription>> errors, boolean byCategory) {
+    public static Node constructSemiLogicalView(Map<AnalyzerFactory, List<ErrorDescription>> errors, boolean byCategory) {
         if (!byCategory) {
             return new AbstractNode(constructSemiLogicalViewChildren(sortErrors(errors, BY_FILE)));
         } else {
-            Map<String, Map<Analyzer, List<ErrorDescription>>> byCategoryId = sortErrors(errors, BY_CATEGORY);
+            Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byCategoryId = sortErrors(errors, BY_CATEGORY);
             List<Node> categoryNodes = new ArrayList<Node>(byCategoryId.size());
 
-            for (Entry<String, Map<Analyzer, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
-                Map<String, Map<Analyzer, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
+            for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> categoryEntry : byCategoryId.entrySet()) {
+                Map<String, Map<AnalyzerFactory, List<ErrorDescription>>> byId = sortErrors(categoryEntry.getValue(), BY_ID);
                 List<Node> warningTypNodes = new ArrayList<Node>(byId.size());
                 long categoryWarnings = 0;
 
-                for (Entry<String, Map<Analyzer, List<ErrorDescription>>> typeEntry : byId.entrySet()) {
-                    Analyzer analyzer = typeEntry.getValue().keySet().iterator().next();
-                    final Image icon = analyzer.getIcon();
+                for (Entry<String, Map<AnalyzerFactory, List<ErrorDescription>>> typeEntry : byId.entrySet()) {
+                    AnalyzerFactory analyzer = typeEntry.getValue().keySet().iterator().next();
+                    final Image icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(analyzer));
 
                     String typeDisplayName = typeEntry.getKey() != null ? SPIAccessor.ACCESSOR.getWarningDisplayName(findWarningDescription(analyzer, typeEntry.getKey())) : null;
                     long typeWarnings = 0;
@@ -136,8 +137,8 @@ public class Nodes {
                     }
                 });
 
-                Analyzer analyzer = categoryEntry.getValue().keySet().iterator().next();//TODO: multiple Analyzers for this category
-                final Image icon = analyzer.getIcon();
+                AnalyzerFactory analyzer = categoryEntry.getValue().keySet().iterator().next();//TODO: multiple Analyzers for this category
+                final Image icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(analyzer));
                 final String categoryHtmlDisplayName = translate(categoryEntry.getKey()) + " <b>(" + categoryWarnings + ")</b>";
                 AbstractNode categoryNode = new AbstractNode(new DirectChildren(warningTypNodes)) {
                     @Override public Image getIcon(int type) {
@@ -164,16 +165,16 @@ public class Nodes {
         }
     }
 
-    private static <A> Map<A, Map<Analyzer, List<ErrorDescription>>> sortErrors(Map<Analyzer, List<ErrorDescription>> errs, AttributeRetriever<A> attributeRetriever) {
-        Map<A, Map<Analyzer, List<ErrorDescription>>> sorted = new HashMap<A, Map<Analyzer, List<ErrorDescription>>>();
+    private static <A> Map<A, Map<AnalyzerFactory, List<ErrorDescription>>> sortErrors(Map<AnalyzerFactory, List<ErrorDescription>> errs, AttributeRetriever<A> attributeRetriever) {
+        Map<A, Map<AnalyzerFactory, List<ErrorDescription>>> sorted = new HashMap<A, Map<AnalyzerFactory, List<ErrorDescription>>>();
 
-        for (Entry<Analyzer, List<ErrorDescription>> e : errs.entrySet()) {
+        for (Entry<AnalyzerFactory, List<ErrorDescription>> e : errs.entrySet()) {
             for (ErrorDescription ed : e.getValue()) {
                 A attribute = attributeRetriever.getAttribute(e.getKey(), ed);
-                Map<Analyzer, List<ErrorDescription>> errorsPerAttributeValue = sorted.get(attribute);
+                Map<AnalyzerFactory, List<ErrorDescription>> errorsPerAttributeValue = sorted.get(attribute);
 
                 if (errorsPerAttributeValue == null) {
-                    sorted.put(attribute, errorsPerAttributeValue = new HashMap<Analyzer, List<ErrorDescription>>());
+                    sorted.put(attribute, errorsPerAttributeValue = new HashMap<AnalyzerFactory, List<ErrorDescription>>());
                 }
 
                 List<ErrorDescription> errors = errorsPerAttributeValue.get(e.getKey());
@@ -190,23 +191,23 @@ public class Nodes {
     }
 
     private static interface AttributeRetriever<A> {
-        public A getAttribute(Analyzer a, ErrorDescription ed);
+        public A getAttribute(AnalyzerFactory a, ErrorDescription ed);
     }
 
     private static final AttributeRetriever<FileObject> BY_FILE = new AttributeRetriever<FileObject>() {
-        @Override public FileObject getAttribute(Analyzer a, ErrorDescription ed) {
+        @Override public FileObject getAttribute(AnalyzerFactory a, ErrorDescription ed) {
             return ed.getFile();
         }
     };
 
     private static final AttributeRetriever<String> BY_ID = new AttributeRetriever<String>() {
-        @Override public String getAttribute(Analyzer a, ErrorDescription ed) {
+        @Override public String getAttribute(AnalyzerFactory a, ErrorDescription ed) {
             return ed.getId();
         }
     };
 
     private static final AttributeRetriever<String> BY_CATEGORY = new AttributeRetriever<String>() {
-        @Override public String getAttribute(Analyzer a, ErrorDescription ed) {
+        @Override public String getAttribute(AnalyzerFactory a, ErrorDescription ed) {
             String id = ed.getId();
 
             if (id == null) {
@@ -221,7 +222,7 @@ public class Nodes {
         }
     };
 
-    private static WarningDescription findWarningDescription(Analyzer a, String id) {
+    private static WarningDescription findWarningDescription(AnalyzerFactory a, String id) {
         //XXX: performance - should cache the results
         for (WarningDescription wd : a.getWarnings()) {
             if (id.equals(SPIAccessor.ACCESSOR.getWarningId(wd))) {
@@ -232,7 +233,7 @@ public class Nodes {
         return null;
     }
 
-    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
+    private static Children constructSemiLogicalViewChildren(final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         return Children.create(new ChildFactory<Node>() {
             @Override protected boolean createKeys(List<Node> toPopulate) {
                 toPopulate.addAll(constructSemiLogicalViewNodes(errors));
@@ -244,8 +245,8 @@ public class Nodes {
         }, true);
     }
 
-    private static List<Node> constructSemiLogicalViewNodes(Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
-        Map<Project, Map<FileObject, Map<Analyzer, List<ErrorDescription>>>> projects = new HashMap<Project, Map<FileObject, Map<Analyzer, List<ErrorDescription>>>>();
+    private static List<Node> constructSemiLogicalViewNodes(Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+        Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new HashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
         
         for (FileObject file : errors.keySet()) {
             Project project = FileOwnerQuery.getOwner(file);
@@ -254,10 +255,10 @@ public class Nodes {
                 Logger.getLogger(Nodes.class.getName()).log(Level.WARNING, "Cannot find project for: {0}", FileUtil.getFileDisplayName(file));
             }
             
-            Map<FileObject, Map<Analyzer, List<ErrorDescription>>> projectErrors = projects.get(project);
+            Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> projectErrors = projects.get(project);
             
             if (projectErrors == null) {
-                projects.put(project, projectErrors = new HashMap<FileObject, Map<Analyzer, List<ErrorDescription>>>());
+                projects.put(project, projectErrors = new HashMap<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>());
             }
             
             projectErrors.put(file, errors.get(file));
@@ -284,7 +285,7 @@ public class Nodes {
         return nodes;
     }
     
-    private static Node constructSemiLogicalView(final Project p, final Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
+    private static Node constructSemiLogicalView(final Project p, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
         final LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         final Node view;
         
@@ -301,7 +302,7 @@ public class Nodes {
 
         int warnings = 0;
 
-        for (Map<Analyzer, List<ErrorDescription>> v1 : errors.values()) {
+        for (Map<AnalyzerFactory, List<ErrorDescription>> v1 : errors.values()) {
             for (List<ErrorDescription> v2 : v1.values()) {
                 warnings += v2.size();
             }
@@ -309,9 +310,9 @@ public class Nodes {
         
         final Wrapper[] w = new Wrapper[1];
 
-        w[0] = new Wrapper(view, warnings, new FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>>() {
-            private Map<Node, Map<Analyzer, List<ErrorDescription>>> computed;
-            @Override public synchronized Map<Node, Map<Analyzer, List<ErrorDescription>>> get() {
+        w[0] = new Wrapper(view, warnings, new FutureValue<Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>>>() {
+            private Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> computed;
+            @Override public synchronized Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> get() {
                 if (computed == null) {
                     computed = resolveFileNodes(lvp, w[0], view, errors);
                 }
@@ -323,11 +324,11 @@ public class Nodes {
         return w[0];
     }
 
-    private static Map<Node, Map<Analyzer, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, Wrapper w, final Node view, Map<FileObject, Map<Analyzer, List<ErrorDescription>>> errors) {
-        Map<Node, Map<Analyzer, List<ErrorDescription>>> fileNodes = new HashMap<Node, Map<Analyzer, List<ErrorDescription>>>();
+    private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, Wrapper w, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
+        Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = new HashMap<Node, Map<AnalyzerFactory, List<ErrorDescription>>>();
 
         for (FileObject file : errors.keySet()) {
-            Map<Analyzer, List<ErrorDescription>> eds = errors.get(file);
+            Map<AnalyzerFactory, List<ErrorDescription>> eds = errors.get(file);
             Node foundChild = locateChild(view, lvp, file);
 
             if (foundChild == null) {
@@ -356,12 +357,12 @@ public class Nodes {
 
         private final int warningsCount;
 
-        public Wrapper(Node orig, int warningsCount, FutureValue<Map<Node, Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
+        public Wrapper(Node orig, int warningsCount, FutureValue<Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodes) {
             super(orig, new WrapperChildren(orig, fileNodes), Lookup.EMPTY);
             this.warningsCount = warningsCount;
         }
         
-        public Wrapper(Node orig, Map<Analyzer, List<ErrorDescription>> errors, boolean file) {
+        public Wrapper(Node orig, Map<AnalyzerFactory, List<ErrorDescription>> errors, boolean file) {
             super(orig, new ErrorDescriptionChildren(errors), lookupForFileNode(orig, errors));
             int warnings = 0;
             for (List<ErrorDescription> e : errors.values()) {
@@ -404,7 +405,7 @@ public class Nodes {
 
     }
 
-    private static Lookup lookupForFileNode(Node n, Map<Analyzer, List<ErrorDescription>> errors) {
+    private static Lookup lookupForFileNode(Node n, Map<AnalyzerFactory, List<ErrorDescription>> errors) {
         return Lookups.fixed();
     }
     
@@ -425,10 +426,10 @@ public class Nodes {
     private static class WrapperChildren extends Children.Keys<Node> {
 
         private final Node orig;
-        private final FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>> fileNodesFuture;
-        private java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes;
+        private final FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodesFuture;
+        private java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes;
 
-        public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>> fileNodes) {
+        public WrapperChildren(Node orig, FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>> fileNodes) {
             this.orig = orig;
             this.fileNodesFuture = fileNodes;
         }
@@ -440,7 +441,7 @@ public class Nodes {
         }
 
         private synchronized void doSetKeys() {
-            java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
+            java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
             Node[] nodes = orig.getChildren().getNodes(true);
             List<Node> toSet = new LinkedList<Node>();
             
@@ -458,14 +459,14 @@ public class Nodes {
         
         @Override
         protected synchronized Node[] createNodes(Node key) {
-            java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
+            java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes = fileNodesFuture.get();
             if (fileNodes.containsKey(key)) {
                 
                 return new Node[] {new Wrapper(key, fileNodes.get(key), true)};
             }
-            final java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> fileNodesInside = new HashMap<Node, java.util.Map<Analyzer, List<ErrorDescription>>>();
+            final java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodesInside = new HashMap<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>();
             int warnings = 0;
-            for (Entry<Node, java.util.Map<Analyzer, List<ErrorDescription>>> e : fileNodes.entrySet()) {
+            for (Entry<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> e : fileNodes.entrySet()) {
                 if (isParent(key, e.getKey())) {
                     fileNodesInside.put(e.getKey(), e.getValue());
                     for (List<ErrorDescription> w : e.getValue().values()) {
@@ -473,9 +474,9 @@ public class Nodes {
                     }
                 }
             }
-            return new Node[] {new Wrapper(key, warnings, new FutureValue<java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>>>() {
+            return new Node[] {new Wrapper(key, warnings, new FutureValue<java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>>() {
                 @Override
-                public java.util.Map<Node, java.util.Map<Analyzer, List<ErrorDescription>>> get() {
+                public java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> get() {
                     return fileNodesInside;
                 }
             })};
@@ -497,11 +498,11 @@ public class Nodes {
 
     private static final class ErrorDescriptionChildren extends Children.Keys<ErrorDescription> {
 
-        private final java.util.Map<ErrorDescription, Analyzer> error2Analyzer = new HashMap<ErrorDescription, Analyzer>();
-        public ErrorDescriptionChildren(java.util.Map<Analyzer, List<ErrorDescription>> errors) {
+        private final java.util.Map<ErrorDescription, AnalyzerFactory> error2Analyzer = new HashMap<ErrorDescription, AnalyzerFactory>();
+        public ErrorDescriptionChildren(java.util.Map<AnalyzerFactory, List<ErrorDescription>> errors) {
             List<ErrorDescription> eds = new ArrayList<ErrorDescription>();
 
-            for (Entry<Analyzer, List<ErrorDescription>> e : errors.entrySet()) {
+            for (Entry<AnalyzerFactory, List<ErrorDescription>> e : errors.entrySet()) {
                 for (ErrorDescription ed : e.getValue()) {
                     error2Analyzer.put(ed, e.getKey());
                     eds.add(ed);
@@ -532,7 +533,7 @@ public class Nodes {
 
         private final Image icon;
 
-        public ErrorDescriptionNode(Analyzer provider, ErrorDescription ed) {
+        public ErrorDescriptionNode(AnalyzerFactory provider, ErrorDescription ed) {
             super(Children.LEAF, Lookups.fixed(ed, new OpenErrorDescription(ed)));
             int line = -1;
             try {
@@ -541,7 +542,7 @@ public class Nodes {
                 Exceptions.printStackTrace(ex);
             }
             setDisplayName((line != (-1) ? (line + ":") : "") + ed.getDescription());
-            icon = provider.getIcon();
+            icon = ImageUtilities.loadImage(SPIAccessor.ACCESSOR.getAnalyzerIconPath(provider));
         }
 
         @Override

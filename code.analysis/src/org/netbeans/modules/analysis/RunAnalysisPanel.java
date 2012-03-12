@@ -63,7 +63,7 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
@@ -82,17 +82,17 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
     private final JPanel progress;
     private final DefaultComboBoxModel configurationModel;
     private final RequiredPluginsPanel requiredPlugins;
-    private final Collection<? extends Analyzer> analyzers;
+    private final Collection<? extends AnalyzerFactory> analyzers;
     private final Map<String, WarningDescription> warningId2Description = new HashMap<String, WarningDescription>();
 
-    public RunAnalysisPanel(ProgressHandle handle, Collection<? extends Analyzer> analyzers) {
+    public RunAnalysisPanel(ProgressHandle handle, Collection<? extends AnalyzerFactory> analyzers) {
         this.analyzers = analyzers;
         
         configurationModel = new DefaultComboBoxModel();
         configurationModel.addElement("Predefined");
         configurationModel.addElement(null);
 
-        for (Analyzer analyzer : analyzers) {
+        for (AnalyzerFactory analyzer : analyzers) {
             configurationModel.addElement(analyzer);
         }
 
@@ -112,8 +112,8 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
 
         DefaultComboBoxModel inspectionModel = new DefaultComboBoxModel();
 
-        for (Analyzer a : analyzers) {
-            inspectionModel.addElement(a.getDisplayName());
+        for (AnalyzerFactory a : analyzers) {
+            inspectionModel.addElement(SPIAccessor.ACCESSOR.getAnalyzerDisplayName(a));
 
             Map<String, Collection<WarningDescription>> cat2Warnings = new TreeMap<String, Collection<WarningDescription>>();
 
@@ -179,18 +179,18 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
     }
 
     private void updatePlugins() {
-        Collection<? extends Analyzer> toRun;
+        Collection<? extends AnalyzerFactory> toRun;
 
-        if (!(configurationCombo.getSelectedItem() instanceof Analyzer)) {
+        if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) {
             toRun = analyzers;
         } else {
-            toRun = Collections.singleton((Analyzer) configurationCombo.getSelectedItem());
+            toRun = Collections.singleton((AnalyzerFactory) configurationCombo.getSelectedItem());
         }
 
         Context ctx = SPIAccessor.ACCESSOR.createContext(null, null, null, null, -1, -1);
         Set<MissingPlugin> plugins = new HashSet<MissingPlugin>();
 
-        for (Analyzer a : toRun) {
+        for (AnalyzerFactory a : toRun) {
             plugins.addAll(a.requiredPlugins(ctx));
         }
 
@@ -202,9 +202,9 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         }
     }
 
-    public Analyzer getSelectedAnalyzer() {
-        if (!(configurationCombo.getSelectedItem() instanceof Analyzer)) return null;
-        return (Analyzer) configurationCombo.getSelectedItem();
+    public AnalyzerFactory getSelectedAnalyzer() {
+        if (!(configurationCombo.getSelectedItem() instanceof AnalyzerFactory)) return null;
+        return (AnalyzerFactory) configurationCombo.getSelectedItem();
     }
 
     public String getConfiguration() {
@@ -409,8 +409,8 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
         @Override public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value == null) {
                 value = Bundle.LBL_RunAllAnalyzers();
-            } else if (value instanceof Analyzer) {
-                value = Bundle.LBL_RunAnalyzer(((Analyzer) value).getDisplayName());
+            } else if (value instanceof AnalyzerFactory) {
+                value = Bundle.LBL_RunAnalyzer(SPIAccessor.ACCESSOR.getAnalyzerDisplayName((AnalyzerFactory) value));
             } else if (value instanceof Configuration) {
                 value = ((Configuration) value).getDisplayName();
             } else if (value instanceof String) {

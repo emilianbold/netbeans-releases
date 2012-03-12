@@ -59,45 +59,48 @@ import org.openide.util.lookup.ServiceProvider;
 public class FakeAnalyzer implements Analyzer {
 
     @Override
-    public Iterable<? extends ErrorDescription> analyze(Context context) {
+    public Iterable<? extends ErrorDescription> analyze() {
         return Collections.emptyList();
     }
 
     @Override
-    public String getDisplayName() {
-        return "FindBugs";
+    public boolean cancel() {
+        return true;
     }
 
-    @Override
-    public Iterable<? extends WarningDescription> getWarnings() {
-        return Collections.emptyList();
-    }
+    public static final class FakeAnalyzerFactory extends AnalyzerFactory {
 
-    @Override
-    public Image getIcon() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+        public FakeAnalyzerFactory() {
+            super("findbugs", "FindBugs", null);
+        }
 
-    @Override
-    public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
-        return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", "FindBugs Integration"));
-    }
+        @Override
+        public Iterable<? extends WarningDescription> getWarnings() {
+            return Collections.emptyList();
+        }
 
-    @Override
-    public String getId() {
-        return "findbugs";
-    }
+        @Override
+        public Collection<? extends MissingPlugin> requiredPlugins(Context context) {
+            return Arrays.asList(new MissingPlugin("org.netbeans.modules.findbugs", "FindBugs Integration"));
+        }
 
-    @Override
-    public CustomizerProvider<?, ?> getCustomizerProvider() {
-        return new CustomizerProvider<Void, JComponent>() {
-            @Override public Void initialize() {
-                return null;
-            }
-            @Override public JComponent createComponent(CustomizerContext<Void, JComponent> context) {
-                return new JPanel();
-            }
-        };
+        @Override
+        public CustomizerProvider<?, ?> getCustomizerProvider() {
+            return new CustomizerProvider<Void, JComponent>() {
+                @Override public Void initialize() {
+                    return null;
+                }
+                @Override public JComponent createComponent(CustomizerContext<Void, JComponent> context) {
+                    return new JPanel();
+                }
+            };
+        }
+
+        @Override
+        public Analyzer createAnalyzer(Context context) {
+            return new FakeAnalyzer();
+        }
+
     }
 
 }

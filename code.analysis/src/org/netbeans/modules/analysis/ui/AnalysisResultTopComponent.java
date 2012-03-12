@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -109,7 +110,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, Collections.<Analyzer, List<ErrorDescription>>emptyMap());
+        setData(Lookup.EMPTY, Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap());
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);
@@ -302,9 +303,9 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     final PreviousError prevAction;
     final NextError nextAction;
 
-    Map<Analyzer, List<ErrorDescription>> hints;
+    Map<AnalyzerFactory, List<ErrorDescription>> hints;
 
-    public void setData(Lookup context, Map<Analyzer, List<ErrorDescription>> provider2Hints) {
+    public void setData(Lookup context, Map<AnalyzerFactory, List<ErrorDescription>> provider2Hints) {
         this.context = context;
         this.hints = provider2Hints;
         manager.setRootContext(Nodes.constructSemiLogicalView(provider2Hints, byCategory.isSelected()));

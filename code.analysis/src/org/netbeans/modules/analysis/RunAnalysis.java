@@ -70,6 +70,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.analysis.spi.Analyzer;
+import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
 import org.netbeans.modules.analysis.ui.AnalysisResultTopComponent;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
@@ -94,7 +95,7 @@ public class RunAnalysis {
     private static final int MAX_WORK = 1000;
 
     public static void showDialogAndRunAnalysis() {
-        final Collection<? extends Analyzer> analyzers = Lookup.getDefault().lookupAll(Analyzer.class);
+        final Collection<? extends AnalyzerFactory> analyzers = Lookup.getDefault().lookupAll(AnalyzerFactory.class);
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
         final RunAnalysisPanel rap = new RunAnalysisPanel(progress, analyzers);
         final JButton runAnalysis = new JButton("Run Analysis");
@@ -111,7 +112,7 @@ public class RunAnalysis {
                 rap.started();
                 progress.start();
 
-                final Analyzer toRun = rap.getSelectedAnalyzer();
+                final AnalyzerFactory toRun = rap.getSelectedAnalyzer();
                 final String configuration = rap.getConfiguration();
                 final String singleWarningId = rap.getSingleWarningId();
 
@@ -151,12 +152,12 @@ public class RunAnalysis {
 
                         progress.switchToDeterminate(MAX_WORK);
 
-                        final Map<Analyzer, List<ErrorDescription>> result = new HashMap<Analyzer, List<ErrorDescription>>();
+                        final Map<AnalyzerFactory, List<ErrorDescription>> result = new HashMap<AnalyzerFactory, List<ErrorDescription>>();
 
                         if (toRun == null) {
                             int doneSoFar = 0;
                             int bucketSize = MAX_WORK / analyzers.size();
-                            for (Analyzer analyzer : analyzers) {
+                            for (AnalyzerFactory analyzer : analyzers) {
                                 if (doCancel.get()) break;
                                 doRunAnalyzer(analyzer, sourceRoots, nonRecursiveFolders, files, progress, doneSoFar, bucketSize, result);
                                 doneSoFar += bucketSize;
@@ -179,11 +180,12 @@ public class RunAnalysis {
                         });
                     }
 
-                    private void doRunAnalyzer(Analyzer analyzer, List<FileObject> sourceRoots, List<NonRecursiveFolder> nonRecursiveFolders, List<FileObject> files, ProgressHandle handle, int bucketStart, int bucketSize, final Map<Analyzer, List<ErrorDescription>> result) {
+                    private void doRunAnalyzer(AnalyzerFactory analyzer, List<FileObject> sourceRoots, List<NonRecursiveFolder> nonRecursiveFolders, List<FileObject> files, ProgressHandle handle, int bucketStart, int bucketSize, final Map<AnalyzerFactory, List<ErrorDescription>> result) {
                         List<ErrorDescription> current = new ArrayList<ErrorDescription>();
                         Scope scope = Scope.create(sourceRoots, nonRecursiveFolders, files);
-                        Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(analyzer.getId()) : null;
-                        for (ErrorDescription ed : analyzer.analyze(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize))) {
+                        Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
+                        Analyzer a = analyzer.createAnalyzer(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize));
+                        for (ErrorDescription ed : a.analyze()) {
                             current.add(ed);
                         }
                         if (!current.isEmpty())
