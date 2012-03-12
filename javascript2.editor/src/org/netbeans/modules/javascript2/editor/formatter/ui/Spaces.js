@@ -13,10 +13,10 @@ var engine = {
     }
 }
 
-function computeColor() {
+function computeColor(limit) {
     try {
         color = 0;
-        for (var a = -1; a < 3; a++) {
+        for (var a = -1; a < limit; a++) {
             color += Math.round(Math.random() * 2);
         }
     } catch (error) {

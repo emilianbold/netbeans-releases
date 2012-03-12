@@ -206,6 +206,22 @@ public class FormatVisitor extends NodeVisitor {
                     if (previous != null) {
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
                     }
+
+                    // mark the within parenthesis places
+                    if (!functionNode.getParameters().isEmpty()) {
+                        appendToken(leftBrace, FormatToken.forFormat(
+                                FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
+
+                        // this works if the offset starts with block as it is now
+                        FormatToken rightBrace = getPreviousToken(getStart(functionNode), JsTokenId.BRACKET_RIGHT_PAREN);
+                        if (rightBrace != null) {
+                            previous = rightBrace.previous();
+                            if (previous != null) {
+                                appendToken(previous, FormatToken.forFormat(
+                                        FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));
+                            }
+                        }
+                    }
                 }
             }
         }
