@@ -39,63 +39,52 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.annotations;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationTag;
-import org.netbeans.modules.php.spi.annotations.PhpAnnotationsProvider;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
- * Provider for user PHP annotations.
+ * I've created this class to test cases from issue 209453.
+ * Package proposals should be shown only if they are prefixed by typed prefix.
+ *
+ * @author Martin Janicek
  */
-public final class UserAnnotationsProvider extends PhpAnnotationsProvider {
+public class PackageCCTest extends GroovyCCTestBase {
 
-    private static final UserAnnotationsProvider INSTANCE = new UserAnnotationsProvider();
-
-
-    @NbBundle.Messages("UserAnnotationsProvider.name=Custom")
-    private UserAnnotationsProvider() {
-        super("User Annotations", // NOI18N
-                Bundle.UserAnnotationsProvider_name(),
-                null);
-    }
-
-    @PhpAnnotationsProvider.Registration(position=1000)
-    public static UserAnnotationsProvider getInstance() {
-        return INSTANCE;
+    public PackageCCTest(String testName) {
+        super(testName);
     }
 
     @Override
-    public List<PhpAnnotationTag> getFunctionAnnotations() {
-        return getAnnotationsForType(UserAnnotationTag.Type.FUNCTION);
+    protected String getTestType() {
+        return "package";
+    }
+    
+
+    public void testAfterExtendsTypeCompletion1() throws Exception {
+        checkCompletion(BASE + "AfterExtendsTypeCompletion1.groovy", "class NoPrefix extends ^ {", false);
     }
 
-    @Override
-    public List<PhpAnnotationTag> getTypeAnnotations() {
-        return getAnnotationsForType(UserAnnotationTag.Type.TYPE);
+    public void testAfterExtendsTypeCompletion3() throws Exception {
+        checkCompletion(BASE + "AfterExtendsTypeCompletion3.groovy", "class PrefixIsEqualWithKeyword extends in^ {", false);
     }
 
-    @Override
-    public List<PhpAnnotationTag> getFieldAnnotations() {
-        return getAnnotationsForType(UserAnnotationTag.Type.FIELD);
+    public void testAfterExtendsTypeCompletion4() throws Exception {
+        checkCompletion(BASE + "AfterExtendsTypeCompletion4.groovy", "class PrefixMatchPackageCaseInsensitive extends Ja^ {", false);
     }
 
-    @Override
-    public List<PhpAnnotationTag> getMethodAnnotations() {
-        return getAnnotationsForType(UserAnnotationTag.Type.METHOD);
+    public void testFieldTypeCompletion1() throws Exception {
+        checkCompletion(BASE + "FieldTypeCompletion1.groovy", "    in^", false);
     }
 
-    private List<PhpAnnotationTag> getAnnotationsForType(UserAnnotationTag.Type type) {
-        List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
-        List<PhpAnnotationTag> result = new ArrayList<PhpAnnotationTag>(annotations.size());
-        for (UserAnnotationTag userAnnotationTag : annotations) {
-            if (userAnnotationTag.getTypes().contains(type)) {
-                result.add(userAnnotationTag);
-            }
-        }
-        return result;
+    public void testFieldTypeCompletion2() throws Exception {
+        checkCompletion(BASE + "FieldTypeCompletion2.groovy", "    Ja^", false);
+    }
+    
+    public void testLocalVariableTypeCompletion1() throws Exception {
+        checkCompletion(BASE + "LocalVariableTypeCompletion1.groovy", "    in^", false);
     }
 
+    public void testLocalVariableTypeCompletion2() throws Exception {
+        checkCompletion(BASE + "LocalVariableTypeCompletion2.groovy", "    Ja^", false);
+    }
 }

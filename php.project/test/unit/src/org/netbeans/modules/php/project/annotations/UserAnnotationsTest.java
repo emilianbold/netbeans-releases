@@ -42,18 +42,21 @@
 package org.netbeans.modules.php.project.annotations;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import org.netbeans.junit.NbTestCase;
 
 public class UserAnnotationsTest extends NbTestCase {
 
+    private static final UserAnnotationTag USER_ANNOTATION = new UserAnnotationTag(
+            EnumSet.of(UserAnnotationTag.Type.FUNCTION, UserAnnotationTag.Type.METHOD), "@FuncMeth2", "@FuncMeth2", "FuncMeth2 description");
     private static final List<UserAnnotationTag> ANNOTATIONS = Arrays.asList(
-            new UserAnnotationTag(UserAnnotationTag.Type.FUNCTION, "@Func1", "@Func1", "Func1 description"),
-            new UserAnnotationTag(UserAnnotationTag.Type.FUNCTION, "@Func2", "@Func2", "Func2 description"),
-            new UserAnnotationTag(UserAnnotationTag.Type.TYPE, "@Class1", "@Class1", "Class1 description"),
-            new UserAnnotationTag(UserAnnotationTag.Type.TYPE, "@Iface2", "@Iface2", "Iface2 description"),
-            new UserAnnotationTag(UserAnnotationTag.Type.FIELD, "@Field1", "@Field1", "Field1 description"),
-            new UserAnnotationTag(UserAnnotationTag.Type.METHOD, "@Method1", "@Method1", "Method1 description"));
+            new UserAnnotationTag(EnumSet.of(UserAnnotationTag.Type.FUNCTION), "@Func1", "@Func1", "Func1 description"),
+            USER_ANNOTATION,
+            new UserAnnotationTag(EnumSet.of(UserAnnotationTag.Type.TYPE), "@Class1", "@Class1", "Class1 description"),
+            new UserAnnotationTag(EnumSet.of(UserAnnotationTag.Type.TYPE), "@Iface2", "@Iface2", "Iface2 description"),
+            new UserAnnotationTag(EnumSet.of(UserAnnotationTag.Type.FIELD), "@Field1", "@Field1", "Field1 description"),
+            new UserAnnotationTag(EnumSet.of(UserAnnotationTag.Type.METHOD), "@Method1", "@Method1", "Method1 description"));
 
 
     public UserAnnotationsTest(String name) {
@@ -96,6 +99,14 @@ public class UserAnnotationsTest extends NbTestCase {
         testSaveAndRead();
         testSaveAndRead();
         testSaveAndRead();
+    }
+
+    public void testMarshall() {
+        assertEquals("FUNCTION,METHOD", UserAnnotations.getInstance().marshallTypes(USER_ANNOTATION.getTypes()));
+    }
+
+    public void testUnmarshall() {
+        assertEquals(USER_ANNOTATION.getTypes(), UserAnnotations.getInstance().unmarshallTypes("FUNCTION,METHOD"));
     }
 
 }
