@@ -198,13 +198,15 @@ public class FormatVisitor extends NodeVisitor {
     public Node visit(FunctionNode functionNode, boolean onset) {
         visit((Block) functionNode, onset);
 
-        FormatToken function = getPreviousToken(getStart(functionNode), JsTokenId.KEYWORD_FUNCTION);
-        if (function != null) {
-            FormatToken leftBrace = getNextToken(function.getOffset(), JsTokenId.BRACKET_LEFT_PAREN);
-            if (leftBrace != null) {
-                FormatToken previous = leftBrace.previous();
-                if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+        if (onset && !isScript(functionNode)) {
+            FormatToken function = getPreviousToken(getStart(functionNode), JsTokenId.KEYWORD_FUNCTION);
+            if (function != null) {
+                FormatToken leftBrace = getNextToken(function.getOffset(), JsTokenId.BRACKET_LEFT_PAREN);
+                if (leftBrace != null) {
+                    FormatToken previous = leftBrace.previous();
+                    if (previous != null) {
+                        appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
+                    }
                 }
             }
         }
