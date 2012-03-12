@@ -188,7 +188,7 @@ public class JavaTypeDescription extends TypeDescriptor {
         else {
             packageName = typeName.substring( 0, lastDot );
             
-            if ( lastDollar == -1 ) {
+            if (lastDollar < lastDot) {
                 simpleName = typeName.substring( lastDot + 1 ).replace( '$', '.');  //NOI18N
             }
             else {
