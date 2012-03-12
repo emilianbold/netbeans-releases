@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.util;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -883,9 +882,8 @@ public final class RequestHelper {
 
         // travel back on the token string till the token is neither a
         // WHITESPACE nor NLS
-        Token<? extends GroovyTokenId> t = null;
         while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
-            t = (Token<? extends GroovyTokenId>) ts.token();
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
             if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 break;
             }

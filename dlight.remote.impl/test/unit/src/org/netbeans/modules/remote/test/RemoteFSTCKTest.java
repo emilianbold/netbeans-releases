@@ -82,12 +82,6 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
 
         @RandomlyFails
         @Override
-        public void testFireFileDeletedEvent2() throws IOException {
-            super.testFireFileDeletedEvent2();
-        }
-
-        @RandomlyFails
-        @Override
         public void testBigFileAndAsString() throws Exception {
             super.testBigFileAndAsString();
         }

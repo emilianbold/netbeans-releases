@@ -205,22 +205,9 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(VCSOwnerTestCase.class);
-        suite.addTestSuite(VCSInterceptorTestCase_.class);
+        suite.addTestSuite(VCSInterceptorTestCase.class);
         suite.addTestSuite(VCSAnnotationProviderTestCase_.class);
         return new RemoteVCSTCKTest(suite);
-    }
-    
-    public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {
-
-        public VCSInterceptorTestCase_(String testName) {
-            super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRefreshRecursively() throws IOException {
-            super.testRefreshRecursively();
-        }
     }
     
     public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {
