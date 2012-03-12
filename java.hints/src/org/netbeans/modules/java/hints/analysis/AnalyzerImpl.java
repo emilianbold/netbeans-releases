@@ -78,6 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 public class AnalyzerImpl implements Analyzer {
 
+    private final AtomicBoolean cancel = new AtomicBoolean();
     private final Context ctx;
 
     private AnalyzerImpl(Context ctx) {
@@ -90,7 +91,7 @@ public class AnalyzerImpl implements Analyzer {
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
 
-        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, new AtomicBoolean()).entrySet()) {
+        for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : RulesManager.getInstance().readHints(null, null, cancel).entrySet()) {
             //XXX: should check settings, whether this hint is enabled or not
             if (e.getKey().kind != Kind.INSPECTION) continue;
             if (e.getKey().options.contains(Options.NO_BATCH)) continue;
@@ -111,7 +112,7 @@ public class AnalyzerImpl implements Analyzer {
             public void groupFinished() {}
             public void cannotVerifySpan(Resource r) {
             }
-        }, problems, new AtomicBoolean());
+        }, problems, cancel);
 
         w.finish();
 
@@ -120,7 +121,8 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public boolean cancel() {
-        return false;
+        cancel.set(true);
+        return true;
     }
 
     @ServiceProvider(service=AnalyzerFactory.class)

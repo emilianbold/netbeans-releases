@@ -47,7 +47,10 @@ import edu.umd.cs.findbugs.DetectorFactory;
 import edu.umd.cs.findbugs.DetectorFactoryCollection;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -67,6 +70,9 @@ public class AnalyzerImpl implements Analyzer {
         this.ctx = ctx;
     }
 
+    private Thread processingThread;
+    private final AtomicBoolean cancel = new AtomicBoolean();
+
     @Override
     public Iterable<? extends ErrorDescription> analyze() {
         Collection<? extends FileObject> sourceRoots = ctx.getScope().getSourceRoots();//XXX: other Scope content!!!
@@ -76,7 +82,16 @@ public class AnalyzerImpl implements Analyzer {
         ctx.start(sourceRoots.size());
 
         for (FileObject sr : sourceRoots) {
+            if (cancel.get()) return Collections.emptyList();
+            Thread.interrupted();//clear interrupted flag
+            synchronized (this) {
+                processingThread = Thread.currentThread();
+            }
             result.addAll(RunFindBugs.runFindBugs(null, ctx.getSettings(), ctx.getSingleWarningId(), sr, null, null));
+            synchronized(this) {
+                processingThread = null;
+            }
+            Thread.interrupted();//clear interrupted flag
             ctx.progress(++i);
         }
 
@@ -87,6 +102,12 @@ public class AnalyzerImpl implements Analyzer {
 
     @Override
     public boolean cancel() {
+        cancel.set(true);
+        synchronized(this) {
+            if (processingThread != null) {
+                processingThread.interrupt();
+            }
+        }
         return false;
     }
 

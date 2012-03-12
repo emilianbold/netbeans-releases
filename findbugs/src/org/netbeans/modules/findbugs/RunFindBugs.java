@@ -65,6 +65,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -217,7 +218,7 @@ public class RunFindBugs {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.FINE, null, ex);
         }
 
         return result;

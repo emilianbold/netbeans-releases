@@ -54,6 +54,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.JButton;
@@ -104,6 +105,7 @@ public class RunAnalysis {
         dd.setClosingOptions(new Object[0]);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         final AtomicBoolean doCancel = new AtomicBoolean();
+        final AtomicReference<Analyzer> currentlyRunning = new AtomicReference<Analyzer>();
 
         runAnalysis.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
@@ -185,9 +187,12 @@ public class RunAnalysis {
                         Scope scope = Scope.create(sourceRoots, nonRecursiveFolders, files);
                         Preferences settings = configuration != null ? getConfigurationSettingsRoot(configuration).node(SPIAccessor.ACCESSOR.getAnalyzerId(analyzer)) : null;
                         Analyzer a = analyzer.createAnalyzer(SPIAccessor.ACCESSOR.createContext(scope, settings, singleWarningId, handle, bucketStart, bucketSize));
+                        currentlyRunning.set(a);
+                        if (doCancel.get()) return;
                         for (ErrorDescription ed : a.analyze()) {
                             current.add(ed);
                         }
+                        currentlyRunning.set(null);
                         if (!current.isEmpty())
                             result.put(analyzer, current);
                     }
@@ -198,6 +203,10 @@ public class RunAnalysis {
         cancel.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 doCancel.set(true);
+                Analyzer a = currentlyRunning.get();
+
+                if (a != null) a.cancel();
+                
                 d.setVisible(false);
                 d.dispose();
             }
