@@ -44,7 +44,9 @@
 package org.netbeans.modules.gsf.testrunner.api;
 
 import java.awt.EventQueue;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import static org.netbeans.modules.gsf.testrunner.api.Bundle.*;
@@ -228,8 +230,7 @@ final class RootNode extends AbstractNode {
         "# {0} - number of tests", "MSG_ErrorTestsInfo={0,choice,1#1 test|1<{0,number,integer} tests} caused an error",
         "MSG_SomePassedNotDisplayed=Information about some passed tests is not displayed.",
         "MSG_PassedNotDisplayed=Information about passed tests is not displayed.",
-        "# Elapsed time for a test suite", "# {0} - number of tests", "MSG_TestSuiteElapsedTime=({0,number,0.0##} s)",
-        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "MSG_TestResultSummary3={0}, {1}, {2}, {3}."
+        "# Elapsed time for a test suite", "# {0} - number of tests", "MSG_TestSuiteElapsedTime=({0,number,0.0##} s)"
     })
     private void updateDisplayName() {
         assert EventQueue.isDispatchThread();
@@ -261,7 +262,7 @@ final class RootNode extends AbstractNode {
                     ? null
                     : MSG_ErrorTestsInfo(errors);
             
-            msg = MSG_TestResultSummary3(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo);
+            msg = constructMessage(passedTestsInfo, pendingTestsInfo, failedTestsInfo, errorTestsInfo);
             
         }
 
@@ -303,6 +304,31 @@ final class RootNode extends AbstractNode {
         setDisplayName(msg);
     }
     
+    @Messages({
+        "# {0} - info about tests in one state", "# {1} - info about tests in another state", "MSG_TestResultSummary1={0}, {1}.",
+        "# {0} - info about tests in one state", "# {1} - info about tests in another state", "# {2} - info about tests in yet another state", "MSG_TestResultSummary2={0}, {1}, {2}.",
+        "# {0} - info about passed tests", "# {1} - info about pending tests", "# {2} - info about failed tests", "# {3} - info about erroneous tests", "MSG_TestResultSummary3={0}, {1}, {2}, {3}."
+    })
+    String constructMessage(String... subMessages) {
+        List<String> messageList = new ArrayList<String>();
+        for (String msg : subMessages) {
+            if (msg != null) {
+                messageList.add(msg);
+            }
+        }
+        int size = messageList.size();
+        switch (size) {
+        case 2:
+            return MSG_TestResultSummary1(messageList.get(0), messageList.get(1));
+        case 3:
+            return MSG_TestResultSummary2(messageList.get(0), messageList.get(1), messageList.get(2));
+        case 4:
+            return MSG_TestResultSummary3(messageList.get(0), messageList.get(1), messageList.get(2), messageList.get(4));
+        default:
+            throw new AssertionError(messageList);
+        }
+    }
+
     /**
      * Returns information whether information about passed tests is displayed.
      *
