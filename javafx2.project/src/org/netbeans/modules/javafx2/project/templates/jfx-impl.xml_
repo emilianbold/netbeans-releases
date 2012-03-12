@@ -4,33 +4,81 @@
 ***       EDIT ../build.xml INSTEAD       ***
 -->
 
-<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
+<project name="jfx-impl" default="jfx-deployment" basedir=".." xmlns:j2seproject1="http://www.netbeans.org/ns/j2se-project/1" 
+         xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>JavaFX-specific Ant calls</description>
 
-    <target name="-check-javafx">
-        <echo message="javafx.runtime = ${javafx.runtime}" level="verbose"/>
-        <echo message="javafx.sdk = ${javafx.sdk}" level="verbose"/>
-        <condition property="javafx.runtime.defined">
+    <!-- Check system and JDK version -->
+
+    <target name="-check-operating-system">
+        <condition property="running.on.unix">
+            <os family="unix"/>
+        </condition>
+        <condition property="running.on.windows">
+            <os family="windows"/>
+        </condition>
+        <echo message="running.on.unix = ${running.on.unix}" level="verbose"/>
+        <echo message="running.on.windows = ${running.on.windows}" level="verbose"/>
+    </target>
+
+    <target name="-check-jdk-version" depends="-do-init">
+        <local name="version-output"/>
+        <exec executable="${platform.java}" outputproperty="version-output">
+            <arg value="-version"/>
+        </exec>
+        <condition property="have-jdk-older-than-1.6">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.1"/>
+                <contains string="${version-output}" substring="java version &quot;1.2"/>
+                <contains string="${version-output}" substring="java version &quot;1.3"/>
+                <contains string="${version-output}" substring="java version &quot;1.4"/>
+                <contains string="${version-output}" substring="java version &quot;1.5"/>
+            </or>
+        </condition>
+        <fail message="Error: JavaFX 2.0+ projects require JDK version 1.6+ !" if="have-jdk-older-than-1.6"/>
+        <condition property="have-jdk-7u4-mac">
             <and>
-                <isset property="javafx.runtime"/>
-                <not><contains string="${javafx.runtime}" substring="$${platform" casesensitive="false"/></not>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                <os family="mac"/>
             </and>
         </condition>
+        <condition property="have-jdk-pre7u6">
+            <or>
+                <contains string="${version-output}" substring="java version &quot;1.6"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_01"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_02"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_03"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_04"/>
+                <contains string="${version-output}" substring="java version &quot;1.7.0_05"/>
+            </or>
+        </condition>
+        <echo message="have-jdk-7u4-mac = ${have-jdk-7u4-mac}" level="verbose"/>
+        <echo message="have-jdk-pre7u6 = ${have-jdk-pre7u6}" level="verbose"/>
+    </target>
+        
+    <target name="-check-jdk-7u4-mac" depends="-check-jdk-version" if="have-jdk-7u4-mac">
+        <fail message="Error: JDK 7u4 Mac does not support WebStart and JavaFX 2.0+ browser plugin technologies. Please upgrade to JDK 7u6 or later."/>
+    </target>
+
+    <!-- Note: target "-check-javafx" is referenced from NB 7.1 build-impl.xml -->
+    <target name="-check-javafx" depends="-check-jdk-version, -check-jfx-runtime, -check-jfx-deployment"/>
+    
+    <!-- Note: target "-javafx-check-error" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
+    <target name="-javafx-check-error" depends="-check-javafx"/>
+    
+    
+    <!-- Check availability of JavaFX SDK deployment support (ant-javafx.jar) -->
+
+    <target name="-check-property-javafx.sdk">
+        <echo message="javafx.sdk = ${javafx.sdk}" level="verbose"/>
         <condition property="javafx.sdk.defined">
             <and>
                 <isset property="javafx.sdk"/>
                 <not><contains string="${javafx.sdk}" substring="$${platform" casesensitive="false"/></not>
             </and>
         </condition>
-        <condition property="javafx.platform.defined">
-            <and>
-                <isset property="javafx.runtime.defined"/>
-                <isset property="javafx.sdk.defined"/>
-            </and>
-        </condition>
-    </target>
-    
-    <target name="-javafx-missing-platform" depends="-check-javafx" unless="javafx.platform.defined">
         <condition property="javafx.sdk.missing+default">
             <and>
                 <equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/>
@@ -41,6 +89,109 @@
             <and>
                 <not><equals arg1="${platform.active}" arg2="Default_JavaFX_Platform" trim="true"/></not>
                 <not><isset property="javafx.sdk.defined"/></not>
+            </and>
+        </condition>
+        <echo message="javafx.sdk.defined = ${javafx.sdk.defined}" level="verbose"/>
+        <echo message="javafx.sdk.missing+default = ${javafx.sdk.missing+default}" level="verbose"/>
+        <echo message="javafx.sdk.missing-default = ${javafx.sdk.missing-default}" level="verbose"/>
+    </target>
+
+    <target name="-check-ant-javafx-location" depends="-check-property-javafx.sdk">
+        <condition property="ant-javafx-available-inside-jdk">
+            <and>
+                <isset property="platform.home"/>
+                <available file="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+        <condition property="ant-javafx-available-inside-fxsdk">
+            <and>
+                <isset property="javafx.sdk.defined"/>
+                <available file="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
+            </and>
+        </condition>
+        <echo message="ant-javafx-available-inside-jdk = ${ant-javafx-available-inside-jdk}" level="verbose"/>
+        <echo message="ant-javafx-available-inside-fxsdk = ${ant-javafx-available-inside-fxsdk}" level="verbose"/>
+    </target>
+    <target name="-set-ant-javafx-path-jdk" depends="-check-ant-javafx-location" if="ant-javafx-available-inside-jdk">
+        <property name="ant-javafx.jar.location" value="${platform.home}${file.separator}lib${file.separator}ant-javafx.jar"/>
+        <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
+    </target>
+    <target name="-set-ant-javafx-path-fxsdk" depends="-check-ant-javafx-location, -set-ant-javafx-path-jdk" if="ant-javafx-available-inside-fxsdk">
+        <property name="ant-javafx.jar.location" value="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
+        <echo message="ant-javafx.jar.location = ${ant-javafx.jar.location}" level="verbose"/>
+    </target>
+        
+    <target name="-check-ant-javafx-version" depends="-set-ant-javafx-path-jdk,-set-ant-javafx-path-fxsdk" if="ant-javafx.jar.location">
+        <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
+            uri="javafx:com.sun.javafx.tools.ant"
+            classpath="${ant-javafx.jar.location}"/>
+        <condition property="have-fx-ant-init">
+            <typefound name="javafx:com.sun.javafx.tools.ant:init-ant"/>
+        </condition>
+        <echo message="have-fx-ant-init = ${have-fx-ant-init}" level="verbose"/>
+    </target>
+
+    <target name="-check-jfx-sdk-version-old" depends="-check-ant-javafx-version" unless="have-fx-ant-init">
+        <property name="javafx.ant.version" value="1.0"/>
+    </target>
+    <target name="-check-jfx-sdk-version-new" depends="-check-ant-javafx-version" if="have-fx-ant-init">
+        <fx:init-ant/>
+        <condition property="have-fx-ant-api-1.1">
+            <!-- new features from JavaFX 2.0.2 are available in API version 1.1 or later -->
+            <matches pattern="1.[1-9]" string="${javafx.ant.version}"/>
+        </condition>
+    </target>
+    <target name="-check-jfx-sdk-version" depends="-check-jfx-sdk-version-old, -check-jfx-sdk-version-new">
+        <echo message="Detected JavaFX Ant API version ${javafx.ant.version}" level="info"/>
+        <echo message="have-fx-ant-api-1.1 = ${have-fx-ant-api-1.1}" level="verbose"/>
+    </target>
+
+    <target name="-check-jfx-deployment" depends="-check-jdk-version,-check-jfx-sdk-version">
+        <condition property="jfx-deployment-available">
+            <and>
+                <or>
+                    <isset property="ant-javafx-available-inside-jdk"/>
+                    <isset property="ant-javafx-available-inside-fxsdk"/>
+                </or>
+                <isset property="ant-javafx.jar.location"/>
+            </and>
+        </condition>
+        <condition property="jfx-deployment-missing+jdk7u6">
+            <and>
+                <not><isset property="jfx-deployment-available"/></not>
+                <not><isset property="have-jdk-pre7u6"/></not>
+            </and>
+        </condition>
+        <condition property="jfx-deployment-missing+javafx.sdk.missing+default">
+            <and>
+                <not><isset property="jfx-deployment-available"/></not>
+                <isset property="have-jdk-pre7u6"/>
+                <isset property="javafx.sdk.missing+default"/>
+            </and>
+        </condition>
+        <condition property="jfx-deployment-missing+javafx.sdk.missing-default">
+            <and>
+                <not><isset property="jfx-deployment-available"/></not>
+                <isset property="have-jdk-pre7u6"/>
+                <isset property="javafx.sdk.missing-default"/>
+            </and>
+        </condition>
+        <fail message="Error: JavaFX deployment executable not found in active JDK. Please check that the JDK is correctly installed and its version is at least 7u4 on Mac or 7u6 on other systems." if="jfx-deployment-missing+jdk7u6"/>
+        <fail message="Error: JavaFX deployment executable not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-deployment-missing+javafx.sdk.missing+default"/>
+        <fail message="Error: JavaFX deployment executable not found.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="jfx-deployment-missing+javafx.sdk.missing-default"/>
+        <fail message="Error: JavaFX deployment executable not found." unless="jfx-deployment-available"/>
+        <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
+    </target>
+    
+    
+    <!-- Check availability of main JavaFX runtime jar (jfxrt.jar) -->
+
+    <target name="-check-property-javafx.runtime">
+        <echo message="javafx.runtime = ${javafx.runtime}" level="verbose"/>
+        <condition property="javafx.runtime.defined">
+            <and>
+                <isset property="javafx.runtime"/>
+                <not><contains string="${javafx.runtime}" substring="$${platform" casesensitive="false"/></not>
             </and>
         </condition>
         <condition property="javafx.runtime.missing+default">
@@ -55,76 +206,156 @@
                 <not><isset property="javafx.runtime.defined"/></not>
             </and>
         </condition>
-    </target>
-    
-    <target name="-javafx-check-error" depends="-check-javafx, -javafx-missing-platform" unless="javafx.platform.defined">
-        <fail message="Platform definition problem.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="javafx.sdk.missing+default"/>
-        <fail message="Platform definition problem.${line.separator}JavaFX SDK path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.sdk in project.properties file)." if="javafx.sdk.missing-default"/>
-        <fail message="Platform definition problem.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="javafx.runtime.missing+default"/>
-        <fail message="Platform definition problem.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file)." if="javafx.runtime.missing-default"/>
-    </target>
-    
-    <target name="-init-javafx">
-        <taskdef resource="com/sun/javafx/tools/ant/antlib.xml"
-            uri="javafx:com.sun.javafx.tools.ant"
-            classpath="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
-        <condition property="have-fx-ant-init">
-            <typefound name="javafx:com.sun.javafx.tools.ant:init-ant"/>
-        </condition>
+        <echo message="javafx.runtime.defined = ${javafx.runtime.defined}" level="verbose"/>
+        <echo message="javafx.runtime.missing+default = ${javafx.runtime.missing+default}" level="verbose"/>
+        <echo message="javafx.runtime.missing-default = ${javafx.runtime.missing-default}" level="verbose"/>
     </target>
 
-    <target name="-check-jdk-version">
-        <exec executable="${platform.java}" outputproperty="version-output">
-            <arg value="-version"/>
+    <target name="-check-jfxrt-location" depends="-check-property-javafx.runtime">
+        <condition property="jfxrt-available-inside-fxrt">
+            <and>
+                <isset property="javafx.runtime.defined"/>
+                <available file="${javafx.runtime}${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+        <condition property="jfxrt-available-inside-jdk">
+            <and>
+                <isset property="platform.home"/>
+                <available file="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+        <condition property="jfxrt-available-inside-fxsdk">
+            <and>
+                <isset property="javafx.sdk.defined"/>
+                <available file="${javafx.sdk}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
+            </and>
+        </condition>
+        <echo message="jfxrt-available-inside-fxrt = ${jfxrt-available-inside-fxrt}" level="verbose"/>
+        <echo message="jfxrt-available-inside-jdk = ${jfxrt-available-inside-jdk}" level="verbose"/>
+        <echo message="jfxrt-available-inside-fxsdk = ${jfxrt-available-inside-fxsdk}" level="verbose"/>
+    </target>
+    <target name="-set-jfxrt-path-fxrt" depends="-check-jfxrt-location" if="jfxrt-available-inside-fxrt">
+        <property name="jfxrt.jar.location" value="${javafx.runtime}${file.separator}lib${file.separator}jfxrt.jar"/>
+        <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
+    </target>
+    <target name="-set-jfxrt-path-jdk" depends="-check-jfxrt-location, -set-jfxrt-path-fxrt" if="jfxrt-available-inside-jdk">
+        <property name="jfxrt.jar.location" value="${platform.home}${file.separator}jre${file.separator}lib${file.separator}jfxrt.jar"/>
+        <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
+    </target>
+    <target name="-set-jfxrt-path-fxsdk" depends="-check-jfxrt-location, -set-jfxrt-path-jdk" if="jfxrt-available-inside-fxsdk">
+        <property name="jfxrt.jar.location" value="${javafx.sdk}${file.separator}rt${file.separator}lib${file.separator}jfxrt.jar"/>
+        <echo message="jfxrt.jar.location = ${jfxrt.jar.location}" level="verbose"/>
+    </target>
+
+    <target name="-check-jfx-runtime" depends="-check-jdk-version, -check-property-javafx.sdk, -check-property-javafx.runtime,
+            -set-jfxrt-path-jdk, -set-jfxrt-path-fxrt, -set-jfxrt-path-fxsdk">
+        <condition property="jfx-runtime-available">
+            <and>
+                <or>
+                    <isset property="jfxrt-available-inside-jdk"/>
+                    <isset property="jfxrt-available-inside-fxrt"/>
+                    <isset property="jfxrt-available-inside-fxsdk"/>
+                </or>
+                <isset property="jfxrt.jar.location"/>
+            </and>
+        </condition>
+        <fail message="Error: JavaFX runtime JAR not found." unless="jfx-runtime-available"/>
+        <echo message="jfx-runtime-available = ${jfx-runtime-available}" level="verbose"/>
+    </target>
+
+
+    <!-- Check availability of WebStart executable -->
+
+    <target name="-check-jfx-webstart-location" depends="-check-property-javafx.runtime">
+        <condition property="jfx-webstart-available-inside-fxsdk">
+            <and>
+                <isset property="javafx.runtime.defined"/>
+                <or>
+                    <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+        <condition property="jfx-webstart-available-inside-jdk">
+            <and>
+                <isset property="platform.home"/>
+                <or>
+                    <available file="${platform.home}${file.separator}bin${file.separator}javaws.exe"/>
+                    <available file="${platform.home}${file.separator}bin${file.separator}javaws"/>
+                </or>
+            </and>
+        </condition>
+        <echo message="jfx-webstart-available-inside-fxsdk = ${jfx-webstart-available-inside-fxsdk}" level="verbose"/>
+        <echo message="jfx-webstart-available-inside-jdk = ${jfx-webstart-available-inside-jdk}" level="verbose"/>
+    </target>
+
+    <target name="-check-jfx-webstart-location-unix" depends="-check-operating-system" if="running.on.unix">
+        <local name="exec.which.javaws.result"/>
+        <exec executable="which" failifexecutionfails="false" failonerror="false" resultproperty="exec.which.javaws.result" outputproperty="exec.which.javaws.output">
+            <arg value="javaws"/>
         </exec>
-        <condition property="have-jdk-older-than-1.6">
-            <or>
-                <contains string="${version-output}" substring="java version &quot;1.0"/>
-                <contains string="${version-output}" substring="java version &quot;1.1"/>
-                <contains string="${version-output}" substring="java version &quot;1.2"/>
-                <contains string="${version-output}" substring="java version &quot;1.3"/>
-                <contains string="${version-output}" substring="java version &quot;1.4"/>
-                <contains string="${version-output}" substring="java version &quot;1.5"/>
-            </or>
+        <condition property="jfx-webstart-available-unix-anywhere">
+            <and>
+                <isset property="exec.which.javaws.result"/>
+                <equals arg1="${exec.which.javaws.result}" arg2="0"/>
+                <isset property="exec.which.javaws.output"/>
+                <not><equals arg1="${exec.which.javaws.output}" arg2=""/></not>
+            </and>
         </condition>
-    </target>
-    <target name="-jdk-version-error" depends="-check-jdk-version" if="have-jdk-older-than-1.6">
-        <fail message="Error: JavaFX 2.0+ projects require JDK version 1.6+ !"/>
+        <echo message="jfx-webstart-available-unix-anywhere = ${jfx-webstart-available-unix-anywhere}" level="verbose"/>
     </target>
 
-    <target name="-check-jfx-deployment" depends="-init-javafx, -check-jdk-version, -jdk-version-error" unless="have-jdk-older-than-1.6">
-        <condition property="jfx-deployment-available">
-            <available file="${javafx.sdk}${file.separator}tools${file.separator}ant-javafx.jar"/>
-        </condition>
-        <echo message="jfx-deployment-available = ${jfx-deployment-available}" level="verbose"/>
+    <target name="-set-jfx-webstart-path-fxsdk" depends="-check-jfx-webstart-location" if="jfx-webstart-available-inside-fxsdk">
+        <property name="active.webstart.executable" value="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
+    </target>
+    <target name="-set-jfx-webstart-path-jdk" depends="-check-jfx-webstart-location, -set-jfx-webstart-path-fxsdk" if="jfx-webstart-available-inside-jdk">
+        <property name="active.webstart.executable" value="${platform.home}${file.separator}bin${file.separator}javaws"/>
+        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
+    </target>
+    <target name="-set-jfx-webstart-path-unix" depends="-check-jfx-webstart-location-unix, -set-jfx-webstart-path-jdk" if="jfx-webstart-available-unix-anywhere">
+        <property name="active.webstart.executable" value="${exec.which.javaws.output}"/>
+        <echo message="active.webstart.executable = ${active.webstart.executable}" level="verbose"/>
     </target>
 
-    <target name="-check-jfx-sdk-version-old" depends="-init-javafx" unless="have-fx-ant-init">
-        <property name="javafx.ant.version" value="1.0"/>
-    </target>
-
-    <target name="-check-jfx-sdk-version-new" depends="-init-javafx" if="have-fx-ant-init">
-        <fx:init-ant/>
-        <condition property="have-fx-ant-api-1.1">
-            <!-- new features from JavaFX 2.0.2 are available in API version 1.1 or later -->
-            <matches pattern="1.[1-9]" string="${javafx.ant.version}"/>
-        </condition>
-    </target>
-
-    <target name="-check-jfx-sdk-version" depends="-check-jfx-sdk-version-old, -check-jfx-sdk-version-new">
-        <echo message="Detected JavaFX Ant API version ${javafx.ant.version}" level="info"/>
-        <echo message="have-fx-ant-api-1.1 = ${have-fx-ant-api-1.1}" level="verbose"/>
-    </target>
-
-    <target name="-check-jfx-webstart">
+    <target name="-check-jfx-webstart" depends="-check-jfx-webstart-location, -set-jfx-webstart-path-fxsdk, 
+            -set-jfx-webstart-path-jdk, -check-jfx-webstart-location-unix, -set-jfx-webstart-path-unix, -check-property-javafx.runtime">
         <condition property="jfx-webstart-available">
             <or>
-                <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws.exe"/>
-                <available file="${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
+                <isset property="jfx-webstart-available-inside-fxsdk"/>
+                <isset property="jfx-webstart-available-inside-jdk"/>
+                <isset property="jfx-webstart-available-unix-anywhere"/>
             </or>
         </condition>
+        <condition property="jfx-webstart-missing+jdk7u6">
+            <and>
+                <not><isset property="jfx-webstart-available"/></not>
+                <not><isset property="have-jdk-pre7u6"/></not>
+            </and>
+        </condition>
+        <condition property="jfx-webstart-missing+javafx.runtime.missing+default">
+            <and>
+                <not><isset property="jfx-webstart-available"/></not>
+                <isset property="have-jdk-pre7u6"/>
+                <isset property="javafx.runtime.missing+default"/>
+            </and>
+        </condition>
+        <condition property="jfx-webstart-missing+javafx.runtime.missing-default">
+            <and>
+                <not><isset property="jfx-webstart-available"/></not>
+                <isset property="have-jdk-pre7u6"/>
+                <isset property="javafx.runtime.missing-default"/>
+            </and>
+        </condition>
+        <fail message="Error: WebStart executable could not be found in active JDK. Please check that the JDK is correctly installed and its version is at least 7u6." if="jfx-webstart-missing+jdk7u6"/>
+        <fail message="Error: WebStart executable could not be found.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file).${line.separator}Note: If missing, the default JavaFX-enabled platform gets created automatically when creating a new FX Project." if="jfx-webstart-missing+javafx.runtime.missing+default"/>
+        <fail message="Error: WebStart executable could not be found.${line.separator}JavaFX RT path undefined. Check the definition of ${platform.active} in Java Platform Manager${line.separator}(or directly the properties platform.active and javafx.runtime in project.properties file)." if="jfx-webstart-missing+javafx.runtime.missing-default"/>
+        <fail message="Error: WebStart executable could not be found." unless="jfx-webstart-available"/>
         <echo message="jfx-webstart-available = ${jfx-webstart-available}" level="verbose"/>
     </target>
+
+    
+    <!-- Check project properties -->
     
     <target name="-check-project" depends="-check-jfx-sdk-version">
         <condition property="main-class-available">
@@ -286,6 +517,7 @@
 
     <!-- Copy dependent libraries -->
     
+    <!-- Note: target "-jfx-copylibs" is referenced from NB 7.1 build-impl.xml -->
     <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar">
         <local name="run.classpath.without.build.classes.and.dist.dir"/>
         <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
@@ -490,6 +722,7 @@
         <rebase-lib jarfile="${jar.file.to.rebase}"/>
     </target>
     
+    <!-- Note: target "-rebase-libs" is referenced from NB 7.1 build-impl.xml -->
     <target name="-rebase-libs" depends="-check-project, -jfx-copylibs" if="rebase-lib-jars">
         <property name="pp_rebase_dir" value="${basedir}${file.separator}${dist.dir}${file.separator}lib"/>
         <property name="pp_rebase_fs" value="*.jar"/>
@@ -518,8 +751,9 @@
     </target>
 
 
-    <!-- Main Target -->
+    <!-- Main Deployment Target -->
 
+    <!-- Note: target "jfx-deployment" is referenced from NB 7.1 build-impl.xml -->
     <target name="jfx-deployment" depends="-check-jfx-deployment,-check-project,-icon-warning,
         -set-dimensions,-reset-dimensions,-set-update-mode-background,-set-update-mode-eager,
         -set-permissions-elevated,-reset-permissions-elevated,
@@ -539,7 +773,7 @@
     <!-- Security / Signing -->
     
     <target name="-unavailable-signjars-task" depends="-check-jfx-deployment" unless="jfx-deployment-available">
-        <echo message="Task required to sign JAR file is missing, check the availability of JavaFX 2.0 deployment tasks. JAR files will not be signed."/>
+        <echo message="Warning: Task required to sign JAR file is missing, check the availability of JavaFX 2.0 deployment tasks. JAR files will not be signed."/>
     </target>
 
     <target name="-security-props-check">
@@ -557,7 +791,8 @@
         </condition>
     </target>
     
-    <target name="-javafx-init-keystore" depends="-check-signing-possible,-javafx-init-signing,-javafx-init-keystore1,-javafx-init-keystore2,-check-keystore-exists" if="javafx.signed.true+signjars.task.available" unless="javafx.signjar.keystore.exists">
+    <target name="-javafx-init-keystore" depends="-check-signing-possible,-javafx-init-signing,-javafx-init-keystore1,-javafx-init-keystore2,-check-keystore-exists" 
+            if="javafx.signed.true+signjars.task.available" unless="javafx.signjar.keystore.exists">
         <property name="javafx.signjar.vendor" value="CN=${application.vendor}"/>
         <echo message="Going to create default keystore in ${javafx.signjar.keystore}"/>
         <genkey dname="${javafx.signjar.vendor}" alias="${javafx.signjar.alias}" keystore="${javafx.signjar.keystore}"
@@ -1251,14 +1486,14 @@
         <antcall target="-check-jnlp-file"/>
     </target>
 
-    <target name="jfxws-run" depends="jar,-check-jfx-webstart,-resolve-jnlp-file" if="jnlp-file-exists" description="Start fx javaws execution">
-        <echo message="Executing ${jfx.deployment.jnlp} using ${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
-        <exec executable="${javafx.runtime}${file.separator}bin${file.separator}javaws">
+    <target name="jfxws-run" if="jnlp-file-exists" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file" description="Start fx javaws execution">
+        <echo message="Executing ${jfx.deployment.jnlp} using ${active.webstart.executable}"/>
+        <exec executable="${active.webstart.executable}">
             <arg file="${jfx.deployment.jnlp}"/>
         </exec>
     </target>
     
-    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="jar,-check-jfx-webstart,-resolve-jnlp-file,-debug-start-debugger,-debug-javaws-debuggee" 
+    <target name="jfxws-debug" if="jnlp-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-check-jfx-webstart,-resolve-jnlp-file,-debug-start-debugger,-debug-javaws-debuggee" 
         description="Debug fx javaws project in IDE"/>
         
     <target name="-init-debug-args">
@@ -1283,8 +1518,8 @@
     </target>
 
     <target name="-debug-javaws-debuggee" depends="-init-debug-args">
-        <echo message="Executing ${jfx.deployment.jnlp} in debug mode using ${javafx.runtime}${file.separator}bin${file.separator}javaws"/>
-        <exec executable="${javafx.runtime}${file.separator}bin${file.separator}javaws">
+        <echo message="Executing ${jfx.deployment.jnlp} in debug mode using ${active.webstart.executable}"/>
+        <exec executable="${active.webstart.executable}">
             <env key="JAVAWS_VM_ARGS" value="${debug-args-line} -Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <arg value="-wait"/>
             <arg file="${jfx.deployment.jnlp}"/>
@@ -1321,14 +1556,14 @@
         </condition>
     </target>
 
-    <target name="jfxbe-run" depends="jar,-set-html-file" if="html-file-exists" description="Start JavaFX execution in browser">
+    <target name="jfxbe-run" if="html-file-exists" depends="-check-jdk-7u4-mac,jar,-set-html-file" description="Start JavaFX execution in browser">
         <echo message="Executing ${jfx.deployment.html} using ${javafx.run.inbrowser.path}"/>
         <exec executable="${javafx.run.inbrowser.path}">
             <arg file="${jfx.deployment.html}"/>
         </exec>
     </target>
     
-    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="jar,-set-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
+    <target name="jfxbe-debug" if="html-file-exists+netbeans.home" depends="-check-jdk-7u4-mac,jar,-set-html-file,-debug-start-debugger,-debug-jfxbe-debuggee" 
         description="Debug JavaFX project in browser"/>
         
     <target name="-init-debug-args">
