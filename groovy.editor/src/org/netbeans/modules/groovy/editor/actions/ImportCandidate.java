@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,20 +37,60 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.actions;
+
+import javax.swing.Icon;
 
 /**
  *
- * @author Petr Hejl
+ * @author Martin Janicek
  */
-public enum CompletionType {
+public class ImportCandidate {
 
-    OBJECT,
+    private String name;
+    private String fqnName;
+    private Icon icon;
+    private int importantsLevel;
 
-    THIS,
+    public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
+        this.name = name;
+        this.fqnName = fqnName;
+        this.icon = icon;
+        this.importantsLevel = importantsLevel;
+    }
 
-    SUPER
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String Name) {
+        this.name = Name;
+    }
+
+    public String getFqnName() {
+        return fqnName;
+    }
+
+    public void setFqnName(String fqnName) {
+        this.fqnName = fqnName;
+    }
+
+    public Icon getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Icon icon) {
+        this.icon = icon;
+    }
+
+    public int getImportantsLevel() {
+        return importantsLevel;
+    }
+
+    public void setImportantsLevel(int importantsLevel) {
+        this.importantsLevel = importantsLevel;
+    }
 }
