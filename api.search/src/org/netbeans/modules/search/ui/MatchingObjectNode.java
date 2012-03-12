@@ -43,12 +43,16 @@ package org.netbeans.modules.search.ui;
 
 import java.awt.EventQueue;
 import java.awt.Image;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Date;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.MatchingObject;
+import org.openide.cookies.EditCookie;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -131,6 +135,11 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public String getDisplayName() {
         return original.getDisplayName();
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return new OpenNodeAction();
     }
 
     private void setValidOriginal() {
@@ -341,6 +350,18 @@ public class MatchingObjectNode extends AbstractNode {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             setValidOriginal();
+        }
+    }
+
+    private class OpenNodeAction extends AbstractAction {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            EditCookie editCookie = original.getLookup().lookup(
+                    EditCookie.class);
+            if (editCookie != null) {
+                editCookie.edit();
+            }
         }
     }
 }
