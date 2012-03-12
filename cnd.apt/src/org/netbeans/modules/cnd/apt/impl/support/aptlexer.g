@@ -543,7 +543,7 @@ tokens {
     };
 
     public interface APTLexerCallback {
-        void onMakeToken(int t);
+        void onMakeToken(int tokType, int startColumn, int startLine);
     }
 
     public void setCallback(APTLexerCallback callback) {
@@ -749,7 +749,7 @@ tokens {
     @Override
     protected APTToken makeToken(int t) {
         if (callback != null) {
-            callback.onMakeToken(t);
+            callback.onMakeToken(t, getTokenStartColumn(), getTokenStartLine());
         }
 
         if (isOnlyPreproc() && isPreprocPossible()) {
