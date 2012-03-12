@@ -56,7 +56,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -80,8 +81,8 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     
     private final char fileTypeChar;
     private SoftReference<CachedRemoteInputStream> fileContentCache = new SoftReference<CachedRemoteInputStream>(null);
-    private ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-
+    private SimpleRWLock rwl = new SimpleRWLock();
+    
     /*package*/ RemotePlainFile(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv, 
             RemoteDirectory parent, String remotePath, File cache, FileType fileType) {
         super(wrapper, fileSystem, execEnv, parent, remotePath, cache);
@@ -134,9 +135,93 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         return (RemoteDirectory) super.getParent(); // cast guaranteed by constructor
     }
 
+    // This homemade Read-Write lock is used instead of ReentrantReadWriteLock to support unlocking from
+    // the thread other when one acquired the lock. This is required by FileObjectTestHid.testBigFileAndAsString test.
+    // In brief the problem is the following: testBigFileAndAsString checks that if FileObject's InputStream is not closed
+    // properly it will be closed in the finalizer. But it is not possible to unlock ReentrantReadWriteLock read lock
+    // from the finalizer as it is executed in separate thread: the exception will happen if you try. And this homemade lock
+    // do not have this restriction.
+    // Some facts about RWL implementation can be found here: http://java.dzone.com/news/java-concurrency-read-write-lo
+    private final class SimpleRWLock {
+
+        private int activeReaders = 0;
+        private Thread writer = null;
+        private final ReentrantLock lock = new ReentrantLock();
+        private final Condition readable = lock.newCondition();
+        private final Condition writtable = lock.newCondition();
+
+        private boolean writeCondition() {
+            return activeReaders == 0 && writer == null;
+        }
+
+        // should support lock's downgrading
+        private boolean readCondition() {
+            return writer == null || writer == Thread.currentThread();
+        }
+
+        public boolean tryReadLock() throws InterruptedException {
+            lock.lock();
+            try {
+                while (!readCondition()) {
+                    if (!readable.await(LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                        return false;
+                    }
+                }
+                activeReaders++;
+                if (writer == Thread.currentThread()) writer = null;
+                return true;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void readUnlock() {
+            lock.lock();
+            try {
+                if (activeReaders > 0) {
+                    activeReaders--;
+                    if (activeReaders == 0) {
+                        writtable.signalAll();
+                    }
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public boolean tryWriteLock() throws InterruptedException {
+            lock.lock();
+            try {
+                while (!writeCondition()) {
+                    if (!writtable.await(LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+                        return false;
+                    }
+                }
+                writer = Thread.currentThread();
+                return true;
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        public void writeUnlock() {
+            lock.lock();
+            try {
+                if (writer != null) {
+                    writer = null;
+                    writtable.signal();
+                    readable.signalAll();
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+    } 
+       
     private final class InputStreamWrapper extends InputStream {
 
         private final InputStream is;
+        private boolean closed;
 
         public InputStreamWrapper(InputStream is) {
             this.is = is;
@@ -154,15 +239,22 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
             try {
                 is.close();
+                closed = true;
             } finally {
-                if (rwl.getReadLockCount() > 0) {
-                    rwl.readLock().unlock();
-                }
+                rwl.readUnlock();
             }
         }
 
+        @Override
+        protected void finalize() throws Throwable {
+            close();
+        }        
+        
         @Override
         public boolean equals(Object obj) {
             return is.equals(obj);
@@ -229,7 +321,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 }
 
             }
-            if (rwl.readLock().tryLock(LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+            if (rwl.tryReadLock()) {
                 return new InputStreamWrapper(newStream);
             } else {
                 return new InputStream() {
@@ -317,7 +409,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (USE_VCS) {
                 interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(getFileSystem());
             }
-            if (rwl.writeLock().tryLock(LOCK_TIMEOUT, TimeUnit.SECONDS)) {
+            if (rwl.tryWriteLock()) {
                 return new DelegateOutputStream(interceptor, orig);
             } else {
                 return new OutputStream() {
@@ -330,7 +422,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             }
         } catch (InterruptedException ex) {
             throw new IOException(ex);
-        }
+    }
     }
 
     // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
@@ -353,6 +445,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     private class DelegateOutputStream extends OutputStream {
 
         private final FileOutputStream delegate;
+        private boolean closed;
 
         public DelegateOutputStream(FilesystemInterceptorProvider.FilesystemInterceptor interceptor, RemoteFileObjectBase orig) throws IOException {
             if (interceptor != null) {
@@ -373,6 +466,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
 
         @Override
         public void close() throws IOException {
+            if (closed) {
+                return;
+            }
             try {
                 delegate.close();
                 FileEvent ev = new FileEvent(getOwnerFileObject(), getOwnerFileObject(), true);
@@ -413,10 +509,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                         }
                     }
                 }
+                closed = true;
             } finally {
-                if (rwl.isWriteLocked()) {
-                    rwl.writeLock().unlock();
-                }
+                rwl.writeUnlock();
             }
         }
 

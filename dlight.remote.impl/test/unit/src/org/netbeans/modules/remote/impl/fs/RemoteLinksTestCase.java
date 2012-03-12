@@ -172,12 +172,18 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             String linkName2 = "link2";
             String parentName2 = "link2parent";
             String baseDirlinkName = "linkToDir";
+            String cyclickLink1 = "cl1";
+            String cyclickLink2 = "cl2";
+            String cyclickLink3 = "cl3";
             String script =
                     "cd " + baseDir + "; " +
                     "ln -s " + selfLinkName + ' ' + selfLinkName + ";" +
                     "ln -s " + linkName1 + ' ' + linkName2 + ";" +
                     "ln -s " + linkName2 + ' ' + linkName1 + ";" +
                     "ln -s . " + parentName2 + ";" +
+                    "ln -s " + cyclickLink1 + ' ' + cyclickLink2 + ";" +
+                    "ln -s " + cyclickLink2 + ' ' + cyclickLink3 + ";" +
+                    "ln -s " + cyclickLink3 + ' ' + cyclickLink1 + ";" +
                     "ln -s " + baseDir + ' ' + baseDirlinkName;
             ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);

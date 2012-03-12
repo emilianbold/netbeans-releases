@@ -197,8 +197,8 @@ public abstract class APTAbstractWalker extends APTWalker {
         }
     }
     
-    protected String getFileOnceMacroName() {
-        return "\""+getRootFile().getPath().toString()+"\""; //NOI18N
+    protected final String getFileOnceMacroName() {
+        return APTUtils.getFileOnceMacroName(getRootFile());
     }
 
     @Override

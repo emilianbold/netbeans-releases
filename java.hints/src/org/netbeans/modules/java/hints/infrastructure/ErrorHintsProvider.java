@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.hints.infrastructure;
 
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
@@ -81,6 +82,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -92,6 +94,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
+import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -567,7 +570,8 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
             HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
 
-            JavaHintsPositionRefresher.errorsUpdated(doc, version, errors);
+            MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
+            MimeLookup.getLookup("text/x-java").lookup(ErrorPositionRefresherHelper.class).setVersion(doc, errors);
             
             long end = System.currentTimeMillis();
 

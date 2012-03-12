@@ -117,7 +117,7 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
             query.putValue(entry.getKey(), entry.getValue());
         }
         CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
-        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject);
+        Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
         dumpAndCheckResults(elements, goldenFileName);
     }
 

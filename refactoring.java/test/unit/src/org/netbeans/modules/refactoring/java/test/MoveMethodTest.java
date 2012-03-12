@@ -54,6 +54,49 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
 
+    public void test207833() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "        java.util.Random r = new java.util.Random(field);\n"
+                + "        field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        t.SourceClass.this.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{2}, src.getFileObject("t/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        tClass.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class TargetClass {\n"
+                + "    public void movedMethod() {\n"
+                + "        if (SourceClass.field == 1) { SourceClass.field++; }\n"
+                + "        Random r = new Random(SourceClass.field);\n"
+                + "        SourceClass.field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+
     public void testMoveImports() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"

@@ -146,6 +146,35 @@ public class ProvidedExtensionsTest extends NbTestCase {
             assertEquals("Just one unlock " + iListener, 1, iListener.implsFileUnlockCalls);                                    
         }        
     }
+
+    public void testImplsFileLockThrowsIO() throws IOException {
+        FileObject fo = FileUtil.toFileObject(getWorkDir());
+        assertNotNull(fo);
+        assertNotNull(iListener);
+        iListener.clear();
+        FileObject toLock = fo.createData(getName());
+        assertNotNull(toLock);
+        assertEquals("Check on " + iListener, 0, iListener.implsFileLockCalls);
+        
+        iListener.throwFromLock = new IOException("Pretend cannot lock");
+        try {
+            FileLock fLock = toLock.lock();
+            fail("Never gets here: " + fLock);
+        } catch (IOException ex) {
+            assertSame("OK, got the exception", iListener.throwFromLock, ex);
+            assertEquals("One call to lock", 1, iListener.implsFileLockCalls);            
+            assertEquals("No call to unlock", 0, iListener.implsFileUnlockCalls);                        
+        }
+
+        iListener.throwFromLock = null;
+        {
+            FileLock fLock = toLock.lock();
+            assertTrue(fLock.isValid());
+            assertEquals("Second call to lock", 2, iListener.implsFileLockCalls);            
+            fLock.releaseLock();
+            assertEquals("Just one unlock " + iListener, 1, iListener.implsFileUnlockCalls);
+        }
+    }
     
     public void testImplsBeforeChange() throws IOException {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
@@ -660,6 +689,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         public static FileLock lock;
         private final AnnotationProvider provider;
+        private IOException throwFromLock;
 
         public ProvidedExtensionsImpl() {
             this(null, false);
@@ -706,9 +736,12 @@ public class ProvidedExtensionsTest extends NbTestCase {
             return super.canWrite(f);
         }
 
-        public void fileLocked(FileObject fo) {
+        public void fileLocked(FileObject fo) throws IOException {
             super.fileLocked(fo);
             implsFileLockCalls++;
+            if (throwFromLock != null) {
+                throw throwFromLock;
+            }
         }
 
         public void fileUnlocked(FileObject fo) {

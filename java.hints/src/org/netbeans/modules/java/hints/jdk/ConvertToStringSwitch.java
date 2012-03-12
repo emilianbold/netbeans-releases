@@ -83,28 +83,29 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.MatcherUtilities;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
-import org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.CustomizerImpl;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.MatcherUtilities;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Jan Lahoda
  */
-@Hint(category="rules15", suppressWarnings="ConvertToStringSwitch", customizerProvider=CustomizerImpl.class)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", description = "#DESC_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch", category="rules15", suppressWarnings="ConvertToStringSwitch")
 public class ConvertToStringSwitch {
 
-    static final String KEY_ALSO_EQ = "also-equals";
     static final boolean DEF_ALSO_EQ = true;
+    
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", tooltip = "#TP_org.netbeans.modules.java.hints.jdk.ConvertToStringSwitch.KEY_ALSO_EQ", defaultValue=DEF_ALSO_EQ)
+    static final String KEY_ALSO_EQ = "also-equals";
     
     private static final String[] INIT_PATTERNS = {
         "$c1.equals($c2)",
@@ -234,11 +235,11 @@ public class ConvertToStringSwitch {
             return null;
         }
 
-        Fix convert = JavaFix.toEditorFix(new ConvertToSwitch(ctx.getInfo(),
-                                                              ctx.getPath(),
-                                                              TreePathHandle.create(variable, ctx.getInfo()),
-                                                              literal2Statement,
-                                                              defaultStatement));
+        Fix convert = new ConvertToSwitch(ctx.getInfo(),
+                                 ctx.getPath(),
+                                 TreePathHandle.create(variable, ctx.getInfo()),
+                                 literal2Statement,
+                                 defaultStatement).toEditorFix();
         ErrorDescription ed = ErrorDescriptionFactory.forName(ctx,
                                                               ctx.getPath(),
                                                               "Convert to switch",
@@ -315,7 +316,9 @@ public class ConvertToStringSwitch {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy copy, TreePath it, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy copy = ctx.getWorkingCopy();
+            TreePath it = ctx.getPath();
             TreeMaker make = copy.getTreeMaker();
             List<CaseTree> cases = new LinkedList<CaseTree>();
             List<CatchDescription<TreePath>> resolved = new ArrayList<CatchDescription<TreePath>>(ConvertToSwitch.this.literal2Statement.size() + 1);
@@ -552,15 +555,4 @@ public class ConvertToStringSwitch {
         }
     }
 
-    public static final class CustomizerImpl extends OneCheckboxCustomizerProvider {
-
-        @Messages({
-            "LBL_ConvertToSwitch_AlsoEq=Also consider String comparison by the == operator",
-            "TP_ConvertToSwitch_AlsoEq=Whether String comparison by the == operator should be considered to be a string comparison."
-        })
-        public CustomizerImpl() {
-            super(Bundle.LBL_ConvertToSwitch_AlsoEq(), Bundle.TP_ConvertToSwitch_AlsoEq(), KEY_ALSO_EQ, DEF_ALSO_EQ);
-        }
-
-    }
 }

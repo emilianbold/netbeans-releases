@@ -170,6 +170,9 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
         String oldValue = getSpi(key);
         if (value.equals(oldValue)) {return;}
         try {
+            if (super.isRemoved()) {
+                return;
+            }
             super.put(key, value);
         } catch (IllegalArgumentException iae) {
             if (iae.getMessage().contains("too long")) {

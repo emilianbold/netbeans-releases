@@ -51,19 +51,19 @@ import com.sun.source.util.TreePathScanner;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.Hint.Options;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-@Hint(category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.EqualsMethodHint", description = "#DESC_org.netbeans.modules.java.hints.EqualsMethodHint", category="general", id="org.netbeans.modules.java.hints.EqualsMethodHint", suppressWarnings="EqualsWhichDoesntCheckParameterClass", options=Options.QUERY)
 public class EqualsMethodHint {
 
     @TriggerPattern(value="$mods$ boolean equals(java.lang.Object $param) { $statements$; }")

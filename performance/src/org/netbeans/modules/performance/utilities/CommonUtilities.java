@@ -122,8 +122,13 @@ public class CommonUtilities {
         SOURCE_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir");
         TEST_PACKAGES = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.Bundle", "NAME_test.src.dir");
         String workDir = System.getProperty("nbjunit.workdir");
+        String altPath = System.getProperty("nb_perf_alt_path");
         if (workDir != null) {
-            projectsDir = workDir + File.separator;
+            if (altPath!=null) {
+                projectsDir = altPath + File.separator;
+            } else {
+                projectsDir = workDir + File.separator;
+            }
             try {
                 projectsDir = new File(projectsDir + File.separator + ".." 
                         + File.separator + ".." + File.separator + ".." 

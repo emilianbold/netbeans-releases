@@ -94,246 +94,197 @@ public class OccurrencesFinderImplTest extends TestBase {
     }
 
     public void testGotoConstructTest() throws Exception {
-//testfiles/markoccurences/testGotoConstructTest/testGotoConstructTest.php
         checkOccurrences(getTestPath(), "$a = new MyCla^ssConstr(", true);
     }
 
     public void testGotoConstructTest_2() throws Exception {
-//testfiles/markoccurences/testGotoConstructTest/testGotoConstructTest.php
         checkOccurrences(getTestPath(), "$b = new MyClass^Constr2(", true);
     }
 
     public void testParamVarPropInPhpDocTest() throws Exception {
-//testfiles/markoccurences/testParamVarPropInPhpDocTest/testParamVarPropInPhpDocTest.php
         checkOccurrences(getTestPath(), "* @param Book $he^llo", true);
     }
 
     public void testMarkReturnsOnConstructorTest() throws Exception {
-//testfiles/markoccurences/testMarkReturnsOnConstructorTest/testMarkReturnsOnConstructorTest.php
         checkOccurrences(getTestPath(), "funct^ion __construct() {}//Auth", true);
     }
 
     public void testMarkReturnsOnConstructorTest_2() throws Exception {
-//testfiles/markoccurences/testMarkReturnsOnConstructorTest/testMarkReturnsOnConstructorTest.php
         checkOccurrences(getTestPath(), "funct^ion __construct() {}//Bo", true);
     }
 
     public void testClsVarPropInPhpDocTest() throws Exception {
-//testfiles/markoccurences/testClsVarPropInPhpDocTest/testClsVarPropInPhpDocTest.php
         checkOccurrences(getTestPath(), "* @return Aut^hor", true);
     }
 
     public void testIfaceTest() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "class mycls implements my^face", true);
     }
 
     public void testIfaceTest_2() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "const REC^OVER_ORIG = ", true);
     }
 
     public void testIfaceTest_3() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "class my^cls implements myface", true);
     }
 
     public void testIfaceTest_4() throws Exception {
-//testfiles/markoccurences/testIfaceTest/testIfaceTest.php
         checkOccurrences(getTestPath(), "const RECOV^ER_ORIG = ", true);
     }
 
     public void testMarkClsIface() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDecla^ration implements ifaceDeclaration ", true);
     }
 
     public void testMarkClsIface_2() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration3 extends clsDec^laration ", true);
     }
 
     public void testMarkClsIface_3() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDec^laration ", true);
     }
 
     public void testMarkClsIface_4() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDeclaration2 extends ifaceDecl^aration  ", true);
     }
 
     public void testMarkClsIface_5() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration implements ifaceDeclara^tion ", true);
     }
 
     public void testMarkClsIface_6() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration2 implements ifaceDecla^ration, ifaceDeclaration2 ", true);
     }
 
     public void testMarkClsIface_7() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "interface ifaceDecl^aration2 extends ifaceDeclaration  ", true);
     }
 
     public void testMarkClsIface_8() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "class clsDeclaration2 implements ifaceDeclaration, ifaceDecl^aration2 ", true);
     }
 
     public void testMarkClsIface_9() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$ifaceDec^laration = ", true);
     }
 
     public void testMarkClsIface_10() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$ifaceDeclarati^on2 = ", true);
     }
 
     public void testMarkClsIface_11() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$iface^Declaration4 = ", true);
     }
 
     public void testMarkClsIface_12() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration  = ", true);
     }
 
     public void testMarkClsIface_13() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration2 = ", true);
     }
 
     public void testMarkClsIface_14() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDec^laration4 = ", true);
     }
 
     public void testMarkClsIface_15() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "$clsDeclar^ation3 = ", true);
     }
 
     public void testMarkClsIface_16() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration()", true);
     }
 
     public void testMarkClsIface_17() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration2() ", true);
     }
 
     public void testMarkClsIface_18() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function ifaceDe^claration4() ", true);
     }
 
     public void testMarkClsIface_19() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration() ", true);
     }
 
     public void testMarkClsIface_20() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration2() ", true);
     }
 
     public void testMarkClsIface_21() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration3() ", true);
     }
 
     public void testMarkClsIface_22() throws Exception {
-//testfiles/markoccurences/testMarkClsIface/testMarkClsIface.php
         checkOccurrences(getTestPath(), "function clsDecla^ration4() ", true);
     }
 
     public void testMarkArray() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "private static $stat^ic_array = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_2() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= self::$st^atic_array[$instance_array[$idx]", true);
     }
 
     public void testMarkArray_3() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "private $fi^eld_array = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_4() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= $this->fiel^d_array[$instance_array[$idx]", true);
     }
 
     public void testMarkArray_5() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_a^rray = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_6() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$result .= self::$static_array[$instanc^e_array[$idx]", true);
     }
 
     public void testMarkArray_7() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx = ", true);
     }
 
     public void testMarkArray_8() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array[$i^dx", true);
     }
 
     public void testMarkArray_9() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx2 = ", true);
     }
 
     public void testMarkArray_10() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array2[$id^x2", true);
     }
 
     public void testMarkArray_11() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$i^dx3 = ", true);
     }
 
     public void testMarkArray_12() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instance_array3[$id^x3", true);
     }
 
     public void testMarkArray_13() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array2 = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testMarkArray_14() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array2[$idx2", true);
     }
 
     public void testMarkArray_15() throws Exception {
-//testfiles/markoccurences/testMarkArray/testMarkArray.php
         checkOccurrences(getTestPath(), "$instan^ce_array3 = array('', 'thousand ', 'million ', 'billion '", true);
     }
 
     public void testVardoc166660() throws Exception {
-        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $testClass Test^Class", true);
     }
     public void testVardoc166660_1() throws Exception {
-        //testfiles/markoccurences/testVardoc166660/testVardoc166660.php
         checkOccurrences(getTestPath(), "@var $test^Class TestClass", true);
     }
 
@@ -837,27 +788,29 @@ public class OccurrencesFinderImplTest extends TestBase {
         checkOccurrences(getTestPath(), "\\Foo\\Bar\\ClassName::B^AR;", true);
     }
 
-    //TODO; these 2 tests are temporary disabled not to fail, needs to be evaluated
-    // and maybe fixed (NOT URGENT)
-    //caused by got to declaration, mark occurences rewrite
-    /*public void testOccurrences5() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "$^name^ = \"test\";\n" +
-                               "function foo() {\n" +
-                               "    echo $GLOBALS['^na|me^'];\n" +
-                               "}\n" +
-                               "?>");
+    public void testIssue207971_01() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld1;", true);
     }
 
-    public void test132230() throws Exception {
-        performTestOccurrences("<?php\n" +
-                               "function a() {\n" +
-                               "    global $^f^;\n" +
-                               "    $^|f^['s']();\n" +
-                               "}\n" +
-                               "?>",
-                               true);
-    }*/
+    public void testIssue207971_02() throws Exception {
+        checkOccurrences(getTestPath(), "private $fie^ld3;", true);
+    }
+
+    public void testIssue207971_03() throws Exception {
+        checkOccurrences(getTestPath(), "private $obj^ect2;", true);
+    }
+
+    public void testIssue207971_04() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->fie^ld1} {$this->object2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_05() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->obj^ect2->xxx} {$this->field3['array1']} \";", true);
+    }
+
+    public void testIssue207971_06() throws Exception {
+        checkOccurrences(getTestPath(), "$sql = \" {$this->field1} {$this->object2->xxx} {$this->fie^ld3['array1']} \";", true);
+    }
 
     @Override
     protected FileObject[] createSourceClassPathsForTest() {

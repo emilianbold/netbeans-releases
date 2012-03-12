@@ -66,36 +66,35 @@ import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.editor.java.Utilities;
-import org.netbeans.modules.java.hints.bugs.CollectionRemove.CollectionRemoveCustomizerImpl;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Constraint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintMetadata.Options;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.support.OneCheckboxCustomizerProvider;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.BooleanOption;
+import org.netbeans.spi.java.hints.ConstraintVariableType;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.Hint.Options;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Lahoda
  */
-@Hint(id="org.netbeans.modules.java.hints.bugs.CollectionRemove",
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.bugs.CollectionRemove", description = "#DESC_org.netbeans.modules.java.hints.bugs.CollectionRemove", id="org.netbeans.modules.java.hints.bugs.CollectionRemove",
       category="bugs",
-      customizerProvider=CollectionRemoveCustomizerImpl.class,
       suppressWarnings={CollectionRemove.SUPPRESS_WARNING_KEY, "", "collection-remove"},
       options=Options.QUERY)
 public class CollectionRemove {
 
             static final String  SUPPRESS_WARNING_KEY = "element-type-mismatch";
-            static final String  WARN_FOR_CASTABLE_KEY = "warn-for-castable";
-            static final boolean WARN_FOR_CASTABLE_DEFAULT = true;
+    static final boolean WARN_FOR_CASTABLE_DEFAULT = true;
+    @BooleanOption(displayName = "#LBL_org.netbeans.modules.java.hints.bugs.CollectionRemove.WARN_FOR_CASTABLE_KEY", tooltip = "#TP_org.netbeans.modules.java.hints.bugs.CollectionRemove.WARN_FOR_CASTABLE_KEY", defaultValue=WARN_FOR_CASTABLE_DEFAULT)
+    static final String  WARN_FOR_CASTABLE_KEY = "warn-for-castable";
   
     @TriggerPattern(value="$col.remove($obj)",
-                    constraints={@Constraint(variable="$col",
+                    constraints={@ConstraintVariableType(variable="$col",
                                              type="java.util.Collection"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> collectionRemove(HintContext ctx) {
@@ -103,9 +102,9 @@ public class CollectionRemove {
     }
 
     @TriggerPattern(value="$col.contains($obj)",
-                    constraints={@Constraint(variable="$col",
+                    constraints={@ConstraintVariableType(variable="$col",
                                              type="java.util.Collection"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> collectionContains(HintContext ctx) {
@@ -113,9 +112,9 @@ public class CollectionRemove {
     }
 
     @TriggerPattern(value="$map.remove($obj)",
-                    constraints={@Constraint(variable="$map",
+                    constraints={@ConstraintVariableType(variable="$map",
                                              type="java.util.Map"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> mapRemove(HintContext ctx) {
@@ -123,9 +122,9 @@ public class CollectionRemove {
     }
 
     @TriggerPattern(value="$map.get($obj)",
-                    constraints={@Constraint(variable="$map",
+                    constraints={@ConstraintVariableType(variable="$map",
                                              type="java.util.Map"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> mapGet(HintContext ctx) {
@@ -133,9 +132,9 @@ public class CollectionRemove {
     }
 
     @TriggerPattern(value="$map.containsKey($obj)",
-                    constraints={@Constraint(variable="$map",
+                    constraints={@ConstraintVariableType(variable="$map",
                                              type="java.util.Map"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> mapContainsKey(HintContext ctx) {
@@ -143,9 +142,9 @@ public class CollectionRemove {
     }
 
     @TriggerPattern(value="$map.containsValue($obj)",
-                    constraints={@Constraint(variable="$map",
+                    constraints={@ConstraintVariableType(variable="$map",
                                              type="java.util.Map"),
-                                 @Constraint(variable="$obj",
+                                 @ConstraintVariableType(variable="$obj",
                                              type="java.lang.Object")
     })
     public static List<ErrorDescription> mapContainsValue(HintContext ctx) {
@@ -330,15 +329,6 @@ public class CollectionRemove {
         }
 
         return null;
-    }
-
-    public static final class CollectionRemoveCustomizerImpl extends OneCheckboxCustomizerProvider {
-        public CollectionRemoveCustomizerImpl() {
-            super(NbBundle.getMessage(CollectionRemove.class, "LBL_CollectionRemoveCustomizer.warnForCastable"),
-                  NbBundle.getMessage(CollectionRemove.class, "TP_CollectionRemoveCustomizer.warnForCastable"),
-                  WARN_FOR_CASTABLE_KEY,
-                  WARN_FOR_CASTABLE_DEFAULT);
-        }
     }
 
 }

@@ -50,17 +50,22 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import org.netbeans.api.java.source.GeneratorUtilities;
+import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.*;
-import org.netbeans.modules.java.hints.jackpot.impl.JavaFixImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreePathHandle;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.jackpot.refactoring.JackpotBaseRefactoring2.Transform;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.api.java.source.matching.Occurrence;
 import org.openide.util.Exceptions;
 
 /**
@@ -155,10 +160,10 @@ public class ReplaceConstructorWithFactoryPlugin implements RefactoringPlugin {
             results.add(mod);
 
             results.addAll(JackpotBaseRefactoring2.performTransformation(ruleCode[0], new Transform() {
-                @Override public void transform(WorkingCopy copy, OccurrenceDescription occurrence) {
+                @Override public void transform(WorkingCopy copy, Occurrence occurrence) {
                     try {
-                        Fix toFix = JavaFix.rewriteFix(copy, "whatever", occurrence.getOccurrenceRoot(), toCode[0], occurrence.getVariables(), occurrence.getMultiVariables(), occurrence.getVariables2Names(), Collections.<String, TypeMirror>emptyMap());
-                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false, new ArrayList<RefactoringElementImplementation>());
+                        Fix toFix = JavaFixImpl.Accessor.INSTANCE.rewriteFix(copy, "whatever", occurrence.getOccurrenceRoot(), toCode[0], occurrence.getVariables(), occurrence.getMultiVariables(), occurrence.getVariables2Names(), Collections.<String, TypeMirror>emptyMap(), Collections.<String, String>emptyMap());
+                        JavaFixImpl.Accessor.INSTANCE.process(((JavaFixImpl) toFix).jf, copy, false, null, new ArrayList<RefactoringElementImplementation>());
                     } catch (Exception ex) {
                         Exceptions.printStackTrace(ex);
                     }

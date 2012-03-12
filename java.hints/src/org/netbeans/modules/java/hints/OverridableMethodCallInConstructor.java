@@ -60,11 +60,11 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.spi.support.FixFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.support.FixFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.util.NbBundle;
@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  *
  * @author David Strupl
  */
-@Hint(category="initialization", suppressWarnings="OverridableMethodCallInConstructor")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor", description = "#DESC_org.netbeans.modules.java.hints.OverridableMethodCallInConstructor", category="initialization", suppressWarnings="OverridableMethodCallInConstructor")
 public class OverridableMethodCallInConstructor {
 
     public OverridableMethodCallInConstructor() {

@@ -83,12 +83,12 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
         initComponents();
     }
     
-    public void initPanel(Map<String,List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
+    public void initPanel(Map<String,List<ImportCandidate>> multipleCandidates) {
         initComponentsMore(multipleCandidates);
         setAccessible();
     }
     
-    private void initComponentsMore(Map<String,List<FixImportsHelper.ImportCandidate>> multipleCandidates) {
+    private void initComponentsMore(Map<String,List<ImportCandidate>> multipleCandidates) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
@@ -116,9 +116,9 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
             
             int i = 0;
 
-            for (Map.Entry<String, List<FixImportsHelper.ImportCandidate>> entry : multipleCandidates.entrySet()) {
+            for (Map.Entry<String, List<ImportCandidate>> entry : multipleCandidates.entrySet()) {
                 String  name = entry.getKey();
-                List<FixImportsHelper.ImportCandidate> importCandidates = entry.getValue();
+                List<ImportCandidate> importCandidates = entry.getValue();
                 
                 int size = importCandidates.size();
                 int iNum = 0;
@@ -128,7 +128,7 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
                 String defaultSelection = null;
                 int maxImportantsLevel = 0;
                 
-                for (FixImportsHelper.ImportCandidate importCandidate : importCandidates) {
+                for (ImportCandidate importCandidate : importCandidates) {
                     choices[iNum] = importCandidate.getFqnName();
                     icons[iNum] = importCandidate.getIcon();
                     

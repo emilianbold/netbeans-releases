@@ -81,8 +81,8 @@ public class LazyLookupProvidersTest extends NbTestCase {
         assertEquals(ServiceImpl2.class.getName(), svcs2.iterator().next().getClass().getName());
         l.assertLoadedClasses("Service2", "ServiceImpl2");
         Collection<?> svcs1 = all.lookupAll(l.loadClass(Service1.class.getName()));
-        l.assertLoadedClasses("MergedServiceImpl1", "Merger", "Service1", "Service2", "ServiceImpl1a", "ServiceImpl1b", "ServiceImpl2");
         assertEquals(svcs1.toString(), 1, svcs1.size());
+        l.assertLoadedClasses("MergedServiceImpl1", "Merger", "Service1", "Service2", "ServiceImpl1a", "ServiceImpl1b", "ServiceImpl2");
         assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1a@"));
         assertTrue(svcs1.toString(), svcs1.toString().contains("ServiceImpl1b@"));
         assertTrue(svcs1.toString(), svcs1.toString().contains("Merge["));

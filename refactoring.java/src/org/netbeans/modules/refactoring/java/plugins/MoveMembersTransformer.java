@@ -594,7 +594,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                             boolean result = false;
 
-                            if (isElementBeingMoved(el) == null) {
+                            if (isElementBeingMoved(el) == null && el.getKind() != ElementKind.PACKAGE) {
                                 TypeElement elType = workingCopy.getElementUtilities().enclosingTypeElement(el);
                                 // TODO: Check for super keyword. if super is used, but it is not overloaded, there is no problem. else warning.
                                 String isThis = node.toString();

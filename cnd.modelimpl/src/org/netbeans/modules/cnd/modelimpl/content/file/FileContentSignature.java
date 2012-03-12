@@ -41,12 +41,27 @@
  */
 package org.netbeans.modules.cnd.modelimpl.content.file;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.TreeSet;
+import org.netbeans.modules.cnd.api.model.CsmClass;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInheritance;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelimpl.trace.LineDiff;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -69,10 +84,61 @@ public final class FileContentSignature {
         return new FileContentSignature(signature, UIDCsmConverter.fileToUID(file));
     }
 
-    private static List<CharSequence> createFileSignature(CsmFile file) {
-        return Collections.emptyList();
+    private static List<CharSequence> createFileSignature(CsmFile csmFile) {
+        Collection<FileElement> fileElements = new TreeSet<FileElement>(PAIR_COMPARATOR);
+        for (CsmInclude element : csmFile.getIncludes()) {
+            // TODO: what about system vs user, shouldn't it be part of Utils.getCsmIncludeKindKey?
+            CharAndCharSequence cs = new CharAndCharSequence(element.getIncludeName(), Utils.getCsmIncludeKindKey());
+            FileElement fe = new FileElement(element.getStartOffset(), cs);
+            fileElements.add(fe);
+        }
+
+        for (CsmMacro element : csmFile.getMacros()) {
+            MacroCharSequence cs = new MacroCharSequence(element.getName(), element.getBody(), Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.MACRO));
+            FileElement fe = new FileElement(element.getStartOffset(), cs);
+            fileElements.add(fe);
+        }
+        for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
+            addDeclarationAndNested(fileElements, element);
+        }
+        ArrayList<CharSequence> out = new ArrayList<CharSequence>(fileElements.size());
+        for (FileElement fe : fileElements) {
+            out.add(fe.signature);
+        }
+        out.trimToSize();
+        return out;
     }
 
+    private static void addDeclarationAndNested(Collection<FileElement> toAdd, CsmOffsetableDeclaration outDecl) {
+        // TODO: what about function return value?
+        // TODO: what about function params?
+        // TODO: what about const/virtual attributes?
+        // TODO: what about static?
+        CharAndCharSequence cs = new CharAndCharSequence(outDecl.getQualifiedName(), Utils.getCsmDeclarationKindkey(outDecl.getKind()));
+        FileElement fe = new FileElement(outDecl.getStartOffset(), cs);
+        toAdd.add(fe);
+        Iterator<? extends CsmOffsetableDeclaration> it = null;
+        if (CsmKindUtilities.isNamespaceDefinition(outDecl)) {
+            it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
+        } else if (CsmKindUtilities.isClass(outDecl)) {
+            CsmClass cl = (CsmClass) outDecl;
+            it = cl.getMembers().iterator();
+            for (CsmInheritance inh : cl.getBaseClasses()) {
+                CharAndCharSequence csi = new CharAndCharSequence(inh.getAncestorType().getClassifierText(), Utils.getCsmInheritanceKindKey(inh));
+                toAdd.add(new FileElement(inh.getStartOffset(), csi));
+            }
+        } else if (CsmKindUtilities.isEnum(outDecl)) {
+            CsmEnum en = (CsmEnum) outDecl;
+            it = en.getEnumerators().iterator();
+        }
+        if (it != null) {
+            while (it.hasNext()) {
+                CsmOffsetableDeclaration decl = (CsmOffsetableDeclaration) it.next();
+                addDeclarationAndNested(toAdd, decl);
+            }
+        }
+    }
+    
     @Override
     public int hashCode() {
         return hashCode;
@@ -102,13 +168,13 @@ public final class FileContentSignature {
     public static CharSequence testDifference(FileContentSignature first, FileContentSignature second) {
         StringBuilder out = new StringBuilder();
         if (!first.file.equals(second.file)) {
-            out.append("<FILE=").append(first.file);// NOI18N
-            out.append(">FILE=").append(second.file);// NOI18N
+            out.append("FILE - ").append(first.file).append('\n');// NOI18N
+            out.append("FILE + ").append(second.file).append('\n');// NOI18N
             return out;
         }
         if (first.hashCode != second.hashCode) {
-            out.append("<HASH=").append(first.hashCode);// NOI18N
-            out.append(">HASH=").append(second.hashCode);// NOI18N
+            out.append("HASH - ").append(first.hashCode).append('\n');// NOI18N
+            out.append("HASH + ").append(second.hashCode).append('\n');// NOI18N
         }
         if (!first.signature.isEmpty() && !second.signature.isEmpty()) {
             List<String> diff = LineDiff.diff(first.signature, second.signature);
@@ -139,5 +205,213 @@ public final class FileContentSignature {
             hash = 89 * hash + charSequence.hashCode();
         }
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder out = new StringBuilder();
+        for (CharSequence sig : signature) {
+            out.append(sig).append('\n');
+        }
+        return out.toString();
+    }
+
+    private static final class FileElement {
+        private final int start;
+        private final KindAndSignature signature;
+
+        public FileElement(int start, KindAndSignature sig) {
+            this.start = start;
+            this.signature = sig;
+        }
+    }
+    
+    private static final Comparator<FileElement> PAIR_COMPARATOR = new Comparator<FileElement>() {
+
+        @Override
+        public int compare(FileElement o1, FileElement o2) {
+            int res = o1.start - o2.start;
+            if (res == 0) {
+                res = CharSequences.comparator().compare(o1.signature.getSignature(), o2.signature.getSignature());
+            }
+            if (res == 0) {
+                res = o1.signature.getKind() - o2.signature.getKind();
+            }
+            return res;
+        }
+    };
+    
+    private interface KindAndSignature extends CharSequence {
+        char getKind();
+        CharSequence getSignature();
+    }
+    
+    private static class CharAndCharSequence implements KindAndSignature {
+
+        private final CharSequence delegate;
+        private final char kind;
+
+        public CharAndCharSequence(CharSequence delegate, String kind) {
+            assert delegate != null;
+            this.delegate = delegate;
+            assert kind.length() == 1 : kind;
+            this.kind = kind.charAt(0);
+        }
+
+        @Override
+        public int length() {
+            return delegate.length() + 2;
+        }
+
+        @Override
+        public char charAt(int index) {
+            switch (index) {
+                case 0:
+                    return kind;
+                case 1:
+                    return ':'; // see toStringImpl
+                default:
+                    return delegate.charAt(index - 2);
+            }
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return toStringImpl().subSequence(start, end);
+        }
+
+        private String toStringImpl() {
+            return kind + ":" + delegate; // NOI18N
+        }
+
+        @Override
+        public String toString() {
+            return toStringImpl();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 37 * hash + this.delegate.hashCode();
+            hash = 37 * hash + this.kind;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CharAndCharSequence other = (CharAndCharSequence) obj;
+            if (!this.delegate.equals(other.delegate)) {
+                return false;
+            }
+            if (this.kind != other.kind) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public char getKind() {
+            return this.kind;
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return this.delegate;
+        }
+    }
+
+    private static final class MacroCharSequence implements KindAndSignature {
+        private final CharSequence signature;
+        private final CharSequence extra;
+
+        public MacroCharSequence(CharSequence sig, CharSequence extra, String kind) {
+            assert sig != null;
+            this.signature = sig;
+            assert extra != null;
+            this.extra = extra;
+            assert kind.length() == 1 : kind;
+            assert kind.charAt(0) == 'M' : kind + " instead of M";
+        }
+        
+        @Override
+        public int length() {
+            return signature.length() + extra.length() + 2;
+        }
+
+        @Override
+        public char charAt(int index) {
+            if (index == 0) {
+                return 'M';
+            } else if (index == 1) {
+                return '[';// see toStringImpl
+            } else {
+                index = index - 2;
+                int len1 = signature.length();
+                if (index < len1) {
+                    return signature.charAt(index);
+                } else if (index == len1) {
+                    return ']';// see toStringImpl
+                } else {
+                    return extra.charAt(index-1-len1);
+                }
+            }
+        }
+
+        @Override
+        public CharSequence subSequence(int start, int end) {
+            return toStringImpl().subSequence(start, end);
+        }
+
+        private String toStringImpl() {
+            // should be in sync with charAt()
+            return "M[" + signature + "]" + extra; // NOI18N
+        }
+
+        @Override
+        public String toString() {
+            return toStringImpl();
+        }
+        
+        @Override
+        public int hashCode() {
+            int hash = 'M';
+            hash = 37 * hash + this.signature.hashCode();
+            hash = 37 * hash + this.extra.hashCode();
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final MacroCharSequence other = (MacroCharSequence) obj;
+            if (!this.signature.equals(other.signature)) {
+                return false;
+            }
+            if (!this.extra.equals(other.extra)) {
+                return false;
+            }
+            return true;
+        }
+        
+        @Override
+        public char getKind() {
+            return 'M';
+        }
+
+        @Override
+        public CharSequence getSignature() {
+            return this.signature;
+        }
     }
 }

@@ -74,17 +74,18 @@ import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerTreeKind;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerTreeKind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -92,7 +93,7 @@ import org.openide.util.NbBundle;
  *
  * @author Dusan Balek
  */
-@Hint(category = "imports")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.OrganizeImports", description = "#DESC_org.netbeans.modules.java.hints.OrganizeImports", category = "imports")
 public class OrganizeImports {
 
     @TriggerTreeKind(Kind.COMPILATION_UNIT)
@@ -114,7 +115,7 @@ public class OrganizeImports {
         }
         List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
         if (diffs != null && !diffs.isEmpty()) {
-            Fix fix = JavaFix.toEditorFix(new OrganizeImportsFix(context.getInfo(), context.getPath()));
+            Fix fix = new OrganizeImportsFix(context.getInfo(), context.getPath()).toEditorFix();
             SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
             int offset = diffs.get(0).getStartPosition().getOffset();
             CompilationUnitTree cu = context.getInfo().getCompilationUnit();
@@ -273,7 +274,9 @@ public class OrganizeImports {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             doOrganizeImports(wc);
         }
     }

@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -104,6 +105,10 @@ public class APTUtils {
                 // skip
             }
         }
+    }
+
+    public static String getFileOnceMacroName(APTFile apt) {
+        return "\"" + apt.getPath().toString() + "\""; //NOI18N
     }
 
     public static String getAPTTokenName(int type) {

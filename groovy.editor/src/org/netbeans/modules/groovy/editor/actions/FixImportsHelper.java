@@ -75,54 +75,11 @@ public class FixImportsHelper {
 
     private static final Logger LOG = Logger.getLogger(FixImportsHelper.class.getName());
 
-    public static class ImportCandidate {
-
-        String name;
-        String fqnName;
-        Icon icon;
-        int importantsLevel;
-
-        public ImportCandidate(String name, String fqnName, Icon icon, int importantsLevel) {
-            this.name = name;
-            this.fqnName = fqnName;
-            this.icon = icon;
-            this.importantsLevel = importantsLevel;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public void setName(String Name) {
-            this.name = Name;
-        }
-
-        public String getFqnName() {
-            return fqnName;
-        }
-
-        public void setFqnName(String fqnName) {
-            this.fqnName = fqnName;
-        }
-
-        public Icon getIcon() {
-            return icon;
-        }
-
-        public void setIcon(Icon icon) {
-            this.icon = icon;
-        }
-
-        public int getImportantsLevel() {
-            return importantsLevel;
-        }
-
-        public void setImportantsLevel(int importantsLevel) {
-            this.importantsLevel = importantsLevel;
-        }
+    
+    private FixImportsHelper() {
     }
 
-    public List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
+    public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
         List<ImportCandidate> result = new ArrayList<ImportCandidate>();
@@ -170,7 +127,7 @@ public class FixImportsHelper {
         return result;
     }
 
-    private void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
+    private static void addAsImportCandidate(String missingClass, String fqnName, ElementKind kind, List<ImportCandidate> result) {
         int level = getImportanceLevel(fqnName);
         Icon icon = ElementIcons.getElementIcon(kind, null);
         
@@ -208,10 +165,8 @@ public class FixImportsHelper {
         return missingClass;
     }
 
-    int getImportPosition(BaseDocument doc) {
+    private static int getImportPosition(BaseDocument doc) {
         TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
-
-        // LOG.setLevel(Level.FINEST);
 
         int importEnd = -1;
         int packageOffset = -1;
@@ -275,20 +230,25 @@ public class FixImportsHelper {
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
     }
 
-    public void doImport(FileObject fo, String fqnName) throws MissingResourceException {
+    public static void doImport(FileObject fo, String fqnName) throws MissingResourceException {
+        doImports(fo, Collections.singletonList(fqnName));
+    }
+
+    public static void doImports(FileObject fo, List<String> fqnNames) throws MissingResourceException {
         BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-
-        int firstFreePosition = getImportPosition(baseDoc);
-        if (firstFreePosition != -1) {
-            if (baseDoc == null) {
-                return;
-            }
-
-            EditList edits = new EditList(baseDoc);
-            LOG.log(Level.FINEST, "Importing here: {0}", firstFreePosition);
-
-            edits.replace(firstFreePosition, 0, "import " + fqnName + "\n", false, 0);
-            edits.apply();
+        if (baseDoc == null) {
+            return;
         }
+
+        EditList edits = new EditList(baseDoc);
+
+        for (String fqnName : fqnNames) {
+            int importPosition = getImportPosition(baseDoc);
+            if (importPosition != -1) {
+                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
+                edits.replace(importPosition, 0, "import " + fqnName + "\n", false, 0);
+            }
+        }
+        edits.apply();
     }
 }

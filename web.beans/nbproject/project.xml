@@ -102,12 +102,12 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.java.hints</code-name-base>
+                    <code-name-base>org.netbeans.modules.java.hints.legacy.spi</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.40</specification-version>
+                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -350,8 +350,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.el</friend>
-                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <package>org.netbeans.modules.web.beans</package>
                 <package>org.netbeans.modules.web.beans.api.model</package>
                 <package>org.netbeans.modules.web.beans.api.model.support</package>
             </friend-packages>

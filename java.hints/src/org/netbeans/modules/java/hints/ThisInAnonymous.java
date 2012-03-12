@@ -55,20 +55,21 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.code.spi.Hint;
-import org.netbeans.modules.java.hints.jackpot.code.spi.TriggerPattern;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
-import org.netbeans.modules.java.hints.jackpot.spi.support.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.Hint;
+import org.netbeans.spi.java.hints.TriggerPattern;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.openide.util.NbBundle;
 
 /**
  * Detects usage of this in anonymous class
  * @author Max Sauer
  */
-@Hint(category="bugs")
+@Hint(displayName = "#DN_org.netbeans.modules.java.hints.ThisInAnonymous", description = "#DESC_org.netbeans.modules.java.hints.ThisInAnonymous", category="bugs")
 public class ThisInAnonymous {
     private static final String THIS_KEYWORD = "this"; // NOI18N
 
@@ -89,8 +90,8 @@ public class ThisInAnonymous {
                 return null;
             }
             
-            Fix fix = JavaFix.toEditorFix(new FixImpl(TreePathHandle.create(thisVariable, ctx.getInfo()),
-                                                      ElementHandle.create((TypeElement) parent)));
+            Fix fix = new FixImpl(TreePathHandle.create(thisVariable, ctx.getInfo()),
+                         ElementHandle.create((TypeElement) parent)).toEditorFix();
 
             String displayName = NbBundle.getMessage(ThisInAnonymous.class, key);
             return ErrorDescriptionFactory.forName(ctx, thisVariable, displayName, fix);
@@ -130,7 +131,9 @@ public class ThisInAnonymous {
         }
 
         @Override
-        protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
+        protected void performRewrite(TransformationContext ctx) {
+            WorkingCopy wc = ctx.getWorkingCopy();
+            TreePath tp = ctx.getPath();
             TypeElement parentClass = parentClassElementHandle.resolve(wc);
 
             assert tp != null;

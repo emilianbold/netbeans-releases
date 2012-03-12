@@ -41,38 +41,31 @@
  */
 package org.netbeans.modules.java.hints.jackpot.refactoring;
 
-import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.ModificationResult.Difference;
-import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.java.hints.jackpot.impl.MessageImpl;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchSearch.BatchResult;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.BatchUtilities;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.ProgressHandleWrapper;
-import org.netbeans.modules.java.hints.jackpot.impl.batch.Scopes;
-import org.netbeans.modules.java.hints.jackpot.impl.tm.Matcher.OccurrenceDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintContext;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescription.Worker;
-import org.netbeans.modules.java.hints.jackpot.spi.HintDescriptionFactory;
-import org.netbeans.modules.java.hints.jackpot.spi.JavaFix;
 import org.netbeans.modules.java.hints.jackpot.spi.PatternConvertor;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
+import org.netbeans.modules.java.hints.providers.spi.Trigger;
+import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
+import org.netbeans.modules.java.hints.spiimpl.batch.ProgressHandleWrapper;
+import org.netbeans.modules.java.hints.spiimpl.batch.Scopes;
+import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompiler;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -81,6 +74,11 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.api.java.source.matching.Matcher;
+import org.netbeans.api.java.source.matching.Occurrence;
+import org.netbeans.api.java.source.matching.Pattern;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -99,82 +97,39 @@ public class JackpotBaseRefactoring2 {
      * @param transformer
      * @return
      */
-    public static Collection<? extends ModificationResult> performTransformation(String inputJackpotPattern, final Transform transformer) {
+    public static Collection<? extends ModificationResult> performTransformation(final String inputJackpotPattern, final Transform transformer) {
         List<HintDescription> descriptions = new ArrayList<HintDescription>();
 
         for (HintDescription hd : PatternConvertor.create(inputJackpotPattern)) {
+            final String triggerPattern = ((Trigger.PatternDescription) hd.getTrigger()).getPattern();
             descriptions.add(HintDescriptionFactory.create().setTrigger(hd.getTrigger()).setWorker(new Worker() {
                 @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
-                    final Map<String, TreePathHandle> params = new HashMap<String, TreePathHandle>();
-
-                    for (Entry<String, TreePath> e : ctx.getVariables().entrySet()) {
-                        params.put(e.getKey(), TreePathHandle.create(e.getValue(), ctx.getInfo()));
-                    }
-
-                    final Map<String, Collection<TreePathHandle>> paramsMulti = new HashMap<String, Collection<TreePathHandle>>();
-
-                    for (Entry<String, Collection<? extends TreePath>> e : ctx.getMultiVariables().entrySet()) {
-                        Collection<TreePathHandle> tph = new LinkedList<TreePathHandle>();
-
-                        for (TreePath tp : e.getValue()) {
-                            tph.add(TreePathHandle.create(tp, ctx.getInfo()));
-                        }
-
-                        paramsMulti.put(e.getKey(), tph);
-                    }
-
-                    final Map<String, String> variableNames = new HashMap<String, String>(ctx.getVariableNames());
-
                     final Map<String, TypeMirrorHandle<?>> constraintsHandles = new HashMap<String, TypeMirrorHandle<?>>();
 
                     for (Entry<String, TypeMirror> c : ctx.getConstraints().entrySet()) {
                         constraintsHandles.put(c.getKey(), TypeMirrorHandle.create(c.getValue()));
                     }
 
-                    Fix fix = JavaFix.toEditorFix(new JavaFix(ctx.getInfo(), ctx.getPath()) {
+                    Fix fix = new JavaFix(ctx.getInfo(), ctx.getPath()) {
                         @Override protected String getText() {
                             return "";
                         }
-                        @Override protected void performRewrite(WorkingCopy wc, TreePath tp, boolean canShowUI) {
-                            final Map<String, TreePath> parameters = new HashMap<String, TreePath>();
-
-                            for (Entry<String, TreePathHandle> e : params.entrySet()) {
-                                TreePath p = e.getValue().resolve(wc);
-
-                                if (p == null) {
-                                    Logger.getLogger(JavaFix.class.getName()).log(Level.SEVERE, "Cannot resolve handle={0}", e.getValue());
-                                }
-
-                                parameters.put(e.getKey(), p);
-                            }
-
-                            final Map<String, Collection<? extends TreePath>> parametersMulti = new HashMap<String, Collection<? extends TreePath>>();
-
-                            for (Entry<String, Collection<TreePathHandle>> e : paramsMulti.entrySet()) {
-                                Collection<TreePath> tps = new LinkedList<TreePath>();
-
-                                for (TreePathHandle tph : e.getValue()) {
-                                    TreePath p = tph.resolve(wc);
-
-                                    if (p == null) {
-                                        Logger.getLogger(JavaFix.class.getName()).log(Level.SEVERE, "Cannot resolve handle={0}", e.getValue());
-                                    }
-
-                                    tps.add(p);
-                                }
-
-                                parametersMulti.put(e.getKey(), tps);
-                            }
-
+                        @Override protected void performRewrite(TransformationContext ctx) {
+                            WorkingCopy wc = ctx.getWorkingCopy();
                             Map<String, TypeMirror> constraints = new HashMap<String, TypeMirror>();
 
                             for (Entry<String, TypeMirrorHandle<?>> c : constraintsHandles.entrySet()) {
                                 constraints.put(c.getKey(), c.getValue().resolve(wc));
                             }
 
-                            transformer.transform(wc, new OccurrenceDescription(tp, parameters, parametersMulti, variableNames, Collections.<Element, Element>emptyMap(), Collections.<Element, TreePath>emptyMap()));
+                            Pattern pattern = PatternCompiler.compile(wc, triggerPattern, constraints, Collections.<String>emptyList());
+                            Collection<? extends Occurrence> occurrence = Matcher.create(wc).setTreeTopSearch().setSearchRoot(ctx.getPath()).match(pattern);
+
+                            assert occurrence.size() == 1;
+
+                            transformer.transform(wc, occurrence.iterator().next());
                         }
-                    });
+                    }.toEditorFix();
                     
                     return Collections.singletonList(ErrorDescriptionFactory.createErrorDescription(Severity.WARNING, "", Collections.singletonList(fix), ctx.getInfo().getFileObject(), 0, 0));
                 }
@@ -187,7 +142,7 @@ public class JackpotBaseRefactoring2 {
     }
 
     public interface Transform {
-        public void transform(WorkingCopy copy, OccurrenceDescription occurrence);
+        public void transform(WorkingCopy copy, Occurrence occurrence);
     }
 
     public static void createAndAddElements(AbstractRefactoring refactoring, RefactoringElementsBag elements, Collection<ModificationResult> results) {
