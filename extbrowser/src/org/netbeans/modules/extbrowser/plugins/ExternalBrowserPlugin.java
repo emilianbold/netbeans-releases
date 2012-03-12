@@ -240,7 +240,7 @@ public final class ExternalBrowserPlugin {
                 }
             }
             // XXX: on Mac, file URLs are open with localhost as the host instead of ""
-            if (browserImpl == null && "file".equals(u.getProtocol())
+            if (browserImpl == null && (u != null) && "file".equals(u.getProtocol())
                     && "localhost".equals(u.getHost()))                 // NOI18N
             {
                 try {
