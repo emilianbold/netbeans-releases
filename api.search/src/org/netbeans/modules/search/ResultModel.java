@@ -45,8 +45,12 @@
 
 package org.netbeans.modules.search;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.nio.charset.Charset;
 import java.util.List;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.search.Constants.Limit;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -60,6 +64,11 @@ import org.openide.nodes.Node;
  * @author  Marian Petras
  */
 public final class ResultModel {
+
+    public static final String PROP_SELECTION = "selection";            //NOI18N
+    public static final String PROP_VALID = "valid";                    //NOI18N
+    public static final String PROP_MATCHING_OBJECTS =
+            "matchingObjects";                                          //NOI18N
 
     /** Common search root */
     private FileObject commonSearchRoot;
@@ -89,6 +98,14 @@ public final class ResultModel {
 
     /** Contains optional finnish message often reason why finished. */
     private String finishMessage;
+    /** model is valid if all matching objects are valid */
+    private volatile boolean valid = true;
+    /** Property change support */
+    private final PropertyChangeSupport propertyChangeSupport =
+            new PropertyChangeSupport(this);
+    private int selectedMatches = 0;
+    private MatchSelectionListener matchSelectionListener =
+            new MatchSelectionListener();
 
     /** Creates new <code>ResultModel</code>. */
     ResultModel(BasicSearchCriteria basicSearchCriteria,
@@ -142,6 +159,18 @@ public final class ResultModel {
                 textDetails);
         if(add(mo)) {
             totalDetailsCount += getDetailsCount(mo);
+            int newSelectedMatches = 0;
+            if (mo.getTextDetails() != null && !mo.getTextDetails().isEmpty()) {
+                for (TextDetail td : mo.getTextDetails()) {
+                    td.addChangeListener(matchSelectionListener);
+                    if (td.isSelected()) {
+                        newSelectedMatches++;
+                    }
+                }
+                updateSelected(newSelectedMatches);
+            }
+            propertyChangeSupport.firePropertyChange(PROP_MATCHING_OBJECTS,
+                    null, null);
         } else {
             mo.cleanup();
         }
@@ -176,12 +205,10 @@ public final class ResultModel {
     /**
      */
     synchronized void objectBecameInvalid(MatchingObject matchingObj) {
-        
-        /* may be called from non-EDT thread */
-        
-        int index = matchingObjects.indexOf(matchingObj);
-        assert index != -1;
-        //TODO
+        if (valid) {
+            valid = false;
+            propertyChangeSupport.firePropertyChange(PROP_VALID, true, false);
+        }
     }
     
     /**
@@ -366,5 +393,59 @@ public final class ResultModel {
 
     public boolean isSearchAndReplace() {
         return searchAndReplace;
+    }
+
+    public synchronized int getSelectedMatchesCount() {
+        return selectedMatches;
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    private void updateSelected(final int inc) {
+        int origSelected;
+        int newSelected;
+        synchronized (this) {
+            origSelected = selectedMatches;
+            newSelected = origSelected + inc;
+            selectedMatches = newSelected;
+        }
+        propertyChangeSupport.firePropertyChange(PROP_SELECTION,
+                origSelected, newSelected);
+    }
+
+    public synchronized void addPropertyChangeListener(
+            PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(
+            PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(listener);
+    }
+
+    public synchronized void addPropertyChangeListener(String propertyName,
+            PropertyChangeListener listener) {
+        propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public synchronized void removePropertyChangeListener(String propertyName,
+            PropertyChangeListener listener) {
+        propertyChangeSupport.removePropertyChangeListener(propertyName,
+                listener);
+    }
+
+    private class MatchSelectionListener implements ChangeListener {
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            TextDetail ts = (TextDetail) e.getSource();
+            if (ts.isSelected()) {
+                updateSelected(1);
+            } else {
+                updateSelected(-1);
+            }
+        }
     }
 }
