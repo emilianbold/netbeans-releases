@@ -1,5 +1,5 @@
 Name: Antlr
-Version: 3.3
+Version: 3.4
 Description: ANother Tool for Language Recognition, 
 is a language tool that provides a framework for constructing recognizers, 
 interpreters, compilers, and translators from grammatical descriptions.
