@@ -113,7 +113,7 @@ public final class ExternalBrowserPlugin {
      * browser requests.
      */
     public void register(URL url, ExtBrowserImpl browserImpl) {
-        awaitingBrowserResponse.put(url, browserImpl);
+        awaitingBrowserResponse.put(url.toExternalForm(), browserImpl);
     }
 
     /**
@@ -227,14 +227,14 @@ public final class ExternalBrowserPlugin {
             } catch (MalformedURLException ex) {
                 LOG.log(Level.WARNING, "cannot parse URL: "+url);
             }
-            ExtBrowserImpl browserImpl = awaitingBrowserResponse.remove(u);
+            ExtBrowserImpl browserImpl = (u == null) ? null : awaitingBrowserResponse.remove(u.toExternalForm());
             
             // XXX: workaround: when Web Project is run it is started as "http:/localhost/aa" but browser URL is
             // "http:/localhost/aa/"
             if (browserImpl == null && url.endsWith("/")) {
                 try {
                     u = new URL(url.substring(0, url.length()-1));
-                    browserImpl = awaitingBrowserResponse.remove(u);
+                    browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: "+url);   // NOI18N
                 }
@@ -245,7 +245,7 @@ public final class ExternalBrowserPlugin {
             {
                 try {
                     u = new URL(u.getProtocol(), "", u.getPort(), u.getFile());
-                    browserImpl = awaitingBrowserResponse.remove(u);
+                    browserImpl = awaitingBrowserResponse.remove(u.toExternalForm());
                 } catch (MalformedURLException ex) {
                     LOG.log(Level.WARNING, "cannot parse URL: " + url);// NOI18N
                 }
@@ -372,7 +372,7 @@ public final class ExternalBrowserPlugin {
     
     private WebSocketServer server;
 
-    private Map<URL,ExtBrowserImpl> awaitingBrowserResponse = new HashMap<URL,ExtBrowserImpl>();
+    private Map<String,ExtBrowserImpl> awaitingBrowserResponse = new HashMap<String,ExtBrowserImpl>();
     
     private List<BrowserTabDescriptor> knownBrowserTabs = new ArrayList<BrowserTabDescriptor>();
     
