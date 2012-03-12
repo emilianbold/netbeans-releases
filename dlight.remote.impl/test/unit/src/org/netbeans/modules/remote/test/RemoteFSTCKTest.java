@@ -65,25 +65,13 @@ public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid_.class);
+        suite.addTestSuite(FileObjectTestHid.class);
         // it seems AttributesTestHidden does not belong to FS TCK
         //suite.addTestSuite(AttributesTestHidden.class);
         suite.addTestSuite(URLMapperTestHidden.class);
         suite.addTestSuite(FileUtilTestHidden.class);
         suite.addTestSuite(TempFileObjectTestHid.class);
         return new RemoteFSTCKTest(suite);
-    }
-    
-    public static class FileObjectTestHid_ extends FileObjectTestHid {
+    }    
 
-        public FileObjectTestHid_(String testName) {
-            super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testBigFileAndAsString() throws Exception {
-            super.testBigFileAndAsString();
-        }
-    }
 }
