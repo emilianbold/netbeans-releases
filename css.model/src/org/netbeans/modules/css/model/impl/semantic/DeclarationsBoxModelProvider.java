@@ -43,6 +43,7 @@ package org.netbeans.modules.css.model.impl.semantic;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
@@ -52,35 +53,51 @@ import org.netbeans.modules.css.model.api.Model;
  *
  * @author marekfukala
  */
-public class DeclarationsBoxModel implements EditableBoxProvider {
+public class DeclarationsBoxModelProvider implements EditableBoxProvider {
 
     private Model model;
     private Declarations declarations;
-    private final Collection<Declaration> involved = new ArrayList<Declaration>();
 
-    public DeclarationsBoxModel(Model model, Declarations element) {
+    public DeclarationsBoxModelProvider(Model model, Declarations element) {
         this.model = model;
         this.declarations = element;
     }
 
     @Override
     public EditableBox getBox(BoxType boxType) {
+        Collection<Declaration> involved = new ArrayList<Declaration>();
         BoxElement[] boxe = new BoxElement[4];
-        
+
         //adjust the boxe edges according to box models obtained from each declaration
         for (Declaration declaration : declarations.getDeclarations()) {
             ModelBuilderNodeVisitor modelvisitor = new ModelBuilderNodeVisitor(PropertyModelId.BOX);
-            declaration.getResolvedProperty().getParseTree().accept(modelvisitor);
             
+            ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
+            if(resolvedProperty == null || !resolvedProperty.isResolved()) {
+                //some invalid/erroneous declarations
+                continue;
+            }
+            
+            resolvedProperty.getParseTree().accept(modelvisitor);
+
             //get all models which has anything to do with the box model
             Collection<BoxProvider> providers = modelvisitor.getModels(BoxProvider.class);
-            
-            for(BoxProvider p : providers) {
+
+            for (BoxProvider p : providers) {
+                //XXX fix this - the box itself must provide the isValid() info, 
+                //not the underlying classes!
+                if(p instanceof NodeModel) {
+                    NodeModel nmodel = (NodeModel)p;
+                    if(!nmodel.isValid()) {
+                        continue;
+                    }
+                }
+                
                 Box box = p.getBox(boxType);
-                if(box != null) {
-                    for(Edge e : Edge.values()) {
+                if (box != null) {
+                    for (Edge e : Edge.values()) {
                         BoxElement boxElement = box.getEdge(e);
-                        if(boxElement != null) {
+                        if (boxElement != null) {
                             //including BoxElement.EMPTY - which erases the value
                             boxe[e.ordinal()] = boxElement;
                         }
@@ -89,17 +106,24 @@ public class DeclarationsBoxModel implements EditableBoxProvider {
                 }
             }
         }
-        
-        switch(boxType) {
+
+        switch (boxType) {
             case MARGIN:
                 return new DeclarationsMarginModel(model, declarations, involved, new BI(boxe));
             case PADDING:
                 return new DeclarationsPaddingModel(model, declarations, involved, new BI(boxe));
+            case BORDER_COLOR:
+                return new DeclarationsBorderColorModel(model, declarations, involved, new BI(boxe));
+            case BORDER_STYLE:
+                return new DeclarationsBorderStyleModel(model, declarations, involved, new BI(boxe));
+            case BORDER_WIDTH:
+                return new DeclarationsBorderWidthModel(model, declarations, involved, new BI(boxe));
+
             default:
                 //fallback, I must implement EBI for border-*
                 return new EBI(boxe, boxType);
         }
-        
+
     }
 
     private static class BI implements Box {
@@ -109,14 +133,13 @@ public class DeclarationsBoxModel implements EditableBoxProvider {
         public BI(BoxElement[] elements) {
             this.elements = elements;
         }
-        
+
         @Override
         public BoxElement getEdge(Edge edge) {
             return elements[edge.ordinal()];
         }
-        
     }
-    
+
     private static class EBI implements EditableBox, SemanticModel {
 
         private BoxElement[] elements;
@@ -126,7 +149,7 @@ public class DeclarationsBoxModel implements EditableBoxProvider {
             this.elements = elements;
             this.type = type;
         }
-        
+
         @Override
         public void setEdge(Edge edge, BoxElement value) {
             throw new UnsupportedOperationException("Not supported yet.");
@@ -156,7 +179,11 @@ public class DeclarationsBoxModel implements EditableBoxProvider {
         public String getCategoryName() {
             return "Box";
         }
+
+        @Override
+        public BoxElement createElement(CharSequence text) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
         
     }
-    
 }

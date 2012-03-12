@@ -51,7 +51,7 @@ import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModel;
+import org.netbeans.modules.css.model.impl.semantic.DeclarationsBoxModelProvider;
 import org.netbeans.modules.diff.builtin.provider.BuiltInDiffProvider;
 
 /**
@@ -150,7 +150,7 @@ public class ModelTestBase extends NbTestCase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, ds);
                 EditableBox box = dbm.getBox(boxType);
                 assertNotNull(box);
 //                Utils.dumpBox(margin);

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.properties.model;
 
+import org.netbeans.modules.css.lib.api.properties.model.Color;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Node;

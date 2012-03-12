@@ -78,7 +78,7 @@ public class DeclarationsBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dmodel = new DeclarationsBoxModelProvider(model, ds);
                 
                 EditableBox box;
                 
@@ -117,7 +117,7 @@ public class DeclarationsBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dmodel = new DeclarationsBoxModelProvider(model, ds);
                 
                 EditableBox box;
                 
@@ -146,7 +146,7 @@ public class DeclarationsBoxModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dmodel = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dmodel = new DeclarationsBoxModelProvider(model, ds);
                 
                 EditableBox box;
                 

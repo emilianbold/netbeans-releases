@@ -78,7 +78,7 @@ public class DeclarationsPaddingModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, ds);
                 EditableBox padding = dbm.getBox(BoxType.PADDING);
                 
                 assertNotNull(padding);
@@ -126,7 +126,7 @@ public class DeclarationsPaddingModelTest extends ModelTestBase {
                 Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
                 assertNotNull(ds);
 
-                DeclarationsBoxModel dbm = new DeclarationsBoxModel(model, ds);
+                DeclarationsBoxModelProvider dbm = new DeclarationsBoxModelProvider(model, ds);
                 EditableBox padding = dbm.getBox(BoxType.PADDING);
                 
                 assertNotNull(padding);

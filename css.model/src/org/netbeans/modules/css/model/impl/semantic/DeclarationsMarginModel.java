@@ -42,8 +42,7 @@
 package org.netbeans.modules.css.model.impl.semantic;
 
 import java.util.Collection;
-import org.netbeans.modules.css.lib.api.properties.model.Box;
-import org.netbeans.modules.css.lib.api.properties.model.SemanticModel;
+import org.netbeans.modules.css.lib.api.properties.model.*;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
@@ -58,9 +57,9 @@ import org.openide.util.NbBundle;
     "CTL_MarginDescription=Margin Box Model", // NOI18N
     "CTL_MarginCategory=Box" //NOI18N
 })
-public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel implements SemanticModel {
+public class DeclarationsMarginModel extends DeclarationsBoxModelBase implements SemanticModel {
 
-    private static final String PROPERTY_BASE_NAME = "margin"; //NOI18N
+    private static final String NAME = "margin"; //NOI18N
     
     public DeclarationsMarginModel(Model model, 
             Declarations element, 
@@ -70,10 +69,20 @@ public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel implem
     }
 
     @Override
-    protected String getPropertyBaseName() {
-        return PROPERTY_BASE_NAME;
+    protected String getPropertyName() {
+        return NAME;
     }
 
+    @Override
+    protected String getPropertyName(Edge edge) {
+        StringBuilder b = new StringBuilder();
+        b.append(getPropertyName());
+        b.append('-');
+        b.append(edge.name().toLowerCase());
+        
+        return b.toString();
+    }
+    
     @Override
     public String getDisplayName() {
         return Bundle.CTL_MarginDisplayName();
@@ -91,8 +100,13 @@ public class DeclarationsMarginModel extends DeclarationsBoxEdgeSizeModel implem
 
     @Override
     public String getName() {
-        return PROPERTY_BASE_NAME;
+        return NAME;
     }
-    
+
+    @Override
+    public BoxElement createElement(CharSequence text) {
+        return BoxEdgeSize.parseValue(text);
+    }
+
     
 }

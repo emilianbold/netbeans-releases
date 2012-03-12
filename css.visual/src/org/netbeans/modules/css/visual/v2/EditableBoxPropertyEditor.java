@@ -50,7 +50,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.netbeans.modules.css.lib.api.properties.model.BoxEdgeSize;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.Edge;
 import org.netbeans.modules.css.lib.api.properties.model.EditableBox;
@@ -66,6 +65,7 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
 
     private static final String SEPARATOR = " "; //NOI18N
     private static final String NO_VALUE = "-"; //NOI18N
+    private static final String OVERRIDES = "x"; //NOI18N
     
     EditableBox editableBox;
     EditableBoxModelProperty property;
@@ -90,7 +90,14 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
         StringBuilder b = new StringBuilder();
         for (Edge e : Edge.values()) {
             BoxElement mw = editableBox.getEdge(e);
-            b.append(mw == null ? NO_VALUE : mw.asText());
+            
+            if(mw == null) {
+                b.append(NO_VALUE);
+            } else if(BoxElement.EMPTY == mw) {
+                b.append(OVERRIDES);
+            } else {
+                b.append(mw.asText());
+            }
             b.append(SEPARATOR);
         }
         return b.toString();
@@ -138,16 +145,18 @@ public class EditableBoxPropertyEditor extends PropertyEditorSupport implements 
         
         for (Edge e : Edge.values()) {
             String token = edges.get(e);
-            BoxEdgeSize mw;
-            if (NO_VALUE.equalsIgnoreCase(token)) {
-                mw = null;
+            BoxElement element;
+            if (OVERRIDES.equalsIgnoreCase(token)) {
+                element = BoxElement.EMPTY;
+            } else if (NO_VALUE.equalsIgnoreCase(token)) {
+                element = null;
             } else {
-                mw = BoxEdgeSize.parseValue(token);
-                if (mw == null) {
+                element = editableBox.createElement(token);
+                if (element == null) {
                     throw new IllegalArgumentException(String.format("Invalid value %s", token));
                 }
             }
-            editableBox.setEdge(e, mw);
+            editableBox.setEdge(e, element);
         }
 
         setPropertyValue();

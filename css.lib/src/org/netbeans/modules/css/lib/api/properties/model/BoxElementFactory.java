@@ -43,7 +43,6 @@ package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.properties.model.BorderStyleItem;
 import org.netbeans.modules.css.lib.properties.model.BorderWidthItem;
-import org.netbeans.modules.css.lib.properties.model.Color;
 
 /**
  *

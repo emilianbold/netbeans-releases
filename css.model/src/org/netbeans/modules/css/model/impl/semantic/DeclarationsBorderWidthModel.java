@@ -39,16 +39,77 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.api.properties.model;
+package org.netbeans.modules.css.model.impl.semantic;
+
+import java.util.Collection;
+import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Model;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author marekfukala
  */
-public interface EditableBox extends Box {
+@NbBundle.Messages({
+    "CTL_BorderWidthDisplayName=Border Width", // NOI18N
+    "CTL_BorderWidthDescription=Border Width Box Model", // NOI18N
+    "CTL_BorderWidthCategory=Box" //NOI18N
+})
+public class DeclarationsBorderWidthModel extends DeclarationsBoxModelBase implements SemanticModel {
+
+    private static final String PROPERTY_NAME_PREFIX = "border"; //NOI18N
+    private static final String PROPERTY_NAME_POSTFIX = "width"; //NOI18N
     
-    public BoxElement createElement(CharSequence text);
-    
-    public void setEdge(Edge edge, BoxElement value);
- 
+    private static final String PROPERTY_NAME = PROPERTY_NAME_PREFIX + "-" + PROPERTY_NAME_POSTFIX;
+
+    public DeclarationsBorderWidthModel(Model model,
+            Declarations element,
+            Collection<Declaration> involved,
+            Box box) {
+        super(model, element, involved, box);
+    }
+
+    @Override
+    protected String getPropertyName() {
+        return PROPERTY_NAME;
+    }
+
+    @Override
+    protected String getPropertyName(Edge edge) {
+        StringBuilder b = new StringBuilder();
+        b.append(PROPERTY_NAME_PREFIX);
+        b.append('-');
+        b.append(edge.name().toLowerCase());
+        b.append('-');
+        b.append(PROPERTY_NAME_POSTFIX);
+
+        return b.toString();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return Bundle.CTL_BorderWidthDisplayName();
+    }
+
+    @Override
+    public String getDescription() {
+        return Bundle.CTL_BorderWidthDescription();
+    }
+
+    @Override
+    public String getCategoryName() {
+        return Bundle.CTL_BorderWidthCategory();
+    }
+
+    @Override
+    public String getName() {
+        return PROPERTY_NAME;
+    }
+
+    @Override
+    public BoxElement createElement(CharSequence text) {
+        return Color.parseValue(text);
+    }
 }

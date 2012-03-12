@@ -56,7 +56,7 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
     private Stack<Entry> stack = new Stack<Entry>();
     private boolean parsingFinished;
     
-    public static boolean DEBUG = true;
+    public static boolean DEBUG = false;
     private int indent = 0;
 
     public Node getParseTree() {

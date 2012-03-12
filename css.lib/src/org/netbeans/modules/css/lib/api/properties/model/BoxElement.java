@@ -48,14 +48,14 @@ package org.netbeans.modules.css.lib.api.properties.model;
 public interface BoxElement {
     
     public String asText();
- 
+    
     public static final BoxElement EMPTY = new BoxElement() {
 
         @Override
         public String asText() {
             return null;
         }
-        
+
     };
         
 }
