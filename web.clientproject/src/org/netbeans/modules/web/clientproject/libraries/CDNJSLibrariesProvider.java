@@ -161,11 +161,13 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
         l1.setName("cdnjs-"+name+"-"+version); // NOI18N
         named.setDisplayName("[CDNJS] "+name+" "+version); // NOI18N
-        l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
-        l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
-        l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
-        l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
-        l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
+        Properties p = new Properties();
+        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
+        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
+        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
+        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
+        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
+        l1.setProperties(p);
         l1.setDescription(description);
         try {
             String path = "http://cdnjs.cloudflare.com/ajax/libs/"+name+"/"+version+"/"+file; // NOI18N

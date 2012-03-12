@@ -50,6 +50,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
@@ -121,12 +122,14 @@ public class GoogleLibrariesProvider implements LibraryProvider<LibraryImplement
             NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
             l1.setName("google-"+name+"-"+version); // NOI18N
             named.setDisplayName("[Google] "+dispName+" "+version); // NOI18N
-            l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
-            l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
-            l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, dispName);
-            l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "Google"); // NOI18N
-            l1.getProperties().setProperty(JavaScriptLibraryTypeProvider.PROPERTY_SITE, site);
-            try {
+            Properties p = new Properties();
+            p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
+            p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
+            p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, dispName);
+            p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "Google"); // NOI18N
+            p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_SITE, site);
+            l1.setProperties(p);
+        try {
                 l1.setContent(JavaScriptLibraryTypeProvider.VOL_MINIFIED, 
                         Collections.singletonList(new URL(path.replace(latestVersion, version))));
                 if (pathu.length() != 0) {
