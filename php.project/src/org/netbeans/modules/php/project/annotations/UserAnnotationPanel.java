@@ -276,18 +276,19 @@ public class UserAnnotationPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(docLabel).addComponent(templateLabel).addComponent(forLabel).addComponent(nameLabel)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField, GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE).addComponent(templateTextField).addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
 
-                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(methodCheckBox).addComponent(fieldCheckBox).addComponent(typeCheckBox).addComponent(functionCheckBox)).addGap(0, 0, Short.MAX_VALUE)).addComponent(docScrollPane)).addContainerGap())
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addComponent(nameLabel)).addGap(80, 80, 80).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(nameTextField).addGroup(layout.createSequentialGroup()
+
+                                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(functionCheckBox).addComponent(fieldCheckBox)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(methodCheckBox).addComponent(typeCheckBox)).addGap(0, 0, Short.MAX_VALUE)))).addComponent(templateTextField).addGroup(layout.createSequentialGroup()
+
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(templateLabel).addComponent(docLabel)).addGap(0, 0, Short.MAX_VALUE)).addComponent(docScrollPane)).addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
 
-                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addComponent(functionCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addComponent(typeCheckBox).addPreferredGap(ComponentPlacement.RELATED).addComponent(fieldCheckBox).addPreferredGap(ComponentPlacement.RELATED).addComponent(methodCheckBox).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(templateLabel).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                        .addComponent(docLabel)
-
-                        .addContainerGap(179, Short.MAX_VALUE)).addComponent(docScrollPane)))
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(nameLabel).addComponent(nameTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(forLabel).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(functionCheckBox).addComponent(typeCheckBox))).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(fieldCheckBox).addComponent(methodCheckBox)).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(templateTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(docLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(docScrollPane, GroupLayout.DEFAULT_SIZE, 265, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
