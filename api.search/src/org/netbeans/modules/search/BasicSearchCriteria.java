@@ -152,7 +152,7 @@ public final class BasicSearchCriteria {
         }
     }
 
-    String getTextPatternExpr() {
+    public String getTextPatternExpr() {
         return searchPattern.getSearchExpression() != null
                 ? searchPattern.getSearchExpression()
                 : "";                                                   //NOI18N
@@ -383,7 +383,7 @@ public final class BasicSearchCriteria {
      * @return replace expression, or {@code null} if no replace expression has
      * been specified
      */
-    String getReplaceExpr() {
+    public String getReplaceExpr() {
         return replaceExpr;
     }
 

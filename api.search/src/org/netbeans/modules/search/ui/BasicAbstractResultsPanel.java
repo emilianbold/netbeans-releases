@@ -51,22 +51,26 @@ import javax.swing.AbstractButton;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.search.BasicComposition;
+import org.netbeans.modules.search.BasicSearchCriteria;
 import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.MatchingObject;
 import org.netbeans.modules.search.PrintDetailsTask;
 import org.netbeans.modules.search.ResultModel;
+import org.netbeans.modules.search.ResultView;
 import org.netbeans.modules.search.TextDetail;
 import org.openide.explorer.view.OutlineView;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author jhavlin
  */
-public class BasicAbstractResultsPanel extends AbstractSearchResultsPanel {
+public abstract class BasicAbstractResultsPanel
+        extends AbstractSearchResultsPanel {
 
     private static final String NEXT_ICON =
             "org/netbeans/modules/search/res/next.png";                 //NOI18N
@@ -88,7 +92,7 @@ public class BasicAbstractResultsPanel extends AbstractSearchResultsPanel {
     private JToggleButton expandButton;
     private JToggleButton toggleViewButton;
     private JButton showDetailsButton;
-    private boolean details;
+    protected boolean details;
     private BasicComposition composition;
     protected final ResultsOutlineSupport resultsOutlineSupport;
 
@@ -333,11 +337,19 @@ public class BasicAbstractResultsPanel extends AbstractSearchResultsPanel {
     }
 
     @Override
+    public void searchStarted() {
+        super.searchStarted();
+        setRootDisplayName(NbBundle.getMessage(ResultView.class,
+                "TEXT_SEARCHING___"));                                  //NOI18N
+    }
+
+    @Override
     public void searchFinished() {
         super.searchFinished();
         if (details && resultModel.size() > 0 && showDetailsButton != null) {
             showDetailsButton.setEnabled(true);
         }
+        setFinalRootNodeText();
     }
 
     /**
@@ -351,9 +363,77 @@ public class BasicAbstractResultsPanel extends AbstractSearchResultsPanel {
 
     public void addMatchingObject(MatchingObject mo) {
         resultsOutlineSupport.addMatchingObject(mo);
+        updateRootNodeText();
     }
 
     public OutlineView getOutlineView() {
         return resultsOutlineSupport.getOutlineView();
+    }
+
+    private void setFinalRootNodeText() {
+
+        int resultSize = resultModel.size();
+
+        if (resultModel.wasLimitReached()) {
+            setRootDisplayName(
+                    NbBundle.getMessage(
+                    ResultView.class,
+                    "TEXT_MSG_FOUND_X_NODES_LIMIT", //NOI18N
+                    Integer.valueOf(resultSize),
+                    Integer.valueOf(resultModel.getTotalDetailsCount()))
+                    + ' ' + resultModel.getLimitDisplayName());         //NOI18N
+            return;
+        }
+
+        String baseMsg;
+        if (resultSize == 0) {
+            baseMsg = NbBundle.getMessage(ResultView.class,
+                    "TEXT_MSG_NO_NODE_FOUND");                          //NOI18N
+        } else {
+            String bundleKey;
+            Object[] args;
+            if (resultModel.isSearchAndReplace()) {
+                bundleKey = "TEXT_MSG_FOUND_X_NODES_REPLACE";           //NOI18N
+                args = new Object[4];
+            } else if (resultModel.canHaveDetails()) {
+                bundleKey = "TEXT_MSG_FOUND_X_NODES_FULLTEXT";          //NOI18N
+                args = new Object[2];
+            } else {
+                bundleKey = "TEXT_MSG_FOUND_X_NODES";                   //NOI18N
+                args = new Object[1];
+            }
+            args[0] = new Integer(resultModel.size());
+            if (args.length > 1) {
+                args[1] = new Integer(resultModel.getTotalDetailsCount());
+            }
+            if (args.length > 2) {
+                BasicSearchCriteria bsc = composition.getBasicSearchCriteria();
+                args[2] = bsc.getTextPatternExpr();
+                args[3] = bsc.getReplaceExpr();
+            }
+            baseMsg = NbBundle.getMessage(ResultView.class, bundleKey, args);
+        }
+        String exMsg = resultModel.getExceptionMsg();
+        String msg = exMsg == null ? baseMsg
+                : baseMsg + " (" + exMsg + ")";      //NOI18N
+        setRootDisplayName(msg);
+    }
+
+    private void setRootDisplayName(String displayName) {
+        Node root = getExplorerManager().getRootContext();
+        root.setDisplayName(displayName);
+    }
+
+    protected void updateRootNodeText() {
+        Integer objectsCount = resultModel.size();
+        if (details) {
+            Integer detailsCount = resultModel.getTotalDetailsCount();
+            setRootDisplayName(NbBundle.getMessage(ResultView.class,
+                    "TXT_RootSearchedNodes", //NOI18N
+                    objectsCount, detailsCount));
+        } else {
+            setRootDisplayName(NbBundle.getMessage(ResultView.class,
+                    "TXT_RootSearchedNodesFulltext", objectsCount));    //NOI18N
+        }
     }
 }

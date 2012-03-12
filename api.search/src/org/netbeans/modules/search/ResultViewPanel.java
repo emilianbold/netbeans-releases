@@ -451,7 +451,6 @@ class ResultViewPanel extends JPanel{
         hasResults = true;
 
         setRootDisplayName(
-                resultModel.isBasicCriteriaOnly &&
                   resultModel.basicCriteria.isFullText()
                 ? nodeCountFormatFullText.format(
                             new Object[] {new Integer(objectsCount),
@@ -636,8 +635,7 @@ class ResultViewPanel extends JPanel{
             if (resultModel.searchAndReplace) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_REPLACE";           //NOI18N
                 args = new Object[4];
-            } else if (resultModel.isBasicCriteriaOnly &&
-                       resultModel.basicCriteria.isFullText()) {
+            } else if (resultModel.basicCriteria.isFullText()) {
                 bundleKey = "TEXT_MSG_FOUND_X_NODES_FULLTEXT";          //NOI18N
                 args = new Object[2];
             } else {
