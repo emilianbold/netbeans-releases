@@ -175,8 +175,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
     }
     
     @Override
-    protected BrowserId getPluginId(URL url){
-        BrowserId id = super.getPluginId(url);
+    protected BrowserId getSystemDefaultPluginId(URL url){
+        BrowserId id = super.getSystemDefaultPluginId(url);
         if (id != BrowserId.UNKNOWN && id != BrowserId.OTHER){
             return id;
         }
