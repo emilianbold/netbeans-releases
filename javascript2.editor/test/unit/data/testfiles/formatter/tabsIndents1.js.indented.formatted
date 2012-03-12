@@ -3,7 +3,7 @@
         power: "22k",
         getDescription: function() {
             if (enabled) {
-                println ('Cylinders: '
+                println('Cylinders: '
                         + this.cylinders + ' with power: ' + this.power);
             }
         }

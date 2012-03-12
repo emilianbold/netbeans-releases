@@ -61,7 +61,8 @@ public final class FormatToken {
                 Kind.BEFORE_WHILE_KEYWORD, Kind.BEFORE_ELSE_KEYWORD,
                 Kind.BEFORE_CATCH_KEYWORD, Kind.BEFORE_FINALLY_KEYWORD,
                 Kind.BEFORE_SEMICOLON, Kind.BEFORE_UNARY_OPERATOR,
-                Kind.BEFORE_TERNARY_OPERATOR, Kind.BEFORE_FUNCTION_DECLARATION);
+                Kind.BEFORE_TERNARY_OPERATOR, Kind.BEFORE_FUNCTION_DECLARATION,
+                Kind.BEFORE_FUNCTION_CALL);
     }
 
     private final Kind kind;
@@ -189,7 +190,9 @@ public final class FormatToken {
         BEFORE_TERNARY_OPERATOR,
         AFTER_TERNARY_OPERATOR,
 
-        BEFORE_FUNCTION_DECLARATION
+        BEFORE_FUNCTION_DECLARATION,
+
+        BEFORE_FUNCTION_CALL
     }
 
 }

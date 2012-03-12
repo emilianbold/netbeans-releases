@@ -4,7 +4,7 @@ var engine = {
     getDescription: function () {
         with (this) {
             if (!disabled) {
-                println ('Cylinders: '
+                println('Cylinders: '
                     + cylinders + ' with power: ' + power);
             } else {
                 log();
@@ -20,7 +20,7 @@ function computeColor() {
             color += Math.round(Math.random() * 2);
         }
     } catch (error) {
-        println (error);
+        println(error);
     } finally {
         log();
     }

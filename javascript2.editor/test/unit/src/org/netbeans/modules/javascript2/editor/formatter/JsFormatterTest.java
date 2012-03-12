@@ -127,6 +127,17 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/functionDeclaration1.js", options);
     }
 
+    public void testFunctionCall1Default() throws Exception {
+        reformatFileContents("testfiles/formatter/functionCall1.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testFunctionCall1Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeMethodCallParen, true);
+        reformatFileContents("testfiles/formatter/functionCall1.js", options, ".inverted.formatted");
+    }
+
     public void testComments1() throws Exception {
         reformatFileContents("testfiles/formatter/comments1.js",new IndentPrefs(4, 4));
     }

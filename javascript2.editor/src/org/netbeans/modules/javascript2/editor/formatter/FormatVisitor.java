@@ -46,7 +46,6 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.LineSeparatorConversion;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 
 /**
@@ -212,6 +211,20 @@ public class FormatVisitor extends NodeVisitor {
         }
         return null;
     }
+
+    @Override
+    public Node visit(CallNode callNode, boolean onset) {
+        if (onset) {
+            FormatToken leftBrace = getNextToken(getFinish(callNode.getFunction()),
+                    JsTokenId.BRACKET_LEFT_PAREN, getFinish(callNode));
+            if (leftBrace != null) {
+                FormatToken previous = leftBrace.previous();
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+            }
+        }
+        return super.visit(callNode, onset);
+    }
+
 
     @Override
     public Node visit(ObjectNode objectNode, boolean onset) {
@@ -438,11 +451,15 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private FormatToken getNextToken(int offset, JsTokenId expected) {
-        return getToken(offset, expected, false, false);
+        return getToken(offset, expected, false, false, null);
+    }
+
+    private FormatToken getNextToken(int offset, JsTokenId expected, int stop) {
+        return getToken(offset, expected, false, false, stop);
     }
 
     private FormatToken getNextToken(int offset, JsTokenId expected, boolean startFallback) {
-        return getToken(offset, expected, false, startFallback);
+        return getToken(offset, expected, false, startFallback, null);
     }
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected) {
@@ -450,10 +467,12 @@ public class FormatVisitor extends NodeVisitor {
     }
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected, boolean startFallback) {
-        return getToken(offset, expected, true, startFallback);
+        return getToken(offset, expected, true, startFallback, null);
     }
 
-    private FormatToken getToken(int offset, JsTokenId expected, boolean backward, boolean startFallback) {
+    private FormatToken getToken(int offset, JsTokenId expected, boolean backward,
+            boolean startFallback, Integer stopMark) {
+
         ts.move(offset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
@@ -463,6 +482,7 @@ public class FormatVisitor extends NodeVisitor {
         Token<?extends JsTokenId> token = ts.token();
         if (expected != null) {
             while (expected != token.id()
+                    && (stopMark == null || ((stopMark >= ts.offset() && !backward) || (stopMark <=ts.offset() && backward)))
                     && ((backward && ts.movePrevious()) || (!backward && ts.moveNext()))) {
                 token = ts.token();
             }
