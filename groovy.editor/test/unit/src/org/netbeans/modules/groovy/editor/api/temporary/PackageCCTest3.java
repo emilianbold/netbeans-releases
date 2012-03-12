@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,30 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.remote.test;
 
-import java.io.IOException;
-import junit.framework.Test;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.remote.impl.fs.RemoteFSTCKTestCase;
-import org.openide.filesystems.FileObjectTestHid;
-import org.openide.filesystems.FileSystemTestHid;
-import org.openide.filesystems.FileUtilTestHidden;
-import org.openide.filesystems.TempFileObjectTestHid;
-import org.openide.filesystems.URLMapperTestHidden;
+package org.netbeans.modules.groovy.editor.api.temporary;
+
+import org.netbeans.modules.groovy.editor.api.completion.GroovyCCTestBase;
 
 /**
+ * Just temporary test (see README.txt for more details). Original test location is {@link PackageCCTest}.
  *
- * @author vv159170
+ * @author Martin Janicek
  */
-public class RemoteFSTCKTest extends RemoteFSTCKTestCase {
-   
-    public RemoteFSTCKTest(Test test) {
-        super(test);
-    }
-    
-    public static Test suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(FileSystemTestHid.class);
-        suite.addTestSuite(FileObjectTestHid.class);
-        // it seems AttributesTestHidden does not belong to FS TCK
-        //suite.addTestSuite(AttributesTestHidden.class);
-        suite.addTestSuite(URLMapperTestHidden.class);
-        suite.addTestSuite(FileUtilTestHidden.class);
-        suite.addTestSuite(TempFileObjectTestHid.class);
-        return new RemoteFSTCKTest(suite);
-    }    
+public class PackageCCTest3 extends GroovyCCTestBase {
 
+    public PackageCCTest3(String testName) {
+        super(testName);
+    }
+
+    @Override
+    protected String getTestType() {
+        return "package";
+    }
+
+    public void testLocalVariableTypeCompletion3() throws Exception {
+        checkCompletion(BASE + "LocalVariableTypeCompletion3.groovy", "    ja^", false);
+    }
 }

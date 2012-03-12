@@ -91,7 +91,7 @@ public final class UserAnnotationsProvider extends PhpAnnotationsProvider {
         List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
         List<PhpAnnotationTag> result = new ArrayList<PhpAnnotationTag>(annotations.size());
         for (UserAnnotationTag userAnnotationTag : annotations) {
-            if (userAnnotationTag.getType() == type) {
+            if (userAnnotationTag.getTypes().contains(type)) {
                 result.add(userAnnotationTag);
             }
         }

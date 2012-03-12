@@ -59,14 +59,14 @@
                 <h:commandLink action="${r"#{"}${managedBean}${r".destroyAndView}"}" value="${r"#{"}bundle.View${entityName}DestroyLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink action="Edit" value="${r"#{"}bundle.View${entityName}EditLink${r"}"}"/>
+                <h:link outcome="Edit" value="${r"#{"}bundle.View${entityName}EditLink${r"}"}"/>
                 <br />
                 <h:commandLink action="${r"#{"}${managedBean}${r".prepareCreate}"}" value="${r"#{"}bundle.View${entityName}CreateLink${r"}"}" />
                 <br />
                 <h:commandLink action="${r"#{"}${managedBean}${r".prepareList}"}" value="${r"#{"}bundle.View${entityName}ShowAllLink${r"}"}"/>
                 <br />
                 <br />
-                <h:commandLink value="${r"#{"}bundle.View${entityName}IndexLink${r"}"}" action="/index" immediate="true" />
+                <h:link outcome="/index" value="${r"#{"}bundle.View${entityName}IndexLink${r"}"}"/>
 
             </h:form>
         </ui:define>
