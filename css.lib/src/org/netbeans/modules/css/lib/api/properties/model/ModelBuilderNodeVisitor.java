@@ -84,9 +84,6 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
     }
 
     static String getModelClassNameForNodeName(String nodeName) {
-        if (nodeName == null) {
-            throw new NullPointerException();
-        }
         if (nodeName.length() == 0) {
             throw new IllegalArgumentException("Node name cannot be empty.");
         }
@@ -129,7 +126,12 @@ public class ModelBuilderNodeVisitor implements NodeVisitor {
     @Override
     public boolean visit(Node node) {
         //assuming model class elements cannot nest
-        String modelClassName = getModelClassNameForNodeName(node.name());
+        String nodeName = node.name();
+        if(nodeName == null) {
+            throw new IllegalArgumentException(String.format("Node %s has no name!", node.toString()));
+        }
+        
+        String modelClassName = getModelClassNameForNodeName(nodeName);
         if (current.isEmpty()) {
             //first try custom model 
             currentModel = createModelInstance(node);

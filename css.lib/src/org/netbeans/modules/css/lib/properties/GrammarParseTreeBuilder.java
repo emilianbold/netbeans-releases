@@ -41,12 +41,7 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
-import org.netbeans.modules.css.lib.api.properties.GrammarResolverListener;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import org.netbeans.modules.css.lib.api.properties.Node.AbstractNode;
 import org.netbeans.modules.css.lib.api.properties.*;
 
@@ -61,19 +56,8 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
     private Stack<Entry> stack = new Stack<Entry>();
     private boolean parsingFinished;
     
-    /**
-     * The resulting parse tree won't contain the anonymous grammar rules.
-     *
-     * So far the only usage of the full parse tree (with the anonymous nodes)
-     * is the unit tests.
-     */
-    private final boolean skipAnonymousElements;
     public static boolean DEBUG = true;
     private int indent = 0;
-
-    public GrammarParseTreeBuilder(boolean skipAnonymousElements) {
-        this.skipAnonymousElements = skipAnonymousElements;
-    }
 
     public Node getParseTree() {
         if (!parsingFinished) {
@@ -83,12 +67,6 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
     }
 
     private void out(GrammarElement element, boolean accepted) {
-        if (skipAnonymousElements) {
-            if (element.getName() == null) {
-                return;
-            }
-        }
-
         if (DEBUG) {
             indent--;
             System.out.println(String.format("%s%s %s", getIndent(), (accepted ? "*" : "-"), element));
@@ -112,12 +90,6 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
 
     @Override
     public void entering(GroupGrammarElement group) {
-        if (skipAnonymousElements) {
-            if (group.getName() == null) {
-                return;
-            }
-        }
-
         if (DEBUG) {
             System.out.println(String.format("%s%s", getIndent(), group));
             indent++;
@@ -183,12 +155,6 @@ public class GrammarParseTreeBuilder implements GrammarResolverListener {
 
     @Override
     public void ruleChoosen(GroupGrammarElement base, GrammarElement element) {
-        if (skipAnonymousElements) {
-            if (element.getName() == null) {
-                return;
-            }
-        }
-
         Entry peek = stack.peek();
         
         if (DEBUG) {

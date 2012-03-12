@@ -368,7 +368,7 @@ public class PropertyValueTest extends CssTestBase {
         
 //        dumpTree(root);
         assertNotNull(root);
-        assertNull(root.parent()); //root node has no parent
+//        assertNull(root.parent()); //root node has no parent
         
         Collection<Node> ch = root.children();
         assertEquals(2, ch.size());
@@ -380,12 +380,12 @@ public class PropertyValueTest extends CssTestBase {
         
         Node.ResolvedTokenNode tokenNode = (Node.ResolvedTokenNode)ch1;
         assertEquals("a", tokenNode.image().toString());
-        assertEquals(root, tokenNode.parent());
+//        assertEquals(root, tokenNode.parent());
         
         Node ch2 = i.next();
         assertNotNull(ch2);
         assertTrue(ch2 instanceof Node.GrammarElementNode);
-        assertEquals(root, ch2.parent());
+//        assertEquals(root, ch2.parent());
         
 
     }
@@ -400,7 +400,7 @@ public class PropertyValueTest extends CssTestBase {
 //        dumpTree(root);
         
         assertNotNull(root);
-        assertNull(root.parent()); //root node has no parent
+//        assertNull(root.parent()); //root node has no parent
         assertEquals("font-family", root.name());
         
         Collection<Node> ch = root.children();
@@ -411,7 +411,7 @@ public class PropertyValueTest extends CssTestBase {
         assertNotNull(ch1);
         assertTrue(ch1 instanceof Node.GrammarElementNode);
         assertEquals("@family-name", ch1.name());
-        assertEquals(root, ch1.parent());
+//        assertEquals(root, ch1.parent());
         
         ch = ch1.children();
         assertEquals(3, ch.size());
@@ -421,7 +421,7 @@ public class PropertyValueTest extends CssTestBase {
         assertNotNull(ch2);
         assertTrue(ch2 instanceof Node.ResolvedTokenNode);
         assertEquals("fantasy(IDENT;0-7)", ch2.toString());
-        assertEquals(ch1, ch2.parent());
+//        assertEquals(ch1, ch2.parent());
         
     }
 

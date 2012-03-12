@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.properties;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import org.netbeans.modules.css.lib.CssTestBase;
@@ -67,21 +68,21 @@ public class GrammarParseTreeBuilderTest extends CssTestBase {
     public void testAnotherNiceFundamentalDesignFlaw() {
         //REQUIRES: TestPropertyDefinitionProvider installed as system service
         String grammar = "<ref>";
-        
+
         GroupGrammarElement tree = GrammarParser.parse(grammar);
         GrammarResolver resolver = new GrammarResolver(tree);
-        resolver.setFeature(GrammarResolver.Feature.keepAnonymousElementsInParseTree, true);
-        
+        resolver.setFeature(GrammarResolver.Feature.keepAnonymousElementsInParseTree, null);
+
         ResolvedProperty rp = new ResolvedProperty(resolver, "a");
         Node parseTree = rp.getParseTree();
-        
+
         assertNotNull(parseTree);
-        
+
         NodeUtil.dumpTree(parseTree);
 
     }
-    
-    @ServiceProvider(service=PropertyDefinitionProvider.class)
+
+    @ServiceProvider(service = PropertyDefinitionProvider.class)
     public static class TestPropertyDefinitionProvider implements PropertyDefinitionProvider {
 
         @Override
@@ -89,6 +90,5 @@ public class GrammarParseTreeBuilderTest extends CssTestBase {
             PropertyDefinition ref = new PropertyDefinition("ref", "[ [ a | b ] | [ a | b ] ]", null);
             return Arrays.asList(new PropertyDefinition[]{ref});
         }
-        
     }
 }
