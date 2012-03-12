@@ -273,6 +273,7 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
     private void clearProperties() {
         synchronized (lock) {
             properties().clear();
+            keyEntries.clear();
         }
     }
     
