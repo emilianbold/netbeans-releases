@@ -57,7 +57,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -103,10 +102,6 @@ import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.xml.XMLUtil;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
-import org.openidex.search.Utils;
 
 /** Root node for list of open projects
  */
@@ -313,7 +308,6 @@ public class ProjectsRootNode extends AbstractNode {
                         this,
                         p,
                         origNodes[i],
-                        type == LOGICAL_VIEW  && projectInLookup[0],
                         type == LOGICAL_VIEW
                     );
                 }
@@ -516,8 +510,8 @@ public class ProjectsRootNode extends AbstractNode {
             }
         }
 
-        public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean addSearchInfo, boolean logicalView) {
-            super(n, null, badgingLookup(n, addSearchInfo));
+        public BadgingNode(ProjectChildren ch, ProjectChildren.Pair p, Node n, boolean logicalView) {
+            super(n, null, badgingLookup(n));
             this.ch = ch;
             this.pair = p;
             this.logicalView = logicalView;
@@ -530,12 +524,8 @@ public class ProjectsRootNode extends AbstractNode {
             result.addLookupListener(annotationListener);
         }
         
-        private static Lookup badgingLookup(Node n, boolean addSearchInfo) {
-            if (addSearchInfo) {
-                return new BadgingLookup(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(n.getLookup().lookup(Project.class))));
-            } else {
-                return new BadgingLookup(n.getLookup());
-            }
+        private static Lookup badgingLookup(Node n) {
+            return new BadgingLookup(n.getLookup());
         }
         
         protected final void setProjectFiles() {
@@ -598,13 +588,7 @@ public class ProjectsRootNode extends AbstractNode {
                 OpenProjectList.log(Level.FINER, "children after change original: {0}", getChildren());
                 OpenProjectList.log(Level.FINER, "delegate children after change original: {0}", getOriginal().getChildren());
                 BadgingLookup bl = (BadgingLookup) getLookup();
-                if (bl.isSearchInfo()) {
-                    OpenProjectList.log(Level.FINER, "is search info {0}", newProj);
-                    bl.setMyLookups(n.getLookup(), Lookups.singleton(alwaysSearchableSearchInfo(newProj)));
-                } else {
-                    OpenProjectList.log(Level.FINER, "no search info {0}", newProj);
-                    bl.setMyLookups(n.getLookup());
-                }
+                bl.setMyLookups(n.getLookup());
                 OpenProjectList.log(Level.FINER, "done {0}", toStringForLog());
                 setProjectFilesAsynch();
             } else {
@@ -892,48 +876,4 @@ public class ProjectsRootNode extends AbstractNode {
             return getLookups().length > 1;
         }
     } // end of BadgingLookup
-    
-    /**
-     * Produce a {@link SearchInfo} variant that is always searchable, for speed.
-     * @see "#48685"
-     */
-    static SearchInfo alwaysSearchableSearchInfo(Project p) {
-        return new AlwaysSearchableSearchInfo(p);
-    }
-    
-    private static final class AlwaysSearchableSearchInfo implements SearchInfo.Files {
-        
-        private final SearchInfo delegate;
-        
-        public AlwaysSearchableSearchInfo(Project prj) {
-            SearchInfo projectSearchInfo = prj.getLookup().lookup(SearchInfo.class);
-            if (projectSearchInfo != null) {
-                delegate = projectSearchInfo;
-            } else {
-                SourceGroup groups[] = ProjectUtils.getSources(prj).getSourceGroups(Sources.TYPE_GENERIC);
-                FileObject folders[] = new FileObject[groups.length];
-                for (int i = 0; i < groups.length; i++) {
-                    folders[i] = groups[i].getRootFolder();
-                }
-                delegate = SearchInfoFactory.createSearchInfo(
-                        folders,
-                        true,
-                        new FileObjectFilter[] { SearchInfoFactory.VISIBILITY_FILTER,
-                                                 SearchInfoFactory.SHARABILITY_FILTER });
-            }
-        }
-
-        public boolean canSearch() {
-            return true;
-        }
-
-        public Iterator<DataObject> objectsToSearch() {
-            return delegate.objectsToSearch();
-        }
-        
-        public Iterator<FileObject> filesToSearch() {
-            return Utils.getFileObjectsIterator(delegate);
-        }
-        
-    }
 }

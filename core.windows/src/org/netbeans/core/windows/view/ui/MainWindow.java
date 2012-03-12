@@ -390,7 +390,10 @@ public final class MainWindow {
    }
 
    public void setVisible(boolean visible) {
-       frame.setVisible(visible);
+        if ("false".equals(System.getProperty("org.netbeans.core.WindowSystem.show"))) { // NOI18N
+            return;
+        }
+        frame.setVisible(visible);
    }
 
    public int getExtendedState() {
