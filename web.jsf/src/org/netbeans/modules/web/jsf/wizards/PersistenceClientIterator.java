@@ -103,6 +103,7 @@ import org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardPa
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -504,6 +505,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             String controllerClassName = controllerFileObjects[i].getName();
             String managedBean = controllerClassName.substring(0, 1).toLowerCase() + controllerClassName.substring(1);
             params.put("managedBeanName", managedBean);
+            params.put("cdiEnabled", isCdiEnabled(project));
             params.put("controllerPackageName", controllerPkg);
             params.put("controllerClassName", controllerClassName);
             params.put("entityFullClassName", entityClass);
@@ -591,6 +593,11 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             saveFacesConfig(fo);
         }
 
+    }
+
+    private static boolean isCdiEnabled(Project project) {
+        CdiUtil cdiUtil = project.getLookup().lookup(CdiUtil.class);
+        return (cdiUtil == null) ? false : cdiUtil.isCdiEnabled();
     }
 
     private static void saveFacesConfig(FileObject fo) {
