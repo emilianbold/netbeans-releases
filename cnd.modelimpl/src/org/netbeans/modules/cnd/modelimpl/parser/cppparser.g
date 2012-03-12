@@ -703,6 +703,7 @@ public translation_unit:
 //
 protected
 template_explicit_specialization
+{TypeQualifier tq; StorageClass sc;int ts = 0;}
     :
     (LITERAL___extension__!)? LITERAL_template LESSTHAN GREATERTHAN
     (
@@ -761,6 +762,22 @@ template_explicit_specialization
 		declaration_specifiers[false, false] SEMICOLON
 		{ #template_explicit_specialization = #(#[CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION, "CSM_FWD_TEMPLATE_EXPLICIT_SPECIALIZATION"], #template_explicit_specialization); }
         |
+            (   (LITERAL___extension__!)?
+                (   storage_class_specifier
+                |   cv_qualifier
+                |   LITERAL_typedef
+                )*
+                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+            ) =>
+            (LITERAL___extension__!)?
+                (   sc = storage_class_specifier
+                |   tq = cv_qualifier
+                |   LITERAL_typedef
+            )*
+            enum_specifier (init_declarator_list[declOther])? 
+            SEMICOLON!
+            { #template_explicit_specialization = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #template_explicit_specialization); }
+        |  
 	// Template explicit specialisation (DW 14/04/03)
 		{if(statementTrace >= 1)
 			printf("template_explicit_specialization_0e[%d]: template " +
@@ -775,7 +792,7 @@ template_explicit_specialization
 // it's a caller's responsibility to check isCPlusPlus
 //
 protected
-external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false;}
+external_declaration_template { String s; K_and_R = false; boolean ctrName=false; boolean definition; boolean friend = false; TypeQualifier tq; StorageClass sc;int ts = 0;}
 	:      
 		((LITERAL___extension__)? LITERAL_template LESSTHAN GREATERTHAN) => template_explicit_specialization
 	|
@@ -847,12 +864,12 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
                 |  
                         // User-defined type cast
                         {isCPlusPlus()}?
-                        ((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+                        ((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
                         {if (statementTrace>=1) 
                                 printf("external_declaration_6[%d]: Operator function\n",
                                         LT(1).getLine());
                         }
-                        (template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+                        (template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
                         { if( definition ) #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #external_declaration_template);
                             else	   #external_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #external_declaration_template); }
 		|
@@ -872,16 +889,39 @@ external_declaration_template { String s; K_and_R = false; boolean ctrName=false
         { #external_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #external_declaration_template); }
     |
 			// Destructor DEFINITION (templated)
-			( dtor_head[true] LCURLY)=>
+			(   dtor_head[true] 
+                            (   LCURLY
+                            |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                            )
+                        )=>
 			{if (statementTrace>=1) 
 				printf("external_declaration_4[%d]: Destructor definition\n",
 					LT(1).getLine());
 			}
-			dtor_head[true] dtor_body
+			dtor_head[true] 
+                        (   dtor_body
+                        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                        )
 			{ #external_declaration_template = #(#[CSM_DTOR_TEMPLATE_DEFINITION, "CSM_DTOR_TEMPLATE_DEFINITION"], #external_declaration_template); }
                 |
                     ((template_head)? LITERAL_using IDENT ASSIGNEQUAL) => (template_head)? alias_declaration
                     { #external_declaration_template = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration_template); }
+                |
+                    (   (LITERAL___extension__!)?
+                        (   storage_class_specifier
+                        |   cv_qualifier
+                        |   LITERAL_typedef
+                        )*
+                        LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? (SEMICOLON | LCURLY)
+                    ) =>
+                    (LITERAL___extension__!)?
+                        (   sc = storage_class_specifier
+                        |   tq = cv_qualifier
+                        |   LITERAL_typedef
+                    )*
+                    enum_specifier (init_declarator_list[declOther])? 
+                    SEMICOLON!
+                    { #external_declaration_template = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #external_declaration_template); }
 		|  
 			// templated forward class decl, init/decl of static member in template
                         // Changed alternative order as a fix for IZ#138099:
@@ -1000,12 +1040,21 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
     |
 		// Destructor DEFINITION (templated or non-templated)
 		{isCPlusPlus()}?
-		((template_head)? dtor_head[true] LCURLY)=>
+		(   (template_head)? 
+                    dtor_head[true] 
+                    (   LCURLY
+                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                    )
+                )=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_4[%d]: Destructor definition\n",
 				LT(1).getLine());
 		}
-		(template_head)? dtor_head[true] dtor_body
+		(template_head)? 
+                dtor_head[true]
+                (   dtor_body
+                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                )
 		{ #external_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #external_declaration); }
 	|
 		// Constructor DEFINITION (non-templated)
@@ -1022,12 +1071,12 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 	|  
 		// User-defined type cast
 		{isCPlusPlus()}?
-		((template_head)? (literal_inline)? scope_override conversion_function_decl_or_def)=>
+		((template_head)? (literal_inline | LITERAL_constexpr)? scope_override conversion_function_decl_or_def)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_6[%d]: Operator function\n",
 				LT(1).getLine());
 		}
-		(template_head)? (literal_inline)? s = scope_override definition = conversion_function_decl_or_def 
+		(template_head)? (literal_inline | LITERAL_constexpr)? s = scope_override definition = conversion_function_decl_or_def 
 		{ if( definition ) #external_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #external_declaration);
 		    else	   #external_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #external_declaration); }
     |
@@ -1175,7 +1224,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 decl_namespace
 	{String qid; String name = "";}
 	:	
-		token:LITERAL_namespace
+		(literal_inline)? token:LITERAL_namespace
 		(
                         {action.namespace_declaration(token);}
 			(ns:IDENT{_td = true; name=ns.getText(); declaratorID(name,qiType);} {action.namespace_name(ns);})?
@@ -1291,11 +1340,11 @@ member_declaration_template
         function_definition
         { #member_declaration_template = #(#[CSM_FUNCTION_TEMPLATE_DEFINITION, "CSM_FUNCTION_TEMPLATE_DEFINITION"], #member_declaration_template); }
     |
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr|LITERAL_explicit)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_13d[%d]: Templated operator " + "function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_constexpr|LITERAL_explicit)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION, "CSM_USER_TYPE_CAST_TEMPLATE_DEFINITION"], #member_declaration_template);
          else               #member_declaration_template = #(#[CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION, "CSM_USER_TYPE_CAST_TEMPLATE_DECLARATION"], #member_declaration_template);}
@@ -1421,12 +1470,19 @@ member_declaration
 	|
 		// No template_head allowed for dtor member
 		// Backtrack if not a dtor (no TILDE)
-		(dtor_head[true] LCURLY)=>
+		(   dtor_head[true] 
+                    (   LCURLY
+                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                    )
+                )=>
 		{if (statementTrace>=1) 
 			printf("member_declaration_5b[%d]: Destructor definition\n",
 				LT(1).getLine());
 		}
-		dtor_head[true] dtor_body	// Definition
+		dtor_head[true] 
+                (   dtor_body
+                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+                )
 		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
     |
         // Function declaration
@@ -1497,11 +1553,11 @@ member_declaration
 		{ #member_declaration = #(#[CSM_FUNCTION_RET_FUN_DEFINITION, "CSM_FUNCTION_RET_FUN_DEFINITION"], #member_declaration); }
     |
         // User-defined type cast
-        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        (   ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr|LITERAL_explicit)*
             conversion_function_decl_or_def
         ) =>
         {if (statementTrace>=1) printf("member_declaration_8[%d]: Operator function\n", LT(1).getLine());}
-        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        ((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual|LITERAL_constexpr|LITERAL_explicit)*
         definition = conversion_function_decl_or_def
         {if( definition )   #member_declaration = #(#[CSM_USER_TYPE_CAST_DEFINITION, "CSM_USER_TYPE_CAST_DEFINITION"], #member_declaration);
          else               #member_declaration = #(#[CSM_USER_TYPE_CAST_DECLARATION, "CSM_USER_TYPE_CAST_DECLARATION"], #member_declaration);}
@@ -1712,8 +1768,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 }
 :
 (
-    (   ( (LITERAL_constexpr)? LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr)?
+    (   ( (LITERAL_constexpr | LITERAL_static)? LITERAL_auto declarator[declOther, 0]) => 
+        (LITERAL_constexpr | LITERAL_static)?
     |
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
@@ -1939,7 +1995,7 @@ enum_specifier
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
     |   
-        ( (IDENT SCOPE) =>
+        ( (IDENT (SCOPE | LESSTHAN) ) =>
             qid = qualified_id
         |
             id:IDENT     // DW 22/04/03 Suggest qualified_id here to satisfy
@@ -2051,7 +2107,7 @@ init_declarator[int kind]
 			ASSIGNEQUAL 
                         (cast_array_initializer_head) => initializer
                 |	
-			LPAREN expression_list RPAREN
+			LPAREN (expression_list | array_initializer) RPAREN
                 |
                         array_initializer
 		)?
@@ -2269,7 +2325,7 @@ direct_declarator[int kind, int level]
         function_like_var_declarator
         {if(kind != declFunctionParam && (kind == declStatement || kind == declNotFirst || LA(1) == COMMA)) {#direct_declarator = #(#[CSM_VARIABLE_LIKE_FUNCTION_DECLARATION, "CSM_VARIABLE_LIKE_FUNCTION_DECLARATION"], #direct_declarator);}}
     |   
-        ((ELLIPSIS)? qualified_id LPAREN) => // Must be class instantiation
+        ((ELLIPSIS)? qualified_id LPAREN ~LCURLY) => // Must be class instantiation
         (ELLIPSIS)? id = qualified_id
         {declaratorID(id, qiVar);}
         LPAREN
@@ -2401,7 +2457,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute))
+        (   ((cv_qualifier)* (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -2569,7 +2625,7 @@ superclass_init
 	: 
 	q = qualified_id 
         (
-            LPAREN! (expression_list)? RPAREN!
+            LPAREN! (expression_list | array_initializer)? RPAREN!
         |
             array_initializer
         )
@@ -2644,7 +2700,7 @@ dtor_declarator[boolean definition]
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
         //{declaratorEndParameterList(definition);}
-        (ASSIGNEQUAL OCTALINT)?	
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
 	;
 
@@ -2754,7 +2810,10 @@ abstract_declarator
     :	
         ptr_operator (literal_restrict!)? abstract_declarator 
     |
-        (abstract_declarator_suffix)*
+        (abstract_declarator_suffix)+
+    |
+        (ELLIPSIS) => ELLIPSIS
+    |
     ;
 
 abstract_declarator_suffix
@@ -2928,9 +2987,9 @@ template_parameter_list
 template_parameter
 	:
 	(   ((LITERAL_class|LITERAL_typename) (ELLIPSIS)? (IDENT (ELLIPSIS)? )? (ASSIGNEQUAL | COMMA | GREATERTHAN)) =>
-		(LITERAL_class|LITERAL_typename) 
+                (LITERAL_class|LITERAL_typename) 
                 (ELLIPSIS)? // support for variadic template params
-		(id:IDENT (ELLIPSIS)? (ASSIGNEQUAL assigned_type_name)? )?
+		(id:IDENT (ELLIPSIS)? )? (ASSIGNEQUAL assigned_type_name)?
 		{templateTypeParameter((id == null) ? "" : id.getText());}
 	|
 		template_template_parameter
@@ -2943,7 +3002,7 @@ template_parameter
 protected template_template_parameter
     :
     template_head
-	LITERAL_class IDENT (ASSIGNEQUAL assigned_type_name)?
+	LITERAL_class (ELLIPSIS)? (IDENT)? (ASSIGNEQUAL assigned_type_name)?
 	{ #template_template_parameter = #(#[CSM_TEMPLATE_TEMPLATE_PARAMETER, "CSM_TEMPLATE_TEMPLATE_PARAMETER"], #template_template_parameter);}
 
     ;
@@ -3081,7 +3140,7 @@ statement
 		// TODO: external_declaration is too generic here. Refactor this!
 		external_declaration
         |
-                ( is_declaration | LITERAL_namespace | LITERAL_static_assert ) =>
+                ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
                 {if (statementTrace>=1) 
 			printf("statement_1[%d]: declaration\n", LT(1).getLine());
 		}
@@ -3512,7 +3571,8 @@ assignment_expression
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
             )
-            assignment_expression
+            (assignment_expression
+            | array_initializer)
         )?
     ;
 
@@ -3612,7 +3672,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   literal_pascal 
             |   literal_stdcall
 
-            |   ts=builtin_type[0]
+            |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
             |   LITERAL_struct
             |   LITERAL_union

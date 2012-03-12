@@ -57,6 +57,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
@@ -305,11 +306,18 @@ public abstract class RemoteFileObjectBase implements Serializable {
                 throw new IOException("Cannot delete "+getPath()); // NOI18N
             }
         }
+        RemoteFileObject fo = getOwnerFileObject();
         for(Map.Entry<String, Object> entry : getAttributesMap().entrySet()) {
-            RemoteFileObject fo = getOwnerFileObject();
             fo.fireFileAttributeChangedEvent(getListenersWithParent(), new FileAttributeEvent(fo, fo, entry.getKey(), entry.getValue(), null));
         }
-        invalidate();
+        FileEvent fe = new FileEvent(fo, fo, true);
+        for(RemoteFileObjectBase child: getExistentChildren(true)) {
+            if (child instanceof RemoteLink && ((RemoteLink) child).isCyclicLink()) {
+                continue;
+            }
+            fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
+        }        
+        invalidate();        
         RemoteFileObjectBase p = getParent();
         if (p != null) {
             p.postDeleteChild(getOwnerFileObject());
@@ -343,6 +351,21 @@ public abstract class RemoteFileObjectBase implements Serializable {
     
     protected OutputStream getOutputStreamImpl(FileLock lock, RemoteFileObjectBase orig) throws IOException {
         throw new ReadOnlyException();
+    }
+    
+    private void populateWithChildren(RemoteFileObjectBase rfl, List<RemoteFileObjectBase> children) {
+        children.add(rfl);
+        for(RemoteFileObjectBase child: rfl.getExistentChildren()) {
+            populateWithChildren(child, children);
+        }
+    }
+    
+    protected RemoteFileObjectBase[] getExistentChildren(boolean recursive) {
+        if (!recursive) return getExistentChildren();
+        List<RemoteFileObjectBase> children = new LinkedList<RemoteFileObjectBase>();
+        populateWithChildren(this, children);
+        children.remove(this);
+        return children.toArray(new RemoteFileObjectBase[0]);
     }
     
     protected RemoteFileObjectBase[] getExistentChildren() {
