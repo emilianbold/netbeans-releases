@@ -236,7 +236,18 @@ public final class ExternalBrowserPlugin {
                     u = new URL(url.substring(0, url.length()-1));
                     browserImpl = awatingBrowserResponse.remove(u);
                 } catch (MalformedURLException ex) {
-                    LOG.log(Level.WARNING, "cannot parse URL: "+url);
+                    LOG.log(Level.WARNING, "cannot parse URL: "+url);   // NOI18N
+                }
+            }
+            // XXX: on Mac, file URLs are open with localhost as the host instead of ""
+            if (browserImpl == null && "file".equals(u.getProtocol())
+                    && "localhost".equals(u.getHost()))                 // NOI18N
+            {
+                try {
+                    u = new URL(u.getProtocol(), "", u.getPort(), u.getFile());
+                    browserImpl = awatingBrowserResponse.remove(u);
+                } catch (MalformedURLException ex) {
+                    LOG.log(Level.WARNING, "cannot parse URL: " + url);// NOI18N
                 }
             }
             if (browserImpl == null) {
