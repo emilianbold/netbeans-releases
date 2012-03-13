@@ -43,7 +43,10 @@
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
@@ -66,7 +69,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.Construc
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ParameterDescriptor;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 
 /**
@@ -118,7 +121,7 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        if (RequestHelper.isConstructorCall(request)) {
+        if (ContextHelper.isConstructorCall(request)) {
             return completeConstructor();
         }
 
@@ -128,7 +131,7 @@ public class MethodCompletion extends BaseCompletion {
             return false;
         }
 
-        ClassNode declaringClass = RequestHelper.getBeforeDotDeclaringClass(request);
+        ClassNode declaringClass = request.declaringClass;
 
         if (declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
@@ -161,7 +164,7 @@ public class MethodCompletion extends BaseCompletion {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(RequestHelper.getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
+                    .getMethods(ContextHelper.getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
                     request.dotContext != null && request.dotContext.isMethodsOnly());
         proposals.addAll(result.values());
 
@@ -248,7 +251,7 @@ public class MethodCompletion extends BaseCompletion {
 
     // FIXME: These should have higher priority and thus be on top of completion list
     private void addProposalsForDeclaredClasses() {
-        List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
+        List<ClassNode> declaredClasses = ContextHelper.getDeclaredClasses(request);
 
         for (ClassNode declaredClass : declaredClasses) {
             String constructorName = declaredClass.getNameWithoutPackage();

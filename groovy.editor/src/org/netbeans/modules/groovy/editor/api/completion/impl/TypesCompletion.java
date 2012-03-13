@@ -69,7 +69,7 @@ import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -131,7 +131,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // check for a constructor call
-        if (RequestHelper.isConstructorCall(request)) {
+        if (ContextHelper.isConstructorCall(request)) {
             constructorCompletion = true;
         } else {
             constructorCompletion = false;
@@ -286,7 +286,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // Adding declared classes
-        for (ClassNode declaredClass : RequestHelper.getDeclaredClasses(request)) {
+        for (ClassNode declaredClass : ContextHelper.getDeclaredClasses(request)) {
             addToProposalUsingFilter(addedTypes, new TypeHolder(declaredClass.getName(), ElementKind.CLASS), onlyInterfaces);
         }
 
@@ -311,7 +311,7 @@ public class TypesCompletion extends BaseCompletion {
         if (moduleNode != null) {
             return moduleNode.getPackageName();
         } else {
-            ClassNode node = RequestHelper.getSurroundingClassNode(request);
+            ClassNode node = ContextHelper.getSurroundingClassNode(request);
             if (node != null) {
                 return node.getPackageName();
             }
