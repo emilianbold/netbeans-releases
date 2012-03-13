@@ -41,21 +41,22 @@
  */
 package org.netbeans.modules.spring.beans.model.impl;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObject;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
-import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.SpringAnnotations;
+import org.netbeans.modules.spring.api.beans.model.Location;
 import org.netbeans.modules.spring.api.beans.model.SpringBean;
 import org.netbeans.modules.spring.api.beans.model.SpringBeanProperty;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -119,24 +120,36 @@ public class SpringBeanImpl extends PersistentObject implements SpringBean, Refr
     }
 
     @Override
-    public boolean refresh(TypeElement type) {
-        Map<String, ? extends AnnotationMirror> types =
-                getHelper().getAnnotationsByType(getHelper().getCompilationController().getElements().getAllAnnotationMirrors(type));
+    public final boolean refresh(TypeElement type) {
+        Map<String, ? extends AnnotationMirror> types = getHelper().getAnnotationsByType(
+                getHelper().getCompilationController().getElements().getAllAnnotationMirrors(type));
         AnnotationMirror annotationMirror = getAnnotationMirror(types);
         if (annotationMirror == null) {
             return false;
         }
         AnnotationParser parser = AnnotationParser.create(getHelper());
-        parser.expectString("value", null);                               // NOI18N
+        parser.expectString("value", null); //NOI18N
         ParseResult parseResult = parser.parse(annotationMirror);
-        className = type.getQualifiedName().toString();
+        className = ElementUtilities.getBinaryName(type);
         names.clear();
-        if (parseResult.get("value", String.class) == null) {            // NOI18N
-            names.add(getConvertedClassName(className));                 // NOI18N
+        if (parseResult.get("value", String.class) == null) { //NOI18N
+            names.add(getConvertedClassName(className));
         } else {
-            names.add(parseResult.get("value", String.class));
+            names.add(parseResult.get("value", String.class)); //NOI18N
         }
+
+        refreshLocation(className);
+
         return true;
+    }
+
+    private void refreshLocation(String fqn) {
+        String classRelativePath = fqn.replace('.', '/') + ".java"; //NOI18N
+        ClassPath classPath = getHelper().getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
+        FileObject classFO = classPath.findResource(classRelativePath);
+        if (classFO != null) {
+            location = new SpringAnnotatedBeanLocation(FileUtil.toFile(classFO));
+        }
     }
 
     private static AnnotationMirror getAnnotationMirror(Map<String, ? extends AnnotationMirror> types) {
@@ -151,7 +164,7 @@ public class SpringBeanImpl extends PersistentObject implements SpringBean, Refr
     }
 
     private static String getConvertedClassName(String className) {
-        String result = className.substring(className.lastIndexOf(".") + 1);
+        String result = className.substring(className.lastIndexOf(".") + 1); //NOI18N
         if (result.length() > 1) {
             StringBuilder builder = new StringBuilder();
             builder.append(
