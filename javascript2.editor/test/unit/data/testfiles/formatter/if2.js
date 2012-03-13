@@ -11,10 +11,10 @@ else {
 
 }
 
-     if (true)
+     if (true )
          a = 7
 
-if ((e || b)) ;
+if ((e || b)  ) ;
 else ;
 
 if (element.select && ( element.tagName.toLowerCase() != 'input' ||
