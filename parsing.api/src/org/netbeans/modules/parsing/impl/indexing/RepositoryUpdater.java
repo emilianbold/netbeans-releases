@@ -2042,7 +2042,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private ProgressHandle progressHandle = null;
         private int progress = -1;
         //Indexer statistics <IndexerName,{InvocationCount,CumulativeTime}>
-        private Map<String,int[]> indexerStatistics;
+        //threading: Has to be SynchronizedMap or ConcurrentMap to ensure propper
+        //visibility. The Work.scanBinaries modifies the map from multiple threads.
+        private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
+        private volatile boolean reportIndexerStatistics;
 
         protected Work(
                 final boolean followUpJob,
@@ -2844,7 +2847,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
-            if (indexerStatistics == null) {
+            if (!reportIndexerStatistics) {
                 return;
             }
             int[] itime = indexerStatistics.get(indexerName);
@@ -2866,17 +2869,16 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         logCtx.recordExecuted();
                     }
                     startTime = System.currentTimeMillis();
-                    indexerStatistics = new HashMap<String, int[]>();
+                    reportIndexerStatistics = true;
                 }
                 try {
                     finished.compareAndSet(false, getDone());
                 } finally {
-                    if (indexerStatistics != null) {
+                    if (reportIndexerStatistics) {
                         lastScanEnded = System.currentTimeMillis();
                         final Object[] stats = createIndexerStatLogData(
                                 lastScanEnded - startTime,
                                 indexerStatistics);
-                        indexerStatistics = null;
                         reportIndexerStatistics(UI_LOGGER, Level.INFO, stats);
                         reportIndexerStatistics(PERF_LOGGER, Level.FINE, stats);
                     }
