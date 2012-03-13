@@ -849,7 +849,6 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
 
                             popupPath = null;
                             methodId = flatProfileContainer.getMethodIdAtRow(selectedRow);
-                            popupAddToRoots.setVisible(true);
 
                             Rectangle cellRect = resTable.getCellRect(selectedRow, 0, false);
 
@@ -880,8 +879,6 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
                         if (popupShowSource != null) popupShowSource.setVisible(false);
                         if (popupShowReverse != null) popupShowReverse.setVisible(false);
 
-                        popupAddToRoots.setVisible(false);
-
                         if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
                             popupPath = null;
                             callGraphPopupMenu.show(e.getComponent(), e.getX(), e.getY());
@@ -892,7 +889,6 @@ public abstract class FlatProfilePanel extends CPUResultsPanel {
                         if (popupShowSource != null) popupShowSource.setVisible(true);
                         if (popupShowReverse != null) popupShowReverse.setVisible(true);
 
-                        popupAddToRoots.setVisible(true);
                         methodId = flatProfileContainer.getMethodIdAtRow(line);
 
                         if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
