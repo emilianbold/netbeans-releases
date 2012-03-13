@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.project.libraries;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.MissingResourceException;
-import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -125,15 +125,15 @@ public class Util {
     }
     
     @NonNull
-    public static Properties getProperties (final @NonNull LibraryImplementation impl) {
+    public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
         return supportsProperties(impl) ?
                 ((LibraryImplementation3)impl).getProperties() :
-                new Properties();
+                Collections.<String,String>emptyMap();
     }
     
     public static boolean setProperties(
         final @NonNull LibraryImplementation impl,
-        final @NonNull Properties  props) {
+        final @NonNull Map<String,String>  props) {
         if (supportsProperties(impl)) {
             ((LibraryImplementation3)impl).setProperties(props);
             return true;

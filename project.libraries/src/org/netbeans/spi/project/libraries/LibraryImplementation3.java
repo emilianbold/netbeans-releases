@@ -41,7 +41,7 @@
  */
 package org.netbeans.spi.project.libraries;
 
-import java.util.Properties;
+import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -55,14 +55,14 @@ public interface LibraryImplementation3 extends NamedLibraryImplementation {
     
     /**
      * Returns library properties
-     * @return the {@link Properties}
+     * @return the {@link Map} containing the properties
      */
     @NonNull
-    Properties getProperties();
+    Map<String,String> getProperties();
     
     /**
      * Sets  the library properties
      * @param properties the properties to be set
      */
-    void setProperties(@NonNull Properties properties);
+    void setProperties(@NonNull Map<String,String> properties);
 }

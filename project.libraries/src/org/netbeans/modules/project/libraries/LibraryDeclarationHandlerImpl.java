@@ -51,7 +51,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
@@ -76,7 +75,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     private String localizingBundle;
     private String displayName;
     private final Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
-    private final Properties properties = new Properties();
+    private final Map<String,String> properties = new HashMap<String, String>();
 
     // last volume
     private List<URL> cpEntries;
@@ -254,7 +253,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         state = State.PROPERTIES;
         assert propName != null;
         assert propValue != null;
-        properties.setProperty(propName, propValue);
+        properties.put(propName, propValue);
     }
 
     @Override

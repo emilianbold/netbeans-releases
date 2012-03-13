@@ -49,8 +49,10 @@ import java.util.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
+import org.openide.util.Parameters;
 
 public final class DefaultLibraryImplementation implements LibraryImplementation3 {
 
@@ -69,7 +71,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
 
     private List<PropertyChangeListener> listeners;
     
-    private volatile Properties properties;
+    private volatile Map<String,String> properties;
 
     /**
      * Create new LibraryImplementation supporting given <tt>library</tt>.
@@ -204,12 +206,15 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         }
     }
 
+    @NonNull
     @Override
-    public Properties getProperties() {
+    public Map<String,String> getProperties() {
         return properties;
     }
     
-    public void setProperties(Properties props) {
+    @Override
+    public void setProperties(@NonNull final Map<String,String> props) {
+        Parameters.notNull("props", props); //NOI18N
         properties = props;
     }
 }

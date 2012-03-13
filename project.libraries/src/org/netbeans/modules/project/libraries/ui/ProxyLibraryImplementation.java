@@ -52,14 +52,13 @@ import java.util.HashMap;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.util.Properties;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.Util;
 
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.WeakListeners;
 
 /**
@@ -236,7 +235,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation3, Prope
     }
 
     @Override
-    public Properties getProperties() {
+    public Map<String,String> getProperties() {
         if (!Util.supportsProperties(original)) {
             throw new IllegalStateException("Original does not support displayName");   //NOI18N
         }
@@ -244,7 +243,7 @@ public class ProxyLibraryImplementation implements LibraryImplementation3, Prope
     }
 
     @Override
-    public void setProperties(Properties properties) {
+    public void setProperties(@NonNull final Map<String,String> properties) {
         //For now no UI to set properties
     }
 
