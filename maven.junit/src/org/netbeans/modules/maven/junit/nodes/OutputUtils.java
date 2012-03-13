@@ -44,12 +44,16 @@
 
 package org.netbeans.modules.maven.junit.nodes;
 
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.List;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.netbeans.api.extexecution.print.LineConvertors.FileLocator;
 import org.netbeans.api.java.source.CompilationController;
@@ -67,10 +71,6 @@ import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.Trees;
-import javax.lang.model.util.ElementFilter;
 
 /**
  *
@@ -168,6 +168,7 @@ final class OutputUtils {
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
+                        @Override
                             public void run(CompilationController compilationController) throws Exception {
                                 compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
                                 Trees trees = compilationController.getTrees();
@@ -365,7 +366,7 @@ final class OutputUtils {
 
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
             if (ed != null && /* not true e.g. for *_ja.properties */
                               file == dob.getPrimaryFile()) {
                 if (lineNum == -1) {
