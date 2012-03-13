@@ -194,7 +194,7 @@ public class MyNode extends AbstractNode {
   </blockquote>
    
    <api group="java"
-        name="SearchAPI"
+        name="deprecated-SearchAPI"
         type="export"
         category="deprecated"
         url="@TOP@index.html">
@@ -713,7 +713,7 @@ Nothing.
     (defined in this module) are expected to be registered in lookups
     of nodes (only on instance per node).
     <api group="lookup"
-         name="SearchInfo-lookup"
+         name="deprecated-SearchInfo-lookup"
          type="import"
          category="stable">
         Helper method

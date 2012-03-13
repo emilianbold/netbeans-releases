@@ -591,7 +591,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     titk = ts.token();//get next token
 
                 } while (titk != null);
-                methodName = this.CCParser.new MD(mname, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
+                methodName = this.CCParser.new MD(mname, literalToComplete != null ? literalToComplete.text().toString() : null, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
             }
         }
 
@@ -634,7 +634,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return controller;
         }
 
-        CCParser.MD getMethod() {
+        public CCParser.MD getMethod() {
             if (methodName == null) {
                 initMethodContext();
             }

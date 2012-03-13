@@ -376,7 +376,7 @@ abstract public class BreakpointPanel extends javax.swing.JPanel
 	return false;
     }
 
-    public abstract void seed(NativeBreakpoint initialBpt);
+    protected abstract void seed(NativeBreakpoint initialBpt);
 
     public abstract void setDescriptionEnabled(boolean enabled);
 
