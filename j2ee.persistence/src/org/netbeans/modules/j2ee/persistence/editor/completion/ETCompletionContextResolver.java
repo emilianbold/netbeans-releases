@@ -163,8 +163,10 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
     }
      private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.MD method, List<JPACompletionItem> results) {
 
-            String completedValue = method.getValue() == null ? "" : method.getValue();
+            String completedValue = method.getValue();
+            if(completedValue == null)return results;//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
             JPQLQueryHelper helper = new JPQLQueryHelper();
+            completedValue = org.netbeans.modules.j2ee.persistence.editor.completion.Utils.unquote(completedValue);
 
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
