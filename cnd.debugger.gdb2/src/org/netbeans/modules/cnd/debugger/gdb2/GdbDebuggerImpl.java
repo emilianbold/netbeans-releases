@@ -1698,7 +1698,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     private void showThreads() {
-        if (peculiarity.supportsThreadInfo()) {
+        if (peculiarity.supports(GdbVersionPeculiarity.Feature.THREAD_INFO)) {
             MICommand cmd = new MiCommandImpl("-thread-info") { // NOI18N
                 @Override
                 protected void onDone(MIRecord record) {
