@@ -377,7 +377,7 @@ public final class VCSFilesystemInterceptor {
      *
      * @param fo a VCSFileProxy
      */
-    public static void fileLocked(VCSFileProxy fo) {
+    public static void fileLocked(final VCSFileProxy fo) throws IOException {
         LOG.log(Level.FINE, "fileLocked {0}", fo);
         getInterceptor(fo, "beforeEdit").beforeEdit();           // NOI18N
     }
@@ -690,7 +690,7 @@ public final class VCSFilesystemInterceptor {
             interceptor.beforeChange(file);
         }
 
-        public void beforeEdit() {
+        public void beforeEdit() throws IOException {
             lhInterceptor.beforeEdit(file);
             interceptor.beforeEdit(file);
         }
