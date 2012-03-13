@@ -225,11 +225,11 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             }
             Library l = mi.getChosenLibrary();
             handle.progress(Bundle.MSG_DownloadingLibraries(
-                    l.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
+                    l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME)));
             FileObject libRoot = librariesRoot.createFolder(
-                    l.getProperties().getProperty(
+                    l.getProperties().get(
                     JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME).replace(' ', '-')+"-"+ // NOI18N
-                    l.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
+                    l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
             List<URL> urls = l.getContent(mi.getChosenLibraryVolume());
             assert !urls.isEmpty() : l + " "+mi.getChosenLibraryVolume(); // NOI18N
             for (URL u : urls) {
@@ -278,7 +278,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             Map<String,List<Library>> map = new HashMap<String, List<Library>>();
             for (Library lib : LibraryManager.getDefault().getLibraries()) {
                 if (JavaScriptLibraryTypeProvider.TYPE.equals(lib.getType())) {
-                    String name = lib.getProperties().getProperty(
+                    String name = lib.getProperties().get(
                             JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME);
                     List<Library> libs = map.get(name);
                     if (libs == null) {
@@ -375,8 +375,8 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             Collections.sort(libraries, new Comparator<Library>() {
                 @Override
                 public int compare(Library o1, Library o2) {
-                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
-                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
+                    Version ver1 = Version.fromDottedNotationWithFallback(o1.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
+                    Version ver2 = Version.fromDottedNotationWithFallback(o2.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION));
                     if (ver1.equals(ver2)) {
                         if (!o1.getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
                             return -1;
@@ -398,7 +398,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
             });
             this.libraries = libraries;
             this.selected = false;
-            this.selectedVersion = getLibrary().getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
+            this.selectedVersion = getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
             if (!getLibrary().getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
                 this.selectedVersion += VER_DOCUMENTED;
             } else if (!getLibrary().getContent(JavaScriptLibraryTypeProvider.VOL_REGULAR).isEmpty()) {
@@ -408,7 +408,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         }
         
         public String getSimpleDisplayName() {
-            return getLibrary().getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
+            return getLibrary().getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME);
         }
         
         public String getDescription() {
@@ -427,7 +427,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
                 selVersion = selVersion.substring(0, selVersion.length()-VER_MINIFIED.length());
             }
             for (Library l : libraries) {
-                if (selVersion.equals(l.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION))) {
+                if (selVersion.equals(l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION))) {
                     return l;
                 }
             }
@@ -448,7 +448,7 @@ public class JavaScriptLibrarySelection extends javax.swing.JPanel {
         public String[] getVersions() {
             List<String> vers = new ArrayList<String>();
             for (Library l : libraries) {
-                String version = l.getProperties().getProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
+                String version = l.getProperties().get(JavaScriptLibraryTypeProvider.PROPERTY_VERSION);
                 if (!l.getContent(JavaScriptLibraryTypeProvider.VOL_DOCUMENTED).isEmpty()) {
                     if (!vers.contains(version + VER_DOCUMENTED)) {
                         vers.add(version + VER_DOCUMENTED);

@@ -161,12 +161,12 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         NamedLibraryImplementation named = (NamedLibraryImplementation) l1;
         l1.setName("cdnjs-"+name+"-"+version); // NOI18N
         named.setDisplayName("[CDNJS] "+name+" "+version); // NOI18N
-        Properties p = new Properties();
-        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
-        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
-        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
-        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
-        p.setProperty(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
+        Map<String, String> p = new HashMap<String, String>();
+        p.put(JavaScriptLibraryTypeProvider.PROPERTY_VERSION, version);
+        p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_NAME, name);
+        p.put(JavaScriptLibraryTypeProvider.PROPERTY_REAL_DISPLAY_NAME, name);
+        p.put(JavaScriptLibraryTypeProvider.PROPERTY_CDN, "CDNJS"); // NOI18N
+        p.put(JavaScriptLibraryTypeProvider.PROPERTY_SITE, homepage);
         l1.setProperties(p);
         l1.setDescription(description);
         try {
