@@ -221,6 +221,8 @@ public class PhpAnnotationsPanel extends JPanel {
         addButton = new JButton();
         editButton = new JButton();
         deleteButton = new JButton();
+        noteLabel = new JLabel();
+        infoLabel = new JLabel();
 
         annotationsLabel.setLabelFor(annotationsTable);
         Mnemonics.setLocalizedText(annotationsLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.annotationsLabel.text")); // NOI18N
@@ -233,16 +235,20 @@ public class PhpAnnotationsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(deleteButton, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.deleteButton.text")); // NOI18N
         deleteButton.setEnabled(false);
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.infoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                .addComponent(annotationsLabel)
 
-                .addGap(0, 334, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+                .addComponent(annotationsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(addButton, Alignment.TRAILING).addComponent(editButton, Alignment.TRAILING).addComponent(deleteButton, Alignment.TRAILING))).addGroup(layout.createSequentialGroup()
 
-                .addComponent(annotationsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(addButton, Alignment.TRAILING).addComponent(editButton, Alignment.TRAILING).addComponent(deleteButton, Alignment.TRAILING)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(annotationsLabel).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 0, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, deleteButton, editButton});
@@ -254,7 +260,7 @@ public class PhpAnnotationsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
 
-                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(editButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton)).addComponent(annotationsScrollPane, GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)))
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(editButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton)).addComponent(annotationsScrollPane, GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(infoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -265,6 +271,8 @@ public class PhpAnnotationsPanel extends JPanel {
     private JTable annotationsTable;
     private JButton deleteButton;
     private JButton editButton;
+    private JLabel infoLabel;
+    private JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

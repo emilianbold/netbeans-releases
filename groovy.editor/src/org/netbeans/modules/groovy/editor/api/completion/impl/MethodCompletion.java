@@ -49,15 +49,14 @@ import javax.lang.model.element.*;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
-import org.codehaus.groovy.ast.ClassNode;
-import org.codehaus.groovy.ast.ConstructorNode;
-import org.codehaus.groovy.ast.Parameter;
+import org.codehaus.groovy.ast.*;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
@@ -66,7 +65,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.Construc
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ParameterDescriptor;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 
 /**
@@ -76,8 +75,6 @@ import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
  */
 public class MethodCompletion extends BaseCompletion {
 
-    private static List<String> defaultImports;
-
     // There attributes should be initiated after each complete() method call
     private List<CompletionProposal> proposals;
     private CompletionRequest request;
@@ -85,8 +82,6 @@ public class MethodCompletion extends BaseCompletion {
 
 
     public MethodCompletion() {
-        defaultImports = new ArrayList<String>();
-        defaultImports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
     }
 
 
@@ -118,7 +113,7 @@ public class MethodCompletion extends BaseCompletion {
 
 
         // 1.) Test if this is a Constructor-call?
-        if (RequestHelper.isConstructorCall(request)) {
+        if (ContextHelper.isConstructorCall(request)) {
             return completeConstructor();
         }
 
@@ -128,9 +123,7 @@ public class MethodCompletion extends BaseCompletion {
             return false;
         }
 
-        ClassNode declaringClass = RequestHelper.getBeforeDotDeclaringClass(request);
-
-        if (declaringClass == null) {
+        if (request.declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
             return false;
         }
@@ -161,19 +154,26 @@ public class MethodCompletion extends BaseCompletion {
 
         Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getMethods(RequestHelper.getSurroundingClassNode(request), declaringClass, request.prefix, anchor,
+                    .getMethods(ContextHelper.getSurroundingClassNode(request), request.declaringClass, request.prefix, anchor,
                     request.dotContext != null && request.dotContext.isMethodsOnly());
         proposals.addAll(result.values());
 
         return true;
     }
 
+    /**
+     * Constructor completion works for following types.
+     *  1) Types in the same package
+     *  2) Already imported types
+     *  3) Groovy default imports
+     *
+     * @return true if we found some constructor proposal, false otherwise
+     */
     private boolean completeConstructor() {
         LOG.log(Level.FINEST, "This looks like a constructor ...");
 
         // look for all imported types starting with prefix, which have public constructors
         final JavaSource javaSource = getJavaSourceFromRequest();
-
         if (javaSource != null) {
             try {
                 javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -181,8 +181,8 @@ public class MethodCompletion extends BaseCompletion {
                     public void run(CompilationController info) {
 
                         List<Element> typelist = new ArrayList<Element>();
-                        for (String singlePackage : defaultImports) {
-                            typelist.addAll(getElementListForPackage(info.getElements(), singlePackage));
+                        for (String importName : getAllImports()) {
+                            typelist.addAll(getElementListFor(info.getElements(), importName));
                         }
                         LOG.log(Level.FINEST, "Number of types found:  {0}", typelist.size());
 
@@ -191,7 +191,7 @@ public class MethodCompletion extends BaseCompletion {
                             // show only String constructors (not StringBuffer constructors etc.)
                             addExactProposals(typelist);
                         }
-                        addProposalsForDeclaredClasses();
+                        addConstructorProposalsForDeclaredClasses();
                     }
                 }, true);
             } catch (IOException ex) {
@@ -200,6 +200,44 @@ public class MethodCompletion extends BaseCompletion {
         }
 
         return !proposals.isEmpty();
+    }
+
+    private List<String> getAllImports() {
+        List<String> imports = new ArrayList<String>();
+        imports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
+        imports.addAll(getImportedTypes());
+        imports.addAll(getTypesInSamePackage());
+
+        return imports;
+    }
+
+    private List<String> getImportedTypes() {
+        List<String> importedTypes = new ArrayList<String>();
+
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
+        if (moduleNode != null) {
+            // this gets the list of full-qualified names of imports.
+            for (ImportNode importNode : moduleNode.getImports()) {
+                importedTypes.add(importNode.getClassName());
+            }
+
+            // this returns a list of String's of wildcard-like included types.
+            for (ImportNode wildcardImport : moduleNode.getStarImports()) {
+                importedTypes.add(wildcardImport.getPackageName());
+            }
+        }
+        return importedTypes;
+    }
+
+    private List<String> getTypesInSamePackage() {
+        String packageName = ContextHelper.getSurroundingModuleNode(request).getPackageName();
+        if (packageName != null) {
+            packageName = packageName.substring(0, packageName.length() - 1); // Removing last '.' char
+
+            return Collections.singletonList(packageName);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**
@@ -229,7 +267,7 @@ public class MethodCompletion extends BaseCompletion {
                         String constructorName = element.getSimpleName().toString();
 
                         if (constructorName.toUpperCase().equals(request.prefix.toUpperCase())) {
-                            addProposal(constructorName, (ExecutableElement) encl);
+                            addConstructorProposal(constructorName, (ExecutableElement) encl);
                         }
                     }
                 }
@@ -237,7 +275,7 @@ public class MethodCompletion extends BaseCompletion {
         }
     }
 
-    private void addProposal(String constructorName, ExecutableElement encl) {
+    private void addConstructorProposal(String constructorName, ExecutableElement encl) {
         LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
 
         String paramListString = getParameterListForMethod(encl);
@@ -246,21 +284,22 @@ public class MethodCompletion extends BaseCompletion {
         proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
     }
 
-    // FIXME: These should have higher priority and thus be on top of completion list
-    private void addProposalsForDeclaredClasses() {
-        List<ClassNode> declaredClasses = RequestHelper.getDeclaredClasses(request);
+    private void addConstructorProposalsForDeclaredClasses() {
+        for (ClassNode declaredClass : ContextHelper.getDeclaredClasses(request)) {
+            addConstructorProposal(declaredClass);
+        }
+    }
 
-        for (ClassNode declaredClass : declaredClasses) {
-            String constructorName = declaredClass.getNameWithoutPackage();
+    private void addConstructorProposal(ClassNode classNode) {
+        String constructorName = classNode.getNameWithoutPackage();
 
-            if (isPrefixed(request, constructorName)) {
-                for (ConstructorNode constructor : declaredClass.getDeclaredConstructors()) {
-                    Parameter[] parameters = constructor.getParameters();
-                    String paramListString = getParameterListStringForMethod(parameters);
-                    List<ParameterDescriptor> paramList = getParameterListForMethod(parameters);
+        if (isPrefixed(request, constructorName)) {
+            for (ConstructorNode constructor : classNode.getDeclaredConstructors()) {
+                Parameter[] parameters = constructor.getParameters();
+                String paramListString = getParameterListStringForMethod(parameters);
+                List<ParameterDescriptor> paramList = getParameterListForMethod(parameters);
 
-                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
-                }
+                proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
             }
         }
     }
@@ -280,21 +319,19 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     @NonNull
-    private List<? extends Element> getElementListForPackage(Elements elements, final String pkg) {
-        LOG.log(Level.FINEST, "getElementListForPackage(), Package :  {0}", pkg);
+    private List<? extends Element> getElementListFor(Elements elements, final String importName) {
+        if (elements != null && importName != null) {
+            PackageElement packageElement = elements.getPackageElement(importName);
 
-        if (elements != null && pkg != null) {
-            LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
-            PackageElement packageElement = elements.getPackageElement(pkg);
-
-            if (packageElement == null) {
-                LOG.log(Level.FINEST, "packageElement is null");
-            } else {
+            if (packageElement != null) {
                 return packageElement.getEnclosedElements();
+            } else {
+                TypeElement typeElement = elements.getTypeElement(importName);
+                if (typeElement != null) {
+                    return Collections.singletonList(typeElement);
+                }
             }
         }
-
-        LOG.log(Level.FINEST, "Returning Typlist");
         return Collections.emptyList();
     }
 
