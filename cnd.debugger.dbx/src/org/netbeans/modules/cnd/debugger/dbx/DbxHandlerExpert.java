@@ -55,18 +55,14 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.LoadObjBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.TimerBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.FaultBreakpointType;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ExceptionBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ClassMethodBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.AccessBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.DebuggerBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.SignalBreakpointType;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ExceptionBreakpointType;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.SysCallBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.InfileBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.SignalBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ObjectBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.AccessBreakpointType;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.VariableBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ProcessBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.InfileBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.CondBreakpointType;
@@ -74,8 +70,6 @@ import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.CondBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ObjectBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.TimerBreakpointType;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.DebuggerBreakpoint;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.VariableBreakpoint;
-import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.SysCallBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.FaultBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.ProcessBreakpoint;
 import org.netbeans.modules.cnd.debugger.dbx.breakpoints.types.LoadObjBreakpointType;
@@ -100,6 +94,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerCom
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.HandlerExpert;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpointType;
 
 public class DbxHandlerExpert implements HandlerExpert {
     private final DbxDebuggerImpl debugger;
