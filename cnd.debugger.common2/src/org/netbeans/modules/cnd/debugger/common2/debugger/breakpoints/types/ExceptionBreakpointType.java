@@ -42,39 +42,38 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
-public final class VariableBreakpoint extends NativeBreakpoint {
+//@BreakpointType.Registration(displayName="#LBL_Exception")
+// Registered in META-INF! 
+// in case we register using Registration it will create ContextAware instance!
+public class ExceptionBreakpointType extends NativeBreakpointType {
 
-    public StringProperty variable =
-	new StringProperty(pos, "variable", null, false, null); // NOI18N
-
-    public VariableBreakpoint(int flags) {
-	super(new VariableBreakpointType(), flags);
+    // interface BreakpointType
+    @Override
+    public NativeBreakpoint newInstance(int flags) {
+	return new ExceptionBreakpoint(flags);
     } 
 
-    public String getVariable() {
-	return variable.get();
-    }
-
-    public void setVariable(String newVariable) {
-	variable.set(newVariable);
-    }
-
+    // interface BreakpointType
     @Override
-    public String getSummary() {
-	return variable.get();
+    public String getTypeDisplayName() {
+	return Catalog.get("LBL_Exception"); //NOI18N
     }
 
+    // interface NativeBreakpointType
     @Override
-    protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Variable", getVariable()); //NOI18N
+    public BreakpointPanel getCustomizer(NativeBreakpoint editable) {
+	if (editable == null)
+	    return new ExceptionBreakpointPanel();
+	else
+	    return new ExceptionBreakpointPanel(editable);
     }
-
+    
     @Override
-    protected void processOriginalEventspec(String oeventspec) {
-	assert IpeUtils.isEmpty(oeventspec);
+    public String id() {
+        return "Exception"; //NOI18N
     }
 }
