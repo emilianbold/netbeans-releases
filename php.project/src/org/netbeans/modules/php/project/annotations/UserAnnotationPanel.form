@@ -42,7 +42,7 @@
                                   <Component id="methodCheckBox" min="-2" max="-2" attributes="0"/>
                                   <Component id="typeCheckBox" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace min="0" pref="234" max="32767" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -54,7 +54,7 @@
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
-                  <Component id="docTabbedPane" alignment="0" max="32767" attributes="0"/>
+                  <Component id="docTabbedPane" alignment="0" pref="458" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -86,7 +86,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="docLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="docTabbedPane" pref="335" max="32767" attributes="0"/>
+              <Component id="docTabbedPane" pref="225" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -184,11 +184,7 @@
 
           <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
           <SubComponents>
-            <Component class="javax.swing.JTextArea" name="sourceTextArea">
-              <Properties>
-                <Property name="tabSize" type="int" value="4"/>
-                <Property name="wrapStyleWord" type="boolean" value="true"/>
-              </Properties>
+            <Component class="javax.swing.JEditorPane" name="sourceEditorPane">
             </Component>
           </SubComponents>
         </Container>
