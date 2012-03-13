@@ -170,6 +170,7 @@ public class SQLEditorSupport extends DataEditorSupport
 
     @Override
     protected void initializeCloneableEditor(CloneableEditor editor) {
+        super.initializeCloneableEditor(editor);
         ((SQLCloneableEditor) editor).initialize();
     }
     
