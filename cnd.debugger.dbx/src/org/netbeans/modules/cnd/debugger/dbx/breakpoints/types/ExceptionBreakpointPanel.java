@@ -52,6 +52,10 @@ import javax.swing.*;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.values.ExceptionSpec;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 class ExceptionBreakpointPanel extends BreakpointPanel {
 
     private ExceptionBreakpoint fb;

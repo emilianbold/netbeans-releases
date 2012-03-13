@@ -49,6 +49,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.props.Exce
 import org.netbeans.modules.cnd.debugger.common2.values.ExceptionSpec;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 public final class ExceptionBreakpoint extends NativeBreakpoint {
 
     public ExceptionSpecProperty exception =

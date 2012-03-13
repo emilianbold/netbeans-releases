@@ -53,6 +53,10 @@ import java.awt.Component;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.values.SysCallEE;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 class SysCallBreakpointPanel extends BreakpointPanel {
 
     private SysCallBreakpoint fb;

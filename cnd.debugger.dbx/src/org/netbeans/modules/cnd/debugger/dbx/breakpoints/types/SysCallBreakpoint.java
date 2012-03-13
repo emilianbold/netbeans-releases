@@ -50,6 +50,10 @@ import org.netbeans.modules.cnd.debugger.common2.values.SysCallEE;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
+/**
+ * @deprecated Use the same class from common instead
+ */
+@Deprecated
 public final class SysCallBreakpoint extends NativeBreakpoint {
 
     public StringProperty sysCall =
