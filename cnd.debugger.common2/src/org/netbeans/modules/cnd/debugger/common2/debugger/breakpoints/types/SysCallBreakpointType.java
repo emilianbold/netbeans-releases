@@ -42,39 +42,36 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
-public final class VariableBreakpoint extends NativeBreakpoint {
+//@BreakpointType.Registration(displayName="#LBL_System_Call")
+// Registered in META-INF! 
+// in case we register using Registration it will create ContextAware instance!
+public class SysCallBreakpointType extends NativeBreakpointType {
 
-    public StringProperty variable =
-	new StringProperty(pos, "variable", null, false, null); // NOI18N
-
-    public VariableBreakpoint(int flags) {
-	super(new VariableBreakpointType(), flags);
+    // interface BreakpointType
+    public NativeBreakpoint newInstance(int flags) {
+	return new SysCallBreakpoint(flags);
     } 
 
-    public String getVariable() {
-	return variable.get();
-    }
-
-    public void setVariable(String newVariable) {
-	variable.set(newVariable);
-    }
-
+    // interface BreakpointType
     @Override
-    public String getSummary() {
-	return variable.get();
+    public String getTypeDisplayName() {
+        return Catalog.get("LBL_System_Call");
     }
 
-    @Override
-    protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Variable", getVariable()); //NOI18N
+    // interface NativeBreakpointType
+    public BreakpointPanel getCustomizer(NativeBreakpoint editable) {
+	if (editable == null)
+	    return new SysCallBreakpointPanel();
+	else
+	    return new SysCallBreakpointPanel(editable);
     }
-
+    
     @Override
-    protected void processOriginalEventspec(String oeventspec) {
-	assert IpeUtils.isEmpty(oeventspec);
+    public String id() {
+        return "SysCall"; //NOI18N
     }
 }

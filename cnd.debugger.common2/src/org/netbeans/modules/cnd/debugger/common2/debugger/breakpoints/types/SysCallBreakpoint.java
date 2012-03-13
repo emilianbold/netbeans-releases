@@ -43,34 +43,62 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.props.SysCallEEProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
+import org.netbeans.modules.cnd.debugger.common2.values.SysCallEE;
 
-public final class VariableBreakpoint extends NativeBreakpoint {
+public final class SysCallBreakpoint extends NativeBreakpoint {
 
-    public StringProperty variable =
-	new StringProperty(pos, "variable", null, false, null); // NOI18N
+    public StringProperty sysCall =
+	new StringProperty(pos, "sysCall", null, false, null); // NOI18N
+    public SysCallEEProperty entryExit =
+	new SysCallEEProperty(pos, "entryExit", null, false, SysCallEE.ENTRY); // NOI18N
 
-    public VariableBreakpoint(int flags) {
-	super(new VariableBreakpointType(), flags);
+    public SysCallBreakpoint(int flags) {
+	super(new SysCallBreakpointType(), flags);
     } 
 
-    public String getVariable() {
-	return variable.get();
+    public String getSysCall() {
+	return sysCall.get();
     }
 
-    public void setVariable(String newVariable) {
-	variable.set(newVariable);
+    public void setSysCall(String newSysCall) {
+	sysCall.set(newSysCall);
     }
 
+    public SysCallEE getEntryExit() {
+        return entryExit.get();
+    }
+
+    public void setEntryExit(SysCallEE ee) {
+        entryExit.set(ee);
+    }
+    
     @Override
     public String getSummary() {
-	return variable.get();
+	return sysCall.get();
     }
 
     @Override
     protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Variable", getVariable()); //NOI18N
+	String summary = null;
+	SysCallBreakpoint bre = this;
+	String call = bre.getSysCall();
+	if (call == null) {
+	    if (bre.getEntryExit() == SysCallEE.EXIT) {
+		summary = Catalog.get("Handler_SysoutAny");
+	    } else {
+		summary = Catalog.get("Handler_SysinAny");
+	    }
+	} else {
+	    if (bre.getEntryExit() == SysCallEE.EXIT) {
+		summary = Catalog.format("Handler_Sysout", call);
+	    } else {
+		summary = Catalog.format("Handler_Sysin", call);
+	    }
+	}
+	return summary;
     }
 
     @Override

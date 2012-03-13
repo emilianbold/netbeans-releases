@@ -42,102 +42,113 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
+import java.awt.Component;
+import javax.swing.DefaultComboBoxModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
+import org.netbeans.modules.cnd.debugger.common2.values.ExceptionSpec;
 
-class VariableBreakpointPanel extends BreakpointPanel {
+class ExceptionBreakpointPanel extends BreakpointPanel {
 
-    private VariableBreakpoint fb;
+    private ExceptionBreakpoint fb;
     
     @Override
     protected final void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
-	fb = (VariableBreakpoint) breakpoint;
+	fb = (ExceptionBreakpoint) breakpoint;
 
-	variableText.setText(fb.getVariable());
+	exceptionCombo.setSelectedItem(fb.getException().toString());
     }
 
     /*
      * Constructors
      */
-    public VariableBreakpointPanel() {
-	this (new VariableBreakpoint(NativeBreakpoint.TOPLEVEL), false);
+    public ExceptionBreakpointPanel() {
+	this (new ExceptionBreakpoint(NativeBreakpoint.TOPLEVEL), false);
     }
 
-    public VariableBreakpointPanel(NativeBreakpoint b) {
-	this ((VariableBreakpoint)b, true);
+    public ExceptionBreakpointPanel(NativeBreakpoint b) {
+	this ((ExceptionBreakpoint)b, true);
     }
-    
-    /** Creates new form VariableBreakpointPanel */
-    public VariableBreakpointPanel(VariableBreakpoint breakpoint,
-				    boolean customizing) {
+
+    /** Creates new form ExceptionBreakpointPanel */
+    public ExceptionBreakpointPanel(ExceptionBreakpoint breakpoint,
+				    boolean customizing ) {
 	super(breakpoint, customizing);
 	fb = breakpoint;
 
 	initComponents();
 	addCommonComponents(1);
 
-	if (!customizing) {
-	    String selection = EditorBridge.getCurrentSelection();
-	    if (selection != null)
-		breakpoint.setVariable(selection);
+	final String[] comboValues = ExceptionSpec.getTags();
+	exceptionCombo.setModel(new DefaultComboBoxModel(comboValues));
+	exceptionCombo.setEditable(true);
+	Component c = exceptionCombo.getEditor().getEditorComponent();
+	if (c instanceof javax.swing.text.JTextComponent) {
+	    javax.swing.text.Document d =
+		((javax.swing.text.JTextComponent)c).getDocument();
+	    d.addDocumentListener(this);
 	}
+	exceptionCombo.setSelectedIndex(0);
 
 	seed(breakpoint);
 
 	// Arrange to revalidate on changes
-	variableText.getDocument().addDocumentListener(this);
+	exceptionCombo.addItemListener(this);
     }
     
     @Override
     public void setDescriptionEnabled(boolean enabled) {
-	// variableLabel.setEnabled(false);
-	variableText.setEnabled(false);
+	// exceptionLabel.setEnabled(false);
+	exceptionCombo.setEnabled(false);
     }
 
     /** This method is called from within the constructor to
      * initialize the form.
      */
     private void initComponents() {
-	variableLabel = new javax.swing.JLabel();
-	variableText = new javax.swing.JTextField();
+	exceptionLabel = new javax.swing.JLabel();
+	exceptionCombo = new javax.swing.JComboBox();
 
 	panel_settings.setLayout(new java.awt.GridBagLayout());
 	java.awt.GridBagConstraints gridBagConstraints1;
 
-	variableLabel.setText(Catalog.get("Variable"));	// NOI18N
-	variableLabel.setDisplayedMnemonic(
-	    Catalog.getMnemonic("MNEM_Variable"));	// NOI18N
-	variableLabel.setLabelFor(variableText);
+	exceptionLabel.setText(Catalog.get("Type"));	// NOI18N
+	exceptionLabel.setDisplayedMnemonic(
+	    Catalog.getMnemonic("MNEM_Type"));		// NOI18N
+	exceptionLabel.setLabelFor(exceptionCombo);
 	gridBagConstraints1 = new java.awt.GridBagConstraints();
 	gridBagConstraints1.ipadx = 5;
 	gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
-	panel_settings.add(variableLabel, gridBagConstraints1);
+	panel_settings.add(exceptionLabel, gridBagConstraints1);
 
 	gridBagConstraints1 = new java.awt.GridBagConstraints();
 	gridBagConstraints1.gridwidth = 3;
-	gridBagConstraints1.fill = java.awt.GridBagConstraints.HORIZONTAL;
+	gridBagConstraints1.fill = java.awt.GridBagConstraints.NONE;
+	gridBagConstraints1.anchor = java.awt.GridBagConstraints.WEST;
 	gridBagConstraints1.weightx = 1.0;
-	panel_settings.add(variableText, gridBagConstraints1);
+	panel_settings.add(exceptionCombo, gridBagConstraints1);
 
 	// a11y
-	variableText.getAccessibleContext().setAccessibleDescription(
-	    Catalog.get("ACSD_Variable") // NOI18N
+	exceptionCombo.getAccessibleContext().setAccessibleDescription(
+	    Catalog.get("ACSD_Type") // NOI18N
 	);
     }
 
-    private javax.swing.JLabel variableLabel;
-    private javax.swing.JTextField variableText;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JLabel exceptionLabel;
+    private javax.swing.JComboBox exceptionCombo;
 
     @Override
     protected void assignProperties() {
-	fb.setVariable(variableText.getText());
+	String xs = exceptionCombo.getSelectedItem().toString();
+	ExceptionSpec x = ExceptionSpec.byTag(xs);
+	fb.setException(x);
     }
     
     @Override
     protected boolean propertiesAreValid() {
-	return !IpeUtils.isEmpty(variableText.getText());
+	return !IpeUtils.isEmpty(exceptionCombo.getSelectedItem().toString());
     }
 }

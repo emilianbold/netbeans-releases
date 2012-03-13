@@ -43,34 +43,42 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.props.ExceptionSpecProperty;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.debugger.common2.utils.props.StringProperty;
+import org.netbeans.modules.cnd.debugger.common2.values.ExceptionSpec;
 
-public final class VariableBreakpoint extends NativeBreakpoint {
+public final class ExceptionBreakpoint extends NativeBreakpoint {
 
-    public StringProperty variable =
-	new StringProperty(pos, "variable", null, false, null); // NOI18N
+    public ExceptionSpecProperty exception =
+	new ExceptionSpecProperty(pos, "exception", null, false, ExceptionSpec.ALL); // NOI18N
 
-    public VariableBreakpoint(int flags) {
-	super(new VariableBreakpointType(), flags);
+    public ExceptionBreakpoint(int flags) {
+	super(new ExceptionBreakpointType(), flags);
     } 
 
-    public String getVariable() {
-	return variable.get();
+    public ExceptionSpec getException() {
+	return exception.get();
     }
 
-    public void setVariable(String newVariable) {
-	variable.set(newVariable);
+    public void setException(ExceptionSpec e) {
+	exception.set(e);
     }
 
     @Override
     public String getSummary() {
-	return variable.get();
+	if (exception.get() != null)
+	    return exception.get().toString();
+	else
+	    return "";
     }
 
     @Override
     protected String getDisplayNameHelp() {
-	return Catalog.format("Handler_Variable", getVariable()); //NOI18N
+	String summary = null;
+	ExceptionBreakpoint bre = this;
+	summary = Catalog.format("Handler_Thrown",
+		                 bre.getException().toString());
+	return summary;
     }
 
     @Override
