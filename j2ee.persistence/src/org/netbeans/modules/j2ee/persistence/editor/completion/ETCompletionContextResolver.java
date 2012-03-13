@@ -44,78 +44,29 @@ package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
 import org.netbeans.modules.j2ee.persistence.editor.completion.db.*;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.util.ElementFilter;
 import javax.swing.text.BadLocationException;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IEntity;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
-import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.dbschema.ColumnElement;
-import org.netbeans.modules.dbschema.TableElement;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.*;
-import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
-import org.netbeans.modules.j2ee.persistence.editor.completion.AnnotationUtils;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CompletionContextResolver;
-import org.netbeans.modules.j2ee.persistence.editor.completion.CCParser;
-import org.netbeans.modules.j2ee.persistence.editor.completion.JPACompletionItem;
-import org.netbeans.modules.j2ee.persistence.dd.PersistenceUtils;
-import org.netbeans.modules.j2ee.persistence.editor.completion.JPACodeCompletionProvider;
-import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSource;
-import org.netbeans.modules.j2ee.persistence.spi.datasource.JPADataSourceProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.ManagedTypeProvider;
 import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
-import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerUtil;
-import org.openide.ErrorManager;
-import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  *
  * @author Sergey Petrov
  */
 public class ETCompletionContextResolver implements CompletionContextResolver {
-    
-    private DatabaseConnection dbconn;
-    private DBMetaDataProvider provider;
-    
-    //annotations names handled somehow by this completion context resolver
-    private static final String[] ANNOTATION_QUERY_TYPES = {
-        "Table", //0
-        "SecondaryTable", //1
-        "Column", //2
-        "PrimaryKeyJoinColumn", //3
-        "JoinColumn", //4
-        "JoinTable", //5
-        "PersistenceUnit", //6
-        "PersistenceContext", //7
-        "ManyToMany",//8
-        "NamedQuery"//9
-    };
     
     private static final String PERSISTENCE_PKG = "javax.persistence";
     
@@ -126,8 +77,26 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         
         //parse the annotation
         String methodName = ctx.getMethod() == null ? null : ctx.getMethod().getMethodName();
-        if (methodName == null || !methodName.equals("createNamedQuery")) return result;
-        result = completecreateNamedQueryparameters(ctx, result);
+        String annotationName = null;
+        CCParser.CC parsedNN = null;
+        CCParser.NNAttr nnattr = null;
+        if (methodName == null){
+            parsedNN = ctx.getParsedAnnotation();
+            if (parsedNN == null) return result;
+
+            nnattr = parsedNN.getAttributeForOffset(ctx.getCompletionOffset());
+            if(nnattr == null) return result;
+
+            annotationName = parsedNN.getName();
+            if(annotationName == null) return result;
+        }
+        if(CCParser.CREATE_NAMEDQUERY.equals(methodName)) {
+            result = completecreateNamedQueryparameters(ctx, result);
+        } else if (CCParser.CREATE_QUERY.equals(methodName)){
+            completeJPQLContext(ctx, ctx.getMethod(), result);
+        } else if("NamedQuery".equals(annotationName)){//NOI18N
+            completeJPQLContext(ctx, parsedNN, nnattr, result);
+        }
         
         
         return result;
@@ -162,6 +131,65 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         return results;
     }
     
+     private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) {
+        String completedMember = nnattr.getName();
+
+        if ("query".equals(completedMember)) { // NOI18N
+            String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
+            JPQLQueryHelper helper = new JPQLQueryHelper();
+
+            Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+            helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
+            int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
+            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
+
+            if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
+                for (String var : buildContentAssistProposals.identificationVariables()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+                for (IMapping mapping : buildContentAssistProposals.mappings()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+                for (String ids : buildContentAssistProposals.identifiers()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
+                }
+            }
+        }
+        
+        return results;
+    }
+     private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.MD method, List<JPACompletionItem> results) {
+
+            String completedValue = method.getValue();
+            if(completedValue == null)return results;//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
+            JPQLQueryHelper helper = new JPQLQueryHelper();
+            completedValue = org.netbeans.modules.j2ee.persistence.editor.completion.Utils.unquote(completedValue);
+
+            Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
+            helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
+            int offset = ctx.getCompletionOffset() - method.getValueOffset() - (method.isWithQ() ? 1 : 0);
+            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
+
+            if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
+                for (String var : buildContentAssistProposals.identificationVariables()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(var, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                }
+                for (IMapping mapping : buildContentAssistProposals.mappings()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                }
+                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                }
+                for (String ids : buildContentAssistProposals.identifiers()) {
+                    results.add(new JPACompletionItem.JPQLElementItem(ids, true, method.getValueOffset(), offset, completedValue, buildContentAssistProposals));
+                }
+            }
+        
+        return results;
+    }
     private static final class ResultItemsFilterList extends ArrayList {
         private JPACodeCompletionProvider.Context ctx;
         public ResultItemsFilterList(JPACodeCompletionProvider.Context ctx) {
@@ -187,5 +215,6 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         }
     }
     
+
     private static final boolean DEBUG = Boolean.getBoolean("debug." + ETCompletionContextResolver.class.getName());
 }
