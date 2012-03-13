@@ -218,16 +218,18 @@ public class DocumentUtil {
         final Set<? extends ClassIndexImpl.UsageType> usageType,
         final boolean javaRegEx) {
         assert resourceName  != null;
-        final char wildcard = javaRegEx ? REGEX_QUERY_WILDCARD : WILDCARD_QUERY_WILDCARD;
-        final char[] yes = javaRegEx ? new char[] {'\\',YES} : new char[] {YES};
-        if (usageType != null) {
-            resourceName = encodeUsage (resourceName, usageType, wildcard, yes).toString();
-        } else {
-            final StringBuilder sb = new StringBuilder (resourceName);
-            for (int i = 0; i< SIZE; i++) {
-                sb.append(wildcard);
+        if (!resourceName.isEmpty()) {
+            final char wildcard = javaRegEx ? REGEX_QUERY_WILDCARD : WILDCARD_QUERY_WILDCARD;
+            final char[] yes = javaRegEx ? new char[] {'\\',YES} : new char[] {YES};
+            if (usageType != null) {
+                resourceName = encodeUsage (resourceName, usageType, wildcard, yes).toString();
+            } else {
+                final StringBuilder sb = new StringBuilder (resourceName);
+                for (int i = 0; i< SIZE; i++) {
+                    sb.append(wildcard);
+                }
+                resourceName = sb.toString();
             }
-            resourceName = sb.toString();
         }
         return new Term (FIELD_REFERENCES, resourceName);
     }

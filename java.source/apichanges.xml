@@ -108,6 +108,32 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="elementhandle-create">
+             <api name="general"/>
+             <summary>Added factory methods to create an <code>ElementHandle</code> for type and package.</summary>
+             <version major="0" minor="98"/>
+             <date day="13" month="3" year="2012"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added a factory methods to create an <code>ElementHandle</code> for type and package from binary name.
+             </description>
+             <class package="org.netbeans.api.java.source" name="ElementHandle"/>
+             <issue number="209082"/>
+        </change>
+        <change id="references-count">
+             <api name="general"/>
+             <summary>Added <code>ReferencesCount</code> support class which provides frequences of type usage in a source root.</summary>
+             <version major="0" minor="97"/>
+             <date day="13" month="3" year="2012"/>
+             <author login="tzezula"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>ReferencesCount</code> support class which provides information how many classes on the source path (source root) are using
+                 given type or package.
+             </description>
+             <issue number="209038"/>
+        </change>
         <change id="class-members-order">
              <api name="general"/>
              <summary>Added several methods to <code>CodeStyle</code> supporting customization of the generated class members order and other minor formatting enhancements.</summary>
