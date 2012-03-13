@@ -124,6 +124,7 @@ final class TestNGOutputReader {
             final AntSessionInfo sessionInfo,
             final Project project,
             final Properties props) {
+        manager.setTestingFramework(Manager.TESTNG_TF);
         this.project = project;
         this.sessionType = sessionInfo.getSessionType();
         this.antScript = FileUtil.normalizeFile(session.getOriginatingScript());
