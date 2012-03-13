@@ -178,6 +178,7 @@ public class FmtOptions {
     public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
     public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
     public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
+    public static final String spaceWithinWithParens = "spaceWithinWithParens"; //NOI18N
 //    public static final String spaceWithinSynchronizedParens = "spaceWithinSynchronizedParens"; //NOI18N
     public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
 //    public static final String spaceWithinAnnotationParens = "spaceWithinAnnotationParens"; //NOI18N
@@ -349,6 +350,7 @@ public class FmtOptions {
             { spaceWithinWhileParens, FALSE},
             { spaceWithinSwitchParens, FALSE},
             { spaceWithinCatchParens, FALSE},
+            { spaceWithinWithParens, FALSE},
 //            { spaceWithinSynchronizedParens, FALSE},
             { spaceWithinTypeCastParens, FALSE},
 //            { spaceWithinAnnotationParens, FALSE},

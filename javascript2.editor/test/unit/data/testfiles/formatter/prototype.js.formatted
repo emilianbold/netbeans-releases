@@ -2006,7 +2006,7 @@ Form.Element.Methods = {
         element = $(element);
         element.focus();
         if (element.select && ( element.tagName.toLowerCase() != 'input' ||
-                !['button', 'reset', 'submit'].include(element.type) ) )
+                !['button', 'reset', 'submit'].include(element.type) ))
             element.select();
         return element;
     },

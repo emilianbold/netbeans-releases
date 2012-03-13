@@ -245,6 +245,46 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceWithinMethodCallParens());
                             break;
+                        case AFTER_IF_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinIfParens());
+                            break;
+                        case BEFORE_IF_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinIfParens());
+                            break;
+                        case AFTER_WHILE_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinWhileParens());
+                            break;
+                        case BEFORE_WHILE_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinWhileParens());
+                            break;
+                        case AFTER_WITH_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinWithParens());
+                            break;
+                        case BEFORE_WITH_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinWithParens());
+                            break;
+                        case AFTER_SWITCH_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinSwitchParens());
+                            break;
+                        case BEFORE_SWITCH_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinSwitchParens());
+                            break;
+                        case AFTER_CATCH_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinCatchParens());
+                            break;
+                        case BEFORE_CATCH_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinCatchParens());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

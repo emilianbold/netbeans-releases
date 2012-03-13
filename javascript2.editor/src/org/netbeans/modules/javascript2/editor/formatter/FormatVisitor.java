@@ -117,6 +117,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(WhileNode whileNode, boolean onset) {
         if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
+                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
             if (handleWhile(whileNode)) {
                 return null;
             }
@@ -128,6 +132,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(DoWhileNode doWhileNode, boolean onset) {
         if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
+                    FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
             FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
             FormatToken beforeWhile = whileToken.previous();
             if (beforeWhile != null) {
@@ -144,6 +152,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(ForNode forNode, boolean onset) {
         if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(forNode, getStart(forNode), getStart(forNode.getBody()),
+                    FormatToken.Kind.AFTER_FOR_PARENTHESIS, FormatToken.Kind.BEFORE_FOR_PARENTHESIS);
+
             if (handleWhile(forNode)) {
                 return null;
             }
@@ -156,6 +168,10 @@ public class FormatVisitor extends NodeVisitor {
     public Node visit(IfNode ifNode, boolean onset) {
         if (onset) {
             ifNode.getTest().accept(this);
+
+            // within parens spaces
+            markSpacesWithinParentheses(ifNode, getStart(ifNode), getStart(ifNode.getPass()),
+                    FormatToken.Kind.AFTER_IF_PARENTHESIS, FormatToken.Kind.BEFORE_IF_PARENTHESIS);
 
             // pass block
             Block body = ifNode.getPass();
@@ -182,6 +198,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(WithNode withNode, boolean onset) {
         if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(withNode, getStart(withNode), getStart(withNode.getBody()),
+                    FormatToken.Kind.AFTER_WITH_PARENTHESIS, FormatToken.Kind.BEFORE_WITH_PARENTHESIS);
+
             Block body = withNode.getBody();
             if (body.getStart() == body.getFinish()) {
                 handleVirtualBlock(body);
@@ -292,6 +312,10 @@ public class FormatVisitor extends NodeVisitor {
     @Override
     public Node visit(SwitchNode switchNode, boolean onset) {
         if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(switchNode, switchNode.getExpression(),
+                    FormatToken.Kind.AFTER_SWITCH_PARENTHESIS, FormatToken.Kind.BEFORE_SWITCH_PARENTHESIS);
+
             FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
@@ -389,6 +413,15 @@ public class FormatVisitor extends NodeVisitor {
         return super.visit(ternaryNode, onset);
     }
 
+    @Override
+    public Node visit(CatchNode catchNode, boolean onset) {
+        // within parens spaces
+        markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
+                FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
+
+        return super.visit(catchNode, onset);
+    }
+
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
         if (body.getStart() == body.getFinish()) {
@@ -484,6 +517,53 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
+    private void markSpacesWithinParentheses(Node outerNode, Node innerNode, FormatToken.Kind leftMark, FormatToken.Kind rightMark) {
+
+        FormatToken leftParen = getPreviousToken(getStart(innerNode),
+                JsTokenId.BRACKET_LEFT_PAREN, getStart(outerNode));
+        if (leftParen != null) {
+            appendToken(leftParen, FormatToken.forFormat(leftMark));
+            FormatToken rightParen = getNextToken(getFinish(innerNode),
+                    JsTokenId.BRACKET_RIGHT_PAREN, getFinish(outerNode));
+            if (rightParen != null) {
+                FormatToken previous = rightParen.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(rightMark));
+                }
+            }
+        }
+    }
+
+    /**
+     * Method putting formatting tokens for within parenthesis rule. Note
+     * that this method may be more secure as it can search for the left paren
+     * from start of the node and for the right from the body of the node
+     * avoiding possibly wrong offset of expressions/conditions.
+     *
+     * @param outerNode the node we are marking, such as if, while, with
+     * @param leftStart from where to start search to the right for the left paren
+     * @param rightStart from where to start search to the left for the right paren
+     * @param leftMark where to stop searching for the left paren
+     * @param rightMark where to stop searching for the right paren
+     */
+    private void markSpacesWithinParentheses(Node outerNode, int leftStart,
+            int rightStart, FormatToken.Kind leftMark, FormatToken.Kind rightMark) {
+
+        FormatToken leftParen = getNextToken(leftStart,
+                JsTokenId.BRACKET_LEFT_PAREN, getFinish(outerNode));
+        if (leftParen != null) {
+            appendToken(leftParen, FormatToken.forFormat(leftMark));
+            FormatToken rightParen = getPreviousToken(rightStart,
+                    JsTokenId.BRACKET_RIGHT_PAREN, getStart(outerNode));
+            if (rightParen != null) {
+                FormatToken previous = rightParen.previous();
+                if (previous != null) {
+                    appendToken(previous, FormatToken.forFormat(rightMark));
+                }
+            }
+        }
+    }
+
     private FormatToken getNextToken(int offset, JsTokenId expected) {
         return getToken(offset, expected, false, false, null);
     }
@@ -498,6 +578,10 @@ public class FormatVisitor extends NodeVisitor {
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected) {
         return getPreviousToken(offset, expected, false);
+    }
+
+    private FormatToken getPreviousToken(int offset, JsTokenId expected, int stop) {
+        return getToken(offset, expected, true, false, stop);
     }
 
     private FormatToken getPreviousToken(int offset, JsTokenId expected, boolean startFallback) {

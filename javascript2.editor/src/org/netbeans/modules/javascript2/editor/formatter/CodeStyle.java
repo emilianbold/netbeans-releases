@@ -413,6 +413,10 @@ public final class CodeStyle {
     public boolean spaceWithinCatchParens() {
         return preferences.getBoolean(spaceWithinCatchParens, getDefaultAsBoolean(spaceWithinCatchParens));
     }
+
+    public boolean spaceWithinWithParens() {
+        return preferences.getBoolean(spaceWithinWithParens, getDefaultAsBoolean(spaceWithinWithParens));
+    }
 //
 //    public boolean spaceWithinSynchronizedParens() {
 //        return preferences.getBoolean(spaceWithinSynchronizedParens, getDefaultAsBoolean(spaceWithinSynchronizedParens));
