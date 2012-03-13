@@ -236,6 +236,24 @@ public class FormatVisitor extends NodeVisitor {
             if (leftBrace != null) {
                 FormatToken previous = leftBrace.previous();
                 appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_CALL));
+
+                // mark the within parenthesis places
+                if (!callNode.getArgs().isEmpty()) {
+                    appendToken(leftBrace, FormatToken.forFormat(
+                            FormatToken.Kind.AFTER_FUNCTION_CALL_PARENTHESIS));
+
+                    // there is -1 as on the finish position may be some outer paren
+                    // so we really need the position precisely
+                    FormatToken rightBrace = getPreviousToken(getFinish(callNode) - 1,
+                            JsTokenId.BRACKET_RIGHT_PAREN);
+                    if (rightBrace != null) {
+                        previous = rightBrace.previous();
+                        if (previous != null) {
+                            appendToken(previous, FormatToken.forFormat(
+                                    FormatToken.Kind.BEFORE_FUNCTION_CALL_PARENTHESIS));
+                        }
+                    }
+                }
             }
         }
         return super.visit(callNode, onset);
