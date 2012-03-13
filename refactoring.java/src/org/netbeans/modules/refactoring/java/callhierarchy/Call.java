@@ -72,16 +72,13 @@ import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.refactoring.java.RetoucheUtils;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.text.PositionBounds;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -400,46 +397,23 @@ final class Call implements CallDescriptor {
             final int begin = bounds.getBegin().getOffset();
             final int end = bounds.getEnd().getOffset();
             DataObject od = DataObject.find(fo);
-            final EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
-            LineCookie lc = od.getCookie(org.openide.cookies.LineCookie.class);
+            final EditorCookie ec = od.getLookup().lookup(org.openide.cookies.EditorCookie.class);
+            boolean opened = DataEditorSupport.openDocument(od, begin, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+            if (opened) {
+                EventQueue.invokeLater(new Runnable() {
 
-            if (ec != null && lc != null && begin != -1) {                
-                StyledDocument doc = ec.openDocument();                
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, begin);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = begin - lineOffset;
-
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-
-                            EventQueue.invokeLater(new Runnable() {
-
-                                public void run() {
-                                    ec.getOpenedPanes()[0].setSelectionStart(begin);
-                                    ec.getOpenedPanes()[0].setSelectionEnd(end);
-                                }
-                            });
-                            return true;
-                        }
+                    @Override
+                    public void run() {
+                        ec.getOpenedPanes()[0].setSelectionStart(begin);
+                        ec.getOpenedPanes()[0].setSelectionEnd(end);
                     }
-                }
-            }
-
-            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-
-            if (oc != null) {
-                oc.open();                
+                });
                 return true;
             }
+            return opened;
         } catch (DataObjectNotFoundException e) {
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(
                     Call.class, "Call.open.warning", FileUtil.getFileDisplayName(fo))); // NOI18N
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
         }
 
         return false;

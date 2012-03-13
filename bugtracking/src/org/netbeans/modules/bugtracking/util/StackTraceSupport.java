@@ -70,13 +70,12 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.spi.VCSAccessor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.Line;
+import org.openide.text.DataEditorSupport;
+import org.openide.text.Line.ShowOpenType;
+import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -340,34 +339,7 @@ class StackTraceSupport {
     private static boolean doOpen(FileObject fo, int line) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = od.getCookie(org.openide.cookies.EditorCookie.class);
-            LineCookie lc = od.getCookie(org.openide.cookies.LineCookie.class);
-
-            if (ec != null && lc != null && line != -1) {
-                StyledDocument doc = ec.openDocument();
-                if (doc != null) {
-                    if (line != -1) {
-                        Line l = null;
-                        try {
-                            l = lc.getLineSet().getCurrent(line);
-                        } catch (IndexOutOfBoundsException e) {
-                            BugtrackingManager.LOG.log(Level.FINE, null, e);
-                            ec.open();
-                            return false;
-                        }
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                            return true;
-                        }
-                    }
-                 }
-            }
-
-            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
-            if (oc != null) {
-                oc.open();
-                return true;
-            }
+            return DataEditorSupport.openDocument(od, line, -1, ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             BugtrackingManager.LOG.log(Level.SEVERE, null, e);
         }

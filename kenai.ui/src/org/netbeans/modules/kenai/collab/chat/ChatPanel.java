@@ -108,6 +108,7 @@ import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.kenai.collab.chat.ChatTopComponent.*;
+import org.openide.text.DataEditorSupport;
 
 /**
  * Panel representing single ChatRoom
@@ -366,34 +367,7 @@ public class ChatPanel extends javax.swing.JPanel {
     private static boolean doOpen(FileObject fo, int line) {
         try {
             DataObject od = DataObject.find(fo);
-            EditorCookie ec = (EditorCookie) od.getCookie(EditorCookie.class);
-            LineCookie lc = (LineCookie) od.getCookie(LineCookie.class);
-
-            if (ec != null && lc != null && line != -1) {
-                StyledDocument doc = ec.openDocument();
-                if (doc != null) {
-                    if (line != -1) {
-                        Line l = null;
-                        try {
-                            l = lc.getLineSet().getCurrent(line - 1);
-                        } catch (IndexOutOfBoundsException e) { // try to open at least the file (line no. is too high?)
-                            l = lc.getLineSet().getCurrent(0);
-                        }
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            OpenCookie oc = (OpenCookie) od.getCookie(OpenCookie.class);
-
-            if (oc != null) {
-                oc.open();
-                return true;
-            }
+            return DataEditorSupport.openDocument(od, line, -1, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
         }

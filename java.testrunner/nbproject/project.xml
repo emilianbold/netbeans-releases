@@ -108,6 +108,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.junit</friend>
+                <friend>org.netbeans.modules.testng</friend>
                 <package>org.netbeans.modules.java.testrunner</package>
             </friend-packages>
         </data>

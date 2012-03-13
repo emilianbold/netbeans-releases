@@ -42,12 +42,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.gsf.testrunner;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate;
+import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider.Registration;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -69,6 +70,7 @@ import org.openide.util.actions.NodeAction;
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.api.TestCreatorAction", category = "UnitTests")
 @ActionRegistration(displayName = "#LBL_CreateCommonTestAction")
 @ActionReferences(value = {@ActionReference(path = "UI/ToolActions/Java")})
+@NbBundle.Messages({"LBL_CreateCommonTestAction=Create Tests"})
 public class TestCreatorAction extends NodeAction {
     private ArrayList<String> testingFrameworksToAdd = new ArrayList<String>();
     

@@ -39,9 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.gsf.testrunner;
 
 import java.util.Collection;
+import org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -59,6 +60,7 @@ import org.openide.util.actions.NodeAction;
 @ActionID(id = "org.netbeans.modules.gsf.testrunner.api.TestMethodDebuggerAction", category = "CommonTestRunner")
 @ActionRegistration(displayName = "#LBL_Action_DebugTestMethod")
 @ActionReferences(value = {@ActionReference(path = "Editors/text/x-java/Popup", position=1797)})
+@NbBundle.Messages({"LBL_Action_DebugTestMethod=Debug Focused Test Method"})
 public class TestMethodDebuggerAction extends NodeAction {
     
     /** Creates a new instance of TestMethodDebuggerAction */

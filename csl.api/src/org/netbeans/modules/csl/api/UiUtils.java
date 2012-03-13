@@ -77,16 +77,12 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
-import org.openide.util.UserQuestionException;
 
 
 /** 
@@ -250,51 +246,11 @@ public final class UiUtils {
 
     private static boolean doOpen(FileObject fo, int offset) {
         try {
-            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(fo, EditorCookie.class);
-            LineCookie lc = DataLoadersBridge.getDefault().getCookie(fo, LineCookie.class);
-
-            if ((ec != null) && (lc != null) && (offset != -1)) {
-                StyledDocument doc = null;
-                try {
-                    doc = ec.openDocument();
-                } catch (UserQuestionException uqe) {
-                    final Object value = DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Confirmation(uqe.getLocalizedMessage(),
-                            NbBundle.getMessage(UiUtils.class, "TXT_Question"),
-                            NotifyDescriptor.YES_NO_OPTION));
-                    if (value != NotifyDescriptor.YES_OPTION) {
-                        return false;
-                    }
-                    uqe.confirmed();
-                    doc = ec.openDocument();
-                }
-
-                if (doc != null) {
-                    int line = NbDocument.findLineNumber(doc, offset);
-                    int lineOffset = NbDocument.findLineOffset(doc, line);
-                    int column = offset - lineOffset;
-
-                    if (line != -1) {
-                        Line l = lc.getLineSet().getCurrent(line);
-
-                        if (l != null) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
-                            return true;
-                        }
-                    }
-                }
-            }
-
-            OpenCookie oc = DataLoadersBridge.getDefault().getCookie(fo, OpenCookie.class);
-
-            if (oc != null) {
-                oc.open();
-                return true;
-            }
-        } catch (IOException ioe) {
-            LOG.log(Level.WARNING, null, ioe);
+            DataObject od = DataObject.find(fo);
+            return DataEditorSupport.openDocument(od, offset, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+        } catch (DataObjectNotFoundException e) {
+            LOG.log(Level.WARNING, null, e);
         }
-
         return false;
     }
 
