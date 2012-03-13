@@ -190,4 +190,13 @@ public interface RemoteClient {
      * @throws RemoteException if any unexpected error occurs.
      */
     List<RemoteFile> listFiles() throws RemoteException;
+
+    /**
+     * Get {@link RemoteFile} if the the given path is file or <code>null</code>.
+     * @param path <b>absolute</b> file path
+     * @return {@link RemoteFile} for the path if the path is file or <code>null</code>
+     * @throws RemoteException if any unexpected error occurs.
+     */
+    RemoteFile listFile(String absolutePath) throws RemoteException;
+
 }

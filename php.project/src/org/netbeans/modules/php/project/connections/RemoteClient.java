@@ -592,18 +592,20 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 break;
             }
 
-            if (!files.add(file)) {
+            // since we have _local_ transfer file, try to get remote transfer file
+            TransferFile remoteFile = convertFromLocalTransferFile(file);
+            if (!files.add(remoteFile)) {
                 LOGGER.log(Level.FINE, "File {0} already in queue", file);
 
                 // file already in set => remove the file from set and add this one (the previous can be root but apparently it is not)
-                files.remove(file);
-                files.add(file);
+                files.remove(remoteFile);
+                files.add(remoteFile);
             }
 
-            if (file.isDirectory()) {
+            if (remoteFile.isDirectory()) {
                 try {
-                    if (!cdBaseRemoteDirectory(file.getRemotePath(), false)) {
-                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", file.getRemotePath());
+                    if (!cdBaseRemoteDirectory(remoteFile.getRemotePath(), false)) {
+                        LOGGER.log(Level.FINE, "Remote directory {0} cannot be entered or does not exist => ignoring", remoteFile.getRemotePath());
                         // XXX maybe return somehow ignored files as well?
                         continue;
                     }
@@ -612,15 +614,15 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                         remoteFiles = remoteClient.listFiles();
                     }
                     for (RemoteFile child : remoteFiles) {
-                        if (isVisible(getLocalFile(baseLocalDir, file, child))) {
+                        if (isVisible(getLocalFile(baseLocalDir, remoteFile, child))) {
                             LOGGER.log(Level.FINE, "File {0} added to download queue", child);
-                            files.add(TransferFile.fromRemoteFile(file, child, this, baseLocalAbsolutePath));
+                            files.add(TransferFile.fromRemoteFile(remoteFile, child, this, baseLocalAbsolutePath));
                         } else {
                             LOGGER.log(Level.FINE, "File {0} NOT added to download queue [invisible]", child);
                         }
                     }
                 } catch (RemoteException exc) {
-                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", file.getRemotePath());
+                    LOGGER.log(Level.FINE, "Remote directory {0}/* cannot be entered or does not exist => ignoring", remoteFile.getRemotePath());
                     // XXX maybe return somehow ignored files as well?
                 }
             }
@@ -629,6 +631,18 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             LOGGER.log(Level.FINE, "Prepared for download: {0}", files);
         }
         return files;
+    }
+
+    private TransferFile convertFromLocalTransferFile(TransferFile localFile) throws RemoteException {
+        RemoteFile remoteFile = remoteClient.listFile(localFile.getRemoteAbsolutePath());
+        if (remoteFile != null) {
+            // remote file found
+            LOGGER.log(Level.FINE, "Remote file {0} found => adding", localFile.getRemotePath());
+            return TransferFile.fromRemoteFile(localFile.hasParent() ? localFile.getParent() : null, remoteFile, this, localFile.getBaseLocalDirectoryPath());
+        }
+        // remote file not found => add what we have
+        LOGGER.log(Level.FINE, "Remote file {0} not found => adding local transfer file", localFile.getRemotePath());
+        return localFile;
     }
 
     public TransferInfo download(Set<TransferFile> filesToDownload) throws RemoteException {
@@ -797,6 +811,61 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         } else {
             transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRemotePath()));
         }
+    }
+
+    /**
+     * Download {@link TransferFile remote file} to a given {@link TmpLocalFile temporary file}.
+     * <p>
+     * @param tmpFile temporary file to be used for download
+     * @param file remote file to be downloaded
+     * @return {@code true} if successful, {@code false} otherwise
+     * @throws RemoteException if any remote error occurs (not a file, file not found, cannot be read etc.)
+     */
+    @NbBundle.Messages({
+        "RemoteClient.error.notFile=Given remote file is not a file.",
+        "# {0} - file name",
+        "RemoteClient.error.cannotOpenTmpLocalFile=Cannot open a local temporary file {0}."
+    })
+    public boolean downloadTemporary(TmpLocalFile tmpFile, TransferFile file) throws RemoteException {
+        if (!file.isFile()) {
+            throw new RemoteException(Bundle.RemoteClient_error_notFile());
+        }
+        if (!cdBaseRemoteDirectory(file.getParentRemotePath(), false)) {
+            LOGGER.log(Level.FINE, "Remote directory {0} does not exist => cannot download file {1}", new Object[] {file.getParentRemotePath(), file.getRemotePath()});
+            return false;
+        }
+
+        boolean success = false;
+        OutputStream os = tmpFile.getOutputStream();
+        if (os == null) {
+            // definitely should not happen
+            throw new RemoteException(Bundle.RemoteClient_error_cannotOpenTmpLocalFile(tmpFile));
+        }
+        try {
+            for (int i = 1; i <= TRIES_TO_TRANSFER; i++) {
+                boolean fileRetrieved;
+                synchronized (this) {
+                    fileRetrieved = remoteClient.retrieveFile(file.getName(), os);
+                }
+                if (fileRetrieved) {
+                    success = true;
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine(String.format("The %d. attempt to download '%s' was successful", i, file.getRemotePath()));
+                    }
+                    break;
+                } else if (LOGGER.isLoggable(Level.FINE)) {
+                    LOGGER.fine(String.format("The %d. attempt to download '%s' was NOT successful", i, file.getRemotePath()));
+                }
+            }
+        } finally {
+            try {
+                os.close();
+            } catch (IOException ex) {
+                // can be safely ignored, in fact, cannot happen
+                LOGGER.log(Level.INFO, null, ex);
+            }
+        }
+        return success;
     }
 
     private TmpLocalFile createTmpLocalFile(TransferFile file) {
