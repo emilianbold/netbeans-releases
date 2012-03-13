@@ -53,7 +53,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.util.Utilities;
@@ -75,16 +74,22 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     private String libraryName;
     private String localizingBundle;
     private String displayName;
-    private Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
+    private final Map<String,List<URL>> contentTypes = new HashMap<String,List<URL>>();
+    private final Map<String,String> properties = new HashMap<String, String>();
 
     // last volume
     private List<URL> cpEntries;
     //last volume type
     private String contentType;
     //parsing volume?
-    private boolean inVolume = false;
+    private State state = State.LIB;
     //Used flag preventing from being reused
     private final AtomicBoolean used = new AtomicBoolean();
+    
+    //Propery name - valid in State.PROPERTY
+    private String propName;
+    //Propery value - valid in State.PROPERTY
+    private String propValue;
 
     @Override
     public void startDocument() {
@@ -100,13 +105,13 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     @Override
     public void start_volume(final Attributes meta) throws SAXException {
         cpEntries = new ArrayList<URL>();
-        this.inVolume = true;
+        this.state = State.VOLUME;
     }
 
     @Override
     public void end_volume() throws SAXException {
         contentTypes.put (contentType, cpEntries);
-        this.inVolume = false;
+        this.state = State.LIB;
         this.contentType = null;
     }
 
@@ -115,7 +120,7 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 		if (data == null || data.length () == 0) {
 			throw new SAXException ("Empty value of type element");	//NOI18N
 		}
-        if (this.inVolume) {
+        if (this.state == State.VOLUME) {
             this.contentType = data;
         }
         else {
@@ -129,7 +134,9 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if (LibraryDeclarationParser.VER_1.equals(version)) {
             return "";  //NOI18N
         } else if (LibraryDeclarationParser.VER_2.equals(version)) {
-            return LibraryDeclarationParser.LIBRARY_NS;
+            return LibraryDeclarationParser.LIBRARY_NS2;
+        } else if (LibraryDeclarationParser.VER_3.equals(version)) {
+            return LibraryDeclarationParser.LIBRARY_NS3;
         } else {
             throw new SAXException("Invalid librray descriptor version"); // NOI18N
         }
@@ -168,6 +175,9 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
             Util.setDisplayName(this.library,displayName);
         }
+        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
+            Util.setProperties(this.library, properties);
+        }
         for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();
@@ -190,7 +200,11 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
 
     @Override
     public void handle_name(final String data, final Attributes meta) throws SAXException {
-        this.libraryName = data;
+        if (state == State.PROPERTY) {
+            this.propName = data;
+        } else {
+            this.libraryName = data;
+        }
     }
 
     @Override
@@ -216,6 +230,37 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         return this.library;
     }
 
+    @Override
+    public void start_properties(Attributes meta) throws SAXException {
+        state = State.PROPERTIES;
+        properties.clear();
+    }
+
+    @Override
+    public void end_properties() throws SAXException {
+        state = State.LIB;
+    }
+
+    @Override
+    public void start_property(Attributes meta) throws SAXException {
+        this.propName = null;
+        this.propValue = null;
+        state = State.PROPERTY;
+    }
+
+    @Override
+    public void end_property() throws SAXException {
+        state = State.PROPERTIES;
+        assert propName != null;
+        assert propValue != null;
+        properties.put(propName, propValue);
+    }
+
+    @Override
+    public void handle_value(String data, Attributes meta) throws SAXException {
+        this.propValue = data;
+    }
+
     public static class UnknownLibraryTypeException extends SAXException {
         private UnknownLibraryTypeException(
             final String libraryName,
@@ -223,6 +268,8 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
             super ("Cannot create library: "+libraryName+" of unknown type: " +libraryType,null);
         }
     }
+    
+    private static enum State {LIB, VOLUME, PROPERTIES, PROPERTY};
 
 
     private static boolean urlsEqual (final Collection<? extends URL> first, final Collection<? extends URL> second) {

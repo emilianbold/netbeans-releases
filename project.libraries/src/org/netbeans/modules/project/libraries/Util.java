@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.project.libraries;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
@@ -52,6 +53,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -107,6 +109,33 @@ public class Util {
             final @NullAllowed String name) {
         if (supportsDisplayName(impl)) {
             ((NamedLibraryImplementation)impl).setDisplayName(name);
+            return true;
+
+        } else {
+            return false;
+        }
+    }
+    
+    public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
+        assert impl != null;
+        if (impl instanceof ProxyLibraryImplementation) {
+            return supportsDisplayName(((ProxyLibraryImplementation)impl).getOriginal());
+        }
+        return impl instanceof LibraryImplementation3;
+    }
+    
+    @NonNull
+    public static Map<String,String> getProperties (final @NonNull LibraryImplementation impl) {
+        return supportsProperties(impl) ?
+                ((LibraryImplementation3)impl).getProperties() :
+                Collections.<String,String>emptyMap();
+    }
+    
+    public static boolean setProperties(
+        final @NonNull LibraryImplementation impl,
+        final @NonNull Map<String,String>  props) {
+        if (supportsProperties(impl)) {
+            ((LibraryImplementation3)impl).setProperties(props);
             return true;
 
         } else {
