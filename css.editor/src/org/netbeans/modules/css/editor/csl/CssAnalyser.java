@@ -89,7 +89,7 @@ public class CssAnalyser {
                     }
                     
                     Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
-                    Node valueNode = NodeUtil.getChildByType(node, NodeType.expr);
+                    Node valueNode = NodeUtil.getChildByType(node, NodeType.propertyValue);
 
                     if (propertyNode != null) {
                         String propertyName = propertyNode.image().toString().trim();

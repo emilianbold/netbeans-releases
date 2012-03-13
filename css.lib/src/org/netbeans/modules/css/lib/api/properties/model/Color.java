@@ -97,6 +97,30 @@ public class Color extends NodeModel implements BoxElement {
         return getValue();
     }
 
+ 
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 73 * hash + (this.value != null ? this.value.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Color other = (Color) obj;
+        if ((this.value == null) ? (other.value != null) : !this.value.equals(other.value)) {
+            return false;
+        }
+        return true;
+    }
+
+    
 
     
 }

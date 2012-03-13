@@ -43,6 +43,7 @@ package org.netbeans.modules.css.model.impl.semantic;
 
 import java.util.Collection;
 import org.netbeans.modules.css.lib.api.properties.model.*;
+import org.netbeans.modules.css.lib.api.properties.model.BorderWidthItem;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
@@ -110,6 +111,6 @@ public class DeclarationsBorderWidthModel extends DeclarationsBoxModelBase imple
 
     @Override
     public BoxElement createElement(CharSequence text) {
-        return Color.parseValue(text);
+        return BorderWidthItem.parseValue(text);
     }
 }

@@ -39,11 +39,12 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.properties.model.TokenNodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -129,5 +130,27 @@ public class BorderStyleItem extends NodeModel implements BoxElement {
         }
         return INVALID_VALUE;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BorderStyleItem other = (BorderStyleItem) obj;
+        
+        return asText().equals(other.asText());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 97 * hash + (this.fixedValue != null ? this.fixedValue.hashCode() : 0);
+        return hash;
+    }
+    
+    
     
 }
