@@ -50,6 +50,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -57,6 +59,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
@@ -175,7 +178,23 @@ public class RunAnalysisPanel extends javax.swing.JPanel {
     void started() {
         ((CardLayout) progress.getLayout()).show(progress, "progress");
         progress.invalidate();
-        //XXX: should disable all elements in the dialog.
+
+        //disable all elements in the dialog:
+        List<JComponent> todo = new LinkedList<JComponent>();
+
+        todo.add(this);
+
+        while (!todo.isEmpty()) {
+            JComponent c = todo.remove(0);
+
+            if (c == progress) continue;
+
+            c.setEnabled(false);
+
+            for (Component child : c.getComponents()) {
+                if (child instanceof JComponent) todo.add((JComponent) child);
+            }
+        }
     }
 
     private void updatePlugins() {
