@@ -121,7 +121,7 @@ public class FXMLOpenAction extends AbstractAction implements ContextAwareAction
     @Override
     public boolean isEnabled() {
         init();
-        return opener != null && super.isEnabled();
+        return opener != null && opener.isEnabled(context) && super.isEnabled();
     }
  
     @Override
