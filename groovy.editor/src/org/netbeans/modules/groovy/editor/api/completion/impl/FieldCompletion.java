@@ -88,7 +88,8 @@ public class FieldCompletion extends BaseCompletion {
         if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
             return false;
         }
-        
+
+        ClassNode declaringClass;
         if (request.isBehindDot()) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
@@ -102,8 +103,10 @@ public class FieldCompletion extends BaseCompletion {
                     return false;
                 }
             }
+            declaringClass = request.declaringClass;
+        } else {
+            declaringClass = ContextHelper.getSurroundingClassNode(request);
         }
-        ClassNode declaringClass = request.declaringClass;
 
         if (declaringClass == null) {
             LOG.log(Level.FINEST, "No declaring class found"); // NOI18N

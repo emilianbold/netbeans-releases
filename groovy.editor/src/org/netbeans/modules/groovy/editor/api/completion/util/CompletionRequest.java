@@ -126,9 +126,7 @@ public class CompletionRequest {
         // a couple of completions.
         dotContext = getDotCompletionContext();
 
-        if (isBehindDot()) {
-            declaringClass = getBeforeDotDeclaringClass();
-        }
+        declaringClass = getBeforeDotDeclaringClass();
 
         // are we're right behind an import statement?
         behindImport = checkForRequestBehindImportStatement();
@@ -653,8 +651,8 @@ public class CompletionRequest {
      *
      * @return a valid ASTNode or null
      */
-    private ClassNode getBeforeDotDeclaringClass() {
-        assert isBehindDot() || ctx.before1 == null;
+    public ClassNode getBeforeDotDeclaringClass() {
+       // assert isBehindDot() || ctx.before1 == null;
 
         if (declaringClass != null && declaringClass instanceof ClassNode) {
             LOG.log(Level.FINEST, "returning declaringClass from request."); // NOI18N
