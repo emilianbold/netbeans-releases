@@ -118,8 +118,6 @@ class ProfilerControlPanel2Support implements FileChangeListener {
 
     public void fileDeleted(FileEvent fe) {
         this.nullAll();
-        CallableSystemAction.get(ModifyProfilingAction.class).updateAction();
-        CallableSystemAction.get(RerunAction.class).updateAction();
     }
 
     public void fileRenamed(FileRenameEvent fe) {
