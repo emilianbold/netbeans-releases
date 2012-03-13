@@ -374,6 +374,13 @@ is divided into following sections:
                         <istrue value="${{use.testng}}"/>
                     </and>
                 </condition>
+                <condition property="testng.debug.mode" value="-mixed" else="">
+                    <and>
+                        <isset property="junit+testng.available"/>
+                        <isset property="use.testng"/>
+                        <istrue value="${{use.testng}}"/>
+                    </and>
+                </condition>
                 <condition property="native.testing">
                     <and>
                         <isset property="junit+testng.available"/>
@@ -1073,7 +1080,129 @@ is divided into following sections:
                 </macrodef>
             </target>
 
-            <target name="-init-macrodef-test-debug">
+            <target name="-init-macrodef-junit-debug" if="junit.available">
+                <macrodef>
+                    <xsl:attribute name="name">junit-debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <xsl:element name="element">
+                        <xsl:attribute name="name">customize2</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </xsl:element>
+                    <sequential>
+                        <property name="test.report.file" location="${{build.test.results.dir}}/TEST-@{{testClass}}.xml"/>
+                        <delete file="${{test.report.file}}"/>
+                        <mkdir dir="${{build.test.results.dir}}"/>
+                        <!--Ugly, puts ant and ant-junit to the test classpath, but there is probably no other solution how to run the XML formatter -->
+                        <j2seproject3:debug classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" classpath="${{ant.home}}/lib/ant.jar:${{ant.home}}/lib/ant-junit.jar:${{debug.test.classpath}}">
+                            <customize>
+                                <arg value="@{{testClass}}"/>
+                                <arg value="showoutput=true"/>
+                                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>
+                                <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.XMLJUnitResultFormatter,${{test.report.file}}"/>
+                                <customize2/>
+                            </customize>
+                        </j2seproject3:debug>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-junit-debug-impl" depends="-init-macrodef-junit-debug" if="junit.available">
+                <macrodef>
+                    <xsl:attribute name="name">test-debug-impl</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <xsl:element name="element">
+                        <xsl:attribute name="name">customize2</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                        <xsl:attribute name="implicit">true</xsl:attribute>
+                    </xsl:element>
+                    <sequential>
+                        <j2seproject3:junit-debug testClass="@{{testClass}}" testMethod="@{{testMethod}}">
+                            <customize2/>
+                        </j2seproject3:junit-debug>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-testng-debug" if="testng.available">
+                <macrodef>
+                    <xsl:attribute name="name">testng-debug</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <xsl:element name="element">
+                        <xsl:attribute name="name">customize2</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                    </xsl:element>
+                    <sequential>
+                        <condition property="test.class.or.method" value="-methods @{{testClass}}.@{{testMethod}}" else="-testclass @{{testClass}}">
+                            <isset property="@{{testMethod}}"/>
+                        </condition>
+                        <delete dir="${{build.test.results.dir}}" quiet="true"/>
+                        <mkdir dir="${{build.test.results.dir}}"/>
+                        <j2seproject3:debug classname="org.testng.TestNG" classpath="${{debug.test.classpath}}">
+                            <customize>
+                                <customize2/>
+                                <jvmarg value="-ea"/>
+                                <arg line="${{testng.debug.mode}}"/>
+                                <arg line="-d ${{build.test.results.dir}}"/>
+                                <arg line="-listener org.testng.reporters.VerboseReporter"/>
+                                <arg line="-suitename {$codename}"/>
+                                <arg line="-testname @{{testClass}}"/>
+                                <arg line="${{test.class.or.method}}"/>
+                            </customize>
+                        </j2seproject3:debug>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-testng-debug-impl" depends="-init-macrodef-testng-debug" if="testng.available">
+                <macrodef>
+                    <xsl:attribute name="name">test-debug-impl</xsl:attribute>
+                    <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testClass</xsl:attribute>
+                        <xsl:attribute name="default">${main.class}</xsl:attribute>
+                    </attribute>
+                    <attribute>
+                        <xsl:attribute name="name">testMethod</xsl:attribute>
+                        <xsl:attribute name="default"></xsl:attribute>
+                    </attribute>
+                    <xsl:element name="element">
+                        <xsl:attribute name="name">customize2</xsl:attribute>
+                        <xsl:attribute name="optional">true</xsl:attribute>
+                        <xsl:attribute name="implicit">true</xsl:attribute>
+                    </xsl:element>
+                    <sequential>
+                        <j2seproject3:testng-debug testClass="@{{testClass}}" testMethod="@{{testMethod}}">
+                            <customize2/>
+                        </j2seproject3:testng-debug>
+                    </sequential>
+                </macrodef>
+            </target>
+
+            <target name="-init-macrodef-test-debug" depends="-init-macrodef-junit-debug-impl,-init-macrodef-testng-debug-impl">
                 <macrodef>
                     <xsl:attribute name="name">test-debug</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/3</xsl:attribute>
@@ -1086,24 +1215,14 @@ is divided into following sections:
                         <xsl:attribute name="default"></xsl:attribute>
                     </attribute>
                     <sequential>
-                        <condition property="test.class.or.method" value="-methods @{{testClass}}.@{{testMethod}}" else="-testclass @{{testClass}}">
-                            <isset property="@{{testMethod}}"/>
-                        </condition>
-                        <j2seproject3:debug classname="org.testng.TestNG" classpath="${{debug.test.classpath}}">
-                            <customize>
+                        <j2seproject3:test-debug-impl testClass="@{{testClass}}" testMethod="@{{testMethod}}">
+                            <customize2>
                                 <syspropertyset>
                                     <propertyref prefix="test-sys-prop."/>
                                     <mapper from="test-sys-prop.*" to="*" type="glob"/>
                                 </syspropertyset>
-                                <jvmarg value="-ea"/>
-                                <arg line="-mixed"/>
-                                <arg line="-d ${{build.test.results.dir}}"/>
-                                <arg line="-listener org.testng.reporters.VerboseReporter"/>
-                                <arg line="-suitename {$codename}"/>
-                                <arg line="-testname ${{test.class}}"/>
-                                <arg line="${{test.class.or.method}}"/>
-                            </customize>
-                        </j2seproject3:debug>
+                            </customize2>
+                        </j2seproject3:test-debug-impl>
                     </sequential>
                 </macrodef>
             </target>
@@ -2209,8 +2328,6 @@ is divided into following sections:
                 <xsl:attribute name="if">have.tests</xsl:attribute>
                 <xsl:attribute name="depends">init,compile-test</xsl:attribute>
                 <fail unless="test.class">Must select one file in the IDE or set test.class</fail>
-                <delete dir="${{build.test.results.dir}}" quiet="true"/>
-                <mkdir dir="${{build.test.results.dir}}"/>
                 <j2seproject3:test-debug testClass="${{test.class}}" testMethod="${{methodname}}"/>
             </target>
             
