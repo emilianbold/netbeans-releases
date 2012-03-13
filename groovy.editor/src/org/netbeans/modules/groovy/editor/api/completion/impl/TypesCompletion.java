@@ -50,7 +50,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -62,14 +61,13 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
@@ -131,7 +129,7 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // check for a constructor call
-        if (RequestHelper.isConstructorCall(request)) {
+        if (ContextHelper.isConstructorCall(request)) {
             constructorCompletion = true;
         } else {
             constructorCompletion = false;
@@ -160,7 +158,7 @@ public class TypesCompletion extends BaseCompletion {
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
 
         // This ModuleNode is used to retrieve the types defined here and the package name.
-        ModuleNode moduleNode = retrieveModuleNode();
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
         String currentPackage = getCurrentPackageName(moduleNode);
         JavaSource javaSource = getJavaSourceFromRequest();
 
@@ -286,32 +284,18 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         // Adding declared classes
-        for (ClassNode declaredClass : RequestHelper.getDeclaredClasses(request)) {
+        for (ClassNode declaredClass : ContextHelper.getDeclaredClasses(request)) {
             addToProposalUsingFilter(addedTypes, new TypeHolder(declaredClass.getName(), ElementKind.CLASS), onlyInterfaces);
         }
 
         return true;
     }
 
-    private ModuleNode retrieveModuleNode() {
-        AstPath path = request.path;
-        if (path != null) {
-            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-                ASTNode current = it.next();
-                if (current instanceof ModuleNode) {
-                    LOG.log(Level.FINEST, "Found ModuleNode");
-                    return (ModuleNode) current;
-                }
-            }
-        }
-        return null;
-    }
-
     private String getCurrentPackageName(ModuleNode moduleNode) {
         if (moduleNode != null) {
             return moduleNode.getPackageName();
         } else {
-            ClassNode node = RequestHelper.getSurroundingClassNode(request);
+            ClassNode node = ContextHelper.getSurroundingClassNode(request);
             if (node != null) {
                 return node.getPackageName();
             }

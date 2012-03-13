@@ -53,7 +53,7 @@ import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.util.CamelCaseUtil;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 
 /**
@@ -75,7 +75,7 @@ public class ConstructorGenerationCompletion extends BaseCompletion {
             return false;
         }
 
-        ClassNode requestedClass = RequestHelper.getSurroundingClassNode(request);
+        ClassNode requestedClass = ContextHelper.getSurroundingClassNode(request);
         if (requestedClass == null) {
             LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
             return false;

@@ -43,57 +43,45 @@
  */
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.impl.ProposalsCollector;
-import java.beans.PropertyChangeEvent;
 import groovy.lang.MetaMethod;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
-import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.editor.BaseDocument;
-import java.util.logging.Logger;
+import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
-import org.netbeans.modules.csl.api.CodeCompletionResult;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParameterInfo;
+import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.AstUtilities;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.completion.impl.ProposalsCollector;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -168,7 +156,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             int anchor = lexOffset - prefix.length();
             ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
 
-            if (RequestHelper.isVariableDefinitionLine(request) || RequestHelper.isFieldDefinitionLine(request)) {
+            if (ContextHelper.isVariableNameDefinition(request) || ContextHelper.isFieldNameDefinition(request)) {
                 proposalsCollector.completeNewVars(request);
             } else {
                 if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {
@@ -348,16 +336,14 @@ public class CompletionHandler implements CodeCompletionHandler {
      * @return
      */
     public static String getParameterListForMethod(ExecutableElement exe) {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
 
         if (exe != null) {
             // generate a list of parameters
             // unfortunately, we have to work around # 139695 in an ugly fashion
 
-            List<? extends VariableElement> params = null;
-
             try {
-                params = exe.getParameters(); // this can cause NPE's
+                List<? extends VariableElement> params = exe.getParameters(); // this can cause NPE's
 
                 for (VariableElement variableElement : params) {
                     TypeMirror tm = variableElement.asType();
@@ -445,7 +431,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             DELIMITER = DELIMITER + " ";
         }
 
-        StringBuffer sb = new StringBuffer("");
+        StringBuilder sb = new StringBuilder("");
         boolean nextIsAnArray = false;
 
         for (int i = 0; i < encodedType.length(); i++) {
