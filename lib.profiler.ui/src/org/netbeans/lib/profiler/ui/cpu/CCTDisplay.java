@@ -825,7 +825,6 @@ public class CCTDisplay extends SnapshotCPUResultsPanel implements ScreenshotPro
         if (popupShowSource != null) popupShowSource.setEnabled(regularNode && isShowSourceAvailable());
         popupShowSubtree.setEnabled(regularNode);
         popupShowReverse.setEnabled(regularNode);
-        popupAddToRoots.setEnabled(regularNode && isAddToRootsAvailable());
         popupFind.setEnabled(regularNode);
         // Allow the selection handler to change state of popupFind
         if (selectionHandler != null) selectionHandler.methodSelected(node.getThreadId(), node.getMethodId(), currentView);
