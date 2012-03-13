@@ -834,6 +834,40 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             return sb.toString();
 
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ConstructorItem other = (ConstructorItem) obj;
+            if (this.expand != other.expand) {
+                return false;
+            }
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if ((this.paramListString == null) ? (other.paramListString != null) : !this.paramListString.equals(other.paramListString)) {
+                return false;
+            }
+            if (this.paramList != other.paramList && (this.paramList == null || !this.paramList.equals(other.paramList))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 61 * hash + (this.expand ? 1 : 0);
+            hash = 61 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 61 * hash + (this.paramListString != null ? this.paramListString.hashCode() : 0);
+            hash = 61 * hash + (this.paramList != null ? this.paramList.hashCode() : 0);
+            return hash;
+        }
     }
 
     public static class JavaFieldItem extends CompletionItem {

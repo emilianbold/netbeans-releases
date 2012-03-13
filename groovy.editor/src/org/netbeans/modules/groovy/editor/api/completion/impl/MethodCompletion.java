@@ -119,7 +119,6 @@ public class MethodCompletion extends BaseCompletion {
 
         // 2.2  static/instance method on class or object
         if (!request.isBehindDot() && request.ctx.before1 != null) {
-            LOG.log(Level.FINEST, "I'm not invoked behind a dot."); // NOI18N
             return false;
         }
 
@@ -207,6 +206,7 @@ public class MethodCompletion extends BaseCompletion {
         imports.addAll(GroovyUtils.DEFAULT_IMPORT_PACKAGES);
         imports.addAll(getImportedTypes());
         imports.addAll(getTypesInSamePackage());
+        imports.addAll(getTypesInSameFile());
 
         return imports;
     }
@@ -230,14 +230,26 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private List<String> getTypesInSamePackage() {
-        String packageName = ContextHelper.getSurroundingModuleNode(request).getPackageName();
-        if (packageName != null) {
-            packageName = packageName.substring(0, packageName.length() - 1); // Removing last '.' char
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
+        if (moduleNode != null) {
+            String packageName = ContextHelper.getSurroundingModuleNode(request).getPackageName();
+            if (packageName != null) {
+                packageName = packageName.substring(0, packageName.length() - 1); // Removing last '.' char
 
-            return Collections.singletonList(packageName);
-        } else {
-            return Collections.emptyList();
+                return Collections.singletonList(packageName);
+            }
         }
+        return Collections.emptyList();
+    }
+
+    private List<String> getTypesInSameFile() {
+        List<String> declaredClassNames = new ArrayList<String>();
+        List<ClassNode> declaredClasses = ContextHelper.getDeclaredClasses(request);
+
+        for (ClassNode declaredClass : declaredClasses) {
+            declaredClassNames.add(declaredClass.getName());
+        }
+        return declaredClassNames;
     }
 
     /**
@@ -276,12 +288,13 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private void addConstructorProposal(String constructorName, ExecutableElement encl) {
-        LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-
         String paramListString = getParameterListForMethod(encl);
         List<ParameterDescriptor> paramList = getParameterList(encl);
-
-        proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
+        
+        ConstructorItem constructor = new ConstructorItem(constructorName, paramListString, paramList, anchor, false);
+        if (!proposals.contains(constructor)) {
+            proposals.add(constructor);
+        }
     }
 
     private void addConstructorProposalsForDeclaredClasses() {
