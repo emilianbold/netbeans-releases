@@ -126,7 +126,7 @@ public class EditableBoxCustomEditor extends javax.swing.JPanel {
         
         Set<String> set = new TreeSet<String>();
         set.add(value);
-        set.add("auto");
+//        set.add("auto");
         
         return new DefaultComboBoxModel(new Vector(set));
     }

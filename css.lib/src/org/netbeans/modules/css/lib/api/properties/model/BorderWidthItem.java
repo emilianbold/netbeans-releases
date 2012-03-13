@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.api.properties.model;
 
 import org.netbeans.modules.css.lib.api.properties.Node;
 import org.netbeans.modules.css.lib.api.properties.Token;
@@ -47,6 +47,8 @@ import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.Tokenizer;
 import org.netbeans.modules.css.lib.api.properties.model.BoxElement;
 import org.netbeans.modules.css.lib.api.properties.model.NodeModel;
+import org.netbeans.modules.css.lib.properties.model.Length;
+import org.netbeans.modules.css.lib.properties.model.TokenNodeModel;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -56,19 +58,17 @@ import org.netbeans.modules.web.common.api.LexerUtils;
 public class BorderWidthItem extends NodeModel implements BoxElement {
 
     public Length length;
-    
     private TokenNodeModel fixedValue;
 
     public static enum FixedValue {
-        
+
         medium, thin, thick;
-        
+
         public String getValue() {
             return name();
         }
-        
     }
-    
+
     public BorderWidthItem(Node node) {
         super(node);
     }
@@ -77,7 +77,7 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
         super();
         this.fixedValue = createText(fixedValue.getValue());
     }
-    
+
     private BorderWidthItem(Length length) {
         super();
         this.length = length;
@@ -95,19 +95,19 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
 
         if (lengthTokenAcceptor.accepts(token)) {
             return new BorderWidthItem(new Length(createText(tokenImage)));
-        } 
-      
+        }
+
         FixedValue fixedValue = getFixedValue(tokenImage);
-        if(fixedValue != null) {
+        if (fixedValue != null) {
             return new BorderWidthItem(fixedValue);
         }
-        
+
         return null;
     }
-    
+
     private static FixedValue getFixedValue(CharSequence sequence) {
-        for(FixedValue fv : FixedValue.values()) {
-            if(LexerUtils.equals(fv.getValue(), sequence, true, true)) {
+        for (FixedValue fv : FixedValue.values()) {
+            if (LexerUtils.equals(fv.getValue(), sequence, true, true)) {
                 return fv;
             }
         }
@@ -120,32 +120,53 @@ public class BorderWidthItem extends NodeModel implements BoxElement {
 
     @Override
     protected TokenNodeModel getTokenNode(CharSequence image) {
-        if(fixedValue != null) {
-            if(LexerUtils.equals(fixedValue.getValue(), image, true, false)) {
+        if (fixedValue != null) {
+            if (LexerUtils.equals(fixedValue.getValue(), image, true, false)) {
                 return fixedValue;
             }
         }
-        
+
         //use the value from submodels
         return super.getTokenNode(image);
     }
-    
+
     public TokenNodeModel getFixedValueModel(FixedValue fixedValue) {
         return getTokenNode(fixedValue.getValue());
     }
 
     @Override
     public String asText() {
-        if(getLength() != null) {
+        if (getLength() != null) {
             return getLength().getLength().getValue().toString();
         } else {
-            for(FixedValue fv : FixedValue.values()) {
+            for (FixedValue fv : FixedValue.values()) {
                 TokenNodeModel tnm = getFixedValueModel(fv);
-                if(tnm != null) {
+                if (tnm != null) {
                     return tnm.getValue().toString();
                 }
             }
         }
         return INVALID_VALUE;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BorderWidthItem other = (BorderWidthItem) obj;
+
+        return asText().equals(other.asText());
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 47 * hash + (this.length != null ? this.length.hashCode() : 0);
+        hash = 47 * hash + (this.fixedValue != null ? this.fixedValue.hashCode() : 0);
+        return hash;
     }
 }

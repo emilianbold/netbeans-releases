@@ -127,7 +127,7 @@ public abstract class DeclarationsBoxModelBase implements EditableBox {
                     Expression expr = f.createExpression(propVal);
                     PropertyValue pv = f.createPropertyValue(expr);
 
-                    String propertyName = getPropertyName(edge);
+                    String propertyName = getPropertyName(e);
                     Property prop = f.createProperty(propertyName);
                     Declaration newD = f.createDeclaration(prop, pv, false);
 
