@@ -46,12 +46,20 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 
 /**
  *
  * @author Tomas Stupka
  */
 public final class Issue {
+    
+    public enum Status {
+        NEW,
+        MODIFIED,
+        UPTODATE
+    }
     
     /**
      * issue data were refreshed
@@ -178,6 +186,21 @@ public final class Issue {
         return impl.getSummary();
     }
 
+    public Status getStatus() {
+        // XXX this is hacked
+        int status = IssueCacheUtils.getStatus(impl);
+        switch(status) {
+            case IssueCache.ISSUE_STATUS_SEEN:
+                return Status.UPTODATE;
+            case IssueCache.ISSUE_STATUS_NEW:
+                return Status.NEW;
+            case IssueCache.ISSUE_STATUS_MODIFIED:
+                return Status.MODIFIED;
+            default:
+                throw new IllegalStateException("Unexpected status value " + status);
+        }
+    }
+    
     /**
      * 
      * @param file
