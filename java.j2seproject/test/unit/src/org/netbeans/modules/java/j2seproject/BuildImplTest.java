@@ -162,6 +162,7 @@ public final class BuildImplTest extends NbTestCase {
     private Properties getProperties() {
         Properties p = new Properties();
         p.setProperty("libs.junit.classpath", testNGJar.getAbsolutePath()  + ":" + junitJar.getAbsolutePath());
+        p.setProperty("use.testng", "true");
         return p;
     }
 
