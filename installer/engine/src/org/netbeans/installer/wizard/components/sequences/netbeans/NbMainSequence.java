@@ -112,10 +112,10 @@ public class NbMainSequence extends WizardSequence {
                 DEFAULT_IA_DESCRIPTION);
     }
     
-    private static class PupolateCacheAction extends WizardAction {
+    private static class PopulateCacheAction extends WizardAction {
         private final Product nbBase;
         CompositeProgress compositeProgress;
-        public PupolateCacheAction(Product p) {
+        public PopulateCacheAction(Product p) {
             this.nbBase = p;
             this.compositeProgress = new CompositeProgress();
         }
@@ -340,7 +340,7 @@ public class NbMainSequence extends WizardSequence {
             addChild(installAction);
             Product nbBase = toInstall.get(0);
             if ("nb-base".equals(nbBase.getUid())) { // NOI18N
-                PupolateCacheAction pupolateCacheAction = new PupolateCacheAction(nbBase);
+                PopulateCacheAction pupolateCacheAction = new PopulateCacheAction(nbBase);
                 addChild(pupolateCacheAction);
                 pupolateCacheAction.setProperty(InstallAction.TITLE_PROPERTY, DEFAULT_IA_TITLE);
                 pupolateCacheAction.setProperty(InstallAction.DESCRIPTION_PROPERTY, DEFAULT_IA_DESCRIPTION);
