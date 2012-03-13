@@ -53,7 +53,6 @@ import org.netbeans.modules.subversion.client.SvnClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnProgressSupport;
 import org.netbeans.modules.subversion.ui.history.SearchHistoryAction;
-import org.netbeans.modules.subversion.util.SvnSearchHistorySupport;
 import org.netbeans.modules.subversion.util.SvnUtils;
 import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.FileUtils;
@@ -160,7 +159,11 @@ public class HistoryProvider implements VCSHistoryProvider {
 
             return ret.toArray(new HistoryEntry[ret.size()]);
         } catch (SVNClientException e) {
-            Subversion.LOG.log(SvnClientExceptionHandler.isCancelledAction(e.getMessage()) ? Level.FINE : Level.WARNING, null, e);
+            if (SvnClientExceptionHandler.isCancelledAction(e.getMessage())) {
+                Subversion.LOG.log(Level.FINE, null, e);
+            } else {
+                SvnClientExceptionHandler.notifyException(e, true, true);
+            }
         }
         return null;
     }
@@ -208,7 +211,15 @@ public class HistoryProvider implements VCSHistoryProvider {
                 }
                 FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
             } catch (IOException e) {
-                Subversion.LOG.log(Level.WARNING, null, e);
+                Exception ex = e;
+                if (e.getCause() != null && e.getCause() instanceof SVNClientException) {
+                    ex = (SVNClientException) e.getCause();
+                }
+                if (SvnClientExceptionHandler.isCancelledAction(ex.getMessage())) {
+                    Subversion.LOG.log(Level.FINE, null, e);
+                } else {
+                    SvnClientExceptionHandler.notifyException(ex, true, true);
+                }
             }
         }
     }
