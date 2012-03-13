@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 public class SysCallBreakpointType extends NativeBreakpointType {
 
     // interface BreakpointType
+    @Override
     public NativeBreakpoint newInstance(int flags) {
 	return new SysCallBreakpoint(flags);
     } 
@@ -59,10 +60,11 @@ public class SysCallBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-        return Catalog.get("LBL_System_Call");
+        return Catalog.get("LBL_System_Call"); //NOI18N
     }
 
     // interface NativeBreakpointType
+    @Override
     public BreakpointPanel getCustomizer(NativeBreakpoint editable) {
 	if (editable == null)
 	    return new SysCallBreakpointPanel();

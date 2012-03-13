@@ -87,15 +87,15 @@ public final class SysCallBreakpoint extends NativeBreakpoint {
 	String call = bre.getSysCall();
 	if (call == null) {
 	    if (bre.getEntryExit() == SysCallEE.EXIT) {
-		summary = Catalog.get("Handler_SysoutAny");
+		summary = Catalog.get("Handler_SysoutAny"); //NOI18N
 	    } else {
-		summary = Catalog.get("Handler_SysinAny");
+		summary = Catalog.get("Handler_SysinAny"); //NOI18N
 	    }
 	} else {
 	    if (bre.getEntryExit() == SysCallEE.EXIT) {
-		summary = Catalog.format("Handler_Sysout", call);
+		summary = Catalog.format("Handler_Sysout", call); //NOI18N
 	    } else {
-		summary = Catalog.format("Handler_Sysin", call);
+		summary = Catalog.format("Handler_Sysin", call); //NOI18N
 	    }
 	}
 	return summary;

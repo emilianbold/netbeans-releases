@@ -76,7 +76,7 @@ public final class ExceptionBreakpoint extends NativeBreakpoint {
     protected String getDisplayNameHelp() {
 	String summary = null;
 	ExceptionBreakpoint bre = this;
-	summary = Catalog.format("Handler_Thrown",
+	summary = Catalog.format("Handler_Thrown", //NOI18N
 		                 bre.getException().toString());
 	return summary;
     }

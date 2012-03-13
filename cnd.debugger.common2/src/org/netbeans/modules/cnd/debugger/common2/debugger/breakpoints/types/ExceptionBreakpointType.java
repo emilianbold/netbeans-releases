@@ -60,7 +60,7 @@ public class ExceptionBreakpointType extends NativeBreakpointType {
     // interface BreakpointType
     @Override
     public String getTypeDisplayName() {
-	return Catalog.get("LBL_Exception");
+	return Catalog.get("LBL_Exception"); //NOI18N
     }
 
     // interface NativeBreakpointType
