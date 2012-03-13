@@ -136,6 +136,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
                     if (dataFolder != null) {
                         elems.add(dataFolder);
                     }
+                    elems.add(fo);
                 }
             }
         }

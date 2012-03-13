@@ -43,8 +43,8 @@
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
 //@BreakpointType.Registration(displayName="#LBL_Variable")
