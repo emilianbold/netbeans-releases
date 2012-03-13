@@ -81,6 +81,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -168,15 +169,24 @@ public class LuceneIndex implements Index.Transactional {
                 }
             } finally {
                 searcher.close();
-            }        
-            for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
+            }
+            if (convertor instanceof IndexReaderInjection) {
+                ((IndexReaderInjection)convertor).setIndexReader(in);
+            }
+            try {
+                for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+                    if (cancel != null && cancel.get()) {
+                        throw new InterruptedException ();
+                    }
+                    final Document doc = in.document(docNum, selector);
+                    final T value = convertor.convert(doc);
+                    if (value != null) {
+                        result.add (value);
+                    }
                 }
-                final Document doc = in.document(docNum, selector);
-                final T value = convertor.convert(doc);
-                if (value != null) {
-                    result.add (value);
+            } finally {
+                if (convertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)convertor).setIndexReader(null);
                 }
             }
         } finally {
@@ -200,20 +210,29 @@ public class LuceneIndex implements Index.Transactional {
 
             final TermEnum terms = seekTo == null ? in.terms () : in.terms (seekTo);        
             try {
-                do {
-                    if (cancel != null && cancel.get()) {
-                        throw new InterruptedException ();
-                    }
-                    final Term currentTerm = terms.term();
-                    if (currentTerm != null) {                    
-                        final T vote = filter.convert(currentTerm);
-                        if (vote != null) {
-                            result.add(vote);
+                if (filter instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)filter).setIndexReader(in);
+                }
+                try {
+                    do {
+                        if (cancel != null && cancel.get()) {
+                            throw new InterruptedException ();
                         }
+                        final Term currentTerm = terms.term();
+                        if (currentTerm != null) {                    
+                            final T vote = filter.convert(currentTerm);
+                            if (vote != null) {
+                                result.add(vote);
+                            }
+                        }
+                    } while (terms.next());
+                } catch (StoppableConvertor.Stop stop) {
+                    //Stop iteration of TermEnum finally {
+                } finally {
+                    if (filter instanceof IndexReaderInjection) {
+                        ((IndexReaderInjection)filter).setIndexReader(null);
                     }
-                } while (terms.next());
-            } catch (StoppableConvertor.Stop stop) {
-                //Stop iteration of TermEnum
+                }
             } finally {
                 terms.close();
             }
@@ -268,28 +287,46 @@ public class LuceneIndex implements Index.Transactional {
             }
         
             boolean logged = false;
-            for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
-                if (cancel != null && cancel.get()) {
-                    throw new InterruptedException ();
+            if (convertor instanceof IndexReaderInjection) {
+                ((IndexReaderInjection)convertor).setIndexReader(in);
+            }
+            try {
+                if (termConvertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)termConvertor).setIndexReader(in);
                 }
-                final Document doc = in.document(docNum, selector);
-                final T value = convertor.convert(doc);
-                if (value != null) {
-                    final Set<Term> terms = termCollector.get(docNum);
-                    if (terms != null) {
-                        result.put (value, convertTerms(termConvertor, terms));
-                    } else {
-                        if (!logged) {
-                            LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
-                                    new Object[] {
-                                        in.maxDoc(),
-                                        in.numDocs(),
-                                        termCollector.docs()
-                                    });
-                            logged = true;
+                try {
+                    for (int docNum = bs.nextSetBit(0); docNum >= 0; docNum = bs.nextSetBit(docNum+1)) {
+                        if (cancel != null && cancel.get()) {
+                            throw new InterruptedException ();
                         }
-                        LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                        final Document doc = in.document(docNum, selector);
+                        final T value = convertor.convert(doc);
+                        if (value != null) {
+                            final Set<Term> terms = termCollector.get(docNum);
+                            if (terms != null) {
+                                result.put (value, convertTerms(termConvertor, terms));
+                            } else {
+                                if (!logged) {
+                                    LOGGER.log(Level.WARNING, "Index info [maxDoc: {0} numDoc: {1} docs: {2}]",
+                                            new Object[] {
+                                                in.maxDoc(),
+                                                in.numDocs(),
+                                                termCollector.docs()
+                                            });
+                                    logged = true;
+                                }
+                                LOGGER.log(Level.WARNING, "No terms found for doc: {0}", docNum);
+                            }
+                        }
                     }
+                } finally {
+                    if (termConvertor instanceof IndexReaderInjection) {
+                        ((IndexReaderInjection)termConvertor).setIndexReader(null);
+                    }
+                }
+            } finally {
+                if (convertor instanceof IndexReaderInjection) {
+                    ((IndexReaderInjection)convertor).setIndexReader(null);
                 }
             }
         } finally {

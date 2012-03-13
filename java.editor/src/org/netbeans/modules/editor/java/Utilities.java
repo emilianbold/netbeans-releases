@@ -77,8 +77,10 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -309,6 +311,18 @@ public final class Utilities {
         }
     }
 
+    public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
+        int typeRefCount = 999 - Math.min(referencesCount.getTypeReferenceCount(handle), 999);
+        int pkgRefCount = 999;
+        String binaryName = SourceUtils.getJVMSignature(handle)[0];
+        int idx = binaryName.lastIndexOf('.');
+        if (idx > 0) {
+            ElementHandle<PackageElement> pkgElement = ElementHandle.createPackageElementHandle(binaryName.substring(0, idx));
+            pkgRefCount -= Math.min(referencesCount.getPackageReferenceCount(pkgElement), 999);
+        }
+        return typeRefCount * 100000 + pkgRefCount * 100 + getImportanceLevel(binaryName);
+    }
+    
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
