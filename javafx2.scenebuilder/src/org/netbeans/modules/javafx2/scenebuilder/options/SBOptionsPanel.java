@@ -230,7 +230,8 @@ final class SBOptionsPanel extends javax.swing.JPanel {
             userDefs.add(hd.home);
         }
         controller.setUserDefinedHomes(userDefs);
-        controller.setSbHome(((HomeDef)sbHome.getSelectedItem()).home);
+        HomeDef selectedHome = (HomeDef)sbHome.getSelectedItem();
+        controller.setSbHome(selectedHome != null ? selectedHome.home : null);
     }
 
     boolean valid() {

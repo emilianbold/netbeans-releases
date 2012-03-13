@@ -97,6 +97,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanImplicitName");
         assertEquals(springBean.getNames().get(0), "beanImplicitName");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanImplicitName.java");
     }
     
     public void testSpringBeanDefinedName() throws IOException, InterruptedException {
@@ -107,6 +108,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanDefinedName");
         assertEquals(springBean.getNames().get(0), "definedName");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanDefinedName.java");
     }
     
     public void testSpringBeanDefinedNameByValue() throws IOException, InterruptedException {
@@ -117,6 +119,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanDefinedNameByValue");
         assertEquals(springBean.getNames().get(0), "byValue");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanDefinedNameByValue.java");
     }
     
     public void testSpringBeanComponent() throws IOException, InterruptedException {
@@ -127,6 +130,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanComponent");
         assertEquals(springBean.getNames().get(0), "beanComponent");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanComponent.java");
     }
     
     public void testSpringBeanService() throws IOException, InterruptedException {
@@ -137,6 +141,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanService");
         assertEquals(springBean.getNames().get(0), "beanService");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanService.java");
     }
     
     public void testSpringBeanRepository() throws IOException, InterruptedException {
@@ -147,6 +152,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanRepository");
         assertEquals(springBean.getNames().get(0), "beanRepository");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanRepository.java");
     }
     
     public void testSpringBeanController() throws IOException, InterruptedException {
@@ -157,6 +163,7 @@ public class SpringModelAnnotationsTest extends CommonAnnotationTestCase {//  An
         SpringBean springBean = beans.get(0);
         assertEquals(springBean.getClassName(), "foo.BeanController");
         assertEquals(springBean.getNames().get(0), "beanController");
+        assertEquals(springBean.getLocation().getFile().getPath(), getWorkDirPath() + "/src/foo/BeanController.java");
     }
     
     private void addSpringBeanImplicitName() throws IOException {

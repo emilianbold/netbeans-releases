@@ -42,17 +42,17 @@
 
 package org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types;
 
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
-import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.BreakpointPanel;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 
 class VariableBreakpointPanel extends BreakpointPanel {
 
     private VariableBreakpoint fb;
     
     @Override
-    public final void seed(NativeBreakpoint breakpoint) {
+    protected final void seed(NativeBreakpoint breakpoint) {
 	seedCommonComponents(breakpoint);
 	fb = (VariableBreakpoint) breakpoint;
 

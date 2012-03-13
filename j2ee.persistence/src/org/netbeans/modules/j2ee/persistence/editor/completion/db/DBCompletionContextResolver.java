@@ -113,8 +113,7 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
         "JoinTable", //5
         "PersistenceUnit", //6
         "PersistenceContext", //7
-        "ManyToMany",//8
-        "NamedQuery"//9
+        "ManyToMany"//8
     };
     
     private static final String PERSISTENCE_PKG = "javax.persistence";
@@ -140,9 +139,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
             if(index == 6 || index == 7) {
                 //we do not need database connection for PU completion
                 completePersistenceUnitContext(ctx, parsedNN, nnattr, result);
-            } else if(index == 9) {
-                //do not need to connect for jpql
-                completeJPQLContext(ctx, parsedNN, nnattr, result);
             } else if(index != -1) {
                 //the completion has been invoked in supported annotation and there is no db connection initialized yet
                 //try to init the database connection
@@ -734,37 +730,6 @@ public class DBCompletionContextResolver implements CompletionContextResolver {
 
     private Set getMappingEntityTableNames(String javaClass) {
         throw new UnsupportedOperationException("Not yet implemented");
-    }
-
-    private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.CC nn, CCParser.NNAttr nnattr, List<JPACompletionItem> results) {
-        String completedMember = nnattr.getName();
-
-        if ("query".equals(completedMember)) { // NOI18N
-            String completedValue = nnattr.getValue().toString() == null ? "" : nnattr.getValue().toString();
-            JPQLQueryHelper helper = new JPQLQueryHelper();
-
-            Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
-            helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings())));
-            int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-            ContentAssistProposals buildContentAssistProposals = helper.buildContentAssistProposals(offset);
-
-            if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
-                for (String var : buildContentAssistProposals.identificationVariables()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(var, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (IMapping mapping : buildContentAssistProposals.mappings()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(mapping.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (IEntity entity : buildContentAssistProposals.abstractSchemaTypes()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(entity.getName(), nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-                for (String ids : buildContentAssistProposals.identifiers()) {
-                    results.add(new JPACompletionItem.JPQLElementItem(ids, nnattr.isValueQuoted(), nnattr.getValueOffset(), offset, nnattr.getValue().toString(), buildContentAssistProposals));
-                }
-            }
-        }
-        
-        return results;
     }
     
     private static final class ResultItemsFilterList extends ArrayList {
