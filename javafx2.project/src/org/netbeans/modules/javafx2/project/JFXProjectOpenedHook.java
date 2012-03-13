@@ -98,9 +98,12 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
             // and update FX build script file jfx-impl.xml if it is not in expected state
             // #204765
+            // and create Default RunAs Configurations
+            // #204760
             final Runnable runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
                 @Override
                 public void run() {
+                    updateDefaultConfigs();
                     FileObject readmeFO = updateJfxImpl();
                     if(readmeFO != null && isEnabledJFXUpdateNotification()) {
                         DataObject dobj;
@@ -210,6 +213,26 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         return readmeFO;
     }
     
+    private boolean updateDefaultConfigs() {
+        // this operation must be finished before any user
+        // action on this project involving Run, Build, Debug, etc.
+        boolean updated = false;
+        final PropertyEvaluator evaluator = eval.evaluator();
+        if(evaluator != null) {
+            try {
+                updated |= JFXProjectUtils.updateDefaultRunAsConfigFile(prj.getProjectDirectory(), JFXProjectProperties.RunAsType.ASWEBSTART, false);
+                updated |= JFXProjectUtils.updateDefaultRunAsConfigFile(prj.getProjectDirectory(), JFXProjectProperties.RunAsType.INBROWSER, 
+                        !JFXProjectProperties.isNonEmpty(evaluator.getProperty(JFXProjectProperties.RUN_IN_BROWSER)) ||
+                        !JFXProjectProperties.isNonEmpty(evaluator.getProperty(JFXProjectProperties.RUN_IN_BROWSER_PATH)));
+            } catch (Exception ex) {
+                LOGGER.log(Level.WARNING, "Can't update JavaFX specific RunAs configuration files: {0}", ex); // NOI18N
+            }
+        } else {
+            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling jfx-impl.xml auto-update."); // NOI18N
+        }
+        return updated;
+    }
+
     private void switchBusy() {
         SwingUtilities.invokeLater(new Runnable() {
 

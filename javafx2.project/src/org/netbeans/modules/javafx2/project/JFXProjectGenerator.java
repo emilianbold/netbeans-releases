@@ -530,8 +530,18 @@ public class JFXProjectGenerator {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
-//        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-//        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        Map<String,String> browserInfo = JFXProjectUtils.getDefaultBrowserInfo();
+        if(browserInfo != null && !browserInfo.isEmpty()) {
+            ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+            for(Map.Entry<String,String> entry : browserInfo.entrySet()) {
+                ep.setProperty(JFXProjectProperties.RUN_IN_BROWSER, entry.getKey());
+                ep.setProperty(JFXProjectProperties.RUN_IN_BROWSER_PATH, entry.getValue());
+                break;
+            }
+            h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
+        }
+        JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.ASWEBSTART, false);
+        JFXProjectUtils.updateDefaultRunAsConfigFile(dirFO, JFXProjectProperties.RunAsType.INBROWSER, false);
         logUsage();
         return h;
     }
