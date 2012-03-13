@@ -195,6 +195,8 @@ public class VersionsCache {
                                 ISVNStatus st = client.getSingleStatus(base);
                                 if (st != null && st.getRevision() != null) {
                                     pegRevision = st.getRevision().toString();
+                                } else {
+                                    pegRevision = SVNRevision.HEAD.toString();
                                 }
                             } catch (SVNClientException e) {}
                         }
