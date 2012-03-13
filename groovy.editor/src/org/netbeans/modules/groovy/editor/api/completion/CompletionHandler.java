@@ -168,7 +168,7 @@ public class CompletionHandler implements CodeCompletionHandler {
             int anchor = lexOffset - prefix.length();
             ProposalsCollector proposalsCollector = new ProposalsCollector(anchor);
 
-            if (RequestHelper.isVariableDefinitionLine(request) || RequestHelper.isFieldDefinitionLine(request)) {
+            if (RequestHelper.isVariableNameDefinition(request) || RequestHelper.isFieldNameDefinition(request)) {
                 proposalsCollector.completeNewVars(request);
             } else {
                 if (!(request.location == CaretLocation.OUTSIDE_CLASSES || request.location == CaretLocation.INSIDE_STRING)) {

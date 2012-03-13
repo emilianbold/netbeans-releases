@@ -495,7 +495,7 @@ public final class RequestHelper {
      *
      * 1.) "def" - keyword in front, then it's a definition but we can not propose a varname
      * 2.) "int, char, long, ..." primitive type. It's a definition and we propose a single char
-     * 3.) Lexer token IDENTIFIER: Then we have to decide wheter it's a type or a method:
+     * 3.) Lexer token IDENTIFIER: Then we have to decide whether it's a type or a method:
      *     For example it could be:
      *     println variable
      *     StringBuilder variable
@@ -509,7 +509,7 @@ public final class RequestHelper {
      * @param ctx
      * @return true if we are on variable definition line, false otherwise
      */
-    public static boolean isVariableDefinitionLine(CompletionRequest request) {
+    public static boolean isVariableNameDefinition(CompletionRequest request) {
         LOG.log(Level.FINEST, "checkForVariableDefinition()"); //NOI18N
         CompletionContext ctx = request.ctx;
 
@@ -551,7 +551,23 @@ public final class RequestHelper {
         }
     }
 
-    public static boolean isFieldDefinitionLine(CompletionRequest request) {
+    /**
+     * Here we test, whether the provided CompletionContext is likely to become
+     * a field definition.
+     *
+     * We have basically four cases:
+     *   1) Property definition:
+     *      1a) With already prefixed identifier (e.g. String st^)
+     *      1b) Without any identifier yet (e.g. String ^)
+     *   2) Field definition:
+     *      2a) With already prefixed identifier (e.g. private String st^)
+     *      2b) Without any identifier yet (e.g. private String ^)
+     *      2ab) Both previous cases can have more than one modifier (e.g. private static ...)
+     *
+     * @param request completion request
+     * @return true if it's field/property definition line, false otherwise
+     */
+    public static boolean isFieldNameDefinition(CompletionRequest request) {
         LOG.log(Level.FINEST, "isFieldDefinitionLine()"); //NOI18N
         CompletionContext ctx = request.ctx;
 
@@ -560,17 +576,36 @@ public final class RequestHelper {
         }
 
         ASTNode node = getASTNodeForToken(ctx.before1, request);
-        if (node != null &&
-                // This might looks weird - we are checking if the current context
-                // is either property (e.g. String st)/field (e.g. private String)
-                // or it might be field but there is no identifier name yet
-                // In that case getASTNodeForToken() will return ClassNode and we
-                // have to check out (from CompletionContext) if it's really field
-                (node instanceof PropertyNode
-                || node instanceof FieldNode
-                || (node instanceof ClassNode && ctx.before1 != null && ctx.before2 == null &&
-                ctx.after1 == null && ctx.after2 == null && ctx.afterLiteral == null))) {
-            return true;
+        if (node != null) {
+            // 1a)
+            if (node instanceof PropertyNode) {
+                return true;
+            }
+
+            // 1b) In that case getASTNodeForToken() will return ClassNode and we
+            // have to check out (from CompletionContext) if it's really field
+            if (node instanceof ClassNode &&
+                ctx.before2 == null &&
+                ctx.after1 == null &&
+                ctx.after2 == null &&
+                ctx.afterLiteral == null) {
+
+                // Still might be for example 'private ^' situation in which we should return false
+                if ("keyword".equals(ctx.before1.id().primaryCategory())) {
+                    return false;
+                }
+
+                return true;
+            }
+
+            // 2a) + 2b)
+            if (node instanceof FieldNode && ctx.before2 != null) {
+                if (ctx.before1.id() == GroovyTokenId.IDENTIFIER || ctx.before2.id() == GroovyTokenId.IDENTIFIER) {
+                    return true;
+                }
+                // 2ab) 'private static Stri^' or 'private static ^'
+                return false;
+            }
         }
         return false;
     }
