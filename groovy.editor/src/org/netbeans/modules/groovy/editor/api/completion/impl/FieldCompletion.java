@@ -123,7 +123,11 @@ public class FieldCompletion extends BaseCompletion {
         Map<FieldSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
                     .getFields(ContextHelper.getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
-
+        
+        FieldSignature prefixFieldSignature = new FieldSignature(request.prefix);
+        if (result.containsKey(prefixFieldSignature)) {
+            result.remove(prefixFieldSignature);
+        }
         proposals.addAll(result.values());
 
         return true;
