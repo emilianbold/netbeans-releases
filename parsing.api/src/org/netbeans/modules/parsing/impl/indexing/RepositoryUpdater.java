@@ -2862,7 +2862,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (UI_LOGGER.isLoggable(Level.INFO) ||
                     PERF_LOGGER.isLoggable(Level.FINE)) {
                     reportIndexingStart(UI_LOGGER, Level.INFO, lastScanEnded);
-                    logCtx.recordExecuted();
+                    if (logCtx != null) {
+                        logCtx.recordExecuted();
+                    }
                     startTime = System.currentTimeMillis();
                     indexerStatistics = new HashMap<String, int[]>();
                 }
