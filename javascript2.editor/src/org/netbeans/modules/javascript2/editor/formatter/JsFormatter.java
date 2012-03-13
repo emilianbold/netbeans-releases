@@ -261,6 +261,14 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceWithinWhileParens());
                             break;
+                        case AFTER_FOR_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinForParens());
+                            break;
+                        case BEFORE_FOR_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinForParens());
+                            break;
                         case AFTER_WITH_PARENTHESIS:
                             offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceWithinWithParens());

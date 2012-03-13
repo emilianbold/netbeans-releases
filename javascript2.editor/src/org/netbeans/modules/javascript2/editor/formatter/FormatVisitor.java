@@ -415,9 +415,11 @@ public class FormatVisitor extends NodeVisitor {
 
     @Override
     public Node visit(CatchNode catchNode, boolean onset) {
-        // within parens spaces
-        markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
-                FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
+        if (onset) {
+            // within parens spaces
+            markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
+                    FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
+        }
 
         return super.visit(catchNode, onset);
     }
