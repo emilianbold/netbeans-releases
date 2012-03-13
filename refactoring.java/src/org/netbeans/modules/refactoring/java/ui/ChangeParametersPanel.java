@@ -235,10 +235,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                 }
                                 ((JEditorPane)singleLineEditor[1]).setText(returnType);
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(returnTypeDocListener);
-                                ((JEditorPane)singleLineEditor[1]).putClientProperty(
-                                    "HighlightsLayerExcludes", //NOI18N
-                                    "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
-                                );
                                 initialized = true;
                                 methodNameChanged = false;
                                 returnTypeChanged = false;
@@ -1131,6 +1127,10 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     if (kit == null) {
                         throw new IllegalStateException("No EditorKit for '" + MIME_JAVA + "' mimetype."); //NOI18N
                     }
+                    editorPane.putClientProperty(
+                            "HighlightsLayerExcludes", //NOI18N
+                            ".*(?<!TextSelectionHighlighting)$" //NOI18N
+                            );
                     editorPane.setEditorKit(kit);
                     
                     KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);
