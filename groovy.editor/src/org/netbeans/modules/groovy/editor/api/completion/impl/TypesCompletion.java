@@ -50,7 +50,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.util.Elements;
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.ModuleNode;
@@ -62,7 +61,6 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.NbUtilities;
@@ -160,7 +158,7 @@ public class TypesCompletion extends BaseCompletion {
         Set<TypeHolder> addedTypes = new HashSet<TypeHolder>();
 
         // This ModuleNode is used to retrieve the types defined here and the package name.
-        ModuleNode moduleNode = retrieveModuleNode();
+        ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(request);
         String currentPackage = getCurrentPackageName(moduleNode);
         JavaSource javaSource = getJavaSourceFromRequest();
 
@@ -291,20 +289,6 @@ public class TypesCompletion extends BaseCompletion {
         }
 
         return true;
-    }
-
-    private ModuleNode retrieveModuleNode() {
-        AstPath path = request.path;
-        if (path != null) {
-            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
-                ASTNode current = it.next();
-                if (current instanceof ModuleNode) {
-                    LOG.log(Level.FINEST, "Found ModuleNode");
-                    return (ModuleNode) current;
-                }
-            }
-        }
-        return null;
     }
 
     private String getCurrentPackageName(ModuleNode moduleNode) {

@@ -89,4 +89,20 @@ public class ConstructorsCCTest extends GroovyCCTestBase {
     public void testConstructors8() throws Exception {
         checkCompletion(BASE + "Constructors8.groovy", "        String s = new String^(\"abc\");", false);
     }
+
+    public void testSamePackage() throws Exception {
+        checkCompletion(BASE + "SamePackage.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testSamePackageMoreConstructors() throws Exception {
+        checkCompletion(BASE + "SamePackageMoreConstructors.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testImportedType() throws Exception {
+        checkCompletion(BASE + "ImportedType.groovy", "    Bar bar = new Bar^", false);
+    }
+
+    public void testImportedTypeMoreConstructors() throws Exception {
+        checkCompletion(BASE + "ImportedTypeMoreConstructors.groovy", "    Bar bar = new Bar^", false);
+    }
 }

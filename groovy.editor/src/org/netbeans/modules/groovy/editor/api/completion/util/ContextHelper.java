@@ -71,7 +71,7 @@ public final class ContextHelper {
     private ContextHelper() {
     }
 
-    
+
     /**
      * Returns all declared <code>ClassNode</code>'s for the given request
      *
@@ -112,6 +112,26 @@ public final class ContextHelper {
                 ClassNode classNode = (ClassNode) current;
                 LOG.log(Level.FINEST, "Found surrounding Class: {0}", classNode.getName()); // NOI18N
                 return classNode;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the enclosing ModuleNode for the given request.
+     *
+     * @param request completion request
+     * @return the surrounding ModuleNode or null if it wasn't found
+     */
+    public static ModuleNode getSurroundingModuleNode(CompletionRequest request) {
+        AstPath path = request.path;
+        if (path != null) {
+            for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+                ASTNode current = it.next();
+                if (current instanceof ModuleNode) {
+                    LOG.log(Level.FINEST, "Found ModuleNode");
+                    return (ModuleNode) current;
+                }
             }
         }
         return null;
