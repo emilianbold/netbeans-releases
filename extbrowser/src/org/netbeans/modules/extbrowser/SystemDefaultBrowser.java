@@ -180,7 +180,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     public BrowserId getBrowserFamilyId() {
         HtmlBrowser.Impl impl = createHtmlBrowserImpl();
         if (impl != null && impl instanceof ExtBrowserImpl) {
-            return ((ExtBrowserImpl)impl).getSystemDefaultPluginId(null);
+            return ((ExtBrowserImpl)impl).getDefaultBrowserFamilyId();
         }
         return BrowserId.UNKNOWN;
     }

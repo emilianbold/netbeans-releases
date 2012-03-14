@@ -128,7 +128,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));
     }
     
-    protected BrowserId getSystemDefaultPluginId(URL url){
+    protected BrowserId getDefaultBrowserFamilyId(){
         return BrowserId.UNKNOWN;
     }
     
