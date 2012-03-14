@@ -44,16 +44,18 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer.BufferType;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
@@ -125,10 +127,13 @@ public class APTDriverImpl {
         }
 
         private TokenStream getTokenStream(APTFileBuffer buffer, String lang, boolean isLight) throws IOException {
+            String bufName = buffer.getAbsolutePath().toString();
+            char[] charBuffer = buffer.getCharBuffer();
+            trackActivity(bufName, charBuffer.length, isLight);
             if (isLight) {
-                return APTTokenStreamBuilder.buildLightTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
+                return APTTokenStreamBuilder.buildLightTokenStream(bufName, charBuffer, lang);
             } else {
-                return APTTokenStreamBuilder.buildTokenStream(buffer.getAbsolutePath().toString(), buffer.getCharBuffer(), lang);
+                return APTTokenStreamBuilder.buildTokenStream(bufName, charBuffer, lang);
             }
         }
 
@@ -204,6 +209,11 @@ public class APTDriverImpl {
             // we do not cache full apt
             return;
         }
+        if (bufType == APTFileBuffer.BufferType.START_FILE && APTTraceFlags.APT_OPTIMIZE_MEMORY) {
+            // do not cache light apt at all for files which are not queried for light apt
+            // see APTTokenStreamBuilder.traceActivity, start files uses only full apt
+            return;
+        }
         if (APTTraceFlags.APT_USE_SOFT_REFERENCE) {
             if (bufType == APTFileBuffer.BufferType.START_FILE) {
                 file2ref2apt.put(path, new WeakReference<APTFile>(apt));
@@ -218,4 +228,89 @@ public class APTDriverImpl {
     public void close() {
         invalidateAll();
     }
+    
+    public void traceActivity() {
+        long totalReads = 0;
+        long fileSizes = 0;
+        int ligthNrReads = 0;
+        int nrReads = 0;
+        int noAPTLightFiles = 0;
+        for (Map.Entry<CharSequence, FileTraceData> entry : readFiles.entrySet()) {
+            final FileTraceData data = entry.getValue();
+            final long readBytes = data.totalBytes();
+            assert data.totalLightReads() < data.totalReads() : "strange params " + data + " " + entry.getKey();
+//            System.err.printf("[%d|%d][%d|%d]%d\t:%s\n", data.totalReads(), data.getLength(), data.totalLightReads(), data.totalReads(), readBytes, entry.getKey());
+            totalReads += readBytes;
+            fileSizes += data.getLength();
+            int lightReads = data.totalLightReads();
+            if (lightReads == 0) {
+                noAPTLightFiles++;
+            }
+            ligthNrReads += lightReads;
+            nrReads += data.totalReads();
+        }
+        double ratio = fileSizes == 0 ? 0 : (1.0 * totalReads) / fileSizes;
+        totalReads /= 1024;
+        fileSizes /= 1024;
+        System.err.printf("StreamBuilder has %d (%d no APTLight queries) entries, ratio is %f (%d reads where %d Light) [read %dKb from files of total size %dKb]\n", readFiles.size(), noAPTLightFiles, ratio, nrReads, ligthNrReads, totalReads, fileSizes);
+        readFiles.clear();
+    }
+
+    private static final class FileTraceData {
+
+        private final int length;
+        private final AtomicInteger nrLightReads = new AtomicInteger(0);
+        private final AtomicInteger nrReads = new AtomicInteger(0);
+
+        public FileTraceData(int length) {
+            this.length = length;
+        }
+
+        public void add(int bytes, CharSequence name, boolean light) {
+            assert bytes == length;
+            nrReads.incrementAndGet();
+            if (light) {
+                int lights = nrLightReads.incrementAndGet();
+                assert lights == 1 : "more that one APT Light created for " + name;
+            }
+        }
+
+        public int totalBytes() {
+            return nrReads.get() * length;
+        }
+
+        public int totalReads() {
+            return nrReads.get();
+        }
+
+        public int totalLightReads() {
+            return nrLightReads.get();
+        }
+
+        public int getLength() {
+            return length;
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" + "length=" + length + ", nrLightReads=" + nrLightReads + ", nrReads=" + nrReads + '}'; // NOI18N
+        }
+    }
+
+    private void trackActivity(CharSequence name, int len, boolean light) {
+        if (true) {
+            return;
+        }
+        FileTraceData size = readFiles.get(name);
+        if (size == null) {
+            size = new FileTraceData(len);
+            FileTraceData prev = readFiles.putIfAbsent(name, size);
+            if (prev != null) {
+                size = prev;
+            }
+        }
+        size.add(len, name, light);
+    }
+    private final ConcurrentMap<CharSequence, FileTraceData> readFiles = new ConcurrentHashMap<CharSequence, FileTraceData>();
+
 }
