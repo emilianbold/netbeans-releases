@@ -394,6 +394,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         });
     }
 
+    @Override
     public Collection<Description> filter(Collection<Description> original) {
 
         boolean non_public = filtersManager.isSelected(SHOW_NON_PUBLIC);
@@ -432,7 +433,7 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
         }
         Collections.sort(result, isNaturalSort() ? Description.POSITION_COMPARATOR : Description.ALPHA_COMPARATOR);
         if(warn) {
-            if(this.label == null) {
+            if(this.label == null && outlineView1.isValid()) {
                 final JLayeredPane layeredPaneAbove = JLayeredPane.getLayeredPaneAbove(outlineView1);
                 ImageIcon imageIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/refactoring/java/resources/warning_16.png", false); //NOI18N
                 this.label = new JLabel("Some selected members are not visible", imageIcon, SwingConstants.LEFT);//NOI18N
