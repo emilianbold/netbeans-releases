@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import java.io.IOException;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -53,6 +52,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.apt.impl.support.APTDriverImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -70,7 +70,7 @@ public final class APTDriver {
         rLock = rwLock.readLock();
         wLock = rwLock.writeLock();
     }
-    
+
     /** Creates a new instance of APTCreator */
     private APTDriver() {
     }
@@ -133,5 +133,16 @@ public final class APTDriver {
         } finally {
             wLock.unlock();
         }      
+    }
+    
+    public static void dumpStatistics() {
+        wLock.lock();
+        try {
+            for (APTDriverImpl driver : drivers.values()) {
+                driver.traceActivity();
+            }
+        } finally {
+            wLock.unlock();
+        }
     }
 }
