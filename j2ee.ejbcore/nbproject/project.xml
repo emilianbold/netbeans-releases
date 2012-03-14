@@ -174,7 +174,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.25</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -533,7 +533,9 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
+                <friend>org.netbeans.modules.j2ee.ejbverification</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <package>org.netbeans.modules.j2ee.ejbcore</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.codegeneration</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.methodcontroller</package>
                 <package>org.netbeans.modules.j2ee.ejbcore.api.ui</package>
