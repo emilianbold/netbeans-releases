@@ -26,7 +26,7 @@ function computeColor(limit) {
     }
     while (color > 100) {
         do {
-            color = color / 2;
+            color = (color / 2) + 1;
         } while (isOk());
     }
     color = color < 1 ? 1 : color

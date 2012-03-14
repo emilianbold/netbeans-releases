@@ -65,7 +65,8 @@ public final class FormatToken {
                 Kind.BEFORE_FUNCTION_CALL, Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS,
                 Kind.BEFORE_IF_PARENTHESIS, Kind.BEFORE_WHILE_PARENTHESIS,
                 Kind.BEFORE_FOR_PARENTHESIS, Kind.BEFORE_WITH_PARENTHESIS,
-                Kind.BEFORE_SWITCH_PARENTHESIS, Kind.BEFORE_CATCH_PARENTHESIS);
+                Kind.BEFORE_SWITCH_PARENTHESIS, Kind.BEFORE_CATCH_PARENTHESIS,
+                Kind.BEFORE_RIGHT_PARENTHESIS);
     }
 
     private final Kind kind;
@@ -220,7 +221,10 @@ public final class FormatToken {
         AFTER_SWITCH_PARENTHESIS,
 
         BEFORE_CATCH_PARENTHESIS,
-        AFTER_CATCH_PARENTHESIS
+        AFTER_CATCH_PARENTHESIS,
+
+        BEFORE_RIGHT_PARENTHESIS,
+        AFTER_LEFT_PARENTHESIS
     }
 
 }

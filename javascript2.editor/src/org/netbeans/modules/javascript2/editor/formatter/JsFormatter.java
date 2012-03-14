@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Utilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
@@ -57,6 +58,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -292,6 +294,14 @@ public class JsFormatter implements Formatter {
                         case BEFORE_CATCH_PARENTHESIS:
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceWithinCatchParens());
+                            break;
+                        case AFTER_LEFT_PARENTHESIS:
+                            offsetDiff = handleSpaceAfter(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinParens());
+                            break;
+                        case BEFORE_RIGHT_PARENTHESIS:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceWithinParens());
                             break;
                         case SOURCE_START:
                         case EOL:

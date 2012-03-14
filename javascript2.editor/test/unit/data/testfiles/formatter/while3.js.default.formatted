@@ -8,7 +8,7 @@ do; while (r.test1() + r);
 
 do {
     "ok"
-} while ((s || b.some() ))
+} while ((s || b.some()))
 
 while (sss);
 

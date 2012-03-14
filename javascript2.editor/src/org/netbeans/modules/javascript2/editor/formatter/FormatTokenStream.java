@@ -174,6 +174,14 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_SEMICOLON));
                     break;
+                case BRACKET_LEFT_PAREN:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_LEFT_PARENTHESIS));
+                    break;
+                case BRACKET_RIGHT_PAREN:
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS));
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text()));
+                    break;
                 default:
                     ret.addToken(FormatToken.forText(ts.offset(), token.text()));
                     break;

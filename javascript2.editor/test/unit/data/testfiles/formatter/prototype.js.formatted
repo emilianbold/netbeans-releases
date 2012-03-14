@@ -75,7 +75,7 @@ Function.prototype.bind = function() {
 Function.prototype.bindAsEventListener = function(object) {
     var __method = this, args = $A(arguments), object = args.shift();
     return function(event) {
-        return __method.apply(object, [( event || window.event)].concat(args).concat($A(arguments)));
+        return __method.apply(object, [(event || window.event)].concat(args).concat($A(arguments)));
     }
 }
 
@@ -2005,8 +2005,8 @@ Form.Element.Methods = {
     activate: function(element) {
         element = $(element);
         element.focus();
-        if (element.select && ( element.tagName.toLowerCase() != 'input' ||
-                !['button', 'reset', 'submit'].include(element.type) ))
+        if (element.select && (element.tagName.toLowerCase() != 'input' ||
+                !['button', 'reset', 'submit'].include(element.type)))
             element.select();
         return element;
     },

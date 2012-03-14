@@ -382,10 +382,10 @@ public final class CodeStyle {
 //        return preferences.getBoolean(spaceBeforeArrayInitLeftBrace, getDefaultAsBoolean(spaceBeforeArrayInitLeftBrace));
 //    }
 //
-//    public boolean spaceWithinParens() {
-//        return preferences.getBoolean(spaceWithinParens, getDefaultAsBoolean(spaceWithinParens));
-//    }
-//
+    public boolean spaceWithinParens() {
+        return preferences.getBoolean(spaceWithinParens, getDefaultAsBoolean(spaceWithinParens));
+    }
+
     public boolean spaceWithinMethodDeclParens() {
         return preferences.getBoolean(spaceWithinMethodDeclParens, getDefaultAsBoolean(spaceWithinMethodDeclParens));
     }
