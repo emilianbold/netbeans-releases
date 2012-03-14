@@ -185,11 +185,13 @@ public final class SyncPanel extends JPanel {
         itemTable.getTableHeader().setReorderingAllowed(false);
         TableColumnModel columnModel = itemTable.getColumnModel();
         columnModel.getColumn(0).setMinWidth(10);
-        columnModel.getColumn(0).setMaxWidth(10);
-        columnModel.getColumn(0).setResizable(false);
+        columnModel.getColumn(0).setPreferredWidth(10);
+        columnModel.getColumn(0).setResizable(true);
+        columnModel.getColumn(1).setPreferredWidth(1000);
         columnModel.getColumn(2).setMinWidth(100);
-        columnModel.getColumn(2).setMaxWidth(100);
-        columnModel.getColumn(2).setResizable(false);
+        columnModel.getColumn(2).setPreferredWidth(100);
+        columnModel.getColumn(2).setResizable(true);
+        columnModel.getColumn(3).setPreferredWidth(1000);
         // selections
         itemTable.setColumnSelectionAllowed(false);
         itemTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
