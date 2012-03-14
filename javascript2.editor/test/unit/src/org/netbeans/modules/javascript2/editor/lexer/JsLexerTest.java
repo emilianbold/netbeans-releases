@@ -209,6 +209,27 @@ public class JsLexerTest extends TestCase {
     }
 
     @SuppressWarnings("unchecked")
+    public void testRegexp9() {
+        String text = "var escapedString = this.replace(/a\\\\/g)";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());
+        TokenSequence<?extends JsTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_VAR, "var");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "escapedString");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_ASSIGNMENT, "=");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.KEYWORD_THIS, "this");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.OPERATOR_DOT, ".");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.IDENTIFIER, "replace");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_LEFT_PAREN, "(");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_BEGIN, "/");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP, "a\\\\");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.REGEXP_END, "/g");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsTokenId.BRACKET_RIGHT_PAREN, ")");
+    }
+
+    @SuppressWarnings("unchecked")
     public void testPartialRegexp() {
         String text = "x=/";
         TokenHierarchy hi = TokenHierarchy.create(text, JsTokenId.language());

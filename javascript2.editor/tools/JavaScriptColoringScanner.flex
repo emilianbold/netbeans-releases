@@ -166,9 +166,9 @@ Exponent = [eE] [+-]? [0-9]+
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
 SStringCharacter = [^\r\n\'\\] | \\{LineTerminator}
 
-SimpleRegexpCharacter  = [^\r\n/\\\[] | \\{InputCharacter}
+SimpleRegexpCharacter  = [^/\r\n\[\\] | \\{InputCharacter}
 RegexpCharacter  = {SimpleRegexpCharacter} | \[{SimpleRegexpCharacter}+\]
-RegexpFirstCharacter  = [^\r\n/\\\[\*] | \\{InputCharacter} | \[{SimpleRegexpCharacter}+\]
+RegexpFirstCharacter  = [^/\r\n\[\*\\] | \\{InputCharacter} | \[{SimpleRegexpCharacter}+\]
 
 %state STRING
 %state STRINGEND
