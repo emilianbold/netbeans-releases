@@ -69,7 +69,7 @@ autostore = false)
 @TopComponent.Description(preferredID = AnalysisResultTopComponent.PREFERRED_ID,
 //iconBase="SET/PATH/TO/ICON/HERE", 
 persistenceType = TopComponent.PERSISTENCE_NEVER)
-@TopComponent.Registration(mode = "output", openAtStartup = false)
+@TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
 @ActionReference(path = "Menu/Window/Output", position = 330)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AnalysisResultAction",
