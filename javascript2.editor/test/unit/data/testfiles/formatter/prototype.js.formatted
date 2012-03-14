@@ -614,7 +614,7 @@ function $w(string){
     return string ? string.split(/\s+/) : [];
 }
 
-if (window.opera){
+if (window.opera) {
     Array.prototype.concat = function(){
         var array = [];
         for (var i = 0, length = this.length; i < length; i++) array.push(this[i]);
@@ -693,7 +693,7 @@ Object.extend(Hash.prototype, {
         var result;
         for (var i = 0, length = arguments.length; i < length; i++) {
             var value = this[arguments[i]];
-            if (value !== undefined){
+            if (value !== undefined) {
                 if (result === undefined) result = value;
                 else {
                     if (result.constructor != Array) result = [result];
@@ -1537,7 +1537,7 @@ Element.Methods.Simulated = {
 };
 
 // IE is missing .innerHTML support for TABLE-related elements
-if (document.all && !window.opera){
+if (document.all && !window.opera) {
     Element.Methods.update = function(element, html) {
         element = $(element);
         html = typeof html == 'undefined' ? '' : html.toString();

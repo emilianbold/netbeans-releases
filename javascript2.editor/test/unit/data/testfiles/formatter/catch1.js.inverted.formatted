@@ -11,12 +11,12 @@ try {
 
 try {
     "hello"
-} catch ( error )  {
+} catch ( error ) {
     println(error);
 }
 
 try {
     "hello"
-} catch ( error )  {
+} catch ( error ) {
     println(error);
 }

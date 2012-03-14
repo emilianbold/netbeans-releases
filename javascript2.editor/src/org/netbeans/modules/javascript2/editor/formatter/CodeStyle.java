@@ -365,8 +365,8 @@ public final class CodeStyle {
         return preferences.getBoolean(spaceBeforeCatchLeftBrace, getDefaultAsBoolean(spaceBeforeCatchLeftBrace));
     }
 
-    public boolean spaceBeforeUseTraitBodyLeftBrace() {
-        return preferences.getBoolean(spaceBeforeUseTraitBodyLeftBrace, getDefaultAsBoolean(spaceBeforeUseTraitBodyLeftBrace));
+    public boolean spaceBeforeFinallyLeftBrace() {
+        return preferences.getBoolean(spaceBeforeFinallyLeftBrace, getDefaultAsBoolean(spaceBeforeFinallyLeftBrace));
     }
 
 //

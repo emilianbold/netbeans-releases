@@ -301,6 +301,38 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceWithinParens());
                             break;
+                        case BEFORE_IF_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeIfLeftBrace());
+                            break;
+                        case BEFORE_ELSE_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeIfLeftBrace());
+                            break;
+                        case BEFORE_WHILE_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeWhileLeftBrace());
+                            break;
+                        case BEFORE_FOR_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeForLeftBrace());
+                            break;
+                        case BEFORE_DO_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeDoLeftBrace());
+                            break;
+                        case BEFORE_TRY_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeTryLeftBrace());
+                            break;
+                        case BEFORE_CATCH_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeCatchLeftBrace());
+                            break;
+                        case BEFORE_FINALLY_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeFinallyLeftBrace());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces

@@ -7,7 +7,7 @@ if (x)
          // test
 alert("a");
 
-if (x) {
+if (x)  {
               "hello"
 
               }

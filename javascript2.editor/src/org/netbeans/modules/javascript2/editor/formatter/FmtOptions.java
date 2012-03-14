@@ -165,7 +165,7 @@ public class FmtOptions {
     public static final String spaceBeforeSwitchLeftBrace = "spaceBeforeSwitchLeftBrace"; //NOI18N
     public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
     public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
-    public static final String spaceBeforeUseTraitBodyLeftBrace = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
+    public static final String spaceBeforeFinallyLeftBrace = "spaceBeforeFinallyLeftBrace"; //NOI18N
 //    public static final String spaceBeforeSynchronizedLeftBrace = "spaceBeforeSynchronizedLeftBrace"; //NOI18N
 //    public static final String spaceBeforeStaticInitLeftBrace = "spaceBeforeStaticInitLeftBrace"; //NOI18N
 //    public static final String spaceBeforeArrayInitLeftBrace = "spaceBeforeArrayInitLeftBrace"; //NOI18N
@@ -337,7 +337,7 @@ public class FmtOptions {
             { spaceBeforeSwitchLeftBrace, TRUE},
             { spaceBeforeTryLeftBrace, TRUE},
             { spaceBeforeCatchLeftBrace, TRUE},
-            { spaceBeforeUseTraitBodyLeftBrace, TRUE},
+            { spaceBeforeFinallyLeftBrace, TRUE},
 //            { spaceBeforeSynchronizedLeftBrace, TRUE},
 //            { spaceBeforeStaticInitLeftBrace, TRUE},
 //            { spaceBeforeArrayInitLeftBrace, FALSE},

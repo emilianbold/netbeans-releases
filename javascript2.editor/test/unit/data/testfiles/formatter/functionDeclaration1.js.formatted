@@ -7,7 +7,7 @@ function computeColor () {
         color += Math.round(Math.random() * 2);
     }
     log();
-    if (!logic)  {
+    if (!logic) {
         test = ~4545 + test2;
     }
 }

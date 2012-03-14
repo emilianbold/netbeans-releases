@@ -121,6 +121,9 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesWithinParentheses(whileNode, getStart(whileNode), getStart(whileNode.getBody()),
                     FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
 
+            // mark space before left brace
+            markSpacesBeforeBrace(whileNode.getBody(), FormatToken.Kind.BEFORE_WHILE_BRACE);
+
             if (handleWhile(whileNode)) {
                 return null;
             }
@@ -135,6 +138,9 @@ public class FormatVisitor extends NodeVisitor {
             // within parens spaces
             markSpacesWithinParentheses(doWhileNode, getFinish(doWhileNode.getBody()), getFinish(doWhileNode),
                     FormatToken.Kind.AFTER_WHILE_PARENTHESIS, FormatToken.Kind.BEFORE_WHILE_PARENTHESIS);
+
+            // mark space before left brace
+            markSpacesBeforeBrace(doWhileNode.getBody(), FormatToken.Kind.BEFORE_DO_BRACE);
 
             FormatToken whileToken = getPreviousToken(doWhileNode.getFinish(), JsTokenId.KEYWORD_WHILE);
             FormatToken beforeWhile = whileToken.previous();
@@ -156,6 +162,9 @@ public class FormatVisitor extends NodeVisitor {
             markSpacesWithinParentheses(forNode, getStart(forNode), getStart(forNode.getBody()),
                     FormatToken.Kind.AFTER_FOR_PARENTHESIS, FormatToken.Kind.BEFORE_FOR_PARENTHESIS);
 
+            // mark space before left brace
+            markSpacesBeforeBrace(forNode.getBody(), FormatToken.Kind.BEFORE_FOR_BRACE);
+
             if (handleWhile(forNode)) {
                 return null;
             }
@@ -175,6 +184,9 @@ public class FormatVisitor extends NodeVisitor {
 
             // pass block
             Block body = ifNode.getPass();
+            // mark space before left brace
+            markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_IF_BRACE);
+
             if (body.getStart() == body.getFinish()) {
                 handleVirtualBlock(body);
             } else {
@@ -184,6 +196,9 @@ public class FormatVisitor extends NodeVisitor {
             // fail block
             body = ifNode.getFail();
             if (body != null) {
+                // mark space before left brace
+                markSpacesBeforeBrace(body, FormatToken.Kind.BEFORE_ELSE_BRACE);
+
                 if (body.getStart() == body.getFinish()) {
                     handleVirtualBlock(body);
                 } else {
@@ -445,10 +460,30 @@ public class FormatVisitor extends NodeVisitor {
             // within parens spaces
             markSpacesWithinParentheses(catchNode, getStart(catchNode), getStart(catchNode.getBody()),
                     FormatToken.Kind.AFTER_CATCH_PARENTHESIS, FormatToken.Kind.BEFORE_CATCH_PARENTHESIS);
+
+            // mark space before left brace
+            markSpacesBeforeBrace(catchNode.getBody(), FormatToken.Kind.BEFORE_CATCH_BRACE);
         }
 
         return super.visit(catchNode, onset);
     }
+
+    @Override
+    public Node visit(TryNode tryNode, boolean onset) {
+        if (onset) {
+            // mark space before left brace
+            markSpacesBeforeBrace(tryNode.getBody(), FormatToken.Kind.BEFORE_TRY_BRACE);
+
+            Block finallyBody = tryNode.getFinallyBody();
+            if (finallyBody != null) {
+                // mark space before finally left brace
+                markSpacesBeforeBrace(tryNode.getFinallyBody(), FormatToken.Kind.BEFORE_FINALLY_BRACE);
+            }
+        }
+
+        return super.visit(tryNode, onset);
+    }
+
 
     private boolean handleWhile(WhileNode whileNode) {
         Block body = whileNode.getBody();
@@ -590,6 +625,17 @@ public class FormatVisitor extends NodeVisitor {
                 if (previous != null) {
                     appendToken(previous, FormatToken.forFormat(rightMark));
                 }
+            }
+        }
+    }
+
+    private void markSpacesBeforeBrace(Block block, FormatToken.Kind mark) {
+        FormatToken brace = getPreviousToken(getStart(block), JsTokenId.BRACKET_LEFT_CURLY,
+                getStart(block) - 1);
+        if (brace != null) {
+            FormatToken previous = brace.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(mark));
             }
         }
     }
