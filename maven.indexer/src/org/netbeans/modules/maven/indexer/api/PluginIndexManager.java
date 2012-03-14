@@ -89,6 +89,8 @@ public class PluginIndexManager {
                     if (v.getVersion().endsWith("-SNAPSHOT") && !v.getRepoId().equals(RepositorySystem.DEFAULT_LOCAL_REPO_ID)) {
                         continue;
                     }
+                    //XXX mkleint: oh man this takes forever.. it's inpractical for any usecase unless one has already downloaded the internet.
+                    // now that I think of it, the only scalable solution is make the info part of the index.
                     File jar = RepositoryUtil.downloadArtifact(v);
                     Document pluginXml = loadPluginXml(jar);
                     if (pluginXml == null) {
