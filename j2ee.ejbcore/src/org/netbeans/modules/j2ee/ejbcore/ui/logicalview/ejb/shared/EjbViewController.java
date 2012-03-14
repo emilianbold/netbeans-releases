@@ -74,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbReferenceSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -172,30 +173,7 @@ public final class EjbViewController {
     }
 
     public EjbReference createEjbReference() throws IOException {
-        Map<String, String> ejbInfo = ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Map<String, String>>() {
-            public Map<String, String> run(EjbJarMetadata metadata) throws Exception {
-                EntityAndSession ejb = (EntityAndSession) metadata.findByEjbClass(ejbClass);
-                Map<String, String> result = new HashMap<String, String>();
-                if (ejb != null){
-                    result.put(Ejb.EJB_NAME, ejb.getEjbName());
-                    result.put(EjbRef.EJB_REF_TYPE, ejb instanceof Entity ? EjbRef.EJB_REF_TYPE_ENTITY : EjbRef.EJB_REF_TYPE_SESSION);
-                    result.put(EntityAndSession.LOCAL, ejb.getLocal());
-                    result.put(EntityAndSession.LOCAL_HOME, ejb.getLocalHome());
-                    result.put(EntityAndSession.REMOTE, ejb.getRemote());
-                    result.put(EntityAndSession.HOME, ejb.getHome());
-                }
-                return result;
-            }
-        });
-        return EjbReference.create(
-                ejbClass,
-                ejbInfo.get(EjbRef.EJB_REF_TYPE),
-                ejbInfo.get(EntityAndSession.LOCAL),
-                ejbInfo.get(EntityAndSession.LOCAL_HOME),
-                ejbInfo.get(EntityAndSession.REMOTE),
-                ejbInfo.get(EntityAndSession.HOME),
-                ejbModule
-                );
+        return EjbReferenceSupport.createEjbReference(ejbModule, ejbClass);
     }
 
     public String getEjbClass(){

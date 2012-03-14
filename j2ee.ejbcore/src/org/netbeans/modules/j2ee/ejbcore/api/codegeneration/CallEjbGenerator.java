@@ -29,7 +29,7 @@
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.ejbcore.action;
+package org.netbeans.modules.j2ee.ejbcore.api.codegeneration;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
