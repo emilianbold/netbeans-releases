@@ -172,12 +172,8 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
         if (!update || !Utilities.compareObjects(this.library.getDescription(), libraryDescription)) {
             this.library.setDescription (this.libraryDescription);
         }
-        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
-            Util.setDisplayName(this.library,displayName);
-        }
-        if (!update || !Utilities.compareObjects(this.library.getLocalizingBundle(), displayName)) {
-            Util.setProperties(this.library, properties);
-        }
+        Util.setDisplayName(this.library,displayName);
+        Util.setProperties(this.library, properties);
         for (Map.Entry<String,List<URL>> entry : contentTypes.entrySet()) {
             String contentType = entry.getKey();
             List<URL> cp = entry.getValue();

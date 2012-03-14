@@ -152,8 +152,11 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
         return this.displayName;
     }
 
+    @Override
     public void setDisplayName(final @NullAllowed String displayName) {
+        final String oldDisplayName = this.displayName;
         this.displayName = displayName;
+        this.firePropertyChange (PROP_DISPLAY_NAME, oldDisplayName, this.displayName);
     }
 
     @Override
@@ -215,6 +218,8 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     @Override
     public void setProperties(@NonNull final Map<String,String> props) {
         Parameters.notNull("props", props); //NOI18N
+        final Map<String,String> oldProps = properties;
         properties = props;
+        firePropertyChange (PROP_PROPERTIES, oldProps, properties);
     }
 }

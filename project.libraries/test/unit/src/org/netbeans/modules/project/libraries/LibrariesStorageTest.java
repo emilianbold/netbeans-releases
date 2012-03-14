@@ -69,6 +69,7 @@ import org.netbeans.modules.project.libraries.ui.LibrariesCustomizer;
 import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.modules.project.libraries.ui.ProxyLibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
 import org.openide.filesystems.FileLock;
@@ -198,6 +199,45 @@ public class LibrariesStorageTest extends NbTestCase {
         assertEquals("Libraries count",1,libs.length);
         assertLibEquals(libs, new String[] {"NewLibrary"});
         assertTrue ("Library created called",  tlp.wasCreatedCalled());
+    }
+    
+    public void testNamedLibraryImplementation() throws Exception {
+        this.storage.getLibraries();
+        LibraryImplementation[] libs = this.storage.getLibraries();
+        assertEquals("Libraries count",1,libs.length);  //NOI18N
+        assertLibEquals(libs, new String[] {"Library1"});   //NOI18N
+        LibraryImplementation3 lib3 = (LibraryImplementation3)libs[0];
+        assertNull(lib3.getDisplayName());
+        
+        LibraryImplementation3 newLib = new TestLibrary ((TestLibrary)lib3);
+        newLib.setDisplayName("FooLib");    //NOI18N
+        this.storage.updateLibrary(lib3,newLib);
+        libs = this.storage.getLibraries();
+        assertEquals("Libraries count",1,libs.length);  //NOI18N
+        assertLibEquals(libs, new String[] {"Library1"});   //NOI18N
+        lib3 = (LibraryImplementation3)libs[0];
+        assertEquals("FooLib",lib3.getDisplayName());   //NOI18N
+    }
+    
+    public void testLibraryImplementation3() throws Exception {
+        this.storage.getLibraries();
+        LibraryImplementation[] libs = this.storage.getLibraries();
+        assertEquals("Libraries count",1,libs.length);  //NOI18N
+        assertLibEquals(libs, new String[] {"Library1"});   //NOI18N
+        LibraryImplementation3 lib3 = (LibraryImplementation3)libs[0];
+        assertTrue(lib3.getProperties().isEmpty());
+        
+        LibraryImplementation3 newLib = new TestLibrary ((TestLibrary)lib3);
+        Map<String,String> props = new HashMap<String, String>();
+        props.put("test_prop","test_value");    //NOI18N
+        newLib.setProperties(props);
+        this.storage.updateLibrary(lib3,newLib);
+        libs = this.storage.getLibraries();
+        assertEquals("Libraries count",1,libs.length);  //NOI18N
+        assertLibEquals(libs, new String[] {"Library1"});   //NOI18N
+        lib3 = (LibraryImplementation3)libs[0];
+        assertEquals(1, lib3.getProperties().size());
+        assertEquals("test_value", lib3.getProperties().get("test_prop"));  //NOI18N
     }
     
     private static void assertLibEquals (LibraryImplementation[] libs, String[] names) {
@@ -367,7 +407,7 @@ public class LibrariesStorageTest extends NbTestCase {
         
     }
 
-    private static class TestLibrary implements LibraryImplementation {
+    private static class TestLibraryOld implements LibraryImplementation {
         
         private String name;
         private String locBundle;
@@ -375,17 +415,17 @@ public class LibrariesStorageTest extends NbTestCase {
         private Map<String,List<URL>> contents;
         private PropertyChangeSupport support;
         
-        public TestLibrary () {
+        public TestLibraryOld () {
             this.support = new PropertyChangeSupport (this);
             this.contents = new HashMap<String,List<URL>>(2);
         }
         
-        public TestLibrary (String name) {
+        public TestLibraryOld (String name) {
             this ();            
             this.name = name;
         }
         
-        public TestLibrary (TestLibrary lib) {
+        public TestLibraryOld (TestLibraryOld lib) {
             this ();
             this.name = lib.name;
             this.locBundle = lib.locBundle;
@@ -393,37 +433,45 @@ public class LibrariesStorageTest extends NbTestCase {
             this.contents = lib.contents;
         }
         
+        @Override
         public String getType() {
             return TestLibraryTypeProvider.TYPE;
         }
         
+        @Override
         public String getName () {
             return this.name;
         }
         
+        @Override
         public void setName(String name) {
             this.name = name;
             this.support.firePropertyChange(PROP_NAME,null,null);
         }
         
+        @Override
         public String getLocalizingBundle() {
             return this.locBundle;
         }
 
+        @Override
         public void setLocalizingBundle(String resourceName) {
             this.locBundle = resourceName;
             this.support.firePropertyChange("localizingBundle",null,null);
         }
         
+        @Override
         public String getDescription() {
             return this.description;
         }
 
+        @Override
         public void setDescription(String text) {
             this.description = text;
             this.support.firePropertyChange(PROP_DESCRIPTION,null,null);
         }
 
+        @Override
         public List<URL> getContent(String volumeType) throws IllegalArgumentException {
             for (String t : TestLibraryTypeProvider.supportedTypes) {
                 if (t.equals(volumeType)) {
@@ -437,6 +485,7 @@ public class LibrariesStorageTest extends NbTestCase {
             throw new IllegalArgumentException ();
         }
 
+        @Override
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {
             for (String t : TestLibraryTypeProvider.supportedTypes) {
                 if (t.equals(volumeType)) {
@@ -448,10 +497,12 @@ public class LibrariesStorageTest extends NbTestCase {
             throw new IllegalArgumentException ();
         }                       
         
+        @Override
         public void addPropertyChangeListener(java.beans.PropertyChangeListener l) {
             this.support.addPropertyChangeListener(l);
         }
         
+        @Override
         public void removePropertyChangeListener(java.beans.PropertyChangeListener l) {
             this.support.removePropertyChangeListener(l);
         }
@@ -465,11 +516,49 @@ public class LibrariesStorageTest extends NbTestCase {
 
         @Override
         public boolean equals (final Object other) {
-            if (other instanceof TestLibrary) {
-                final TestLibrary otherLib = (TestLibrary) other;
+            if (other instanceof TestLibraryOld) {
+                final TestLibraryOld otherLib = (TestLibraryOld) other;
                 return name == null ? otherLib.name == null : name.equals(otherLib.name);
             }
             return false;
+        }
+    }
+    
+    private static class TestLibrary extends TestLibraryOld implements LibraryImplementation3 {
+        
+        private String dName;
+        private Map<String,String> props = new HashMap<String, String>();
+        
+        public TestLibrary () {
+            super();
+        }
+        
+        public TestLibrary (String name) {
+            super(name);
+        }
+        
+        public TestLibrary (TestLibrary lib) {
+            super(lib);
+        }
+        
+        @Override
+        public Map<String, String> getProperties() {
+            return props;
+        }
+
+        @Override
+        public void setProperties(Map<String, String> properties) {
+            this.props = properties;
+        }
+
+        @Override
+        public void setDisplayName(String displayName) {
+            this.dName = displayName;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return dName;
         }
     }
     

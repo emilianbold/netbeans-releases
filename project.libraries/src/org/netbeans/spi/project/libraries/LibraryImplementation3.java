@@ -54,6 +54,12 @@ import org.netbeans.api.annotations.common.NonNull;
 public interface LibraryImplementation3 extends NamedLibraryImplementation {
     
     /**
+     * Name of the properties property.
+     * @since 1.35
+     */
+    String PROP_PROPERTIES = "properties";
+    
+    /**
      * Returns library properties
      * @return the {@link Map} containing the properties
      */
