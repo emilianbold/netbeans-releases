@@ -67,11 +67,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Name;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.hints.ui.SearchDependencyUI;
-import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.ModelUtils;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.lexer.Token;
@@ -81,7 +76,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
+import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.hints.errors.Bundle.*;
+import org.netbeans.modules.maven.hints.ui.SearchDependencyUI;
+import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
@@ -90,7 +91,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -104,6 +105,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
     public SearchClassDependencyInRepo() {
     }
 
+    @Override
     public Set<String> getCodes() {
         return new HashSet<String>(Arrays.asList(
                 "compiler.err.cant.resolve",//NOI18N
@@ -113,6 +115,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
     }
 
+    @Override
     public List<Fix> run(final CompilationInfo info, String diagnosticKey,
             final int offset, TreePath treePath, Data<Void> data) {
         cancel.set(false);
@@ -206,7 +209,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
                         switch (initializer.getKind()) {
                             case NEW_CLASS:
                                  {
-                                    ExpressionTree identifier = null;
+                                    ExpressionTree identifier;
                                     NewClassTree classTree = (NewClassTree) initializer;
                                     identifier = classTree.getIdentifier();
 
@@ -402,15 +405,19 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         return null;
     }
 
+    @Override
     public String getId() {
         return "MAVEN_MISSING_CLASS";//NOI18N
 
     }
 
+    @Override
+    @Messages("LBL_Class_Search_DisplayName=Add Class Dependency From Maven Repository")
     public String getDisplayName() {
-        return NbBundle.getMessage(SearchClassDependencyInRepo.class, "LBL_Class_Search_DisplayName");
+        return LBL_Class_Search_DisplayName();
     }
 
+    @Override
     public void cancel() {
         //cancel task
         cancel.set(true);
@@ -428,22 +435,28 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
             this.test = test;
         }
 
+        @Override
         public CharSequence getSortText() {
             return getText();
         }
 
+        @Override
+        @Messages({
+            "# {0} - maven coordinates",
+            "LBL_Class_Search_Fix=Add Maven Dependency # {0}"})
         public String getText() {
-            return NbBundle.getMessage(SearchClassDependencyInRepo.class,
-                    "LBL_Class_Search_Fix", nbvi.getGroupId() + " : " + nbvi.getArtifactId() + " : " + nbvi.getVersion());
+            return LBL_Class_Search_Fix(nbvi.getGroupId() + " : " + nbvi.getArtifactId() + " : " + nbvi.getVersion());
 
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             ModelUtils.addDependency(mavProj.getProjectDirectory().getFileObject("pom.xml"), nbvi.getGroupId(), nbvi.getArtifactId(),
                     nbvi.getVersion(), nbvi.getType(), test ? "test" : null, null, true);//NOI18N
 
             RequestProcessor.getDefault().post(new Runnable() {
 
+                @Override
                 public void run() {
                     mavProj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
                 }
@@ -464,21 +477,28 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
             this.test = test;
         }
 
+        @Override
         public CharSequence getSortText() {
             return getText();
         }
 
+        @Override
+        @Messages({
+            "# {0} - classname",
+            "LBL_Class_Search_ALL_Fix=Search Dependency at Maven Repositories for {0}"})
         public String getText() {
-            return org.openide.util.NbBundle.getMessage(SearchClassDependencyInRepo.class, "LBL_Class_Search_ALL_Fix", clazz);
+            return LBL_Class_Search_ALL_Fix(clazz);
 
         }
 
+        @Override
+        @Messages("LBL_Search_Repo=Search In Maven Repositories ")
         public ChangeInfo implement() throws Exception {
             NBVersionInfo nbvi = null;
             SearchDependencyUI dependencyUI = new SearchDependencyUI(clazz, mavProj);
 
             DialogDescriptor dd = new DialogDescriptor(dependencyUI,
-                    org.openide.util.NbBundle.getMessage(SearchClassDependencyInRepo.class, "LBL_Search_Repo"));
+                    LBL_Search_Repo());
             dd.setClosingOptions(new Object[]{
                         dependencyUI.getAddButton(),
                         DialogDescriptor.CANCEL_OPTION
@@ -498,6 +518,7 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
 
                 RequestProcessor.getDefault().post(new Runnable() {
 
+                    @Override
                     public void run() {
                         mavProj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
                     }
