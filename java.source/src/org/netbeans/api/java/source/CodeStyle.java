@@ -1135,8 +1135,8 @@ public final class CodeStyle {
             private boolean check(ElementKind kind, Set<Modifier> modifiers) {
                 if (this.kind != kind)
                     return false;
-                if (modifiers == null)
-                    return true;
+                if (modifiers == null || modifiers.isEmpty())
+                    return mods.isEmpty();
                 if (!modifiers.containsAll(this.mods))
                     return false;
                 if (ignoreVisibility)

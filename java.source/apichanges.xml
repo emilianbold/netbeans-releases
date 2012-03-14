@@ -108,6 +108,21 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="GeneratorUtilities-appendToAnnotationValue">
+             <api name="general"/>
+             <summary>Added <code>GeneratorUtilities.appendToAnnotationValue</code>.</summary>
+             <version major="0" minor="99"/>
+             <date day="13" month="3" year="2012"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added two overloaded methods <code>appendToAnnotationValue</code> to class <code>GeneratorUtilites</code>,
+                 which augment <code>ModifiersTree</code> or <code>CompilationUnitTree</code> with
+                 annotation with the given attribute values.
+             </description>
+             <class package="org.netbeans.api.java.source" name="GeneratorUtilities"/>
+             <issue number="208570"/>
+        </change>
         <change id="elementhandle-create">
              <api name="general"/>
              <summary>Added factory methods to create an <code>ElementHandle</code> for type and package.</summary>
