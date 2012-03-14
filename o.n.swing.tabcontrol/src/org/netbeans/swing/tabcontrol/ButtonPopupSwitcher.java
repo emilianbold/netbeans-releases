@@ -61,6 +61,7 @@ import org.netbeans.swing.popupswitcher.SwitcherTableItem;
 import org.netbeans.swing.tabcontrol.DocumentSwitcherTable.Item;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataEvent;
 import org.netbeans.swing.tabcontrol.event.ComplexListDataListener;
+import org.netbeans.swing.tabcontrol.event.TabActionEvent;
 import org.openide.awt.StatusDisplayer;
 import org.openide.windows.TopComponent;
 
@@ -250,8 +251,8 @@ final class ButtonPopupSwitcher implements MouseInputListener, AWTEventListener,
             if( !pTable.onMouseEvent(e) ) {
                 final SwitcherTableItem item = pTable.getSelectedItem();
                 if (item != null) {
-                    item.activate();
                     hideCurrentPopup();
+                    item.activate();
                 }
             }
         }
