@@ -218,53 +218,69 @@ public final class SyncItem {
         "SyncItem.error.fileConflict=File must be merged before synchronization.",
         "SyncItem.error.fileDirCollision=Cannot synchronize file with directory.",
         "SyncItem.error.childNotDeleted=Not all children marked for deleting.",
+        "SyncItem.error.cannotDownload=Non-existing file cannot be downloaded.",
+        "SyncItem.error.cannotUpload=Non-existing file cannot be uploaded.",
         "SyncItem.warn.downloadReview=File should be reviewed before download.",
         "SyncItem.warn.uploadReview=File should be reviewed before upload.",
         "SyncItem.warn.symlink=Symbolic links are not downloaded (to avoid future overriding on server)."
     })
     public void validate() {
-        Operation op = getOperation();
-        if (op == Operation.FILE_CONFLICT) {
-            valid = false;
-            message = Bundle.SyncItem_error_fileConflict();
-            return;
-        }
-        if (op == Operation.FILE_DIR_COLLISION) {
-            valid = false;
-            message = Bundle.SyncItem_error_fileDirCollision();
-            return;
-        }
-        if (op == Operation.SYMLINK) {
-            valid = true;
-            message = Bundle.SyncItem_warn_symlink();
-            return;
-        }
-        if (op == Operation.DELETE) {
-            if (localTransferFile != null
-                    && !verifyChildrenOperation(localTransferFile, Operation.DELETE)) {
-                valid = false;
-                message = Bundle.SyncItem_error_childNotDeleted();
-                return;
-            }
-            if (remoteTransferFile != null
-                    && !verifyChildrenOperation(remoteTransferFile, Operation.DELETE)) {
-                valid = false;
-                message = Bundle.SyncItem_error_childNotDeleted();
-                return;
-            }
-        }
-        if (op == Operation.DOWNLOAD_REVIEW) {
-            valid = true;
-            message = Bundle.SyncItem_warn_downloadReview();
-            return;
-        }
-        if (op == Operation.UPLOAD_REVIEW) {
-            valid = true;
-            message = Bundle.SyncItem_warn_uploadReview();
-            return;
-        }
         message = null;
         valid = true;
+        Operation op = getOperation();
+        switch (op) {
+            case NOOP:
+                // noop
+                break;
+            case FILE_CONFLICT:
+                valid = false;
+                message = Bundle.SyncItem_error_fileConflict();
+                return;
+            case FILE_DIR_COLLISION:
+                valid = false;
+                message = Bundle.SyncItem_error_fileDirCollision();
+                break;
+            case SYMLINK:
+                valid = true;
+                message = Bundle.SyncItem_warn_symlink();
+                break;
+            case DELETE:
+                if (localTransferFile != null
+                        && !verifyChildrenOperation(localTransferFile, Operation.DELETE)) {
+                    valid = false;
+                    message = Bundle.SyncItem_error_childNotDeleted();
+                    return;
+                }
+                if (remoteTransferFile != null
+                        && !verifyChildrenOperation(remoteTransferFile, Operation.DELETE)) {
+                    valid = false;
+                    message = Bundle.SyncItem_error_childNotDeleted();
+                    return;
+                }
+                break;
+            case DOWNLOAD:
+                if (remoteTransferFile == null) {
+                    valid = false;
+                    message = Bundle.SyncItem_error_cannotDownload();
+                }
+                break;
+            case UPLOAD:
+                if (localTransferFile == null) {
+                    valid = false;
+                    message = Bundle.SyncItem_error_cannotUpload();
+                }
+                break;
+            case DOWNLOAD_REVIEW:
+                valid = true;
+                message = Bundle.SyncItem_warn_downloadReview();
+                break;
+            case UPLOAD_REVIEW:
+                valid = true;
+                message = Bundle.SyncItem_warn_uploadReview();
+                break;
+            default:
+                throw new IllegalStateException("Unhandled operation: " + op);
+        }
     }
 
     public boolean hasError() {

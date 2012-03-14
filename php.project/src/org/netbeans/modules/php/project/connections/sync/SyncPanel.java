@@ -253,23 +253,24 @@ public final class SyncPanel extends JPanel {
     }
 
     void setEnabledOperationButtons(int[] selectedRows) {
-        boolean enabled = false;
-        if (selectedRows.length > 0) {
-            enabled = true;
-            // is there any symlink?
-            for (int i : selectedRows) {
-                SyncItem syncItem = items.get(i);
-                if (syncItem.getOperation() == SyncItem.Operation.SYMLINK) {
-                    enabled = false;
-                    break;
-                }
-            }
-        }
+        boolean enabled = areOperationButtonsEnabled(selectedRows);
         noopButton.setEnabled(enabled);
         downloadButton.setEnabled(enabled);
         uploadButton.setEnabled(enabled);
         deleteButton.setEnabled(enabled);
         resetButton.setEnabled(enabled);
+    }
+
+    private boolean areOperationButtonsEnabled(int[] selectedRows) {
+        if (selectedRows.length == 0) {
+            return false;
+        }
+        for (int i : selectedRows) {
+            if (items.get(i).getOperation() == SyncItem.Operation.SYMLINK) {
+                return false;
+            }
+        }
+        return true;
     }
 
     void setEnabledDiffButton(int selectedRowCount) {
