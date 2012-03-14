@@ -77,8 +77,13 @@ made subject to such option by the copyright holder.
             </pathfileset>
         </delete>
         
+        <!-- architecture of jvm on which app will run -->
+        <condition property="jvm.arch.string" value="64" else="">
+            <available file="${run.jdkhome}\jre\lib\amd64" />
+        </condition>  
+        
         <!-- use nb.exe if exists (old platform), netbeans.exe otherwise -->
-        <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans.exe">
+        <condition property="run.app.exe" value="bin\nb.exe" else="bin\netbeans${jvm.arch.string}.exe">
             <available file="${install}\bin\nb.exe"/>
         </condition>
         <property name="run.app.sh" value="bin/netbeans"/>
@@ -149,7 +154,7 @@ made subject to such option by the copyright holder.
         </pathconvert>
         <pathconvert property="run.exe">
             <path>
-                <fileset dir="${install}" includes="platform*/lib/nbexec.exe"/>
+                <fileset dir="${install}" includes="platform*/lib/nbexec${jvm.arch.string}.exe"/>
             </path>
         </pathconvert>
         <pathconvert property="run.sh">

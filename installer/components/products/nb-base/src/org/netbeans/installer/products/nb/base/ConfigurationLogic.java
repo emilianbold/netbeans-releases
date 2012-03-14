@@ -77,7 +77,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private List<WizardComponent> wizardComponents;
-
+    
     public ConfigurationLogic() throws InitializationException {
         wizardComponents = Wizard.loadWizardComponents(
                 WIZARD_COMPONENTS_URI,
@@ -100,6 +100,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log("... path    : "  + jdkHome);
             LogManager.log("... version : "  + info.getVersion().toJdkStyle());
             LogManager.log("... vendor  : "  + info.getVendor());
+            LogManager.log("... arch    : "  + info.getArch());
             LogManager.log("... final   : "  + (!info.isNonFinal()));
             NetBeansUtils.setJavaHome(installLocation, jdkHome);
         } catch (IOException e) {
@@ -766,8 +767,15 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
     @Override
     public String getExecutable() {
+        File jdkHome = new File(getProduct().getProperty(JdkLocationPanel.JDK_LOCATION_PROPERTY));
+        JavaInfo javaInfo = JavaUtils.getInfo(jdkHome);
+        
         if (SystemUtils.isWindows()) {
-            return EXECUTABLE_WINDOWS;
+            if (javaInfo.getArch().endsWith("64")) {
+                return EXECUTABLE_WINDOWS_64;
+            } else {
+                return EXECUTABLE_WINDOWS;
+            }    
         } else {
             return EXECUTABLE_UNIX;
         }
@@ -829,11 +837,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             icon = new File(location, ICON_UNIX);
         }
 
-        if (SystemUtils.isWindows()) {
-            executable = new File(location, EXECUTABLE_WINDOWS);
-        } else {
-            executable = new File(location, EXECUTABLE_UNIX);
-        }
+        executable = new File(location, getExecutable());
         final String name = names.get(new Locale(StringUtils.EMPTY_STRING));
         final FileShortcut shortcut = new FileShortcut(name, executable);
         shortcut.setNames(names);
@@ -902,6 +906,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     
     public static final String EXECUTABLE_WINDOWS =
             BIN_SUBDIR + "/netbeans.exe"; // NOI18N
+    public static final String EXECUTABLE_WINDOWS_64 =
+            BIN_SUBDIR + "/netbeans64.exe"; // NOI18N
     public static final String EXECUTABLE_UNIX =
             BIN_SUBDIR + "/netbeans"; // NOI18N
     

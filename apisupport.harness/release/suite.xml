@@ -323,6 +323,7 @@ made subject to such option by the copyright holder.
             <isset property="nbexec.dll.found"/>
         </condition>
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app.exe" tofile="${build.launcher.dir}/bin/${app.name}.exe" overwrite="true"/>
+        <copy file="${harness.dir}/launchers/${app.exe.prefix}app64.exe" tofile="${build.launcher.dir}/bin/${app.name}64.exe" failonerror="false" overwrite="true"/>
         <copy file="${harness.dir}/launchers/${app.exe.prefix}app_w.exe" tofile="${build.launcher.dir}/bin/${app.name}_w.exe" failonerror="false" overwrite="true"/>
 
         <copy file="${harness.dir}/launchers/app.sh" tofile="${build.launcher.dir}/bin/${app.name}"/>
