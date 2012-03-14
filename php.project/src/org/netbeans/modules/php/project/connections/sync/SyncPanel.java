@@ -288,7 +288,7 @@ public final class SyncPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "SyncPanel.error.operations=Synchronization not possible. Fix errors first.",
+        "SyncPanel.error.operations=Synchronization not possible. Resolve conflicts first.",
         "SyncPanel.warn.operations=Synchronization possible but warnings should be reviewed first."
     })
     void validateItems() {
