@@ -58,11 +58,13 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpointType;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpointType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpoint;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
@@ -282,7 +284,15 @@ public class GdbHandlerExpert implements HandlerExpert {
 			   NativeBreakpoint template) {
 	NativeBreakpointType type = null;
 
-	type = template.getBreakpointType();
+        if (template != null) {
+            type = template.getBreakpointType();
+        } else {
+            if ("catchpoint".equals(results.getConstValue("type"))) { //NOI18N
+                type = new SysCallBreakpointType();
+            } else {
+                type = new ExceptionBreakpointType();
+            }
+        }
 
 	NativeBreakpoint newBreakpoint = null;
 	if (type != null)
