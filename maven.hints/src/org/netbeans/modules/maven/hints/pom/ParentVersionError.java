@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.hints.pom.Bundle.*;
 import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
@@ -69,7 +70,7 @@ import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 
 /**
  *
@@ -80,14 +81,23 @@ public class ParentVersionError implements POMErrorFixProvider {
     static final String PROP_SOURCES = "sources";//NOI18N
     static final String PROP_SNAPSHOT = "snapshot";//NOI18N
 
+    @Messages({
+        "TIT_ParentVersionError=Use latest version of parent POM", 
+        "DESC_ParentVersionError=Make sure the current project is using the version of parent that resides in current source base or the latest known version based on the repository index."})
     public ParentVersionError() {
         configuration = new Configuration("ParentVersionError", //NOI18N
-                NbBundle.getMessage(ParentVersionError.class, "TIT_ParentVersionError"),
-                NbBundle.getMessage(ParentVersionError.class, "DESC_ParentVersionError"),
+                TIT_ParentVersionError(),
+                DESC_ParentVersionError(),
                 true, Configuration.HintSeverity.WARNING);
     }
 
 
+    @Override
+    @Messages({
+        "# {0} - parent artifact version",
+        "TXT_ParentVersionError=Use current parent version - {0}", 
+        "# {0} - parent artifact version",
+        "TXT_ParentVersionError2=Use the latest known parent version - {0}"})
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj) {
         assert model != null;
         List<ErrorDescription> toRet = new ArrayList<ErrorDescription>();
@@ -151,8 +161,8 @@ public class ParentVersionError implements POMErrorFixProvider {
             int position = par.findChildElementPosition(model.getPOMQNames().VERSION.getQName());
             Line line = NbEditorUtilities.getLine(model.getBaseDocument(), position, false);
             String message = usedSources ?
-                NbBundle.getMessage(ParentVersionError.class, "TXT_ParentVersionError", currentVersion) :
-                NbBundle.getMessage(ParentVersionError.class, "TXT_ParentVersionError2", currentVersion);
+                TXT_ParentVersionError(currentVersion) :
+                TXT_ParentVersionError2(currentVersion);
 
             toRet.add(ErrorDescriptionFactory.createErrorDescription(
                     configuration.getSeverity(configuration.getPreferences()).toEditorSeverity(),
@@ -165,10 +175,12 @@ public class ParentVersionError implements POMErrorFixProvider {
 
     }
 
+    @Override
     public JComponent getCustomizer(Preferences preferences) {
         return new ParentVersionErrorCustomizer(preferences);
     }
 
+    @Override
     public Configuration getConfiguration() {
         return configuration;
     }
@@ -178,18 +190,25 @@ public class ParentVersionError implements POMErrorFixProvider {
         private String version;
         private String message;
 
+        @Messages({
+            "# {0} - parent artifact version",
+            "TEXT_ParentVersionFix=Use version {0} as defined in current parent project sources.", 
+            "# {0} - parent artifact version",
+            "TEXT_ParentVersionFix2=Use the latest known parent version - {0}"})
         SynchronizeFix(Parent par, String version, boolean usedSources) {
             parent = par;
             this.version = version;
             message = usedSources ?
-                NbBundle.getMessage(ParentVersionError.class, "TEXT_ParentVersionFix", version) :
-                NbBundle.getMessage(ParentVersionError.class, "TEXT_ParentVersionFix2", version);
+                TEXT_ParentVersionFix(version) :
+                TEXT_ParentVersionFix2(version);
         }
 
+        @Override
         public String getText() {
             return message;
         }
 
+        @Override
         public ChangeInfo implement() throws Exception {
             ChangeInfo info = new ChangeInfo();
             POMModel mdl = parent.getModel();
