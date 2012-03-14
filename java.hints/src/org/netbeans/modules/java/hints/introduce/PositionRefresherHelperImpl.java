@@ -44,6 +44,7 @@ package org.netbeans.modules.java.hints.introduce;
 import java.util.EnumMap;
 import java.util.List;
 import javax.swing.text.Document;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
@@ -51,6 +52,7 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.hints.introduce.PositionRefresherHelperImpl.DocumentVersionImpl;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper.DocumentVersion;
+import org.netbeans.modules.java.hints.spiimpl.hints.HintsTask.HintPositionRefresherHelper;
 import org.netbeans.spi.editor.hints.Context;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -84,8 +86,12 @@ public class PositionRefresherHelperImpl extends PositionRefresherHelper<Documen
         return IntroduceHint.computeError(info, selection[0], selection[1], new EnumMap<IntroduceKind, Fix>(IntroduceKind.class), new EnumMap<IntroduceKind, String>(IntroduceKind.class), context.getCancel());
     }
 
-    void setVersion(Document doc, int selStart, int selEnd) {
-        setVersion(doc, new DocumentVersionImpl(doc, selStart, selEnd));
+    static void setVersion(Document doc, int selStart, int selEnd) {
+        for (PositionRefresherHelper h : MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class)) {
+            if (h instanceof PositionRefresherHelperImpl) {
+                ((PositionRefresherHelperImpl) h).setVersion(doc, new DocumentVersionImpl(doc, selStart, selEnd));
+            }
+        }
     }
 
     static final class DocumentVersionImpl extends DocumentVersion {

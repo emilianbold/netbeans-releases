@@ -135,6 +135,10 @@ public abstract class ClassIndexImpl {
     
     public abstract void getPackageNames (String prefix, boolean directOnly, Set<String> result) throws IOException, InterruptedException;
     
+    public abstract void getReferencesFrequences (
+            @NonNull final Map<String,Integer> typeFreq,
+            @NonNull final Map<String,Integer> pkgFreq) throws IOException, InterruptedException;
+    
     public abstract FileObject[] getSourceRoots ();
    
     public abstract BinaryAnalyser getBinaryAnalyser ();

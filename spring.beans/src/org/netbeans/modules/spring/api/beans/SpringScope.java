@@ -165,11 +165,11 @@ public final class SpringScope {
     }
 
     /**
-     * Returns the reference to the {@code MetadataModel<SpringMOdel>} of Spring 
+     * Returns the reference to the {@code MetadataModel<SpringModel>} of Spring
      * annotation support.
      * 
      * @param fo any file inside project; never null.
-     * @return {@code MetadataModel<SpringMOdel>} of annotation model; never null
+     * @return {@code MetadataModel<SpringModel>} of annotation model; never null
      */
     public MetadataModel<SpringModel> getSpringAnnotationModel(FileObject fo) {
         if (springAnnotationModel == null) {

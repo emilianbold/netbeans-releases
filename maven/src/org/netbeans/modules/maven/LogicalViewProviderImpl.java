@@ -47,9 +47,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
-import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.nodes.MavenProjectNode;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -62,9 +62,6 @@ import org.openide.nodes.NodeNotFoundException;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.FileObjectFilter;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
 
 /**
  * provider of logical view, meaning the top node in the projects tab.
@@ -93,11 +90,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             return Lookups.fixed(project);
         }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        SearchInfo info = SearchInfoFactory.createSearchInfo( rootFolder.getPrimaryFile(), true,
-                new FileObjectFilter[] {
-                    SearchInfoFactory.VISIBILITY_FILTER,
-                    SearchInfoFactory.SHARABILITY_FILTER});
-        return Lookups.fixed(project, rootFolder, info);
+        return Lookups.fixed(project, rootFolder);
     }
     
     /**

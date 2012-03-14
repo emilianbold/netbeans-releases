@@ -68,7 +68,6 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
 
 /**
  * Dummy project that shows a wait node while the real project list is 
@@ -77,7 +76,7 @@ import org.openidex.search.SearchInfo;
  * @author Tim Boudreau, Jaroslav Tulach
  */
 final class LazyProject implements
-Project, ProjectInformation, SearchInfo, LogicalViewProvider, RecommendedTemplates {
+Project, ProjectInformation, LogicalViewProvider, RecommendedTemplates {
     URL url;
     String displayName;
     ExtIcon icon;
@@ -122,14 +121,6 @@ Project, ProjectInformation, SearchInfo, LogicalViewProvider, RecommendedTemplat
     }
 
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-    }
-    
-    public boolean canSearch() {
-        return false;
-    }
-
-    public Iterator<DataObject> objectsToSearch() {
-        return Collections.<DataObject>emptyList().iterator();
     }
 
     public Node createLogicalView() {

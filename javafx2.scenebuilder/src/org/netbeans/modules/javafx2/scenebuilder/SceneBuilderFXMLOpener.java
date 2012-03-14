@@ -203,7 +203,7 @@ public final class SceneBuilderFXMLOpener extends FXMLOpener {
  
     @Override
     public boolean isEnabled(Lookup context) {
-        return true;
+        return settings.getSelectedHome() != null;
     }
 
     @Override

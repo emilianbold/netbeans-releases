@@ -570,8 +570,7 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
 
             HintsController.setErrors(doc, ErrorHintsProvider.class.getName(), errors);
 
-            MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
-            MimeLookup.getLookup("text/x-java").lookup(ErrorPositionRefresherHelper.class).setVersion(doc, errors);
+            ErrorPositionRefresherHelper.setVersion(doc, errors);
             
             long end = System.currentTimeMillis();
 

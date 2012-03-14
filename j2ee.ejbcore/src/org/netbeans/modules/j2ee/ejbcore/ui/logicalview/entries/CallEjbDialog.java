@@ -69,7 +69,7 @@ import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
-import org.netbeans.modules.j2ee.ejbcore.action.CallEjbGenerator;
+import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.CallEjbGenerator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;

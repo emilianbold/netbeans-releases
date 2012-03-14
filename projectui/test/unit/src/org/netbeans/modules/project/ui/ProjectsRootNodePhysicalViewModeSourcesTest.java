@@ -73,7 +73,6 @@ import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.lookup.Lookups;
-import org.openidex.search.SearchInfo;
 
 /** 
  *
@@ -128,8 +127,6 @@ public class ProjectsRootNodePhysicalViewModeSourcesTest extends NbTestCase {
         for (Node n : view.getChildren().getNodes()) {
             TestSupport.TestProject p = n.getLookup().lookup(TestSupport.TestProject.class);
             assertNull("No project of this type, yet", p);
-            SearchInfo  info = n.getLookup().lookup(SearchInfo.class);
-            assertNoRealSearchInfo(n, info);
         }
         
         // let project open code run
@@ -143,8 +140,6 @@ public class ProjectsRootNodePhysicalViewModeSourcesTest extends NbTestCase {
         Node[] all = view.getChildren().getNodes();
         assertEquals("3x30", 90, all.length);
         for (Node n : all) {
-            SearchInfo  info = n.getLookup().lookup(SearchInfo.class);
-            assertNoRealSearchInfo(n, info);
             LogicalView v = n.getLookup().lookup(LogicalView.class);
             assertEquals("View is not present in physical view", null, v);
         }
@@ -234,16 +229,6 @@ public class ProjectsRootNodePhysicalViewModeSourcesTest extends NbTestCase {
         }
     }
 
-    static void assertNoRealSearchInfo(Node n, SearchInfo info) {
-        if (info != null) {
-            if (info instanceof LazyProject) {
-                // OK
-            } else {
-                fail("No search info at " + n + "\nwas: " + info);
-            }
-        }
-    }
-    
     private static class TestSources implements Sources {
         private SourceGroup[] arr;
         public TestSources(Project p) throws IOException {

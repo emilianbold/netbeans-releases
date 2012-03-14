@@ -118,12 +118,10 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
 
         HintsController.setErrors(info.getFileObject(), caretAware ? KEY_SUGGESTIONS : KEY_HINTS, result);
 
-        MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
-        
         if (caretAware) {
-            MimeLookup.getLookup("text/x-java").lookup(SuggestionsPositionRefresherHelper.class).setVersion(doc, caret);
+            SuggestionsPositionRefresherHelper.setVersion(doc, caret);
         } else {
-            MimeLookup.getLookup("text/x-java").lookup(HintPositionRefresherHelper.class).setVersion(doc);
+            HintPositionRefresherHelper.setVersion(doc);
         }
 
         long endTime = System.currentTimeMillis();
@@ -206,8 +204,12 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
             return new HintsInvoker(info, rowStart, rowEnd, context.getCancel()).computeHints(info);
         }
 
-        private void setVersion(Document doc) {
-            setVersion(doc, new DocumentVersion(doc));
+        private static void setVersion(Document doc) {
+            for (PositionRefresherHelper h : MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class)) {
+                if (h instanceof HintPositionRefresherHelper) {
+                    ((HintPositionRefresherHelper) h).setVersion(doc, new DocumentVersion(doc));
+                }
+            }
         }
 
     }
@@ -229,8 +231,12 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
             return new HintsInvoker(info, context.getPosition(), context.getCancel()).computeHints(info);
         }
 
-        private void setVersion(Document doc, int caret) {
-            setVersion(doc, new SuggestionsDocumentVersion(doc, caret));
+        private static void setVersion(Document doc, int caret) {
+            for (PositionRefresherHelper h : MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class)) {
+                if (h instanceof SuggestionsPositionRefresherHelper) {
+                    ((SuggestionsPositionRefresherHelper) h).setVersion(doc, new SuggestionsDocumentVersion(doc, caret));
+                }
+            }
         }
     }
 

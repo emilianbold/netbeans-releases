@@ -355,8 +355,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             Document doc = info.getSnapshot().getSource().getDocument(false);
 
             if (doc != null) {
-                MimeLookup.getLookup("text/x-java").lookupAll(PositionRefresherHelper.class);
-                MimeLookup.getLookup("text/x-java").lookup(PositionRefresherHelperImpl.class).setVersion(doc, selection[0], selection[1]);
+                PositionRefresherHelperImpl.setVersion(doc, selection[0], selection[1]);
             }
         }
     }
