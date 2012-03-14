@@ -43,7 +43,6 @@ package org.netbeans.modules.php.project.connections.sync;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -64,7 +63,6 @@ import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
@@ -276,7 +274,7 @@ public final class SyncPanel extends JPanel {
             return false;
         }
         for (int i : selectedRows) {
-            if (items.get(i).getOperation() == SyncItem.Operation.SYMLINK) {
+            if (!items.get(i).isOperationChangePossible()) {
                 return false;
             }
         }

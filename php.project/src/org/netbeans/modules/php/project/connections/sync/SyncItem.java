@@ -311,6 +311,13 @@ public final class SyncItem {
         return localTransferFile.isFile();
     }
 
+    public boolean isOperationChangePossible() {
+        if (getOperation() == Operation.SYMLINK) {
+            return false;
+        }
+        return true;
+    }
+
     public TmpLocalFile getTmpLocalFile() {
         return tmpLocalFile;
     }
