@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
  * base Tree walker for APT
@@ -376,10 +375,10 @@ public abstract class APTWalker {
     protected final void putNodeProperty(APT node, Object key, Object value) {
         Map<Object, Object> props = nodeProperties.get(node);
         if (props == null) {
-            nodeProperties.put(node, new TinySingletonMap<Object, Object>(key, value));
-            return;
-        } else if (props instanceof TinySingletonMap) {
-            nodeProperties.put(node, props = new HashMap<Object, Object>(props));
+//            nodeProperties.put(node, new TinySingletonMap<Object, Object>(key, value));
+//            return;
+//        } else if (props instanceof TinySingletonMap) {
+            nodeProperties.put(node, props = new HashMap<Object, Object>(1));
         }
         props.put(key, value);
     }
