@@ -2717,7 +2717,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public final APTFile getAPTLight(CsmFile csmFile) throws IOException {
         FileImpl fileImpl = (FileImpl) csmFile;
-        APTFile aptLight = APTDriver.findAPTLight(fileImpl.getBuffer());
+        APTFile aptLight = fileImpl.getFileAPT(false);
         if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
             CharSequence guardMacro = aptLight.getGuardMacro();
             if (guardMacro.length() == 0 && !fileImpl.isSourceFile()) {

@@ -1137,6 +1137,10 @@ public class Gdb {
                 if (record.cls().equals("thread-group-started")) { //NOI18N
                     debugger.session().setSessionEngine(GdbEngineCapabilityProvider.getGdbEngineType());
                     debugger.session().setPid(Long.valueOf(record.results().getConstValue("pid"))); //NOI18N
+                } else if (record.cls().equals("breakpoint-created")) { //NOI18N
+                    debugger.newAsyncBreakpoint(record);
+                } else if (record.cls().equals("breakpoint-modified")) { //NOI18N
+                } else if (record.cls().equals("breakpoint-deleted")) { //NOI18N
                 } else if (record.cls().equals("thread-group-added") || //NOI18N
                     record.cls().equals("thread-group-removed") || //NOI18N
                     record.cls().equals("thread-group-exited") || //NOI18N
