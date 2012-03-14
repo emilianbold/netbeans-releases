@@ -53,7 +53,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenuItem;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.modules.j2ee.ejbcore._RetoucheUtil;
+import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
