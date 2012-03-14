@@ -182,16 +182,19 @@ PageInspectionContext.inspect = function() {
 }
 
 PageInspectionContext.prototype.cleanup = function() {
+    var temp;
     this.inspectedPageReady = false;
     this.backgroundPageReady = false;
     this.pendingMessages = [];
     if (this.inspectedPage) {
-        this.inspectedPage.destroy();
+        temp = this.inspectedPage;
         this.inspectedPage = null;
+        temp.destroy();
     }
     if (this.backgroundPage) {
-        this.backgroundPage.destroy();
+        temp = this.backgroundPage;
         this.backgroundPage = null;
+        temp.destroy();
     }
     if (PageInspectionContext.currentContext === this) {
         PageInspectionContext.currentContext = null;
@@ -217,6 +220,7 @@ PageInspectionContext.prototype.initInspectedPage = function() {
         }
     });
     this.inspectedPage.on('detach', function() {
+        that.inspectedPage = null;
         that.cleanup();
     });
 };

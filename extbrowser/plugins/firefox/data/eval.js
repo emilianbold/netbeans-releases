@@ -49,7 +49,11 @@ self.on('message', function(message) {
         // Do not remove this variable - it serves as an API.
         // Scripts that want to send some message back to IDE call this method.
         var postMessageToNetBeans = function(message) {
-            self.postMessage(message);
+            try {
+                self.postMessage(message);
+            } catch (e) {
+                // This page has been destroyed/detached
+            }
         };
         try {
             result.result = eval(message.script);

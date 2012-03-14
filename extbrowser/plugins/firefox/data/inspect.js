@@ -50,7 +50,6 @@ socket = new MozWebSocket("ws://127.0.0.1:8008/");
 
 socket.onerror = function(e) {
     console.log('Socket error!');
-    console.log(e);
     sendDetachMessage();
 };
 
@@ -135,9 +134,13 @@ processMessageFromInspectedPage = function(message) {
 };
 
 sendDetachMessage = function() {
-    self.postMessage({
-        message: 'detach'
-    });
+    try {
+        self.postMessage({
+            message: 'detach'
+        });
+    } catch (e) {
+        // We are detached already
+    }
 };
 
 self.on('message', function(message) {

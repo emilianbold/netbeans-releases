@@ -86,7 +86,9 @@ NetBeans.connectIfNeeded = function() {
         }
         this.socket.onerror = function(e) {
             console.log('Socket error!');
-            console.log(e);
+            if (e.name && e.message) {
+                console.log(e.name + ': ' + e.message);
+            }
             self.cleanup();
         }
         this.socket.onclose = function() {
