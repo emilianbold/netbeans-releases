@@ -45,7 +45,6 @@
 package org.netbeans.modules.extbrowser;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -56,7 +55,6 @@ import java.util.logging.Level;
 
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.plugins.BrowserId;
-import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -78,6 +76,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     /** Given URL is displayed. 
       *  Configured process is started to satisfy this request. 
       */
+    @Override
     protected void loadURLInBrowser(URL url) {
         if (url == null) {
             return;
@@ -109,17 +108,14 @@ public class MacBrowserImpl extends ExtBrowserImpl {
         logger.log(Level.INFO, null, ex);
     }
     
-    /* (non-Javadoc)
-     * @see org.netbeans.modules.extbrowser.ExtBrowserImpl#getPluginId(java.net.URL)
-     */
     @Override
-    protected BrowserId getSystemDefaultPluginId( URL url ) {
-        BrowserId pluginId = super.getSystemDefaultPluginId(url);
+    protected BrowserId getDefaultBrowserFamilyId( ) {
+        BrowserId pluginId = super.getDefaultBrowserFamilyId();
         if (pluginId != BrowserId.UNKNOWN && pluginId != BrowserId.OTHER){
             return pluginId;
         }
         String defaultApps = getDefaultApps();
-        if (url != null) {
+        /*if (url != null) {
             String protocol = url.getProtocol();
             if ( protocol != null ){
                 pluginId = parseDefaultApps( defaultApps , "LSHandlerURLScheme",    // NOI18N
@@ -137,7 +133,7 @@ public class MacBrowserImpl extends ExtBrowserImpl {
                             "public."+ext );                                        // NOI18N
                 }
             }
-        }
+        }*/
         if ( pluginId == null || pluginId == BrowserId.UNKNOWN){
             pluginId = parseDefaultApps( defaultApps , "LSHandlerContentType",    
                     "public.url" );                                             // NOI18N
