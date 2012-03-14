@@ -673,7 +673,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             cacheName = oldEntry.getCache();
                             keepCacheNames.add(newEntry);
                             boolean fire = false;
-                            if (!newEntry.isSameLastModified(oldEntry)) {
+                            if (!newEntry.isSameLastModified(oldEntry) || newEntry.getSize() != oldEntry.getSize()) {
                                 if (newEntry.isPlainFile()) {
                                     changed = fire = true;
                                     File entryCache = new File(getCache(), oldEntry.getCache());
@@ -991,7 +991,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                             cacheName = oldEntry.getCache();
                             keepCacheNames.add(newEntry);
                             boolean fire = false;
-                            if (!newEntry.isSameLastModified(oldEntry)) {
+                            if (!newEntry.isSameLastModified(oldEntry) || newEntry.getSize() != oldEntry.getSize()) {
                                 if (newEntry.isPlainFile()) {
                                     changed = fire = true;
                                     File entryCache = new File(getCache(), oldEntry.getCache());
