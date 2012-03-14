@@ -365,6 +365,17 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".disabled.formatted");
     }
 
+    public void testCatch1Default() throws Exception {
+        reformatFileContents("testfiles/formatter/catch1.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testCatch1Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceWithinCatchParens, true);
+        reformatFileContents("testfiles/formatter/catch1.js", options, ".inverted.formatted");
+    }
+
     public void testPartialFormat1() throws Exception {
         reformatFileContents("testfiles/formatter/partialFormat1.js", Collections.<String, Object>emptyMap());
     }
