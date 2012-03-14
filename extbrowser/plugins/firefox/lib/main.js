@@ -223,6 +223,12 @@ PageInspectionContext.prototype.initInspectedPage = function() {
         that.inspectedPage = null;
         that.cleanup();
     });
+    // Detach is not fired during navigation to another page
+    var listener = function() {
+        tab.removeListener('ready', listener);
+        that.cleanup();
+    };
+    tab.on('ready', listener);
 };
 
 PageInspectionContext.prototype.initBackgroundPage = function() {
