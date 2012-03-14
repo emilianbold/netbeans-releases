@@ -177,6 +177,7 @@ PageInspectionContext.inspect = function() {
         this.currentContext.cleanup();
     }
     this.currentContext = new PageInspectionContext();
+    this.currentContext.tab = tabs.activeTab;
     this.currentContext.initInspectedPage()
     this.currentContext.initBackgroundPage();
 }
@@ -186,6 +187,11 @@ PageInspectionContext.prototype.cleanup = function() {
     this.inspectedPageReady = false;
     this.backgroundPageReady = false;
     this.pendingMessages = [];
+    if (this.tabListener) {
+        this.tab.removeListener('ready', this.tabListener);
+    }
+    this.tab = null;
+    this.tabListener = null;
     if (this.inspectedPage) {
         temp = this.inspectedPage;
         this.inspectedPage = null;
@@ -203,9 +209,8 @@ PageInspectionContext.prototype.cleanup = function() {
 
 PageInspectionContext.prototype.initInspectedPage = function() {
     var that = this;
-    var tab = tabs.activeTab;
-    this.tabId = tab[tabIdKey];
-    this.inspectedPage = tab.attach({
+    this.tabId = this.tab[tabIdKey];
+    this.inspectedPage = this.tab.attach({
         contentScriptFile: self.data.url('eval.js')
     });
     this.inspectedPage.on('message', function(message) {
@@ -224,11 +229,10 @@ PageInspectionContext.prototype.initInspectedPage = function() {
         that.cleanup();
     });
     // Detach is not fired during navigation to another page
-    var listener = function() {
-        tab.removeListener('ready', listener);
+    this.tabListener = function() {
         that.cleanup();
     };
-    tab.on('ready', listener);
+    this.tab.on('ready', this.tabListener);
 };
 
 PageInspectionContext.prototype.initBackgroundPage = function() {
@@ -246,6 +250,18 @@ PageInspectionContext.prototype.initBackgroundPage = function() {
                 tabId: that.tabId
             });
         } else if (type === 'detach') {
+            // Tab closed
+            that.cleanup();
+        } else if (type === 'failed') {
+            // WebSocket connection not established,
+            // notify user that Inspect action failed
+            var worker = that.tab.attach({
+                contentScript: 'window.alert("Unable to connect to NetBeans!"); self.postMessage("");',
+                onMessage: function() {
+                    // Alert shown => the worked can be destroyed
+                    worker.destroy();
+                }
+            });
             that.cleanup();
         } else {
             if (that.inspectedPageReady) {
