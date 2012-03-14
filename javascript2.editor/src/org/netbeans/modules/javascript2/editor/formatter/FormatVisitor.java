@@ -313,8 +313,7 @@ public class FormatVisitor extends NodeVisitor {
     public Node visit(SwitchNode switchNode, boolean onset) {
         if (onset) {
             // within parens spaces
-            markSpacesWithinParentheses(switchNode, switchNode.getExpression(),
-                    FormatToken.Kind.AFTER_SWITCH_PARENTHESIS, FormatToken.Kind.BEFORE_SWITCH_PARENTHESIS);
+            markSpacesWithinParentheses(switchNode);
 
             FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
@@ -519,20 +518,14 @@ public class FormatVisitor extends NodeVisitor {
         }
     }
 
-    private void markSpacesWithinParentheses(Node outerNode, Node innerNode, FormatToken.Kind leftMark, FormatToken.Kind rightMark) {
+    private void markSpacesWithinParentheses(SwitchNode node) {
+        int leftStart = getStart(node);
 
-        FormatToken leftParen = getPreviousToken(getStart(innerNode),
-                JsTokenId.BRACKET_LEFT_PAREN, getStart(outerNode));
-        if (leftParen != null) {
-            appendToken(leftParen, FormatToken.forFormat(leftMark));
-            FormatToken rightParen = getNextToken(getFinish(innerNode),
-                    JsTokenId.BRACKET_RIGHT_PAREN, getFinish(outerNode));
-            if (rightParen != null) {
-                FormatToken previous = rightParen.previous();
-                if (previous != null) {
-                    appendToken(previous, FormatToken.forFormat(rightMark));
-                }
-            }
+        // the { has to be there for switch
+        FormatToken token = getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
+        if (token != null) {
+            markSpacesWithinParentheses(node, leftStart, token.getOffset(),
+                    FormatToken.Kind.AFTER_SWITCH_PARENTHESIS, FormatToken.Kind.BEFORE_SWITCH_PARENTHESIS);
         }
     }
 
