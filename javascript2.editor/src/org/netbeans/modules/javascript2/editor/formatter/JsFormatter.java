@@ -307,7 +307,7 @@ public class JsFormatter implements Formatter {
                             break;
                         case BEFORE_ELSE_BRACE:
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
-                                    !CodeStyle.get(doc).spaceBeforeIfLeftBrace());
+                                    !CodeStyle.get(doc).spaceBeforeElseLeftBrace());
                             break;
                         case BEFORE_WHILE_BRACE:
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
@@ -332,6 +332,10 @@ public class JsFormatter implements Formatter {
                         case BEFORE_FINALLY_BRACE:
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeFinallyLeftBrace());
+                            break;
+                        case BEFORE_SWITCH_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeSwitchLeftBrace());
                             break;
                         case SOURCE_START:
                         case EOL:

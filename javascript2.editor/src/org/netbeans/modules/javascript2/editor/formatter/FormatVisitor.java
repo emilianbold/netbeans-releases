@@ -357,6 +357,9 @@ public class FormatVisitor extends NodeVisitor {
             // within parens spaces
             markSpacesWithinParentheses(switchNode);
 
+            // mark space before left brace
+            markSpacesBeforeBrace(switchNode);
+
             FormatToken formatToken = getNextToken(getStart(switchNode), JsTokenId.BRACKET_LEFT_CURLY, true);
             if (formatToken != null) {
                 appendTokenAfterLastVirtual(formatToken, FormatToken.forFormat(FormatToken.Kind.INDENTATION_INC));
@@ -588,6 +591,19 @@ public class FormatVisitor extends NodeVisitor {
         if (token != null) {
             markSpacesWithinParentheses(node, leftStart, token.getOffset(),
                     FormatToken.Kind.AFTER_SWITCH_PARENTHESIS, FormatToken.Kind.BEFORE_SWITCH_PARENTHESIS);
+        }
+    }
+
+    private void markSpacesBeforeBrace(SwitchNode node) {
+        int leftStart = getStart(node);
+
+        // the { has to be there for switch
+        FormatToken token = getNextToken(leftStart, JsTokenId.BRACKET_LEFT_CURLY, getFinish(node));
+        if (token != null) {
+            FormatToken previous = token.previous();
+            if (previous != null) {
+                appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_SWITCH_BRACE));
+            }
         }
     }
 
