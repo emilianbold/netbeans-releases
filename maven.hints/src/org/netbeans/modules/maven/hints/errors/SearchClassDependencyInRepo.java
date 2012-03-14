@@ -310,8 +310,9 @@ public class SearchClassDependencyInRepo implements ErrorRule<Void> {
         } else {
             //mkleint: this option is has rather serious performance impact.
             // we need to work on performance before we enable it..
+            // the result() version's impact is better, always just searching matters, never indexing.
             Collection<NBVersionInfo> findVersionsByClass = filter(mavProj,
-                    RepositoryQueries.findVersionsByClass(simpleOrQualifiedName, RepositoryPreferences.getInstance().getRepositoryInfos()), isTestSource);
+                    RepositoryQueries.findVersionsByClassResult(simpleOrQualifiedName, RepositoryPreferences.getInstance().getRepositoryInfos()).getResults(), isTestSource);
 
 
 

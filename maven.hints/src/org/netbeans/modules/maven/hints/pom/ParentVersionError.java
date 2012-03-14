@@ -60,6 +60,7 @@ import org.netbeans.modules.maven.hints.pom.spi.Configuration;
 import org.netbeans.modules.maven.hints.pom.spi.POMErrorFixProvider;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Parent;
 import org.netbeans.modules.xml.xam.Model;
@@ -144,17 +145,20 @@ public class ParentVersionError implements POMErrorFixProvider {
         }
         if ((!useSources || currentVersion == null) && declaredVersion != null) {
             ArtifactVersion currentAV = new DefaultArtifactVersion(declaredVersion);
-            for (NBVersionInfo info : RepositoryQueries.getVersions(par.getGroupId(), par.getArtifactId(), null)) {
-                if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
-                    continue;
+            Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(par.getGroupId(), par.getArtifactId(), null);
+            if (!result.isPartial()) {
+                for (NBVersionInfo info : result.getResults()) {
+                    if (!useSnapshot && info.getVersion().contains("SNAPSHOT")) { //NOI18N
+                        continue;
+                    }
+                    // XXX can probably just pick the first one, since RQ now sorts
+                    ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
+                    if (currentAV.compareTo(av) < 0) {
+                        currentAV = av;
+                    }
                 }
-                // XXX can probably just pick the first one, since RQ now sorts
-                ArtifactVersion av = new DefaultArtifactVersion(info.getVersion());
-                if (currentAV.compareTo(av) < 0) {
-                    currentAV = av;
-                }
+                currentVersion = currentAV.toString();
             }
-            currentVersion = currentAV.toString();
         }
 
         if (currentVersion != null && !currentVersion.equals(declaredVersion)) {

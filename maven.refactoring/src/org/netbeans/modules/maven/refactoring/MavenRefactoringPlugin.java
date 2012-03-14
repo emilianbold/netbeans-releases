@@ -108,7 +108,8 @@ class MavenRefactoringPlugin implements RefactoringPlugin {
         }
         LOG.log(Level.FINE, "for {0} found FQN: {1}", new Object[] {handle, fqn});
         if (fqn.get() != null) {
-            for (ClassUsageQuery.ClassUsageResult result : RepositoryQueries.findClassUsages(fqn.get(), null)) {
+            //TODO do we care reporting to the user somehow?
+            for (ClassUsageQuery.ClassUsageResult result : RepositoryQueries.findClassUsagesResult(fqn.get(), null).getResults()) {
                 for (String clazz : result.getClasses()) {
                     refactoringElements.add(query, new MavenRefactoringElementImplementation(new ReferringClass(result.getArtifact(), clazz)));
                 }

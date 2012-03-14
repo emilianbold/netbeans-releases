@@ -52,9 +52,11 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.maven.api.MavenValidators;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.validation.api.ValidatorUtils;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -80,6 +82,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     boolean isSuite = false;
 
     @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
+    @Messages("ADD_Module_Name=NetBeans Module ArtifactId")
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
@@ -90,7 +93,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     MavenValidators.createArtifactIdValidators(),
                     StringValidators.REQUIRE_VALID_FILENAME
                     ));
-            SwingValidationGroup.setComponentName(txtAddModule, /* XXX I18N */"NetBeans Module ArtifactId");
+            SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
         } else {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
@@ -106,12 +109,17 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
             }
         }
         if (info != null) {
-            final List<RepositoryInfo> infos = Collections.singletonList(info);
+            final RepositoryInfo fInfo = info;
             versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
             RP.post(new Runnable() {
                 public @Override void run() {
                     final List<String> versions = new ArrayList<String>();
-                    for (NBVersionInfo version : RepositoryQueries.getVersions("org.netbeans.cluster", "platform", infos)) { // NOI18N
+                    //mkleint: we deliberately sacrifice speed here to precise results..
+                    if (!RepositoryQueries.getLoadedContexts().contains(fInfo)) {
+                        RepositoryIndexer.indexRepo(fInfo);
+                    }
+                    Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(fInfo));
+                    for (NBVersionInfo version : result.getResults()) { // NOI18N
                         versions.add(version.getVersion());
                     }
                     versions.add("SNAPSHOT"); // NOI18N

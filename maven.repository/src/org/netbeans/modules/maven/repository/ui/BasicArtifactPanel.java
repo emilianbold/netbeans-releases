@@ -75,6 +75,7 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import org.netbeans.modules.maven.indexer.api.RepositoryUtil;
 import org.netbeans.modules.maven.indexer.api.ui.ArtifactViewer;
 import static org.netbeans.modules.maven.repository.ui.Bundle.*;
@@ -507,7 +508,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
     @Messages({
         "TXT_Loading=Loading...",
         "MSG_FailedSHA1=<Failed to calculate SHA1>",
-        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>"
+        "MSG_NOSHA=<Cannot calculate SHA1, the artifact is not present locally>",
+        "TXT_INCOMPLETE=<Incomplete result, processing indices...>"
     })
     @Override
     public void componentOpened() {
@@ -538,7 +540,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         RP.post(new Runnable() {
             @Override
             public void run() {
-                final List<NBVersionInfo> infos = RepositoryQueries.getVersions(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(artifact.getGroupId(), artifact.getArtifactId(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final List<NBVersionInfo> infos = result.getResults();
                 final ArtifactVersion av = new DefaultArtifactVersion(artifact.getVersion());
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
@@ -548,6 +551,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                             if (!av.equals(new DefaultArtifactVersion(ver.getVersion()))) {
                                 dlm.addElement(ver);
                             }
+                        }
+                        if (result.isPartial()) {
+                            dlm.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });
@@ -559,7 +565,8 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
         RP.post(new Runnable() {
             @Override
             public void run() {
-                List<NBVersionInfo> infos = RepositoryQueries.getRecords(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                final Result<NBVersionInfo> result = RepositoryQueries.getRecordsResult(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion(), RepositoryPreferences.getInstance().getRepositoryInfos());
+                List<NBVersionInfo> infos = result.getResults();
                 final Set<String> classifiers = new TreeSet<String>();
                 boolean hasJavadoc = false;
                 boolean hasSource = false;
@@ -586,6 +593,9 @@ public class BasicArtifactPanel extends TopComponent implements MultiViewElement
                         mdl.removeAllElements();
                         for (String ver : classifiers) {
                             mdl.addElement(ver);
+                        }
+                        if (result.isPartial()) {
+                            dlm.addElement(TXT_INCOMPLETE());
                         }
                     }
                 });

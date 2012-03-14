@@ -44,11 +44,12 @@ package org.netbeans.modules.maven.indexer.spi;
 import java.util.List;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
  * Query to find artifacts by MD5, SHA1. Non mandatory for repository managers.
  * @author Milos Kleint
  */
 public interface ChecksumQueries {
-    List<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<NBVersionInfo> findBySHA1(String sha1, List<RepositoryInfo> repos);
 }

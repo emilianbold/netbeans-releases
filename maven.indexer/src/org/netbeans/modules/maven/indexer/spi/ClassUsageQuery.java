@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 
 /**
  * Ability to find class usages.
@@ -84,8 +85,8 @@ public interface ClassUsageQuery {
      * Finds all usages of a given class.
      * @param className the (binary) FQN of a class that might be used as an API
      * @param repos repositories of this type to search in
-     * @return a list of usages
+     * @return result object with a list of usages
      */
-    List<ClassUsageResult> findClassUsages(String className, List<RepositoryInfo> repos);
+    RepositoryQueries.Result<ClassUsageResult> findClassUsages(String className, List<RepositoryInfo> repos);
 
 }
