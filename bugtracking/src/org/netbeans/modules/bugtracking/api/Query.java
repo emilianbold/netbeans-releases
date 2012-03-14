@@ -81,11 +81,6 @@ public final class Query {
         return impl.getTooltip();
     }
 
-    public Collection<Issue> getIssues(int status) {
-        List<Issue> ret = toIssues(impl.getIssues(status));
-        return ret;
-    }
-    
     public Collection<Issue> getIssues() {
         List<Issue> ret = toIssues(impl.getIssues());
         return ret;
