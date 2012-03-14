@@ -59,6 +59,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import org.codehaus.groovy.ast.CompileUnit;
@@ -71,16 +73,6 @@ import org.codehaus.groovy.control.messages.SimpleMessage;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.groovy.editor.api.AstUtilities;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
-import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
-import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.lexer.Token;
@@ -90,12 +82,20 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.GroovyCompilerErrorID;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -154,6 +154,8 @@ public class GroovyParser extends Parser {
         Context context = new Context(snapshot, event);
         final Set<Error> errors = new HashSet<Error>();
         context.errorHandler = new ParseErrorHandler() {
+
+            @Override
             public void error(Error error) {
                 errors.add(error);
             }
@@ -815,8 +817,12 @@ public class GroovyParser extends Parser {
         private final ClassPath path;
 
         private final GroovyResourceLoader resourceLoader = new GroovyResourceLoader() {
+
+            @Override
             public URL loadGroovySource(final String filename) throws MalformedURLException {
                 URL file = (URL) AccessController.doPrivileged(new PrivilegedAction() {
+
+                    @Override
                     public Object run() {
                         return getSourceFile(filename);
                     }
