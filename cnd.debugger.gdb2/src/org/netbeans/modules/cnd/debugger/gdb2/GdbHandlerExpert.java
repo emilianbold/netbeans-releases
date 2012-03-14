@@ -57,10 +57,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBrea
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpointType;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.ExceptionBreakpoint;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.FunctionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.LineBreakpoint;
+import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.SysCallBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.VariableBreakpoint;
 
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
@@ -251,6 +253,16 @@ public class GdbHandlerExpert implements HandlerExpert {
             VariableBreakpoint vb = (VariableBreakpoint) breakpoint;
             cmd.append("-break-watch "); //NOI18N
             cmd.append(vb.getVariable());
+        } else if (bClass == ExceptionBreakpoint.class) {
+            ExceptionBreakpoint eb = (ExceptionBreakpoint) breakpoint;
+            cmd.append("catch throw"); //NOI18N
+        } else if (bClass == SysCallBreakpoint.class) {
+            SysCallBreakpoint sb = (SysCallBreakpoint) breakpoint;
+            cmd.append("catch syscall "); //NOI18N
+            String sysCall = sb.getSysCall();
+            if (sysCall != null) {
+                cmd.append(sysCall);
+            }
 	} else {
 	    return HandlerCommand.makeError(null);
 	}
