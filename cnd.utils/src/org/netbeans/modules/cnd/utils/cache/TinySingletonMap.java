@@ -50,11 +50,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * map for one entry set (only two fields to reduce memory)
+ * map for one entry set (only two fields to reduce memory) - 16 bytes on 32bit system.
  * @author Alexandr Simon
  * @author Vladimir Voskresensky
  */
-public final class TinySingletonMap<K, V> implements Map<K, V> {
+final class TinySingletonMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, V> {
 
     private K key;
     private V value;
@@ -63,6 +63,7 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
     }
 
     public TinySingletonMap(K key, V value) {
+        assert key != null;
         this.key = key;
         this.value = value;
     }
@@ -113,13 +114,14 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
     }
 
     @Override
-    public V put(K aKey, V aMacro) {
+    public V put(K aKey, V aValue) {
+        assert aKey != null;
         V out = null;
         if (key != null && key.equals(aKey)) {
             out = value;
         }
         key = aKey;
-        value = aMacro;
+        value = aValue;
         return out;
     }
 
@@ -259,5 +261,13 @@ public final class TinySingletonMap<K, V> implements Map<K, V> {
                 }
             };
         }
+    }
+
+    @Override
+    public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+        if (key == null || key.equals(newElem)) {
+            return this;
+        }
+        return new TinyTwoValuesMap<K, V>(this);
     }
 }

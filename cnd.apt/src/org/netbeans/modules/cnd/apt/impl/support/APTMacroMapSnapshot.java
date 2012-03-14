@@ -54,8 +54,8 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 import org.openide.util.CharSequences;
-import org.netbeans.modules.cnd.utils.cache.TinySingletonMap;
 
 /**
  *
@@ -81,25 +81,16 @@ public final class APTMacroMapSnapshot {
         if (prefferedSize == 0) {
             return NO_MACROS;
         }
-        if (prefferedSize == 1) {
-            return new TinySingletonMap<CharSequence, APTMacro>();
-        } else {
-            return new HashMap<CharSequence, APTMacro>(prefferedSize);
-        }
+        return TinyMaps.createMap(prefferedSize);
     }
 
     private void prepareMacroMapToAddMacro(CharSequence name) {
         if (macros == NO_MACROS) {
             // create LW map
             macros = createMacroMap(1);
-        } else if (macros instanceof TinySingletonMap<?, ?>) {
-            // copy into new map
-            TinySingletonMap<CharSequence, APTMacro> lwMap = (TinySingletonMap<CharSequence, APTMacro>)macros;
-            if (lwMap.getKey() != null && !lwMap.getKey().equals(name)) {
-                Map<CharSequence, APTMacro> map = createMacroMap(4);
-                map.put(lwMap.getKey(), lwMap.getValue());
-                macros = map;
-            }
+        } else {
+            // expand map if needed based on expected next key
+            macros = TinyMaps.expandForNextKey(macros, name);
         }
     }
 

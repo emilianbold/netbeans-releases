@@ -100,14 +100,31 @@ public final class APTDriver {
     }
 
     public static APTFile findAPTLight(APTFileBuffer buffer) throws IOException {
-        return getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
+        APTFile out = null;
+        if (buffer instanceof APTFileCache) {
+            out = ((APTFileCache)buffer).getCachedAPTLight();
+        }
+        if (out == null) {
+            out = getInstance(buffer).findAPT(buffer, false, APTLanguageSupport.UNKNOWN);
+        }
+        return out;
     }
     
     public static APTFile findAPT(APTFileBuffer buffer, String lang) throws IOException {
-        return getInstance(buffer).findAPT(buffer, true, lang);
+        APTFile out = null;
+        if (buffer instanceof APTFileCache) {
+            out = ((APTFileCache) buffer).getCachedAPT();
+        }
+        if (out == null) {
+            out = getInstance(buffer).findAPT(buffer, true, lang);
+        }
+        return out;
     }
     
     public static void invalidateAPT(APTFileBuffer buffer) {
+        if (buffer instanceof APTFileCache) {
+            ((APTFileCache) buffer).invalidate();
+        }
         getInstance(buffer).invalidateAPT(buffer);
     }
     
