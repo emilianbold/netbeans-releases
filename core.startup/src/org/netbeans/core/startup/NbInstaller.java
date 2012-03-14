@@ -81,6 +81,7 @@ import org.netbeans.core.startup.layers.ModuleLayeredFileSystem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Dependency;
+import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.NbCollections;
@@ -167,7 +168,7 @@ final class NbInstaller extends ModuleInstaller {
                 cache.findGlobalProperty("processSections", "false", "true"); // NOI18N
             }
         }
-        String installClass = cache.findProperty(m, "OpenIDE-Module-Install"); // NOI18N
+        String installClass = cache.findProperty(m, "OpenIDE-Module-Install", false); // NOI18N
         if (installClass != null) {
             String installClassName;
             try {
@@ -221,12 +222,12 @@ final class NbInstaller extends ModuleInstaller {
         }
         // For layer & help set, validate only that the base-locale resource
         // exists, not its contents or anything.
-        String layerResource = cache.findProperty(m, "OpenIDE-Module-Layer"); // NOI18N
+        String layerResource = cache.findProperty(m, "OpenIDE-Module-Layer", false); // NOI18N
         if (layerResource != null && !m.isNetigso()) {
             URL layer = m.getClassLoader().getResource(layerResource);
             if (layer == null) throw new InvalidException(m, "Layer not found: " + layerResource); // NOI18N
         }
-        String helpSetName = cache.findProperty(m, "OpenIDE-Module-Description"); // NOI18N
+        String helpSetName = cache.findProperty(m, "OpenIDE-Module-Description", false); // NOI18N
         if (helpSetName != null) {
             Util.err.log(Level.WARNING, "Use of OpenIDE-Module-Description in {0} is deprecated.", m.getCodeNameBase());
             Util.err.warning("(Please install help using an XML layer instead.)");
@@ -255,7 +256,7 @@ final class NbInstaller extends ModuleInstaller {
             }
         }
         for (Module _m : mWithDeps) {
-            String hidden = cache.findProperty(_m, "OpenIDE-Module-Hide-Classpath-Packages"); // NOI18N
+            String hidden = cache.findProperty(_m, "OpenIDE-Module-Hide-Classpath-Packages", false); // NOI18N
             if (hidden != null) {
                 for (String piece : hidden.trim().split("[ ,]+")) { // NOI18N
                     try {
@@ -614,7 +615,7 @@ final class NbInstaller extends ModuleInstaller {
     private void checkForDeprecations(List<Module> modules) {
         Map<String,Set<String>> depToUsers = new TreeMap<String,Set<String>>();
         for (Module m : modules) {
-            String depr = cache.findProperty(m, "OpenIDE-Module-Deprecated"); // NOI18N
+            String depr = cache.findProperty(m, "OpenIDE-Module-Deprecated", false); // NOI18N
             if (!Boolean.parseBoolean(depr)) { 
                 for (Dependency dep : m.getDependencies()) {
                     if (dep.getType() == Dependency.TYPE_MODULE) {
@@ -633,9 +634,9 @@ final class NbInstaller extends ModuleInstaller {
             String dep = entry.getKey();
             Module o = mgr.get(dep);
             assert o != null : "No such module: " + dep;
-            String depr = cache.findProperty(o, "OpenIDE-Module-Deprecated"); // NOI18N
+            String depr = cache.findProperty(o, "OpenIDE-Module-Deprecated", false); // NOI18N
             if (Boolean.parseBoolean(depr)) {
-                String message = (String) o.getLocalizedAttribute("OpenIDE-Module-Deprecation-Message"); // NOI18N
+                String message = cache.findProperty(o, "OpenIDE-Module-Deprecation-Message", true); // NOI18N
                 // XXX use NbEvents? I18N?
                 // For now, assume this is a developer-oriented message that need not be localized or displayed in a pretty fashion.
                 Set<String> users = entry.getValue();
@@ -1176,6 +1177,19 @@ final class NbInstaller extends ModuleInstaller {
         }
     }
     
+    final boolean isShowInAutoUpdateClient(ModuleInfo m) {
+        String show = cache.findProperty(m, "AutoUpdate-Show-In-Client", false); // NOI18N
+        if (show != null) {
+            return Boolean.parseBoolean(show);
+        }
+        // OSGi bundles should be considered invisible by default since they are typically autoloads.
+        // (NB modules get AutoUpdate-Show-In-Client inserted into the JAR by the build process.)
+        if (m instanceof Module) {
+            return !((Module)m).isNetigso();
+        }
+        return true;
+    }
+    
     /** Cache important attributes from module manifests */
     private static class Cache implements Stamps.Updater {
         private static final String CACHE = "all-installer.dat"; // NOI18N
@@ -1202,12 +1216,13 @@ final class NbInstaller extends ModuleInstaller {
             modulePropertiesCached = false;
         }
 
-        final String findProperty(Module m, String name) {
+        final String findProperty(ModuleInfo m, String name, boolean localized) {
             final String fullName = m.getCodeNameBase() + '.' + name;
             if (modulePropertiesCached) {
                 return moduleProperties.getProperty(fullName);
             } else {
-                String prop = m.getManifest().getMainAttributes().getValue(name);
+                Object p = localized ? m.getLocalizedAttribute(name) : m.getAttribute(name);
+                String prop = p instanceof String ? (String)p : null;
                 if (prop != null) {
                     moduleProperties.setProperty(fullName, prop);
                     Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
