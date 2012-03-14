@@ -71,7 +71,10 @@ public class SchemaGeneratorPerf2Test extends AbstractTestCase {
     }
     
     public static Test suite() {
-        TestSuite suite = new TestSuite(SchemaGeneratorPerf2Test.class);
+        TestSuite suite = new TestSuite();
+        suite.addTest(new SchemaGeneratorPerf2Test("testGenerateSchema")); // NOI18N
+        suite.addTest(new SchemaGeneratorPerf2Test("testGenerateSchema2")); // NOI18N
+        suite.addTest(new SchemaGeneratorPerf2Test("testDeleteExistingGlobalElement")); // NOI18N
         
         return suite;
     }

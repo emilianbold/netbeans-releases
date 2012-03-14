@@ -380,6 +380,10 @@ public final class ReferencesIndex implements SelfPersistent, Persistent {
     
     private static final boolean ENABLED = Boolean.getBoolean("cnd.model.global.index");
     private void addRef(CsmUID<?> referedObject, CsmUID<CsmFile> fileUID, FileComponentReferences.ReferenceImpl ref) {
+        if (!ENABLED) {
+            // check memory after turning ON
+            return;
+        }
         lock.writeLock().lock();
         try {
             if (ENABLED) {

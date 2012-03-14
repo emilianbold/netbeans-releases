@@ -118,8 +118,11 @@ public abstract class LookupManager {
     private static final class Handle implements LookupListener {
 
         private final Class clazz;
+        // @GuardedBy(this)
         private Lookup.Result lookupResult = null;
+        // @GuardedBy(this)
         private Collection lastResult = null;
+        // @GuardedBy(self)
         private final Set<LookupManager> lms = new WeakSet<LookupManager>(300);
 
         //
@@ -147,6 +150,7 @@ public abstract class LookupManager {
         
         /**
          */
+        // @GuardedBy(this)
         private Lookup.Result getLookupResult () {
             if ( lookupResult == null ) {
                 lookupResult = (Lookup.getDefault()).lookup (new Lookup.Template (clazz));
@@ -158,35 +162,45 @@ public abstract class LookupManager {
         /**
          */
         public void resultChanged (LookupEvent evt) {
-            Collection currentResult = getLookupResult().allInstances();
-
-            Collection removed = new HashSet (lastResult);
-            removed.removeAll (currentResult);
-            Collection added = new HashSet (currentResult);
-            added.removeAll (lastResult);
-
-            if ( ( removed.isEmpty() == false ) ||
-                 ( added.isEmpty() == false ) ) {
-                synchronized (lms) {
-                    Iterator it = lms.iterator();
-                    while (it.hasNext()) {
-                        LookupManager lm = (LookupManager)it.next();
-                        if ( removed.isEmpty() == false ) {
-                            lm.removedFromResult(removed);
-                        }
-                        if ( added.isEmpty() == false ) {
-                            lm.addedToResult(added);
+            final Collection removed;
+            final Collection added;
+            
+            synchronized (this) {
+                Collection currentResult = getLookupResult().allInstances();
+                removed = new HashSet (lastResult);
+                removed.removeAll (currentResult);
+                added = new HashSet (currentResult);
+                added.removeAll (lastResult);
+                lastResult = currentResult;
+                
+                // guarantee delivery order, since diffs{added,removed} must be
+                // delivered in the proper order to give a consistent view.
+                CHANGES.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if ( ( removed.isEmpty() == false ) ||
+                            ( added.isEmpty() == false ) ) {
+                            synchronized (lms) {
+                                Iterator it = lms.iterator();
+                                while (it.hasNext()) {
+                                    LookupManager lm = (LookupManager)it.next();
+                                    if ( removed.isEmpty() == false ) {
+                                        lm.removedFromResult(removed);
+                                    }
+                                    if ( added.isEmpty() == false ) {
+                                        lm.addedToResult(added);
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
-            
-            lastResult = currentResult;
         }
 
         /**
          */
-        public Collection getInstances() {
+        public synchronized Collection getInstances() {
             //!!! can we use caching? I'm affraid we cannot because
             // lookup callbakcs are asynchronous so we can miss some
             // registrations (it may be crucuial for cookies)
@@ -197,5 +211,7 @@ public abstract class LookupManager {
         }
 
     } // end: class Handle
+    
+    private static final RequestProcessor CHANGES = new RequestProcessor("Lookup changes", 1); // NOI18N
     
 }

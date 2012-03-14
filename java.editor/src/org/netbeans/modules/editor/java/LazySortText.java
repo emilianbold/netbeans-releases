@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,81 +34,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.java;
 
-package org.netbeans.modules.form;
+import javax.lang.model.element.TypeElement;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.support.ReferencesCount;
 
 /**
- * Implementation of one panel in Options Dialog.
  *
- * @author Jan Jancura
+ * @author Dusan Balek
  */
-@OptionsPanelController.SubRegistration(
-    location="Java",
-    id="FormEditor",
-    displayName="#Form_Editor",
-    keywords="#KW_FormOptions",
-    keywordsCategory="Java/FormEditor")
-public final class FormEditorPanelController extends OptionsPanelController {
+class LazySortText implements CharSequence {
 
-    private FormEditorCustomizer customizer = new FormEditorCustomizer ();
-    private boolean initialized = false;
+    private String simpleName;
+    private String enclName;
+    private ElementHandle<TypeElement> handle;
+    private ReferencesCount referencesCount;
+    private String importanceLevel = null;
 
-
-    @Override
-    public void update () {
-        initialized = true;
-        customizer.update ();
+    LazySortText(String simpleName, String enclName, ElementHandle<TypeElement> handle, ReferencesCount referencesCount) {
+        this.simpleName = simpleName;
+        this.enclName = enclName != null ? Utilities.getImportanceLevel(enclName) + "#" + enclName : ""; //NOI18N
+        this.handle = handle;
+        this.referencesCount = referencesCount;
     }
-    
+
     @Override
-    public void applyChanges () {
-        if (initialized) {
-            customizer.applyChanges ();
+    public int length() {
+        return simpleName.length() + enclName.length() + 10;
+    }
+
+    @Override
+    public char charAt(int index) {
+        if ((index < 0) || (index >= length())) {
+            throw new StringIndexOutOfBoundsException(index);
         }
-        initialized = false;
-    }
-    
-    @Override
-    public void cancel () {
-        customizer.cancel ();
-        initialized = false;
-    }
-    
-    @Override
-    public boolean isValid () {
-        return customizer.dataValid ();
-    }
-    
-    @Override
-    public boolean isChanged () {
-        return customizer.isChanged ();
-    }
-    
-    @Override
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.advanced.formEditor"); // NOI18N
-    }
-    
-    @Override
-    public JComponent getComponent (Lookup masterLookup) {
-        return customizer;
+        if (index < simpleName.length()) {
+            return simpleName.charAt(index);
+        }
+        index -= simpleName.length();
+        if (index-- == 0) {
+            return '#';
+        }
+        if (index < 8) {
+            return getImportanceLevel().charAt(index);
+        }
+        index -= 8;
+        if (index-- == 0) {
+            return '#';
+        }
+        return enclName.charAt(index);
     }
 
     @Override
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        customizer.addPropertyChangeListener (l);
+    public CharSequence subSequence(int start, int end) {
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
-    @Override
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        customizer.removePropertyChangeListener (l);
+    private String getImportanceLevel() {
+        if (importanceLevel == null) {
+            importanceLevel = String.format("%8d", Utilities.getImportanceLevel(referencesCount, handle)); //NOI18N
+        }
+        return importanceLevel;
     }
 }

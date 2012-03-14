@@ -66,6 +66,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
 import org.netbeans.modules.java.editor.javadoc.TagRegistery.TagEntry;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -220,16 +221,16 @@ final class JavadocCompletionItem implements CompletionItem {
             boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createExecutableItem(
-                info, e, et, startOffset, isInherited, isDeprecated, false, false, false, false, -1, null);
+                info, e, et, startOffset, null, isInherited, isDeprecated, false, false, false, -1, null);
         return new JavadocExecutableItem(delegate, e, startOffset);
     }
     
     public static CompletionItem createTypeItem(CompilationInfo info, TypeElement elem,
-            int startOffset, boolean displayPkgName, boolean isDeprecated) {
+            int startOffset, ReferencesCount referencesCount, boolean isDeprecated) {
         
         CompletionItem delegate = JavaCompletionItem.createTypeItem(
                 info, elem, (DeclaredType) elem.asType(), startOffset,
-                displayPkgName, isDeprecated, false, false, false, false, false, null);
+                referencesCount, isDeprecated, false, false, false, false, false, null);
         return new JavadocTypeItem(delegate, startOffset);
     }
     
