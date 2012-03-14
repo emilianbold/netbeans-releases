@@ -42,7 +42,11 @@
 package org.netbeans.modules.remote.impl.fs;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import junit.framework.Test;
+import org.netbeans.junit.RandomlyFails;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
@@ -62,6 +66,130 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         super(testName, execEnv);
     }
 
+    // The following two methods are copy-paste from org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider
+    // They are used for emulation refresh method used in ADE plugin
+    private void refreshFor(String... paths) {
+        List<RemoteFileObjectBase> roots = new ArrayList<RemoteFileObjectBase>();
+        for (String path : paths) {
+            RemoteFileObjectBase fo = findExistingParent(path);
+            if (fo != null) {
+                roots.add(fo);
+            }
+        }
+        for (RemoteFileObjectBase fo : roots) {
+            if (fo.isValid()) {
+                fo.refresh(true);
+            }
+        }
+    }
+
+    private RemoteFileObjectBase findExistingParent(String path) {
+        while (true) {
+            RemoteFileObject fo = RemoteFileSystemManager.getInstance().getFileSystem(execEnv).findResource(path);
+            if (fo != null) {
+                return fo.getImplementor();
+            }
+            path = PathUtilities.getDirName(path);
+            if (path == null) {
+                return null;
+            }
+        }
+    }
+
+    @RandomlyFails
+    @ForAllEnvironments
+    public void testADELinkWorkflow() throws Exception {
+        String baseDir = null;
+
+        final String dataFile = "test";
+
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            // The following directory structure emulates ADE real one.
+            String script =
+                    "cd " + baseDir + ";"
+                    + "mkdir -p " + baseDir + "/ade_autofs/111/222;"
+                    + "echo 123 > " + baseDir + "/ade_autofs/111/222/" + dataFile + ";"
+                    + "chmod a-wx " + baseDir + "/ade_autofs/111/222/" + dataFile + ";"
+                    + "chmod a+r " + baseDir + "/ade_autofs/111/222/" + dataFile + ";"
+                    + "mkdir " + baseDir + "/ade;"
+                    + "ln -s " + baseDir + "/ade_autofs/111 " + baseDir + "/ade/111;"
+                    + "ln -s " + baseDir + "/ade/111/222 " + baseDir + "/ade_path;"
+                    + "ln -s ade_path/" + dataFile + ' ' + dataFile;
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            FileObject dataFileFO = getFileObject(baseDirFO, dataFile);
+            assertFalse("FileObject should not be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
+
+            script =
+                    "cd " + baseDir + "; "
+                    + "mv " + baseDir + "/ade_autofs/111/222/" + dataFile + ' ' + dataFile + "; "
+                    + "chmod a+w " + dataFile;
+            res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            refreshFor(dataFileFO.getPath());
+            assertTrue("FileObject should be writable: " + dataFileFO.getPath(), dataFileFO.canWrite());
+            String content = "another brown fox...";
+            writeFile(dataFileFO, content);
+            WritingQueue.getInstance(execEnv).waitFinished(null);
+            CharSequence readContent = readFile(dataFileFO);
+            assertEquals("File content differ", content.toString(), readContent.toString());
+
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
+    @RandomlyFails
+    @ForAllEnvironments
+    public void testDirectoryLinkExternalUpdate() throws Exception {
+        String baseDir = null;
+
+        final String dataFile = "test";
+        final String dirLink = "dir";
+        final String content1 = "123";
+        final String content2 = "321";
+
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String script =
+                    "cd " + baseDir + ";"
+                    + "mkdir -p " + baseDir + "/ade_autofs/111;"
+                    + "mkdir -p " + baseDir + "/ade_autofs/222;"
+                    + "echo " + content1 + " > " + baseDir + "/ade_autofs/111/" + dataFile + ";"
+                    + "echo " + content2 + " > " + baseDir + "/ade_autofs/222/" + dataFile + ";"
+                    + "ln -s " + baseDir + "/ade_autofs/111 " + baseDir + "/" + dirLink + ';';
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
+            FileObject dataFileFO = getFileObject(dirLinkFO, dataFile);
+
+            assertFalse("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
+            CharSequence readContent = readFile(dataFileFO);
+            assertEquals("File content differ", content1, readContent.toString());
+
+            script =
+                    "cd " + baseDir + ";"
+                    + "rm " + baseDir + "/" + dirLink + ';'
+                    + "ln -s " + baseDir + "/ade_autofs/222 " + baseDir + "/" + dirLink + ';';
+            res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            refreshFor(dataFileFO.getPath());
+            assertFalse("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
+            readContent = readFile(dataFileFO);
+            assertEquals("File content differ", content2, readContent.toString());
+
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+    
     @ForAllEnvironments
     public void testDirectoryLink() throws Exception {
         String baseDir = null;
