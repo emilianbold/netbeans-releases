@@ -337,6 +337,10 @@ public class JsFormatter implements Formatter {
                             offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
                                     !CodeStyle.get(doc).spaceBeforeSwitchLeftBrace());
                             break;
+                        case BEFORE_FUNCTION_DECLARATION_BRACE:
+                            offsetDiff = handleSpaceBefore(tokens, i, doc, offsetDiff,
+                                    !CodeStyle.get(doc).spaceBeforeMethodDeclLeftBrace());
+                            break;
                         case SOURCE_START:
                         case EOL:
                             // remove trailing spaces
@@ -531,8 +535,9 @@ public class JsFormatter implements Formatter {
         }
 
         // this may happen when curly bracket is on new line
-        if (!next.isVirtual() && next.getText() != null) {
-            String nextText = next.getText().toString();
+        FormatToken nonVirtualNext = getNextNonVirtual(next);
+        if (nonVirtualNext != null && nonVirtualNext.getText() != null) {
+            String nextText = nonVirtualNext.getText().toString();
             if(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)
                     || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)) {
                 return false;

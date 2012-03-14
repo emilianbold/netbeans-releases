@@ -235,9 +235,9 @@ public class FormatVisitor extends NodeVisitor {
         if (onset && !isScript(functionNode)) {
             FormatToken function = getPreviousToken(getStart(functionNode), JsTokenId.KEYWORD_FUNCTION);
             if (function != null) {
-                FormatToken leftBrace = getNextToken(function.getOffset(), JsTokenId.BRACKET_LEFT_PAREN);
-                if (leftBrace != null) {
-                    FormatToken previous = leftBrace.previous();
+                FormatToken leftParen = getNextToken(function.getOffset(), JsTokenId.BRACKET_LEFT_PAREN);
+                if (leftParen != null) {
+                    FormatToken previous = leftParen.previous();
                     if (previous != null) {
                         appendToken(previous, FormatToken.forFormat(FormatToken.Kind.BEFORE_FUNCTION_DECLARATION));
                     }
@@ -245,26 +245,38 @@ public class FormatVisitor extends NodeVisitor {
                     // mark the within parenthesis places
 
                     // remove original paren marks
-                    FormatToken mark = leftBrace.next();
+                    FormatToken mark = leftParen.next();
                     assert mark.getKind() == FormatToken.Kind.AFTER_LEFT_PARENTHESIS : mark.getKind();
                     tokenStream.removeToken(mark);
 
                     // this works if the offset starts with block as it is now
-                    FormatToken rightBrace = getPreviousToken(getStart(functionNode),
-                            JsTokenId.BRACKET_RIGHT_PAREN, leftBrace.getOffset());
-                    if (rightBrace != null) {
-                        previous = rightBrace.previous();
+                    FormatToken rightParen = getPreviousToken(getStart(functionNode),
+                            JsTokenId.BRACKET_RIGHT_PAREN, leftParen.getOffset());
+                    if (rightParen != null) {
+                        previous = rightParen.previous();
                         assert previous.getKind() == FormatToken.Kind.BEFORE_RIGHT_PARENTHESIS : previous.getKind();
                         tokenStream.removeToken(previous);
                     }
 
+                    // mark left brace of block - this works if function node
+                    // start offset is offset of the left brace
+                    FormatToken leftBrace = getNextToken(getStart(functionNode),
+                            JsTokenId.BRACKET_LEFT_CURLY, getFinish(functionNode));
+                    if (leftBrace != null) {
+                        previous = leftBrace.previous();
+                        if (previous != null) {
+                            appendToken(previous, FormatToken.forFormat(
+                                    FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_BRACE));
+                        }
+                    }
+
                     // place the new marks
                     if (!functionNode.getParameters().isEmpty()) {
-                        appendToken(leftBrace, FormatToken.forFormat(
+                        appendToken(leftParen, FormatToken.forFormat(
                                 FormatToken.Kind.AFTER_FUNCTION_DECLARATION_PARENTHESIS));
 
-                        if (rightBrace != null) {
-                            previous = rightBrace.previous();
+                        if (rightParen != null) {
+                            previous = rightParen.previous();
                             if (previous != null) {
                                 appendToken(previous, FormatToken.forFormat(
                                         FormatToken.Kind.BEFORE_FUNCTION_DECLARATION_PARENTHESIS));

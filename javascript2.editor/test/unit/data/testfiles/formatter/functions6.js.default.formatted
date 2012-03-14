@@ -26,7 +26,7 @@ function addSpace(count) {
     return space;
 }
 
-function Ridic(name, surname){
+function Ridic(name, surname) {
     this.name = name;
     this.surname = surname;
 

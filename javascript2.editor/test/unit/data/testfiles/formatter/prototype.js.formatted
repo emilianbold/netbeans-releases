@@ -145,7 +145,7 @@ PeriodicalExecuter.prototype = {
         }
     }
 }
-String.interpret = function(value){
+String.interpret = function(value) {
     return value == null ? '' : String(value);
 }
 
@@ -223,7 +223,7 @@ Object.extend(String.prototype, {
         var div = document.createElement('div');
         div.innerHTML = this.stripTags();
         return div.childNodes[0] ? (div.childNodes.length > 1 ?
-                $A(div.childNodes).inject('', function(memo, node){ return memo + node.nodeValue }) :
+                $A(div.childNodes).inject('', function(memo, node) { return memo + node.nodeValue }) :
                 div.childNodes[0].nodeValue) : '';
     },
 
@@ -270,7 +270,7 @@ Object.extend(String.prototype, {
         return camelized;
     },
 
-    capitalize: function(){
+    capitalize: function() {
         return this.charAt(0).toUpperCase() + this.substring(1).toLowerCase();
     },
 
@@ -609,13 +609,13 @@ Object.extend(Array.prototype, {
 
 Array.prototype.toArray = Array.prototype.clone;
 
-function $w(string){
+function $w(string) {
     string = string.strip();
     return string ? string.split(/\s+/) : [];
 }
 
 if (window.opera) {
-    Array.prototype.concat = function(){
+    Array.prototype.concat = function() {
         var array = [];
         for (var i = 0, length = this.length; i < length; i++) array.push(this[i]);
         for (var i = 0, length = arguments.length; i < length; i++) {
@@ -1558,13 +1558,13 @@ if (document.all && !window.opera) {
                     div.innerHTML = '<table><tbody><tr><td>' + html.stripScripts() + '</td></tr></tbody></table>';
                     depth = 4;
             }
-            $A(element.childNodes).each(function(node){
+            $A(element.childNodes).each(function(node) {
                 element.removeChild(node)
             });
-            depth.times(function(){ div = div.firstChild });
+            depth.times(function() { div = div.firstChild });
 
             $A(div.childNodes).each(
-                    function(node){ element.appendChild(node) });
+                    function(node) { element.appendChild(node) });
         } else {
             element.innerHTML = html.stripScripts();
         }
