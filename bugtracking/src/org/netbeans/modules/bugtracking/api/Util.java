@@ -46,6 +46,7 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
@@ -93,6 +94,24 @@ public final class Util {
     public static Repository createRepository() {
         RepositoryImpl impl = BugtrackingUtil.createRepository();
         return impl != null ? impl.getRepository() : null;
+    }
+    
+    /*
+     * Creates a new, not yet saved and named query.  
+     * 
+     * @return 
+     */
+    public void createNewQuery(Repository repository) {
+        QueryAction.openQuery(null, repository.getImpl());
+    }
+
+    /**
+     * Creates a new, not yet submitted issue
+     * 
+     * @return 
+     */
+    public void createNewIssue(Repository repository) {
+        IssueAction.createIssue(repository.getImpl());
     }
     
     private static Collection<Repository> toRepositories(Collection<RepositoryImpl> impls) {
