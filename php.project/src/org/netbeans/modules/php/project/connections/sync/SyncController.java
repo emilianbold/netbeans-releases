@@ -144,8 +144,7 @@ public final class SyncController implements Cancellable {
         try {
             progressHandle.start();
             FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(phpProject);
-            Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
-            initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, getFilesForSync()));
+            Set<TransferFile> remoteFiles = getRemoteFiles(sources);
             Set<TransferFile> localFiles = remoteClient.prepareUpload(sources, getFilesForSync());
             items = pairItems(remoteFiles, localFiles);
         } catch (RemoteException ex) {
@@ -155,6 +154,23 @@ public final class SyncController implements Cancellable {
             progressHandle.finish();
         }
         return items;
+    }
+
+    private Set<TransferFile> getRemoteFiles(FileObject sources) throws RemoteException {
+        Set<TransferFile> remoteFiles = new HashSet<TransferFile>();
+        if (isForProject()) {
+            initRemoteFiles(remoteFiles, remoteClient.prepareDownload(sources, sources));
+        } else {
+            // fetch individual files...
+            for (FileObject file : files) {
+                TransferFile transferFile = remoteClient.listFile(sources, file);
+                if (transferFile != null) {
+                    // remote file exists
+                    remoteFiles.add(transferFile);
+                }
+            }
+        }
+        return remoteFiles;
     }
 
     private FileObject[] getFilesForSync() {
