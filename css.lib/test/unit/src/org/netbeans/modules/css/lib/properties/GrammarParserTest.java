@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.lib.properties.model;
+package org.netbeans.modules.css.lib.properties;
 
-import org.netbeans.modules.css.lib.api.properties.model.BoxType;
+import java.util.List;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 
 /**
  *
  * @author marekfukala
  */
-public class BorderColorTest extends BoxTestBase {
+public class GrammarParserTest extends CssTestBase {
 
-    public BorderColorTest(String name) {
-        super(name);
+    public GrammarParserTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected boolean isDebugMode() {
-        return true;
+    public void testQuotedValues() {
+        String g = " \" a | b \" ";
+        GroupGrammarElement root = GrammarParser.parse(g);
+        
+        List<GrammarElement> children = root.elements();
+        assertNotNull(children);
+        assertEquals(1, children.size());
+        
+        GrammarElement ge = children.get(0);
+        assertTrue(ge instanceof ValueGrammarElement);
+        
+        ValueGrammarElement value = (ValueGrammarElement)ge;
+        assertEquals(" a | b ", value.value());
     }
-
-    public void testBorderColor() {
-        assertBox("border-color", "red", BoxType.BORDER_COLOR, "red");
-        assertBox("border-color", "red green", BoxType.BORDER_COLOR, "red", "green", "red", "green");
-        assertBox("border-color", "red green blue", BoxType.BORDER_COLOR, "red", "green", "blue", "green");
-        assertBox("border-color", "red green blue yellow", BoxType.BORDER_COLOR, "red", "green", "blue", "yellow");
-    }
+    
 }

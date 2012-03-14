@@ -102,6 +102,10 @@ public class GroupGrammarElement extends GrammarElement {
         this.type = type;
     }
 
+    /**
+     * 
+     * @return List of children elements
+     */
     public List<GrammarElement> elements() {
         return elements;
     }

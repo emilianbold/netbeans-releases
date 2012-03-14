@@ -250,16 +250,24 @@ public class GrammarParser {
                         if (c == Character.MAX_VALUE) {
                             break;
                         }
-                        if (isEndOfValueChar(c)) {
-                            input.backup(1);
-                            break;
-                        } else if(quotes && isQuoteChar(c)) {
-                            //closing quote, do not backup
-                            break; 
+                        if(quotes) {
+                            //quoted value - anything except the quote is considered
+                            //as the value char
+                            if(isQuoteChar(c)) {
+                                //closing quote, do not backup
+                                break; 
+                            }
                         } else {
-                            buf.append(c);
+                            //unqouted value - end the value by various characters
+                            if(isEndOfValueChar(c)) {
+                                input.backup(1);
+                                break;
+                            }
                         }
-
+                        
+                        //append the char to the value
+                        buf.append(c);
+                        
                         c = input.read(); //also include the char from main loop
 
                     }

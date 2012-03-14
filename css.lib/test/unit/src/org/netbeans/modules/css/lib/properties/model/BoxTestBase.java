@@ -43,10 +43,7 @@ package org.netbeans.modules.css.lib.properties.model;
 
 import java.util.Collection;
 import org.netbeans.modules.css.lib.CssTestBase;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.*;
 import org.netbeans.modules.css.lib.api.properties.model.*;
 
 /**
