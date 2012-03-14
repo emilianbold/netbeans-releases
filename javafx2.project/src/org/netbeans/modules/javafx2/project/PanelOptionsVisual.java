@@ -149,7 +149,7 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
                 break;
             case PRELOADER:
                 createMainCheckBox.setSelected(lastMainClassCheck);
-                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createPrealoaderCheckBox")); // NOI18N
+                Mnemonics.setLocalizedText(createMainCheckBox, NbBundle.getMessage(PanelOptionsVisual.class, "LBL_createPreloaderCheckBox")); // NOI18N
                 mainClassTextField.setEnabled(lastMainClassCheck);
                 preloaderCheckBox.setVisible(false);
                 lblPreloaderProject.setVisible(false);
