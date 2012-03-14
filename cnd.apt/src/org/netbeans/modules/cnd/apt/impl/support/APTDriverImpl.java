@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -53,9 +52,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
-import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTBuilder;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer;
 import org.netbeans.modules.cnd.apt.support.APTFileBuffer.BufferType;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
@@ -209,7 +209,7 @@ public class APTDriverImpl {
             // we do not cache full apt
             return;
         }
-        if (bufType == APTFileBuffer.BufferType.START_FILE) {
+        if (bufType == APTFileBuffer.BufferType.START_FILE && APTTraceFlags.APT_OPTIMIZE_MEMORY) {
             // do not cache light apt at all for files which are not queried for light apt
             // see APTTokenStreamBuilder.traceActivity, start files uses only full apt
             return;
