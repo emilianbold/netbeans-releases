@@ -79,6 +79,9 @@ Contributor(s):
             <file name="TestRepositoryDistributionAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestRepositoryDistributionAction.getInstance"/>
             </file>
+            <file name="TraceAPTDiagnosticAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TraceAPTDiagnosticAction.getInstance"/>
+            </file>
             <file name="TestFileContainerAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.modelui.trace.TestProjectReferencesAction.getFileContainerAction"/>
             </file>
@@ -134,6 +137,10 @@ Contributor(s):
             <file name="TestRepositoryDistributionAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestRepositoryDistributionAction.instance"/>
                 <attr name="position" intvalue="1800"/>
+            </file>
+            <file name="TraceAPTDiagnosticAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TraceAPTDiagnosticAction.instance"/>
+                <attr name="position" intvalue="1820"/>
             </file>
             <file name="TestFileContainerAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/NativeProjectCodeAssistance/TestFileContainerAction.instance"/>
