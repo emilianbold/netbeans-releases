@@ -816,7 +816,7 @@ public final class FileImpl implements CsmFile,
         ensureParsedOnInclusion(Collections.singletonList(preprocHandler), semaHandler);
     }
 
-    private APTFile getFileAPT(boolean full) {
+    public APTFile getFileAPT(boolean full) {
         APTFile fileAPT = null;
         ChangedSegment changedSegment = null;
         try {
