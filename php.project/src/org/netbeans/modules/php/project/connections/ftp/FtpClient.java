@@ -413,7 +413,8 @@ public class FtpClient implements RemoteClient {
             FTPFile[] files = ftpClient.listFiles(absolutePath);
             if (files.length == 1) {
                 FTPFile file = files[0];
-                if (file.isFile() && file.getName().equals(RemoteUtils.getName(absolutePath))) {
+                if ((file.isFile() || file.isSymbolicLink())
+                        && file.getName().equals(RemoteUtils.getName(absolutePath))) {
                     String parentPath = RemoteUtils.getParentPath(absolutePath);
                     assert parentPath != null : "Parent path should exist for " + absolutePath;
                     result = new RemoteFileImpl(file, parentPath);

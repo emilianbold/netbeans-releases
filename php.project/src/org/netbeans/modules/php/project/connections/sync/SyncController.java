@@ -361,6 +361,9 @@ public final class SyncController implements Cancellable {
                 TransferFile remoteTransferFile = syncItem.getRemoteTransferFile();
                 TransferFile localTransferFile = syncItem.getLocalTransferFile();
                 switch (syncItem.getOperation()) {
+                    case SYMLINK:
+                        // noop
+                        break;
                     case NOOP:
                         progressPanel.decreaseNoopNumber();
                         break;

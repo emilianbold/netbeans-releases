@@ -193,8 +193,11 @@ public interface RemoteClient {
 
     /**
      * Get {@link RemoteFile} if the the given path is file or <code>null</code>.
+     * <p>
+     * If the file is symbolic link then it is simply returned since cannot be decided
+     * whether it is a file or a directory.
      * @param path <b>absolute</b> file path
-     * @return {@link RemoteFile} for the path if the path is file or <code>null</code>
+     * @return {@link RemoteFile} for the path if the path is file (or symbolic link) or <code>null</code>
      * @throws RemoteException if any unexpected error occurs.
      */
     RemoteFile listFile(String absolutePath) throws RemoteException;

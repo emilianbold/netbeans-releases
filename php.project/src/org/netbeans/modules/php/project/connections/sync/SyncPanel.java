@@ -198,9 +198,8 @@ public final class SyncPanel extends JPanel {
                 if (event.getValueIsAdjusting()) {
                     return;
                 }
-                int selectedRowCount = itemTable.getSelectedRowCount();
-                setEnabledOperationButtons(selectedRowCount > 0);
-                setEnabledDiffButton(selectedRowCount);
+                setEnabledOperationButtons(itemTable.getSelectedRows());
+                setEnabledDiffButton(itemTable.getSelectedRowCount());
             }
         });
         // actions
@@ -253,7 +252,19 @@ public final class SyncPanel extends JPanel {
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
     }
 
-    void setEnabledOperationButtons(boolean enabled) {
+    void setEnabledOperationButtons(int[] selectedRows) {
+        boolean enabled = false;
+        if (selectedRows.length > 0) {
+            enabled = true;
+            // is there any symlink?
+            for (int i : selectedRows) {
+                SyncItem syncItem = items.get(i);
+                if (syncItem.getOperation() == SyncItem.Operation.SYMLINK) {
+                    enabled = false;
+                    break;
+                }
+            }
+        }
         noopButton.setEnabled(enabled);
         downloadButton.setEnabled(enabled);
         uploadButton.setEnabled(enabled);
@@ -329,6 +340,9 @@ public final class SyncPanel extends JPanel {
         SyncInfo syncInfo = new SyncInfo();
         for (SyncItem syncItem : items) {
             switch (syncItem.getOperation()) {
+                case SYMLINK:
+                    // noop
+                    break;
                 case NOOP:
                     syncInfo.noop++;
                     break;
@@ -607,7 +621,7 @@ public final class SyncPanel extends JPanel {
         public void actionPerformed(ActionEvent e) {
             int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
-            for (Integer index : selectedRows) {
+            for (int index : selectedRows) {
                 SyncItem syncItem = items.get(index);
                 if (operation == null) {
                     syncItem.resetOperation();

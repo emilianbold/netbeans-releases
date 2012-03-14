@@ -69,6 +69,8 @@ public final class SyncItem {
     @StaticResource
     static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
+    static final String SYMLINK_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    @StaticResource
     static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
     static final String FILE_CONFLICT_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
@@ -80,6 +82,7 @@ public final class SyncItem {
         "Operation.upload.title=Upload",
         "Operation.uploadReview.title=Upload with review",
         "Operation.delete.title=Delete",
+        "Operation.symlink.title=Symbolic link",
         "Operation.fileDirCollision.title=File vs. directory collision",
         "Operation.fileConflict.title=File conflict",
     })
@@ -91,6 +94,7 @@ public final class SyncItem {
         UPLOAD(Bundle.Operation_upload_title(), UPLOAD_ICON_PATH, true),
         UPLOAD_REVIEW(Bundle.Operation_uploadReview_title(), UPLOAD_REVIEW_ICON_PATH, true),
         DELETE(Bundle.Operation_delete_title(), DELETE_ICON_PATH, false),
+        SYMLINK(Bundle.Operation_symlink_title(), SYMLINK_ICON_PATH, false),
         FILE_DIR_COLLISION(Bundle.Operation_fileDirCollision_title(), FILE_DIR_COLLISION_ICON_PATH, false),
         FILE_CONFLICT(Bundle.Operation_fileConflict_title(), FILE_CONFLICT_ICON_PATH, false);
 
@@ -215,7 +219,8 @@ public final class SyncItem {
         "SyncItem.error.fileDirCollision=Cannot synchronize file with directory.",
         "SyncItem.error.childNotDeleted=Not all children marked for deleting.",
         "SyncItem.warn.downloadReview=File should be reviewed before download.",
-        "SyncItem.warn.uploadReview=File should be reviewed before upload."
+        "SyncItem.warn.uploadReview=File should be reviewed before upload.",
+        "SyncItem.warn.symlink=Symbolic links are not downloaded (to avoid future overriding on server)."
     })
     public void validate() {
         Operation op = getOperation();
@@ -227,6 +232,11 @@ public final class SyncItem {
         if (op == Operation.FILE_DIR_COLLISION) {
             valid = false;
             message = Bundle.SyncItem_error_fileDirCollision();
+            return;
+        }
+        if (op == Operation.SYMLINK) {
+            valid = true;
+            message = Bundle.SyncItem_warn_symlink();
             return;
         }
         if (op == Operation.DELETE) {
@@ -295,6 +305,9 @@ public final class SyncItem {
     }
 
     private Operation calculateDefaultOperation(long lastTimestamp) {
+        if (remoteTransferFile != null && remoteTransferFile.isLink()) {
+            return Operation.SYMLINK;
+        }
         if (localTransferFile != null && remoteTransferFile != null) {
             if (localTransferFile.isFile() && !remoteTransferFile.isFile()) {
                 return Operation.FILE_DIR_COLLISION;
