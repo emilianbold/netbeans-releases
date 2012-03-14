@@ -63,12 +63,6 @@
         <fail message="Error:${line.separator}JDK 7u4 Mac does not support WebStart and JavaFX 2.0+ browser plugin technologies.${line.separator}Please upgrade to JDK 7u6 or later."/>
     </target>
 
-    <!-- Note: target "-check-javafx" is referenced from NB 7.1 build-impl.xml -->
-    <target name="-check-javafx" depends="-check-jdk-version, -check-jfx-runtime, -check-jfx-deployment"/>
-    
-    <!-- Note: target "-javafx-check-error" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
-    <target name="-javafx-check-error" depends="-check-javafx"/>
-    
     
     <!-- Check availability of JavaFX SDK deployment support (ant-javafx.jar) -->
 
@@ -369,6 +363,16 @@
         <fail message="Error:${line.separator}WebStart executable could not be found." unless="jfx-webstart-available"/>
         <echo message="jfx-webstart-available = ${jfx-webstart-available}" level="verbose"/>
     </target>
+
+    
+    <!-- Legacy targets kept for compatibility with older build-impl.xml scripts -->
+
+    <!-- Note: target "-check-javafx" is referenced from NB 7.1 build-impl.xml -->
+    <target name="-check-javafx" depends="-check-jdk-version, -check-jfx-runtime, -check-jfx-deployment"/>
+    <!-- Note: target "-javafx-check-error" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
+    <target name="-javafx-check-error" depends="-check-javafx"/>    
+    <!-- Note: target "-init-javafx" is not necessary any more but is referenced from NB 7.1 build-impl.xml -->
+    <target name="-init-javafx"/>
 
     
     <!-- Check project properties -->
