@@ -55,25 +55,25 @@ import org.openide.util.NbBundle;
  */
 public final class SyncItem {
 
-    // XXX
     @StaticResource
-    static final String NOOP_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String NOOP_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/noop.png"; // NOI18N
     @StaticResource
-    static final String DOWNLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String DOWNLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/download.png"; // NOI18N
     @StaticResource
-    static final String DOWNLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String DOWNLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/download.png"; // NOI18N
     @StaticResource
-    static final String UPLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String UPLOAD_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload.png"; // NOI18N
     @StaticResource
-    static final String UPLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String UPLOAD_REVIEW_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/upload.png"; // NOI18N
     @StaticResource
-    static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String DELETE_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/delete.png"; // NOI18N
     @StaticResource
-    static final String SYMLINK_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String SYMLINK_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/symlink.png"; // NOI18N
     @StaticResource
-    static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String FILE_DIR_COLLISION_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/file-dir-collision.png"; // NOI18N
     @StaticResource
-    static final String FILE_CONFLICT_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    static final String FILE_CONFLICT_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/file-conflict.png"; // NOI18N
+
 
     @NbBundle.Messages({
         "Operation.noop.title=No operation",

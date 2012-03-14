@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -94,11 +95,16 @@ public final class SyncPanel extends JPanel {
 
     static final Logger LOGGER = Logger.getLogger(SyncPanel.class.getName());
 
-    // XXX
     @StaticResource
     private static final String INFO_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
     @StaticResource
-    private static final String RESET_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/info_icon.png"; // NOI18N
+    private static final String DIFF_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/diff.png"; // NOI18N
+    @StaticResource
+    private static final String RESET_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/reset.png"; // NOI18N
+    @StaticResource
+    private static final String ERROR_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/error.png"; // NOI18N
+    @StaticResource
+    private static final String WARNING_ICON_PATH = "org/netbeans/modules/php/project/ui/resources/warning.gif"; // NOI18N
 
     static final TableCellRenderer DEFAULT_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
@@ -179,18 +185,20 @@ public final class SyncPanel extends JPanel {
         });
         itemTable.setModel(tableModel);
         // renderer
+        itemTable.setDefaultRenderer(Icon.class, new IconRenderer());
         itemTable.setDefaultRenderer(String.class, new StringRenderer());
         itemTable.setDefaultRenderer(SyncItem.Operation.class, new OperationRenderer());
+        // rows
+        itemTable.setRowHeight(20);
         // columns
         itemTable.getTableHeader().setReorderingAllowed(false);
         TableColumnModel columnModel = itemTable.getColumnModel();
-        columnModel.getColumn(0).setMinWidth(10);
-        columnModel.getColumn(0).setPreferredWidth(10);
-        columnModel.getColumn(0).setResizable(true);
+        columnModel.getColumn(0).setMinWidth(20);
+        columnModel.getColumn(0).setMaxWidth(20);
+        columnModel.getColumn(0).setResizable(false);
         columnModel.getColumn(1).setPreferredWidth(1000);
-        columnModel.getColumn(2).setMinWidth(100);
-        columnModel.getColumn(2).setPreferredWidth(100);
-        columnModel.getColumn(2).setResizable(true);
+        columnModel.getColumn(2).setMinWidth(40);
+        columnModel.getColumn(2).setPreferredWidth(40);
         columnModel.getColumn(3).setPreferredWidth(1000);
         // selections
         itemTable.setColumnSelectionAllowed(false);
@@ -227,25 +235,25 @@ public final class SyncPanel extends JPanel {
     }
 
     private void initOperationButton(JButton button, SyncItem.Operation operation) {
-        // XXX
-        //button.setText(null);
-        button.setText(operation.name());
-        //button.setIcon(operation.getIcon());
+        button.setText(null);
+        button.setIcon(operation.getIcon());
         button.setToolTipText(operation.getTitle());
         button.addActionListener(new OperationButtonListener(operation));
     }
 
-    @NbBundle.Messages("SyncPanel.resetButton.title=Reset the file to the original state (any changes will be discarded)")
+    @NbBundle.Messages("SyncPanel.resetButton.toolTip=Reset the file to the original state (any changes will be discarded!)")
     private void initResetButton() {
-        // XXX
-        //resetButton.setText(null);
-        resetButton.setText("RESET"); // NOI18N
-        //resetButton.setIcon(ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
-        resetButton.setToolTipText(Bundle.SyncPanel_resetButton_title());
+        resetButton.setText(null);
+        resetButton.setIcon(ImageUtilities.loadImageIcon(RESET_ICON_PATH, false));
+        resetButton.setToolTipText(Bundle.SyncPanel_resetButton_toolTip());
         resetButton.addActionListener(new OperationButtonListener(null));
     }
 
+    @NbBundle.Messages("SyncPanel.diffButton.toolTip=View differences between remote and local file")
     private void initDiffButton() {
+        diffButton.setText(null);
+        diffButton.setIcon(ImageUtilities.loadImageIcon(DIFF_ICON_PATH, false));
+        diffButton.setToolTipText(Bundle.SyncPanel_diffButton_toolTip());
         diffButton.addActionListener(new DiffActionListener());
     }
 
@@ -372,7 +380,7 @@ public final class SyncPanel extends JPanel {
     }
 
     void openDiffPanel() {
-        assert diffButton.isEnabled() : "Diff button has to be anbled";
+        assert diffButton.isEnabled() : "Diff button has to be enabled";
 
         SyncItem syncItem = getSelectedItem();
         DiffPanel diffPanel = new DiffPanel(remoteClient, syncItem, ProjectPropertiesSupport.getEncoding(project));
@@ -484,13 +492,12 @@ public final class SyncPanel extends JPanel {
 
         @NbBundle.Messages({
             "SyncPanel.table.column.remote.title=Remote Path",
-            "SyncPanel.table.column.local.title=Local Path",
-            "SyncPanel.table.column.operation.title=Operation"
+            "SyncPanel.table.column.local.title=Local Path"
         })
         private static final String[] COLUMNS = {
             "", // NOI18N
             Bundle.SyncPanel_table_column_remote_title(),
-            Bundle.SyncPanel_table_column_operation_title(),
+            "", // NOI18N
             Bundle.SyncPanel_table_column_local_title(),
         };
 
@@ -516,19 +523,15 @@ public final class SyncPanel extends JPanel {
             return COLUMNS.length;
         }
 
-        @NbBundle.Messages({
-            "SyncPanel.error.cellValue=!",
-            "SyncPanel.warning.cellValue=?"
-        })
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             SyncItem syncItem = items.get(rowIndex);
             if (columnIndex == 0) {
                 if (syncItem.hasError()) {
-                    return Bundle.SyncPanel_error_cellValue();
+                    return ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false);
                 }
                 if (syncItem.hasWarning()) {
-                    return Bundle.SyncPanel_warning_cellValue();
+                    return ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false);
                 }
                 return null;
             } else if (columnIndex == 1) {
@@ -548,8 +551,9 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
-            if (columnIndex == 0
-                    || columnIndex == 1
+            if (columnIndex == 0) {
+                return Icon.class;
+            } else if (columnIndex == 1
                     || columnIndex == 3) {
                 return String.class;
             } else if (columnIndex == 2) {
@@ -569,6 +573,24 @@ public final class SyncPanel extends JPanel {
 
     }
 
+    private final class IconRenderer implements TableCellRenderer {
+
+        private static final long serialVersionUID = -46865321321L;
+
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            Icon icon = (Icon) value;
+            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
+            rendererComponent.setToolTipText(items.get(row).getMessage());
+            rendererComponent.setText(null);
+            rendererComponent.setIcon(icon);
+            return rendererComponent;
+        }
+
+    }
+
     private final class StringRenderer implements TableCellRenderer {
 
         private static final long serialVersionUID = 567654543546954L;
@@ -576,22 +598,12 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            JLabel rendererComponent;
             String text = (String) value;
-            if (column == 0) {
-                // error
-                rendererComponent = (JLabel) ERROR_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
-                rendererComponent.setFont(rendererComponent.getFont().deriveFont(Font.BOLD));
-                SyncItem syncItem = items.get(row);
-                rendererComponent.setForeground(UIManager.getColor(syncItem.hasError() ? "nb.errorForeground" : "nb.warningForeground")); // NOI18N
-                rendererComponent.setToolTipText(items.get(row).getMessage());
-            } else {
-                rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                // file path
-                rendererComponent.setToolTipText(text);
-            }
+            JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            rendererComponent.setHorizontalAlignment(SwingConstants.LEFT);
+            rendererComponent.setToolTipText(text);
             rendererComponent.setText(text);
+            rendererComponent.setIcon(null);
             return rendererComponent;
         }
 
@@ -606,9 +618,10 @@ public final class SyncPanel extends JPanel {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             SyncItem.Operation operation = (SyncItem.Operation) value;
-            // XXX replace with icon
-            rendererComponent.setText(operation.toString());
+            rendererComponent.setIcon(operation.getIcon());
             rendererComponent.setToolTipText(operation.getTitle());
+            rendererComponent.setText(null);
+            rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
             return rendererComponent;
         }
 
@@ -638,6 +651,8 @@ public final class SyncPanel extends JPanel {
             }
             // need to redraw all children and parents
             tableModel.fireSyncItemsChange();
+            // reselect the rows
+            itemTable.getSelectionModel().setSelectionInterval(selectedRows[0], selectedRows[selectedRows.length - 1]);
         }
 
     }
@@ -647,7 +662,10 @@ public final class SyncPanel extends JPanel {
         @NbBundle.Messages("SyncPanel.error.documentSave=Cannot save file content.")
         @Override
         public void actionPerformed(ActionEvent e) {
+            int selectedRow = itemTable.getSelectedRow();
             openDiffPanel();
+            // reselect the row
+            itemTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
         }
 
     }
