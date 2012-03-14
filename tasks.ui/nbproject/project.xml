@@ -3,7 +3,7 @@
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
-            <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
+            <code-name-base>org.netbeans.modules.tasks.ui</code-name-base>
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
@@ -11,7 +11,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.19</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -29,41 +29,51 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.15</specification-version>
+                        <specification-version>1.17</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.autoupdate.services</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.15</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.diff</code-name-base>
+                    <code-name-base>org.netbeans.libs.swingx</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.21</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.jumpto</code-name-base>
+                    <code-name-base>org.netbeans.modules.bugtracking</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>1.53</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.25</specification-version>
+                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <code-name-base>org.netbeans.modules.javahelp</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>2.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -81,7 +91,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.5</specification-version>
+                        <specification-version>1.24</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -90,25 +100,16 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31</specification-version>
+                        <specification-version>1.33</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.queries</code-name-base>
+                    <code-name-base>org.netbeans.modules.settings</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.spi.tasklist</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6.0</specification-version>
+                        <specification-version>1.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -116,7 +117,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.13</specification-version>
+                        <specification-version>6.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -124,7 +125,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.2</specification-version>
+                        <specification-version>7.24</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -132,7 +133,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.7</specification-version>
+                        <specification-version>7.10</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -140,7 +141,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.8</specification-version>
+                        <specification-version>6.17</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -148,15 +149,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.9</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.openide.io</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.16</specification-version>
+                        <specification-version>7.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -164,7 +157,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.2</specification-version>
+                        <specification-version>7.5</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.modules</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.21</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -172,7 +173,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>7.9</specification-version>
+                        <specification-version>7.8</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -180,7 +181,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.21</specification-version>
+                        <specification-version>6.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -188,7 +189,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.0</specification-version>
+                        <specification-version>8.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -204,7 +205,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.24</specification-version>
+                        <specification-version>6.25</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -212,15 +213,8 @@
                 <test-type>
                     <name>unit</name>
                     <test-dependency>
-                        <code-name-base>org.eclipse.equinox.common</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.bugzilla</code-name-base>
+                        <recursive/>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
@@ -228,30 +222,9 @@
                         <recursive/>
                         <compile-dependency/>
                     </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.openide.util.lookup</code-name-base>
-                        <compile-dependency/>
-                        <test/>
-                    </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.bugtracking.bridge</friend>
-                <friend>org.netbeans.modules.bugtracking.kenai</friend>
-                <friend>org.netbeans.modules.bugtracking.util</friend>
-                <friend>org.netbeans.modules.bugzilla</friend>
-                <friend>org.netbeans.modules.jira</friend>
-                <friend>org.netbeans.modules.tasks.ui</friend>
-                <friend>org.netbeans.modules.versioning.kenai</friend>
-                <package>org.netbeans.modules.bugtracking.api</package>
-                <package>org.netbeans.modules.bugtracking.issuetable</package>
-                <package>org.netbeans.modules.bugtracking.jira</package>
-                <package>org.netbeans.modules.bugtracking.kenai.spi</package>
-                <package>org.netbeans.modules.bugtracking.spi</package>
-                <package>org.netbeans.modules.bugtracking.ui.issue.cache</package>
-                <package>org.netbeans.modules.bugtracking.ui.search</package>
-                <package>org.netbeans.modules.bugtracking.util</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
