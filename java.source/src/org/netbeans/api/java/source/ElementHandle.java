@@ -115,7 +115,7 @@ public final class ElementHandle<T extends Element> {
     private final String[] signatures;
         
        
-    private ElementHandle(final ElementKind kind, String[] signatures) {
+    private ElementHandle(final ElementKind kind, String... signatures) {
         assert kind != null;
         assert signatures != null;
         this.kind = kind;
@@ -388,6 +388,41 @@ public final class ElementHandle<T extends Element> {
         ElementHandle<T> eh = createImpl(element);
 
         return (ElementHandle<T>) NORMALIZATION_CACHE.putIfAbsent(eh);
+    }
+    
+    /**
+     * Creates an {@link ElementHandle} representing a {@link PackageElement}.
+     * @param packageName the name of the package
+     * @return the created {@link ElementHandle}
+     * @since 0.98
+     */
+    @NonNull
+    public static ElementHandle<PackageElement> createPackageElementHandle (
+        @NonNull final String packageName) {
+        Parameters.notNull("packageName", packageName); //NOI18N
+        return new ElementHandle<PackageElement>(ElementKind.PACKAGE, packageName);
+    }
+    
+    /**
+     * Creates an {@link ElementHandle} representing a {@link TypeElement}.
+     * @param kind the {@link ElementKind} of the {@link TypeElement},
+     * allowed values are {@link ElementKind#CLASS}, {@link ElementKind#INTERFACE},
+     * {@link ElementKind#ENUM} and {@link ElementKind#ANNOTATION_TYPE}.
+     * @param binaryName the class binary name as specified by JLS §13.1
+     * @return the created {@link ElementHandle}
+     * @throws IllegalArgumentException if kind is neither class nor interface
+     * @since 0.98
+     */
+    @NonNull
+    public static ElementHandle<TypeElement> createTypeElementHandle(
+        @NonNull final ElementKind kind,
+        @NonNull final String binaryName) throws IllegalArgumentException {
+        Parameters.notNull("kind", kind);   //NOI18N
+        Parameters.notNull("binaryName", binaryName);   //NOI18N
+        if (!kind.isClass() && !kind.isInterface()) {
+            throw new IllegalArgumentException(kind.toString());
+        }
+        return new ElementHandle<TypeElement>(kind, binaryName);
     }
 
     private static @NonNull <T extends Element> ElementHandle<T> createImpl (@NonNull final T element) throws IllegalArgumentException {

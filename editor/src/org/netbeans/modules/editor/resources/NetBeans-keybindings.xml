@@ -133,10 +133,12 @@ made subject to such option by the copyright holder.
     <bind actionName="move-selection-else-line-up" key="OS-KP_UP"/>
     <bind actionName="move-selection-else-line-down" key="OS-DOWN"/>
     <bind actionName="move-selection-else-line-down" key="OS-KP_DOWN"/>
-    <bind actionName="copy-selection-else-line-up" key="DS-UP"/>
-    <bind actionName="copy-selection-else-line-up" key="DS-KP_UP"/>
-    <bind actionName="copy-selection-else-line-down" key="DS-DOWN"/>
-    <bind actionName="copy-selection-else-line-down" key="DS-KP_DOWN"/>
+    <bind actionName="move-code-element-up" key="DS-UP"/>
+    <bind actionName="move-code-element-up" key="DS-KP_UP"/>
+    <bind actionName="move-code-element-down" key="DS-DOWN"/>
+    <bind actionName="move-code-element-down" key="DS-KP_DOWN"/>
+    <bind actionName="copy-selection-else-line-up" key="DS-COMMA"/>
+    <bind actionName="copy-selection-else-line-down" key="DS-PERIOD"/>
     <!-- #47709 <bind actionName="remove-word" key="D-W"/> -->
     <bind actionName="remove-word-next" key="D-DELETE"/>
     <bind actionName="remove-word-previous" key="D-BACK_SPACE"/>

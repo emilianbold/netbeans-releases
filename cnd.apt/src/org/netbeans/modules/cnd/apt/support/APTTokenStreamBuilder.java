@@ -44,8 +44,12 @@
 
 package org.netbeans.modules.cnd.apt.support;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.Reader;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
 
 /**
@@ -54,6 +58,7 @@ import org.netbeans.modules.cnd.apt.impl.support.generated.APTLexer;
  * @author Vladimir Voskresensky
  */
 public final class APTTokenStreamBuilder {
+
     private APTTokenStreamBuilder() {
     }   
     
@@ -86,6 +91,7 @@ public final class APTTokenStreamBuilder {
     }    
 
     public static TokenStream buildLightTokenStream(CharSequence name, char[] buf, String lang) {
+        trackActivity(name, buf.length, true);
         APTLexer lexer = new APTLexer(buf);
         lexer.init(name.toString(), 0, lang);
         lexer.setOnlyPreproc(true);
@@ -99,8 +105,87 @@ public final class APTTokenStreamBuilder {
     }     
 
     public static TokenStream buildTokenStream(CharSequence name, char[] buf, String lang) {
+        trackActivity(name, buf.length, false);
         APTLexer lexer = new APTLexer(buf);
         lexer.init(name.toString(), 0, lang);
         return lexer;
+    }
+    
+    private static void traceActivity() {
+        long totalReads = 0;
+        long fileSizes = 0;
+        int ligthNrReads = 0;
+        int nrReads = 0;
+        for (Map.Entry<CharSequence, Pair> entry : readFiles.entrySet()) {
+            final Pair data = entry.getValue();
+            final long readBytes = data.totalBytes();
+            assert data.totalLightReads() < data.totalReads() : "strange params " + data + " " + entry.getKey();
+//            System.err.printf("[%d|%d][%d|%d]%d\t:%s\n", data.totalReads(), data.getLength(), data.totalLightReads(), data.totalReads(), readBytes, entry.getKey());
+            totalReads += readBytes;
+            fileSizes += data.getLength();
+            ligthNrReads += data.totalLightReads();
+            nrReads += data.totalReads();
+        }
+        double ratio = fileSizes == 0 ? 0 : (1.0 * totalReads) / fileSizes;
+        totalReads /= 1024;
+        fileSizes /= 1024;
+        System.err.printf("StreamBuilder has %d entries, ratio is %f (%d reads where %d Light) [read %dKb from files of total size %dKb]\n", readFiles.size(), ratio, nrReads, ligthNrReads, totalReads, fileSizes);
+        readFiles.clear();
+    }
+
+    private static final class Pair {
+        private final int length;
+        private final AtomicInteger nrLightReads = new AtomicInteger(0);
+        private final AtomicInteger nrReads = new AtomicInteger(0);
+
+        public Pair(int length) {
+            this.length = length;
+        }
+
+        public void add(int bytes, boolean light) {
+            assert bytes == length;
+            nrReads.incrementAndGet();
+            if (light) {
+                nrLightReads.incrementAndGet();
+            }
+        }
+
+        public int totalBytes() {
+            return nrReads.get() * length;
+        }
+
+        public int totalReads() {
+            return nrReads.get();
+        }
+
+        public int totalLightReads() {
+            return nrLightReads.get();
+        }
+        
+        public int getLength() {
+            return length;
+        }
+
+        @Override
+        public String toString() {
+            return "Pair{" + "length=" + length + ", nrLightReads=" + nrLightReads + ", nrReads=" + nrReads + '}'; // NOI18N
+        }
+    }
+    
+    private static final ConcurrentMap<CharSequence, Pair> readFiles = new ConcurrentHashMap<CharSequence, Pair>();
+    private static void trackActivity(CharSequence name, int len, boolean light) {
+        if (true) return;
+//        if ("/home/vvoskres/NetBeansProjects/Quote_1/disk.h".contentEquals(name)) {
+//            new Exception().printStackTrace(System.err);
+//        }
+        Pair size = readFiles.get(name);
+        if (size == null) {
+            size = new Pair(len);
+            Pair prev = readFiles.putIfAbsent(name, size);
+            if (prev != null) {
+                size = prev;
+            }
+        }
+        size.add(len, light);
     }
 }

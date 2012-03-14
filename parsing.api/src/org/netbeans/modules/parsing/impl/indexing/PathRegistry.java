@@ -232,7 +232,7 @@ public final class PathRegistry implements Runnable {
             }
             LOGGER.log(Level.FINE, "registerUnknownSourceRoots: {0}", l); // NOI18N
         }
-        scheduleFirer();
+        scheduleFirer(roots);
     }
 
     public Collection<? extends URL> getSources () {
@@ -806,12 +806,19 @@ public final class PathRegistry implements Runnable {
 
         LOGGER.log(Level.FINE, "resetCacheAndFire: eventKind={0}, pathKind={1}, pathId={2}, paths={3}",
             new Object [] { eventKind, pathKind, pathId, paths }); // NOI18N
-        scheduleFirer();
+        scheduleFirer(paths);
     }
 
-    private void scheduleFirer() {
+    private void scheduleFirer(Collection<? extends ClassPath> paths) {
         if (logCtx.get() == null) {
-            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null));
+            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addPaths(paths));
+        }
+        firerTask.schedule(0);
+    }
+
+    private void scheduleFirer(Iterable<? extends URL> roots) {
+        if (logCtx.get() == null) {
+            logCtx.compareAndSet(null, LogContext.create(LogContext.EventType.PATH, null).addRoots(roots));
         }
         firerTask.schedule(0);
     }

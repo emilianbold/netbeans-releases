@@ -137,7 +137,15 @@ public final class Util {
     public static URL resolveUrl(URL root, String relativePath) throws MalformedURLException {
         try {
             if ("file".equals(root.getProtocol())) { //NOI18N
-                return new File(new File(root.toURI()), relativePath).toURI().toURL();
+                // The assertion is needed for the perf. optimization bellow, making sure the file is not a directory
+                assert ! relativePath.endsWith(File.separator);
+                return new File(new File(root.toURI()), relativePath) {
+                    @Override public boolean isDirectory() {
+                        // Performance optimization for File.toURI() which calls this method
+                        // and the original implementation calls into native method
+                        return false;
+                    }
+                }.toURI().toURL();
             } else {
                 return new URL(root, relativePath);
             }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,23 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.scenebuilder;
+package org.netbeans.modules.editor.actions;
 
-import org.openide.modules.ModuleInstall;
+import java.awt.event.ActionEvent;
 
-public class Installer extends ModuleInstall {
+import javax.swing.Action;
+import javax.swing.text.JTextComponent;
+
+import org.netbeans.api.editor.EditorActionNames;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.api.editor.EditorActionRegistrations;
+import org.netbeans.api.editor.EditorUtilities;
+import org.netbeans.editor.BaseKit;
+import org.netbeans.spi.editor.AbstractEditorAction;
+
+/**
+ * Move move entire code elements (statements and class members) up or down.
+ *
+ * @author Dusan Balek
+ */
+@EditorActionRegistrations({
+    @EditorActionRegistration(name = EditorActionNames.moveCodeElementUp,
+                              menuPath = "Source",
+                              menuPosition = 840,
+                              menuText = "#" + EditorActionNames.moveCodeElementUp + "_menu_text"),
+    @EditorActionRegistration(name = EditorActionNames.moveCodeElementDown,
+                              menuPath = "Source",
+                              menuPosition = 860,
+                              menuText = "#" + EditorActionNames.moveCodeElementDown + "_menu_text")
+})
+public class MoveCodeElementAction extends AbstractEditorAction {
 
     @Override
-    public void restored() {
-        // simulating the installer provided installation root
-//        try {
-//            Preferences.systemRoot().put("com/oracle/javafx/authoring/AuthoringTool/home", "/opt/SceneBuilder");
-//            Preferences.userRoot().put("com/oracle/javafx/authoring/AuthoringTool/home", "/opt/SceneBuilder");
-//            Preferences.systemRoot().sync();
-//            Preferences.userRoot().sync();
-//        } catch (BackingStoreException e) {
-//        }
+    public void actionPerformed(ActionEvent evt, JTextComponent component) {
+        if (component != null) {
+            String actionName = EditorActionNames.moveCodeElementUp.equals(actionName())
+                    ? BaseKit.moveSelectionElseLineUpAction
+                    : BaseKit.moveSelectionElseLineDownAction;
+            Action action = EditorUtilities.getAction(component.getUI().getEditorKit(component), actionName);
+            if (action != null) {
+                action.actionPerformed(evt);
+                return;
+            }
+        }
+        component.getToolkit().beep();
     }
 }
