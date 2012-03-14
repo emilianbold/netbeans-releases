@@ -48,6 +48,7 @@ import java.beans.PropertyVetoException;
 import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.cookies.OpenCookie;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 
@@ -80,9 +81,9 @@ public class PreviousError extends AbstractAction implements PropertyChangeListe
         Node node = getNextMeaningfullNode();
         
         comp.nodesForNext.add(0, node);
-        ErrorDescription ed = node.getLookup().lookup(ErrorDescription.class);
+        OpenCookie oc = node.getLookup().lookup(OpenCookie.class);
             
-        assert ed != null;
+        assert oc != null;
         
         try {
             comp.getExplorerManager().setSelectedNodes(new Node[]{node});
@@ -90,8 +91,7 @@ public class PreviousError extends AbstractAction implements PropertyChangeListe
             Exceptions.printStackTrace(ex);
         }
 
-        //XXX:
-        Nodes.openErrorDescription(ed);
+        oc.open();
         fireEnabledChanged();
     }
 

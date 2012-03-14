@@ -76,6 +76,7 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
     private static final Logger LOG = Logger.getLogger(RunInEditor.class.getName());
     public static final String RUN_IN_EDITOR = "run-in-editor";
     public static final boolean RUN_IN_EDITOR_DEFAULT = false;
+    public static final String HINTS_KEY = RunInEditor.class.getName();
     
     private final AtomicBoolean cancel = new AtomicBoolean();
     private long cancelledAt;
@@ -146,7 +147,7 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
 
         if (cancel.get() || bugs == null) return;
 
-        HintsController.setErrors(parameter.getFileObject(), RunInEditor.class.getName(), bugs);
+        HintsController.setErrors(parameter.getFileObject(), HINTS_KEY, bugs);
     }
 
     @Override public void cancel() {

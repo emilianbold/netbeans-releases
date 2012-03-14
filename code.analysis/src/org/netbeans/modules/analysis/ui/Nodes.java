@@ -534,7 +534,7 @@ public class Nodes {
         private final Image icon;
 
         public ErrorDescriptionNode(AnalyzerFactory provider, ErrorDescription ed) {
-            super(Children.LEAF, Lookups.fixed(ed, new OpenErrorDescription(ed)));
+            super(Children.LEAF, Lookups.fixed(ed, new OpenErrorDescription(provider, ed)));
             int line = -1;
             try {
                 line = ed.getRange().getBegin().getLine();
@@ -559,20 +559,22 @@ public class Nodes {
 
     private static final class OpenErrorDescription implements OpenCookie {
 
+        private final AnalyzerFactory analyzer;
         private final ErrorDescription ed;
 
-        public OpenErrorDescription(ErrorDescription ed) {
+        public OpenErrorDescription(AnalyzerFactory analyzer, ErrorDescription ed) {
+            this.analyzer = analyzer;
             this.ed = ed;
         }
 
         @Override
         public void open() {
-            openErrorDescription(ed);
+            openErrorDescription(analyzer, ed);
         }
         
     }
 
-    static void openErrorDescription(ErrorDescription ed) throws IndexOutOfBoundsException {
+    static void openErrorDescription(AnalyzerFactory analyzer, ErrorDescription ed) throws IndexOutOfBoundsException {
         try {
             DataObject od = DataObject.find(ed.getFile());
             LineCookie lc = od.getLookup().lookup(LineCookie.class);
@@ -581,6 +583,7 @@ public class Nodes {
                 Line line = lc.getLineSet().getCurrent(ed.getRange().getBegin().getLine());
 
                 line.show(ShowOpenType.OPEN, ShowVisibilityType.FOCUS);
+                analyzer.warningOpened(ed);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);

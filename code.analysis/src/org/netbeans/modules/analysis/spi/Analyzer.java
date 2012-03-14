@@ -106,6 +106,9 @@ public interface Analyzer extends Cancellable {
          * @return
          */
         public abstract Analyzer createAnalyzer(Context context);
+
+        //XXX: should be protected
+        public void warningOpened(ErrorDescription warning) {}
     }
 
     public static final class Context {

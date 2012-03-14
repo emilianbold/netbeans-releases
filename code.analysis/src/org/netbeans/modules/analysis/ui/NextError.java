@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import javax.swing.AbstractAction;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.cookies.OpenCookie;
 import org.openide.nodes.FilterNode.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -92,9 +93,9 @@ public class NextError extends AbstractAction implements PropertyChangeListener 
             return ;
         }
         
-        ErrorDescription ed = node.getLookup().lookup(ErrorDescription.class);
+        OpenCookie oc = node.getLookup().lookup(OpenCookie.class);
             
-        assert ed != null;
+        assert oc != null;
         
         addToSeenNodes(node);
         
@@ -104,8 +105,7 @@ public class NextError extends AbstractAction implements PropertyChangeListener 
             Exceptions.printStackTrace(ex);
         }
 
-        //XXX:
-        Nodes.openErrorDescription(ed);
+        oc.open();
         fireEnabledChanged();
     }
     

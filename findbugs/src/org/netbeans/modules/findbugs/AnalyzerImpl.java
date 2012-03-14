@@ -54,8 +54,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.findbugs.options.FindBugsPanel;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -160,6 +162,13 @@ public class AnalyzerImpl implements Analyzer {
         @Override
         public Analyzer createAnalyzer(Context context) {
             return new AnalyzerImpl(context);
+        }
+
+        @Override
+        public void warningOpened(ErrorDescription warning) {
+            if (NbPreferences.forModule(RunInEditor.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT)) return;
+
+            HintsController.setErrors(warning.getFile(), RunInEditor.HINTS_KEY, Collections.singleton(warning));
         }
 
     }
