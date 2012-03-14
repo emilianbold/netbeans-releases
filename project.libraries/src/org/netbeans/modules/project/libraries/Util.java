@@ -121,7 +121,7 @@ public class Util {
     public static boolean supportsProperties(final @NonNull LibraryImplementation impl) {
         assert impl != null;
         if (impl instanceof ProxyLibraryImplementation) {
-            return supportsDisplayName(((ProxyLibraryImplementation)impl).getOriginal());
+            return supportsProperties(((ProxyLibraryImplementation)impl).getOriginal());
         }
         return impl instanceof LibraryImplementation3;
     }
