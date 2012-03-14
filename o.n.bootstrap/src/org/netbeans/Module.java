@@ -165,6 +165,7 @@ public abstract class Module extends ModuleInfo {
             if (data != null) {
                 return data;
             }
+            Util.err.log(Level.FINE, "Initialize data {0}", getJarFile()); // NOI18N
             InputStream is = mgr.dataFor(getJarFile());
             if (is != null) {
                 try {
@@ -264,6 +265,10 @@ public abstract class Module extends ModuleInfo {
     
     @Override
     public String getCodeNameBase() {
+        String cnb = mgr.cnbFor(getJarFile());
+        if (cnb != null) {
+            return cnb;
+        }
         return data().getCodeNameBase();
     }
     
