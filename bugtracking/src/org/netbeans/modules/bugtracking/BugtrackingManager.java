@@ -57,7 +57,6 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
@@ -76,9 +75,9 @@ import org.openide.windows.WindowManager;
  */
 public final class BugtrackingManager implements LookupListener {
     
-    private static final BugtrackingManager instance = new BugtrackingManager();
+    private static BugtrackingManager instance;
 
-    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugracking.BugtrackingManager"); // NOI18N
+    public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.BugtrackingManager"); // NOI18N
 
     private RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
 
@@ -95,11 +94,14 @@ public final class BugtrackingManager implements LookupListener {
     private Map<String, List<RecentIssue>> recentIssues;
     private KenaiAccessor kenaiAccessor;
 
-    public static BugtrackingManager getInstance() {
+    public synchronized static BugtrackingManager getInstance() {
+        if(instance == null) {
+            instance = new BugtrackingManager();
+        }
         return instance;
     }
 
-    private BugtrackingManager() {
+    private BugtrackingManager() { 
         WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
