@@ -66,6 +66,17 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
 
+    public void test209579() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public @interface A {\n"
+                + "    String name() default \"\";\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodInAnnotation"));
+    }
+
     public void test208741() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

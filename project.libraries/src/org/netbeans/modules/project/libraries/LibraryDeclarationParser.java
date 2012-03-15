@@ -50,13 +50,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Stack;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryTypeProvider;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
@@ -87,9 +89,11 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
 
     private static final String LIBRARY_DEF_1 = "-//NetBeans//DTD Library Declaration 1.0//EN"; //NOI18N
     private static final String LIBRARY_DTD_1 = "http://www.netbeans.org/dtds/library-declaration-1_0.dtd"; //NOI18N
-    static final String LIBRARY_NS = "http://www.netbeans.org/ns/library-declaration/2";    //NOI18N
+    static final String LIBRARY_NS2 = "http://www.netbeans.org/ns/library-declaration/2";    //NOI18N
+    static final String LIBRARY_NS3 = "http://www.netbeans.org/ns/library-declaration/3";    //NOI18N
     static final String VER_1 = "1.0";  //NOI18N
     static final String VER_2 = "2.0";  //NOI18N
+    static final String VER_3 = "3.0";  //NOI18N
     private static final String LIBRARY = "library";    //NOI18N
     private static final String VERSION = "version";    //NOI18N
     private static final String VOLUME = "volume";  //NOI18N
@@ -99,6 +103,9 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
     private static final String NAME = "name";  //NOI18N
     private static final String BUNDLE = "localizing-bundle";   //NOI18N
     private static final String DISPLAY_NAME = "display-name";  //NOI18N
+    private static final String PROPERTIES = "properties";   //NOI18N
+    private static final String PROPERTY = "property";  //NOI18N
+    private static final String VALUE = "value";    //NOI18N
 
     private StringBuffer buffer;
     private final LibraryDeclarationConvertor parslet;
@@ -158,6 +165,10 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             handler.start_volume(attrs);
         } else if (LIBRARY.equals(qname)) {
             expectedNS = handler.start_library(ns, attrs);
+        } else if (PROPERTIES.equals(qname) && supportsProperties(ns)) {
+            handler.start_properties(attrs);
+        } else if (PROPERTY.equals(qname) && supportsProperties(ns)) {
+            handler.start_property(attrs);
         }
     }
     
@@ -173,6 +184,10 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             handler.end_volume();
         } else if (LIBRARY.equals(qname)) {
             handler.end_library();
+        } else if (PROPERTIES.equals(qname) && supportsProperties(ns)) {
+            handler.end_properties();
+        } else if (PROPERTY.equals(qname) && supportsProperties(ns)) {
+            handler.end_property();
         }
     }
     
@@ -250,9 +265,12 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
         } else if (BUNDLE.equals(here)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_localizingBundle(buffer.length() == 0 ? null : buffer.toString(), attrs);
-        } else if (DISPLAY_NAME.equals(here) && LIBRARY_NS.equals(ns)) {
+        } else if (DISPLAY_NAME.equals(here) && supportsDisplayName(ns)) {
             if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
             handler.handle_displayName(buffer.length() == 0 ? null : buffer.toString(), attrs);
+        } else if (VALUE.equals(here) && supportsProperties(ns)) {
+            if (fireOnlyIfMixed) throw new IllegalStateException("Unexpected characters() event! (Missing DTD?)");
+            handler.handle_value(buffer.length() == 0 ? null : buffer.toString(), attrs);
         } else {
             //do not care
         }
@@ -332,7 +350,9 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
             final @NonNull LibraryImplementation library,
             final @NonNull LibraryTypeProvider libraryTypeProvider) throws IOException {
         final Document doc = Util.supportsDisplayName(library) ?
-                createLibraryDefinition2(library, libraryTypeProvider) :
+                (Util.supportsProperties(library) ?
+                    createLibraryDefinition3(library, libraryTypeProvider) :
+                    createLibraryDefinition2(library, libraryTypeProvider)) :
                 createLibraryDefinition1(library, libraryTypeProvider);
         final OutputStream os = definitionFile.getOutputStream();
         try {
@@ -381,34 +401,82 @@ public class LibraryDeclarationParser implements ContentHandler, EntityResolver 
     private static Document createLibraryDefinition2(
             final @NonNull LibraryImplementation library,
             final @NonNull LibraryTypeProvider libraryTypeProvider) {
-        final Document doc = XMLUtil.createDocument(LIBRARY, LIBRARY_NS, null, null);
+        final Document doc = XMLUtil.createDocument(LIBRARY, LIBRARY_NS2, null, null);
         final Element libraryE = doc.getDocumentElement();
         libraryE.setAttribute(VERSION, VER_2); // NOI18N
-        libraryE.appendChild(doc.createElementNS(LIBRARY_NS, NAME)).appendChild(doc.createTextNode(library.getName())); // NOI18N
-        libraryE.appendChild(doc.createElementNS(LIBRARY_NS, TYPE)).appendChild(doc.createTextNode(library.getType())); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, NAME)).appendChild(doc.createTextNode(library.getName())); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, TYPE)).appendChild(doc.createTextNode(library.getType())); // NOI18N
         String description = library.getDescription();
         if (description != null && description.length() > 0) {
-            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, DESCRIPTION)).appendChild(doc.createTextNode(description)); // NOI18N
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, DESCRIPTION)).appendChild(doc.createTextNode(description)); // NOI18N
         }
         String localizingBundle = library.getLocalizingBundle();
         if (localizingBundle != null && localizingBundle.length() > 0) {
-            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
         }
         String displayname = Util.getDisplayName(library);
         if (displayname != null) {
-            libraryE.appendChild(doc.createElementNS(LIBRARY_NS, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS2, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
         }
         for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
-            Element volumeE = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS,VOLUME)); // NOI18N
-            volumeE.appendChild(doc.createElementNS(LIBRARY_NS, TYPE)).appendChild(doc.createTextNode(vtype)); // NOI18N
+            Element volumeE = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS2,VOLUME)); // NOI18N
+            volumeE.appendChild(doc.createElementNS(LIBRARY_NS2, TYPE)).appendChild(doc.createTextNode(vtype)); // NOI18N
             List<URL> volume = library.getContent(vtype);
             if (volume != null) {
                 for (URL url : volume) {
-                    volumeE.appendChild(doc.createElementNS(LIBRARY_NS, RESOURCE)).appendChild(doc.createTextNode(url.toString())); // NOI18N
+                    volumeE.appendChild(doc.createElementNS(LIBRARY_NS2, RESOURCE)).appendChild(doc.createTextNode(url.toString())); // NOI18N
                 }
             }
         }
         return doc;
+    }
+    
+    private static Document createLibraryDefinition3(
+            final @NonNull LibraryImplementation library,
+            final @NonNull LibraryTypeProvider libraryTypeProvider) {
+        final Document doc = XMLUtil.createDocument(LIBRARY, LIBRARY_NS3, null, null);
+        final Element libraryE = doc.getDocumentElement();
+        libraryE.setAttribute(VERSION, VER_3); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, NAME)).appendChild(doc.createTextNode(library.getName())); // NOI18N
+        libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, TYPE)).appendChild(doc.createTextNode(library.getType())); // NOI18N
+        String description = library.getDescription();
+        if (description != null && description.length() > 0) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, DESCRIPTION)).appendChild(doc.createTextNode(description)); // NOI18N
+        }
+        String localizingBundle = library.getLocalizingBundle();
+        if (localizingBundle != null && localizingBundle.length() > 0) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, BUNDLE)).appendChild(doc.createTextNode(localizingBundle)); // NOI18N
+        }
+        String displayname = Util.getDisplayName(library);
+        if (displayname != null) {
+            libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, DISPLAY_NAME)).appendChild(doc.createTextNode(displayname)); // NOI18N
+        }
+        for (String vtype : libraryTypeProvider.getSupportedVolumeTypes()) {
+            Element volumeE = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS3,VOLUME)); // NOI18N
+            volumeE.appendChild(doc.createElementNS(LIBRARY_NS3, TYPE)).appendChild(doc.createTextNode(vtype)); // NOI18N
+            List<URL> volume = library.getContent(vtype);
+            if (volume != null) {
+                for (URL url : volume) {
+                    volumeE.appendChild(doc.createElementNS(LIBRARY_NS3, RESOURCE)).appendChild(doc.createTextNode(url.toString())); // NOI18N
+                }
+            }
+        }
+        final Map<String,String> properties = Util.getProperties(library);
+        final Element propertiesNode = (Element) libraryE.appendChild(doc.createElementNS(LIBRARY_NS3, PROPERTIES));
+        for (Map.Entry<String,String> e : properties.entrySet()) {
+            final Element propertyNode = (Element)propertiesNode.appendChild(doc.createElementNS(LIBRARY_NS3, PROPERTY));
+            propertyNode.appendChild(doc.createElementNS(LIBRARY_NS3, NAME)).appendChild(doc.createTextNode(e.getKey()));
+            propertyNode.appendChild(doc.createElementNS(LIBRARY_NS3, VALUE)).appendChild(doc.createTextNode(e.getValue()));
+        }
+        return doc;
+    }
+    
+    private static boolean supportsDisplayName(@NullAllowed final String ns) {
+        return LIBRARY_NS2.equals(ns) || LIBRARY_NS3.equals(ns);
+    }
+    
+    private static boolean supportsProperties(@NullAllowed final String ns) {
+        return LIBRARY_NS3.equals(ns);
     }
 }
 

@@ -117,7 +117,9 @@ public class JFXConfigsTest extends NbTestCase {
         assertNotNull(CONFIGS);
         // newly created project has DEFAULT config defined and non-empty
         Set<String> names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 1);
+        assertTrue(names != null);
+        //assertTrue(names.size() == 1); // default config only
+        assertTrue(names.size() == 3); // default + Run as WebStart + Run in Browser
         assertFalse(CONFIGS.isActiveConfigEmpty());
         assertFalse(CONFIGS.isConfigEmpty(DEFAULT));
         assertFalse(CONFIGS.isDefaultConfigEmpty());
@@ -138,7 +140,7 @@ public class JFXConfigsTest extends NbTestCase {
         assertFalse(CONFIGS.isPropertySet(NONDEF1, PROP2));
         assertFalse(CONFIGS.isPropertySet(NONDEF2, PROP2));
         Set<String> names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 1);
+        assertTrue(names != null);
         // add property value, null is a valid value
         CONFIGS.setProperty(NONDEF1, PROP2, null);
         assertFalse(CONFIGS.isDefaultPropertySet(PROP2));
@@ -150,7 +152,9 @@ public class JFXConfigsTest extends NbTestCase {
         assertTrue(CONFIGS.hasConfig(NONDEF1));
         assertFalse(CONFIGS.hasConfig(NONDEF2));
         names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 2);
+        assertTrue(names != null);
+        //assertTrue(names.size() == 2); // default + NONDEF1
+        assertTrue(names.size() == 4); // default + NONDEF1 + Run as WebStart + Run in Browser
         // check property value (null is ambiguous)
         assertNull(CONFIGS.getProperty(DEFAULT, PROP2));
         assertNull(CONFIGS.getProperty(NONDEF1, PROP2));
@@ -189,19 +193,25 @@ public class JFXConfigsTest extends NbTestCase {
         assertFalse(CONFIGS.isPropertySet(NONDEF2, PROP2));
         // erase configs
         names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 2);
+        assertTrue(names != null);
+        //assertTrue(names.size() == 2); // default + NONDEF1
+        assertTrue(names.size() == 4); // default + NONDEF1 + Run as WebStart + Run in Browser
         CONFIGS.eraseConfig(NONDEF1);
         assertTrue(CONFIGS.hasConfig(DEFAULT));
         assertFalse(CONFIGS.hasConfig(NONDEF1));
         assertFalse(CONFIGS.hasConfig(NONDEF2));
         names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 1);
+        assertTrue(names != null);
+        //assertTrue(names.size() == 1); // default
+        assertTrue(names.size() == 3); // default + Run as WebStart + Run in Browser
         CONFIGS.eraseConfig(NONDEF2);
         assertTrue(CONFIGS.hasConfig(DEFAULT));
         assertFalse(CONFIGS.hasConfig(NONDEF1));
         assertFalse(CONFIGS.hasConfig(NONDEF2));
         names = CONFIGS.getConfigNames();
-        assertTrue(names != null && names.size() == 1);
+        assertTrue(names != null);
+        //assertTrue(names.size() == 1); // default
+        assertTrue(names.size() == 3); // default + Run as WebStart + Run in Browser
     }
     
     public void testGetSetPropertyTransparent() throws Exception {
