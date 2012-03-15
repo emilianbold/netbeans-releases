@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -85,6 +87,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     private Preferences settings;
     private final boolean defaultsToDisabled;
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
+    private final Map<String, TreePath> bug2Path =  new HashMap<String, TreePath>();
     private final DefaultTreeModel treeModel;
 
     public FindBugsPanel(OptionsFilter filter, final CustomizerContext<?, ?> cc) {
@@ -306,6 +309,16 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         bugsTree.repaint();
     }
 
+    void selectById(String id) {
+        TreePath toSelect = bug2Path.get(id);
+
+        if (toSelect != null) {
+            bugsTree.setSelectionPath(toSelect);
+        }
+
+        Logger.getLogger(FindBugsPanel.class.getName()).log(Level.WARNING, "cannot find bug to select ({0})", id);
+    }
+    
     private TreeNode createRootNode() {
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         DetectorFactoryCollection dfc = DetectorFactoryCollection.instance();
@@ -346,6 +359,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 DefaultMutableTreeNode bugNode = new DefaultMutableTreeNode(bug);
 
                 categoryNode.add(bugNode);
+                bug2Path.put(bug.getType(), new TreePath(new Object[] {root, categoryNode, bugNode}));
             }
         }
 

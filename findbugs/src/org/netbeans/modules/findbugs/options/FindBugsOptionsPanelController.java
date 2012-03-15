@@ -43,7 +43,6 @@ package org.netbeans.modules.findbugs.options;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
 import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
@@ -86,8 +85,8 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
         return null; // new HelpCtx("...ID") if you have a help set
     }
 
-    public JComponent getComponent(Lookup masterLookup) {
-        return getPanel(masterLookup.lookup(OptionsFilter.class));
+    public FindBugsPanel getComponent(Lookup masterLookup) {
+        return getPanel(masterLookup);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
@@ -98,9 +97,9 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
         pcs.removePropertyChangeListener(l);
     }
 
-    private FindBugsPanel getPanel(OptionsFilter options) {
+    private FindBugsPanel getPanel(Lookup masterLookup) {
         if (panel == null) {
-            panel = new FindBugsPanel(options, null);
+            panel = new FindBugsPanel(masterLookup.lookup(OptionsFilter.class), null);
         }
         return panel;
     }
@@ -111,5 +110,10 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
+    }
+
+    @Override
+    protected void setCurrentSubcategory(String subpath) {
+        getComponent(null).selectById(subpath);
     }
 }
