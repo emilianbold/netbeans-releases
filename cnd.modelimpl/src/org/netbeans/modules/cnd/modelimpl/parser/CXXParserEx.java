@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.cnd.modelimpl.parser;
 
+import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CXXParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 
 /**
  *
@@ -56,4 +59,18 @@ public class CXXParserEx extends CXXParser {
         super(input, action);
         this.action = action;
     }
+    
+    private CsmParserProvider.ParserErrorDelegate errorDelegate;
+    
+    public void setErrorDelegate(CsmParserProvider.ParserErrorDelegate delegate) {
+        errorDelegate = delegate;
+    }
+
+    @Override
+    public void displayRecognitionError(String[] tokenNames, RecognitionException e) {
+        if(errorDelegate != null) {
+            errorDelegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.line, e.charPositionInLine, e.token.getText(), e.token.getType() == -1));
+        }
+    }
+    
 }

@@ -75,9 +75,13 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.BaseParserErrorFilter;
+import org.openide.util.NbBundle;
 
 /**
  * Extends CPPParser to implement logic, ported from Support.cpp.
@@ -1183,21 +1187,17 @@ public class CPPParserEx extends CPPParser {
         }
     }
 
-    public interface ErrorDelegate {
-
-        void onError(RecognitionException e);
-    }
-    private ErrorDelegate errorDelegate;
-
-    public void setErrorDelegate(ErrorDelegate errorDelegate) {
-        this.errorDelegate = errorDelegate;
+    private CsmParserProvider.ParserErrorDelegate errorDelegate;
+    
+    public void setErrorDelegate(CsmParserProvider.ParserErrorDelegate delegate) {
+        errorDelegate = delegate;
     }
 
     @Override
     protected void onError(RecognitionException e) {
-        ErrorDelegate delegate = errorDelegate;
+        CsmParserProvider.ParserErrorDelegate delegate = errorDelegate;
         if (delegate != null) {
-            delegate.onError(e);
+            delegate.onError(new CsmParserProvider.ParserError(e.getMessage(), e.getLine(), e.getColumn(), e.getTokenText(), e instanceof NoViableAltException && APTUtils.isEOF(((NoViableAltException)e).token)));
         }
     }
 }

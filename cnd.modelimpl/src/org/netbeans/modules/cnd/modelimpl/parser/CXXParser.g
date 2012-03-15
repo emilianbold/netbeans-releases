@@ -43,6 +43,8 @@
 /**
  * C++ grammar.
  * @author Fedor Sergeev
+ * C++11 standard extensions.
+ * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 
 parser grammar CXXParser;
@@ -275,7 +277,14 @@ iteration_statement:
     |
         LITERAL_do statement LITERAL_while LPAREN expression RPAREN SEMICOLON
     |
-        LITERAL_for LPAREN for_init_statement condition? SEMICOLON expression? RPAREN statement
+        LITERAL_for LPAREN 
+        (
+            (for_range_declaration COLON) =>
+            for_range_declaration COLON for_range_initializer
+        |
+            for_init_statement condition? SEMICOLON expression? 
+        )
+        RPAREN statement
     ;
 /*
  * The same expression-declaration ambiguity as in statement rule.
@@ -287,12 +296,29 @@ for_init_statement:
         expression_statement
 
     ;
+
+for_range_declaration:
+    type_specifier+ declarator
+    ;
+
+for_range_initializer:
+        expression 
+    |   
+        braced_init_list
+    ;
+
 jump_statement:
         LITERAL_break SEMICOLON
     |
         LITERAL_continue SEMICOLON
     |
-        LITERAL_return expression? SEMICOLON
+        LITERAL_return 
+        (   
+            expression?
+        |   
+            braced_init_list
+        )               
+        SEMICOLON
     |
         LITERAL_goto IDENT SEMICOLON
     ;
@@ -325,6 +351,8 @@ declaration [decl_kind kind] :
         linkage_specification[kind]
     |
         namespace_definition 
+    |
+        attribute_declaration
     ;
 block_declaration:
         asm_definition 
@@ -334,6 +362,12 @@ block_declaration:
         using_declaration
     |
         using_directive 
+    |
+        static_assert_declaration
+    |
+        alias_declaration
+//    |
+//        opaque_enum_declaration
     ;
 
 // IDs
@@ -349,7 +383,11 @@ unqualified_id:
     |
         conversion_function_id
     |
+        literal_operator_id
+    |
         TILDE class_name
+    |
+        TILDE decltype_specifier
     |
         simple_template_id_or_IDENT
     ;
@@ -363,6 +401,8 @@ qualified_id:
             operator_function_id
         |
             simple_template_id_or_IDENT
+        |
+            literal_operator_id
         )
     ;
 
@@ -410,6 +450,11 @@ lookup_nested_name_specifier:
     ;
 
 //[gram.dcl]
+
+alias_declaration:
+    LITERAL_using IDENT ASSIGNEQUAL type_id SEMICOLON
+    ;
+
 /*
  * original rule:
 
@@ -446,7 +491,7 @@ scope Declaration;
  * (see different init_declarator_list continuation sequences).
  */
 simple_declaration_or_function_definition [decl_kind kind]
-scope Declaration;
+//scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
         {action.simple_declaration(input.LT(1));}
@@ -466,7 +511,7 @@ scope Declaration;
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { $greedy_declarator.type.is_function() }?
+                { /*$greedy_declarator.type.is_function()*/ true }?
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
@@ -474,6 +519,14 @@ scope Declaration;
             )
         )
         {action.end_simple_declaration(input.LT(0));}
+    ;
+
+static_assert_declaration:
+    LITERAL_static_assert LPAREN constant_expression COMMA STRING_LITERAL RPAREN SEMICOLON
+    ;
+
+attribute_declaration:
+        LITERAL_attribute
     ;
 
 decl_specifier
@@ -487,11 +540,13 @@ decl_specifier
         LITERAL_typedef         {action.decl_specifier(action.DECL_SPECIFIER__LITERAL_TYPEDEF, $LITERAL_typedef);}
     |
         type_specifier          {action.decl_specifier(action.DECL_SPECIFIER__TYPE_SPECIFIER, null);}
+    |
+        LITERAL_constexpr
     ;
 
 storage_class_specifier:
-        LITERAL_auto 
-    |
+//        LITERAL_auto 
+//    |
         LITERAL_register 
     |
         LITERAL_static 
@@ -501,6 +556,8 @@ storage_class_specifier:
         LITERAL_mutable 
     |
         LITERAL___thread
+    |
+        LITERAL_thread_local
     ;
 function_specifier:
         LITERAL_inline 
@@ -536,7 +593,7 @@ type_specifier returns [type_specifier_t ts]
     :
         // LITERAL_class SCOPE does not cover all the elaborated_type_specifier cases even with LITERAL_class
         (LITERAL_class SCOPE)=>
-            elaborated_type_specifier
+            trailing_type_specifier
     |
         // thus we need to make serious lookahead here to catch LCURLY
         (class_head LCURLY)=>
@@ -546,11 +603,15 @@ type_specifier returns [type_specifier_t ts]
         (LITERAL_enum IDENT? LCURLY)=>
             enum_specifier
     |
+        trailing_type_specifier
+    ;
+
+trailing_type_specifier:
         simple_type_specifier
-        { store_type_specifier($simple_type_specifier.ts_val, CTX); }
     |
-        // LITERAL_class SCOPE above does not cover all the elaborated_type_specifier cases
         elaborated_type_specifier
+    |
+        typename_specifier
     |
         cv_qualifier
     ;
@@ -562,6 +623,10 @@ scope QualName;
         LITERAL_char
     |
         LITERAL_wchar_t
+    |
+        LITERAL_char16_t
+    |
+        LITERAL_char32_t
     |
         LITERAL_bool
     |
@@ -580,6 +645,10 @@ scope QualName;
         LITERAL_double
     |
         LITERAL_void
+    |
+        LITERAL_auto
+    |
+        decltype_specifier
     |
         /*
          * "at most one type-specifier is allowed in the complete decl-specifier-seq of a declaration..."
@@ -622,6 +691,10 @@ elaborated_type_specifier:
 * Resolved by specifically predicating IDENT SCOPE in 'enum' situation.
 */
 
+decltype_specifier:
+    LITERAL_decltype LPAREN expression RPAREN
+    ;
+
 elaborated_type_specifier:
         class_key SCOPE? (
             (IDENT SCOPE) =>
@@ -639,8 +712,6 @@ elaborated_type_specifier:
             (IDENT)=>
                 IDENT
         )
-    |
-        typename_specifier
     ;
 
 // In C++0x this is factored out already
@@ -656,7 +727,31 @@ enum_name:
  *
  */
 enum_specifier:
-        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
+//        LITERAL_enum IDENT? LCURLY enumerator_list? RCURLY
+        enum_head 
+        (
+            LCURLY (enumerator_list COMMA?)? RCURLY
+        |
+            SEMICOLON
+        )
+    ;
+enum_head:
+    enum_key 
+    (
+        nested_name_specifier IDENT
+    |
+        IDENT?
+    )
+    enum_base?
+    ;
+//opaque_enum_declaration:
+//    enum_key IDENT enum_base? SEMICOLON
+//    ;
+enum_key:
+    LITERAL_enum // (LITERAL_class | LITERAL_struct)?
+    ;
+enum_base:
+    COLON type_specifier+
     ;
 enumerator_list:
         enumerator_definition (COMMA enumerator_definition)* 
@@ -714,6 +809,7 @@ unnamed_namespace_definition:
  * This is all unnecessarily complicated. We can easily handle it by one single rule:
  */
 namespace_definition:
+        LITERAL_inline?
         LITERAL_namespace       {action.namespace_declaration($LITERAL_namespace);}
         (   
             IDENT               {action.namespace_name($IDENT);}
@@ -819,13 +915,13 @@ noptr_declarator:
 declarator returns [declarator_type_t type]
     :
         noptr_declarator 
-            {{ type = $noptr_declarator.type; }}
+//            {{ type = $noptr_declarator.type; }}
     |
         (ptr_operator)=>
             ptr_operator nested=declarator
-                {{ type = $nested.type;
-                   type.apply_ptr($ptr_operator.type);
-                }}
+//                {{ type = $nested.type;
+//                   type.apply_ptr($ptr_operator.type);
+//                }}
     ;
 
 // is quite unpretty because of left recursion removed here
@@ -833,20 +929,25 @@ noptr_declarator returns [declarator_type_t type]
     :
         (
             declarator_id
-                {{ type = $declarator_id.type; }}
+//                {{ type = $declarator_id.type; }}
         |
             LPAREN declarator RPAREN
-                {{ type = $declarator.type; }}
+//                {{ type = $declarator.type; }}
         ) // continued
         (
             parameters_and_qualifiers
-                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
+//                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
          |
              LSQUARE constant_expression? RSQUARE
-                {{ type.apply_array($constant_expression.expr); }}
+//                {{ type.apply_array($constant_expression.expr); }}
         )*
+        trailing_return_type?
     ;
 
+trailing_return_type:
+    LITERAL_POINTERTO trailing_type_specifier+ 
+    ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
+    ;
 /*
  *   This rule was crafted in order to resolve ambiguity between decl_specifier (type_specifier)
  * and constructor declaration (which has declarator_id == class name).
@@ -856,15 +957,15 @@ noptr_declarator returns [declarator_type_t type]
 function_declarator returns [declarator_type_t type]
     :
         (constructor_declarator)=>
-            constructor_declarator {{ type = $constructor_declarator.type; }}
+            constructor_declarator //{{ type = $constructor_declarator.type; }}
     |
-        declarator {{ type = $declarator.type; }}
+        declarator //{{ type = $declarator.type; }}
     ;
 
 constructor_declarator returns [declarator_type_t type]
     :
         parameters_and_qualifiers
-            {{ type.set_constructor($parameters_and_qualifiers.pq); }}
+            //{{ type.set_constructor($parameters_and_qualifiers.pq); }}
     ;
 
 /*
@@ -889,12 +990,15 @@ noptr_abstract_declarator:
 
 abstract_declarator returns [declarator_type_t type]
     :
-        noptr_abstract_declarator {{ type = $noptr_abstract_declarator.type; }}
+        noptr_abstract_declarator //{{ type = $noptr_abstract_declarator.type; }}
+        trailing_return_type?
     |
-        ptr_operator decl=abstract_declarator?
-            {{ type = $decl.type;
-               type.apply_ptr($ptr_operator.type);
-            }}
+        ptr_operator ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
+//            {{ type = $decl.type;
+//               type.apply_ptr($ptr_operator.type);
+//            }}
+    |
+        ELLIPSIS
     ;
 
 noptr_abstract_declarator returns [declarator_type_t type]
@@ -908,20 +1012,20 @@ noptr_abstract_declarator returns [declarator_type_t type]
 universal_declarator returns [declarator_type_t type]
 options { backtrack = true; }
     :
-        declarator { type = $declarator.type; }
+        declarator //{ type = $declarator.type; }
     |
-        abstract_declarator { type = $abstract_declarator.type; }
+        abstract_declarator //{ type = $abstract_declarator.type; }
     ;
 
 greedy_declarator returns [declarator_type_t type]
     :
-        greedy_nonptr_declarator {{ type = $greedy_nonptr_declarator.type; }}
+        greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
         (ptr_operator)=>
             ptr_operator decl=greedy_declarator
-            {{ type = $decl.type;
-               type.apply_ptr($ptr_operator.type);
-            }}
+//            {{ type = $decl.type;
+//               type.apply_ptr($ptr_operator.type);
+//            }}
     ;
 
 /*
@@ -932,37 +1036,45 @@ greedy_nonptr_declarator returns [declarator_type_t type]
     :
         (
             declarator_id
-                {{ type = $declarator_id.type; }}
+                //{{ type = $declarator_id.type; }}
         |
             LPAREN greedy_declarator RPAREN
-                {{ type = $greedy_declarator.type; }}
+                //{{ type = $greedy_declarator.type; }}
         ) // continued
         (
             (parameters_and_qualifiers)=>
                 parameters_and_qualifiers
-                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
+                //{{ type.apply_parameters($parameters_and_qualifiers.pq); }}
         |
             LSQUARE constant_expression? RSQUARE
-                {{ type.apply_array($constant_expression.expr); }}
+                //{{ type.apply_array($constant_expression.expr); }}
         )*
     ;
 
 ptr_operator returns [ declarator_type_t type ]
     :
         STAR cv_qualifier*
-            {{ type.set_ptr(NULL, $cv_qualifier.qual); }}
+            //{{ type.set_ptr(NULL, $cv_qualifier.qual); }}
     |
         AMPERSAND 
-            {{ type.set_ref(); }}
+            //{{ type.set_ref(); }}
+    |
+        AND
     |
         SCOPE? nested_name_specifier STAR cv_qualifier*
-/*DLITERAL_ifF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+/*DIFF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-/*DLITERAL_ifF*/        LITERAL_const //{{ qual = LITERAL_const; }}
+/*DIFF*/        LITERAL_const //{{ qual = LITERAL_const; }}
     |
-/*DLITERAL_ifF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
+/*DIFF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
+    ;
+
+ref_qualifier:
+        AMPERSAND
+    |
+        AND
     ;
 
 /*
@@ -975,7 +1087,7 @@ cv_qualifier returns [ qualifier_t qual ]:
  */
 
 declarator_id returns [ declarator_type_t type ] :
-        id_expression {{ type.set_ident(); }}
+        ELLIPSIS? id_expression //{{ type.set_ident(); }}
     ;
 
 /*
@@ -984,13 +1096,13 @@ declarator_id returns [ declarator_type_t type ] :
  * shall be considered a type-id"
  */
 type_id:
-        type_specifier+ abstract_declarator?
+        type_specifier+ 
+        ((abstract_declarator) => abstract_declarator)? // review: predicate to avoid ambiguity around ELLIPSIS
     ;
 
 parameters_and_qualifiers returns [ parameters_and_qualifiers_t pq ]
     :
-
-        LPAREN parameter_declaration_clause RPAREN cv_qualifier* exception_specification?
+        LPAREN parameter_declaration_clause RPAREN cv_qualifier* ref_qualifier? exception_specification?
     ;
 
 parameter_declaration_clause
@@ -999,7 +1111,7 @@ scope Declaration; /* need it zero'ed to handle hoisted type_specifier predicate
     :
         ELLIPSIS?
     |
-        parameter_declaration_list (COMMA? ELLIPSIS)?
+        parameter_declaration_list (COMMA ELLIPSIS)?
     ;
 
 parameter_declaration_list:
@@ -1028,6 +1140,8 @@ function_definition_after_declarator:
         ctor_initializer? function_body
     |
         function_try_block
+    |
+        ASSIGNEQUAL (LITERAL_delete | LITERAL_default) SEMICOLON
     ;
 
 /*
@@ -1059,19 +1173,25 @@ function_body:
     ;
 
 initializer:
-        ASSIGNEQUAL initializer_clause 
+        brace_or_equal_initializer
     |
         LPAREN expression_list RPAREN 
+    ;
+brace_or_equal_initializer:
+        ASSIGNEQUAL initializer_clause 
+    |
+        braced_init_list
     ;
 initializer_clause:
         assignment_expression 
     |
-        LCURLY initializer_list COMMA? RCURLY
-    |
-        LCURLY RCURLY
+        braced_init_list
     ;
 initializer_list:
         initializer_clause (COMMA initializer_clause )*
+    ;
+braced_init_list:
+    LCURLY (initializer_list COMMA?)? RCURLY
     ;
 
 //[gram.class] 
@@ -1107,7 +1227,13 @@ optionally_qualified_name
     ;
 
 class_head:
-        class_key optionally_qualified_name? base_clause?
+        class_key optionally_qualified_name? class_virtual_specifier* base_clause?
+    ;
+
+class_virtual_specifier:
+        LITERAL_final
+    |   
+        LITERAL_explicit
     ;
 
 class_key:
@@ -1171,7 +1297,7 @@ scope Declaration;
         |
             declarator
             (
-                { $declarator.type.is_function() }?
+                { /*$declarator.type.is_function()*/ true }?
                     function_definition_after_declarator
             |
                 // this was member_declarator_list
@@ -1189,14 +1315,18 @@ scope Declaration;
         using_declaration
     |
         template_declaration[kind]
+    |
+        static_assert_declaration
+    |
+        alias_declaration
     ;
 
 member_bitfield_declarator:
-        IDENT? COLON constant_expression
+        IDENT? virt_specifier+ COLON constant_expression
     ;
 
 member_declarator:
-        declarator constant_initializer?
+        declarator virt_specifier+ brace_or_equal_initializer
     |
         member_bitfield_declarator
     ;
@@ -1222,19 +1352,35 @@ constant_initializer:
         ASSIGNEQUAL constant_expression 
     ;
 
+virt_specifier:
+        LITERAL_override
+    |
+        LITERAL_final
+    |
+        LITERAL_new
+    ;
+
 // [gram.class.derived] 
 base_clause:
         COLON base_specifier_list 
     ;
 base_specifier_list:
-        base_specifier ( COMMA base_specifier )*
+        base_specifier ELLIPSIS? ( COMMA base_specifier ELLIPSIS? )*
     ;
 base_specifier:
-        SCOPE? nested_name_specifier? class_name 
+        base_type_specifier
     |
-        LITERAL_virtual access_specifier? SCOPE? nested_name_specifier? class_name 
+        LITERAL_virtual access_specifier? base_type_specifier
     |
-        access_specifier LITERAL_virtual? SCOPE? nested_name_specifier? class_name 
+        access_specifier LITERAL_virtual? base_type_specifier
+    ;
+class_or_decltype:
+        SCOPE? nested_name_specifier? class_name
+    |
+        decltype_specifier
+    ;
+base_type_specifier:
+    class_or_decltype
     ;
 access_specifier:
         LITERAL_private
@@ -1275,11 +1421,16 @@ ctor_initializer:
     ;
 
 mem_initializer_list:
-        mem_initializer ( COMMA mem_initializer )*
+        mem_initializer ELLIPSIS? ( COMMA mem_initializer ELLIPSIS? )*
     ;
 
 mem_initializer:
-        mem_initializer_id LPAREN expression_list? RPAREN 
+        mem_initializer_id 
+        (
+            LPAREN expression_list? RPAREN 
+        |
+            braced_init_list
+        )
     ;
 
 /*
@@ -1292,7 +1443,7 @@ mem_initializer_id:
  * Ambiguity resolved by removing special class_name case
  */
 mem_initializer_id:
-        SCOPE? nested_name_specifier? IDENT
+        class_or_decltype
     ;
 
 // [gram.over] 
@@ -1313,6 +1464,10 @@ operator_id returns [int id]:
         BITWISEXOREQUAL | BITWISEANDEQUAL | BITWISEOREQUAL | SHIFTLEFT | SHIFTRIGHT | SHIFTRIGHTEQUAL | SHIFTLEFTEQUAL | EQUAL | NOTEQUAL |
         LESSTHANOREQUALTO | GREATERTHANOREQUALTO | AND | OR | PLUSPLUS | MINUSMINUS | COMMA | POINTERTOMBR | POINTERTO | 
         LPAREN RPAREN | LSQUARE RSQUARE
+    ;
+
+literal_operator_id:
+        LITERAL_OPERATOR STRING_LITERAL IDENT
     ;
 
 // [gram.temp] 
@@ -1343,15 +1498,15 @@ template_parameter:
         parameter_declaration[tparm_decl]
     ;
 type_parameter:
-        LITERAL_class IDENT? 
+        LITERAL_class ELLIPSIS? IDENT? 
     |
         LITERAL_class IDENT? ASSIGNEQUAL type_id 
     |
-        LITERAL_typename IDENT? 
+        LITERAL_typename ELLIPSIS? IDENT? 
     |
         LITERAL_typename IDENT? ASSIGNEQUAL type_id 
     |
-        LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class IDENT? (ASSIGNEQUAL id_expression)?
+        LITERAL_template LESSTHAN template_parameter_list GREATERTHAN LITERAL_class ELLIPSIS? IDENT? (ASSIGNEQUAL id_expression)?
     ;
 
 simple_template_id
@@ -1401,7 +1556,7 @@ template_name:
  */
 
 template_argument_list:
-        template_argument ( COMMA template_argument )*
+        template_argument ELLIPSIS? ( COMMA template_argument ELLIPSIS? )*
     ;
 template_argument:
         // id_exression is included into assignment_expression, thus we need to explicitly rule it up
@@ -1454,10 +1609,18 @@ throw_expression:
         LITERAL_throw assignment_expression? 
     ;
 exception_specification:
+        dynamic_exception_specification
+    |
+        noexcept_specification
+    ;
+dynamic_exception_specification:
         LITERAL_throw LPAREN type_id_list? RPAREN 
     ;
 type_id_list:
-        type_id ( COMMA type_id )*
+        type_id ELLIPSIS? ( COMMA type_id ELLIPSIS? )*
+    ;
+noexcept_specification:
+        LITERAL_noexcept //(LPAREN constant_expression RPAREN)?
     ;
 
 // EXPRESSIONS
@@ -1470,6 +1633,39 @@ primary_expression:
         LPAREN expression RPAREN 
     |
         id_expression 
+    |
+        lambda_expression
+    ;
+
+lambda_expression:
+        lambda_introduser lambda_declarator? compound_statement
+    ;
+
+lambda_introduser:
+        LSQUARE lambda_capture? RSQUARE
+    ;
+lambda_capture:
+        capture_default (COMMA capture_list)?
+    |
+        capture_list
+    ;
+capture_default:
+        AMPERSAND
+    |
+        ASSIGNEQUAL
+    ;
+capture_list:
+        capture ELLIPSIS? (COMMA capture ELLIPSIS?)*
+    ;
+capture:
+        IDENT
+    |
+        AMPERSAND IDENT
+    |
+        LITERAL_this
+    ;
+lambda_declarator:
+        LPAREN parameter_declaration_clause RPAREN LITERAL_mutable? exception_specification? trailing_return_type?
     ;
 
 /*
@@ -1572,7 +1768,7 @@ basic_postfix_expression:
     ;
 
 expression_list:
-        assignment_expression ( COMMA assignment_expression )*
+        initializer_list
     ;
 /*
  * original rule:
@@ -1633,6 +1829,8 @@ unary_expression:
             (LPAREN type_id RPAREN)=>
                 LPAREN type_id RPAREN
         )
+    |
+        noexcept_expression
     ;
 
 unary_operator:
@@ -1700,13 +1898,20 @@ direct_new_declarator:
 
 new_initializer:
         LPAREN expression_list? RPAREN
+    |
+        braced_init_list
     ;
 delete_expression:
-        SCOPE? LITERAL_delete cast_expression
-    |
-        SCOPE? LITERAL_delete LSQUARE RSQUARE cast_expression
+        SCOPE? LITERAL_delete 
+        (
+            (LSQUARE RSQUARE) => LSQUARE RSQUARE cast_expression
+        |
+            cast_expression
+        )
     ;
-
+noexcept_expression:
+        LITERAL_noexcept LPAREN expression RPAREN
+    ;
 cast_expression :
         (LPAREN type_id RPAREN)=>
             LPAREN type_id RPAREN cast_expression

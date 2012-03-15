@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.antlr.NoViableAltException;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.openide.util.NbBundle;
 
 /**
@@ -61,15 +62,13 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
     // Mac OS X uses '\n' as line separator too
     private static final char LF = '\n'; // NOI18N
 
-    protected Collection<CsmErrorInfo> toErrorInfo(Collection<RecognitionException> exceptions, CsmFile file) {
+    protected Collection<CsmErrorInfo> toErrorInfo(Collection<CsmParserProvider.ParserError> errors, CsmFile file) {
         Collection<CsmErrorInfo> result = new ArrayList<CsmErrorInfo>();
-        if (!exceptions.isEmpty()){
+        if (!errors.isEmpty()){
             CharSequence text = file.getText();
-            RecognitionException prev = null;
+            CsmParserProvider.ParserError prev = null;
             ContextCache prevLine = new ContextCache();
-            for (RecognitionException e : exceptions) {
-                // IZ#204205 - unexpected token: <no text>
-                e = convertIfNeeded(e);
+            for (CsmParserProvider.ParserError e : errors) {
                 // Fix for IZ#143082: some syntax errors are reported twice.
                 // We assume that equal recognition exceptions are next to each other.
                 if (!equal(prev, e)) {
@@ -81,14 +80,14 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         return result;
     }
 
-    private boolean equal(RecognitionException e1, RecognitionException e2) {
+    private boolean equal(CsmParserProvider.ParserError e1, CsmParserProvider.ParserError e2) {
         if ((e1 == null) != (e2 == null)) {
             return false;
         }
         return e1.getLine() == e2.getLine() && e1.getColumn() == e2.getColumn();
     }
 
-    private CsmErrorInfo toErrorInfo(RecognitionException e, CharSequence text, ContextCache prevLine) {
+    private CsmErrorInfo toErrorInfo(CsmParserProvider.ParserError e, CharSequence text, ContextCache prevLine) {
         return toErrorInfo(getMessage(e), e.getLine(), e.getColumn(), text, prevLine, e.getTokenText());
     }
 
@@ -133,29 +132,18 @@ public abstract class BaseParserErrorFilter extends ParserErrorFilter {
         return new SimpleErrorInfo(start, end, message, getDefaultSeverity());
     }
 
-    private String getMessage(RecognitionException e) {        
+    private String getMessage(CsmParserProvider.ParserError e) {        
         String tokenText = e.getTokenText();
         if (tokenText == null) {
             return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_PARSER_ERROR"); // NOI18N
         } else {
-            if (e instanceof NoViableAltException) {
-                if (APTUtils.isEOF(((NoViableAltException)e).token)) {
-                    return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_EOF"); // NOI18N
-                }
+            if (e.isEof()) {
+                return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_EOF"); // NOI18N
             }
             return NbBundle.getMessage(BaseParserErrorFilter.class, "MSG_UNEXPECTED_TOKEN", tokenText); // NOI18N
         }
     }
 
-    private RecognitionException convertIfNeeded(RecognitionException e) {
-        if (e instanceof NoViableAltException) {
-            NoViableAltException nvae = (NoViableAltException) e;
-            if (APTUtils.isEOF(nvae.token)) {
-                return new NoViableAltException(APTUtils.EOF_TOKEN, nvae.fileName);
-            }
-        }
-        return e;
-    }
     protected CsmErrorInfo.Severity getDefaultSeverity() {
         return CsmErrorInfo.Severity.ERROR;
     }
