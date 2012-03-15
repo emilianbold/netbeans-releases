@@ -99,11 +99,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     @Override
     protected JavaSource getJavaSource(Phase p) {
         TreePathHandle source;
-        if(p == Phase.PRECHECK) {
-            source = properties.getPreSelectedMembers()[0];
-        } else {
-            source = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
-        }
+        source = properties.getPreSelectedMembers()[0];
         if(source != null && source.getFileObject() != null) {
             switch(p) {
                 case CHECKPARAMETERS:
@@ -162,13 +158,14 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
     protected Problem fastCheckParameters(CompilationController javac) throws IOException {
         javac.toPhase(JavaSource.Phase.RESOLVED);
         Collection<? extends TreePathHandle> source = refactoring.getRefactoringSource().lookupAll(TreePathHandle.class);
-        TreePathHandle target = refactoring.getTarget().lookup(TreePathHandle.class);
 
         if (source.isEmpty()) { // [f] nothing is selected
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NothingSelected")); //NOI18N
         }
-        
-        if(target == null) {
+
+        Lookup targetLookup = refactoring.getTarget();
+        TreePathHandle target;
+        if(targetLookup == null || (target = targetLookup.lookup(TreePathHandle.class)) == null) {
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_NoTarget")); //NOI18N
         }
 
