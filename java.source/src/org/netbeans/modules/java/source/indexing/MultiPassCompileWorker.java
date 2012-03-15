@@ -84,7 +84,6 @@ import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -120,7 +119,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     previous.aptGenerated);
         }
         
-        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.cpInfo);
+        final JavaFileManager fileManager = ClasspathInfoAccessor.getINSTANCE().getFileManager(javaContext.getClasspathInfo());
         final ClassNamesForFileOraculumImpl cnffOraculum = new ClassNamesForFileOraculumImpl(previous.file2FQNs);
 
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
@@ -168,7 +167,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                 }
                 if (jt == null) {
-                    jt = JavacParser.createJavacTask(javaContext.cpInfo, diagnosticListener, javaContext.sourceLevel, cnffOraculum, javaContext.fqn2Files, new CancelService() {
+                    jt = JavacParser.createJavacTask(javaContext.getClasspathInfo(), diagnosticListener, javaContext.getSourceLevel(), cnffOraculum, javaContext.getFQNs(), new CancelService() {
                         public @Override boolean isCanceled() {
                             return context.isCancelled();
                         }
@@ -176,7 +175,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     Iterable<? extends Processor> processors = jt.getProcessors();
                     aptEnabled = processors != null && processors.iterator().hasNext();
                     if (JavaIndex.LOG.isLoggable(Level.FINER)) {
-                        JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.cpInfo.toString()); //NOI18N
+                        JavaIndex.LOG.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(context.getRoot()) + " " + javaContext.getClasspathInfo().toString()); //NOI18N
                     }
                 }
                 Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
@@ -279,9 +278,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                     System.gc();
                     continue;
                 }
-                javaContext.fqn2Files.set(types, active.indexable.getURL());
+                javaContext.getFQNs().set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
-                if (javaContext.checkSums.checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
+                if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
                     javaContext.analyze(trees, jt, fileManager, active, previous.addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
@@ -324,9 +323,9 @@ final class MultiPassCompileWorker extends CompileWorker {
             } catch (OutputFileManager.InvalidSourcePath isp) {
                 //Deleted project - log & ignore
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                     final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                 active.jfo.toUri().toString(),
                                 FileUtil.getFileDisplayName(context.getRoot()),
@@ -340,9 +339,9 @@ final class MultiPassCompileWorker extends CompileWorker {
             } catch (MissingPlatformError mpe) {
                 //No platform - log & ignore
                 if (JavaIndex.LOG.isLoggable(Level.FINEST)) {
-                    final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                    final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                    final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                    final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                    final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                    final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                     final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                 active.jfo.toUri().toString(),
                                 FileUtil.getFileDisplayName(context.getRoot()),
@@ -364,9 +363,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                 else {
                     Level level = t instanceof FatalError ? Level.FINEST : Level.WARNING;
                     if (JavaIndex.LOG.isLoggable(level)) {
-                        final ClassPath bootPath   = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
-                        final ClassPath classPath  = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
-                        final ClassPath sourcePath = javaContext.cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
+                        final ClassPath bootPath   = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.BOOT);
+                        final ClassPath classPath  = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);
+                        final ClassPath sourcePath = javaContext.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.SOURCE);
                         final String message = String.format("MultiPassCompileWorker caused an exception\nFile: %s\nRoot: %s\nBootpath: %s\nClasspath: %s\nSourcepath: %s", //NOI18N
                                     active == null ? null : active.jfo.toUri().toString(),
                                     FileUtil.getFileDisplayName(context.getRoot()),

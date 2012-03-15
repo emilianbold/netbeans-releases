@@ -55,6 +55,7 @@ import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -174,7 +175,6 @@ public class PushDownTransformer extends RefactoringVisitor {
                                 methodTree.getThrows(),
                                 (BlockTree) null,
                                 null);
-                        RefactoringUtils.copyJavadoc(member, njuMethod, workingCopy);
                         njuClass = genUtils.insertClassMember(njuClass, njuMethod);
                         makeClassAbstract = true;
                     } else {
@@ -182,7 +182,14 @@ public class PushDownTransformer extends RefactoringVisitor {
                             problem = MoveTransformer.createProblem(problem, false, org.openide.util.NbBundle.getMessage(PushDownTransformer.class, "ERR_PushDown_AlreadyExists", member.getSimpleName(), el.getSimpleName()));
                         }
                         TreePath path = workingCopy.getTrees().getPath(member);
-                        Tree memberTree = genUtils.importComments(path.getLeaf(), path.getCompilationUnit());
+                        Tree memberTree = path.getLeaf();
+                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(memberTree, true);
+                        if(comments.isEmpty()) {
+                            comments = workingCopy.getTreeUtilities().getComments(memberTree, false);
+                        }
+                        if(comments.isEmpty()) { // TODO Remove when #206200 is fixed
+                            memberTree = genUtils.importComments(memberTree, path.getCompilationUnit());
+                        }
                         memberTree = genUtils.importFQNs(memberTree);
                         if (members[i].isMakeAbstract() && memberTree.getKind() == Tree.Kind.METHOD && member.getModifiers().contains((Modifier.PRIVATE))) {
                             MethodTree oldOne = (MethodTree) memberTree;
@@ -195,7 +202,6 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     oldOne.getThrows(),
                                     oldOne.getBody(),
                                     (ExpressionTree) oldOne.getDefaultValue());
-                            RefactoringUtils.copyJavadoc(member, m, workingCopy);
                             njuClass = genUtils.insertClassMember(njuClass, m);
                         } else {
                             njuClass = genUtils.insertClassMember(njuClass, memberTree);

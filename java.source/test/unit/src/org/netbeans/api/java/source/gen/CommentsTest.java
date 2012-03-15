@@ -364,7 +364,7 @@ public class CommentsTest extends GeneratorTestBase {
     }
     
     // issue #100829
-    public void DISABLEtestCopyMethodWithCommments() throws Exception {
+    public void testCopyMethodWithCommments() throws Exception {
         testFile = new File(getWorkDir(), "Origin.java");
         TestUtilities.copyStringToFile(testFile, 
             "public class Origin {\n" +
@@ -423,7 +423,6 @@ public class CommentsTest extends GeneratorTestBase {
         };
         src.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
-        System.err.println(res);
         assertEquals(golden, res);
     }
     

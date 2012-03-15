@@ -118,22 +118,30 @@ public class MoveBaseTest extends RefactoringTestBase {
                 for (int i = 0; i < position.length; i++) {
                     handles[i] = TreePathHandle.create(allMembers.get(position[i]), info);
                 }
+                TreePathHandle[] preselectedMember = new TreePathHandle[1];
+                if(position.length > 0) {
+                    preselectedMember[0] = handles[0];
+                } else {
+                    preselectedMember[0] =TreePathHandle.create(allMembers.get(0), info);
+                }
                 r[0] = new MoveRefactoring(Lookups.fixed((Object[]) handles));
-                properties[0] = new JavaMoveMembersProperties(handles);
+                properties[0] = new JavaMoveMembersProperties(preselectedMember);
             }
         }, true);
-        JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {
+        if(target != null) {
+            JavaSource.forFileObject(target).runUserActionTask(new Task<CompilationController>() {
 
-            @Override
-            public void run(CompilationController info) throws Exception {
-                info.toPhase(JavaSource.Phase.RESOLVED);
-                CompilationUnitTree cut = info.getCompilationUnit();
-                final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
-                final TreePath classPath = info.getTrees().getPath(cut, classTree);
-                TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
-                r[0].setTarget(Lookups.singleton(TreePathHandle.create(classEl, info)));
-            }
-        }, true);
+                @Override
+                public void run(CompilationController info) throws Exception {
+                    info.toPhase(JavaSource.Phase.RESOLVED);
+                    CompilationUnitTree cut = info.getCompilationUnit();
+                    final ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                    final TreePath classPath = info.getTrees().getPath(cut, classTree);
+                    TypeElement classEl = (TypeElement) info.getTrees().getElement(classPath);
+                    r[0].setTarget(Lookups.singleton(TreePathHandle.create(classEl, info)));
+                }
+            }, true);
+        }
         properties[0].setVisibility(visibility);
         properties[0].setDelegate(delegate);
         r[0].getContext().add(properties[0]);
