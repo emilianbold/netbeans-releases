@@ -44,7 +44,9 @@ package org.netbeans.modules.apisupport.project.queries;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
+import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.TestBase;
 
 /**
@@ -56,21 +58,29 @@ public class BinaryForSourceImplTest extends TestBase {
     public BinaryForSourceImplTest(final String name) {
         super(name);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        clearWorkDir();
+    }    
     
     public void testFindSourceRootForCompiledClasses() throws Exception {
-        doTestFindBinaryRootForSources("java.project/src", "java.project/build/classes");   //NOI18N
-        doTestFindBinaryRootForSources("java.project/build/classes-generated/", "java.project/build/classes");  //NOI18N
-        doTestFindBinaryRootForSources("java.project/test/unit/src", "java.project/build/test/unit/classes");   //NOI18N
-        doTestFindBinaryRootForSources("java.project/build/test/unit/classes-generated/", "java.project/build/test/unit/classes");  //NOI18N
-        doTestFindBinaryRootForSources("ant.freeform/src", "ant.freeform/build/classes");   //NOI18N
-        doTestFindBinaryRootForSources("ant.freeform/build/classes-generated/", "ant.freeform/build/classes");  //NOI18N
-        doTestFindBinaryRootForSources("ant.freeform/test/unit/src", "ant.freeform/build/test/unit/classes");   //NOI18N
-        doTestFindBinaryRootForSources("ant.freeform/build/test/unit/classes-generated/", "ant.freeform/build/test/unit/classes");  //NOI18N
+        final NbModuleProject prj = generateStandaloneModule(getWorkDir(),"testproject");   //NOI18N
+        
+        doTestFindBinaryRootForSources(prj.getProjectDirectoryFile(), "src", "build/classes");   //NOI18N
+        doTestFindBinaryRootForSources(prj.getProjectDirectoryFile(), "build/classes-generated/", "build/classes");  //NOI18N
+        doTestFindBinaryRootForSources(prj.getProjectDirectoryFile(), "test/unit/src", "build/test/unit/classes");   //NOI18N
+        doTestFindBinaryRootForSources(prj.getProjectDirectoryFile(), "build/test/unit/classes-generated/", "build/test/unit/classes");  //NOI18N
+        
     }
 
-    private void doTestFindBinaryRootForSources(String srcPath, String classesPath) throws Exception {
-        File classesF = file(classesPath);
-        File srcF = file(srcPath);
+    private void doTestFindBinaryRootForSources(
+            @NonNull final File projectFolder,
+            @NonNull final String srcPath,
+            @NonNull final String classesPath) throws Exception {
+        final File classesF = file(projectFolder, classesPath);
+        final File srcF = file(projectFolder, srcPath);
         assertEquals("right binary root for " + srcPath,    //NOI18N
             Collections.singletonList(classesF.toURI().toURL()),
             Arrays.asList(BinaryForSourceQuery.findBinaryRoots(srcF.toURI().toURL()).getRoots()));
