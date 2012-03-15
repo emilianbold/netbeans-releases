@@ -106,7 +106,7 @@ public final class FriendFunctionDefinitionImpl extends FunctionDefinitionImpl<C
         
         friendFunctionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionDefinitionImpl, file));
-        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, fileContent, global), 
+        friendFunctionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionDefinitionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?

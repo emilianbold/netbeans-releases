@@ -83,7 +83,7 @@ public final class FunctionInstantiationImpl extends OffsetableDeclarationBase<C
 
     public static FunctionInstantiationImpl create(AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         NameHolder nameHolder = NameHolder.createFunctionName(ast);
-        FunctionParameterListImpl params = FunctionParameterListImpl.create(file, fileContent, ast, null, !register);
+        FunctionParameterListImpl params = FunctionParameterListImpl.create(file, fileContent, ast, null);
         FunctionInstantiationImpl res =  new FunctionInstantiationImpl(ast, file, null, nameHolder, params);
         postObjectCreateRegistration(register, res);
         nameHolder.addReference(fileContent, res);

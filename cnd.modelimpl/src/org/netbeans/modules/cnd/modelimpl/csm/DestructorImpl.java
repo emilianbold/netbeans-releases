@@ -108,7 +108,7 @@ public final class DestructorImpl extends MethodImpl<CsmMethod> {
         
         destructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         destructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorImpl, file));
-        destructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorImpl, file, fileContent, global), 
+        destructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, destructorImpl);

@@ -114,7 +114,7 @@ public class MethodDDImpl<T> extends MethodImpl<T> implements CsmFunctionDefinit
         
         methodDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodDDImpl, file));
-        methodDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodDDImpl, file, fileContent, global), 
+        methodDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, methodDDImpl);
         if (body == null) {

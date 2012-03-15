@@ -120,7 +120,7 @@ public class MethodImpl<T> extends FunctionImpl<T> implements CsmMethod {
         
         methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
-        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent, global), 
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);

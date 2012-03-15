@@ -105,7 +105,7 @@ public final class FriendFunctionImplEx extends FunctionImplEx<CsmFriendFunction
         
         friendFunctionImplEx.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionImplEx.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionImplEx, file));
-        friendFunctionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionImplEx, file, fileContent, global), 
+        friendFunctionImplEx.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionImplEx, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?

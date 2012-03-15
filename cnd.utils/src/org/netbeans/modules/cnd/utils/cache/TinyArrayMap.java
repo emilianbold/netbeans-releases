@@ -78,7 +78,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     }
 
     // different order of params to simplify issue with ambiguity in derived classes constructors
-    TinyArrayMap(TinyArrayMap prev, int capacity) {
+    TinyArrayMap(TinyArrayMap<K, V> prev, int capacity) {
         assert prev.keyValues.length <= capacity*2;
         keyValues = new Object[capacity*2];
         System.arraycopy(prev.keyValues, 0, keyValues, 0, prev.keyValues.length);
@@ -134,7 +134,9 @@ class TinyArrayMap<K, V> implements Map<K, V> {
         assert aKey != null;
         int index = indexForKey(aKey);
         if (index >= 0) {
-            return (V) keyValues[index+1];
+            @SuppressWarnings("unchecked")
+            V val = (V) keyValues[index+1];
+            return val;
         }
         return null;
     }
@@ -151,6 +153,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
                 keyValues[index] = aKey;
                 assert keyValues[index+1] == null;
             }
+            @SuppressWarnings("unchecked")
             V prev = (V) keyValues[index+1];
             keyValues[index+1] = aValue;
             return prev;
@@ -188,6 +191,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
             if (keyValues[index] != null) {
                 size--;
                 keyValues[index] = null;
+                @SuppressWarnings("unchecked")
                 V prev = (V) keyValues[index + 1];
                 keyValues[index + 1] = null;
                 return prev;
@@ -215,6 +219,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public Set<K> keySet() {
         Set<K> keys = new HashSet<K>(size);
         for (int i = 0; i < keyValues.length; i+=2) {
+            @SuppressWarnings("unchecked")
             K key = (K) keyValues[i];
             if (key != null) {
                 keys.add(key);
@@ -227,9 +232,12 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public Collection<V> values() {
         List<V> values = new ArrayList<V>(size);
         for (int i = 0; i < keyValues.length; i += 2) {
+            @SuppressWarnings("unchecked")
             K key = (K) keyValues[i];
             if (key != null) {
-                values.add((V)keyValues[i+1]);
+                @SuppressWarnings("unchecked")
+                V val = (V)keyValues[i+1];
+                values.add(val);
             }
         }
         return values;
@@ -272,15 +280,18 @@ class TinyArrayMap<K, V> implements Map<K, V> {
                                 index+=2;
                                 return new Map.Entry<K, V>(){
                                     @Override
+                                    @SuppressWarnings("unchecked")
                                     public K getKey() {
                                         return (K) keyValues[entryIndex];
                                     }
                                     @Override
+                                    @SuppressWarnings("unchecked")
                                     public V getValue() {
                                         return (V) keyValues[entryIndex+1];
                                     }
                                     @Override
                                     public V setValue(V value) {
+                                        @SuppressWarnings("unchecked")
                                         V res = (V) keyValues[entryIndex+1];
                                         keyValues[entryIndex+1] = value;
                                         return res;

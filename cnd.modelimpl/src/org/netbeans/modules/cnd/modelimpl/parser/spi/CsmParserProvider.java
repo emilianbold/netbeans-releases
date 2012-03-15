@@ -88,6 +88,7 @@ public abstract class CsmParserProvider {
         }
         void init(CsmObject object, TokenStream ts, CsmParseCallback callback);
         CsmParserResult parse(ConstructionKind kind);
+        void setErrorDelegate(ParserErrorDelegate delegate);
     }
     
     public interface CsmParserResult {
@@ -96,6 +97,47 @@ public abstract class CsmParserProvider {
         Object getAST();
         void dumpAST();
         int getErrorCount();
+    }
+    
+    public static final class ParserError {
+        public String message;
+        public String tokenText;
+        public int line;
+        public int column;
+        public boolean eof;
+        
+        public ParserError(String message, int line, int column, String tokenText, boolean eof) {
+            this.message = message;
+            this.line = line;
+            this.column = column;
+            this.tokenText = tokenText;
+            this.eof = eof;
+        }
+
+        public int getColumn() {
+            return column;
+        }
+
+        public int getLine() {
+            return line;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public String getTokenText() {
+            return tokenText;
+        }
+        
+        public boolean isEof() {
+            return eof;
+        }        
+                
+    }
+    
+    public interface ParserErrorDelegate {
+        void onError(ParserError e);
     }
     
     private static final class Default extends CsmParserProvider {

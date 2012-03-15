@@ -115,7 +115,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
         
         methodImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         methodImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, methodImpl, file));
-        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent, global), 
+        methodImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, methodImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, methodImpl);

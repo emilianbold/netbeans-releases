@@ -42,22 +42,18 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
-import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -65,11 +61,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  * implementation of offsetable object to represent functions' parameters
  * @author Vladimir Voskresensky
  */
-public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableIdentifiableBase<T> implements CsmParameterList<K> {
+public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableBase implements CsmParameterList<K> {
 
-    private final Collection<?>/*<K>or<CsmUID<K>>*/ parameters;
+    private final Collection<CsmParameter> parameters;
 
-    protected ParameterListImpl(CsmFile file, int start, int end, Collection<?>/*<K>or<CsmUID<K>>*/ parameters) {
+    protected ParameterListImpl(CsmFile file, int start, int end, Collection<CsmParameter> parameters) {
         super(file, start, end);
         if (parameters == null || parameters.isEmpty()) {
             this.parameters = null;
@@ -94,47 +90,21 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     @Override
     public void dispose() {
         super.dispose();
-        RepositoryUtils.remove(_getUIDs());
     }
 
-    @SuppressWarnings("unchecked")
     private Collection<K> _getParameters() {
         if (this.parameters == null) {
             return Collections.<K>emptyList();
         } else {
-            Object first = parameters.iterator().next();
-            Collection<K> out;
-            if (first instanceof CsmUID<?>) {
-                out = UIDCsmConverter.UIDsToCsmObjects((Collection<CsmUID<K>>)parameters);
-            } else {
-                out = new ArrayList<K>((Collection<K>)parameters);
-            }
-            return out;
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private Collection<CsmUID<K>> _getUIDs() {
-        if (this.parameters == null) {
-            return null;
-        } else {
-            Object first = parameters.iterator().next();
-            Collection<CsmUID<K>> out = null;
-            if (first instanceof CsmUID<?>) {
-                out = (Collection<CsmUID<K>>)parameters;
-            }
-            return out;
+            @SuppressWarnings("unchecked")
+            Collection<K> collection = (Collection<K>) parameters;
+            return Collections.unmodifiableCollection(collection);
         }
     }
 
     @Override
     public String toString() {
         return "ParamList " + super.toString(); // NOI18N
-    }
-
-    @Override
-    protected CsmUID<CsmParameterList<K>> createUID() {
-        return UIDUtilities.createParamListUID((CsmParameterList<K>)this);
     }
 
 //    @Override
@@ -167,17 +137,12 @@ public class ParameterListImpl<T, K extends CsmNamedElement> extends OffsetableI
     @Override
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
-        UIDObjectFactory.getDefaultFactory().writeUIDCollection(_getUIDs(), output, false);
+        PersistentUtils.writeParameters(parameters, output);
     }
 
     public ParameterListImpl(RepositoryDataInput input) throws IOException {
         super(input);
-        int collSize = input.readInt();
-        if (collSize <= 0) {
-            parameters = null;
-        } else {
-            parameters = UIDObjectFactory.getDefaultFactory().readUIDCollection(new ArrayList<CsmUID<K>>(collSize), input, collSize);
-        }
+        parameters = PersistentUtils.readParameters(input);
     }
 
     ////////////////////////////////////////////////////////////////////////////
