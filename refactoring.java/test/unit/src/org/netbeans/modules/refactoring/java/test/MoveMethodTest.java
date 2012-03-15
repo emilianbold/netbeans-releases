@@ -54,6 +54,48 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
 
+    public void test209620() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "        java.util.Random r = new java.util.Random(field);\n"
+                + "        field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        t.SourceClass.this.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{}, null, Visibility.ASIS, false, new Problem(true, "ERR_NothingSelected"));
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "public class SourceClass {\n"
+                + "    static int field;\n"
+                + "\n"
+                + "    public void movedMethod() {\n"
+                + "        if(field==1) field++;\n"
+                + "        java.util.Random r = new java.util.Random(field);\n"
+                + "        field = r.nextInt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        t.SourceClass.this.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+    }
+
     public void test207833() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/SourceClass.java", "package t;\n"
