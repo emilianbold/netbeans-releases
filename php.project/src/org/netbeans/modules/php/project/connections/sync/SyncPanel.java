@@ -650,7 +650,9 @@ public final class SyncPanel extends JPanel {
             // need to redraw all children and parents
             tableModel.fireSyncItemsChange();
             // reselect the rows
-            itemTable.getSelectionModel().setSelectionInterval(selectedRows[0], selectedRows[selectedRows.length - 1]);
+            for (int index : selectedRows) {
+                itemTable.getSelectionModel().addSelectionInterval(index, index);
+            }
         }
 
     }
