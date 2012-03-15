@@ -63,26 +63,29 @@ import org.openide.modules.ModuleInfo;
 import org.openide.util.Lookup;
 
 /**
- * Read access test
- * see details on http://wiki.netbeans.org/FitnessViaWhiteAndBlackList
+ * Verifies that modules outside of platform,ide,nb and ergonomics clusters
+ * are not initialized - e.g. their manifests are not parsed. This is done
+ * by a "logging" contract from ModuleManager caches. As soon as module
+ * manifest is loaded, the test verifies that the file is in one of 
+ * allowed clusters.
  */
-public class CachingPreventsLoadingOfModulesTest extends NbTestCase {
+public class CachingPreventsLoadingOfModuleManifestsTest extends NbTestCase {
     static {
         System.setProperty("java.util.logging.config.class", CaptureLog.class.getName());
     }
     private static final Logger LOG;
     static {
-        LOG = Logger.getLogger(CachingPreventsLoadingOfModulesTest.class.getName());
+        LOG = Logger.getLogger(CachingPreventsLoadingOfModuleManifestsTest.class.getName());
         CaptureLog.assertCalled();
     }
 
-    public CachingPreventsLoadingOfModulesTest(String name) {
+    public CachingPreventsLoadingOfModuleManifestsTest(String name) {
         super(name);
     }
     
     public static Test suite() throws IOException {
         NbModuleSuite.Configuration base = NbModuleSuite.createConfiguration(
-                CachingPreventsLoadingOfModulesTest.class
+                CachingPreventsLoadingOfModuleManifestsTest.class
             ).
             gui(false).
             clusters("ergonomics.*").
@@ -96,12 +99,12 @@ public class CachingPreventsLoadingOfModulesTest extends NbTestCase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(base.reuseUserDir(false).addTest("testInitUserDir").suite());
 
-        suite.addTest(new CachingPreventsLoadingOfModulesTest("testInMiddle"));
+        suite.addTest(new CachingPreventsLoadingOfModuleManifestsTest("testInMiddle"));
 
         suite.addTest(
             base.reuseUserDir(true).addTest("testEnabledWindows").suite()
         );
-        suite.addTest(new CachingPreventsLoadingOfModulesTest("testDontLoadManifests"));
+        suite.addTest(new CachingPreventsLoadingOfModuleManifestsTest("testDontLoadManifests"));
         
         return suite;
     }
