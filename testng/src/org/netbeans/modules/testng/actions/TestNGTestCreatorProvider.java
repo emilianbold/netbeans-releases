@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.testng.actions;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.TestCreatorProvider;
@@ -53,6 +55,9 @@ import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
 import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.ui.TestNGPlugin;
+import org.netbeans.modules.testng.ui.TestNGPluginTrampoline;
+import org.netbeans.modules.testng.ui.TestUtil;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -62,6 +67,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -74,14 +81,15 @@ public class TestNGTestCreatorProvider extends TestCreatorProvider {
     
     @Override
     public boolean canHandleMultipleClasses(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        DataObject dataObj = activatedNodes[0].getLookup().lookup(DataObject.class);
-        if (dataObj == null) {
-            return false;
-        }
-        return dataObj.getPrimaryFile().isData();
+        return true;
+//        if (activatedNodes.length != 1) {
+//            return false;
+//        }
+//        DataObject dataObj = activatedNodes[0].getLookup().lookup(DataObject.class);
+//        if (dataObj == null) {
+//            return false;
+//        }
+//        return dataObj.getPrimaryFile().isData();
     }
 
     @Override
@@ -98,82 +106,169 @@ public class TestNGTestCreatorProvider extends TestCreatorProvider {
     }
 
     @Override
-    public void createTests(Context context) {//Node[] activatedNodes) {
-//        final DataObject dataObject = activatedNodes[0].getLookup().lookup(DataObject.class);
+    public void createTests(Context context) {
         final DataObject dataObject = context.getActivatedNodes()[0].getLookup().lookup(DataObject.class);
         if (dataObject == null) {
+            return;
+        }
+        
+        final FileObject[] filesToTest = getFileObjectsFromNodes(context.getActivatedNodes());
+        if (filesToTest == null) {
+            return;     //XXX: display some message
+        }
+
+        /*
+         * Determine the plugin to be used:
+         */
+        final TestNGPlugin plugin = TestUtil.getPluginForProject(
+                FileOwnerQuery.getOwner(filesToTest[0]));
+
+        if (!TestNGPluginTrampoline.DEFAULT.createTestActionCalled(
+                plugin, filesToTest)) {
             return;
         }
 
         /*
          * Store the configuration data:
          */
-//        final boolean singleClass = isSingleClass();
         final boolean singleClass = context.isSingleClass();
         final Map<CommonPlugin.CreateTestParam, Object> params = CommonTestUtil.getSettingsMap(!singleClass);
         if (singleClass) {
-//            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, getTestClassName());
-            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, context.getTestClassName());
+            String name = context.getTestClassName();
+            params.put(CommonPlugin.CreateTestParam.CLASS_NAME, name.substring(name.indexOf("testng.") + 7));
         }
-//        final FileObject trgFolder = getTargetFolder();
-//        String n = getTestClassName();
-        final FileObject trgFolder = context.getTargetFolder();
-        String n = context.getTestClassName();
         
-        FileObject templateFO = FileUtil.getConfigFile("Templates/TestNG/EmptyTestNGTest.java");
-        DataObject templateDO = null;
+        FileObject trgFolder = context.getTargetFolder();        
+        
         try {
-            templateDO = DataObject.find(templateFO);
-        } catch (DataObjectNotFoundException ex) {
-            LOGGER.log(Level.FINER, null, ex);
+            trgFolder = FileUtil.createFolder(trgFolder, "testng");
+        } catch (IOException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
         }
-        String pkg = n.indexOf(".") > -1
-                ? n.substring(0, n.lastIndexOf("."))
-                : null;
-        String name = n.substring(n.lastIndexOf('.') + 1);
-        FileObject targetFolder = trgFolder;
-        
-        if (pkg != null) {
-            try {
-                targetFolder = FileUtil.createFolder(targetFolder, pkg.replace('.', '/'));
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
-            }
-        }
-        if (templateDO != null) {
-            DataObject createdFile = null;
-            try {
-                createdFile = templateDO.createFromTemplate(DataFolder.findFolder(targetFolder), name, Collections.singletonMap("package", pkg));
-            } catch (IOException ex) {
-                LOGGER.log(Level.SEVERE, null, ex);
-            }
-            FileObject newFile = createdFile.getPrimaryFile();
-            TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(newFile)).configureProject(newFile);
-            final LineCookie lc = createdFile.getLookup().lookup(LineCookie.class);
-            if (lc != null) {
-                SwingUtilities.invokeLater(new Runnable() {
+        final FileObject targetFolder = trgFolder;
+        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(targetFolder)).configureProject(targetFolder);
+        RequestProcessor.getDefault().post(new Runnable() {
 
-                    public void run() {
-                        //XXX - should find correct line # programatically
-                        Line l = lc.getLineSet().getOriginal(16);
-                        l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
-                    }
-                });
-            } else {
-                final EditorCookie ec = createdFile.getLookup().lookup(EditorCookie.class);
-                if (ec != null) {
-                    SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                /*
+                 * Now create the tests:
+                 */
+                final FileObject[] testFileObjects = TestNGPluginTrampoline.DEFAULT.createTests(
+                        plugin,
+                        filesToTest,
+                        targetFolder,
+                        params);
 
-                        public void run() {
-                            ec.open();
+                /*
+                 * Open the created/updated test class if appropriate:
+                 */
+                if (testFileObjects.length == 1) {
+                    try {
+                        DataObject dobj = DataObject.find(testFileObjects[0]);
+                        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+                        if (ec != null) {
+                            EventQueue.invokeLater(new Runnable() {
 
+                                @Override
+                                public void run() {
+                                    ec.open();
+                                }
+                            });
                         }
-                    });
-                } else {
-                    LOGGER.log(Level.INFO, "Didn''t get LineCookie nor EditorCookie for: {0}", createdFile.getPrimaryFile()); //NOI18N
+                    } catch (DataObjectNotFoundException ex) {
+                        ex.printStackTrace();
+                    }
                 }
             }
+        });
+    }
+    
+    /**
+     * Extracts {@code FileObject}s from the given nodes.
+     * Nodes that have (direct or indirect) parent nodes among the given
+     * nodes are ignored.
+     *
+     * @return  a non-empty array of {@code FileObject}s
+     *          represented by the given nodes;
+     *          or {@code null} if no {@code FileObject} was found;
+     */
+    private static FileObject[] getFileObjectsFromNodes(final Node[] nodes){
+        FileObject[] fileObjects = new FileObject[nodes.length];
+        List<FileObject> fileObjectsList = null;
+
+        for (int i = 0; i < nodes.length; i++) {
+            final Node node = nodes[i];
+            final FileObject fo;
+            if (!hasParentAmongNodes(nodes, i)
+                    && ((fo = getTestFileObject(node)) != null)) {
+                if (fileObjects != null) {
+                    fileObjects[i] = fo;
+                } else {
+                    if (fileObjectsList == null) {
+                        fileObjectsList = new ArrayList<FileObject>(
+                                                        nodes.length - i);
+                    }
+                    fileObjectsList.add(fo);
+                }
+            } else {
+                fileObjects = null;     //signs that some FOs were skipped
+            }
         }
+        if (fileObjects == null) {
+            if (fileObjectsList != null) {
+                fileObjects = fileObjectsList.toArray(
+                        new FileObject[fileObjectsList.size()]);
+                fileObjectsList = null;
+            }
+        }
+
+        return fileObjects;
+    }
+
+    private static boolean hasParentAmongNodes(final Node[] nodes,
+                                               final int idx) {
+        Node node;
+
+        node = nodes[idx].getParentNode();
+        while (null != node) {
+            for (int i = 0; i < nodes.length; i++) {
+                if (i == idx) {
+                    continue;
+                }
+                if (node == nodes[i]) {
+                    return true;
+                }
+            }
+            node = node.getParentNode();
+        }
+        return false;
+    }
+
+    /**
+     * Grabs and checks a <code>FileObject</code> from the given node.
+     * If either the file could not be grabbed or the file does not pertain
+     * to any project, a message is displayed.
+     *
+     * @param  node  node to get a <code>FileObject</code> from.
+     * @return  the grabbed <code>FileObject</code>,
+     *          or <code>null</code> in case of failure
+     */
+    @NbBundle.Messages({"MSG_file_from_node_failed=File cannot be found for selected node.",
+        "# {0} - source file",
+        "MSG_no_project=Source file {0} does not belong to any project."})
+    private static FileObject getTestFileObject(final Node node) {
+        final FileObject fo = TestUtil.getFileObjectFromNode(node);
+        if (fo == null) {
+            TestUtil.notifyUser(Bundle.MSG_file_from_node_failed());
+            return null;
+        }
+        ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
+        if (cp == null) {
+            TestUtil.notifyUser(Bundle.MSG_no_project(fo));
+            return null;
+        }
+        return fo;
     }
     
 }

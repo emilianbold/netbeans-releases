@@ -46,14 +46,19 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.gsf.testrunner.plugin.CommonPlugin;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.ui.TestNGPlugin;
+import org.netbeans.modules.testng.ui.TestNGPluginTrampoline;
+import org.netbeans.modules.testng.ui.TestNGSettings;
+import org.netbeans.modules.testng.ui.TestUtil;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
+import org.openide.loaders.TemplateWizard;
 
 /**
  * Wizard to create a new TestNG file.
@@ -71,6 +76,7 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
     private transient WizardDescriptor wiz;
 
     public NewTestWizardIterator() {
+        System.out.println("NewTestWizardIterator()");
     }
 
     private WizardDescriptor.Panel[] createPanels(final WizardDescriptor wizardDescriptor) {
@@ -90,7 +96,7 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
                     };
         } else {
             return new WizardDescriptor.Panel[]{
-                        JavaTemplates.createPackageChooser(project, groups)
+                        JavaTemplates.createPackageChooser(project, groups, new EmptyTestStepLocation())
                     };
         }
     }
@@ -116,22 +122,63 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
     }
 
     public Set<FileObject> instantiate() throws IOException {
-        FileObject dir = Templates.getTargetFolder(wiz);
-        String targetName = Templates.getTargetName(wiz);
-
-        DataFolder df = DataFolder.findFolder(dir);
-        FileObject template = Templates.getTemplate(wiz);
-
-        DataObject dTemplate = DataObject.find(template);
-        String pkgName = getSelectedPackageName(dir);
-        DataObject dobj;
-        if (pkgName == null) {
-            dobj = dTemplate.createFromTemplate(df, targetName);
-        } else {
-            dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
+        System.out.println("instantiate()...");
+//        FileObject dir = Templates.getTargetFolder(wiz);
+//        String targetName = Templates.getTargetName(wiz);
+//
+//        DataFolder df = DataFolder.findFolder(dir);
+//        FileObject template = Templates.getTemplate(wiz);
+//
+//        DataObject dTemplate = DataObject.find(template);
+//        String pkgName = getSelectedPackageName(dir);
+//        DataObject dobj;
+//        if (pkgName == null) {
+//            dobj = dTemplate.createFromTemplate(df, targetName);
+//        } else {
+//            dobj = dTemplate.createFromTemplate(df, targetName, Collections.singletonMap("package", pkgName)); // NOI18N
+//        }
+//
+//        FileObject createdFile = dobj.getPrimaryFile();
+//        TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
+//        return Collections.singleton(createdFile);
+        saveSettings(wiz);        
+        
+        /* collect and build necessary data: */
+        String name = Templates.getTargetName(wiz);
+        FileObject targetFolder = Templates.getTargetFolder(wiz);
+        
+        Map<CommonPlugin.CreateTestParam, Object> params
+                = TestUtil.getSettingsMap(false);
+        params.put(CommonPlugin.CreateTestParam.CLASS_NAME,
+                   Templates.getTargetName(wiz));
+                
+        /* create the test class: */
+        final TestNGPlugin plugin = TestUtil.getPluginForProject(
+                                                Templates.getProject(wiz));
+        
+        if (!TestNGPluginTrampoline.DEFAULT.createTestActionCalled(
+                                            plugin,
+                                            new FileObject[] {targetFolder})) {
+            return null;
         }
 
-        FileObject createdFile = dobj.getPrimaryFile();
+        /*
+         * The TestNGPlugin instance must be initialized _before_ field
+         * TestNGPluginTrampoline.DEFAULT gets accessed.
+         * See issue #74744.
+         */
+        final FileObject[] testFileObjects
+                = TestNGPluginTrampoline.DEFAULT.createTests(
+                     plugin,
+                     null,
+                     targetFolder,
+                     params);
+        
+        if (testFileObjects == null) {
+            throw new IOException();
+        }
+        
+        FileObject createdFile = testFileObjects[0];
         TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
         return Collections.singleton(createdFile);
     }
@@ -140,6 +187,7 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
         this.wiz = wiz;
         index = 0;
         panels = createPanels(wiz);
+        loadSettings(wiz);
         // Make sure list of steps is accurate.
         String[] beforeSteps = null;
         Object prop = wiz.getProperty("WizardPanel_contentData"); // NOI18N
@@ -163,6 +211,28 @@ public final class NewTestWizardIterator implements WizardDescriptor.Instantiati
                 jc.putClientProperty("WizardPanel_contentData", steps); // NOI18N
             }
         }
+    }   
+    
+    private void loadSettings(WizardDescriptor wizard) {
+        TestNGSettings settings = TestNGSettings.getDefault();
+        
+        wizard.putProperty(GuiUtils.CHK_SETUP,
+                           Boolean.valueOf(settings.isGenerateSetUp()));
+        wizard.putProperty(GuiUtils.CHK_TEARDOWN,
+                           Boolean.valueOf(settings.isGenerateTearDown()));
+        wizard.putProperty(GuiUtils.CHK_HINTS,
+                           Boolean.valueOf(settings.isBodyComments()));
+    }
+
+    private void saveSettings(WizardDescriptor wizard) {
+        TestNGSettings settings = TestNGSettings.getDefault();
+        
+        settings.setGenerateSetUp(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_SETUP)));
+        settings.setGenerateTearDown(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_TEARDOWN)));
+        settings.setBodyComments(
+                Boolean.TRUE.equals(wizard.getProperty(GuiUtils.CHK_HINTS)));
     }
 
     public void uninitialize(WizardDescriptor wiz) {

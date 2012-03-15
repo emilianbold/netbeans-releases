@@ -49,7 +49,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.*;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.java.testrunner.GuiUtils;
 import org.netbeans.modules.testng.api.TestNGSupport;
+import org.netbeans.modules.testng.ui.TestNGSettings;
+import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -68,7 +71,7 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
     private transient WizardDescriptor wiz;
-
+    
     public NewTestSuiteWizardIterator() {
     }
 
@@ -87,8 +90,8 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
             groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
         return new WizardDescriptor.Panel[]{
-                    Templates.buildSimpleTargetChooser(project, groups).create()
-                };
+                        JavaTemplates.createPackageChooser(project, groups)
+                    };
     }
 
     private String[] createSteps(String[] before, WizardDescriptor.Panel[] panels) {
@@ -128,8 +131,8 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
         }
         
         Map<String, String> props = new HashMap<String, String>();
-        props.put("name", projectName);
-        props.put("suiteName", suiteName);
+        props.put("suiteName", projectName);
+        props.put("testName", suiteName);
         props.put("pkg", pkgName);
 
         DataObject dobj = dTemplate.createFromTemplate(df, targetName, props);
@@ -137,8 +140,8 @@ public final class NewTestSuiteWizardIterator implements WizardDescriptor.Instan
         FileObject createdFile = DataObject.find(dobj.getPrimaryFile()).getPrimaryFile();
         TestNGSupport.findTestNGSupport(FileOwnerQuery.getOwner(createdFile)).configureProject(createdFile);
         return Collections.singleton(dobj);
-    }
-
+    }   
+    
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
         index = 0;
