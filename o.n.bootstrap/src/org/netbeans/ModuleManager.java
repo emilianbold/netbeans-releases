@@ -314,6 +314,10 @@ public final class ModuleManager extends Modules {
         return new HashSet<Module>(modules);
     }
 
+    final int getModuleCount() {
+        return modules.size();
+    }
+
     /** Get a set of modules managed which are currently enabled.
      * Convenience method only.
      * @see #PROP_ENABLED_MODULES
@@ -1941,8 +1945,9 @@ public final class ModuleManager extends Modules {
         private final Map<String,byte[]> path2Data;
         private final Map<String,Boolean> path2OSGi;
         private final Map<String,String> path2Cnb;
-        private final Set<String> toEnable;
-        private final List<String> willEnable;
+        private final int moduleCount;
+        private Set<String> toEnable;
+        private List<String> willEnable;
         
         public ModuleDataCache() {
             InputStream is = Stamps.getModulesJARs().asStream(CACHE);
@@ -1951,11 +1956,13 @@ public final class ModuleManager extends Modules {
             Map<String,String> cnbs = null;
             Set<String> toEn = null;
             List<String> toWi = null;
+            int cnt = -1;
             if (is != null) try {
                 DataInputStream dis = new DataInputStream(is);
                 map = new HashMap<String, byte[]>();
                 osgi = new HashMap<String, Boolean>();
                 cnbs = new HashMap<String, String>();
+                cnt = dis.readInt();
                 for (;;) {
                     String path = Stamps.readRelativePath(dis);
                     if (path.isEmpty()) {
@@ -1983,10 +1990,11 @@ public final class ModuleManager extends Modules {
             path2Data = map;
             path2OSGi = osgi;
             path2Cnb = cnbs;
-            toEnable = toEn == null ? new HashSet<String>() : toEn;
-            willEnable = toWi == null ? new ArrayList<String>() : toWi;
+            toEnable = toEn;
+            willEnable = toWi;
+            moduleCount = cnt;
             if (map == null) {
-                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                reset();
             }
         }
         
@@ -2003,7 +2011,7 @@ public final class ModuleManager extends Modules {
                 res = path2Data.remove(path);
             }
             if (res == null) {
-                Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
+                reset();
             }
             return res;
         }
@@ -2014,6 +2022,7 @@ public final class ModuleManager extends Modules {
         @Override
         public void flushCaches(DataOutputStream os) throws IOException {
             Set<Module> store = getModules();
+            os.writeInt(store.size());
             for (Module m : store) {
                 final File path = m.getJarFile();
                 if (path == null) {
@@ -2034,27 +2043,39 @@ public final class ModuleManager extends Modules {
                 os.write(arr);
             }
             Stamps.writeRelativePath("", os);
-            writeCnbs(os, toEnable);
-            writeCnbs(os, willEnable);
+            synchronized (this) {
+                writeCnbs(os, toEnable);
+                writeCnbs(os, willEnable);
+            }
         }
         @Override
         public void cacheReady() {
         }
+        
+        private synchronized void reset() {
+            toEnable = null;
+            willEnable = null;
+        }
 
         synchronized final void registerEnable(Set<Module> modules, List<Module> l) {
-            toEnable.clear();
+            toEnable = new HashSet<String>();
             for (Module m : modules) {
                 toEnable.add(m.getCodeNameBase());
             }
-            willEnable.clear();
+            List<String> arr = new ArrayList<String>(l.size());
             for (Module m : l) {
-                willEnable.add(m.getCodeNameBase());
+                arr.add(m.getCodeNameBase());
             }
+            willEnable = Collections.unmodifiableList(arr);
             Stamps.getModulesJARs().scheduleSave(this, CACHE, false);
         }
 
-        final List<String> simulateEnable(Set<Module> modules) {
-            if (modules.size() == toEnable.size()) {
+        synchronized final List<String> simulateEnable(Set<Module> modules) {
+            if (
+                toEnable != null &&
+                modules.size() == toEnable.size() &&
+                moduleCount == getModuleCount()
+            ) {
                 Set<String> clone = new HashSet<String>(toEnable);
                 for (Module m : modules) {
                     if (!clone.remove(m.getCodeNameBase())) {
@@ -2070,15 +2091,24 @@ public final class ModuleManager extends Modules {
 
         private <T extends Collection<String>> T readCnbs(DataInputStream dis, T fill) throws IOException {
             int size = dis.readInt();
+            if (size == -1) {
+                return null;
+            }
+            
             while (size-- > 0) {
                 fill.add(dis.readUTF());
             }
             return fill;
         }
 
-        private void writeCnbs(DataOutputStream os, Collection<String> willEnable) throws IOException {
-            os.writeInt(willEnable.size());
-            for (String s : willEnable) {
+        private void writeCnbs(DataOutputStream os, Collection<String> cnbs) throws IOException {
+            if (cnbs == null) {
+                os.writeInt(-1);
+                return;
+            }
+            
+            os.writeInt(cnbs.size());
+            for (String s : cnbs) {
                 os.writeUTF(s);
             }
         }
