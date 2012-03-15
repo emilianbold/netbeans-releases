@@ -59,10 +59,14 @@ public class APTMacroMapTest {
     private static final CharSequence GUARD = CharSequences.create("GUARD");
     private static final CharSequence KEY1 = CharSequences.create("KEY1");
     private static final CharSequence VALUE1 = CharSequences.create("VALUE1");
+    private static final CharSequence KEY2 = CharSequences.create("KEY2");
+    private static final CharSequence KEY2_FUN = CharSequences.create(KEY2.toString() + "(x, y)");
+    private static final CharSequence VALUE2 = CharSequences.create("VALUE2 + x + y");
     
     @Test
     public void testGetMacro() {
         APTDefine defineKey = APTUtils.createAPTDefine(KEY1 + "=" + VALUE1);
+        APTDefine funDefineKey = APTUtils.createAPTDefine(KEY2_FUN + "=" + VALUE1);
         APTToken tokKey = APTUtils.createIDENT(CharSequences.create(KEY1));
         APTFileMacroMap mmap1 = new APTFileMacroMap(null, Arrays.asList(GUARD.toString()));
         APTToken tokGuard = APTUtils.createIDENT(CharSequences.create(GUARD));
@@ -73,6 +77,7 @@ public class APTMacroMapTest {
         APTBaseMacroMap.StateImpl state1 = (APTBaseMacroMap.StateImpl) mmap1.getState();
         mmap1.undef(null, tokGuard);
         assertNull(mmap1.getMacro(tokGuard));
+        assertEquals(0, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
         Map<CharSequence, APTMacro> allMacros = APTMacroMapSnapshot.addAllMacros(mmap1.active, null);
         assertTrue(allMacros.isEmpty());
         Map<CharSequence, APTMacro> allMacrosState1 = APTMacroMapSnapshot.addAllMacros(state1.snap, null);
@@ -80,10 +85,14 @@ public class APTMacroMapTest {
         assertEquals(macro1, allMacrosState1.get(CharSequences.create(GUARD)));
         mmap1.define(null, defineKey, APTMacro.Kind.DEFINED);
         assertNotNull(mmap1.getMacro(tokKey));
+        mmap1.define(null, funDefineKey, APTMacro.Kind.DEFINED);
         APTFileMacroMap fromState1 = new APTFileMacroMap();
         fromState1.setState(state1);
         assertNotNull(fromState1.getMacro(tokGuard));
         assertNull(fromState1.getMacro(tokKey));
         assertNotNull(mmap1.getMacro(tokKey));
+        assertEquals(2, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
+        mmap1.define(null, macro1.getDefineNode(), APTMacro.Kind.DEFINED);
+        assertEquals(3, APTMacroMapSnapshot.addAllMacros(mmap1.active, null).size());
     }
 }
