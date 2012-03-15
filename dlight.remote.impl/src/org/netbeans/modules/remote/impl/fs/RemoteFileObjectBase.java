@@ -478,6 +478,9 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
     }
 
+    protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    }
+    
     protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
     }
 
