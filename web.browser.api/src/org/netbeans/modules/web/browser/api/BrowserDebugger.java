@@ -54,7 +54,7 @@ import org.openide.windows.InputOutput;
 /**
  * API wrapper of browser's debugging support.
  */
-BrowserDebugger@NbBundle.Messages({"DebuggingIOPane=JavaScript Debugger"})
+@NbBundle.Messages({"DebuggingIOPane=JavaScript Debugger"})
 public final class BrowserDebugger {
     
     private static Map<BrowserDebuggerImplementation, List<WebBrowserPane>>

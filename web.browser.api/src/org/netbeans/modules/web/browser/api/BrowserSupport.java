@@ -160,7 +160,6 @@ public final class BrowserSupport {
                                         BrowserDebugger.stopDebuggingSession(pane);
                                     }
                                     pane = null;
-                                    warnUserDebuggerIsMissing = true;
                                 }
                             }
                         }
