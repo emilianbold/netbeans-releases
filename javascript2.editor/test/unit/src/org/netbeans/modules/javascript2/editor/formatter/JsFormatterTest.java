@@ -138,6 +138,17 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/functionDeclaration2.js", options, ".inverted.formatted");
     }
 
+    public void testFunctionDeclaration3Default() throws Exception {
+        reformatFileContents("testfiles/formatter/functionDeclaration3.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testFunctionDeclaration3Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
+        reformatFileContents("testfiles/formatter/functionDeclaration3.js", options, ".inverted.formatted");
+    }
+
     public void testFunctionCall1Default() throws Exception {
         reformatFileContents("testfiles/formatter/functionCall1.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
