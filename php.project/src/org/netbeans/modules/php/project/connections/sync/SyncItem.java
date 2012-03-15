@@ -222,7 +222,7 @@ public final class SyncItem {
         "SyncItem.error.cannotUpload=Non-existing file cannot be uploaded.",
         "SyncItem.warn.downloadReview=File should be reviewed before download.",
         "SyncItem.warn.uploadReview=File should be reviewed before upload.",
-        "SyncItem.warn.symlink=Symbolic links are not downloaded (to avoid future overriding on server)."
+        "SyncItem.warn.symlink=Symbolic links are not transfered (to avoid future overriding)."
     })
     public void validate() {
         message = null;
