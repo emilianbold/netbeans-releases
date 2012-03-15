@@ -446,7 +446,7 @@ scope Declaration;
  * (see different init_declarator_list continuation sequences).
  */
 simple_declaration_or_function_definition [decl_kind kind]
-scope Declaration;
+//scope Declaration;
 @init { init_declaration(CTX, kind); }
     :
         {action.simple_declaration(input.LT(1));}
@@ -466,7 +466,7 @@ scope Declaration;
             // greedy_declarator starts init_declarator
             greedy_declarator
             (
-                { $greedy_declarator.type.is_function() }?
+                { /*$greedy_declarator.type.is_function()*/ true }?
                     function_definition_after_declarator
             |
                 // this is a continuation of init_declarator_list after greedy_declarator
@@ -819,13 +819,13 @@ noptr_declarator:
 declarator returns [declarator_type_t type]
     :
         noptr_declarator 
-            {{ type = $noptr_declarator.type; }}
+//            {{ type = $noptr_declarator.type; }}
     |
         (ptr_operator)=>
             ptr_operator nested=declarator
-                {{ type = $nested.type;
-                   type.apply_ptr($ptr_operator.type);
-                }}
+//                {{ type = $nested.type;
+//                   type.apply_ptr($ptr_operator.type);
+//                }}
     ;
 
 // is quite unpretty because of left recursion removed here
@@ -833,17 +833,17 @@ noptr_declarator returns [declarator_type_t type]
     :
         (
             declarator_id
-                {{ type = $declarator_id.type; }}
+//                {{ type = $declarator_id.type; }}
         |
             LPAREN declarator RPAREN
-                {{ type = $declarator.type; }}
+//                {{ type = $declarator.type; }}
         ) // continued
         (
             parameters_and_qualifiers
-                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
+//                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
          |
              LSQUARE constant_expression? RSQUARE
-                {{ type.apply_array($constant_expression.expr); }}
+//                {{ type.apply_array($constant_expression.expr); }}
         )*
     ;
 
@@ -856,15 +856,15 @@ noptr_declarator returns [declarator_type_t type]
 function_declarator returns [declarator_type_t type]
     :
         (constructor_declarator)=>
-            constructor_declarator {{ type = $constructor_declarator.type; }}
+            constructor_declarator //{{ type = $constructor_declarator.type; }}
     |
-        declarator {{ type = $declarator.type; }}
+        declarator //{{ type = $declarator.type; }}
     ;
 
 constructor_declarator returns [declarator_type_t type]
     :
         parameters_and_qualifiers
-            {{ type.set_constructor($parameters_and_qualifiers.pq); }}
+            //{{ type.set_constructor($parameters_and_qualifiers.pq); }}
     ;
 
 /*
@@ -889,12 +889,12 @@ noptr_abstract_declarator:
 
 abstract_declarator returns [declarator_type_t type]
     :
-        noptr_abstract_declarator {{ type = $noptr_abstract_declarator.type; }}
+        noptr_abstract_declarator //{{ type = $noptr_abstract_declarator.type; }}
     |
         ptr_operator decl=abstract_declarator?
-            {{ type = $decl.type;
-               type.apply_ptr($ptr_operator.type);
-            }}
+//            {{ type = $decl.type;
+//               type.apply_ptr($ptr_operator.type);
+//            }}
     ;
 
 noptr_abstract_declarator returns [declarator_type_t type]
@@ -908,20 +908,20 @@ noptr_abstract_declarator returns [declarator_type_t type]
 universal_declarator returns [declarator_type_t type]
 options { backtrack = true; }
     :
-        declarator { type = $declarator.type; }
+        declarator //{ type = $declarator.type; }
     |
-        abstract_declarator { type = $abstract_declarator.type; }
+        abstract_declarator //{ type = $abstract_declarator.type; }
     ;
 
 greedy_declarator returns [declarator_type_t type]
     :
-        greedy_nonptr_declarator {{ type = $greedy_nonptr_declarator.type; }}
+        greedy_nonptr_declarator //{{ type = $greedy_nonptr_declarator.type; }}
     |
         (ptr_operator)=>
             ptr_operator decl=greedy_declarator
-            {{ type = $decl.type;
-               type.apply_ptr($ptr_operator.type);
-            }}
+//            {{ type = $decl.type;
+//               type.apply_ptr($ptr_operator.type);
+//            }}
     ;
 
 /*
@@ -932,37 +932,37 @@ greedy_nonptr_declarator returns [declarator_type_t type]
     :
         (
             declarator_id
-                {{ type = $declarator_id.type; }}
+                //{{ type = $declarator_id.type; }}
         |
             LPAREN greedy_declarator RPAREN
-                {{ type = $greedy_declarator.type; }}
+                //{{ type = $greedy_declarator.type; }}
         ) // continued
         (
             (parameters_and_qualifiers)=>
                 parameters_and_qualifiers
-                {{ type.apply_parameters($parameters_and_qualifiers.pq); }}
+                //{{ type.apply_parameters($parameters_and_qualifiers.pq); }}
         |
             LSQUARE constant_expression? RSQUARE
-                {{ type.apply_array($constant_expression.expr); }}
+                //{{ type.apply_array($constant_expression.expr); }}
         )*
     ;
 
 ptr_operator returns [ declarator_type_t type ]
     :
         STAR cv_qualifier*
-            {{ type.set_ptr(NULL, $cv_qualifier.qual); }}
+            //{{ type.set_ptr(NULL, $cv_qualifier.qual); }}
     |
         AMPERSAND 
-            {{ type.set_ref(); }}
+            //{{ type.set_ref(); }}
     |
         SCOPE? nested_name_specifier STAR cv_qualifier*
-/*DLITERAL_ifF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
+/*DIFF*/ //           {{ type.set_ptr(& $nested_name_specifier.namequal, $cv_qualifier.qual); }}
     ;
 
 cv_qualifier returns [ qualifier_t qual ]:
-/*DLITERAL_ifF*/        LITERAL_const //{{ qual = LITERAL_const; }}
+/*DIFF*/        LITERAL_const //{{ qual = LITERAL_const; }}
     |
-/*DLITERAL_ifF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
+/*DIFF*/        LITERAL_volatile //{{ qual = LITERAL_volatile; }}
     ;
 
 /*
@@ -975,7 +975,7 @@ cv_qualifier returns [ qualifier_t qual ]:
  */
 
 declarator_id returns [ declarator_type_t type ] :
-        id_expression {{ type.set_ident(); }}
+        id_expression //{{ type.set_ident(); }}
     ;
 
 /*
@@ -1171,7 +1171,7 @@ scope Declaration;
         |
             declarator
             (
-                { $declarator.type.is_function() }?
+                { /*$declarator.type.is_function()*/ true }?
                     function_definition_after_declarator
             |
                 // this was member_declarator_list

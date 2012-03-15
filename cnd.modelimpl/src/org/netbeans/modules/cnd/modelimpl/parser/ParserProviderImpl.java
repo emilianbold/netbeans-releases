@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.api.model.CsmScopeElement;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
@@ -252,6 +253,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public int getErrorCount() {
             return parser.getErrorCount();
         }
+
+        @Override
+        public void setErrorDelegate(ParserErrorDelegate delegate) {
+        }
     }
     
     private final static class Antrl3FortranParser implements CsmParserProvider.CsmParser, CsmParserProvider.CsmParserResult {
@@ -323,6 +328,10 @@ public final class ParserProviderImpl extends CsmParserProvider {
             CommonTree tree = (CommonTree) ret.getTree();
             System.err.println(tree);
             System.err.println(tree.getChildren());
+        }
+
+        @Override
+        public void setErrorDelegate(ParserErrorDelegate delegate) {
         }
     }
 
@@ -406,10 +415,16 @@ public final class ParserProviderImpl extends CsmParserProvider {
         public int getErrorCount() {
             return parser.getNumberOfSyntaxErrors();
         }
+
+        @Override
+        public void setErrorDelegate(ParserErrorDelegate delegate) {
+            parser.setErrorDelegate(delegate);
+        }
         
         private static final class MyToken implements org.antlr.runtime.Token {
 
             org.netbeans.modules.cnd.antlr.Token t;
+            org.antlr.runtime.CharStream s = null;
 
             public MyToken(org.netbeans.modules.cnd.antlr.Token t) {
                 this.t = t;
@@ -427,7 +442,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int getType() {
-                return t.getType();
+                return t.getType() == APTTokenTypes.EOF ? -1 : t.getType();
             }
 
             @Override
@@ -477,12 +492,12 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public org.antlr.runtime.CharStream getInputStream() {
-                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+                return s;
             }
 
             @Override
             public void setInputStream(org.antlr.runtime.CharStream arg0) {
-                throw new UnsupportedOperationException("Not supported yet."); // NOI18N
+                s = arg0;
             }
 
         }
@@ -507,7 +522,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int LA(int arg0) {
-                return tb.LA(arg0);
+                return tb.LA(arg0) == APTTokenTypes.EOF ? -1 : tb.LA(arg0);
             }
 
             @Override
