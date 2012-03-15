@@ -81,7 +81,9 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
@@ -95,13 +97,17 @@ public class RunAnalysis {
     private static final RequestProcessor WORKER = new RequestProcessor(RunAnalysisAction.class.getName(), 1, false, false);
     private static final int MAX_WORK = 1000;
 
+    @Messages({"BN_Inspect=Inspect",
+               "BN_Cancel=Cancel",
+               "TL_Inspect=Inspect"})
     public static void showDialogAndRunAnalysis() {
         final Collection<? extends AnalyzerFactory> analyzers = Lookup.getDefault().lookupAll(AnalyzerFactory.class);
         final ProgressHandle progress = ProgressHandleFactory.createHandle("Analyzing...", null, null);
         final RunAnalysisPanel rap = new RunAnalysisPanel(progress, analyzers);
-        final JButton runAnalysis = new JButton("Run Analysis");
-        JButton cancel = new JButton("Cancel");
-        DialogDescriptor dd = new DialogDescriptor(rap, "Code Analysis", true, new Object[] {runAnalysis, cancel}, runAnalysis, DialogDescriptor.DEFAULT_ALIGN, null/*XXX*/, null);
+        final JButton runAnalysis = new JButton(Bundle.BN_Inspect());
+        JButton cancel = new JButton(Bundle.BN_Cancel());
+        HelpCtx helpCtx = new HelpCtx(RunAnalysis.class);
+        DialogDescriptor dd = new DialogDescriptor(rap, Bundle.TL_Inspect(), true, new Object[] {runAnalysis, cancel}, runAnalysis, DialogDescriptor.DEFAULT_ALIGN, helpCtx, null);
         dd.setClosingOptions(new Object[0]);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         final AtomicBoolean doCancel = new AtomicBoolean();
