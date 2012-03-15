@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -54,6 +55,7 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.javafx2.platform.PlatformPropertiesHandler;
 import org.netbeans.modules.javafx2.platform.Utils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -212,22 +214,33 @@ public final class JavaFXPlatformUtils {
         String javadocPath = null;
         String srcPath = null;
 
-        for (String path : KNOWN_JFX_LOCATIONS) {
+        List<String> locations = new ArrayList<String>();
+        JavaPlatform defaultPlatform = JavaPlatformManager.getDefault().getDefaultPlatform();
+        Collection<FileObject> roots = defaultPlatform.getInstallFolders();
+        for(FileObject root : roots) {
+            assert root != null && root.isFolder();
+            FileObject parent = root.getParent();
+            if(parent != null) {
+                locations.add(parent.getPath());
+            }
+        }
+        locations.addAll(Arrays.asList(KNOWN_JFX_LOCATIONS));
+        
+        for (String path : locations.toArray(new String[0])) {
             if (sdkPath == null) {
                 sdkPath = predictSDKLocation(path);
             }
             if (runtimePath == null) {
                 runtimePath = predictRuntimeLocation(path);
             }
-            if (javadocPath == null) {
-                javadocPath = predictJavadocLocation(path);
-            }
-            if (srcPath == null) {
-                srcPath = predictSourcesLocation(path);
-            }
-
             // SDK and RT location is enought for JFX platform definition
             if (sdkPath != null && runtimePath != null) {
+                if (javadocPath == null) {
+                    javadocPath = predictJavadocLocation(path);
+                }
+                if (srcPath == null) {
+                    srcPath = predictSourcesLocation(path);
+                }
                 break;
             }
         }
@@ -255,7 +268,10 @@ public final class JavaFXPlatformUtils {
                 return null;
             }
             for (File child : children) {
-                File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                File toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                if(!toolsJar.exists()) {
+                    toolsJar = new File(child.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+                }
                 if (toolsJar.exists()) {
                     return child.getAbsolutePath();
                 }
@@ -344,7 +360,10 @@ public final class JavaFXPlatformUtils {
         if (!file.exists()) {
             return false;
         }
-        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        File toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "lib" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        if(!toolsJar.exists()) {
+            toolsJar = new File(file.getAbsolutePath() + File.separatorChar + "tools" + File.separatorChar + "ant-javafx.jar"); // NOI18N
+        }
         return toolsJar.exists();
     }
     
