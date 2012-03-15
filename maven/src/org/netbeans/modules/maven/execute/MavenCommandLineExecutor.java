@@ -120,6 +120,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     /**
      * not to be called directrly.. use execute();
      */
+    @Override
     public void run() {
         synchronized (SEMAPHORE) {
             if (task == null) {
@@ -140,7 +141,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ExecutionContext exCon = ActionToGoalUtils.ACCESSOR.createContext(ioput, handle);
         // check the prerequisites
         if (clonedConfig.getProject() != null) {
-            Lookup.Result<LateBoundPrerequisitesChecker> result = clonedConfig.getProject().getLookup().lookup(new Lookup.Template<LateBoundPrerequisitesChecker>(LateBoundPrerequisitesChecker.class));
+            Lookup.Result<LateBoundPrerequisitesChecker> result = clonedConfig.getProject().getLookup().lookupResult(LateBoundPrerequisitesChecker.class);
             for (LateBoundPrerequisitesChecker elem : result.allInstances()) {
                 if (!elem.checkRunConfig(clonedConfig, exCon)) {
                     return;
@@ -206,7 +207,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             try { //defend against badly written extensions..
                 out.buildFinished();
                 if (clonedConfig.getProject() != null) {
-                    Lookup.Result<ExecutionResultChecker> result = clonedConfig.getProject().getLookup().lookup(new Lookup.Template<ExecutionResultChecker>(ExecutionResultChecker.class));
+                    Lookup.Result<ExecutionResultChecker> result = clonedConfig.getProject().getLookup().lookupResult(ExecutionResultChecker.class);
                     for (ExecutionResultChecker elem : result.allInstances()) {
                         elem.executionResult(clonedConfig, exCon, executionresult);
                     }
@@ -222,6 +223,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 actionStatesAtFinish(out.firstFailure != null ? new FindByName(out.firstFailure) : null);
                 markFreeTab();
                 RP.post(new Runnable() { //#103460
+                    @Override
                     public void run() {
                         if (clonedConfig.getProject() != null) {
                             NbMavenProject.fireMavenProjectReload(clonedConfig.getProject());
@@ -240,6 +242,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         ExternalProcessSupport.destroy(prcs, env);
     }
     
+    @Override
     public boolean cancel() {
         if (preProcess != null) {
             kill(preProcess, preProcessUUID);
@@ -343,7 +346,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 }
 
             } catch (Exception ex1) {
-                Logger.getLogger(MavenSettings.class.getName()).fine("Error parsing global options:" + opts);
+                Logger.getLogger(MavenSettings.class.getName()).log(Level.FINE, "Error parsing global options:{0}", opts);
             }
 
         }
@@ -382,7 +385,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 //TODO somehow use the config.getMavenProject() call rather than looking up the
                 // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                 ActiveJ2SEPlatformProvider javaprov = clonedConfig.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
-                File path = null;
+                File path;
                 FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N
                 if (java != null) {
                     Collection<FileObject> objs = javaprov.getJavaPlatform().getInstallFolders();
@@ -459,8 +462,11 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             ioput.getErr().println("Cannot execute the mvn.bat executable directly due to wrong access rights, switching to execution via 'cmd.exe /c mvn.bat'."); //NOI18N - in maven output
             try {
                 ioput.getErr().println("  See issue http://www.netbeans.org/issues/show_bug.cgi?id=153101 for details.", new OutputListener() {                    //NOI18N - in maven output
+                    @Override
                     public void outputLineSelected(OutputEvent ev) {}
+                    @Override
                     public void outputLineCleared(OutputEvent ev) {}
+                    @Override
                     public void outputLineAction(OutputEvent ev) {
                         try {
                             HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("http://www.netbeans.org/issues/show_bug.cgi?id=153101")); //NOI18N - in maven output
@@ -475,6 +481,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             ioput.getErr().println("  This message will show on the next start of the IDE again, to skip it, add -J-Dmaven.run.cmd=true to your etc/netbeans.conf file in your NetBeans installation."); //NOI18N - in maven output
             ioput.getErr().println("The detailed exception output is printed to the IDE's log file."); //NOI18N - in maven output
             RP.post(new Runnable() {
+                @Override
                 public void run() {
                     RunConfig newConfig = new BeanRunConfig(config);
                     RunUtils.executeMaven(newConfig);
