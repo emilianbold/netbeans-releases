@@ -46,7 +46,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Date;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
@@ -72,6 +71,7 @@ public class MatchingObjectNode extends AbstractNode {
     private MatchingObject matchingObject;
     private Node original;
     private boolean valid = true;
+    PropertySet[] propertySets;
 
     public MatchingObjectNode(Node original,
             org.openide.nodes.Children children,
@@ -164,91 +164,22 @@ public class MatchingObjectNode extends AbstractNode {
     @Override
     public PropertySet[] getPropertySets() {
 
-        PropertySet[] sets = new PropertySet[1];
-        PropertySet set = new PropertySet("default", "default properties",
-                "Default Properties") {
+        if (propertySets == null) {
 
-            @Override
-            public Property<?>[] getProperties() {
-                Property[] properties = new Property[]{
-                    new SizeProperty(),
-                    new LastModifiedProperty(),
-                    new DetailsCountProperty(),
-                    new PathProperty()
-                };
-                return properties;
-            }
-        };
-
-        sets[0] = set;
-        return sets;
-    }
-
-    private class SizeProperty extends Property<Long> {
-
-        public SizeProperty() {
-            super(Long.class);
+            propertySets = new PropertySet[2];
+            PropertySet set = new PropertySet() {
+                @Override
+                public Property<?>[] getProperties() {
+                    Property[] properties = new Property[]{
+                        new DetailsCountProperty(),};
+                    return properties;
+                }
+            };
+            propertySets[0] = set;
+            propertySets[1] = new FileObjectPropertySet(
+                    matchingObject.getFileObject());
         }
-
-        @Override
-        public boolean canRead() {
-            return true;
-        }
-
-        @Override
-        public Long getValue() throws IllegalAccessException, InvocationTargetException {
-            return matchingObject.getFileObject().getSize();
-        }
-
-        @Override
-        public boolean canWrite() {
-            return false;
-        }
-
-        @Override
-        public void setValue(Long val) throws IllegalAccessException,
-                IllegalArgumentException, InvocationTargetException {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getName() {
-            return "size";
-        }
-    }
-
-    private class LastModifiedProperty extends Property<Date> {
-
-        public LastModifiedProperty() {
-            super(Date.class);
-        }
-
-        @Override
-        public boolean canRead() {
-            return true;
-        }
-
-        @Override
-        public Date getValue() throws IllegalAccessException,
-                InvocationTargetException {
-            return matchingObject.getFileObject().lastModified();
-        }
-
-        @Override
-        public boolean canWrite() {
-            return false;
-        }
-
-        @Override
-        public void setValue(Date val) throws IllegalAccessException,
-                IllegalArgumentException, InvocationTargetException {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public String getName() {
-            return "lastModified";                                      //NOI18N
-        }
+        return propertySets;
     }
 
     private class DetailsCountProperty extends Property<Integer> {
@@ -282,40 +213,6 @@ public class MatchingObjectNode extends AbstractNode {
         @Override
         public String getName() {
             return "detailsCount";                                      //NOI18N
-        }
-    }
-
-     private class PathProperty extends Property<String> {
-
-        public PathProperty() {
-            super(String.class);
-        }
-
-        @Override
-        public boolean canRead() {
-            return true;
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException,
-                InvocationTargetException {
-            return matchingObject.getFileObject().getPath();
-        }
-
-        @Override
-        public boolean canWrite() {
-            return false;
-        }
-
-        @Override
-        public void setValue(String val) throws IllegalAccessException,
-                IllegalArgumentException, InvocationTargetException {
-            throw new UnsupportedOperationException();                  //NOI18N
-        }
-
-        @Override
-        public String getName() {
-            return "path";                                              //NOI18N
         }
     }
 

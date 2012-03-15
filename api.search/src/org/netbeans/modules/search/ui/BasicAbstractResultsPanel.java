@@ -459,8 +459,7 @@ public abstract class BasicAbstractResultsPanel
     }
 
     private void setRootDisplayName(String displayName) {
-        Node root = getExplorerManager().getRootContext();
-        root.setDisplayName(displayName);
+        resultsOutlineSupport.setResultsNodeText(displayName);
     }
 
     protected void updateRootNodeText() {
