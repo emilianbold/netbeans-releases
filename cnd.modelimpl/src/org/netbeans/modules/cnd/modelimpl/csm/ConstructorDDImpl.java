@@ -118,7 +118,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         
         constructorDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         constructorDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, constructorDDImpl, file));
-        constructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorDDImpl, file, fileContent, global), 
+        constructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, constructorDDImpl);
         if (body == null) {

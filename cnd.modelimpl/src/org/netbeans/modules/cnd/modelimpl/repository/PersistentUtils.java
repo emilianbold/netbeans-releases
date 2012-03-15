@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -72,6 +73,8 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor;
@@ -80,6 +83,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterIm
 import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyTryCatchStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.fsm.DummyParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.fsm.DummyParametersListImpl;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -129,22 +133,22 @@ public class PersistentUtils {
 
     ////////////////////////////////////////////////////////////////////////////
     // support for parameters
-    public static void writeParameterList(CsmParameterList<?> params, RepositoryDataOutput output) throws IOException {
-        if (params == null) {
+    public static void writeParameterList(CsmParameterList<?> paramList, RepositoryDataOutput output) throws IOException {
+        if (paramList == null) {
             output.writeInt(AbstractObjectFactory.NULL_POINTER);
-        } else if (params instanceof ParameterListImpl<?, ?>) {
+        } else if (paramList instanceof ParameterListImpl<?, ?>) {
             int handler = PARAM_LIST_IMPL;
-            if (params instanceof FunctionParameterListImpl) {
+            if (paramList instanceof FunctionParameterListImpl) {
                 handler = FUN_PARAM_LIST_IMPL;
-                if (params instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
+                if (paramList instanceof FunctionParameterListImpl.FunctionKnRParameterListImpl) {
                     handler = FUN_KR_PARAM_LIST_IMPL;
                 }
             }
-            if (params instanceof DummyParametersListImpl) {
+            if (paramList instanceof DummyParametersListImpl) {
                 handler = DUMMY_PARAMS_LIST_IMPL;
             }
             output.writeInt(handler);
-            ((ParameterListImpl<?, ?>)params).write(output);
+            ((ParameterListImpl<?, ?>)paramList).write(output);
         }
     }
 
@@ -172,6 +176,65 @@ public class PersistentUtils {
                 paramList = null;
         }
         return paramList;
+    }
+
+    public static void writeParameters(Collection<CsmParameter> params, RepositoryDataOutput output) throws IOException {
+        if (params == null || params.isEmpty()) {
+            output.writeInt(0);
+        } else {
+            output.writeInt(params.size());
+            for (CsmParameter param : params) {
+                writeParameter(param, output);
+            }
+        }
+    }
+
+    public static Collection<CsmParameter> readParameters(RepositoryDataInput input) throws IOException {
+        int size = input.readInt();
+        if (size == 0) {
+            return null;
+        }
+        ArrayList<CsmParameter> list = new ArrayList<CsmParameter>(size);
+        for (int i = 0; i < size; i++) {
+            list.add(readParameter(input));
+        }
+        list.trimToSize();
+        return list;
+    }
+
+    private static CsmParameter readParameter(RepositoryDataInput input) throws IOException {
+        byte handler = input.readByte();
+        CsmParameter obj = null;
+        switch (handler) {
+            case DUMMY_PARAMETER_IMPL:
+                obj = new ParameterEllipsisImpl(input);
+                break;
+            case PARAMETER_ELLIPSIS_IMPL:
+                obj = new ParameterEllipsisImpl(input);
+                break;
+            case PARAMETER_IMPL:
+                obj = new ParameterImpl(input);
+                break;
+            default:
+                assert false : "unexpected handler" + handler;
+        }
+        return obj;
+    }
+
+    private static void writeParameter(CsmParameter param, RepositoryDataOutput output) throws IOException {
+        assert param != null;
+        if (param instanceof DummyParameterImpl) {
+            output.writeByte(DUMMY_PARAMETER_IMPL);
+            ((DummyParameterImpl)param).write(output);
+        } else if (param instanceof ParameterEllipsisImpl) { // have to be before ParameterImpl check
+            output.writeByte(PARAMETER_ELLIPSIS_IMPL);
+            ((ParameterEllipsisImpl)param).write(output);
+        } else if (param instanceof ParameterImpl) {
+            output.writeByte(PARAMETER_IMPL);
+            ((ParameterImpl)param).write(output);
+        } else {
+            throw new IllegalArgumentException("instance of unknown FileBuffer " + param.getClass() + param);  //NOI18N
+        }
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -687,9 +750,13 @@ public class PersistentUtils {
     private static final int FUN_PARAM_LIST_IMPL = PARAM_LIST_IMPL + 1;
     private static final int FUN_KR_PARAM_LIST_IMPL = FUN_PARAM_LIST_IMPL + 1;
     private static final int DUMMY_PARAMS_LIST_IMPL = FUN_KR_PARAM_LIST_IMPL + 1;
+    // params
+    private static final int DUMMY_PARAMETER_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
+    private static final int PARAMETER_ELLIPSIS_IMPL = DUMMY_PARAMETER_IMPL + 1;
+    private static final int PARAMETER_IMPL = PARAMETER_ELLIPSIS_IMPL + 1;
 
     // tempalte descriptor
-    private static final int TEMPLATE_DESCRIPTOR_IMPL = DUMMY_PARAMS_LIST_IMPL + 1;
+    private static final int TEMPLATE_DESCRIPTOR_IMPL = PARAMETER_IMPL + 1;
     // specialization descriptor
     private static final int SPECIALIZATION_DESCRIPTOR_IMPL = TEMPLATE_DESCRIPTOR_IMPL + 1;
     // specialization parameters

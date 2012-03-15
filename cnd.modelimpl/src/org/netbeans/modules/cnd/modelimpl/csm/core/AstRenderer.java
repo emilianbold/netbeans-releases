@@ -1798,13 +1798,13 @@ public class AstRenderer {
         return fun;
     }
 
-    public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, FileContent fileContent, CsmScope scope, boolean isRenderingLocalContext) {
+    public static List<CsmParameter> renderParameters(AST ast, final CsmFile file, FileContent fileContent, CsmScope scope) {
         ArrayList<CsmParameter> parameters = new ArrayList<CsmParameter>();
         if (ast != null && (ast.getType() == CPPTokenTypes.CSM_PARMLIST ||
                 ast.getType() == CPPTokenTypes.CSM_KR_PARMLIST)) {
             for (AST token = ast.getFirstChild(); token != null; token = token.getNextSibling()) {
                 if (token.getType() == CPPTokenTypes.CSM_PARAMETER_DECLARATION) {
-                    List<ParameterImpl> params = renderParameter(token, file, fileContent, scope, isRenderingLocalContext);
+                    List<ParameterImpl> params = renderParameter(token, file, fileContent, scope);
                     if (params != null) {
                         parameters.addAll(params);
                     }
@@ -1834,7 +1834,7 @@ public class AstRenderer {
         return false;
     }
 
-    public static List<ParameterImpl> renderParameter(AST ast, final CsmFile file, FileContent fileContent, final CsmScope scope1, final boolean isRenderingLocalContext) {
+    public static List<ParameterImpl> renderParameter(AST ast, final CsmFile file, FileContent fileContent, final CsmScope scope1) {
 
         // The only reason there might be several declarations is the K&R C style
         // we can split this function into two (for K&R and "normal" parameters)
@@ -1844,7 +1844,7 @@ public class AstRenderer {
         AST firstChild = ast.getFirstChild();
         if (firstChild != null) {
             if (firstChild.getType() == CPPTokenTypes.ELLIPSIS) {
-                ParameterEllipsisImpl parameter = ParameterEllipsisImpl.create(ast.getFirstChild(), file, null, scope1, !isRenderingLocalContext); // NOI18N
+                ParameterEllipsisImpl parameter = ParameterEllipsisImpl.create(ast.getFirstChild(), file, null, scope1); // NOI18N
                 result.add(parameter);
                 return result;
             }
@@ -1866,9 +1866,9 @@ public class AstRenderer {
                 type = TemplateUtils.checkTemplateType(type, scope1);
                 ParameterImpl parameter;
                 if (offsetAst.getType() == CPPTokenTypes.ELLIPSIS) {
-                    parameter = ParameterEllipsisImpl.create(offsetAst, file, type, scope1, !isRenderingLocalContext);
+                    parameter = ParameterEllipsisImpl.create(offsetAst, file, type, scope1);
                 } else {
-                    parameter = ParameterImpl.create(offsetAst, file, type, name, scope1, !isRenderingLocalContext);
+                    parameter = ParameterImpl.create(offsetAst, file, type, name, scope1);
                 }
                 result.add(parameter);
                 return parameter;
@@ -2318,8 +2318,8 @@ public class AstRenderer {
             return TemplateUtils.checkTemplateType(ret, scope);
         }        
         
-        public static FunctionParameterListImpl createParameters(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean global) {
-            FunctionParameterListImpl parameterList = FunctionParameterListImpl.create(file, fileContent, ast, scope, !global);
+        public static FunctionParameterListImpl createParameters(AST ast, CsmScope scope, CsmFile file, FileContent fileContent) {
+            FunctionParameterListImpl parameterList = FunctionParameterListImpl.create(file, fileContent, ast, scope);
             return parameterList;
         }
 

@@ -102,7 +102,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         
         functionDefinitionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionDefinitionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, functionDefinitionImpl, file, objects));
-        functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, fileContent, global), 
+        functionDefinitionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionDefinitionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));        
         
         CharSequence[] classOrNspNames = CastUtils.isCast(ast) ?

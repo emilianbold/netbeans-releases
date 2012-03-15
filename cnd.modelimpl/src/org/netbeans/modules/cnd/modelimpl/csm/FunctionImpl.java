@@ -80,7 +80,6 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
 
     private final CharSequence name;
     private CsmType returnType;
-//    private final Collection<CsmUID<CsmParameter>>  parameters;
     private FunctionParameterListImpl parameterList;
     private CharSequence signature;
 
@@ -143,7 +142,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         functionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         functionImpl.setReturnType(type != null ? type : AstRenderer.FunctionRenderer.createReturnType(ast, functionImpl, file, objects));
-        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, fileContent, global), 
+        functionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, functionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, functionImpl);
