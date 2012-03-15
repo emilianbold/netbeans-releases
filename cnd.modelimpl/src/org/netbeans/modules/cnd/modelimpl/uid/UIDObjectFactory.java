@@ -57,7 +57,6 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmNamespaceDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
@@ -82,7 +81,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.InheritanceUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.InstantiationUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.MacroUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.NamespaceUID;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ParamListUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.ProjectUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.TypedefUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities.UnnamedClassifierUID;
@@ -382,8 +380,6 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             aHandler = UID_INCLUDE_UID;
         } else if (object instanceof UIDUtilities.InheritanceUID) {
             aHandler = UID_INHERITANCE_UID;
-        } else if (object instanceof ParamListUID<?>) {
-            aHandler = UID_PARAM_LIST_UID;
         } else if (object instanceof UnnamedOffsetableDeclarationUID<?>) {
             aHandler = UID_UNNAMED_OFFSETABLE_DECLARATION_UID;
         } else if (object instanceof DeclarationUID<?>) {
@@ -455,10 +451,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
                 anUID = new InheritanceUID(aStream);
                 break;
 
-                // no reason to cache declaration and more detailed uids.
-            case UID_PARAM_LIST_UID:
-                anUID = new ParamListUID<CsmNamedElement>(aStream);
-                break;
+            // no reason to cache declaration and more detailed uids.
 
             case UID_UNNAMED_OFFSETABLE_DECLARATION_UID:
                 anUID = new UnnamedOffsetableDeclarationUID<CsmOffsetableDeclaration>(aStream);
@@ -519,8 +512,7 @@ public class UIDObjectFactory extends AbstractObjectFactory {
     private static final int UID_MACRO_UID = UID_UNNAMED_CLASSIFIER_UID + 1;
     private static final int UID_INCLUDE_UID = UID_MACRO_UID + 1;
     private static final int UID_INHERITANCE_UID = UID_INCLUDE_UID + 1;
-    private static final int UID_PARAM_LIST_UID = UID_INHERITANCE_UID + 1;
-    private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_PARAM_LIST_UID + 1;
+    private static final int UID_UNNAMED_OFFSETABLE_DECLARATION_UID = UID_INHERITANCE_UID + 1;
     private static final int UID_DECLARATION_UID = UID_UNNAMED_OFFSETABLE_DECLARATION_UID + 1;
     private static final int UID_BUILT_IN_UID = UID_DECLARATION_UID + 1;
     private static final int UID_INSTANTIATION_UID = UID_BUILT_IN_UID + 1;

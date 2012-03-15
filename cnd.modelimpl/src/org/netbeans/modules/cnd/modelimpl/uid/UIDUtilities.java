@@ -63,7 +63,6 @@ import org.netbeans.modules.cnd.api.model.CsmNamespace;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
-import org.netbeans.modules.cnd.api.model.CsmParameterList;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.CsmUID;
@@ -146,10 +145,6 @@ public class UIDUtilities {
 
     public static CsmUID<CsmInheritance> createInheritanceUID(CsmInheritance inh) {
         return getCachedUID(new InheritanceUID(inh), inh);
-    }
-
-    public static <T extends CsmNamedElement> CsmUID<CsmParameterList<T>> createParamListUID(CsmParameterList<T> incl) {
-        return getCachedUID(new ParamListUID<T>(incl), incl);
     }
 
     public static CsmUID<CsmClass> createUnresolvedClassUID(String name, CsmProject project) {
@@ -657,20 +652,6 @@ public class UIDUtilities {
         }
 
         /* package */ InheritanceUID(RepositoryDataInput aStream) throws IOException {
-            super(aStream);
-        }
-    }
-
-    /**
-     * UID for CsmParameterList
-     */
-    /* package */ static final class ParamListUID<T extends CsmNamedElement> extends CachedUID<CsmParameterList<T>> { //KeyBasedUID<CsmParameterList<T>> {
-
-        public ParamListUID(CsmParameterList<T> paramList) {
-            super(KeyUtilities.createParamListKey(paramList), paramList);
-        }
-
-        /* package */ ParamListUID(RepositoryDataInput aStream) throws IOException {
             super(aStream);
         }
     }

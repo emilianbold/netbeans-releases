@@ -109,7 +109,7 @@ public final class DestructorDDImpl extends MethodDDImpl<CsmMethod> {
         
         destructorDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         destructorDDImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, destructorDDImpl, file));
-        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, fileContent, global), 
+        destructorDDImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, destructorDDImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         CsmCompoundStatement body = AstRenderer.findCompoundStatement(ast, file, destructorDDImpl);
         if (body == null) {

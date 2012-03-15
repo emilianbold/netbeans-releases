@@ -110,7 +110,7 @@ public final class FriendFunctionImpl extends FunctionImpl<CsmFriendFunction> im
         friendFunctionImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         friendFunctionImpl.setSpecializationDesctiptor(SpecializationDescriptor.createIfNeeded(ast, file, scope, global));
         friendFunctionImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, friendFunctionImpl, file));
-        friendFunctionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionImpl, file, fileContent, global), 
+        friendFunctionImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, friendFunctionImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         
         postObjectCreateRegistration(global, friendFunctionImpl);
