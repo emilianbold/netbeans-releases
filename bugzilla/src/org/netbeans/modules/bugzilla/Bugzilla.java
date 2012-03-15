@@ -52,9 +52,11 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
+import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -159,5 +161,9 @@ public class Bugzilla {
             brp = new BugzillaRepositoryProvider();
         }
         return brp; 
+    }
+
+    public UndoRedoSupport getUndoRedoSupport(BugzillaIssue issue) {
+        return getBugtrackingFactory().getUndoRedoSupport(BugzillaUtil.getRepository(issue.getRepository()), issue);
     }
 }

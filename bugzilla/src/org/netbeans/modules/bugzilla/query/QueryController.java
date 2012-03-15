@@ -76,7 +76,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
@@ -837,7 +837,7 @@ public class QueryController extends BugtrackingController implements DocumentLi
     }
 
     private void onFindIssues() {
-        Query.openNew(BugzillaUtil.getRepository(repository));
+        Util.createNewQuery(BugzillaUtil.getRepository(repository));
     }
 
     private void onCloneQuery() {

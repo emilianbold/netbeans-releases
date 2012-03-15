@@ -253,7 +253,7 @@ public class BugtrackingUtil {
         return Scrambler.getInstance().descramble(str);
     }
 
-    public static Issue selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
+    public static String selectIssue(String message, Repository repository, JPanel caller, HelpCtx helpCtx) {
         QuickSearchComboBar bar = new QuickSearchComboBar(caller);
         bar.setRepository(repository);
         bar.setAlignmentX(0f);
@@ -299,7 +299,7 @@ public class BugtrackingUtil {
         if (descriptor.getValue() == ok) {
             issue = bar.getIssue();
         }
-        return issue;
+        return issue != null ? issue.getID() : null;
     }
 
     public static File selectPatchContext() {

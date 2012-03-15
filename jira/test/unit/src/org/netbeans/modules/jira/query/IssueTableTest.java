@@ -91,7 +91,7 @@ public class IssueTableTest extends IssuetableTestFactory {
         final JiraQuery jq = new JiraQuery( queryName, repo, fd, false, true); // false = not saved
         assertEquals(0, jq.getIssues().size());
         queries.put(queryName, jq);
-        return JiraUtils.getQuery(jq);
+        return JiraTestUtil.getQuery(jq);
     }
 
     @Override
