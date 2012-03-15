@@ -56,6 +56,7 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import org.netbeans.api.sendopts.CommandException;
+import org.netbeans.modules.sendopts.DefaultProcessor;
 import org.netbeans.modules.sendopts.OptionImpl;
 import org.openide.util.Lookup;
 
@@ -401,13 +402,7 @@ public final class Option {
                 if (bundle == OptionImpl.NO_BUNDLE) {
                     return key;
                 }
-                ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
-                if (loader == null) {
-                    loader = Thread.currentThread().getContextClassLoader();
-                }
-                if (loader == null) {
-                    loader = getClass().getClassLoader();
-                }
+                ClassLoader loader = DefaultProcessor.findClassLoader();
                 try {
                     ResourceBundle b = ResourceBundle.getBundle(bundle, l, loader);
                     return b.getString(key);
