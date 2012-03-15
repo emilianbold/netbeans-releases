@@ -49,7 +49,7 @@ import java.io.File;
  * 
  * @author Tomas Stupka
  * 
- * @deprecated use o.n.m.versioning.spi.VCSHIstoryProvider instead
+ * @deprecated use o.n.m.versioning.spi.VCSHistoryProvider instead
  */
 public abstract class VCSAccessor {
 
