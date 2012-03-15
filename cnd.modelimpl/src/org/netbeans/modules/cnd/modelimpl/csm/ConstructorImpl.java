@@ -111,7 +111,7 @@ public final class ConstructorImpl extends MethodImpl<CsmConstructor> implements
         
         constructorImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
         constructorImpl.setReturnType(AstRenderer.FunctionRenderer.createReturnType(ast, constructorImpl, file));
-        constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, fileContent, global), 
+        constructorImpl.setParameters(AstRenderer.FunctionRenderer.createParameters(ast, constructorImpl, file, fileContent), 
                 AstRenderer.FunctionRenderer.isVoidParameter(ast));
         postObjectCreateRegistration(global, constructorImpl);
         nameHolder.addReference(fileContent, constructorImpl);

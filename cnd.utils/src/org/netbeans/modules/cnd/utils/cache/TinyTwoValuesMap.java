@@ -428,6 +428,6 @@ final class TinyTwoValuesMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, 
         } else if (secondKey == null || secondKey.equals(newElem)) {
             return this;
         }
-        return new TinyMap4<K, V>(this);
+        return new TinyMaps.TinyMap4<K, V>(this);
     }
 }

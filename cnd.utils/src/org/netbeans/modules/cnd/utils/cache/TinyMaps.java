@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -49,6 +50,7 @@ import java.util.Map;
  * @author Vladimir Voskresensky
  */
 public final class TinyMaps {
+    private static final Map<?,?> NO_CONTENT = Collections.emptyMap();
     // marker interface for optimized maps
     interface CompactMap<K, V> {
         public Map<K, V> expandForNextKeyIfNeeded(K newElem);
@@ -60,7 +62,9 @@ public final class TinyMaps {
     public static <K, V> Map<K, V> createMap(int initialCapacity) {
         switch (initialCapacity) {
             case 0:
-                return Collections.emptyMap();
+                @SuppressWarnings("unchecked")
+                Map<K, V> out = (Map<K, V>) NO_CONTENT;
+                return out;
             case 1:
                 return new TinySingletonMap<K, V>();
             case 2:
@@ -75,6 +79,15 @@ public final class TinyMaps {
             case 8:
                 return new TinyMap8<K, V>();
         }
+        if (initialCapacity <= 16) {
+            return new TinyMap16<K, V>();
+        } else if (initialCapacity <= 32) {
+            return new TinyHashMap32<K, V>();
+        } else if (initialCapacity <= 64) {
+            return new TinyHashMap64<K, V>();
+        } else if (initialCapacity <= 128) {
+            return new TinyHashMap128<K, V>();
+        }
         return new TinyHashMap<K, V>(initialCapacity);
     }
 
@@ -82,8 +95,175 @@ public final class TinyMaps {
     public static <K, V> Map<K, V> expandForNextKey(Map<K, V> orig, K newElem) {
         if (orig instanceof CompactMap<?, ?>) {
             return ((CompactMap<K, V>)orig).expandForNextKeyIfNeeded(newElem);
+        } else if (orig == NO_CONTENT) {
+            return createMap(1);
         } else {
             return orig;
+        }
+    }
+
+    static final class TinyMap4<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyMap4() {
+            super(4);
+        }
+
+        TinyMap4(TinyTwoValuesMap<K, V> twoValues) {
+            super(twoValues, 4);
+        }
+
+        TinyMap4(Map<K, V> twoValues) {
+            super(4, twoValues);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() <= 3 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyMap6<K, V>(this);
+        }
+    }
+
+    static final class TinyMap6<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyMap6() {
+            super(6);
+        }
+
+        TinyMap6(TinyArrayMap<K, V> other) {
+            super(other, 6);
+        }
+
+        TinyMap6(Map<K, V> other) {
+            super(6, other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() <= 5 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyMap8<K, V>(this);
+        }
+    }
+
+    static final class TinyMap8<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyMap8() {
+            super(8);
+        }
+
+        TinyMap8(TinyArrayMap<K, V> other) {
+            super(other, 8);
+        }
+
+        TinyMap8(Map<K, V> other) {
+            super(8, other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() <= 7 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyMap16<K, V>(this);
+        }
+    }
+
+    static final class TinyMap16<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyMap16() {
+            super(16);
+        }
+
+        TinyMap16(TinyArrayMap<K, V> other) {
+            super(other, 16);
+        }
+
+//        TinyHashMap16(Map<K, V> other) {
+//            super(16, other);
+//        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() < 16 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyHashMap32<K, V>(this);
+        }
+    }
+
+    static final class TinyHashMap32<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyHashMap32() {
+            super(32);
+        }
+
+        TinyHashMap32(Map<K, V> other) {
+            super(other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() < 32 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyHashMap64<K, V>(this);
+        }
+    }
+
+    static final class TinyHashMap64<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyHashMap64() {
+            super(64);
+        }
+
+        TinyHashMap64(Map<K, V> other) {
+            super(other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() < 64 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyHashMap128<K, V>(this);
+        }
+    }
+
+    static final class TinyHashMap128<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyHashMap128() {
+            super(128);
+        }
+
+        TinyHashMap128(Map<K, V> other) {
+            super(other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            if (size() < 128 || containsKey(newElem)) {
+                return this;
+            }
+            return new TinyHashMap<K, V>(this);
+        }
+    }
+
+    static final class TinyHashMap<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+
+        public TinyHashMap(int initialCapacity) {
+            super(initialCapacity);
+        }
+
+        TinyHashMap(Map<K, V> other) {
+            super(other);
+        }
+
+        @Override
+        public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
+            return this;
         }
     }
 }

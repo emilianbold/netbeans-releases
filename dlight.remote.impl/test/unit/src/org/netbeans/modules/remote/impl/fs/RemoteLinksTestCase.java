@@ -96,7 +96,6 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
         }
     }
 
-    @RandomlyFails
     @ForAllEnvironments
     public void testADELinkWorkflow() throws Exception {
         String baseDir = null;
@@ -169,7 +168,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             FileObject dirLinkFO = getFileObject(baseDirFO, dirLink);
             FileObject dataFileFO = getFileObject(dirLinkFO, dataFile);
 
-            assertFalse("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
+            assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
             CharSequence readContent = readFile(dataFileFO);
             assertEquals("File content differ", content1, readContent.toString());
 
@@ -181,7 +180,7 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
 
             refreshFor(dataFileFO.getPath());
-            assertFalse("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
+            assertTrue("FileObject should be readable: " + dataFileFO.getPath(), dataFileFO.canRead());
             readContent = readFile(dataFileFO);
             assertEquals("File content differ", content2, readContent.toString());
 
