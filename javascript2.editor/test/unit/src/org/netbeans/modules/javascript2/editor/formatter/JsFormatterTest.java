@@ -413,6 +413,19 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/catch1.js", options, ".inverted.formatted");
     }
 
+    public void testCatch2Default() throws Exception {
+        reformatFileContents("testfiles/formatter/catch2.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testCatch2Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
+        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.spaceBeforeFinallyLeftBrace, false);
+        reformatFileContents("testfiles/formatter/catch2.js", options, ".inverted.formatted");
+    }
+
     public void testParentheses1Default() throws Exception {
         reformatFileContents("testfiles/formatter/parentheses1.js",
                 Collections.<String, Object>emptyMap(), ".default.formatted");
