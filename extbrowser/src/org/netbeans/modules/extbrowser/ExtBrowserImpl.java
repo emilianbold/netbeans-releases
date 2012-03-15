@@ -86,6 +86,8 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
     
     private boolean enhancedMode;
     
+    private boolean running = false;
+    
     /** Default constructor. 
       * <p>Builds PropertyChangeSupport. 
       */
@@ -290,10 +292,25 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
 
     public synchronized void setBrowserTabDescriptor(BrowserTabDescriptor browserTabDescriptor) {
         this.browserTabDescriptor = browserTabDescriptor;
+        setRunning(browserTabDescriptor != null);
     }
 
     public void urlHasChanged() {
         pcs.firePropertyChange(HtmlBrowser.Impl.PROP_URL, null, null);
+    }
+
+    @Override
+    public Boolean isRunning() {
+        if (hasEnhancedMode()) {
+            return Boolean.valueOf(running);
+        } else {
+            return null;
+        }
+    }
+
+    private void setRunning(boolean running) {
+        this.running = running;
+        pcs.firePropertyChange(HtmlBrowser.Impl.PROP_RUNNING, null, null);
     }
 
 }
