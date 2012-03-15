@@ -107,12 +107,13 @@ public final class GsfUtilities {
         }
     }
 
-    /** Adjust the indentation of the line containing the given offset to the provided
-     * indentation, and return the new indent.
+    /**
+     * Adjust the indentation of the line containing the given offset to the provided
+     * indentation, and return the length difference of old and new indentation.
      *
      * Copied from Indent module's "modifyIndent"
      */
-    public static void setLineIndentation(BaseDocument doc, int lineOffset, int newIndent) throws BadLocationException {
+    public static int setLineIndentation(BaseDocument doc, int lineOffset, int newIndent) throws BadLocationException {
         int lineStartOffset = Utilities.getRowStart(doc, lineOffset);
 
         // Determine old indent first together with oldIndentEndOffset
@@ -156,6 +157,7 @@ public final class GsfUtilities {
         if (newIndentString.length() > 0) {
             doc.insertString(offset, newIndentString, null);
         }
+        return newIndentString.length() - (oldIndentEndOffset - offset);
     }
 
 
