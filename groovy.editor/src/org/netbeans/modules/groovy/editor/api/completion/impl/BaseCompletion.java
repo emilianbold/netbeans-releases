@@ -53,9 +53,9 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -132,8 +132,9 @@ public abstract class BaseCompletion {
         boolean remainingTokens = true;
         while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-            // LOG.log(Level.FINEST, "LexerToken(back): {0}", t.text().toString());
-            if (!(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER)) {
+
+            // Keyword check needs to be here because of issue #209453
+            if (!(t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER || "keyword".equals(t.id().primaryCategory()))) {
                 break;
             } else {
                 token = t;
@@ -143,23 +144,21 @@ public abstract class BaseCompletion {
         // now we are travelling in the opposite direction to construct
         // the result
 
-        StringBuffer buf = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         Token<? extends GroovyTokenId> lastToken = null;
 
         // if we reached the beginning in the previous iteration we have to get
         // the first token too (without call to moveNext())
         if (!remainingTokens && token != null && ts.isValid()) {
-            buf.append(token.text().toString());
+            sb.append(token.text().toString());
             lastToken = token;
         }
 
         // iterate the rest of the sequence
         while (ts.isValid() && ts.moveNext() && ts.offset() < position) {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
-
-            // LOG.log(Level.FINEST, "LexerToken(fwd): {0}", t.text().toString());
             if (t.id() == GroovyTokenId.DOT || t.id() == GroovyTokenId.IDENTIFIER) {
-                buf.append(t.text().toString());
+                sb.append(t.text().toString());
                 lastToken = t;
             } else {
                 break;
@@ -175,17 +174,23 @@ public abstract class BaseCompletion {
         // "java.lang"      "java"      "lang"
         // "java.lang."     "java.lang" ""
 
-        result.fullString = buf.toString();
+        result.fullString = sb.toString();
 
-        if (buf.length() == 0) {
+        if (sb.length() == 0) {
             result.basePackage = "";
             result.prefix = "";
+
+            // This might happened if we are trying to get completion on prefix which match to some keyword
+            // In that case 'sb' is empty, but we want to have result.prefix initialized (see issue #209453)
+            if (token != null && "keyword".equals(token.id().primaryCategory())) {
+                result.prefix = request.prefix;
+            }
         } else if (lastToken != null && lastToken.id() == GroovyTokenId.DOT) {
-            String pkgString = buf.toString();
+            String pkgString = sb.toString();
             result.basePackage = pkgString.substring(0, pkgString.length() - 1);
             result.prefix = "";
         } else if (lastToken != null && lastToken.id() == GroovyTokenId.IDENTIFIER) {
-            String pkgString = buf.toString();
+            String pkgString = sb.toString();
             result.prefix = lastToken.text().toString();
 
             result.basePackage = pkgString.substring(0, pkgString.length() - result.prefix.length());

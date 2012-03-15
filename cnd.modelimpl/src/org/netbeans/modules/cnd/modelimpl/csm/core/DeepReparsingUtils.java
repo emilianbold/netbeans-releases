@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.content.project.GraphContainer.ParentFiles;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -75,9 +76,7 @@ import org.openide.filesystems.FileObject;
 public final class DeepReparsingUtils {
     private static final Logger LOG = Logger.getLogger("DeepReparsingUtils"); // NOI18N
     private static final boolean TRACE = LOG.isLoggable(Level.FINE);
-//    private static final RequestProcessor PARTIAL_RP = new RequestProcessor("DeepReparsingUtils - partial reparse checker", 1); // NOI18N
-//    private static final AtomicInteger nrPartialTasks = new AtomicInteger(0);
-    
+
     private DeepReparsingUtils() {
     }
 
@@ -117,70 +116,52 @@ public final class DeepReparsingUtils {
     /**
      * Reparse including/included files at fileImpl content changed.
      */
-    public static void tryPartialReparseOnChangedFile(final FileImpl fileImpl, final ProjectBase project) {
-        if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
-            LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
-            reparseOnlyOneFile(project, fileImpl);
-        } else {
-            if (true) {
-                reparseOnChangedFileImpl(fileImpl, project);
-                return;
+    public static void tryPartialReparseOnChangedFile(final ProjectBase project, final FileImpl fileImpl) {
+        if (TraceFlags.USE_PARTIAL_REPARSE) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "tryPartialReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
             }
             project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
             fileImpl.markReparseNeeded(false);
             ParserQueue.instance().addForPartialReparse(fileImpl);
-//            PARTIAL_RP.post(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        int val = nrPartialTasks.incrementAndGet();
-//                        if (val > 10) {
-//                            LOG.log(Level.INFO, "there are {0} pending partial check task", val);
-//                        }
-//                        FileContentSignature prevSig = fileImpl.getSignature();
-//                        project.markAsParsingPreprocStates(fileImpl.getAbsolutePath());
-//                        fileImpl.markReparseNeeded(false);
-//                        try {
-//                            // wait file parse
-//                            fileImpl.scheduleParsing(true);
-//                            // compare signatures
-//                            FileContentSignature newSig = fileImpl.getSignature();
-//                            boolean sigCheckResult = newSig.equals(prevSig);
-//                            if (!sigCheckResult) {
-//                                if (TRACE) {
-//                                    CharSequence diff = FileContentSignature.testDifference(prevSig, newSig);
-//                                    LOG.log(Level.INFO, "check signatures for {0} : \n{1}", new Object[]{fileImpl.getAbsolutePath(), diff});
-//                                }
-//                                reparseOnChangedFileImpl(fileImpl, project);
-//                            } else {
-//                                if (TRACE) {
-//                                    LOG.log(Level.INFO, "PARTIAL reparse was enough for changed file {0}", fileImpl.getAbsolutePath());
-//                                }
-//                            }
-//                        } catch (InterruptedException ex) {
-//                            Exceptions.printStackTrace(ex);
-//                        }
-//                    } finally {
-//                        nrPartialTasks.decrementAndGet();
-//                    }
-//                }
-//            });
+        } else {
+            if (TraceFlags.DEEP_REPARSING_OPTIMISTIC) {
+                if (TRACE) LOG.log(Level.INFO, "OPTIMISTIC partial ReparseOnChangedFile {0}", fileImpl.getAbsolutePath());
+                reparseOnlyOneFile(project, fileImpl);
+            } else {
+                reparseOnChangedFileImpl(project, fileImpl, true);
+            }
         }
     }
 
-    /**
-     * for tests only
-     */
-    /*package*/static void reparseOnChangedFileForTests(final FileImpl fileImpl, final ProjectBase project) {
-        reparseOnChangedFileImpl(fileImpl, project);
+    static boolean finishPartialReparse(FileImpl fileImpl, FileContentSignature lastFileBasedSignature, FileContentSignature newSignature) {
+        if (newSignature.equals(lastFileBasedSignature)) {
+            if (TRACE) {
+                LOG.log(Level.INFO, "partial reparseOnChangedFile was enough for {0}", fileImpl.getAbsolutePath());
+            }
+            return true;
+        } else if (TRACE) {
+            LOG.log(Level.INFO, "partial reparseOnChangedFile results in changed signature for {0}:\n{1}", 
+                    new Object[] { fileImpl.getAbsolutePath(), FileContentSignature.testDifference(newSignature, lastFileBasedSignature)}
+                    );
+        }
+        // signature have changed => full reparse is needed
+        DeepReparsingUtils.fullReparseOnChangedFile(fileImpl.getProjectImpl(true), fileImpl);
+        return false;
     }
 
-    private static void reparseOnChangedFileImpl(final FileImpl fileImpl, final ProjectBase project) {
+    static void fullReparseOnChangedFile(final ProjectBase project, final FileImpl fileImpl) {
+        reparseOnChangedFileImpl(project, fileImpl, false);
+    }
+
+    private static void reparseOnChangedFileImpl(final ProjectBase project, final FileImpl fileImpl, boolean contentChanged) {
         if (TRACE) {
             LOG.log(Level.INFO, "full reparseOnChangedFile {0}", fileImpl.getAbsolutePath());
         }
         // content of file was changed => invalidate cache
-        APTDriver.invalidateAPT(fileImpl.getBuffer());
+        if (contentChanged) {
+            APTDriver.invalidateAPT(fileImpl.getBuffer());
+        }
         boolean scheduleParsing = true;
         ParentFiles top = project.getGraph().getTopParentFiles(fileImpl);
         Set<CsmFile> cuStartFiles = top.getCompilationUnits();

@@ -1518,12 +1518,12 @@ public class Utilities {
         }
 
         final JEditorPane editorPane = new JEditorPane();
-        editorPane.setEditorKit(kit);
-
         editorPane.putClientProperty(
             "HighlightsLayerExcludes", //NOI18N
-            "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.CaretRowHighlighting$" //NOI18N
+            ".*(?<!TextSelectionHighlighting)$" //NOI18N
         );
+        editorPane.setEditorKit(kit);
+        
         getEditorUI(editorPane).textLimitLineVisible = false;
 
         KeyStroke enterKs = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0);

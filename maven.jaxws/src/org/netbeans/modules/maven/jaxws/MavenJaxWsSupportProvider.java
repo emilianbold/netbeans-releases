@@ -197,6 +197,7 @@ class MavenJaxWsSupportProvider implements JAXWSLightSupportProvider, PropertyCh
         WebservicesChangeListener(JAXWSLightSupport jaxWsSupport, MetadataModel<WebservicesMetadata> wsModel) {
             this.jaxWsSupport = jaxWsSupport;
             this.wsModel = wsModel;
+            updateJaxWsTask.schedule(1000);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

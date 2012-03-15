@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.support.APTBaseToken;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 
@@ -72,6 +73,11 @@ public class MacroExpandedToken implements APTToken, Serializable {
     }
 
     public MacroExpandedToken(APTToken from, APTToken to, APTToken endOffsetToken) {
+        if (APTTraceFlags.APT_OPTIMIZE_MEMORY) {
+            while (from instanceof MacroExpandedToken) {
+                from = ((MacroExpandedToken) from).from;
+            }
+        }
         if (from == null) {
             throw new IllegalArgumentException("why 'from' is not APTToken?"); // NOI18N
         }
@@ -80,6 +86,11 @@ public class MacroExpandedToken implements APTToken, Serializable {
             throw new IllegalArgumentException("why 'to' is not APTToken?"); // NOI18N
         }
         this.to = to;
+        if (APTTraceFlags.APT_OPTIMIZE_MEMORY) {
+            while (endOffsetToken instanceof MacroExpandedToken) {
+                endOffsetToken = ((MacroExpandedToken) endOffsetToken).endOffsetToken;
+            }
+        }
         if (endOffsetToken == null) {
             throw new IllegalArgumentException("why 'endOffsetToken' is not APTToken?"); // NOI18N
         }

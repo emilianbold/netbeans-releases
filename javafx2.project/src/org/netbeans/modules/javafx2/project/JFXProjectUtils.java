@@ -59,12 +59,16 @@ import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.project.*;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.cookies.CloseCookie;
+import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -519,6 +523,76 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Checks the existence of default configuration for given RUN_AS type.
+     * If it does not exist, it is created.
+     * 
+     * @param proj the project to check
+     * @param runAs run type whose default configuration is to be updated
+     * @param setBrowserProps if true, adds properties representing an existing browser
+     * @return true is any update took place
+     */
+    public static boolean updateDefaultRunAsConfigFile(final @NonNull FileObject projDir, JFXProjectProperties.RunAsType runAs, boolean setBrowserProps) throws IOException {
+        boolean updated = false;
+        String configName = runAs.getDefaultConfig();
+        String configFile = makeSafe(configName);
+        String sharedPath = JFXProjectProperties.getSharedConfigFilePath(configFile);
+        FileObject sharedCfgFO = projDir.getFileObject(sharedPath);
+        final EditableProperties sharedCfgProps = sharedCfgFO != null ?
+                JFXProjectProperties.readFromFile(sharedCfgFO) : new EditableProperties(true);
+        assert sharedCfgProps != null;
+        if(sharedCfgProps.isEmpty()) {
+            sharedCfgProps.setProperty("$label", configName); // NOI18N
+            sharedCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            JFXProjectProperties.saveToFile(projDir, sharedPath, sharedCfgProps);
+            updated = true;
+        }
+        String privatePath = JFXProjectProperties.getPrivateConfigFilePath(configFile);
+        FileObject privateCfgFO = projDir.getFileObject(privatePath);
+        final EditableProperties privateCfgProps = privateCfgFO != null ?
+                JFXProjectProperties.readFromFile(projDir, privatePath) : new EditableProperties(true);
+        assert privateCfgProps != null;
+        if(privateCfgProps.isEmpty() || setBrowserProps) {
+            privateCfgProps.setProperty("$label", configName); // NOI18N
+            privateCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            privateCfgProps.setProperty(JFXProjectProperties.RUN_AS, runAs.getString());
+            privateCfgProps.setComment(JFXProjectProperties.RUN_AS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            if(setBrowserProps) {
+                Map<String,String> browserInfo = getDefaultBrowserInfo();
+                if(browserInfo != null && !browserInfo.isEmpty()) {
+                    for(Map.Entry<String,String> entry : browserInfo.entrySet()) {
+                        privateCfgProps.setProperty(JFXProjectProperties.RUN_IN_BROWSER, entry.getKey());
+                        privateCfgProps.setProperty(JFXProjectProperties.RUN_IN_BROWSER_PATH, entry.getValue());
+                        break;
+                    }
+                }
+            }
+            JFXProjectProperties.saveToFile(projDir, privatePath, privateCfgProps);       
+            updated = true;
+        }
+        return updated;
+    }
+
+    /**
+     * @return name and path to default browser
+     */
+    public static Map<String,String> getDefaultBrowserInfo() {
+        Lookup.Result<ExtWebBrowser> allBrowsers = Lookup.getDefault().lookupResult(ExtWebBrowser.class);
+        Map<String,String> browserPaths = new HashMap<String, String>();
+        for(Lookup.Item<ExtWebBrowser> browser : allBrowsers.allItems()) {
+            String name = browser.getDisplayName();
+            if(name != null && name.toLowerCase().contains("default")) { // NOI18N
+                NbProcessDescriptor proc = browser.getInstance().getBrowserExecutable();
+                String path = proc.getProcessName();
+                if(JFXProjectProperties.isNonEmpty(path)) {
+                    browserPaths.put(name, path);
+                }
+                break;
+            }
+        }
+        return browserPaths;
+    }
+    
+    /**
      * Returns a copy of existing list of maps, usually used to store application parameters
      * 
      * @param list2Copy
@@ -550,5 +624,16 @@ public final class JFXProjectUtils {
             }
         }
         return newMap;
+    }
+
+    /**
+     * Modifies name so that it can be used as file name,
+     * i.e., replaces problematic characters.
+     * 
+     * @param name
+     * @return modified name usable as file name
+     */
+    public static String makeSafe(@NonNull String name) {
+        return name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N;
     }
 }

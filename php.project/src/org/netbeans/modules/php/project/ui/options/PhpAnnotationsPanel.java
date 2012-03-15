@@ -47,8 +47,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -62,9 +64,9 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
-import org.netbeans.modules.php.project.phpunit.annotations.AssertTag;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -74,11 +76,11 @@ public class PhpAnnotationsPanel extends JPanel {
 
     @NbBundle.Messages({
         "PhpAnnotationsPanel.table.column.name.title=Name",
-        "PhpAnnotationsPanel.table.column.forType.title=For Type"
+        "PhpAnnotationsPanel.table.column.for.title=For"
     })
     static final String[] TABLE_COLUMNS = {
         Bundle.PhpAnnotationsPanel_table_column_name_title(),
-        Bundle.PhpAnnotationsPanel_table_column_forType_title(),
+        Bundle.PhpAnnotationsPanel_table_column_for_title(),
     };
 
 
@@ -197,13 +199,11 @@ public class PhpAnnotationsPanel extends JPanel {
     private UserAnnotationTag getAnnotation(Integer index) {
         assert EventQueue.isDispatchThread();
         if (index == null) {
-            // XXX provide better sample
-            AssertTag assertTag = new AssertTag();
             return new UserAnnotationTag(
-                    UserAnnotationTag.Type.METHOD,
-                    assertTag.getName(),
-                    assertTag.getInsertTemplate(),
-                    assertTag.getDocumentation());
+                    EnumSet.of(UserAnnotationTag.Type.FUNCTION),
+                    "sample", // NOI18N
+                    "@sample(${param1}, ${param2} = ${value1})", // NOI18N
+                    NbBundle.getMessage(PhpAnnotationsPanel.class, "SampleTag.documentation"));
         }
         return annotations.get(index.intValue());
     }
@@ -221,6 +221,8 @@ public class PhpAnnotationsPanel extends JPanel {
         addButton = new JButton();
         editButton = new JButton();
         deleteButton = new JButton();
+        noteLabel = new JLabel();
+        infoLabel = new JLabel();
 
         annotationsLabel.setLabelFor(annotationsTable);
         Mnemonics.setLocalizedText(annotationsLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.annotationsLabel.text")); // NOI18N
@@ -233,16 +235,20 @@ public class PhpAnnotationsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(deleteButton, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.deleteButton.text")); // NOI18N
         deleteButton.setEnabled(false);
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.infoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
-                .addComponent(annotationsLabel)
 
-                .addGap(0, 334, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+                .addComponent(annotationsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(addButton, Alignment.TRAILING).addComponent(editButton, Alignment.TRAILING).addComponent(deleteButton, Alignment.TRAILING))).addGroup(layout.createSequentialGroup()
 
-                .addComponent(annotationsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(addButton, Alignment.TRAILING).addComponent(editButton, Alignment.TRAILING).addComponent(deleteButton, Alignment.TRAILING)))
+                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(annotationsLabel).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 0, Short.MAX_VALUE)).addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoLabel)
+                .addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, deleteButton, editButton});
@@ -254,7 +260,7 @@ public class PhpAnnotationsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
 
-                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(editButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton)).addComponent(annotationsScrollPane, GroupLayout.DEFAULT_SIZE, 296, Short.MAX_VALUE)))
+                        .addPreferredGap(ComponentPlacement.RELATED).addComponent(editButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton)).addComponent(annotationsScrollPane, GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(infoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -265,6 +271,8 @@ public class PhpAnnotationsPanel extends JPanel {
     private JTable annotationsTable;
     private JButton deleteButton;
     private JButton editButton;
+    private JLabel infoLabel;
+    private JLabel noteLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -297,7 +305,7 @@ public class PhpAnnotationsPanel extends JPanel {
             if (columnIndex == 0) {
                 return annotation.getName();
             } else if (columnIndex == 1) {
-                return annotation.getType().getTitle();
+                return getTypes(annotation.getTypes());
             }
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
@@ -320,6 +328,15 @@ public class PhpAnnotationsPanel extends JPanel {
 
         public void fireAnnotationsChange() {
             fireTableDataChanged();
+        }
+
+        @NbBundle.Messages("PhpAnnotationsPanel.value.delimiter=, ")
+        private String getTypes(EnumSet<UserAnnotationTag.Type> types) {
+            ArrayList<String> list = new ArrayList<String>(types.size());
+            for (UserAnnotationTag.Type type : types) {
+                list.add(type.getTitle());
+            }
+            return StringUtils.implode(list, Bundle.PhpAnnotationsPanel_value_delimiter());
         }
 
     }

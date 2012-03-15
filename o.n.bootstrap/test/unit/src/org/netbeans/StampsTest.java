@@ -44,6 +44,7 @@ package org.netbeans;
 
 import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -673,6 +674,22 @@ public class StampsTest extends NbTestCase {
         s = Stamps.getModulesJARs();
         ByteBuffer third = s.asByteBuffer("locale.cache");
         assertNull("Locale changed no cache found", third);
+    }
+    
+    public void testCanFallbackCacheToFirstDirsCluster() throws Exception {
+        File cache = new File(new File(new File(ide, "var"), "cache"), "mycache");
+        cache.getParentFile().mkdirs();
+        FileOutputStream os = new FileOutputStream(cache);
+        os.write("Ahoj".getBytes());
+        os.close();
+        
+        InputStream is = Stamps.getModulesJARs().asStream("mycache");
+        assertNotNull("Cache found", is);
+        
+        byte[] arr = new byte[10];
+        int len = is.read(arr);
+        assertEquals("Len is 4", 4, len);
+        assertEquals("Ahoj", new String(arr, 0, 4));
     }
 
     /** Helper method to reset state of Stamps. */

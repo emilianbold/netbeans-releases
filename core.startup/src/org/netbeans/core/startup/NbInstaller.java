@@ -1201,7 +1201,7 @@ final class NbInstaller extends ModuleInstaller {
             for (Map.Entry<File, DateAndManifest> entry : m.entrySet()) {
                 File jar = entry.getKey();
                 String[] relPath = RelPaths.findRelativePath(jar.getAbsolutePath());
-                assert relPath != null;
+                assert relPath != null : "Cannot find relative path for " + jar;
                 os.writeUTF(relPath[0]);
                 os.writeUTF(relPath[1]);
                 long time = entry.getValue().date;

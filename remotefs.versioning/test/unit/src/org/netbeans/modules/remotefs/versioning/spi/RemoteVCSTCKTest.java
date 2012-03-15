@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.Collection;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -205,35 +204,9 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(VCSOwnerTestCase.class);
-        suite.addTestSuite(VCSInterceptorTestCase_.class);
-        suite.addTestSuite(VCSAnnotationProviderTestCase_.class);
+        suite.addTestSuite(VCSInterceptorTestCase.class);
+        suite.addTestSuite(VCSAnnotationProviderTestCase.class);
         return new RemoteVCSTCKTest(suite);
     }
     
-    public static final class VCSInterceptorTestCase_ extends VCSInterceptorTestCase {
-
-        public VCSInterceptorTestCase_(String testName) {
-            super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testRefreshRecursively() throws IOException {
-            super.testRefreshRecursively();
-        }
-    }
-    
-    public static final class VCSAnnotationProviderTestCase_ extends VCSAnnotationProviderTestCase {
-
-        public VCSAnnotationProviderTestCase_(String testName) {
-            super(testName);
-        }
-
-        @RandomlyFails
-        @Override
-        public void testAnnotationChanged() throws Exception {
-            super.testAnnotationChanged();
-        }
-        
-    }
 }

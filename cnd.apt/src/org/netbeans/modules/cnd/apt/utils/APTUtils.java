@@ -69,6 +69,8 @@ import org.netbeans.modules.cnd.apt.support.lang.APTBaseLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
+import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
@@ -106,11 +108,22 @@ public class APTUtils {
         }
     }
 
+    public static String getFileOnceMacroName(APTFile apt) {
+        return "\"" + apt.getPath().toString() + "\""; //NOI18N
+    }
+
     public static String getAPTTokenName(int type) {
         if (type == APTTokenTypes.IDENT) {
             return "ID"; // NOI18N
         }
         return APTExprParser._tokenNames[type];
+    }
+
+    /**
+     * dumps APT related statistics (for test diagnostics)
+     */
+    public static void dumpStatistics() {
+        APTDriver.dumpStatistics();
     }
 
     /** Creates a new instance of APTUtils */

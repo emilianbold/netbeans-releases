@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -61,6 +60,7 @@ import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.SourceGroup;
 import static org.netbeans.spi.java.project.support.ui.Bundle.*;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.search.SearchInfoDefinitionFactory;
 import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.PasteAction;
@@ -90,13 +90,8 @@ import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.datatransfer.MultiTransferObject;
 import org.openide.util.datatransfer.PasteType;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openidex.search.SearchInfo;
-import org.openidex.search.SearchInfoFactory;
-import org.openidex.search.Utils;
 
 /** Node displaying a packages in given SourceGroup
  * @author Petr Hrebejk
@@ -117,13 +112,12 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
     private volatile boolean nameChange;
     
     PackageRootNode( SourceGroup group ) {
-        this( group, new InstanceContent() );
+        this(group, new PackageViewChildren(group));
     }
     
-    private PackageRootNode( SourceGroup group, InstanceContent ic ) {
-        super( new PackageViewChildren(group),
-                new ProxyLookup(createLookup(group), new AbstractLookup(ic)));
-        ic.add(alwaysSearchableSearchInfo(SearchInfoFactory.createSearchInfoBySubnodes(this)));
+    private PackageRootNode( SourceGroup group, Children ch) {
+        super(ch, new ProxyLookup(createLookup(group), Lookups.singleton(
+                SearchInfoDefinitionFactory.createSearchInfoBySubnodes(ch))));
         this.group = group;
         file = group.getRootFolder();
         files = Collections.singleton(file);
@@ -450,35 +444,5 @@ final class PackageRootNode extends AbstractNode implements Runnable, FileStatus
             return "PathFinder[" + group + "]"; // NOI18N
         }
                     
-    }
-    
-    /**
-     * Produce a {@link SearchInfo} variant that is always searchable, for speed.
-     * @see "#48685"
-     */
-    static SearchInfo alwaysSearchableSearchInfo(SearchInfo i) {
-        return new AlwaysSearchableSearchInfo(i);
-    }    
-    
-    private static final class AlwaysSearchableSearchInfo implements SearchInfo.Files {
-        
-        private final SearchInfo delegate;
-        
-        public AlwaysSearchableSearchInfo(SearchInfo delegate) {
-            this.delegate = delegate;
-        }
-
-        public boolean canSearch() {
-            return true;
-        }
-
-        public Iterator<DataObject> objectsToSearch() {
-            return delegate.objectsToSearch();
-        }
-
-        public Iterator<FileObject> filesToSearch() {
-            return Utils.getFileObjectsIterator(delegate);
-        }
-        
     }
 }

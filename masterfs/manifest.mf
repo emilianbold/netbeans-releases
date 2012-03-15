@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.masterfs/2
 OpenIDE-Module-Install: org/netbeans/modules/masterfs/Installer.class
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/masterfs/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.36
+OpenIDE-Module-Specification-Version: 2.37
 OpenIDE-Module-Recommends: org.netbeans.modules.masterfs.providers.Notifier
 OpenIDE-Module-Provides: org.openide.filesystems.FileUtil.toFileObject
 AutoUpdate-Show-In-Client: false

@@ -46,12 +46,8 @@ package org.netbeans.modules.xml.multiview.ui;
 
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
-import javax.swing.JTextField;
-import javax.swing.JTextArea;
+import javax.swing.*;
 import javax.swing.text.JTextComponent;
-import javax.swing.JPanel;
-import javax.swing.JLabel;
-import javax.swing.JButton;
 import org.openide.util.NbBundle;
 
 /** The simple dialog panel containing labels, text fields and browse buttons.
@@ -151,7 +147,7 @@ public class SimpleDialogPanel extends JPanel {
             jButtons = new JButton[buttonList.size()];
             buttonList.toArray(jButtons);
         }
-        if (mnem!=null) {
+        if (mnem!=null && !"Aqua".equals( UIManager.getLookAndFeel().getID())) { //NOI18N
             for (int i=0;i<labels.length;i++) {
                 jLabels[i].setLabelFor(jTextComponents[i]);
                 jLabels[i].setDisplayedMnemonic(mnem[i]);

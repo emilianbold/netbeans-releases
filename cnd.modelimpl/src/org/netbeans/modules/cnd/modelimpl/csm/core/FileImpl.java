@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
@@ -228,6 +229,7 @@ public final class FileImpl implements CsmFile,
     private static final class StateLock {}
     private final Object stateLock = new StateLock();
     private FileContent currentFileContent;
+    private FileContentSignature lastFileBasedSignature;
     private FileSnapshot fileSnapshot;
     private final Object snapShotLock = new Object();
 
@@ -430,8 +432,9 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    /** must be called only changeStateLock */
     private void postMarkedAsModified() {
+        // must be called only changeStateLock
+        assert Thread.holdsLock(changeStateLock) : "must be called under changeStateLock";
         tsRef.clear();
         if (parsingState == ParsingState.BEING_PARSED) {
             parsingState = ParsingState.MODIFIED_WHILE_BEING_PARSED;
@@ -465,11 +468,13 @@ public final class FileImpl implements CsmFile,
                 RepositoryUtils.put(this);
                 return;
             }
-            boolean partialReparse = false;
+            FileContentSignature newSignature = null;
+            FileContentSignature oldSignature = null;
+            boolean tryPartialReparse = false;
             boolean wasDummy = false;
             if (handlers == DUMMY_HANDLERS || handlers == PARTIAL_REPARSE_HANDLERS) {
                 wasDummy = true;
-                partialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
+                tryPartialReparse = handlers == PARTIAL_REPARSE_HANDLERS;
                 handlers = getPreprocHandlers();
             }
             long time;
@@ -532,6 +537,12 @@ public final class FileImpl implements CsmFile,
                             time = System.currentTimeMillis();
                             try {
                                 ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, true);
+                                if (lastFileBasedSignature == null) {
+                                    if (tryPartialReparse ||  !fileBuffer.isFileBased()) {
+                                        // initialize file-based content signature
+                                        lastFileBasedSignature = FileContentSignature.create(this);
+                                    }
+                                }
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     if (first) {
@@ -545,6 +556,12 @@ public final class FileImpl implements CsmFile,
                                     }
                                 }
                                 updateModelAfterParsing(parseParams);
+                                if (tryPartialReparse) {
+                                    assert lastFileBasedSignature != null;
+                                    newSignature = FileContentSignature.create(this);
+                                    oldSignature = lastFileBasedSignature;
+                                    lastFileBasedSignature = null;
+                                }
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -579,7 +596,13 @@ public final class FileImpl implements CsmFile,
                     state = State.INITIAL;
                 }
                 RepositoryUtils.put(this);
-            }            
+            } else {
+                if (tryPartialReparse) {
+                    assert oldSignature != null;
+                    assert newSignature != null;
+                    DeepReparsingUtils.finishPartialReparse(this, oldSignature, newSignature);
+                }
+            }
         } finally {
             if (inEnsureParsed.decrementAndGet() != 0) {
                 CndUtils.assertTrueInConsole(false, "broken state in file " + getAbsolutePath() + parsingState + state);
@@ -793,7 +816,7 @@ public final class FileImpl implements CsmFile,
         ensureParsedOnInclusion(Collections.singletonList(preprocHandler), semaHandler);
     }
 
-    private APTFile getFileAPT(boolean full) {
+    public APTFile getFileAPT(boolean full) {
         APTFile fileAPT = null;
         ChangedSegment changedSegment = null;
         try {
@@ -809,6 +832,12 @@ public final class FileImpl implements CsmFile,
             APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found, probably removed", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
         } catch (IOException ex) {
             DiagnosticExceptoins.register(ex);
+        }
+        if (fileAPT != null && APTUtils.LOG.isLoggable(Level.FINE)) {
+            CharSequence guardMacro = fileAPT.getGuardMacro();
+            if (guardMacro.length() == 0 && !isSourceFile()) {
+                APTUtils.LOG.log(Level.FINE, "FileImpl: file {0} does not have guard", new Object[]{getBuffer().getAbsolutePath()});// NOI18N
+            }
         }
         return fileAPT;
     }
@@ -1435,7 +1464,7 @@ public final class FileImpl implements CsmFile,
 
     @Override
     public CharSequence getName() {
-        return CharSequences.create(fileBuffer.getFileObject().getNameExt());
+        return CharSequences.create(PathUtilities.getBaseName(getAbsolutePath().toString()));
     }
 
     @Override

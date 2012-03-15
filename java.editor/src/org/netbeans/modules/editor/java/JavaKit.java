@@ -53,6 +53,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.*;
+
+import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
@@ -268,6 +270,8 @@ public class JavaKit extends NbEditorKit {
             new InsertSemicolonAction(false),
             new SelectCodeElementAction(selectNextElementAction, true),
             new SelectCodeElementAction(selectPreviousElementAction, false),
+            new JavaMoveCodeElementAction(EditorActionNames.moveCodeElementUp, false),
+            new JavaMoveCodeElementAction(EditorActionNames.moveCodeElementDown, true),
 
             new JavaNextWordAction(nextWordAction),
             new JavaPreviousWordAction(previousWordAction),

@@ -409,7 +409,8 @@ public class WebProjectRestSupport extends WebRestSupport {
     public static String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
-        } else {
+        } 
+        else {
             RestApplicationsPanel panel = new RestApplicationsPanel(restApplications);
             DialogDescriptor desc = new DialogDescriptor(panel,
                     NbBundle.getMessage(WebProjectRestSupport.class,"TTL_RestResourcesPath"));

@@ -49,8 +49,9 @@ import org.codehaus.groovy.ast.Variable;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.completion.VariableFinderVisitor;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.completion.VariableFinderVisitor;
 
 /**
  *
@@ -70,7 +71,6 @@ public class LocalVarCompletion extends BaseCompletion {
         }
 
         // If we are right behind a dot, there's no local-vars completion.
-
         if (request.isBehindDot()) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
             return false;

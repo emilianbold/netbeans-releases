@@ -98,6 +98,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.PostIncludeData;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
@@ -1926,7 +1927,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final void onFileExternalChange(FileImpl file) {
-        DeepReparsingUtils.tryPartialReparseOnChangedFile(file, this);
+        DeepReparsingUtils.tryPartialReparseOnChangedFile(this, file);
     }
 
     @Override
@@ -2715,8 +2716,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public final APTFile getAPTLight(CsmFile csmFile) throws IOException {
-        APTFile aptLight = null;
-        aptLight = APTDriver.findAPTLight(((FileImpl) csmFile).getBuffer());
+        FileImpl fileImpl = (FileImpl) csmFile;
+        APTFile aptLight = fileImpl.getFileAPT(false);
+        if (aptLight != null && APTUtils.LOG.isLoggable(Level.FINE)) {
+            CharSequence guardMacro = aptLight.getGuardMacro();
+            if (guardMacro.length() == 0 && !fileImpl.isSourceFile()) {
+                APTUtils.LOG.log(Level.FINE, "FileImpl: file {0} does not have guard", new Object[]{fileImpl.getAbsolutePath()});// NOI18N
+            }
+        }
+
         return aptLight;
     }
 

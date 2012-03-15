@@ -350,8 +350,9 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.web.el</friend>
-                <friend>org.netbeans.modules.web.jsf.editor</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
+                <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <package>org.netbeans.modules.web.beans</package>
                 <package>org.netbeans.modules.web.beans.api.model</package>
                 <package>org.netbeans.modules.web.beans.api.model.support</package>
             </friend-packages>

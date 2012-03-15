@@ -535,13 +535,20 @@ tokens {
 {
     private boolean reportErrors;
     private Language lang;
-
+    private APTLexerCallback callback;
     public static enum Language {
         C,
         CPP,
         FORTRAN
     };
 
+    public interface APTLexerCallback {
+        void onMakeToken(int tokType, int startColumn, int startLine);
+    }
+
+    public void setCallback(APTLexerCallback callback) {
+        this.callback = callback;
+    }
 
     public void init(String filename, int flags, String language) {
         preprocPossible = true;
@@ -741,6 +748,10 @@ tokens {
 
     @Override
     protected APTToken makeToken(int t) {
+        if (callback != null) {
+            callback.onMakeToken(t, getTokenStartColumn(), getTokenStartLine());
+        }
+
         if (isOnlyPreproc() && isPreprocPossible()) {
            // do not create token if lexer builds light stream
             if (!(t==Token.EOF_TYPE || t==END_PREPROC_DIRECTIVE)){

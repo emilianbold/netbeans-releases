@@ -66,6 +66,56 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
 
+    public void test209579() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public @interface A {\n"
+                + "    String name() default \"\";\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 0, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodInAnnotation"));
+    }
+
+    public void test208741() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int c = 4;\n"
+                + "    private void testMethod() {\n"
+                + "        Inner inner = new Inner();\n"
+                + "        int a = c;\n"
+                + "        int b = inner.power(a);\n"
+                + "    }\n"
+                + "    private class Inner {\n"
+                + "        private int power(int b) {\n"
+                + "            return b * c;\n"
+                + "        }\n"
+                + "        private int power2(int b) {\n"
+                + "            return power(b);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 3, r);
+        performRefactoring(r, new Problem(false, "WRN_InlineNotAccessible"));
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private int c = 4;\n"
+                + "    private void testMethod() {\n"
+                + "        Inner inner = new Inner();\n"
+                + "        int a = c;\n"
+                + "        int b = a * c;\n"
+                + "    }\n"
+                + "    private class Inner {\n"
+                + "        private int power2(int b) {\n"
+                + "            return b * c;\n"
+                + "        }\n"
+                + "    }\n"
+                + "}"));
+    }
+
     public void test204694() throws Exception { // #204694 - "Cannot inline public method which uses local accessors" when method used only in-class
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -1236,7 +1286,12 @@ public class InlineTest extends RefactoringTestBase {
                 parameter.toPhase(JavaSource.Phase.RESOLVED);
                 CompilationUnitTree cut = parameter.getCompilationUnit();
 
-                MethodTree method = (MethodTree) ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
+                Tree member = ((ClassTree) cut.getTypeDecls().get(0)).getMembers().get(position);
+                if(member.getKind() == Tree.Kind.CLASS) {
+                    ClassTree klazz = (ClassTree) member;
+                    member = klazz.getMembers().get(1); // Skip the first, generated constr.
+                }
+                MethodTree method = (MethodTree) member;
 
                 TreePath tp = TreePath.getPath(cut, method);
                 r[0] = new InlineRefactoring(TreePathHandle.create(tp, parameter), InlineRefactoring.Type.METHOD);

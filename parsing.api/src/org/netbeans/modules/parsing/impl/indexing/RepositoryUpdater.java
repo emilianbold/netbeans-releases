@@ -661,39 +661,45 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     sourcesForBinaryRoots,
                                     false,
                                     suspendSupport.getSuspendStatus(),
-                                    LogContext.create(LogContext.EventType.FILE, null));
+                                    LogContext.create(LogContext.EventType.FILE, null).addRoots(Collections.singleton(root.first)));
                             } else {
                                 //Already seen files work is enough
                                 final FileObject[] children = fo.getChildren();
+                                final Collection<FileObject> c = Arrays.asList(children);
                                 if (children.length > 0) {
                                     wrk = new FileListWork(
                                         scannedRoots2Dependencies,
                                         root.first,
-                                        Arrays.asList(children),
+                                        c,
                                         false,
                                         false,
                                         true,
                                         sourcForBinaryRoot,
                                         true,
                                         suspendSupport.getSuspendStatus(),
-                                        LogContext.create(LogContext.EventType.FILE, null));
+                                        LogContext.create(LogContext.EventType.FILE, null).
+                                            withRoot(root.first).
+                                            addFileObjects(c));
                                 } else {
                                     //If no children nothing needs to be done - save some CPU time
                                     wrk = null;
                                 }
                             }
                         } else {
+                            Collection<FileObject> c = Collections.singleton(fo);
                             wrk = new FileListWork(
                                 scannedRoots2Dependencies,
                                 root.first,
-                                Collections.singleton(fo),
+                                c,
                                 false,
                                 false,
                                 true,
                                 sourcForBinaryRoot,
                                 true,
                                 suspendSupport.getSuspendStatus(),
-                                LogContext.create(LogContext.EventType.FILE, null));
+                                LogContext.create(LogContext.EventType.FILE, null).
+                                    withRoot(root.first).
+                                    addFileObjects(c));
                         }
                         if (wrk != null) {
                             eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
@@ -709,7 +715,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
-                        LogContext.create(LogContext.EventType.FILE, null));
+                        LogContext.create(LogContext.EventType.FILE, null).
+                            withRoot(root.first).
+                            addFileObjects(Collections.singleton(fo)));
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
                 }
@@ -753,7 +761,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             sourceForBinaryRoot,
                             true,
                             suspendSupport.getSuspendStatus(),
-                            LogContext.create(LogContext.EventType.FILE, null));
+                            LogContext.create(LogContext.EventType.FILE, null).
+                                withRoot(root.first).
+                                addFiles(Collections.singleton(fo.toURL())));
                         eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
                         processed = true;
                     }
@@ -766,7 +776,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
-                        LogContext.create(LogContext.EventType.FILE, null));
+                        LogContext.create(LogContext.EventType.FILE, null).
+                            withRoot(root.first).
+                            addFiles(Collections.singleton(fo.toURL())));
                     eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
                     processed = true;
                 }
@@ -815,7 +827,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             root.first,
                             Collections.singleton(relativePath),
                             suspendSupport.getSuspendStatus(),
-                            LogContext.create(LogContext.EventType.FILE, null));
+                            LogContext.create(LogContext.EventType.FILE, null).
+                                withRoot(root.first).
+                                addFiles(Collections.singleton(fo.toURL())));
                         eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
                         processed = true;
                     } catch (FileStateInvalidException fse) {
@@ -832,7 +846,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
-                        LogContext.create(LogContext.EventType.FILE, null));
+                        LogContext.create(LogContext.EventType.FILE, null).
+                            withRoot(root.first).
+                            addFiles(Collections.singleton(fo.toURL())));
                     eventQueue.record(FileEventLog.FileOp.DELETE, root.first, null, fe, wrk);
                     processed = true;
                 }
@@ -878,7 +894,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             root.first,
                             Collections.singleton(oldFilePath),
                             suspendSupport.getSuspendStatus(),
-                            LogContext.create(LogContext.EventType.FILE, null));
+                            LogContext.create(LogContext.EventType.FILE, null).
+                                withRoot(root.first).
+                                addFilePaths(Collections.singleton(oldFilePath)));
                         eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
                     } else {
                         Set<String> oldFilePaths = new HashSet<String>();
@@ -888,7 +906,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 root.first,
                                 oldFilePaths,
                                 suspendSupport.getSuspendStatus(),
-                                LogContext.create(LogContext.EventType.FILE, null));
+                                LogContext.create(LogContext.EventType.FILE, null).
+                                    withRoot(root.first).
+                                    addFilePaths(oldFilePaths));
                             eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
                         }
                     }
@@ -907,7 +927,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 sourceForBinaryRoot,
                                 true,
                                 suspendSupport.getSuspendStatus(),
-                                LogContext.create(LogContext.EventType.FILE, null));
+                                LogContext.create(LogContext.EventType.FILE, null).
+                                    withRoot(root.first).
+                                    addFileObjects(Collections.singleton(newFile)));
                             eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
                         }
                     }
@@ -929,7 +951,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     fe,
                                     new BinaryWork(oldBinaryRoot,
                                         suspendSupport.getSuspendStatus(),
-                                        LogContext.create(LogContext.EventType.FILE, null)));    //NOI18N
+                                        LogContext.create(LogContext.EventType.FILE, null).
+                                            addRoots(Collections.singleton(oldBinaryRoot))));    //NOI18N
                         } catch (MalformedURLException mue) {
                             LOGGER.log(Level.WARNING, null, mue);
                         }
@@ -942,7 +965,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             fe,
                             new BinaryWork(root.first,
                                 suspendSupport.getSuspendStatus(),
-                                LogContext.create(LogContext.EventType.FILE, null)));
+                                LogContext.create(LogContext.EventType.FILE, null).
+                                    withRoot(root.first).
+                                    addRoots(Collections.singleton(root.first))));
                     processed = true;
                 }
             }
@@ -1085,17 +1110,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                         FileListWork job = jobs.get(root.first);
                         if (job == null) {
+                            Collection<FileObject> c = Collections.singleton(docFile);
                             job = new FileListWork(
                                     scannedRoots2Dependencies,
                                     root.first,
-                                    Collections.singleton(docFile),
+                                    c,
                                     false,
                                     openedInEditor,
                                     true,
                                     sourcesForBinaryRoots.contains(root.first),
                                     true,
                                     suspendSupport.getSuspendStatus(),
-                                    LogContext.create(LogContext.EventType.FILE, null));
+                                    LogContext.create(LogContext.EventType.FILE, null).
+                                        withRoot(root.first).
+                                        addFileObjects(c));
                             jobs.put(root.first, job);
                         } else {
                             // XXX: strictly speaking we should set 'checkEditor' for each file separately
@@ -1357,15 +1385,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 // an odd event, maybe we could just ignore it
                 try {
                     FileObject f = Util.getFileObject(document);
+                    Collection<URL> c = Collections.singleton(f.getURL());
                     addIndexingJob(
                         root.first,
-                        Collections.singleton(f.getURL()),
+                        c,
                         false,
                         true,
                         false,
                         true,
                         true,
-                        LogContext.create(LogContext.EventType.FILE, null));
+                        LogContext.create(LogContext.EventType.FILE, null).
+                            withRoot(root.first).
+                            addFiles(c));
                 } catch (FileStateInvalidException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
@@ -2011,7 +2042,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private ProgressHandle progressHandle = null;
         private int progress = -1;
         //Indexer statistics <IndexerName,{InvocationCount,CumulativeTime}>
-        private Map<String,int[]> indexerStatistics;
+        //threading: Has to be SynchronizedMap or ConcurrentMap to ensure propper
+        //visibility. The Work.scanBinaries modifies the map from multiple threads.
+        private final Map<String,int[]> indexerStatistics = Collections.<String, int[]>synchronizedMap(new HashMap<String, int[]>());
+        private volatile boolean reportIndexerStatistics;
 
         protected Work(
                 final boolean followUpJob,
@@ -2124,7 +2158,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             sourceForBinaryRoot,
                             getSuspendStatus(),
                             getShuttdownRequest(),
-                            null);
+                            logCtx);
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
                 }
@@ -2171,7 +2205,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 sourceForBinaryRoot,
                                 getSuspendStatus(),
                                 getShuttdownRequest(),
-                                null);
+                                logCtx);
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
@@ -2316,7 +2350,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     sourceForBinaryRoot,
                                     getSuspendStatus(),
                                     getShuttdownRequest(),
-                                    null);
+                                    logCtx);
                             value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                             contexts.put(key,value);
                         }
@@ -2426,7 +2460,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                                 sourceForBinaryRoot,
                                                 getSuspendStatus(),
                                                 getShuttdownRequest(),
-                                                null);
+                                                logCtx);
                                         value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                                         contexts.put(key,value);
                                     }
@@ -2692,7 +2726,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                                         sourceForBinaryRoot,
                                                         getSuspendStatus(),
                                                         getShuttdownRequest(),
-                                                        null);
+                                                        logCtx);
                                                 value = Pair.<SourceIndexerFactory,Context>of(indexerFactory,context);
                                                 transactionContexts.put(key,value);
                                             }
@@ -2813,7 +2847,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
-            if (indexerStatistics == null) {
+            if (!reportIndexerStatistics) {
                 return;
             }
             int[] itime = indexerStatistics.get(indexerName);
@@ -2831,18 +2865,20 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (UI_LOGGER.isLoggable(Level.INFO) ||
                     PERF_LOGGER.isLoggable(Level.FINE)) {
                     reportIndexingStart(UI_LOGGER, Level.INFO, lastScanEnded);
+                    if (logCtx != null) {
+                        logCtx.recordExecuted();
+                    }
                     startTime = System.currentTimeMillis();
-                    indexerStatistics = new HashMap<String, int[]>();
+                    reportIndexerStatistics = true;
                 }
                 try {
                     finished.compareAndSet(false, getDone());
                 } finally {
-                    if (indexerStatistics != null) {
+                    if (reportIndexerStatistics) {
                         lastScanEnded = System.currentTimeMillis();
                         final Object[] stats = createIndexerStatLogData(
                                 lastScanEnded - startTime,
                                 indexerStatistics);
-                        indexerStatistics = null;
                         reportIndexerStatistics(UI_LOGGER, Level.INFO, stats);
                         reportIndexerStatistics(PERF_LOGGER, Level.FINE, stats);
                     }
@@ -2860,7 +2896,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 latch.countDown();
             }
         }
-
+        
         public final void waitUntilDone() {
             while (latch.getCount() != 0) {
                 try {

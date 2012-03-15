@@ -33,7 +33,7 @@
     The library is a facade over a java implementation of Git client - <a href="http://eclipse.org/jgit/">JGit</a>. Because JGit does not provide a full-featured high-level API
     (on the level of whole git commands), this library groups the JGit low-level API into bigger pieces and exports the API in the form of full Git commandline commands 
     (e.g. status, commit, checkout, reset, etc.).
-    <api name="GitlibraryAPI" group="java" type="export" category="friend">
+    <api name="GitlibraryAPI" group="java" type="export" category="devel">
       Allows clients to work with local Git repositories and invoke a set of Git commands affecting a Git repository.
     </api>
   </p>
@@ -76,7 +76,6 @@
  <answer id="arch-time">
    <ul>      
     <li>Module and the API already implemented</li>
-    <li>Estimated time for the API stabilization and incorporating external comments: 1 week</li>    
    </ul>
  </answer>
 

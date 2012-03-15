@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion.impl;
 
-import org.netbeans.modules.groovy.editor.api.completion.util.RequestHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,8 +51,10 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.FieldSignature;
-import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionRequest;
+import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
 
 /**
  * Complete the fields for a class. There are two principal completions for fields:
@@ -78,8 +79,17 @@ public class FieldCompletion extends BaseCompletion {
             return false;
         }
 
-        ClassNode declaringClass;
+        // We are after either implements or extends keyword
+        if ((request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_implements) ||
+            (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_extends)) {
+            return false;
+        }
+        
+        if (request.ctx.beforeLiteral != null && request.ctx.beforeLiteral.id() == GroovyTokenId.LITERAL_class) {
+            return false;
+        }
 
+        ClassNode declaringClass;
         if (request.isBehindDot()) {
             LOG.log(Level.FINEST, "We are invoked right behind a dot."); // NOI18N
 
@@ -93,20 +103,14 @@ public class FieldCompletion extends BaseCompletion {
                     return false;
                 }
             }
-
-            declaringClass = RequestHelper.getBeforeDotDeclaringClass(request);
-
-            if (declaringClass == null) {
-                LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
-                return false;
-            }
+            declaringClass = request.declaringClass;
         } else {
-            declaringClass = RequestHelper.getSurroundingClassNode(request);
+            declaringClass = ContextHelper.getSurroundingClassNode(request);
+        }
 
-            if (declaringClass == null) {
-                LOG.log(Level.FINEST, "No surrounding class found, bail out ..."); // NOI18N
-                return false;
-            }
+        if (declaringClass == null) {
+            LOG.log(Level.FINEST, "No declaring class found"); // NOI18N
+            return false;
         }
 
         // If we are dealing with GStrings, the prefix is prefixed ;-)
@@ -121,8 +125,12 @@ public class FieldCompletion extends BaseCompletion {
 
         Map<FieldSignature, ? extends CompletionItem> result = CompleteElementHandler
                 .forCompilationInfo(request.info)
-                    .getFields(RequestHelper.getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
-
+                    .getFields(ContextHelper.getSurroundingClassNode(request), declaringClass, fieldName, anchor + anchorShift);
+        
+        FieldSignature prefixFieldSignature = new FieldSignature(request.prefix);
+        if (result.containsKey(prefixFieldSignature)) {
+            result.remove(prefixFieldSignature);
+        }
         proposals.addAll(result.values());
 
         return true;

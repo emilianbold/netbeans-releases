@@ -45,10 +45,8 @@
 package org.netbeans.modules.masterfs;
 
 import java.net.URI;
-import java.util.Collection;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.spi.queries.SharabilityQueryImplementation2;
-import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -68,9 +66,8 @@ public class GlobalSharabilityQueryImpl implements SharabilityQueryImplementatio
 
     @Override public SharabilityQuery.Sharability getSharability(URI uri) {
         if (visibilityQuery == null) {
-            Collection<? extends VisibilityQueryImplementation> allInstance = Lookup.getDefault().lookupAll(VisibilityQueryImplementation.class);
-            assert allInstance.contains(GlobalVisibilityQueryImpl.INSTANCE) : "Missing GVQI: " + allInstance;
-            visibilityQuery = GlobalVisibilityQueryImpl.INSTANCE;
+            visibilityQuery = Lookup.getDefault().lookup(GlobalVisibilityQueryImpl.class);
+            assert visibilityQuery != null;
         }
         return (visibilityQuery.isVisible(uri.toString().replaceFirst(".+/", ""))) ? SharabilityQuery.Sharability.UNKNOWN : SharabilityQuery.Sharability.NOT_SHARABLE;
     }    

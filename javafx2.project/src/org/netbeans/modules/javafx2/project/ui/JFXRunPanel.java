@@ -323,7 +323,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelConfig.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleName")); // NOI18N
         labelConfig.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelConfig.AccessibleContext.accessibleDescription")); // NOI18N
 
-        comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "<default config>" }));
+        comboConfig.setModel(new javax.swing.DefaultComboBoxModel(new String[] { JFXProjectProperties.DEFAULT_CONFIG }));
         comboConfig.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 comboConfigActionPerformed(evt);
@@ -916,7 +916,7 @@ private void buttonNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             return;
         }
         String name = d.getInputText();
-        String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+        String config = JFXProjectUtils.makeSafe(name);
         if (config.trim().length() == 0) {
             //#143764
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
