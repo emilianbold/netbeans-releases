@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.utils.cache;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -76,10 +75,7 @@ public final class TinyMaps {
             case 8:
                 return new TinyMap8<K, V>();
         }
-        if (initialCapacity <= 16) {
-            return new TinyMap16<K, V>();
-        }
-        return new HashMap<K, V>(initialCapacity);
+        return new TinyHashMap<K, V>(initialCapacity);
     }
 
     @SuppressWarnings("unchecked")

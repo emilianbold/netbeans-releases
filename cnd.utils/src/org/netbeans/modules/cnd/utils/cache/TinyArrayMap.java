@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.cnd.utils.cache;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -63,7 +66,19 @@ class TinyArrayMap<K, V> implements Map<K, V> {
         this.size = 0;
     }
 
-    TinyArrayMap(int capacity, TinyArrayMap prev) {
+    TinyArrayMap(TinyTwoValuesMap<K, V> twoValues, int capacity) {
+        assert capacity >= 2;
+        keyValues = new Object[capacity*2];
+        this.size = twoValues.size();
+        int index = 0;
+        this.keyValues[index++] = twoValues.getFirstKey();
+        this.keyValues[index++] = twoValues.getFirstValue();
+        this.keyValues[index++] = twoValues.getSecondKey();
+        this.keyValues[index] = twoValues.getSecondValue();
+    }
+
+    // different order of params to simplify issue with ambiguity in derived classes constructors
+    TinyArrayMap(TinyArrayMap prev, int capacity) {
         assert prev.keyValues.length <= capacity*2;
         keyValues = new Object[capacity*2];
         System.arraycopy(prev.keyValues, 0, keyValues, 0, prev.keyValues.length);
@@ -95,7 +110,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public boolean containsKey(Object aKey) {
         assert aKey != null;
         int index = indexForKey(aKey);
-        if (index > 0) {
+        if (index >= 0) {
             return keyValues[index] != null;
         }
         return false;
@@ -118,7 +133,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public V get(Object aKey) {
         assert aKey != null;
         int index = indexForKey(aKey);
-        if (index > 0) {
+        if (index >= 0) {
             return (V) keyValues[index+1];
         }
         return null;
@@ -128,7 +143,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public V put(K aKey, V aValue) {
         assert aKey != null;
         int index = indexForKey(aKey);
-        if (index > 0) {
+        if (index >= 0) {
             Object key = keyValues[index];
             if (key == null) {
                 assert (size+1)*2 <= keyValues.length;
@@ -140,7 +155,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
             keyValues[index+1] = aValue;
             return prev;
         }
-        assert size*2 == keyValues.length;
+        assert size*2 == keyValues.length : "trying to put " + size + " in " + keyValues.length;
         assert false : "this map can not contain more than " + size;
         return null;
     }
@@ -169,7 +184,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
     public V remove(Object aKey) {
         assert aKey != null;
         int index = indexForKey(aKey);
-        if (index > 0) {
+        if (index >= 0) {
             if (keyValues[index] != null) {
                 size--;
                 keyValues[index] = null;
@@ -198,12 +213,26 @@ class TinyArrayMap<K, V> implements Map<K, V> {
 
     @Override
     public Set<K> keySet() {
-        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
+        Set<K> keys = new HashSet<K>(size);
+        for (int i = 0; i < keyValues.length; i+=2) {
+            K key = (K) keyValues[i];
+            if (key != null) {
+                keys.add(key);
+            }
+        }
+        return keys;
     }
 
     @Override
     public Collection<V> values() {
-        throw new UnsupportedOperationException("Not supported yet.");// NOI18N
+        List<V> values = new ArrayList<V>(size);
+        for (int i = 0; i < keyValues.length; i += 2) {
+            K key = (K) keyValues[i];
+            if (key != null) {
+                values.add((V)keyValues[i+1]);
+            }
+        }
+        return values;
     }
 
     @Override
@@ -240,6 +269,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
                                 assert index < keyValues.length-1;
                                 final int entryIndex = index;
                                 counter++;
+                                index+=2;
                                 return new Map.Entry<K, V>(){
                                     @Override
                                     public K getKey() {
@@ -247,7 +277,7 @@ class TinyArrayMap<K, V> implements Map<K, V> {
                                     }
                                     @Override
                                     public V getValue() {
-                                        return (V) keyValues[entryIndex];
+                                        return (V) keyValues[entryIndex+1];
                                     }
                                     @Override
                                     public V setValue(V value) {
