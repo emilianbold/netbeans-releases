@@ -48,21 +48,18 @@ import java.util.Map;
  *
  * @author Vladimir Voskresensky
  */
-final class TinyMap16<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+final class TinyHashMap<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
 
-    public TinyMap16() {
-        super(16);
+    public TinyHashMap(int initialCapacity) {
+        super(initialCapacity);
     }
-
-    TinyMap16(Map<K, V> other) {
+    
+    TinyHashMap(Map<K, V> other) {
         super(other);
     }
 
     @Override
     public Map<K, V> expandForNextKeyIfNeeded(K newElem) {
-        if (size() <= 15 || containsKey(newElem)) {
-            return this;
-        }
-        return new HashMap<K, V>(this);
+        return this;
     }
 }

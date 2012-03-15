@@ -41,21 +41,24 @@
  */
 package org.netbeans.modules.cnd.utils.cache;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-final class TinyMap8<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+final class TinyMap8<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
 
     public TinyMap8() {
-        super(8, 1);
+        super(8);
     }
 
+    TinyMap8(TinyArrayMap<K, V> other) {
+        super(other, 8);
+    }
+    
     TinyMap8(Map<K, V> other) {
-        super(other);
+        super(8, other);
     }
 
     @Override
@@ -63,6 +66,6 @@ final class TinyMap8<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<
         if (size() <= 7 || containsKey(newElem)) {
             return this;
         }
-        return new TinyMap16<K, V>(this);
+        return new TinyHashMap<K, V>(this);
     }
 }
