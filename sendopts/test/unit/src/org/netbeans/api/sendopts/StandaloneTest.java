@@ -41,6 +41,8 @@
  */
 package org.netbeans.api.sendopts;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -49,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.spi.sendopts.Arg;
+import org.netbeans.spi.sendopts.Description;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
 import org.netbeans.spi.sendopts.OptionProcessor;
@@ -63,6 +66,7 @@ public final class StandaloneTest extends NbTestCase {
     private Class<?> classCommandLine;
     private Method methodProcess;
     private Class<?> classOptions;
+    private Method methodUsage;
     
     public StandaloneTest(String n) {
         super(n);
@@ -82,6 +86,7 @@ public final class StandaloneTest extends NbTestCase {
         classCommandLine = loader.loadClass(CommandLine.class.getName());
         classOptions = loader.loadClass(Options.class.getName());
         methodProcess = classCommandLine.getMethod("process", String[].class);
+        methodUsage = classCommandLine.getMethod("usage", PrintWriter.class);
     }
     
     
@@ -95,6 +100,25 @@ public final class StandaloneTest extends NbTestCase {
         
         assertEquals("myvalue", System.getProperty("key"));
     }
+
+    public void testStandaloneUsageOfUsageMethod() throws Exception {
+        Method factory = classCommandLine.getMethod("create", Class[].class);
+        final Object arr = new Class[] { classOptions };
+        Object cli = factory.invoke(null, arr);
+        StringWriter w = new StringWriter();
+        PrintWriter pw = new PrintWriter(w);
+        methodUsage.invoke(cli, pw);
+        
+        if (w.toString().indexOf("--checkbox") == -1) {
+            fail("--checkbox should be in the output:\n" + w);
+        }
+        if (w.toString().indexOf("Shows a value") == -1) {
+            fail("'Shows a value' should be in the output:\n" + w);
+        }
+        if (w.toString().indexOf("Computes real value") == -1) {
+            fail("'Computes real value' should be in the output:\n" + w);
+        }
+    }
     
     public void testStandaloneGetDefaultUsage() throws Exception {
         Method def = classCommandLine.getMethod("getDefault");
@@ -106,8 +130,15 @@ public final class StandaloneTest extends NbTestCase {
     }
     
     public static final class Options implements Runnable {
+        @Description(
+            displayName="org.netbeans.api.sendopts.TestBundle#SHOW",
+            shortDescription="org.netbeans.api.sendopts.TestBundle#COMPUTE"
+        )
         @Arg(longName="value")
         public String value;
+        
+        @Arg(longName="checkbox")
+        public boolean check;
         
         @Override
         public void run() {
