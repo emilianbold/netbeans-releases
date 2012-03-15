@@ -56,9 +56,9 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import org.netbeans.api.sendopts.CommandException;
+import org.netbeans.api.sendopts.CommandLine;
 import org.netbeans.modules.sendopts.DefaultProcessor;
 import org.netbeans.modules.sendopts.OptionImpl;
-import org.openide.util.Lookup;
 
 /** Represents possible option that can appear on {@link org.netbeans.api.sendopts.CommandLine}
  * and contains factory methods to create them. Consider using {@link Arg} 
@@ -371,8 +371,8 @@ public final class Option {
             public OptionImpl impl(Option o) {
                 return o.impl;
             }
-            public Env create(InputStream is, OutputStream os, OutputStream err, File currentDir) {
-                return new Env(is, os, err, currentDir);
+            public Env create(CommandLine cmd, InputStream is, OutputStream os, OutputStream err, File currentDir) {
+                return new Env(cmd, is, os, err, currentDir);
             }
 
             public void usage(PrintWriter w, Option o, int max) {

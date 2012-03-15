@@ -134,7 +134,7 @@ public final class CommandLine {
         if (currentDir == null) {
             currentDir = new File(System.getProperty("user.dir")); // NOI18N
         }
-        Env env = OptionImpl.Trampoline.DEFAULT.create(is, os, err, currentDir);
+        Env env = OptionImpl.Trampoline.DEFAULT.create(this, is, os, err, currentDir);
         
         
         ArrayList<String> additionalParams = new ArrayList<String>();
