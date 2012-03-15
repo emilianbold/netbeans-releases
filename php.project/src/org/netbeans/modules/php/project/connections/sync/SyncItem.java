@@ -259,24 +259,26 @@ public final class SyncItem {
                 }
                 break;
             case DOWNLOAD:
+            case DOWNLOAD_REVIEW:
                 if (remoteTransferFile == null) {
                     valid = false;
                     message = Bundle.SyncItem_error_cannotDownload();
+                    return;
+                }
+                if (op == Operation.DOWNLOAD_REVIEW) {
+                    message = Bundle.SyncItem_warn_downloadReview();
                 }
                 break;
             case UPLOAD:
+            case UPLOAD_REVIEW:
                 if (localTransferFile == null) {
                     valid = false;
                     message = Bundle.SyncItem_error_cannotUpload();
+                    return;
                 }
-                break;
-            case DOWNLOAD_REVIEW:
-                valid = true;
-                message = Bundle.SyncItem_warn_downloadReview();
-                break;
-            case UPLOAD_REVIEW:
-                valid = true;
-                message = Bundle.SyncItem_warn_uploadReview();
+                if (op == Operation.UPLOAD_REVIEW) {
+                    message = Bundle.SyncItem_warn_uploadReview();
+                }
                 break;
             default:
                 throw new IllegalStateException("Unhandled operation: " + op);
