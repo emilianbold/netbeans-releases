@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.web.browser.spi;
 
-import org.netbeans.api.project.Project;
-
 /**
  * Each browser capable of debugging must have implementation of this SPI in 
  * its lookup.
@@ -50,24 +48,18 @@ import org.netbeans.api.project.Project;
 public interface BrowserDebuggerImplementation {
     
     /**
-     * Can debugging session be started in this browser? Should return false for example
-     * when browser was not started with debugging port.
+     * Start debugging session. Can display some UI to initialize debugging.
+     * Returns true if debugging session was successfully started or not.
+     * @param urlToDebug identification of page being debugged
      */
-    boolean isDebuggingEnabled();
-
-    /**
-     * Start debugging session.
-     */
-    void startDebuggingSession();
+    boolean startDebuggingSession(String urlToDebug);
+    // TODO: urlToDebug will not work when the same URL is opened multiple times
+    // alternative is to modify browser plugins to return also tab index and use
+    // tab index here instead of URL
     
     /**
      * Stop debugging session.
      */
     void stopDebuggingSession();
 
-    /**
-     * Make sure all breakpoints for this project (and all global breakpoints)
-     * are active.
-     */
-    void activateBreakpoints(Project p);
 }

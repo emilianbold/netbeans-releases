@@ -48,6 +48,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.io</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.30</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.loaders</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -94,6 +102,7 @@
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.web.clientproject</friend>
                 <friend>org.netbeans.modules.web.inspect</friend>
+                <friend>org.netbeans.modules.web.javascript.debugger</friend>
                 <friend>org.netbeans.modules.web.project</friend>
                 <package>org.netbeans.modules.web.browser.api</package>
                 <package>org.netbeans.modules.web.browser.spi</package>
