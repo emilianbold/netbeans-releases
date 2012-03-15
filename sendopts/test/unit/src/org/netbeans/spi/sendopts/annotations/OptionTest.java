@@ -193,9 +193,9 @@ public class OptionTest extends NbTestCase {
     public void testCheckForStatic() throws IOException {
         clearWorkDir();
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
-            "import org.netbeans.spi.sendopts.annotations.Arg;\n" +
+            "import org.netbeans.spi.sendopts.Arg;\n" +
             "public class A {\n" +
-            "  @Arg(shortName='a')" +
+            "  @Arg(longName=\"\", shortName='a')" +
             "  public static String Static;" +
             "}\n"
         );
@@ -206,13 +206,33 @@ public class OptionTest extends NbTestCase {
             fail(os.toString());
         }
     }
+    
+    public void testNeedToSpecifyAName() throws IOException {
+        clearWorkDir();
+        AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
+            "import org.netbeans.spi.sendopts.Arg;\n" +
+            "public class A {\n" +
+            "  @Arg(longName=\"\", implicit=true)" +
+            "  public String[] fail;" +
+            "}\n"
+        );
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        boolean r = AnnotationProcessorTestUtils.runJavac(getWorkDir(), null, getWorkDir(), null, os);
+        assertFalse("Compilation has to fail:\n" + os, r);
+        if (!os.toString().contains("longName")) {
+            fail(os.toString());
+        }
+        if (!os.toString().contains("shortName")) {
+            fail(os.toString());
+        }
+    }
 
     public void testImplicitNeedsToBeOnStringArray() throws IOException {
         clearWorkDir();
         AnnotationProcessorTestUtils.makeSource(getWorkDir(), "test.A", 
             "import org.netbeans.spi.sendopts.Arg;\n" +
             "public class A {\n" +
-            "  @Arg(shortName='a',implicit=true)" +
+            "  @Arg(longName=\"ahoj\", shortName='a',implicit=true)" +
             "  public String Static;" +
             "}\n"
         );

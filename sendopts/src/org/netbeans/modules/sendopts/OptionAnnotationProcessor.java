@@ -94,6 +94,9 @@ public final class OptionAnnotationProcessor extends LayerGeneratingProcessor {
                 throw new LayerGenerationException("@Arg can be applied only to non-final fields", e);
             }
             Arg arg = e.getAnnotation(Arg.class);
+            if (arg.longName().isEmpty() && arg.shortName() == Option.NO_SHORT_NAME) {
+                throw new LayerGenerationException("At least one of longName or shortName attributes needs to be non-empty", e);
+            }
             if (arg.implicit() && !e.asType().equals(stringArray)) {
                 throw new LayerGenerationException("implicit @Arg can only be applied to String[] fields", e);
             }
