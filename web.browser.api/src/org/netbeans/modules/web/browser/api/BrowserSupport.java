@@ -46,10 +46,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.windows.TopComponent;
 
 /**
  * Helper class to be added to project's lookup and to be used to open URLs from
@@ -137,17 +134,20 @@ public final class BrowserSupport {
                                 if (!WebBrowsers.getInstance().getPreferred()
                                         .getId().equals(browser.getId()))
                                 {
-                                    assert pane != null;
                                     // update browser pane
                                     browser = WebBrowsers.getInstance()
                                             .getPreferred();
-                                    pane.removeListener(paneListener);
-                                    if (activeDebuggingSession) {
-                                        activeDebuggingSession = false;
-                                        BrowserDebugger.stopDebuggingSession(pane);
+                                    if ( pane!= null ){
+                                        // pane could be null because of the following code
+                                        pane.removeListener(paneListener);
+                                        if (activeDebuggingSession) {
+                                            activeDebuggingSession = false;
+                                            BrowserDebugger
+                                                    .stopDebuggingSession(pane);
+                                        }
+                                        pane = null;
+                                        warnUserDebuggerIsMissing = true;
                                     }
-                                    pane = null;
-                                    warnUserDebuggerIsMissing = true;
                                 }
                             }
                         }
