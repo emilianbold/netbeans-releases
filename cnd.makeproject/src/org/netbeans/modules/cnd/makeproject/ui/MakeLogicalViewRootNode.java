@@ -53,10 +53,11 @@ import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -67,9 +68,12 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cnd.api.project.BrokenIncludes;
 import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.actions.AddExistingFolderItemsAction;
 import org.netbeans.modules.cnd.makeproject.api.actions.AddExistingItemAction;
@@ -81,9 +85,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
-import org.netbeans.modules.cnd.api.project.BrokenIncludes;
-import org.netbeans.modules.cnd.api.toolchain.ui.ToolsCacheManager;
-import org.netbeans.modules.cnd.makeproject.MakeProjectConfigurationProvider;
 import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -285,14 +286,12 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     }
 
     private void updateAnnotationFiles() {
-        HashSet<FileObject> set = new HashSet<FileObject>();
         // Add project directory
         FileObject fo = getProject().getProjectDirectory();
         if (fo == null || !fo.isValid()) {
             // See IZ 125880
             Logger.getLogger("cnd.makeproject").log(Level.WARNING, "project.getProjectDirectory() == null - {0}", getProject());
         }
-        set.add(getProject().getProjectDirectory());
         if (!gotMakeConfigurationDescriptor()) {
             return;
         }
@@ -305,6 +304,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         if (confs == null) {
             return;
         }
+        Set<FileObject> set = new LinkedHashSet<FileObject>();
         for (Configuration conf : confs.toArray()) {
             MakeConfiguration makeConfiguration = (MakeConfiguration) conf;
             if (makeConfiguration.isMakefileConfiguration()) {
@@ -322,6 +322,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
                 }
             }
         }
+        set.add(getProject().getProjectDirectory());
         setFiles(set);
         Folder aFolder = folder;
         if (aFolder != null) {

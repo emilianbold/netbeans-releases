@@ -44,9 +44,13 @@
 
 package org.netbeans.modules.cnd.apt.impl.support;
 
-import org.netbeans.modules.cnd.antlr.TokenStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.structure.APTDefine;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTToken;
@@ -60,10 +64,18 @@ import org.openide.util.CharSequences;
 /**
  *
  * @author gorrus
+ * @author Vladimir Voskresensky
  */
 public final class APTMacroMapSnapshot {
     private static final Map<CharSequence, APTMacro> NO_MACROS = Collections.unmodifiableMap(new HashMap<CharSequence, APTMacro>(0));
-    private Map<CharSequence, APTMacro> macros;
+    /**
+     * optimize by memory
+     * one of:
+     * 1)APTMacro when only one macro is defined
+     * 2)Map<CharSequence, APTMacro> - map of macros
+     * 3)CharSequence for alone UNDEFINED_MACRO with specified name
+     */
+    private Object macros;
 
     /*package*/ final APTMacroMapSnapshot parent;
     
@@ -84,19 +96,47 @@ public final class APTMacroMapSnapshot {
         return TinyMaps.createMap(prefferedSize);
     }
 
-    private void prepareMacroMapToAddMacro(CharSequence name) {
+    private void prepareMacroMapToAddMacro(CharSequence name, APTMacro macro) {
         if (macros == NO_MACROS) {
-            // create LW map
-            macros = createMacroMap(1);
-        } else {
+            return;
+        }
+        if (macros instanceof Map<?,?>) {
             // expand map if needed based on expected next key
-            macros = TinyMaps.expandForNextKey(macros, name);
+            macros = TinyMaps.expandForNextKey((Map<CharSequence, APTMacro>)macros, name);
+        } else {
+            CharSequence key;
+            APTMacro value;
+            if (macros instanceof APTMacro) {
+                value = (APTMacro) macros;
+                key = value.getName().getTextID();
+            } else {
+                assert macros instanceof CharSequence;
+                value = UNDEFINED_MACRO;
+                key = (CharSequence) macros;
+            }
+            if (key.equals(name)) {
+                // clean to let putMacro do the job
+                macros = NO_MACROS;
+            } else {
+                // create LW map and remember previous value in map
+                macros = createMacroMap(2);
+                ((Map<CharSequence, APTMacro>)macros).put(key, value);
+            }
         }
     }
 
     /*package*/ final void putMacro(CharSequence name, APTMacro macro) {
-        prepareMacroMapToAddMacro(name);
-        macros.put(name, macro);
+        prepareMacroMapToAddMacro(name, macro);
+        if (macros == NO_MACROS) {
+            if (macro == UNDEFINED_MACRO) {
+                macros = name;
+            } else {
+                assert macro.getName().getTextID().equals(name);
+                macros = macro;
+            }
+        } else {
+            ((Map<CharSequence, APTMacro>)macros).put(name, macro);
+        }
     }
 
     public final APTMacro getMacro(APTToken token) {
@@ -107,13 +147,30 @@ public final class APTMacroMapSnapshot {
         assert CharSequences.isCompact(key) : "string can't be here " + key;
         APTMacroMapSnapshot currentSnap = this;
         while (currentSnap != null) {
-            APTMacro macro = currentSnap.macros.get(key);
+            APTMacro macro = currentSnap.getMacroImpl(key);
             if (macro != null) {
                 return macro;
             }
             currentSnap = currentSnap.parent;
         }
         return null;
+    }
+    
+    private APTMacro getMacroImpl(CharSequence key) {
+        if (macros == NO_MACROS) {
+            return null;
+        } else if (macros.equals(key)) {
+            return UNDEFINED_MACRO;
+        } else if (macros instanceof APTMacro) {
+            assert macros != UNDEFINED_MACRO;
+            if (((APTMacro)macros).getName().equals(key)) {
+                return (APTMacro)macros;
+            }
+            return null;
+        } else {
+            assert macros instanceof Map<?,?>;
+            return ((Map<CharSequence, APTMacro>)macros).get(key);
+        }
     }
     
     @Override
@@ -127,7 +184,7 @@ public final class APTMacroMapSnapshot {
             int i = 0;
             LinkedList<APTMacroMapSnapshot> stack = new LinkedList<APTMacroMapSnapshot>();
             while(snap != null) {
-                i += snap.macros.size();
+                i += snap.size();
                 stack.add(snap);
                 snap = snap.parent;
             }
@@ -136,12 +193,22 @@ public final class APTMacroMapSnapshot {
             }
             while(!stack.isEmpty()) {
                 snap = stack.removeLast();
-                for (Map.Entry<CharSequence, APTMacro> cur : snap.macros.entrySet()) {
-                    if (cur.getValue() != UNDEFINED_MACRO) {
-                        out.put(cur.getKey(), cur.getValue());
-                    } else {
-                        out.remove(cur.getKey());
+                if (snap.macros instanceof Map<?,?>) {
+                    for (Map.Entry<CharSequence, APTMacro> cur : ((Map<CharSequence, APTMacro>)snap.macros).entrySet()) {
+                        if (cur.getValue() != UNDEFINED_MACRO) {
+                            out.put(cur.getKey(), cur.getValue());
+                        } else {
+                            out.remove(cur.getKey());
+                        }
                     }
+                } else if (snap.macros instanceof APTMacro) {
+                    assert snap.macros != UNDEFINED_MACRO;
+                    APTMacro m = (APTMacro) snap.macros;
+                    out.put(m.getName().getTextID(), m);
+                } else {
+                    // this is undefined name
+                    assert snap.macros instanceof CharSequence;
+                    out.remove((CharSequence)snap.macros);
                 }
             }
         }
@@ -154,29 +221,55 @@ public final class APTMacroMapSnapshot {
     public static int getMacroSize(APTMacroMapSnapshot snap) {
         int size = 0;
         while (snap != null) {
-            size += snap.macros.size();
+            size += snap.size();
             snap = snap.parent;
         }
         return size;
     }
 
     public boolean isEmtpy() {
-        return macros.isEmpty();
+        return size() == 0;
     }
 
+    private int size() {
+        if (macros == NO_MACROS) {
+            return 0;
+        } else if (macros instanceof Map<?, ?>) {
+            return ((Map<?,?>)macros).size();
+        } else {
+            return 1;
+        }
+    }
+    
     ////////////////////////////////////////////////////////////////////////////
     // persistence support
     
     public void write(RepositoryDataOutput output) throws IOException {
         APTSerializeUtils.writeSnapshot(this.parent, output);
-        APTSerializeUtils.writeStringToMacroMap(this.macros, output);
+        if (this.macros instanceof Map<?, ?>) {
+            output.writeInt(size());
+            APTSerializeUtils.writeStringToMacroMap((Map<CharSequence, APTMacro>)this.macros, output);
+        } else if (this.macros instanceof CharSequence) {
+            output.writeInt(-1);
+            output.writeCharSequenceUTF((CharSequence)this.macros);
+        } else {
+            assert this.macros instanceof APTMacro : "unexpected object " + this.macros;
+            output.writeInt(-2);
+            APTSerializeUtils.writeMacro((APTMacro)this.macros, output);
+        }
     }
     
     public APTMacroMapSnapshot(RepositoryDataInput input) throws IOException {
         this.parent = APTSerializeUtils.readSnapshot(input);
         int collSize = input.readInt();
-        macros = createMacroMap(collSize);
-        APTSerializeUtils.readStringToMacroMap(collSize, this.macros, input);
+        if (collSize == -2) {
+            this.macros = APTSerializeUtils.readMacro(input);
+        } else if (collSize == -1) {
+            this.macros = CharSequences.create(input.readCharSequenceUTF());
+        } else {
+            macros = createMacroMap(collSize);
+            APTSerializeUtils.readStringToMacroMap(collSize, (Map<CharSequence, APTMacro>)this.macros, input);
+        }
     }  
         
     //This is a single instance of a class to indicate that macro is undefined,

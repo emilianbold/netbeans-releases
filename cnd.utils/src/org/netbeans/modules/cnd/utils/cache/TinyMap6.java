@@ -41,21 +41,24 @@
  */
 package org.netbeans.modules.cnd.utils.cache;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  *
  * @author Vladimir Voskresensky
  */
-final class TinyMap6<K, V> extends HashMap<K, V> implements TinyMaps.CompactMap<K, V> {
+final class TinyMap6<K, V> extends TinyArrayMap<K, V> implements TinyMaps.CompactMap<K, V> {
 
     public TinyMap6() {
-        super(6, 1);
+        super(6);
     }
 
-    TinyMap6(Map<K, V> twoValues) {
-        super(twoValues);
+    TinyMap6(TinyArrayMap<K, V> other) {
+        super(other, 6);
+    }
+    
+    TinyMap6(Map<K, V> other) {
+        super(6, other);
     }
 
     @Override

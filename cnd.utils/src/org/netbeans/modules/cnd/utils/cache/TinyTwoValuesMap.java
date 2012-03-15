@@ -161,7 +161,7 @@ final class TinyTwoValuesMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, 
             secondValue = aValue;
             return out;
         }
-        assert false : "this map can not contain more than one element";
+        assert false : "this map can not contain more than two elements";
         return null;
     }
 
