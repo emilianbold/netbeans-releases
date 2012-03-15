@@ -68,6 +68,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.api.ChangeParametersRefactoring.ParameterInfo;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
+import org.netbeans.modules.refactoring.java.spi.ToPhaseException;
 import org.netbeans.modules.refactoring.java.ui.ChangeParametersPanel.Javadoc;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -94,19 +95,23 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
     private String returnType;
     private boolean compatible;
     private final Javadoc javaDoc;
+    private final TreePathHandle refactoringSource;
+    private MethodTree origMethod;
 
     public ChangeParamsTransformer(ParameterInfo[] paramInfo,
             Collection<? extends Modifier> newModifiers,
             String returnType,
             boolean compatible,
             Javadoc javaDoc,
-            Set<ElementHandle<ExecutableElement>> am) {
+            Set<ElementHandle<ExecutableElement>> am,
+            TreePathHandle refactoringSource) {
         this.paramInfos = paramInfo;
         this.newModifiers = newModifiers;
         this.returnType = returnType;
         this.compatible = compatible;
         this.javaDoc = javaDoc;
         this.allMethods = am;
+        this.refactoringSource = refactoringSource;
     }
     
     private Problem problem;
@@ -114,6 +119,17 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
 
     public Problem getProblem() {
         return problem;
+    }
+
+    @Override
+    public void setWorkingCopy(WorkingCopy workingCopy) throws ToPhaseException {
+        super.setWorkingCopy(workingCopy);
+        if(origMethod == null
+                && workingCopy.getFileObject().equals(refactoringSource.getFileObject())) {
+            TreePath resolvedPath = refactoringSource.resolve(workingCopy);
+            TreePath meth = JavaPluginUtils.findMethod(resolvedPath);
+            origMethod = (MethodTree) meth.getLeaf();
+        }
     }
 
     private void checkNewModifier(TreePath tree, Element p) throws MissingResourceException {
@@ -411,18 +427,30 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                             make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
                             null);
                 } else {
-                    VariableTree originalVt = currentParameters.get(p[i].getOriginalIndex());
+                    VariableTree originalVt = currentParameters.get(originalIndex);
                     boolean isVarArgs = i == p.length -1 && p[i].getType().endsWith("..."); // NOI18N
+                    String newType = isVarArgs? p[i].getType().replace("...", "") : p[i].getType();
+                    
+                    final Tree typeTree;
+                    if (origMethod != null) {
+                        if (p[i].getType().equals(origMethod.getParameters().get(originalIndex).getType().toString())) { // Type has not changed
+                            typeTree = originalVt.getType();
+                        } else {
+                            typeTree = make.Identifier(newType); // NOI18N
+                        }
+                    } else {
+                        typeTree = make.Identifier(newType); // NOI18N
+                    }
                     vt = make.Variable(originalVt.getModifiers(),
                             originalVt.getName(),
-                            make.Identifier(isVarArgs? p[i].getType().replace("...", "") : p[i].getType()), // NOI18N
+                            typeTree,
                             originalVt.getInitializer());
                 }
                 newParameters.add(vt);
             }
 
             // apply new access modifiers if necessary
-            Set<Modifier> modifiers = EnumSet.copyOf(current.getModifiers().getFlags());
+            Set<Modifier> modifiers = new HashSet<Modifier>(current.getModifiers().getFlags());
             if (newModifiers!=null && !el.getEnclosingElement().getKind().isInterface()) {
                 modifiers.removeAll(ALL_ACCESS_MODIFIERS);
                 modifiers.addAll(newModifiers);

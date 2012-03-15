@@ -164,8 +164,10 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
     
     private Set<FileObject> getRelevantFiles() {
         ClasspathInfo cpInfo = getClasspathInfo(refactoring);
-        final Set<FileObject> set = new HashSet<FileObject>();
-        JavaSource source = JavaSource.create(cpInfo, refactoring.getRefactoringSource().lookup(TreePathHandle.class).getFileObject());
+        final Set<FileObject> set = new LinkedHashSet<FileObject>();
+        TreePathHandle tph = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        set.add(tph.getFileObject());
+        JavaSource source = JavaSource.create(cpInfo, tph.getFileObject());
         
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
@@ -225,7 +227,8 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
                                                                                       refactoring.getReturnType(),
                                                                                       refactoring.isOverloadMethod(),
                                                                                       refactoring.getContext().lookup(Javadoc.class),
-                                                                                      allMethods);
+                                                                                      allMethods,
+                                                                                      treePathHandle);
         if (!a.isEmpty()) {
             for (RenameRefactoring renameRefactoring : renameDelegates) {
                 problem = JavaPluginUtils.chainProblems(problem, renameRefactoring.prepare(elements.getSession()));
