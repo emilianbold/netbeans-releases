@@ -260,6 +260,18 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/while3.js", options, ".inverted.formatted");
     }
 
+    public void testWhile4Default() throws Exception {
+        reformatFileContents("testfiles/formatter/while4.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testWhile4Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
+        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
+        reformatFileContents("testfiles/formatter/while4.js", options, ".inverted.formatted");
+    }
+
     public void testWith1() throws Exception {
         reformatFileContents("testfiles/formatter/with1.js",new IndentPrefs(4, 4));
     }
