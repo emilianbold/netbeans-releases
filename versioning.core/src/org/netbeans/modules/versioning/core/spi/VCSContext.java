@@ -156,6 +156,11 @@ public final class VCSContext {
                 rootFiles.add(VCSFileProxy.createFileProxy(aFile));
                 continue;
             }
+            VCSFileProxy aFileProxy = node.getLookup().lookup(VCSFileProxy.class);
+            if (aFileProxy != null) {
+                rootFiles.add(aFileProxy);
+                continue;
+            }
             Project project =  node.getLookup().lookup(Project.class);
             if (project != null) {
                 addProjectFiles(rootFiles, rootFileExclusions, project);
