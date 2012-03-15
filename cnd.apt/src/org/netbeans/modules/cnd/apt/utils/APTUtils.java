@@ -252,6 +252,14 @@ public class APTUtils {
         return out;
     }
 
+    public static APTToken createIDENT(CharSequence text) {
+        assert CharSequences.isCompact(text);
+        APTToken out = createAPTToken(APTTokenTypes.IDENT);
+        out.setType(APTTokenTypes.IDENT);
+        out.setTextID(text);
+        return out;
+    }
+    
     public static APTToken createAPTToken(int type) {
         // Preprocessor tokens can be made constText, but we can get '#define' and '# define'
         // which have different text. so for now they are treated as usual tokens

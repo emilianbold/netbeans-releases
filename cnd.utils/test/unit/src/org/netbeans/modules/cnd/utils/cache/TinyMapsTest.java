@@ -64,7 +64,7 @@ public class TinyMapsTest {
 
     @Test
     public void testCreateMap() {
-        for (int initialCapacity = 0; initialCapacity < 20; initialCapacity++) {
+        for (int initialCapacity = 0; initialCapacity < 65; initialCapacity++) {
             Map<?, ?> result = TinyMaps.createMap(initialCapacity);
             Assert.assertNotNull(result);
             if (initialCapacity == 0) {
@@ -79,8 +79,8 @@ public class TinyMapsTest {
                 Assert.assertTrue("have to be TinyMap6 " + result.getClass().getSimpleName(), result instanceof TinyMap6<?,?>);
             } else if (initialCapacity <= 8) {
                 Assert.assertTrue("have to be TinyMap8 " + result.getClass().getSimpleName(), result instanceof TinyMap8<?,?>);
-            } else if (initialCapacity <= 16) {
-                Assert.assertTrue("have to be TinyMap16 " + result.getClass().getSimpleName(), result instanceof TinyMap16<?,?>);
+            } else {
+                Assert.assertTrue("have to be TinyHashMap " + result.getClass().getSimpleName(), result instanceof TinyHashMap<?,?>);
             }
         }
     }

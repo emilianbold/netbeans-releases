@@ -116,13 +116,17 @@ final class TinySingletonMap<K, V> implements Map<K, V>, TinyMaps.CompactMap<K, 
     @Override
     public V put(K aKey, V aValue) {
         assert aKey != null;
-        V out = null;
-        if (key != null && key.equals(aKey)) {
-            out = value;
+        if (key == null) {
+            key = aKey;
+            value = aValue;
+            return null;
+        } else if (key.equals(aKey)) {
+            V out = value;
+            value = aValue;
+            return out;
         }
-        key = aKey;
-        value = aValue;
-        return out;
+        // only one element is supported in this map
+        throw new IllegalStateException();
     }
 
     @Override
