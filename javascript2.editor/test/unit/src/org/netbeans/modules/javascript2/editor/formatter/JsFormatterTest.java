@@ -188,6 +188,18 @@ public class JsFormatterTest extends JsTestBase {
                 options, ".inverted.formatted");
     }
 
+    public void testSwitch4Default() throws Exception {
+        reformatFileContents("testfiles/formatter/switch4.js",
+                Collections.<String, Object>emptyMap(), ".default.formatted");
+    }
+
+    public void testSwitch4Inverted() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>();
+        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
+        reformatFileContents("testfiles/formatter/switch4.js",
+                options, ".inverted.formatted");
+    }
+
     public void testIf1() throws Exception {
         reformatFileContents("testfiles/formatter/if1.js",new IndentPrefs(4, 4));
     }
