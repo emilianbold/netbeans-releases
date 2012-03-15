@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbcore;
+package org.netbeans.modules.j2ee.ejbcore.util;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ClassTree;
