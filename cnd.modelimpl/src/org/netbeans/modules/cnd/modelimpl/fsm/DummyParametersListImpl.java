@@ -55,11 +55,11 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class DummyParametersListImpl extends ParameterListImpl<DummyParametersListImpl, CsmParameter> {
 
-    private DummyParametersListImpl(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    private DummyParametersListImpl(CsmFile file, int start, int end, Collection<CsmParameter> parameters) {
         super(file, start, end, parameters);
     }
 
-    public static DummyParametersListImpl create(CsmFile file, int start, int end, Collection<?>/*<CsmParameter> or <CsmUID<CsmParameter>>*/ parameters) {
+    public static DummyParametersListImpl create(CsmFile file, int start, int end, Collection<CsmParameter> parameters) {
         DummyParametersListImpl dummyParametersListImpl = new DummyParametersListImpl(file, start, end, parameters);
         return dummyParametersListImpl;
     }
