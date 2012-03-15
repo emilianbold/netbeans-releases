@@ -314,9 +314,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         if (toSelect != null) {
             bugsTree.setSelectionPath(toSelect);
+        } else {
+            Logger.getLogger(FindBugsPanel.class.getName()).log(Level.WARNING, "cannot find bug to select ({0})", id);
         }
-
-        Logger.getLogger(FindBugsPanel.class.getName()).log(Level.WARNING, "cannot find bug to select ({0})", id);
     }
     
     private TreeNode createRootNode() {
