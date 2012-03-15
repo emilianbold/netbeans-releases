@@ -115,7 +115,7 @@ public class ProgressPanel extends JPanel {
         int units = 0;
         for (SyncItem syncItem : items) {
             if (syncItem.getOperation().hasProgress()) {
-                units += syncItem.getSize() / 1024;
+                units += syncItem.getSize();
             }
         }
         progressHandle.start(units == 0 ? NO_SYNC_UNITS : units);
@@ -197,7 +197,7 @@ public class ProgressPanel extends JPanel {
     }
 
     private void progress(SyncItem syncItem, String message) {
-        workUnits += Long.valueOf(syncItem.getSize()).intValue() / 1024;
+        workUnits += syncItem.getSize();
         progressHandle.progress(message, workUnits);
     }
 
@@ -244,8 +244,11 @@ public class ProgressPanel extends JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(infoLabel)
+                .addGap(8, 8, 8)
 
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(infoLabel).addPreferredGap(ComponentPlacement.RELATED).addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(18, 18, 18).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 20, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
