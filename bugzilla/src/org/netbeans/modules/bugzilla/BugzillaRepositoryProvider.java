@@ -38,10 +38,8 @@
 package org.netbeans.modules.bugzilla;
 
 import java.awt.Image;
-import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
