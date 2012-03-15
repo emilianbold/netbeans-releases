@@ -539,7 +539,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
     
         void init() {
-            delegate = UndoRedoSupport.getUndoRedo(issue.getIssue());
+            delegate = UndoRedoSupport.getUndoRedo(issue);
             synchronized(this) {
                 for (ChangeListener l : listeners) {
                     delegate.addChangeListener(l);
