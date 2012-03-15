@@ -817,6 +817,7 @@ public class RefactoringUtils {
      * @param elm element containing some javadoc
      * @param tree newly created tree where the javadoc should be copied to
      * @param wc working copy where the tree belongs to
+     * @deprecated should copy all comments
      */
     public static void copyJavadoc(Element elm, Tree tree, WorkingCopy wc) {
         TreeMaker make = wc.getTreeMaker();
