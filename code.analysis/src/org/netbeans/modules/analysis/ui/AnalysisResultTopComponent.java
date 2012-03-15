@@ -47,6 +47,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.analysis.RunAnalysis;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
@@ -111,6 +113,13 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);
+
+        HTMLEditorKit hek = new HTMLEditorKit();
+        StyleSheet styleSheet = (hek).getStyleSheet();
+
+        styleSheet.addRule("h1 { font-weight: bold; font-size: 100% }");
+        hek.setStyleSheet(styleSheet);
+        descriptionPanel.setEditorKit(hek);
 
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override public void propertyChange(PropertyChangeEvent evt) {
