@@ -43,7 +43,11 @@ package org.netbeans.modules.findbugs;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 import edu.umd.cs.findbugs.BugCategory;
 import edu.umd.cs.findbugs.BugCollectionBugReporter;
 import edu.umd.cs.findbugs.BugInstance;
@@ -63,9 +67,11 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -75,27 +81,37 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery.Result2;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 
 /**
@@ -165,6 +181,7 @@ public class RunFindBugs {
             engine.setNoClassOk(true);
             engine.setBugReporter(r);
 
+            boolean inEditor = validator != null;
             Preferences settings = customSettings != null ? customSettings : NbPreferences.forModule(RunFindBugs.class).node("global-settings");
             UserPreferences preferences;
 
@@ -203,10 +220,12 @@ public class RunFindBugs {
                         DataObject d = DataObject.find(sourceFile);
                         EditorCookie ec = d.getLookup().lookup(EditorCookie.class);
                         Document doc = ec.openDocument();
-                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), doc, sourceLine.getStartLine()));
+                        LazyFixList fixes = prepareFixes(b, inEditor, sourceFile, sourceLine.getStartLine(), null);
+
+                        result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, doc, sourceLine.getStartLine()));
                     } else {
                         if (sourceFile != null) {
-                            addByElementAnnotation(b, info, sourceFile, result);
+                            addByElementAnnotation(b, info, sourceFile, result, inEditor);
                         } else {
                             LOG.log(Level.WARNING, "{0}, location: {1}:{2}", new Object[]{b, sourceLine.getSourcePath(), sourceLine.getStartLine()});
                         }
@@ -224,7 +243,7 @@ public class RunFindBugs {
         return result;
     }
 
-    private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, List<ErrorDescription> result) {
+    private static void addByElementAnnotation(BugInstance b, CompilationInfo info, FileObject sourceFile, List<ErrorDescription> result, boolean globalPreferences) {
         int[] span = null;
         FieldAnnotation fieldAnnotation = b.getPrimaryField();
 
@@ -245,7 +264,8 @@ public class RunFindBugs {
         }
 
         if (span != null && span[0] != (-1)) {
-            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), ErrorDescriptionFactory.lazyListForFixes(Collections.<Fix>emptyList()), sourceFile, span[0], span[1]));
+            LazyFixList fixes = prepareFixes(b, globalPreferences, sourceFile, -1, span);
+            result.add(ErrorDescriptionFactory.createErrorDescription(PREFIX_FINDBUGS + b.getType(), Severity.VERIFIER, b.getMessageWithoutPrefix(), b.getBugPattern().getDetailHTML(), fixes, sourceFile, span[0], span[1]));
         }
     }
 
@@ -354,6 +374,24 @@ public class RunFindBugs {
         return result;
     }
 
+    private static LazyFixList prepareFixes(BugInstance b, boolean globalPreferences, FileObject sourceFile, int line, int[] span) {
+        List<Fix> fixes;
+
+        if (globalPreferences) {
+            String bugId = b.getBugPattern().getType();
+            String bugDN = b.getBugPattern().getShortDescription();
+            Fix topLevelFix = new TopLevelConfigureFix(bugId, bugDN);
+            ErrorDescriptionFactory.attachSubfixes(topLevelFix, Arrays.asList(new DisableConfigure(bugId, bugDN, true),
+                                                                              new DisableConfigure(bugId, bugDN, false),
+                                                                              new SuppressWarningsFix(sourceFile, bugId, line, span != null ? span[0] : -1)));
+            fixes = Collections.singletonList(topLevelFix);
+        } else {
+            fixes = Collections.emptyList();
+        }
+
+        return ErrorDescriptionFactory.lazyListForFixes(fixes);
+    }
+
     private static UserPreferences readPreferences(Preferences settings, boolean defaultsToDisabled) {
         boolean atLeastOneEnabled = false;
         UserPreferences prefs = UserPreferences.createDefaultUserPreferences();
@@ -444,5 +482,171 @@ public class RunFindBugs {
 
     interface SigFilesValidator {
         public boolean validate(Iterable<? extends FileObject> files);
+    }
+
+    private static class DisableConfigure implements Fix {
+        private final @NonNull String bugId;
+        private final String bugDisplayName;
+        private final boolean disable;
+
+        public DisableConfigure(String bugId, String bugDisplayName, boolean disable) {
+            this.bugId = bugId;
+            this.bugDisplayName = bugDisplayName;
+            this.disable = disable;
+        }
+
+        @Override
+        @Messages({"FIX_DisableBug=Disable {0}",
+                   "FIX_ConfigureBug=Configure {0}"})
+        public String getText() {
+            return disable ? Bundle.FIX_DisableBug(bugDisplayName) : Bundle.FIX_ConfigureBug(bugDisplayName);
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            if (disable) {
+                NbPreferences.forModule(RunFindBugs.class).node("global-settings").putBoolean(bugId, false);
+            } else {
+                OptionsDisplayer.getDefault().open("Editor/Hints/text/findbugs+x-java/" + bugId);
+            }
+
+            return null;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 67 * hash + (this.bugId != null ? this.bugId.hashCode() : 0);
+            hash = 67 * hash + (this.bugDisplayName != null ? this.bugDisplayName.hashCode() : 0);
+            hash = 67 * hash + (this.disable ? 1 : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DisableConfigure other = (DisableConfigure) obj;
+            if ((this.bugId == null) ? (other.bugId != null) : !this.bugId.equals(other.bugId)) {
+                return false;
+            }
+            if ((this.bugDisplayName == null) ? (other.bugDisplayName != null) : !this.bugDisplayName.equals(other.bugDisplayName)) {
+                return false;
+            }
+            if (this.disable != other.disable) {
+                return false;
+            }
+            return true;
+        }
+
+    }
+
+    private static final class TopLevelConfigureFix extends DisableConfigure implements EnhancedFix {
+
+        public TopLevelConfigureFix(String bugId, String bugDisplayName) {
+            super(bugId, bugDisplayName, false);
+        }
+
+        @Override
+        public CharSequence getSortText() {
+            return "\uFFFFzz";
+        }
+
+    }
+
+    private static final String[] SUPPRESS_WARNINGS_ANNOTATIONS = {
+        org.netbeans.api.annotations.common.SuppressWarnings.class.getName(),
+        edu.umd.cs.findbugs.annotations.SuppressWarnings.class.getName()
+    };
+
+    private static final Set<Kind> ANNOTATABLE = EnumSet.of(Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE, Kind.METHOD, Kind.VARIABLE);
+    
+    private static class SuppressWarningsFix implements Fix {
+
+        private final FileObject sourceCode;
+        private final String bugId;
+        private final int line;
+        private final int pos;
+        
+        public SuppressWarningsFix(FileObject sourceCode, String bugId, int line, int pos) {
+            this.sourceCode = sourceCode;
+            this.bugId = bugId;
+            this.line = line;
+            this.pos = pos;
+        }
+
+        @Override
+        @Messages("FIX_SuppressWarnings=Suppress Warning")
+        public String getText() {
+            return Bundle.FIX_SuppressWarnings();
+        }
+
+        @Override
+        public ChangeInfo implement() throws Exception {
+            JavaSource js = JavaSource.forFileObject(sourceCode);
+
+            js.runModificationTask(new Task<WorkingCopy>() {
+                @Override
+                public void run(WorkingCopy parameter) throws Exception {
+                    parameter.toPhase(Phase.RESOLVED);
+                    TypeElement suppressWarningsAnnotation = null;
+
+                    for (String ann : SUPPRESS_WARNINGS_ANNOTATIONS) {
+                        if ((suppressWarningsAnnotation = parameter.getElements().getTypeElement(ann)) != null) break;
+                    }
+
+                    if (suppressWarningsAnnotation == null) {
+                        NotifyDescriptor nd = new NotifyDescriptor.Message("Cannot find SuppressWarnings annotation with Retention.CLASS, please add some on the classpath", NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notifyLater(nd);
+                        return;
+                    }
+
+                    int realPos;
+                    
+                    if (pos != (-1)) {
+                        realPos = pos;
+                    } else {
+                        realPos = (int) parameter.getCompilationUnit().getLineMap().getPosition(line, 0);
+                    }
+
+                    TreePath tp = parameter.getTreeUtilities().pathFor(realPos);
+
+                    while (tp != null && !ANNOTATABLE.contains(tp.getLeaf().getKind())) {
+                        tp = tp.getParentPath();
+                    }
+
+                    if (tp == null) return;
+
+                    ModifiersTree mods;
+                    Tree leaf = tp.getLeaf();
+
+                    switch (leaf.getKind()) {
+                        case ANNOTATION_TYPE:
+                        case CLASS:
+                        case ENUM:
+                        case INTERFACE:
+                            mods = ((ClassTree) leaf).getModifiers();
+                            break;
+                        case METHOD:
+                            mods = ((MethodTree) leaf).getModifiers();
+                            break;
+                        case VARIABLE:
+                            mods = ((MethodTree) leaf).getModifiers();
+                            break;
+                        default:
+                            throw new IllegalStateException(leaf.getKind().name());
+                    }
+
+                    parameter.rewrite(mods, GeneratorUtilities.get(parameter).appendToAnnotationValue(mods, suppressWarningsAnnotation, "value", parameter.getTreeMaker().Literal(bugId)));
+                }
+            }).commit();
+
+            return null;
+        }
+
     }
 }
