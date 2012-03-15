@@ -94,6 +94,9 @@ public final class WebBrowserPane {
                 if (HtmlBrowser.Impl.PROP_URL.equals(evt.getPropertyName())) {
                     fireUrlChange();
                 }
+                if (HtmlBrowser.Impl.PROP_RUNNING.equals(evt.getPropertyName())) {
+                    fireRunningStateChange();
+                }
             }
         };
         /*
@@ -250,6 +253,17 @@ public final class WebBrowserPane {
         listeners.remove(l);
     }
 
+    /**
+     * Is browser pane running or not? See Javadoc for HtmlBrowser.Impl.isRunning.
+     */
+    public Boolean isRunning() {
+        if (impl != null) {
+            return impl.isRunning();
+        } else {
+            return null;
+        }
+    }
+
     private void firePaneClosed() {
         for (WebBrowserPaneListener listener : listeners) {
             listener.browserEvent(new WebBrowserPaneWasClosedEvent(this));
@@ -259,6 +273,12 @@ public final class WebBrowserPane {
     private void fireUrlChange() {
         for (WebBrowserPaneListener listener : listeners) {
             listener.browserEvent(new WebBrowserPaneURLChangedEvent(this));
+        }
+    }
+    
+    private void fireRunningStateChange() {
+        for (WebBrowserPaneListener listener : listeners) {
+            listener.browserEvent(new WebBrowserRunningStateChangedEvent(this));
         }
     }
     
@@ -306,6 +326,14 @@ public final class WebBrowserPane {
     public static final class WebBrowserPaneURLChangedEvent extends WebBrowserPaneEvent {
 
         private WebBrowserPaneURLChangedEvent(WebBrowserPane pane) {
+            super(pane);
+        }
+
+    }
+    
+    public static final class WebBrowserRunningStateChangedEvent extends WebBrowserPaneEvent {
+
+        private WebBrowserRunningStateChangedEvent(WebBrowserPane pane) {
             super(pane);
         }
 

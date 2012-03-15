@@ -39,27 +39,31 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.javascript.debugger.callstack;
 
-/**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
- */
-public interface BrowserDebuggerImplementation {
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.modules.web.javascript.debugger.DebuggerConstants;
+import org.netbeans.spi.viewmodel.TreeModel;
+
+public class CallStackAnnotationListener extends DebuggerManagerAdapter {
     
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
+    @Override
+    public String[] getProperties() {
+        return new String[] { DebuggerManager.PROP_DEBUGGER_ENGINES };
+    }
     
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
+    @Override
+    public void engineAdded(DebuggerEngine engine) {
+        // force init of CallStackModel and its listeners which will
+        // update call stack annotations:
+        CallStackModel model = (CallStackModel)engine.lookupFirst(
+            DebuggerConstants.CALL_STACK_VIEW, TreeModel.class);
+    }
+
+    @Override
+    public void engineRemoved(DebuggerEngine engine) {
+    }
 
 }

@@ -43,10 +43,16 @@ package org.netbeans.modules.web.browser.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.URL;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.WebBrowserPane.WebBrowserPaneEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Helper class to be added to project's lookup and to be used to open URLs from
@@ -58,6 +64,14 @@ import org.openide.filesystems.FileObject;
  * global one owned by BrowserSupport (ie. getDefault method) or per project
  * pane (ie. getProjectScoped method).
  */
+@NbBundle.Messages({
+    "AttemptToDebug=Attempting to debug {0}",
+    "AlreadyRunning=Reusing active debugging session",
+    "StartingDebugger=Starting new debugging session",
+    "BrowserReady=Browser is up and running",
+    "BrowserUnknownState=Cannot talk to browser via NetBeans browser plugin. Debugging aborted.",
+    "WaitingForBrowser=Waiting for browser to start"
+    })
 public final class BrowserSupport {
     
     private WebBrowserPane pane;
@@ -67,7 +81,6 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
-    private boolean warnUserDebuggerIsMissing = true;
     private boolean activeDebuggingSession = false;
 
     private static BrowserSupport INSTANCE = create();
@@ -146,7 +159,6 @@ public final class BrowserSupport {
                                                     .stopDebuggingSession(pane);
                                         }
                                         pane = null;
-                                        warnUserDebuggerIsMissing = true;
                                     }
                                 }
                             }
@@ -171,31 +183,71 @@ public final class BrowserSupport {
      * 
      */
     public void load(URL url, FileObject context) {
-        Project p = FileOwnerQuery.getOwner(context);
         WebBrowserPane wbp = getWebBrowserPane();
-        
-        Boolean b = BrowserDebugger.isDebuggingEnabled(pane);
-        if (Boolean.TRUE.equals(b)) {
-            if (!activeDebuggingSession) {
-                BrowserDebugger.startDebuggingSession(p, pane);
-                activeDebuggingSession = true;
-            }
-        } else {
-            if (warnUserDebuggerIsMissing) {
-                warnUserDebuggerIsMissing = false;
-                if (b == null) {
-                    //DialogDisplayer.getDefault().notify(new DialogDescriptor.Message("this browser does not support debugging. use chrome instead."));
-                } else {
-                    //DialogDisplayer.getDefault().notify(new DialogDescriptor.Message("chrome is not running in debugging mode"));
-                }
-            }
-        }
-        
         file = context;
         currentURL = url;
         wbp.showURL(url);
+        if (BrowserDebugger.isDebuggingEnabled(pane)) {
+            BrowserDebugger.getOutputLogger().getOut().println(Bundle.AttemptToDebug(url.toExternalForm()));
+            startDebugger(url, FileOwnerQuery.getOwner(context));
+        }
     }
+    
+    private void startDebugger(final URL url, final Project p) {
+        assert BrowserDebugger.isDebuggingEnabled(pane);
+        final String tabToDebug = url.toExternalForm();
+        if (!activeDebuggingSession) {
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    BrowserDebugger.getOutputLogger().getOut().println(Bundle.StartingDebugger());
+                    boolean res = BrowserDebugger.startDebuggingSession(p, pane, tabToDebug);
+                    if (res) {
+                        activeDebuggingSession = true;
+                    }
+                }
+            };
 
+            final WebBrowserPane.WebBrowserPaneListener l = new WebBrowserPane.WebBrowserPaneListener() {
+                @Override
+                public void browserEvent(WebBrowserPaneEvent event) {
+                    if (event instanceof WebBrowserPane.WebBrowserRunningStateChangedEvent) {
+                        pane.removeListener(this);
+                        if (Boolean.TRUE.equals(pane.isRunning())) {
+                            // try to start debugger again; will be harmless if debugger is already running
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    startDebugger(url, p);
+                                }
+                            });
+                        }
+                    }
+                }
+            };
+            pane.addListener(l);
+
+            Boolean browserRuns = getWebBrowserPane().isRunning();
+            if (browserRuns == Boolean.TRUE) {
+                BrowserDebugger.getOutputLogger().getOut().println(Bundle.BrowserReady());
+                r.run();
+            } else if (browserRuns == null) {
+                BrowserDebugger.getOutputLogger().getOut().println(Bundle.BrowserUnknownState());
+                // we do know know anything about browser;
+                // perhaps I could just wait two seconds and try to connect to
+                // browser and repeat this five times before giving up.
+                // there might be many causes of the failure, eg. browser is still starting;
+                // browser is not running with debugging port; etc.
+            } else {
+                BrowserDebugger.getOutputLogger().getOut().println(Bundle.WaitingForBrowser());
+                // listener defined above will take care about this case
+                // and start debugger once the browser has started
+            }
+        } else {
+            BrowserDebugger.getOutputLogger().getOut().println(Bundle.AlreadyRunning());
+        }
+    }
+    
     /**
      * The same behaviour as load() method but file object context is not necessary
      * to be passed again.

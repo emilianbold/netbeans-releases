@@ -1,0 +1,5 @@
+org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointAnnotationListener
+org.netbeans.modules.web.javascript.debugger.callstack.CallStackAnnotationListener
+org.netbeans.modules.web.javascript.debugger.breakpoints.PersistenceManager
+org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointClearService
+org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter

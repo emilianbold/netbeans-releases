@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,32 +40,26 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.javascript.debugger.breakpoints;
+
+import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManagerAdapter;
+
 
 /**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
+ * @author ads
+ *
  */
-public interface BrowserDebuggerImplementation {
+public class BreakpointClearService extends DebuggerManagerAdapter {
     
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
+    /* (non-Javadoc)
+     * @see org.netbeans.api.debugger.DebuggerManagerAdapter#breakpointRemoved(org.netbeans.api.debugger.Breakpoint)
      */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
-    
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
-
+    @Override
+    public void breakpointRemoved( Breakpoint breakpoint ) {
+        if ( breakpoint instanceof AbstractBreakpoint ){
+            ((AbstractBreakpoint)breakpoint).removed();
+        }
+    }
 }

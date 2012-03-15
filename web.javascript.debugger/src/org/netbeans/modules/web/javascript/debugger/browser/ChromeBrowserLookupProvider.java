@@ -39,27 +39,23 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.javascript.debugger.browser;
 
-/**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
- */
-public interface BrowserDebuggerImplementation {
-    
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
-    
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
+import org.netbeans.modules.extbrowser.plugins.BrowserId;
+import org.netbeans.modules.extbrowser.spi.BrowserLookupProvider;
+import org.netbeans.modules.extbrowser.spi.ExternalBrowserDescriptor;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
+@ServiceProvider(service=BrowserLookupProvider.class)
+public class ChromeBrowserLookupProvider implements BrowserLookupProvider {
+
+    @Override
+    public Lookup createBrowserLookup(ExternalBrowserDescriptor desc) {
+        if (desc.getBrowserFamily() != BrowserId.CHROME) {
+            return null;
+        }
+        return Lookups.fixed(new ChromeBrowserDebuggerImpl(desc));
+    }
 }

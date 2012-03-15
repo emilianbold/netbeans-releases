@@ -39,27 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.javascript.debugger.wrd;
 
-/**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
- */
-public interface BrowserDebuggerImplementation {
-    
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
-    
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
+import org.openide.util.NbBundle;
 
+@NbBundle.Messages({"DebuggerState_R=Running",
+"DebuggerState_S=Suspended", "DebuggerState_D=Disconnected"})
+public enum DebuggerState {
+    
+    RUNNING(Bundle.DebuggerState_R()),
+    SUSPENDED(Bundle.DebuggerState_S()),
+    DISCONNECTED(Bundle.DebuggerState_D()),;
+    
+    private String name;
+
+    private DebuggerState(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+    
 }

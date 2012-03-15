@@ -768,6 +768,8 @@ public class HtmlBrowser extends JPanel {
 
         public static final String PROP_BROWSER_WAS_CLOSED = "browser.was.closed"; // NOI18N
 
+        public static final String PROP_RUNNING = "running"; // NOI18N
+        
         /**
         * Returns visual component of html browser.
         *
@@ -902,6 +904,16 @@ public class HtmlBrowser extends JPanel {
         
         public Lookup getLookup() {
             return Lookup.EMPTY;
+        }
+        
+        /**
+         * Is browser pane represented by this instance up and running? For example 
+         * can a connection be established to it using Remote Webkit debugging protocol?
+         * @return null if nothing is know about state of browser; TRUE is pane is 
+         *   up and running; FALSE if pane has not opened yet or was closed by user
+         */
+        public Boolean isRunning() {
+            return null;
         }
     }
 

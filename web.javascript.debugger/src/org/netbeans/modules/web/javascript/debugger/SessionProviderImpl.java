@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,32 +34,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+
+package org.netbeans.modules.web.javascript.debugger;
+
+import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.SESSION;
+import static org.netbeans.modules.web.javascript.debugger.DebuggerConstants.SESSION_LOCATION_NAME;
+import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.debugger.SessionProvider;
 
 /**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
+ *
+ * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
-public interface BrowserDebuggerImplementation {
-    
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
-    
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
+public class SessionProviderImpl extends SessionProvider {
+	
+    private String sessionName;
+
+    public SessionProviderImpl(ContextProvider contextProvider) {
+        org.netbeans.modules.web.javascript.debugger.wrd.Debugger d = contextProvider.lookupFirst(null, org.netbeans.modules.web.javascript.debugger.wrd.Debugger.class);
+        sessionName = d.getUrlToDebug();
+    }
+
+    @Override
+    public String getSessionName() {
+        return sessionName;
+    }
+
+    @Override
+    public String getLocationName() {
+        return SESSION_LOCATION_NAME;
+    }
+
+    @Override
+    public String getTypeID() {
+        return SESSION;
+    }
+
+    @Override
+    public Object[] getServices() {
+        return new Object[0];
+    }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,32 +40,73 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
+package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
-/**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
- */
-public interface BrowserDebuggerImplementation {
+import org.netbeans.api.debugger.Breakpoint;
+
+
+public abstract class AbstractBreakpoint extends Breakpoint {
     
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
+    private String myId;
+    private boolean isEnabled;
     
-    /**
-     * Stop debugging session.
+    protected AbstractBreakpoint() {
+        isEnabled = true;
+    }
+    
+    /*
+     * Method is called from debugger manager listener when breakpoint is removed.
+     * It is allowed to provide clear actions.
+     * This method should be implemented in sublasses if needed.
      */
-    void stopDebuggingSession();
+    public void removed(){
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.api.debugger.Breakpoint#disable()
+     */
+    @Override
+    public void disable() {
+        if(!isEnabled) {
+            return;
+        }
+
+        isEnabled = false;
+        firePropertyChange(PROP_ENABLED, Boolean.TRUE, Boolean.FALSE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.api.debugger.Breakpoint#enable()
+     */
+    @Override
+    public void enable() {
+        if(isEnabled) {
+            return;
+        }
+
+        isEnabled = true;
+        firePropertyChange(PROP_ENABLED, Boolean.FALSE, Boolean.TRUE);
+    }
+
+    /* (non-Javadoc)
+     * @see org.netbeans.api.debugger.Breakpoint#isEnabled()
+     */
+    @Override
+    public boolean isEnabled() {
+        return isEnabled;
+    }
+    
+    public void setBreakpointId( String id ) {
+        myId = id ;
+    }
+    
+    public String getBreakpointId() {
+        return myId;
+    }
+    
+    public boolean isConditional() {
+        return false;
+    }
 
 }

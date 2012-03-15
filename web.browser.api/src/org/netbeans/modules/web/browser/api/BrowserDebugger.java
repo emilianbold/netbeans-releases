@@ -47,10 +47,14 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.spi.BrowserDebuggerImplementation;
+import org.openide.util.NbBundle;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;
 
 /**
  * API wrapper of browser's debugging support.
  */
+@NbBundle.Messages({"DebuggingIOPane=JavaScript Debugger"})
 public final class BrowserDebugger {
     
     private static Map<BrowserDebuggerImplementation, List<WebBrowserPane>>
@@ -61,32 +65,30 @@ public final class BrowserDebugger {
      * browser is not running in debug mode; or null in case debugging is not supported
      * by the browser at all.
      */
-    public static Boolean isDebuggingEnabled(WebBrowserPane pane) {
-        BrowserDebuggerImplementation impl = pane.getLookup().lookup(BrowserDebuggerImplementation.class);
-        if (impl == null) {
-            return null;
-        }
-        return Boolean.valueOf(impl.isDebuggingEnabled());
+    public static boolean isDebuggingEnabled(WebBrowserPane pane) {
+        return pane.getLookup().lookup(BrowserDebuggerImplementation.class) != null;
     }
     
     /**
      * Given browser pane would like to initiate debugging session. Browser
      * is having one debugging session which is shared by multiple browser panes. 
      */
-    public static void startDebuggingSession(Project p, WebBrowserPane pane) {
+    public static boolean startDebuggingSession(Project p, WebBrowserPane pane, String urlToDebug) {
         BrowserDebuggerImplementation impl = pane.getLookup().lookup(BrowserDebuggerImplementation.class);
         if (impl == null) {
-            return;
+            return false;
         }
         List<WebBrowserPane> listOfPanes = activeDebuggingSessions.get(impl);
         if (listOfPanes == null) {
-            impl.startDebuggingSession();
+            if (!impl.startDebuggingSession(urlToDebug)) {
+                return false;
+            }
             listOfPanes = new ArrayList<WebBrowserPane>();
             activeDebuggingSessions.put(impl, listOfPanes);
         }
         assert !listOfPanes.contains(pane) : "this pane already started debugging session";
         listOfPanes.add(pane);
-        impl.activateBreakpoints(p);
+        return true;
     }
     
     /**
@@ -108,7 +110,14 @@ public final class BrowserDebugger {
             activeDebuggingSessions.remove(impl);
         }
     }
-
+    
+    /**
+     * Output panel for debugger output.
+     */
+    public static InputOutput getOutputLogger() {
+       return IOProvider.getDefault().getIO(Bundle.DebuggingIOPane(), false); 
+    }
+    
     /**
      * 
      */

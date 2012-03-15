@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,17 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.browser.spi;
 
-/**
- * Each browser capable of debugging must have implementation of this SPI in 
- * its lookup.
- */
-public interface BrowserDebuggerImplementation {
-    
-    /**
-     * Start debugging session. Can display some UI to initialize debugging.
-     * Returns true if debugging session was successfully started or not.
-     * @param urlToDebug identification of page being debugged
-     */
-    boolean startDebuggingSession(String urlToDebug);
-    // TODO: urlToDebug will not work when the same URL is opened multiple times
-    // alternative is to modify browser plugins to return also tab index and use
-    // tab index here instead of URL
-    
-    /**
-     * Stop debugging session.
-     */
-    void stopDebuggingSession();
+package org.netbeans.modules.web.javascript.debugger;
 
+public interface DebuggerConstants {
+
+    String DEBUGGER_INFO = "javascript-debuggerinfo";       // NOI18N
+    String SESSION    = "javascript-session";            // NOI18N
+    String ENGINE     = "javascript-debuggerengine";                   // NOI18N
+    String JAVASCRIPT    = "JavaScript";                               // NOI18N
+    String SESSION_LOCATION_NAME = "localhost";
+    String CALL_STACK_VIEW = "CallStackView"; // NOI18N
 }
