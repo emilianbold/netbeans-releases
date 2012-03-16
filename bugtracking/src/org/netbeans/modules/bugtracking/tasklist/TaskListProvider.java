@@ -61,9 +61,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.IssueImpl;
-import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider.LazyIssue;
@@ -134,7 +132,16 @@ public final class TaskListProvider extends PushTaskScanner {
         synchronized (SCOPE_LOCK) {
             if (!providersInitialized) {
                 // tasklist initialization
-                for (TaskListIssueProvider provider : Lookup.getDefault().lookupAll(TaskListIssueProvider.class)) {
+                List<TaskListIssueProvider> providers = new LinkedList<TaskListIssueProvider>();
+                DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+                for (DelegatingConnector c : connectors) {
+                    Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getRepositories(c.getID());
+                    if(!repos.isEmpty()) {
+                        providers.add(c.getTasklistProvder());
+                    }
+                }
+                
+                for (TaskListIssueProvider provider : providers) {
                     LOG.log(Level.FINER, "TaskListProvider.setScope: waking up {0}", provider.getClass().getName()); //NOI18N
                 }
                 providersInitialized = true;
