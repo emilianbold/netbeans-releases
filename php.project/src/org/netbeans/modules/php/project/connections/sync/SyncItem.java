@@ -131,8 +131,9 @@ public final class SyncItem {
     private final Operation defaultOperation;
 
     private volatile Operation operation;
-    private volatile boolean valid;
+    private volatile boolean valid = false;
     private volatile String message = null;
+    private volatile boolean validated = false;
     // for merging
     private volatile TmpLocalFile tmpLocalFile = null;
 
@@ -199,6 +200,7 @@ public final class SyncItem {
 
     public void setOperation(Operation operation) {
         assert operation != null;
+        validated = false;
         this.operation = operation;
     }
 
@@ -206,6 +208,7 @@ public final class SyncItem {
         cleanupTmpLocalFile();
         tmpLocalFile = null;
         operation = null;
+        validated = false;
     }
 
     public void cleanupTmpLocalFile() {
@@ -225,6 +228,10 @@ public final class SyncItem {
         "SyncItem.warn.symlink=Symbolic links are not transfered (to avoid future overriding)."
     })
     public void validate() {
+        if (validated) {
+            return;
+        }
+        validated = true;
         message = null;
         valid = true;
         Operation op = getOperation();
@@ -286,19 +293,16 @@ public final class SyncItem {
     }
 
     public boolean hasError() {
-        // optimize?
         validate();
         return !valid;
     }
 
     public boolean hasWarning() {
-        // optimize?
         validate();
         return valid && message != null;
     }
 
     public String getMessage() {
-        // optimize?
         validate();
         return message;
     }
