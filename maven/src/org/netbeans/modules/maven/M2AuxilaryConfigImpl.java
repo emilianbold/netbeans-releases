@@ -374,7 +374,7 @@ public class M2AuxilaryConfigImpl implements AuxiliaryConfiguration {
             if (fo != null) {
                 try {
                     DataObject dobj = DataObject.find(fo);
-                    EditCookie edit = dobj.getCookie(EditCookie.class);
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
                     edit.edit();
                 } catch (DataObjectNotFoundException ex) {
                     ex.printStackTrace();
