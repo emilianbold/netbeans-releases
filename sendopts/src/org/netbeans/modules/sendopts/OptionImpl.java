@@ -615,7 +615,7 @@ public abstract class OptionImpl implements Cloneable {
             }
         }
         public abstract OptionImpl impl(Option o);
-        public abstract Env create(InputStream is, OutputStream os, OutputStream err, File currentDir);
+        public abstract Env create(CommandLine cmd, InputStream is, OutputStream os, OutputStream err, File currentDir);
         public abstract void usage(PrintWriter w, Option o, int max);
         public abstract Option[] getOptions(OptionProcessor p);
         public abstract void process(OptionProcessor provider, Env env, Map<Option,String[]> options)

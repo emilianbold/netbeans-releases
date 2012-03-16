@@ -52,31 +52,35 @@ import java.lang.annotation.Target;
  * human readable explanation of the option's behavior. The field should be
  * public and the class should have public default constructor. It is suggested
  * the class implements {@link ArgsProcessor} or at least {@link Runnable} - its
- * methods will be called after successful assignment of argument fields. 
- * Following line defines an option without any arguments: 
+ * methods will be called after successful assignment of argument fields. Here
+ * is an example:
  * <pre>
- * {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
- * </pre>
- * if such option is present on the command line, the value of the 
- * <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
- * value remains unchanged (e.g. <code>false</code>).
- * <p>
- * One can also annotate a {@link String} field which then becomes 
- * an option with a {@link org.netbeans.spi.sendopts.Option#requiredArgument(char, java.lang.String) required argument}:
- * <pre>
- * {@code @}{@link Arg}(shortName='r', longName="") public String requiredArg;
- * </pre>
- * If one annotates a field where an array of {@link String strings} can be 
- * assigned, such option will then contain all 
- * {@link org.netbeans.spi.sendopts.Option#additionalArguments(char, java.lang.String) additional arguments}
- * made available:
- * <pre>
- * {@code @}{@link Arg}(longName="additional") public String[] additionalArgs;
- * </pre>
- * To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
- * one can annotate string field and provide its default value:
- * <pre>
- * {@code @}{@link Arg}(shortName='o', longName="", defaultValue="used-but-no-argument-provided") public String optionArg;
+ * public final class YourOptions implements {@link ArgsProcessor} {
+ *   // Defines an option without any arguments
+ *   public {@code @}{@link Arg}(shortName='p', longName="") public boolean usedWithO;
+ *   // if such option is present on the command line, the value of the 
+ *   // <code>usedWithO</code> field is set to <code>true</code>. Otherwise its
+ *   // value remains unchanged (e.g. <code>false</code>).
+ * 
+ * 
+ *   // One can also annotate a {@link String} field which then becomes 
+ *   // an option with a {@link org.netbeans.spi.sendopts.Option#requiredArgument(char, java.lang.String) required argument}:
+ *   public {@code @}{@link Arg}(shortName='r', longName="") public String requiredArg;
+ * 
+ *   // If one annotates a field where an array of {@link String strings} can be 
+ *   // assigned, such option will then contain all 
+ *   // {@link org.netbeans.spi.sendopts.Option#additionalArguments(char, java.lang.String) additional arguments}
+ *   // made available:
+ *   public {@code @}{@link Arg}(longName="additional") public String[] additionalArgs;
+ * 
+ *   // To define an option with {@link org.netbeans.spi.sendopts.Option#optionalArgument(char, java.lang.String) optional argument}
+ *   // one can annotate string field and provide its default value:
+ *   {@code @}{@link Arg}(shortName='o', longName="", defaultValue="used-but-no-argument-provided") public String optionArg;
+ * 
+ *   public void process({@link Env} env) {
+ *     // when this method is called, above defined fields are initialized
+ *   }
+ * }
  * </pre>
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  * @since 2.20
