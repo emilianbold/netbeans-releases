@@ -505,22 +505,31 @@ public final class SyncPanel extends JPanel {
     void updateDisplayedItems() {
         assert SwingUtilities.isEventDispatchThread();
         displayedItems.clear();
-        boolean anyButtonSelected = false;
-        for (SyncItem syncItem : allItems) {
-            for (ViewButton button : viewButtons) {
-                if (button.isSelected()) {
-                    anyButtonSelected = true;
+        List<ViewButton> selectedViewButtons = getSelectedViewButtons();
+        if (!selectedViewButtons.isEmpty()) {
+            // some view button selected
+            for (SyncItem syncItem : allItems) {
+                for (ViewButton button : selectedViewButtons) {
                     if (button.getFilter().accept(syncItem)) {
                         displayedItems.add(syncItem);
                         break;
                     }
                 }
             }
-        }
-        if (!anyButtonSelected) {
+        } else {
             displayedItems.addAll(allItems);
         }
         tableModel.fireSyncItemsChange();
+    }
+
+    private List<ViewButton> getSelectedViewButtons() {
+        List<ViewButton> selected = new ArrayList<ViewButton>(viewButtons.size());
+        for (ViewButton button : viewButtons) {
+            if (button.isSelected()) {
+                selected.add(button);
+            }
+        }
+        return selected;
     }
 
     /**
