@@ -69,6 +69,30 @@ public class PushDownTest extends RefactoringTestBase {
         super(name);
    }
 
+    public void testPushDownComments() throws Exception { // #208705 - Duplicate comments after Push Down
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { /** * This is a method */ public int a() { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { /** * This is a method */ public int a() { return 1; } }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { /** * This is a method */ public int a() { return 1; } }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
+
+    public void testPushDownAbstractComments() throws Exception { // #208705 - Duplicate comments after Push Down
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { /** * This is a method */ public int a() { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.TRUE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { /** * This is a method */ public int a() { return 1; } }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { /** * This is a method */ public int a() { return 1; } }"),
+                new File("pushdown/B.java", "package pushdown; public abstract class B { /** * This is a method */ public abstract int a(); }"));
+    }
+
     public void testPushDownField() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
@@ -78,6 +102,30 @@ public class PushDownTest extends RefactoringTestBase {
         verifyContent(src,
                 new File("pushdown/A.java", "package pushdown; public class A extends B { public int a; }"),
                 new File("pushdown/C.java", "package pushdown; public class C extends B { public int a; }"),
+                new File("pushdown/B.java", "package pushdown; public class B {}"));
+    }
+
+    public void testPushDownMethodMakeAbstract() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int a() { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.TRUE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int a() { return 1; } }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
+                new File("pushdown/B.java", "package pushdown; public abstract class B { public abstract int a(); }"));
+    }
+
+    public void testPushDownMethodNested() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {} class Nested { }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; public class B { public int a() { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B { public int a() { return 1; } } class Nested { }"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B { public int a() { return 1; } }"),
                 new File("pushdown/B.java", "package pushdown; public class B {}"));
     }
     

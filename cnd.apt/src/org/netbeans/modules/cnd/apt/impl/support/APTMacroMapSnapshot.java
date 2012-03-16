@@ -101,8 +101,10 @@ public final class APTMacroMapSnapshot {
             return;
         }
         if (macros instanceof Map<?,?>) {
+            @SuppressWarnings("unchecked")
+            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)macros;
             // expand map if needed based on expected next key
-            macros = TinyMaps.expandForNextKey((Map<CharSequence, APTMacro>)macros, name);
+            macros = TinyMaps.expandForNextKey(map, name);
         } else {
             CharSequence key;
             APTMacro value;
@@ -120,7 +122,9 @@ public final class APTMacroMapSnapshot {
             } else {
                 // create LW map and remember previous value in map
                 macros = createMacroMap(2);
-                ((Map<CharSequence, APTMacro>)macros).put(key, value);
+                @SuppressWarnings("unchecked")
+                Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)macros;
+                map.put(key, value);
             }
         }
     }
@@ -135,7 +139,9 @@ public final class APTMacroMapSnapshot {
                 macros = macro;
             }
         } else {
-            ((Map<CharSequence, APTMacro>)macros).put(name, macro);
+            @SuppressWarnings("unchecked")
+            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)macros;
+            map.put(name, macro);
         }
     }
 
@@ -169,7 +175,9 @@ public final class APTMacroMapSnapshot {
             return null;
         } else {
             assert macros instanceof Map<?,?>;
-            return ((Map<CharSequence, APTMacro>)macros).get(key);
+            @SuppressWarnings("unchecked")
+            APTMacro map = ((Map<CharSequence, APTMacro>)macros).get(key);
+            return map;
         }
     }
     
@@ -194,7 +202,9 @@ public final class APTMacroMapSnapshot {
             while(!stack.isEmpty()) {
                 snap = stack.removeLast();
                 if (snap.macros instanceof Map<?,?>) {
-                    for (Map.Entry<CharSequence, APTMacro> cur : ((Map<CharSequence, APTMacro>)snap.macros).entrySet()) {
+                    @SuppressWarnings("unchecked")
+                    final Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)snap.macros;
+                    for (Map.Entry<CharSequence, APTMacro> cur : map.entrySet()) {
                         if (cur.getValue() != UNDEFINED_MACRO) {
                             out.put(cur.getKey(), cur.getValue());
                         } else {
@@ -248,7 +258,9 @@ public final class APTMacroMapSnapshot {
         APTSerializeUtils.writeSnapshot(this.parent, output);
         if (this.macros instanceof Map<?, ?>) {
             output.writeInt(size());
-            APTSerializeUtils.writeStringToMacroMap((Map<CharSequence, APTMacro>)this.macros, output);
+            @SuppressWarnings("unchecked")
+            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)this.macros;
+            APTSerializeUtils.writeStringToMacroMap(map, output);
         } else if (this.macros instanceof CharSequence) {
             output.writeInt(-1);
             output.writeCharSequenceUTF((CharSequence)this.macros);
@@ -268,7 +280,9 @@ public final class APTMacroMapSnapshot {
             this.macros = CharSequences.create(input.readCharSequenceUTF());
         } else {
             macros = createMacroMap(collSize);
-            APTSerializeUtils.readStringToMacroMap(collSize, (Map<CharSequence, APTMacro>)this.macros, input);
+            @SuppressWarnings("unchecked")
+            Map<CharSequence, APTMacro> map = (Map<CharSequence, APTMacro>)this.macros;
+            APTSerializeUtils.readStringToMacroMap(collSize, map, input);
         }
     }  
         

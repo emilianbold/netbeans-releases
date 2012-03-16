@@ -91,7 +91,7 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
                 "import org.netbeans.spi.java.hints.*;\n",
                 "import org.netbeans.spi.editor.hints.*;\n",
                 "import java.util.*;\n",
-                "@Hint(displayName=\"#DN_p.H\", description=\"DESC_p.H\", category=\"general\")\n",
+                "@Hint(displayName=\"#DN_p.H\", description=\"#DESC_p.H\", category=\"general\")\n",
                 "public class H {\n",
                 "    @TriggerPattern(\"$1.$2.$3\")\n",
                 "    public static List<ErrorDescription> hint(HintContext ctx) { return null;}\n",
@@ -99,5 +99,32 @@ public class JavaHintsAnnotationProcessorTest extends NbTestCase {
         TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "DN_p.H=DN_p.H\nDESC_p.H=DESC_p.H\n");
         ByteArrayOutputStream err = new ByteArrayOutputStream();
         assertTrue(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+    }
+
+    public void testCustomizerProvider() throws Exception {
+        File src = new File(getWorkDir(), "src");
+        File dest = new File(getWorkDir(), "classes");
+        AnnotationProcessorTestUtils.makeSource(src, "p.H",
+                "import org.netbeans.spi.java.hints.*;\n",
+                "import org.netbeans.spi.editor.hints.*;\n",
+                "import java.util.*;\n",
+                "import java.util.prefs.*;\n",
+                "import javax.swing.*;\n",
+                "@Hint(displayName=\"dn\", description=\"desc\", category=\"general\", customizerProvider=H.Customizer.class)\n",
+                "public class H {\n",
+                "    @TriggerPattern(\"$1.$2.$3\")\n",
+                "    public static List<ErrorDescription> hint(HintContext ctx) { return null;}\n",
+                "    static final class Customizer implements CustomizerProvider {\n",
+                "        @Override public JComponent getCustomizer(Preferences prefs) {\n",
+                "            return new JPanel();\n",
+                "        }\n",
+                "    }\n",
+                "}\n");
+        TestFileUtils.writeFile(new File(src, "p/Bundle.properties"), "DN_p.H=DN_p.H\nDESC_p.H=DESC_p.H\n");
+        ByteArrayOutputStream err = new ByteArrayOutputStream();
+        assertFalse(AnnotationProcessorTestUtils.runJavac(src, null, dest, null, err));
+        String errors = err.toString();
+        assertTrue(errors.contains("error: Customizer provider must be public"));
+        assertTrue(errors.contains("error: Customizer provider must provide a public default constructor"));
     }
 }

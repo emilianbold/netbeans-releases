@@ -199,7 +199,7 @@ public class ConvertToDiamondBulkHint {
 
     }
 
-    static final class CustomizerProviderImpl implements CustomizerProvider {
+    public static final class CustomizerProviderImpl implements CustomizerProvider {
 
         @Override public JComponent getCustomizer(Preferences prefs) {
             return new ConvertToDiamondBulkHintPanel(prefs);

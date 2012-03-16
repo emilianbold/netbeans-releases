@@ -170,7 +170,26 @@ made subject to such option by the copyright holder.
        that creates new <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">command line</a>.
        One can then process the arguments as many times as needed via the
         <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#process(java.lang.String...)">process</a>
-        method.
+        method. Example:
+        <pre>
+public final class MyOption implements <a href="@JDK@/java/lang/Runnable.html">Runnable</a> {
+  <a href="@TOP@/org/netbeans/spi/sendopts/Arg.html">@Arg</a>(longName="hello")
+  public String name;
+
+  public void run() {
+    System.out.println("Hello " + name + "!");
+  }
+  
+  public static void main(String... args) {
+    <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html">CommandLine</a> line = <a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#create(java.lang.Class...)">CommandLine.create</a>(MyOption.class);
+    line.<a href="@TOP@/org/netbeans/api/sendopts/CommandLine.html#process(java.lang.String...)">process</a>(args);
+  }
+}
+</pre>
+   <p>
+       If the above main class is called with parameters <code>--hello World</code> it
+       will print out <code>Hello World!</code>.
+   </p>
    </usecase>
    <usecase id="cli-types-of-options" name="Short and Long options with or without an argument" >
        The standard <code>getopts</code> supports short form of options - e.g. a dash

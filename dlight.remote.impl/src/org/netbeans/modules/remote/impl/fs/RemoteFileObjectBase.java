@@ -312,9 +312,6 @@ public abstract class RemoteFileObjectBase implements Serializable {
         }
         FileEvent fe = new FileEvent(fo, fo, true);
         for(RemoteFileObjectBase child: getExistentChildren(true)) {
-            if (child instanceof RemoteLink && ((RemoteLink) child).isCyclicLink()) {
-                continue;
-            }
             fo.fireFileDeletedEvent(Collections.enumeration(child.listeners), fe);
         }        
         invalidate();        

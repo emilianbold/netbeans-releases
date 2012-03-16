@@ -56,9 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.impl.services.InstantiationProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
-import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
-import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
+import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 
@@ -68,18 +66,21 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
-    private Collection<CsmUID<CsmParameter>> functionParameters;
+    private Collection<CsmParameter> functionParameters;
     private short functionPointerDepth;
 
     TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
+        functionParameters = null;
     }
 
     // package-local - for facory only
     TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
         super(type, pointerDepth, reference, arrayDepth, _const);
         if(type.functionParameters != null) {
-            functionParameters = new ArrayList<CsmUID<CsmParameter>>(type.functionParameters);
+            functionParameters = new ArrayList<CsmParameter>(type.functionParameters);
+        } else {
+            functionParameters = null;
         }
         functionPointerDepth = type.functionPointerDepth;
     }
@@ -88,7 +89,9 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     TypeFunPtrImpl(TypeFunPtrImpl type, List<CsmSpecializationParameter> instantiationParams) {
         super(type, instantiationParams);
         if(type.functionParameters != null) {
-            functionParameters = new ArrayList<CsmUID<CsmParameter>>(type.functionParameters);
+            functionParameters = new ArrayList<CsmParameter>(type.functionParameters);
+        } else {
+            functionParameters = null;
         }
         functionPointerDepth = type.functionPointerDepth;
     }
@@ -102,7 +105,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         if (functionParameters == null) {
             return Collections.<CsmParameter>emptyList();
         } else {
-            return UIDCsmConverter.UIDsToDeclarations(functionParameters);
+            return Collections.unmodifiableCollection(functionParameters);
         }
     }
 
@@ -239,8 +242,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         // typedef void foo_type(...);
         if (inTypedef && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
-                instance.functionParameters = RepositoryUtils.put(
-                        AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null, false));
+                instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
             }
             return true;
         }
@@ -258,8 +260,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             }
             if (next.getType() == CPPTokenTypes.CSM_PARMLIST) {
                 if (instance != null) {
-                    instance.functionParameters = RepositoryUtils.put(
-                            AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null, false));
+                    instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
                 }
                 return true;
             } else if (next.getType() == CPPTokenTypes.RPAREN) {
@@ -269,8 +270,7 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
             }
         } else if (inFunctionParams && next != null && next.getType() == CPPTokenTypes.CSM_PARMLIST) {
             if (instance != null) {
-                instance.functionParameters = RepositoryUtils.put(
-                        AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null, false));
+                instance.functionParameters = AstRenderer.renderParameters(next, instance.getContainingFile(), fileContent, null);
             }
             return true;
         } else {
@@ -324,9 +324,6 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     @Override
     public void dispose() {
         super.dispose();
-        if (functionParameters != null) {
-            RepositoryUtils.remove(functionParameters);
-        }
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -335,19 +332,12 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         output.writeShort(functionPointerDepth);
-        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        factory.writeUIDCollection(functionParameters, output, false);
+        PersistentUtils.writeParameters(functionParameters, output);
     }
 
     public TypeFunPtrImpl(RepositoryDataInput input) throws IOException {
         super(input);
         functionPointerDepth = input.readShort();
-        UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
-        int collSize = input.readInt();
-        if (collSize < 0) {
-            functionParameters = null;
-        } else {
-            functionParameters = factory.readUIDCollection(new ArrayList<CsmUID<CsmParameter>>(collSize), input, collSize);
-        }
+        functionParameters = PersistentUtils.readParameters(input);
     }
 }

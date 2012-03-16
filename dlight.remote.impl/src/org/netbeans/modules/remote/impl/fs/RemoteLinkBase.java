@@ -286,7 +286,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
 
     @Override
     public void fileDeleted(FileEvent fe) {
-        fireFileDeletedEvent(getListeners(), transform(fe));
+        if (!isCyclicLink()) {
+            fireFileDeletedEvent(getListeners(), transform(fe));
+        }
     }
 
     @Override

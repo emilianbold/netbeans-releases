@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.*;
 import org.netbeans.modules.sendopts.DefaultProcessor;
 import org.netbeans.modules.sendopts.OptionImpl;
@@ -133,7 +134,7 @@ public final class CommandLine {
         if (currentDir == null) {
             currentDir = new File(System.getProperty("user.dir")); // NOI18N
         }
-        Env env = OptionImpl.Trampoline.DEFAULT.create(is, os, err, currentDir);
+        Env env = OptionImpl.Trampoline.DEFAULT.create(this, is, os, err, currentDir);
         
         
         ArrayList<String> additionalParams = new ArrayList<String>();
@@ -154,7 +155,7 @@ public final class CommandLine {
             }
 
             if (optionMode) {
-                if (args[i].startsWith("--")) {
+                if (args[i].startsWith("--")) { //NOI18N
                     if (args[i].length() == 2) {
                         optionMode = false;
                         continue ARGS;
@@ -171,23 +172,23 @@ public final class CommandLine {
                     OptionImpl opt = findByLongName (text, arr);
                     if (opt == null) {
                         throw new CommandException(args[i], ERROR_BASE + 1,
-                            NbBundle.getMessage(CommandLine.class, "MSG_Unknown", args[i])
+                            getMessage("MSG_Unknown", args[i])
                         );
                     }
                     if (opt.getArgumentType() == 1 && value == null) {
                         // read next value from the argument
                         for(;;) {
                             if (++i == args.length) {
-                                throw new CommandException(NbBundle.getMessage(CommandLine.class, "MSG_MissingArgument", "--" + opt.getLongName()), ERROR_BASE + 2); // NOI18N
+                                throw new CommandException(getMessage("MSG_MissingArgument", "--" + opt.getLongName()), ERROR_BASE + 2); // NOI18N
                             }
                             
-                            if (args[i].equals("--")) {
+                            if (args[i].equals("--")) { //NOI18N
                                 optionMode = false;
                                 continue;
                             }
                             
-                            if (optionMode && args[i].startsWith("-")) {
-                                throw new CommandException(NbBundle.getMessage(CommandLine.class, "MSG_MissingArgument", "--" + opt.getLongName()), ERROR_BASE + 2); // NOI18N
+                            if (optionMode && args[i].startsWith("-")) { //NOI18N
+                                throw new CommandException(getMessage("MSG_MissingArgument", "--" + opt.getLongName()), ERROR_BASE + 2); // NOI18N
                             }
 
                             break;
@@ -201,7 +202,7 @@ public final class CommandLine {
 
                     if (value != null) {
                         if (opt.getArgumentType() != 1 && opt.getArgumentType() != 2) {
-                            throw new CommandException("Option " + opt + " cannot have value " + value, ERROR_BASE + 2);
+                            throw new CommandException(getMessage("MSG_OPTION_CANNOT_HAVE_VALUE", opt, value), ERROR_BASE + 2);
                         }
 
                         opt.associateValue(value);
@@ -211,7 +212,7 @@ public final class CommandLine {
                         if (acceptsAdons != null) {
                             String oName1 = findOptionName(acceptsAdons, args);
                             String oName2 = findOptionName(opt, args);
-                            String msg = NbBundle.getMessage(CommandLine.class, "MSG_CannotTogether", oName1, oName2); // NOI18N
+                            String msg = getMessage("MSG_CannotTogether", oName1, oName2); // NOI18N
                             throw new CommandException(msg, ERROR_BASE + 3);
                         }
                         acceptsAdons = opt;
@@ -219,15 +220,15 @@ public final class CommandLine {
 
                     opts.add(opt);
                     continue ARGS;
-                } else if (args[i].startsWith("-") && args[i].length() > 1) {
+                } else if (args[i].startsWith("-") && args[i].length() > 1) { //NOI18N
                     for (int j = 1; j < args[i].length(); j++) {
                         char ch = args[i].charAt(j);
                         OptionImpl opt = findByShortName(ch, arr);
                         if (opt == null) {
-                            throw new CommandException("Unknown option " + args[i], ERROR_BASE + 1);
+                            throw new CommandException(getMessage("MSG_UNKNOWN_OPTION", args[i]), ERROR_BASE + 1);
                         }
                         if (args[i].length() == j + 1 && opt.getArgumentType() == 1) {
-                            throw new CommandException(NbBundle.getMessage(CommandLine.class, "MSG_MissingArgument", args[i]), ERROR_BASE + 2);
+                            throw new CommandException(getMessage("MSG_MissingArgument", args[i]), ERROR_BASE + 2);
                         }
 
                         if (args[i].length() > j && (opt.getArgumentType() == 1 || opt.getArgumentType() == 2)) {
@@ -238,7 +239,7 @@ public final class CommandLine {
                             if (acceptsAdons != null) {
                                 String oName1 = findOptionName(acceptsAdons, args);
                                 String oName2 = findOptionName(opt, args);
-                                String msg = NbBundle.getMessage(CommandLine.class, "MSG_CannotTogether", oName1, oName2); // NOI18N
+                                String msg = getMessage("MSG_CannotTogether", oName1, oName2); // NOI18N
                                 throw new CommandException(msg, ERROR_BASE + 3);
                             }
                             acceptsAdons = opt;
@@ -256,14 +257,14 @@ public final class CommandLine {
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i].getArgumentType() == 4) {
                     if (acceptsAdons != null) {
-                        throw new CommandException("There cannot be two default options: " + acceptsAdons + " and " + arr[i], ERROR_BASE + 3);
+                        throw new CommandException(getMessage("MSG_TWO_DEFAULT_OPTIONS", acceptsAdons, arr[i]), ERROR_BASE + 3);
                     }
                     acceptsAdons = arr[i];
                     opts.add(acceptsAdons);
                 }
             }
             if (acceptsAdons == null) {
-                throw new CommandException("There are params but noone wants to proces them: " + additionalParams, ERROR_BASE + 2);
+                throw new CommandException(getMessage("MSG_NOT_PROCESSED_PARAMS", additionalParams), ERROR_BASE + 2);
             }
             
         }
@@ -340,11 +341,11 @@ public final class CommandLine {
             if (ownDisplay != null) {
                 sb.append(ownDisplay);
             } else {
-                String sep = "";
+                String sep = ""; //NOI18N
                 if (arr[i].getShortName() != -1) {
                     sb.append('-');
                     sb.append((char)arr[i].getShortName());
-                    sep = ", ";
+                    sep = ", "; //NOI18N
                 }
                 if (arr[i].getLongName() != null) {
                     sb.append(sep);
@@ -360,15 +361,15 @@ public final class CommandLine {
                     case 0: break;
                     case 1:
                         sb.append(' ');
-                        sb.append(NbBundle.getMessage(CommandLine.class, "MSG_OneArg")); // NOI18N
+                        sb.append(getMessage("MSG_OneArg")); // NOI18N
                         break;
                     case 2:
                         sb.append(' ');
-                        sb.append(NbBundle.getMessage(CommandLine.class, "MSG_OptionalArg")); // NOI18N
+                        sb.append(getMessage("MSG_OptionalArg")); // NOI18N
                         break;
                     case 3:
                         sb.append(' ');
-                        sb.append(NbBundle.getMessage(CommandLine.class, "MSG_AddionalArgs")); // NOI18N
+                        sb.append(getMessage("MSG_AddionalArgs")); // NOI18N
                         break;
                     default:
                         assert false;
@@ -456,11 +457,11 @@ public final class CommandLine {
 
     private static String findOptionName(OptionImpl opt, String[] args) {
         for(int i = 0; i < args.length; i++) {
-            if (!args[i].startsWith("-")) {
+            if (!args[i].startsWith("-")) { //NOI18N
                 continue;
             }
             
-            if (args[i].startsWith("--")) {
+            if (args[i].startsWith("--")) { //NOI18N
                 String text = args[i].substring(2);
                 int textEqual = text.indexOf('=');
                 if (textEqual >= 0) {
@@ -472,12 +473,26 @@ public final class CommandLine {
                 }
             } else {
                 if (opt.getShortName() == args[i].charAt(1)) {
-                    return "-" + (char)opt.getShortName();
+                    return "-" + (char)opt.getShortName(); //NOI18N
                 }
             }
         }
         
         return opt.toString();
+    }
+
+    private static String getMessage(String msg, Object... args) {
+        final Class<?> c = CommandException.class;
+        try {
+            return NbBundle.getMessage(c, msg, args);
+        } catch (LinkageError ex) {
+            ResourceBundle b = ResourceBundle.getBundle(c.getPackage().getName() + ".Bundle"); // NOI18N
+            String res = b.getString(msg);
+            if (args != null && args.length > 0) {
+                res = MessageFormat.format(res, args);
+            }
+            return res;
+        }
     }
 
 }

@@ -93,8 +93,10 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.ParserProviderImpl;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -1199,10 +1201,10 @@ public final class FileImpl implements CsmFile,
 
     /** For test purposes only */
     public void getErrors(ErrorListener errorListener) {
-        Collection<RecognitionException> parserErrors = new ArrayList<RecognitionException>();
+        Collection<ParserError> parserErrors = new ArrayList<ParserError>();
         getErrors(parserErrors);
-        for (RecognitionException e : parserErrors) {
-            errorListener.error(e.getMessage(), e.getLine(), e.getColumn());
+        for (ParserError e : parserErrors) {
+            errorListener.error(e.message, e.line, e.column);
         }
     }
 
@@ -1241,11 +1243,11 @@ public final class FileImpl implements CsmFile,
         }
     }
 
-    public ReadOnlyTokenBuffer getErrors(final Collection<RecognitionException> result) {
-        CPPParserEx.ErrorDelegate delegate = new CPPParserEx.ErrorDelegate() {
+    public ReadOnlyTokenBuffer getErrors(final Collection<ParserError> result) {
+        CsmParserProvider.ParserErrorDelegate delegate = new CsmParserProvider.ParserErrorDelegate() {
 
             @Override
-            public void onError(RecognitionException e) {
+            public void onError(ParserError e) {
                 result.add(e);
             }
         };
@@ -1265,12 +1267,21 @@ public final class FileImpl implements CsmFile,
         try {
             // use cached TS
             TokenStream tokenStream = getTokenStream(0, Integer.MAX_VALUE, 0, true);
+            
             if (tokenStream != null) {
-                CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
-                parser.setErrorDelegate(delegate);
-                parser.setLazyCompound(false);
-                parser.translation_unit();
-                return new ParserBasedTokenBuffer(parser);
+                if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
+                    CsmParser parser = CsmParserProvider.createParser(this);
+                    parser.init(null, tokenStream, null);
+                    parser.setErrorDelegate(delegate);
+                    parser.parse(CsmParser.ConstructionKind.TRANSLATION_UNIT);
+                    return new ParserBasedTokenBuffer(null);
+                } else {
+                    CPPParserEx parser = CPPParserEx.getInstance(this, tokenStream, flags);
+                    parser.setErrorDelegate(delegate);
+                    parser.setLazyCompound(false);
+                    parser.translation_unit();
+                    return new ParserBasedTokenBuffer(parser);
+                }
             }
         } catch (Throwable ex) {
             System.err.println(ex.getClass().getName() + " at parsing file " + fileBuffer.getAbsolutePath()); // NOI18N

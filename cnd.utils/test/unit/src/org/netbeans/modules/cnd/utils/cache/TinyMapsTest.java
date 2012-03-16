@@ -45,8 +45,8 @@ import java.util.Collections;
 import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Test;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *
@@ -74,13 +74,21 @@ public class TinyMapsTest {
             } else if (initialCapacity == 2) {
                 Assert.assertTrue("have to be TinyTwoValuesMap " + result.getClass().getSimpleName(), result instanceof TinyTwoValuesMap<?,?>);
             } else if (initialCapacity <= 4) {
-                Assert.assertTrue("have to be TinyMap4 " + result.getClass().getSimpleName(), result instanceof TinyMap4<?,?>);
+                Assert.assertTrue("have to be TinyMap4 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyMap4<?,?>);
             } else if (initialCapacity <= 6) {
-                Assert.assertTrue("have to be TinyMap6 " + result.getClass().getSimpleName(), result instanceof TinyMap6<?,?>);
+                Assert.assertTrue("have to be TinyMap6 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyMap6<?,?>);
             } else if (initialCapacity <= 8) {
-                Assert.assertTrue("have to be TinyMap8 " + result.getClass().getSimpleName(), result instanceof TinyMap8<?,?>);
+                Assert.assertTrue("have to be TinyMap8 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyMap8<?,?>);
+            } else if (initialCapacity <= 16) {
+                Assert.assertTrue("have to be TinyMap16 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyMap16<?,?>);
+            } else if (initialCapacity <= 32) {
+                Assert.assertTrue("have to be TinyMap16 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyHashMap32<?,?>);
+            } else if (initialCapacity <= 64) {
+                Assert.assertTrue("have to be TinyMap16 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyHashMap64<?,?>);
+            } else if (initialCapacity <= 128) {
+                Assert.assertTrue("have to be TinyMap16 " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyHashMap128<?,?>);
             } else {
-                Assert.assertTrue("have to be TinyHashMap " + result.getClass().getSimpleName(), result instanceof TinyHashMap<?,?>);
+                Assert.assertTrue("have to be TinyHashMap " + result.getClass().getSimpleName(), result instanceof TinyMaps.TinyHashMap<?,?>);
             }
         }
     }
