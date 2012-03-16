@@ -98,7 +98,7 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
     
     static SearchInfo createSingleProjectSearchInfo(Project project) {
 
-        SearchInfo prjSearchInfo = CompatibilityUtils.getSearchInfoForLookup(
+        SearchInfo prjSearchInfo = SearchInfoHelper.getSearchInfoForLookup(
                 project.getLookup());
         if (prjSearchInfo != null) {
             return prjSearchInfo;
@@ -136,7 +136,7 @@ abstract class AbstractProjectSearchScope extends SearchScopeDefinition
             return SearchInfoUtils.createSearchInfoForRoots(rootArray);
         } else {
             return SearchInfoUtils.createSearchInfoForRoots(rootArray, false,
-                    CompatibilityUtils.subTreeFilters(stso));
+                    SearchInfoHelper.subTreeFilters(stso));
         }
     }
 

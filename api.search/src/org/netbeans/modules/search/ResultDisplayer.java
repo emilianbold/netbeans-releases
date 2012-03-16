@@ -51,6 +51,7 @@ import org.netbeans.modules.search.ui.BasicSearchResultsPanel;
 import org.netbeans.spi.search.provider.SearchResultsDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,6 +64,7 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     private BasicSearchCriteria criteria;
     private BasicComposition composition;
     private BasicAbstractResultsPanel resultPanel;
+    private Node infoNode;
 
     public ResultDisplayer(BasicSearchCriteria criteria,
             BasicComposition composition) {
@@ -79,10 +81,11 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
     public JComponent getVisualComponent() {
         if (criteria.isSearchAndReplace()) {
             resultPanel = new BasicReplaceResultsPanel(resultModel, composition,
-                    composition.getRootFiles());
+                    composition.getRootFiles(), infoNode);
         } else {
             resultPanel = new BasicSearchResultsPanel(resultModel, composition,
-                    criteria.isFullText(), composition.getRootFiles());
+                    criteria.isFullText(), composition.getRootFiles(),
+                    infoNode);
         }
         return resultPanel;
     }
@@ -250,5 +253,10 @@ class ResultDisplayer extends SearchResultsDisplayer<MatchingObject.Def> {
             }
             return csr.getFileObject();
         }
+    }
+
+    @Override
+    public void setInfoNode(Node infoNode) {
+        this.infoNode = infoNode;
     }
 }

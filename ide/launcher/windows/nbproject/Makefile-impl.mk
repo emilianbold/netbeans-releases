@@ -31,7 +31,7 @@ DEFAULTCONF=netbeans.exe
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=netbeans.exe 
+ALLCONFS=netbeans.exe netbeans64.exe 
 
 
 # build

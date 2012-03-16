@@ -125,24 +125,6 @@ public final class Repository {
     }
 
     /**
-     * Creates a new, not yet saved and named query.  
-     * 
-     * @return 
-     */
-    public QueryImpl createNewQuery() {
-        return impl.createNewQuery();
-    }
-
-    /**
-     * Creates a new, not yet submitted issue
-     * 
-     * @return 
-     */
-    public IssueImpl createNewIssue() {
-        return impl.createNewIssue();
-    }
-
-    /**
      * Returns a list of all saved queries for this repository
      * 
      * @return 

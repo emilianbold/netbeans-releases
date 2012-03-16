@@ -153,7 +153,7 @@ final class SearchScopeNodeSelection extends SearchScopeDefinition
      */
     private static boolean canSearch(Node node) {
 
-        SearchInfo si = CompatibilityUtils.getSearchInfoForNode(node);
+        SearchInfo si = SearchInfoHelper.getSearchInfoForNode(node);
         return si != null && si.canSearch();
     }
 
@@ -198,7 +198,7 @@ final class SearchScopeNodeSelection extends SearchScopeDefinition
     /**
      */
     private static SearchInfo getSearchInfo(Node node) {
-        return CompatibilityUtils.getSearchInfoForNode(node);
+        return SearchInfoHelper.getSearchInfoForNode(node);
     }
 
     /**

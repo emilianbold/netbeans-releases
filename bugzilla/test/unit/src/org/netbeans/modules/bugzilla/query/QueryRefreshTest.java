@@ -42,18 +42,13 @@
 
 package org.netbeans.modules.bugzilla.query;
 
-import java.io.File;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.logging.Level;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.TestKit;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
-import org.netbeans.modules.bugtracking.ui.query.QueryAction;
-import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -64,7 +59,6 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
@@ -122,7 +116,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                TestKit.openQuery(BugzillaUtil.getQuery(q));
+                TestKit.openQuery(TestUtil.getQuery(q));
             }
         }).waitFinished();
         assertFalse(lh.isDone());    // but this one wasn't yet
@@ -158,7 +152,7 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
             public void run() {
                 // init columndescriptors before opening query to prevent some "do not call in awt asserts"
                 BugzillaIssue.getColumnDescriptors(repo);
-                TestKit.openQuery(BugzillaUtil.getQuery(q));
+                TestKit.openQuery(TestUtil.getQuery(q));
             }
         }).waitFinished();
         schedulingHandler.waitUntilDone();
