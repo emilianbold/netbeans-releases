@@ -467,11 +467,11 @@ public abstract class BasicAbstractResultsPanel
         if (details) {
             Integer detailsCount = resultModel.getTotalDetailsCount();
             setRootDisplayName(NbBundle.getMessage(ResultView.class,
-                    "TXT_RootSearchedNodes", //NOI18N
+                    "TXT_RootSearchedNodesFulltext", //NOI18N
                     objectsCount, detailsCount));
         } else {
             setRootDisplayName(NbBundle.getMessage(ResultView.class,
-                    "TXT_RootSearchedNodesFulltext", objectsCount));    //NOI18N
+                    "TXT_RootSearchedNodes", objectsCount));            //NOI18N
         }
     }
 
