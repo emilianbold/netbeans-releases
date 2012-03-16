@@ -247,7 +247,11 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
             try {
                 fetchedBranches = HgCommand.getBranches(repository, logger);
             } catch (HgException ex) {
+                Mercurial.LOG.log(Level.INFO, null, ex);
                 fetchedBranches = null;
+            }
+            if( fetchedBranches == null) {
+                fetchedBranches = new HgBranch[0];
             }
 
             if (!supp.isCanceled() && fetchedBranches.length > 0) {
@@ -259,9 +263,6 @@ public class BranchSelector implements ListSelectionListener, DocumentListener {
             }
 
             if (!supp.isCanceled()) {
-                if( fetchedBranches == null) {
-                    fetchedBranches = new HgBranch[0];
-                }
                 Arrays.sort(fetchedBranches, new Comparator<HgBranch>() {
                     @Override
                     public int compare (HgBranch b1, HgBranch b2) {
