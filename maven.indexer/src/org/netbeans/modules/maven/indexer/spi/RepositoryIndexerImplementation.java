@@ -49,18 +49,12 @@ import org.openide.util.Lookup;
 /**
  * Implementation of repository indexer (repository manager). Apart from basic
  * indexing features also serves as provider of various index queries.
- * Implementations are expected to be registered in default Lookup (see {@link org.openide.util.lookup.ServiceProvider}).
+ * There is one implementation based on apache indexer
  * 
  * @author Milos Kleint
  */
 public interface RepositoryIndexerImplementation {
     
-    /**
-     * type identifier of the implementation.
-     * @return
-     */
-    String getType();
-
     /**
      * Index local repository or retrieve remote prepopulated index for local use.
      * @param repo

@@ -92,6 +92,7 @@ import org.netbeans.modules.maven.indexer.api.QueryField;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.spi.nodes.MavenNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -711,11 +712,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private void populateGroupId() {
         assert !SwingUtilities.isEventDispatchThread();
-        final List<String> lst = new ArrayList<String>(RepositoryQueries.getGroups(RepositoryPreferences.getInstance().getRepositoryInfos()));
+        final Result<String> result = RepositoryQueries.getGroupsResult(RepositoryPreferences.getInstance().getRepositoryInfos());
+        final List<String> lst = new ArrayList<String>(result.getResults());
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                groupCompleter.setValueList(lst);
+                groupCompleter.setValueList(lst, result.isPartial());
             }
         });
 
@@ -723,12 +725,12 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private void populateArtifact(String groupId) {
         assert !SwingUtilities.isEventDispatchThread();
-
-        final List<String> lst = new ArrayList<String>(RepositoryQueries.getArtifacts(groupId, RepositoryPreferences.getInstance().getRepositoryInfos()));
+        final Result<String> result = RepositoryQueries.getArtifactsResult(groupId, RepositoryPreferences.getInstance().getRepositoryInfos());
+        final List<String> lst = new ArrayList<String>(result.getResults());
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                artifactCompleter.setValueList(lst);
+                artifactCompleter.setValueList(lst, result.isPartial());
             }
         });
 
@@ -736,8 +738,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
 
     private void populateVersion(String groupId, String artifactId) {
         assert !SwingUtilities.isEventDispatchThread();
-
-        List<NBVersionInfo> lst = RepositoryQueries.getVersions(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
+        final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult(groupId, artifactId, RepositoryPreferences.getInstance().getRepositoryInfos());
+        List<NBVersionInfo> lst = result.getResults();
         final List<String> vers = new ArrayList<String>();
         for (NBVersionInfo rec : lst) {
             if (!vers.contains(rec.getVersion())) {
@@ -759,7 +761,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                versionCompleter.setValueList(vers);
+                versionCompleter.setValueList(vers, result.isPartial());
             }
         });
 
@@ -1244,7 +1246,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     qf.setValue(NbMavenProject.TYPE_NBM);
                     qf.setMatch(QueryField.MATCH_EXACT);
                     qf.setOccur(QueryField.OCCUR_MUST);
-                    for (NBVersionInfo alt : RepositoryQueries.find(Collections.singletonList(qf), RepositoryPreferences.getInstance().getRepositoryInfos())) {
+                    for (NBVersionInfo alt : RepositoryQueries.findResult(Collections.singletonList(qf), RepositoryPreferences.getInstance().getRepositoryInfos()).getResults()) {
                         String key = key(alt);
                         if (check.contains(key) && !found.contains(key)) {
                             refined.add(alt);
@@ -1508,8 +1510,8 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             } else {
                 AddDependencyPanel.this.setFields("", "", "", "", ""); //NOI18N
                 //reset completion.
-                AddDependencyPanel.this.artifactCompleter.setValueList(Collections.<String>emptyList());
-                AddDependencyPanel.this.versionCompleter.setValueList(Collections.<String>emptyList());
+                AddDependencyPanel.this.artifactCompleter.setValueList(Collections.<String>emptyList(), false);
+                AddDependencyPanel.this.versionCompleter.setValueList(Collections.<String>emptyList(), false);
             }
         }
 

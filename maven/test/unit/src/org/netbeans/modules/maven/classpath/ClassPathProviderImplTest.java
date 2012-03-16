@@ -133,9 +133,6 @@ public class ClassPathProviderImplTest extends NbTestCase {
 
     public void testEndorsedClassPath() throws Exception {
         MockLookup.setInstances(new RepositoryIndexerImplementation() { // need to suppress RepositoryQueries.findBySHA1 for test
-            public @Override String getType() {
-                return RepositoryPreferences.TYPE_NEXUS;
-            }
             public @Override Lookup getCapabilityLookup() {
                 return Lookup.EMPTY;
             }

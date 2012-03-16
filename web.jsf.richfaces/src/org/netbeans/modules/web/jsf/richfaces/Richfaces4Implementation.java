@@ -70,6 +70,10 @@ import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
@@ -182,6 +186,10 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
                         libraries.toArray(new Library[1]),
                         javaSources[0],
                         ClassPath.COMPILE);
+
+                // generate Richfaces welcome page
+                FileObject welcomePage = generateWelcomePage(webModule);
+                return Collections.singleton(welcomePage);
             } else {
                 LOGGER.log(Level.SEVERE, "No RichFaces library was found.");
             }
@@ -192,6 +200,29 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
         }
 
         return Collections.<FileObject>emptySet();
+    }
+
+    private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/Other/welcomeRichfaces.xhtml"); //NOI18N
+        DataObject templateDO = DataObject.find(templateFO);
+        DataObject generated = templateDO.createFromTemplate(
+                DataFolder.findFolder(webModule.getDocumentBase()),
+                "welcomeRichfaces"); //NOI18N
+        JsfComponentUtils.reformat(generated);
+
+        // update and reformat index page
+        updateIndexPage(webModule);
+
+        return generated.getPrimaryFile();
+    }
+
+    private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
+        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
+        DataObject indexDO = DataObject.find(indexFO);
+        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeRichfaces\" value=\"Richfaces welcome page\" />"); //NOI18N
+        if (indexFO.isValid() && indexFO.canWrite()) {
+            JsfComponentUtils.reformat(indexDO);
+        }
     }
 
     @Override
