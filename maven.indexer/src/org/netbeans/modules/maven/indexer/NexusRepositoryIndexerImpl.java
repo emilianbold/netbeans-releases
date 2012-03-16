@@ -722,6 +722,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
         void run(RepositoryInfo repo) throws IOException;
     }
     private void iterate(List<RepositoryInfo> repos, final RepoAction action, final RepoAction actionSkip) {
+        if (repos == null) {
+            repos = RepositoryPreferences.getInstance().getRepositoryInfos();
+        }
         for (final RepositoryInfo repo : repos) {
             Mutex mutex = getRepoMutex(repo);
             if (isIndexing(repo, mutex)) {
