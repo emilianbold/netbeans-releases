@@ -133,7 +133,7 @@ tokens {
         FUN_LIKE_MACRO_LPAREN;
         GRAVE_ACCENT;
 
-        //END_PREPROC_DIRECTIVE;
+        END_PREPROC_DIRECTIVE;
 
         // marker for last const text token
         LAST_CONST_TEXT_TOKEN;
@@ -174,7 +174,7 @@ tokens {
     // preprocessor specific tokens
     INCLUDE_STRING;
     SYS_INCLUDE_STRING;
-    END_PREPROC_DIRECTIVE;
+//    END_PREPROC_DIRECTIVE; // was moved into const tokens part
 
     // preprocessor directives
     INCLUDE;
