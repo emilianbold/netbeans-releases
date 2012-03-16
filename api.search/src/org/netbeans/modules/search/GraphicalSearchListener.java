@@ -43,11 +43,13 @@ package org.netbeans.modules.search;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.search.provider.SearchListener;
@@ -116,6 +118,14 @@ class GraphicalSearchListener<R> extends SearchListener {
         });
         progressHandle.start();
         searchComposition.getSearchResultsDisplayer().searchStarted();
+        Collection<? extends Savable> unsaved =
+                Savable.REGISTRY.lookupAll(Savable.class);
+        if (unsaved.size() > 0) {
+            String msg = NbBundle.getMessage(ResultView.class,
+                    "TEXT_INFO_WARNING_UNSAVED",
+                    unsaved.iterator().next().toString(), unsaved.size());
+            eventChildren.addEvent(new EventNode(EventType.WARNING, msg));
+        }
     }
 
     public void searchFinished() {
