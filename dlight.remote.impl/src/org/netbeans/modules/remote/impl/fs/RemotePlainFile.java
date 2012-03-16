@@ -377,7 +377,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
         }
         FileLock lock = super.lockImpl(orig);
         if (interceptor != null) {
-            interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+            try {
+                interceptor.fileLocked(FilesystemInterceptorProvider.toFileProxy(orig.getOwnerFileObject()));
+            } catch (IOException ex){
+                lock.releaseLock();
+                throw ex;
+            }
         }
         return lock;
     }
