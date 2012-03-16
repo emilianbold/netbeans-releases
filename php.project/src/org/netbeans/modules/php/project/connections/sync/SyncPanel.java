@@ -347,6 +347,7 @@ public final class SyncPanel extends JPanel {
 
     private void initInfos() {
         firstRunInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
+        warningLabel.setIcon(ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false));
         syncInfoLabel.setIcon(ImageUtilities.loadImageIcon(INFO_ICON_PATH, false));
     }
 
