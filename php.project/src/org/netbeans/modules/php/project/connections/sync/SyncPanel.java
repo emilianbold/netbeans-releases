@@ -45,20 +45,27 @@ import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
@@ -108,11 +115,19 @@ public final class SyncPanel extends JPanel {
     static final TableCellRenderer ERROR_TABLE_CELL_RENDERER = new DefaultTableCellRenderer();
 
     final RemoteClient remoteClient;
-    final List<SyncItem> items;
+    // @GuardedBy(AWT)
+    final List<SyncItem> allItems;
+    // @GuardedBy(AWT)
+    final List<SyncItem> displayedItems;
+    // @GuardedBy(AWT)
     final FileTableModel tableModel;
 
     private final PhpProject project;
     private final String remoteConfigurationName;
+    // @GuardedBy(AWT)
+    private final List<ViewButton> viewButtons;
+    // @GuardedBy(AWT)
+    private final ItemListener viewButtonListener = new ViewButtonListener();
 
     // @GuardedBy(AWT)
     private DialogDescriptor descriptor = null;
@@ -126,15 +141,24 @@ public final class SyncPanel extends JPanel {
 
         this.project = project;
         this.remoteConfigurationName = remoteConfigurationName;
-        this.items = items;
+        this.allItems = items;
+        displayedItems = new ArrayList<SyncItem>(items);
         this.remoteClient = remoteClient;
-        tableModel = new FileTableModel(items);
+        tableModel = new FileTableModel(displayedItems);
 
         initComponents();
+        viewButtons = getViewButtons();
+        initViewButtons();
         initTable();
         initOperationButtons();
         initDiffButton();
         initInfos();
+    }
+
+    private JToggleButton createViewButton() {
+        ViewButton viewButton = new ViewButton();
+        viewButton.addItemListener(viewButtonListener);
+        return viewButton;
     }
 
     @NbBundle.Messages({
@@ -169,10 +193,76 @@ public final class SyncPanel extends JPanel {
     }
 
     public List<SyncItem> getItems() {
-        return items;
+        assert SwingUtilities.isEventDispatchThread();
+        return allItems;
+    }
+
+    private List<ViewButton> getViewButtons() {
+        return Arrays.asList(
+                (ViewButton) noopToggleButton,
+                (ViewButton) downloadToggleButton,
+                (ViewButton) uploadToggleButton,
+                (ViewButton) deleteToggleButton,
+                (ViewButton) symlinkToggleButton,
+                (ViewButton) fileDirCollisionToggleButton,
+                (ViewButton) fileConflictToggleButton,
+                (ViewButton) warningToggleButton,
+                (ViewButton) errorToggleButton);
+    }
+
+    @NbBundle.Messages({
+        "SyncPanel.view.warning=Warning",
+        "SyncPanel.view.error=Error"
+    })
+    private void initViewButtons() {
+        // operations
+        initViewButton(noopToggleButton, SyncItem.Operation.NOOP);
+        initViewButton(downloadToggleButton, EnumSet.of(SyncItem.Operation.DOWNLOAD, SyncItem.Operation.DOWNLOAD_REVIEW));
+        initViewButton(uploadToggleButton, EnumSet.of(SyncItem.Operation.UPLOAD, SyncItem.Operation.UPLOAD_REVIEW));
+        initViewButton(deleteToggleButton, SyncItem.Operation.DELETE);
+        initViewButton(symlinkToggleButton, SyncItem.Operation.SYMLINK);
+        initViewButton(fileDirCollisionToggleButton, SyncItem.Operation.FILE_DIR_COLLISION);
+        initViewButton(fileConflictToggleButton, SyncItem.Operation.FILE_CONFLICT);
+        // warnings & errors
+        initViewButton(warningToggleButton, ImageUtilities.loadImageIcon(WARNING_ICON_PATH, false), Bundle.SyncPanel_view_warning());
+        initViewButton(errorToggleButton, ImageUtilities.loadImageIcon(ERROR_ICON_PATH, false), Bundle.SyncPanel_view_error());
+        ((ViewButton) warningToggleButton).setFilter(new SyncItemFilter() {
+            @Override
+            public boolean accept(SyncItem syncItem) {
+                return syncItem.hasWarning();
+            }
+        });
+        ((ViewButton) errorToggleButton).setFilter(new SyncItemFilter() {
+            @Override
+            public boolean accept(SyncItem syncItem) {
+                return syncItem.hasError();
+            }
+        });
+    }
+
+    private void initViewButton(JToggleButton button, SyncItem.Operation operation) {
+        initViewButton(button, EnumSet.of(operation));
+    }
+
+    private void initViewButton(JToggleButton button, final EnumSet<SyncItem.Operation> operations) {
+        SyncItem.Operation operation = operations.iterator().next();
+        initViewButton(button, operation.getIcon(), operation.getTitle());
+        ((ViewButton) button).setFilter(new SyncItemFilter() {
+            @Override
+            public boolean accept(SyncItem syncItem) {
+                return operations.contains(syncItem.getOperation());
+            }
+        });
+    }
+
+    private void initViewButton(JToggleButton button, Icon icon, String toolTip) {
+        button.setText(null);
+        button.setIcon(icon);
+        button.setToolTipText(toolTip);
     }
 
     private void initTable() {
+        assert SwingUtilities.isEventDispatchThread();
         // model
         tableModel.addTableModelListener(new TableModelListener() {
             @Override
@@ -270,11 +360,12 @@ public final class SyncPanel extends JPanel {
     }
 
     private boolean areOperationButtonsEnabled(int[] selectedRows) {
+        assert SwingUtilities.isEventDispatchThread();
         if (selectedRows.length == 0) {
             return false;
         }
         for (int i : selectedRows) {
-            if (!items.get(i).isOperationChangePossible()) {
+            if (!displayedItems.get(i).isOperationChangePossible()) {
                 return false;
             }
         }
@@ -290,7 +381,8 @@ public final class SyncPanel extends JPanel {
     }
 
     SyncItem getSelectedItem() {
-        return items.get(itemTable.getSelectedRow());
+        assert SwingUtilities.isEventDispatchThread();
+        return displayedItems.get(itemTable.getSelectedRow());
     }
 
     @NbBundle.Messages({
@@ -300,7 +392,7 @@ public final class SyncPanel extends JPanel {
     void validateItems() {
         assert SwingUtilities.isEventDispatchThread();
         boolean warn = false;
-        for (SyncItem syncItem : items) {
+        for (SyncItem syncItem : allItems) {
             if (syncItem.hasError()) {
                 setError(Bundle.SyncPanel_error_operations());
                 return;
@@ -346,8 +438,9 @@ public final class SyncPanel extends JPanel {
     }
 
     public SyncInfo getSyncInfo() {
+        assert SwingUtilities.isEventDispatchThread();
         SyncInfo syncInfo = new SyncInfo();
-        for (SyncItem syncItem : items) {
+        for (SyncItem syncItem : allItems) {
             switch (syncItem.getOperation()) {
                 case SYMLINK:
                     // noop
@@ -378,6 +471,7 @@ public final class SyncPanel extends JPanel {
     }
 
     void openDiffPanel() {
+        assert SwingUtilities.isEventDispatchThread();
         assert diffButton.isEnabled() : "Diff button has to be enabled";
 
         SyncItem syncItem = getSelectedItem();
@@ -395,6 +489,27 @@ public final class SyncPanel extends JPanel {
         }
     }
 
+    void updateDisplayedItems() {
+        assert SwingUtilities.isEventDispatchThread();
+        displayedItems.clear();
+        boolean anyButtonSelected = false;
+        for (SyncItem syncItem : allItems) {
+            for (ViewButton button : viewButtons) {
+                if (button.isSelected()) {
+                    anyButtonSelected = true;
+                    if (button.getFilter().accept(syncItem)) {
+                        displayedItems.add(syncItem);
+                        break;
+                    }
+                }
+            }
+        }
+        if (!anyButtonSelected) {
+            displayedItems.addAll(allItems);
+        }
+        tableModel.fireSyncItemsChange();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form
      * Editor.
@@ -405,6 +520,16 @@ public final class SyncPanel extends JPanel {
 
         firstRunInfoLabel = new JLabel();
         warningLabel = new JLabel();
+        viewLabel = new JLabel();
+        noopToggleButton = createViewButton();
+        downloadToggleButton = createViewButton();
+        uploadToggleButton = createViewButton();
+        deleteToggleButton = createViewButton();
+        symlinkToggleButton = createViewButton();
+        fileDirCollisionToggleButton = createViewButton();
+        fileConflictToggleButton = createViewButton();
+        warningToggleButton = createViewButton();
+        errorToggleButton = createViewButton();
         itemScrollPane = new JScrollPane();
         itemTable = new JTable();
         syncInfoLabel = new JLabel();
@@ -418,6 +543,16 @@ public final class SyncPanel extends JPanel {
         Mnemonics.setLocalizedText(firstRunInfoLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.firstRunInfoLabel.text")); // NOI18N
         itemTable.setSelectionMode(javax.swing.ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.warningLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(viewLabel, NbBundle.getMessage(SyncPanel.class, "SyncPanel.viewLabel.text")); // NOI18N
+
+        noopToggleButton.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/php/project/ui/resources/diff.png"))); Mnemonics.setLocalizedText(downloadToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(uploadToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(deleteToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(symlinkToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(fileDirCollisionToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(fileConflictToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(warningToggleButton, " "); // NOI18N
+        Mnemonics.setLocalizedText(errorToggleButton, " "); // NOI18N
 
         itemTable.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         itemScrollPane.setViewportView(itemTable);
@@ -454,32 +589,47 @@ public final class SyncPanel extends JPanel {
                                 .addGap(18, 18, 18)
                                 .addComponent(noopButton)
 
-                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(resetButton)).addComponent(firstRunInfoLabel).addComponent(syncInfoLabel).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup()
+                                .addComponent(viewLabel)
+
+                                .addPreferredGap(ComponentPlacement.RELATED).addComponent(noopToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(downloadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(uploadToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(deleteToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(symlinkToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileDirCollisionToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(fileConflictToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(warningToggleButton).addPreferredGap(ComponentPlacement.RELATED).addComponent(errorToggleButton))).addGap(0, 0, Short.MAX_VALUE))).addContainerGap())
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteButton, downloadButton, noopButton, resetButton, uploadButton});
+
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {deleteToggleButton, downloadToggleButton, errorToggleButton, fileConflictToggleButton, fileDirCollisionToggleButton, noopToggleButton, symlinkToggleButton, uploadToggleButton, warningToggleButton});
 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(firstRunInfoLabel)
 
-                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane, GroupLayout.DEFAULT_SIZE, 399, Short.MAX_VALUE).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton)))
+                .addPreferredGap(ComponentPlacement.UNRELATED).addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(viewLabel).addComponent(noopToggleButton).addComponent(downloadToggleButton).addComponent(uploadToggleButton).addComponent(deleteToggleButton).addComponent(symlinkToggleButton).addComponent(fileDirCollisionToggleButton).addComponent(fileConflictToggleButton).addComponent(warningToggleButton).addComponent(errorToggleButton)).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(itemScrollPane).addPreferredGap(ComponentPlacement.RELATED).addComponent(syncInfoLabel).addPreferredGap(ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(Alignment.BASELINE).addComponent(diffButton).addComponent(noopButton).addComponent(downloadButton).addComponent(uploadButton).addComponent(deleteButton).addComponent(resetButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton deleteButton;
+    private JToggleButton deleteToggleButton;
     private JButton diffButton;
     private JButton downloadButton;
+    private JToggleButton downloadToggleButton;
+    private JToggleButton errorToggleButton;
+    private JToggleButton fileConflictToggleButton;
+    private JToggleButton fileDirCollisionToggleButton;
     private JLabel firstRunInfoLabel;
     private JScrollPane itemScrollPane;
     private JTable itemTable;
     private JButton noopButton;
+    private JToggleButton noopToggleButton;
     private JButton resetButton;
+    private JToggleButton symlinkToggleButton;
     private JLabel syncInfoLabel;
     private JButton uploadButton;
+    private JToggleButton uploadToggleButton;
+    private JLabel viewLabel;
     private JLabel warningLabel;
+    private JToggleButton warningToggleButton;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
@@ -503,26 +653,31 @@ public final class SyncPanel extends JPanel {
 
 
         public FileTableModel(List<SyncItem> items) {
+            assert SwingUtilities.isEventDispatchThread();
             this.items = items;
         }
 
         @Override
         public boolean isCellEditable(int row, int column) {
+            assert SwingUtilities.isEventDispatchThread();
             return false;
         }
 
         @Override
         public int getRowCount() {
+            assert SwingUtilities.isEventDispatchThread();
             return items.size();
         }
 
         @Override
         public int getColumnCount() {
+            assert SwingUtilities.isEventDispatchThread();
             return COLUMNS.length;
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
+            assert SwingUtilities.isEventDispatchThread();
             SyncItem syncItem = items.get(rowIndex);
             if (columnIndex == 0) {
                 if (syncItem.hasError()) {
@@ -544,11 +699,13 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public String getColumnName(int column) {
+            assert SwingUtilities.isEventDispatchThread();
             return COLUMNS[column];
         }
 
         @Override
         public Class<?> getColumnClass(int columnIndex) {
+            assert SwingUtilities.isEventDispatchThread();
             if (columnIndex == 0) {
                 return Icon.class;
             } else if (columnIndex == 1
@@ -561,11 +718,13 @@ public final class SyncPanel extends JPanel {
         }
 
         public void fireSyncItemChange(int row) {
+            assert SwingUtilities.isEventDispatchThread();
             fireTableCellUpdated(row, 0);
             fireTableCellUpdated(row, 2);
         }
 
         public void fireSyncItemsChange() {
+            assert SwingUtilities.isEventDispatchThread();
             fireTableDataChanged();
         }
 
@@ -578,10 +737,11 @@ public final class SyncPanel extends JPanel {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            assert SwingUtilities.isEventDispatchThread();
             Icon icon = (Icon) value;
             JLabel rendererComponent = (JLabel) DEFAULT_TABLE_CELL_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             rendererComponent.setHorizontalAlignment(SwingConstants.CENTER);
-            rendererComponent.setToolTipText(items.get(row).getMessage());
+            rendererComponent.setToolTipText(displayedItems.get(row).getMessage());
             rendererComponent.setText(null);
             rendererComponent.setIcon(icon);
             return rendererComponent;
@@ -637,10 +797,11 @@ public final class SyncPanel extends JPanel {
         // can be done in background thread if needed
         @Override
         public void actionPerformed(ActionEvent e) {
+            assert SwingUtilities.isEventDispatchThread();
             int[] selectedRows = itemTable.getSelectedRows();
             assert selectedRows.length > 0;
             for (int index : selectedRows) {
-                SyncItem syncItem = items.get(index);
+                SyncItem syncItem = displayedItems.get(index);
                 if (operation == null) {
                     syncItem.resetOperation();
                 } else {
@@ -692,6 +853,36 @@ public final class SyncPanel extends JPanel {
                     dialog.setVisible(false);
                 }
             }
+        }
+
+    }
+
+    private static final class ViewButton extends JToggleButton {
+
+        private static final long serialVersionUID = 874534687646546546L;
+
+        private SyncItemFilter filter;
+
+
+        public SyncItemFilter getFilter() {
+            return filter;
+        }
+
+        public void setFilter(SyncItemFilter filter) {
+            this.filter = filter;
+        }
+
+    }
+
+    private interface SyncItemFilter {
+        boolean accept(SyncItem syncItem);
+    }
+
+    private class ViewButtonListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            updateDisplayedItems();
         }
 
     }
