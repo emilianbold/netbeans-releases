@@ -85,7 +85,9 @@ public final class RelPaths {
         if (testWritePath(path, System.getProperty("netbeans.home"), "home", ret)) {
             return ret;
         }
-        return null;
+        ret[0] = "abs";
+        ret[1] = path;
+        return ret;
     }
     
     /** Reads relative path from a buffer.
@@ -123,6 +125,9 @@ public final class RelPaths {
         }
         if ("home".equals(index)) { // NOI18N
             return System.getProperty("netbeans.home").concat(relative); // NOI18N
+        }
+        if ("abs".equals(index)) { // NOI18N
+            return relative;
         }
         int indx = 0;
         try {
