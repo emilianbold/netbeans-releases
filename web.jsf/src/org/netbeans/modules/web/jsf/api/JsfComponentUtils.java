@@ -147,28 +147,37 @@ public class JsfComponentUtils {
     }
 
     /**
-     * Enhances existing index.xhtml page for content.
-     * @param webModule web module with index to be enhanced
-     * @param enhancing enhancing content
+     * Enhances existing data object for content.
+     * @param dob data object to be enhanced
+     * @param find text element where text should be included
+     * @param enhanceBy enhancing content
      * @since 1.35
      */
-    public static void enhanceIndexBody(WebModule webModule, String enhancing) {
-        Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-        FileObject index = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-
-        String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, index);
-
+    public static void enhanceFileBody(DataObject dob, final String find, final String enhanceBy) {
         try {
-            String content = JSFFrameworkProvider.readResource(index.getInputStream(), projectEncoding); //NO18N
-            String toFind = "</h:body>"; //NOI18N
-            if (content.indexOf(toFind) > -1) {
-                StringBuilder replace = new StringBuilder(enhancing);
-                replace.append("\n").append(toFind); //NOI18N
-                content = content.replace(toFind, replace.toString());
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
+            if (ec == null) {
+                return;
             }
-            JSFFrameworkProvider.createFile(index, content, projectEncoding);
-        } catch (FileNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+
+            final StyledDocument doc = ec.openDocument();
+            try {
+                NbDocument.runAtomicAsUser(doc, new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            int position = doc.getText(0, doc.getLength()).indexOf(find);
+                            doc.insertString(position, enhanceBy + "\n", null); //NOI18N
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                ec.saveDocument();
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
