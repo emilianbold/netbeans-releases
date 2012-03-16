@@ -192,6 +192,8 @@ public final class WebBrowsers {
         }
 
         DataFolder folder = DataFolder.findFolder(servicesBrowsers);
+        // force object creation:
+        Lookup.getDefault ().lookupAll(HtmlBrowser.Factory.class).toArray();
         for (DataObject browserSetting : folder.getChildren()) {
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
             HtmlBrowser.Factory fact;
@@ -204,9 +206,6 @@ public final class WebBrowsers {
                 Exceptions.printStackTrace(ex);
                 continue;
             }
-            
-            // force object creation:
-            Lookup.getDefault ().lookupAll(HtmlBrowser.Factory.class);
             
             Lookup.Item<HtmlBrowser.Factory> item =
                     Lookup.getDefault ().lookupItem (
