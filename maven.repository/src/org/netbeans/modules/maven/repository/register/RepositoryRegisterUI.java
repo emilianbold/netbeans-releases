@@ -43,13 +43,10 @@
 package org.netbeans.modules.maven.repository.register;
 
 import java.net.URISyntaxException;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
-import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.repository.register.Bundle.*;
-import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -59,21 +56,12 @@ import org.openide.util.NbBundle.Messages;
 public class RepositoryRegisterUI extends javax.swing.JPanel {
 
     private boolean modify = false;
-    private boolean singleType = false;
     private boolean alreadyFilled = false;
 
     /** Creates new form RepositoryRegisterUI */
     public RepositoryRegisterUI() {
         initComponents();
         validateInfo();
-        String[] types = RepositoryIndexer.getAvailableTypes();
-        if (types.length == 1) {
-            lblType.setVisible(false);
-            comType.setVisible(false);
-            singleType = true;
-        } 
-        comType.setModel(new DefaultComboBoxModel(types));
-        comType.setSelectedItem(RepositoryPreferences.TYPE_NEXUS);
     }
     
      @Messages(
@@ -102,8 +90,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
         txtRepoId = new javax.swing.JTextField();
         lblRepoName = new javax.swing.JLabel();
         txtRepoName = new javax.swing.JTextField();
-        lblType = new javax.swing.JLabel();
-        comType = new javax.swing.JComboBox();
         lblRepoUrl = new javax.swing.JLabel();
         txtRepoUrl = new javax.swing.JTextField();
         lblValidate = new javax.swing.JLabel();
@@ -131,11 +117,6 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
             }
         });
 
-        lblType.setLabelFor(comType);
-        org.openide.awt.Mnemonics.setLocalizedText(lblType, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.lblType.text")); // NOI18N
-
-        comType.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-
         lblRepoUrl.setLabelFor(txtRepoUrl);
         org.openide.awt.Mnemonics.setLocalizedText(lblRepoUrl, org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_URL", new Object[] {})); // NOI18N
 
@@ -157,13 +138,9 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblRepoId)
-                            .addComponent(lblRepoName)
-                            .addComponent(lblType)
-                            .addComponent(lblRepoUrl))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(lblRepoName))
+                        .addGap(19, 19, 19)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtRepoUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
-                            .addComponent(comType, javax.swing.GroupLayout.PREFERRED_SIZE, 220, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(txtRepoName, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)
                             .addComponent(txtRepoId, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)))
                     .addGroup(layout.createSequentialGroup()
@@ -171,7 +148,12 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                         .addComponent(lblHeader, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(10, 10, 10)
-                        .addComponent(lblValidate, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)))
+                        .addComponent(lblValidate, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(lblRepoUrl)
+                        .addGap(31, 31, 31)
+                        .addComponent(txtRepoUrl, javax.swing.GroupLayout.DEFAULT_SIZE, 456, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -189,19 +171,14 @@ public class RepositoryRegisterUI extends javax.swing.JPanel {
                     .addComponent(txtRepoName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblType)
-                    .addComponent(comType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblRepoUrl)
                     .addComponent(txtRepoUrl, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 174, Short.MAX_VALUE)
                 .addComponent(lblValidate, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         txtRepoId.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoId.AccessibleContext.accessibleDescription")); // NOI18N
         txtRepoName.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoName.AccessibleContext.accessibleDescription")); // NOI18N
-        comType.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.comType.AccessibleContext.accessibleDescription")); // NOI18N
         txtRepoUrl.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RepositoryRegisterUI.class, "RepositoryRegisterUI.txtRepoUrl.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
@@ -229,9 +206,6 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
         txtRepoId.setEnabled(false);
         txtRepoId.setText(info.getId());
         txtRepoName.setText(info.getName());
-        if (singleType && info.getType() != null) {
-            comType.setSelectedItem(info.getType());
-        }
         if (info.isLocal()) {
             throw new IllegalStateException( "cannot modify local repository definition");
         } else if (info.isRemoteDownloadable()) {
@@ -241,7 +215,6 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
     
     public RepositoryInfo getRepositoryInfo() throws URISyntaxException {
       return new RepositoryInfo(txtRepoId.getText().trim(),
-              (String)comType.getSelectedItem(),
               txtRepoName.getText().trim(),
               null,
               txtRepoUrl.getText().trim());
@@ -308,12 +281,10 @@ private void txtRepoUrlKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:eve
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnOK;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox comType;
     private javax.swing.JLabel lblHeader;
     private javax.swing.JLabel lblRepoId;
     private javax.swing.JLabel lblRepoName;
     private javax.swing.JLabel lblRepoUrl;
-    private javax.swing.JLabel lblType;
     private javax.swing.JLabel lblValidate;
     private javax.swing.JTextField txtRepoId;
     private javax.swing.JTextField txtRepoName;

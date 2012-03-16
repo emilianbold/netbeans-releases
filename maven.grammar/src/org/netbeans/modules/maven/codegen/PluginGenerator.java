@@ -129,6 +129,8 @@ public class PluginGenerator implements CodeGenerator {
         NewPluginPanel pluginPanel = new NewPluginPanel();
         DialogDescriptor dd = new DialogDescriptor(pluginPanel,
                 TIT_Add_plugin());
+        
+        pluginPanel.setNotificationLineSupport(dd.createNotificationLineSupport());
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             NBVersionInfo vi = pluginPanel.getPlugin();
             if (vi != null) {

@@ -60,14 +60,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import static org.netbeans.modules.maven.hints.ui.Bundle.*;
 import org.netbeans.modules.maven.hints.ui.nodes.ArtifactNode;
 import org.netbeans.modules.maven.hints.ui.nodes.VersionNode;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
-import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
-import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.indexer.api.QueryRequest;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
+import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
@@ -76,7 +77,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -85,10 +86,11 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author  Anuradha G
  */
+@Messages("BTN_Add=Add")
 public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerManager.Provider, Observer {
 
     private ExplorerManager explorerManager = new ExplorerManager();
-    private JButton addButton = new JButton(NbBundle.getMessage(SearchDependencyUI.class, "BTN_Add"));
+    private JButton addButton = new JButton(BTN_Add());
     private BeanTreeView beanTreeView;
     private NBVersionInfo nbvi;
     private static RequestProcessor.Task task = null;
@@ -150,14 +152,17 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         createSearchTask();
         load();
         txtClassName.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 load();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 load();
             }
 
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 load();
             }
@@ -180,10 +185,12 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
         }
         final Observer observer = this;
         task = RP.create(new Runnable() {
+            @Override
             public void run() {
                 final String[] search = new String[1];
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                         public void run() {
                             lblSelected.setText(null);
                             search[0] = getClassSearchName();
@@ -195,6 +202,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         resultsRootNode.setOneChild(getSearchingNode());
                     }
@@ -208,6 +216,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                         RepositoryQueries.findVersionsByClass(queryRequest);
                     } catch (BooleanQuery.TooManyClauses exc) {
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 resultsRootNode.setOneChild(getTooGeneralNode());
                             }
@@ -220,6 +229,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                         // but most probably this thread will be it
                         // trying to indicate the condition to the user here
                         SwingUtilities.invokeLater(new Runnable() {
+                            @Override
                             public void run() {
                                 resultsRootNode.setOneChild(getTooGeneralNode());
                             }
@@ -233,11 +243,11 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
                         if (retrigger) {
                             retrigger = false;
                             task.schedule(20);
-                            return;
                         }
                     }
                 } else {
                     SwingUtilities.invokeLater(new Runnable() {
+                        @Override
                         public void run() {
                             resultsRootNode.setOneChild(getNoResultsNode());
                         }
@@ -324,6 +334,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
     private javax.swing.JTextField txtClassName;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return explorerManager;
     }
@@ -388,6 +399,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
     private static Node noResultsNode, searchingNode, tooGeneralNode;
     
+    @Messages("Node_Loading=Searching...")
     private static Node getSearchingNode() {
         if (searchingNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -404,13 +416,14 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Searching"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_Loading")); //NOI18N
+            nd.setDisplayName(Node_Loading()); //NOI18N
             
             searchingNode = nd;
         }
         return new FilterNode (searchingNode, Children.LEAF);
     }
 
+    @Messages("Node_Empty=No matching items")
     public static Node getNoResultsNode() {
         if (noResultsNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -427,13 +440,14 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Empty"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_Empty"));
+            nd.setDisplayName(Node_Empty());
             
             noResultsNode = nd;
         }
         return new FilterNode (noResultsNode, Children.LEAF);
     }
 
+    @Messages("Node_TooGeneral=Too general query")
     private static Node getTooGeneralNode() {
         if (tooGeneralNode == null) {
             AbstractNode nd = new AbstractNode(Children.LEAF) {
@@ -450,7 +464,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             };
             nd.setName("Too General"); //NOI18N
 
-            nd.setDisplayName(NbBundle.getMessage(SearchDependencyUI.class, "Node_TooGeneral")); //NOI18N
+            nd.setDisplayName(Node_TooGeneral()); //NOI18N
 
             tooGeneralNode = nd;
         }
@@ -469,20 +483,21 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
 
         final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
-        for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+        for (NBVersionInfo ver : infos) {
+            String key = ver.getGroupId() + " : " + ver.getArtifactId();
             List<NBVersionInfo> get = map.get(key);
             if (get == null) {
                 get = new ArrayList<NBVersionInfo>();
                 map.put(key, get);
             }
-            get.add(nbvi);
+            get.add(ver);
         }
         final List<String> keyList = new ArrayList<String>(map.keySet());
         // sort specially using our comparator, see compare method
         Collections.sort(keyList, new HeuristicsComparator());
 
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 updateResultNodes(keyList, map);
             }
@@ -565,6 +580,7 @@ public class SearchDependencyUI extends javax.swing.JPanel implements ExplorerMa
             }
         }
 
+        @Override
         public int compare(String s1, String s2) {
             String[] split1 = s1.split(":");
             String[] split2 = s2.split(":");

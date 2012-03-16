@@ -42,10 +42,8 @@
 
 package org.netbeans.modules.maven.indexer;
 
-import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.Lookup;
@@ -71,13 +69,7 @@ public class Installer extends ModuleInstall {
                 }
             }
         }
-
-        Collection<? extends RepositoryIndexerImplementation> res = Lookup.getDefault().lookupAll(RepositoryIndexerImplementation.class);
-        for (RepositoryIndexerImplementation impl : res) {
-            if (impl.getType().equals(RepositoryPreferences.TYPE_NEXUS)) {
-                ((NexusRepositoryIndexerImpl)impl).shutdownAll();
-            }
-        }
+        ((NexusRepositoryIndexerImpl)Lookup.getDefault().lookup(RepositoryIndexerImplementation.class)).shutdownAll();
     }
 
 }

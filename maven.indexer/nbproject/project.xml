@@ -198,7 +198,6 @@ made subject to such option by the copyright holder.
                 <package>org.apache.lucene.util.cache</package>
                 <package>org.netbeans.modules.maven.indexer.api</package>
                 <package>org.netbeans.modules.maven.indexer.api.ui</package>
-                <package>org.netbeans.modules.maven.indexer.spi</package>
                 <package>org.netbeans.modules.maven.indexer.spi.ui</package>
             </friend-packages>
             <class-path-extension>
