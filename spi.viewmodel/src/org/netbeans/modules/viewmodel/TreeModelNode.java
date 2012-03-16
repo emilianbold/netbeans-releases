@@ -122,6 +122,8 @@ public class TreeModelNode extends AbstractNode {
      * This is documented at openide/explorer/src/org/openide/explorer/doc-files/propertyViewCustomization.html
      */
     private static final int MAX_HTML_LENGTH = 511;
+    private static final String HTML_START_TAG = "<html>";
+    private static final String HTML_END_TAG = "</html>";
     
     // variables ...............................................................
 
@@ -676,7 +678,7 @@ public class TreeModelNode extends AbstractNode {
             String _oldDisplayName = oldDisplayName;
 
             String newDisplayName;
-            if (name.startsWith ("<html>")) {
+            if (name.startsWith (HTML_START_TAG)) {
                 htmlDisplayName = name;
                 newDisplayName = removeHTML(name);
             } else if (name.startsWith ("<_html>")) { //[TODO] use empty string as name in the case of <_html> tag
@@ -713,7 +715,7 @@ public class TreeModelNode extends AbstractNode {
             if (pattern.indexOf("{"+i) >= 0) {
             //if (formatsByArgumentIndex[i] != null) {
                 if (columns[i].getType() == null) {
-                    if (name.startsWith ("<html>")) {
+                    if (name.startsWith (HTML_START_TAG)) {
                         argsHTML[i] = name;
                         args[i] = removeHTML(name);
                     } else if (name.startsWith ("<_html>")) {
@@ -760,7 +762,7 @@ public class TreeModelNode extends AbstractNode {
             }
             String format = treeNodeDisplayFormat.format(args);
             if (isHTML) {
-                format = "<html>"+format+"</html>";
+                format = HTML_START_TAG+format+HTML_END_TAG;
             }
             return format; //new Object[] { name });
         } else {
@@ -769,11 +771,11 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String stripHTMLTags(String str) {
-        if (str.startsWith("<html>")) {
-            str = str.substring("<html>".length());
+        if (str.startsWith(HTML_START_TAG)) {
+            str = str.substring(HTML_START_TAG.length());
         }
-        if (str.endsWith("</html>")) {
-            str = str.substring(0, str.length() - "</html>".length());
+        if (str.endsWith(HTML_END_TAG)) {
+            str = str.substring(0, str.length() - HTML_END_TAG.length());
         }
         return str;
     }
@@ -985,7 +987,7 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String htmlValue (String name) {
-        if (!(name.length() > 6 && name.substring(0, 6).equalsIgnoreCase("<html>"))) return null;
+        if (!(name.length() > 6 && name.substring(0, 6).equalsIgnoreCase(HTML_START_TAG))) return null;
         if (name.length() > MAX_HTML_LENGTH) {
             int endTagsPos = findEndTagsPos(name);
             String ending = name.substring(endTagsPos + 1);
@@ -1018,15 +1020,15 @@ public class TreeModelNode extends AbstractNode {
     }
     
     private static String removeHTML (String text) {
-        if (!(text.length() > 6 && text.substring(0, 6).equalsIgnoreCase("<html>"))) {
+        if (!(text.length() > 6 && text.substring(0, 6).equalsIgnoreCase(HTML_START_TAG))) {
             return text;
         }
         text = text.replaceAll ("<i>", "");
         text = text.replaceAll ("</i>", "");
         text = text.replaceAll ("<b>", "");
         text = text.replaceAll ("</b>", "");
-        text = text.replaceAll ("<html>", "");
-        text = text.replaceAll ("</html>", "");
+        text = text.replaceAll (HTML_START_TAG, "");
+        text = text.replaceAll (HTML_END_TAG, "");
         text = text.replaceAll ("</font>", "");
         int i = text.indexOf ("<font");
         while (i >= 0) {
@@ -1999,7 +2001,7 @@ public class TreeModelNode extends AbstractNode {
                 }
                 synchronized (evaluated) {
                     if (evaluated[0] != 1) {
-                        return "<html><font color=\"0000CC\">"+EVALUATING_STR+"</font></html>";
+                        return HTML_START_TAG+"<font color=\"0000CC\">"+EVALUATING_STR+"</font>"+HTML_END_TAG;
                     }
                 }
                 synchronized (properties) {
