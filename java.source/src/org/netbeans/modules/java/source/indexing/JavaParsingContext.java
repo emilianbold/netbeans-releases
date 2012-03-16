@@ -237,6 +237,18 @@ final class JavaParsingContext {
             plugin.delete(indexable);
         }
     }
+    
+    void store() throws IOException {
+        if (checkSums != null) {
+            checkSums.store();
+        }
+        if (fqn2Files != null) {
+            fqn2Files.store();
+        }
+        if (sa != null) {
+            sa.store();
+        }
+    }
 
     void finish() {
         for (JavaIndexerPlugin plugin : getPlugins()) {
