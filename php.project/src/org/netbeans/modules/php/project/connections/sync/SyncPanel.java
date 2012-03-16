@@ -484,8 +484,8 @@ public final class SyncPanel extends JPanel {
             if (diffPanel.open()) {
                 assert syncItem.getTmpLocalFile() != null : "TMP local file should be found for " + syncItem;
                 syncItem.setOperation(SyncItem.Operation.UPLOAD);
-                // need to redraw the changed line
-                tableModel.fireSyncItemChange(itemTable.getSelectedRow());
+                // need to redraw table
+                updateDisplayedItems();
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Error while saving document", ex);
@@ -726,12 +726,6 @@ public final class SyncPanel extends JPanel {
             throw new IllegalStateException("Unknown column index: " + columnIndex);
         }
 
-        public void fireSyncItemChange(int row) {
-            assert SwingUtilities.isEventDispatchThread();
-            fireTableCellUpdated(row, 0);
-            fireTableCellUpdated(row, 2);
-        }
-
         public void fireSyncItemsChange() {
             assert SwingUtilities.isEventDispatchThread();
             fireTableDataChanged();
@@ -817,8 +811,8 @@ public final class SyncPanel extends JPanel {
                     syncItem.setOperation(operation);
                 }
             }
-            // need to redraw all children and parents
-            tableModel.fireSyncItemsChange();
+            // need to redraw table
+            updateDisplayedItems();
             // reselect the rows
             for (int index : selectedRows) {
                 itemTable.getSelectionModel().addSelectionInterval(index, index);
