@@ -45,7 +45,6 @@
 package org.openide.xml;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -378,6 +377,8 @@ public final class XMLUtil extends Object {
             "</xsl:copy>" + // NOI18N
             "</xsl:template>" + // NOI18N
             "</xsl:stylesheet>"; // NOI18N
+    /** Workaround for JAXP bug 7150637 / XALANJ-1497. */
+    private static final String ORACLE_IS_STANDALONE = "http://www.oracle.com/xml/is-standalone";
     /**
      * Writes a DOM document to a stream.
      * The precise output format is not guaranteed but this method will attempt to indent it sensibly.
@@ -430,6 +431,11 @@ public final class XMLUtil extends Object {
                 }
             }
             t.setOutputProperty(OutputKeys.ENCODING, enc);
+            try {
+                t.setOutputProperty(ORACLE_IS_STANDALONE, "yes");
+            } catch (IllegalArgumentException x) {
+                // fine, introduced in JDK 7u4
+            }
 
             // See #123816
             Set<String> cdataQNames = new HashSet<String>();
@@ -441,22 +447,10 @@ public final class XMLUtil extends Object {
                 }
                 t.setOutputProperty(OutputKeys.CDATA_SECTION_ELEMENTS, cdataSections.toString());
             }
-            
+
             Source source = new DOMSource(doc2);
-            ByteArrayOutputStream tmp = new ByteArrayOutputStream();
-            Result result = new StreamResult(tmp);
+            Result result = new StreamResult(out);
             t.transform(source, result);
-            // Workaround for JAXP bug 7150637 / XALANJ-1497.
-            byte[] data = tmp.toByteArray();
-            for (int i = 0; i < data.length; i++) {
-                out.write(data[i]);
-                if (i >= 2 && (data[i - 1] == '?' || data[i - 2] == '-' && data[i - 1] == '-') && data[i] == '>' && data[i + 1] == '<') {
-                    // Insert missing newline. (XXX check that we are not inside a comment or string.)
-                    for (byte c : System.getProperty("line.separator").getBytes()) {
-                        out.write(c);
-                    }
-                }
-            }
         } catch (Exception e) {
             throw new IOException(e);
         } finally {

@@ -230,6 +230,10 @@ public class SvnClientExceptionHandler {
             }
             return support.showLogin() && handleKenaiAuthorization(support, sUrl);
         } else {
+            if (Thread.interrupted()) {
+                Subversion.LOG.log(Level.FINE, "SvnClientExceptionHandler.handleRepositoryConnectError(): canceled"); //NOI18N
+                return false;
+            }
             Repository repository = new Repository(Repository.FLAG_SHOW_PROXY, org.openide.util.NbBundle.getMessage(SvnClientExceptionHandler.class, "MSG_Error_ConnectionParameters"));  // NOI18N
             repository.selectUrl(url, true);
 

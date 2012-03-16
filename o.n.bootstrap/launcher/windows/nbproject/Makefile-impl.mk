@@ -31,7 +31,7 @@ DEFAULTCONF=nbexec
 CONF=${DEFAULTCONF}
 
 # All Configurations
-ALLCONFS=nbexec 
+ALLCONFS=nbexec nbexec64 
 
 
 # build

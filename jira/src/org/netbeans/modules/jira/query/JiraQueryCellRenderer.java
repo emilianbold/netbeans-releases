@@ -12,10 +12,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -23,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode.SummaryProperty;
@@ -46,7 +45,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
     private static final MessageFormat subtasksFormat = getFormat("subtasksFormat");  // NOI18N
     private static final MessageFormat parentFormat = getFormat("parentFormat");      // NOI18N
 
-    private final JiraQuery query;
+    private final JiraQuery jiraQuery;
+    private final Query query;
     private final QueryTableCellRenderer defaultIssueRenderer;
     private TwoLabelPanel twoLabelPanel;
     private MultiLabelPanel multiLabelPanel;
@@ -58,10 +58,21 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private Map<Integer, Integer> tooLargeRows = new HashMap<Integer, Integer>();
 
-    public JiraQueryCellRenderer(JiraQuery query, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
-        this.query = query;
+    public JiraQueryCellRenderer(JiraQuery jiraQuery, IssueTable issueTable, QueryTableCellRenderer defaultIssueRenderer) {
         this.defaultIssueRenderer = defaultIssueRenderer;
         this.issueTable = issueTable;
+        this.jiraQuery = jiraQuery;
+        Repository repository = JiraUtils.getRepository(jiraQuery.getRepository());
+        Collection<Query> queries = repository.getQueries();
+        Query aQuery = null;
+        for (Query q : queries) {
+            if(q.getDisplayName().equals(jiraQuery.getDisplayName())) {
+                aQuery = q;
+                break;
+            }
+        }
+        this.query = aQuery;
+        assert query != null;
     }
 
     @Override
@@ -153,8 +164,8 @@ public class JiraQueryCellRenderer implements TableCellRenderer {
 
     private TableCellStyle getStyle(JTable table, IssueProperty p, boolean isSelected, int row) {
         TableCellStyle style = null;
-        if (query.isSaved()) {
-            style = QueryTableCellRenderer.getCellStyle(table, JiraUtils.getQuery(query), issueTable, p, isSelected, row);
+        if (jiraQuery.isSaved()) {
+            style = QueryTableCellRenderer.getCellStyle(table, query, issueTable, p, isSelected, row);
         } else {
             style = QueryTableCellRenderer.getDefaultCellStyle(table, issueTable, p, isSelected, row);
         }

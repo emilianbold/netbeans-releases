@@ -54,8 +54,8 @@ import org.netbeans.modules.bugtracking.issuetable.IssuetableTestFactory;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.TestConstants;
+import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -103,7 +103,7 @@ public class IssueTableTest extends IssuetableTestFactory implements QueryConsta
         String queryName = QUERY_NAME + System.currentTimeMillis();
         final BugzillaQuery bugzillaQuery = new BugzillaQuery(queryName, repo, p, false, false, true); // false = not saved
         assertEquals(0,bugzillaQuery.getIssues().size());
-        Query query = BugzillaUtil.getQuery(bugzillaQuery);
+        Query query = TestUtil.getQuery(bugzillaQuery);
         queries.put(queryName, bugzillaQuery);
         return query;
     }

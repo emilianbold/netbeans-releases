@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.AnnotationProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider.FileOperations;
@@ -248,7 +250,12 @@ public class FilesystemInterceptorProviderImpl extends FilesystemInterceptorProv
 
         @Override
         public void fileLocked(FileProxyI fo) {
-            VCSFilesystemInterceptor.fileLocked(toVCSFileProxy(fo));
+            try {
+                VCSFilesystemInterceptor.fileLocked(toVCSFileProxy(fo));
+            } catch (IOException ex) {
+                // XXX handle properly
+                Logger.getLogger(FilesystemInterceptorProviderImpl.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
         @Override

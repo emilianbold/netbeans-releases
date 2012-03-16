@@ -39,27 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.search.project;
+package org.openidex.search.impl;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.search.SearchRoot;
 import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.FileNameMatcher;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.search.project.spi.CompatibilityUtils;
 import org.netbeans.spi.search.SearchFilterDefinition;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchInfoDefinitionFactory;
-import org.netbeans.spi.search.SubTreeSearchOptions;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.ServiceProvider;
 import org.openidex.search.FileObjectFilter;
 import org.openidex.search.SearchInfo;
 import org.openidex.search.SearchInfoFactory;
@@ -69,7 +68,24 @@ import org.openidex.search.Utils;
  *
  * @author jhavlin
  */
-class CompatibilityUtils {
+@ServiceProvider(service = CompatibilityUtils.class)
+public class ProjectSearchingUtils implements CompatibilityUtils {
+
+    @Override
+    public org.netbeans.api.search.provider.SearchInfo getSearchInfoForNode(
+            Node node) {
+        return getSearchInfoForLookup(node.getLookup());
+    }
+
+    @Override
+    public org.netbeans.api.search.provider.SearchInfo getSearchInfoForLookup(
+            Lookup lookup) {
+        SearchInfo si = lookup.lookup(SearchInfo.class);
+        if (si != null) {
+            return wrap(si);
+        }
+        return null;
+    }
 
     /**
      * Convert an old SearchInfo object to SearchInfoDefinition object.
@@ -78,25 +94,6 @@ class CompatibilityUtils {
             final SearchInfo searchInfo) {
 
         return new WrappingSearchInfoDefinition(searchInfo);
-    }
-
-    /**
-     * Convert list of FileObjectFilters to list of SearchFilterDefinitions.
-     */
-    static List<SearchFilterDefinition> fileObjectFiltersToSearchFilters(
-            List<FileObjectFilter> filters) {
-
-        List<SearchFilterDefinition> l = new LinkedList<SearchFilterDefinition>();
-        for (FileObjectFilter fof : filters) {
-            if (fof == SearchInfoFactory.SHARABILITY_FILTER) {
-                l.add(SearchInfoDefinitionFactory.SHARABILITY_FILTER);
-            } else if (fof == SearchInfoFactory.VISIBILITY_FILTER) {
-                l.add(SearchInfoDefinitionFactory.VISIBILITY_FILTER);
-            } else {
-                l.add(new WrappingSearchFilter(fof));
-            }
-        }
-        return l;
     }
 
     /**
@@ -159,7 +156,8 @@ class CompatibilityUtils {
         @Override
         public List<SearchRoot> getSearchRoots() {
 
-            return Collections.emptyList(); // TODO could be obtained by simpleSearchIterator.
+            return Collections.emptyList();
+            // TODO could be obtained by simpleSearchIterator.
         }
     }
 
@@ -243,114 +241,31 @@ class CompatibilityUtils {
     }
 
     /**
-     * Get search info for legacy or current definition in a lookup.
+     * Convert list of FileObjectFilters to list of SearchFilterDefinitions.
      */
-    static org.netbeans.api.search.provider.SearchInfo getSearchInfoForLookup(
-            Lookup lookup) {
+    static List<SearchFilterDefinition> fileObjectFiltersToSearchFilters(
+            List<FileObjectFilter> filters) {
 
-        SearchInfoDefinition sid = lookup.lookup(SearchInfoDefinition.class);
-        if (sid != null) {
-            return SearchInfoUtils.createForDefinition(sid);
-        }
-        SearchInfo si = lookup.lookup(SearchInfo.class);
-        if (si != null) {
-            return legacyToCurrentSearchInfo(si);
-        }
-        return null;
-    }
-
-    /**
-     * Get search info for a node. If there is no explicit search info
-     * definition, try to create default search info.
-     */
-    static org.netbeans.api.search.provider.SearchInfo getSearchInfoForNode(
-            Node node) {
-
-        org.netbeans.api.search.provider.SearchInfo currentSearchInfo =
-                SearchInfoUtils.findDefinedSearchInfo(node);
-        if (currentSearchInfo != null) {
-            return currentSearchInfo;
-        }
-        SearchInfo legacySearchInfo = node.getLookup().lookup(SearchInfo.class);
-        if (legacySearchInfo != null) {
-            return legacyToCurrentSearchInfo(legacySearchInfo);
-        }
-        Project p = node.getLookup().lookup(Project.class);
-        Project ancestorProject = findAncestorProjectNode(node.getParentNode());
-        if (p != null && ancestorProject == null) { // project node
-            return AbstractProjectSearchScope.createSingleProjectSearchInfo(p);
-        }
-        if (ancestorProject != null) {
-            org.netbeans.api.search.provider.SearchInfo subTreeSearchInfo;
-            subTreeSearchInfo = findSearchInfoForProjectSubTree(
-                    ancestorProject, node);
-            if (subTreeSearchInfo != null) {
-                return subTreeSearchInfo;
+        List<SearchFilterDefinition> l =
+                new LinkedList<SearchFilterDefinition>();
+        for (FileObjectFilter fof : filters) {
+            if (fof == SearchInfoFactory.SHARABILITY_FILTER) {
+                l.add(SearchInfoDefinitionFactory.SHARABILITY_FILTER);
+            } else if (fof == SearchInfoFactory.VISIBILITY_FILTER) {
+                l.add(SearchInfoDefinitionFactory.VISIBILITY_FILTER);
+            } else {
+                l.add(new WrappingSearchFilter(fof));
             }
         }
-        return SearchInfoUtils.getSearchInfoForNode(node);
-    }
-
-    /**
-     * Check whether there is a project node among ancestors of a node.
-     */
-    private static Project findAncestorProjectNode(Node node) {
-        if (node == null) {
-            return null;
-        }
-        Project p = node.getLookup().lookup(Project.class);
-        if (p != null) {
-            return p;
-        } else {
-            return findAncestorProjectNode(node.getParentNode());
-        }
+        return l;
     }
 
     /**
      * Create SearchInfo for a legacy definition.
      */
-    private static org.netbeans.api.search.provider.SearchInfo legacyToCurrentSearchInfo(SearchInfo legacyInfo) {
+    private static org.netbeans.api.search.provider.SearchInfo wrap(
+            SearchInfo legacyInfo) {
         return SearchInfoUtils.createForDefinition(
                 new WrappingSearchInfoDefinition(legacyInfo));
-    }
-
-    /**
-     * Create search info for a node that is under a project node, if the
-     * project lookup contains SubTreeSearchOptions instance.
-     *
-     * @return SearchInfo for the node if ancestor project defines
-     * SubTreeSearchOptions and a file object for the node can be found, null
-     * otherwise.
-     */
-    private static org.netbeans.api.search.provider.SearchInfo findSearchInfoForProjectSubTree(
-            Project ancestorProject, Node node) {
-        SubTreeSearchOptions stso;
-        stso = ancestorProject.getLookup().lookup(
-                SubTreeSearchOptions.class);
-        FileObject fileObject = node.getLookup().lookup(FileObject.class);
-        if (fileObject == null) {
-            DataObject dob = node.getLookup().lookup(DataObject.class);
-            if (dob != null) {
-                fileObject = dob.getPrimaryFile();
-            }
-        }
-        if (stso != null && fileObject != null) {
-            return SearchInfoUtils.createSearchInfoForRoots(
-                    new FileObject[]{fileObject},
-                    false, subTreeFilters(stso));
-        }
-        return null;
-    }
-
-    /**
-     * Create an array of search filter definition for filters from a
-     * SubTreeSearchOptions instance.
-     */
-    static SearchFilterDefinition[] subTreeFilters(SubTreeSearchOptions subTreeSearchOptions) {
-        assert subTreeSearchOptions != null;
-        List<SearchFilterDefinition> list = subTreeSearchOptions.getFilters();
-        SearchFilterDefinition[] array = list.toArray(
-                new SearchFilterDefinition[list.size()]);
-        return array;
     }
 }
