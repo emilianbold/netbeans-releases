@@ -4976,24 +4976,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         @Override
         public void run() {
             try {
-                RunWhenScanFinishedSupport.performScan(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                _run();
+                Utilities.runPriorityIO(new Callable<Void>(){
+                    @Override
+                    public Void call() throws Exception {
+                        try {
+                            RunWhenScanFinishedSupport.performScan(
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        _run();
+                                    }
+                            });
+                        } finally {
+                            synchronized (todo) {
+                                if (todo.isEmpty()) {
+                                    scheduled = false;
+                                    LOGGER.fine("scheduled = false");   //NOI18N
+                                } else {
+                                    WORKER.submit(this);
+                                }
+                                todo.notifyAll();
                             }
-                        });
-            } finally {
-                synchronized (todo) {
-                    if (todo.isEmpty()) {
-                        scheduled = false;
-                        LOGGER.fine("scheduled = false");   //NOI18N
-                    } else {
-                        WORKER.submit(this);
+                            RunWhenScanFinishedSupport.performDeferredTasks();
+                        }
+                        return null;
                     }
-                    todo.notifyAll();
-                }
-                RunWhenScanFinishedSupport.performDeferredTasks();
+
+                });
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
             }
         }
 
