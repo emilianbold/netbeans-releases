@@ -48,12 +48,15 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.lang.ref.WeakReference;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
+import java.text.Format;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -689,6 +692,118 @@ public class TreeModelNode extends AbstractNode {
                    oldHtmlDisplayName == null || !oldHtmlDisplayName.equals(htmlDisplayName);
         }
     }
+    
+    private String parseDisplayFormat(String name) {
+        MessageFormat treeNodeDisplayFormat = treeModelRoot.getTreeNodeDisplayFormat();
+        if (treeNodeDisplayFormat == null) {
+            return name;
+        }
+        if (propertyDisplayNameListener == null) {
+            propertyDisplayNameListener = new PropertyDisplayNameListener();
+            addPropertyChangeListener(propertyDisplayNameListener);
+        }
+        Property<?>[] nodeProperties = getPropertySets()[0].getProperties();
+        Format[] formatsByArgumentIndex = treeNodeDisplayFormat.getFormatsByArgumentIndex();
+        String pattern = treeNodeDisplayFormat.toPattern();
+        int n = formatsByArgumentIndex.length;
+        Object[] args = new Object[n];
+        String[] argsHTML = new String[n];
+        boolean nonEmptyArgs = false;
+        for (int i = 0; i < n; i++) {
+            if (pattern.indexOf("{"+i) >= 0) {
+            //if (formatsByArgumentIndex[i] != null) {
+                if (columns[i].getType() == null) {
+                    if (name.startsWith ("<html>")) {
+                        argsHTML[i] = name;
+                        args[i] = removeHTML(name);
+                    } else if (name.startsWith ("<_html>")) {
+                        argsHTML[i] = '<' + name.substring(2);
+                        args[i] = removeHTML((String) argsHTML[i]);
+                    } else {
+                        argsHTML[i] = null;
+                        args[i] = name;
+                    }
+                } else {
+                    try {
+                        args[i] = nodeProperties[i].getValue();
+                        argsHTML[i] = (String) nodeProperties[i].getValue("htmlDisplayValue");
+                        if (!"".equals(args[i])) {
+                            propertyDisplayNameListener.addPropertyName(nodeProperties[i].getName());
+                            nonEmptyArgs = true;
+                        }
+                    } catch (IllegalAccessException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (InvocationTargetException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            } else {
+                args[i] = null;
+            }
+        }
+        if (nonEmptyArgs) {
+            boolean isHTML = false;
+            int iHTML = -1;
+            for (int i = 0; i < n; i++) {
+                if (argsHTML[i] != null) {
+                    isHTML = true;
+                    iHTML = i;
+                    args[i] = stripHTMLTags(argsHTML[i]);
+                } else if (isHTML && args[i] instanceof String) {
+                    args[i] = adjustHTML((String) args[i]);
+                }
+            }
+            for (int i = 0; i < iHTML; i++) {
+                if (args[i] instanceof String) {
+                    args[i] = adjustHTML((String) args[i]);
+                }
+            }
+            String format = treeNodeDisplayFormat.format(args);
+            if (isHTML) {
+                format = "<html>"+format+"</html>";
+            }
+            return format; //new Object[] { name });
+        } else {
+            return name;
+        }
+    }
+    
+    private static String stripHTMLTags(String str) {
+        if (str.startsWith("<html>")) {
+            str = str.substring("<html>".length());
+        }
+        if (str.endsWith("</html>")) {
+            str = str.substring(0, str.length() - "</html>".length());
+        }
+        return str;
+    }
+    
+    private PropertyDisplayNameListener propertyDisplayNameListener;
+    
+    private class PropertyDisplayNameListener implements PropertyChangeListener {
+        
+        private Set<String> propertyNames = new HashSet<String>();
+        
+        PropertyDisplayNameListener() {
+        }
+        
+        void addPropertyName(String propertyName) {
+            propertyNames.add(propertyName);
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (propertyNames.contains(evt.getPropertyName())) {
+                try {
+                    setModelDisplayName();
+                    fireDisplayNameChange(null, null);
+                } catch (UnknownTypeException ex) {
+                    Logger.getLogger(TreeModelNode.class.getName()).log(Level.CONFIG, "Model: "+model, ex);
+                }
+            }
+        }
+        
+    }
 
     private void setModelDisplayName() throws UnknownTypeException {
         Executor exec = asynchronous(model, CALL.DISPLAY_NAME, object);
@@ -702,6 +817,7 @@ public class TreeModelNode extends AbstractNode {
                     );
                 Exceptions.printStackTrace(t);
             } else {
+                name = parseDisplayFormat(name);
                 setName (name, false);
             }
         } else {
