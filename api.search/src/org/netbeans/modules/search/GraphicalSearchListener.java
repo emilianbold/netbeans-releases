@@ -189,7 +189,7 @@ class GraphicalSearchListener<R> extends SearchListener {
                 "TEXT_INFO_ERROR_MATCHING", fileName(path), //NOI18N
                 t.getMessage());
         eventChildren.addEvent(new PathEventNode(EventType.ERROR, msg, path));
-        LOG.log(Level.INFO, t.getMessage(), t);
+        LOG.log(Level.INFO, path + ": " + t.getMessage(), t);           //NOI18N
     }
 
     /**
@@ -224,10 +224,20 @@ class GraphicalSearchListener<R> extends SearchListener {
                 filter)) {
             String infoMsg = NbBundle.getMessage(ResultView.class,
                     "TEXT_INFO_SKIPPED_FILTER", //NOI18N
-                    fileName, filter.getClass().getName());
+                    fileName, getFilterName(filter));
             eventChildren.addEvent(new FileObjectEventNode(EventType.INFO,
                     infoMsg, fileObject));
         }
+        LOG.log(Level.INFO, "{0} skipped {1} {2}", new Object[]{ //NOI18N
+                    fileObject.getPath(),
+                    filter != null ? filter.getClass().getName() : "", //NOI18N
+                    message != null ? message : ""});                   //NOI18N
+    }
+
+    private String getFilterName(SearchFilterDefinition filter) {
+        return filter.getClass().getSimpleName().isEmpty()
+                ? filter.getClass().getName()
+                : filter.getClass().getSimpleName();
     }
 
     public Node getInfoNode() {
