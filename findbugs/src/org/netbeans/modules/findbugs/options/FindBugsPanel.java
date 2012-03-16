@@ -48,8 +48,11 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -63,9 +66,12 @@ import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.ButtonGroup;
+import javax.swing.ButtonModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
 import javax.swing.JTree;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -199,7 +205,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             treeModel.nodeChanged(node.getParent());
         }
         else if ( user instanceof BugCategory ) {
-            boolean value = !enabled((BugCategory) user);
+            boolean newValue = enabled((BugCategory) user) == State.NOT_SELECTED;
 
             for ( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
@@ -207,8 +213,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 if (cho instanceof BugPattern) {
                     BugPattern pattern = (BugPattern)cho;
                     boolean cv = enabled(pattern);
-                    if ( cv != value ) {
-                        settings.putBoolean(pattern.getType(), value);
+                    if ( cv != newValue ) {
+                        settings.putBoolean(pattern.getType(), newValue);
                         treeModel.nodeChanged( ch );
                     }
                 }
@@ -385,12 +391,15 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         return !defaultsToDisabled && RunFindBugs.isEnabledByDefault(bp);
     }
 
-    private boolean enabled(BugCategory bc) {
+    private State enabled(BugCategory bc) {
+        boolean hasEnabled = false;
+        boolean hasDisabled = false;
         for (BugPattern bp : this.categorizedBugs.get(bc)) {
-            if (enabled(bp)) return true;
+            if (enabled(bp)) hasEnabled = true;
+            else hasDisabled = true;
         }
 
-        return false;
+        return hasEnabled ? hasDisabled ? State.OTHER : State.SELECTED : State.NOT_SELECTED;
     }
 
     private static boolean contains(String where, String what) {
@@ -413,8 +422,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     
     private class CheckBoxRenderer implements TreeCellRenderer {
 
-        private JCheckBox renderer = new JCheckBox();
-        private DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
+        private final TristateCheckBox renderer = new TristateCheckBox();
+        private final DefaultTreeCellRenderer dr = new DefaultTreeCellRenderer();
 
         public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 
@@ -426,7 +435,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
             if (user instanceof BugCategory) {
                 renderer.setText(((BugCategory) user).getShortDescription());
-                renderer.setSelected(enabled((BugCategory) user));
+                renderer.setState(enabled((BugCategory) user));
             } else if (user instanceof BugPattern) {
                 BugPattern bp = (BugPattern) user;
                 renderer.setText("<html>" + (bp.isDeprecated() ? "<s>" : "") + translate(bp.getShortDescription()));
@@ -434,6 +443,141 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             }
 
             return renderer;
+        }
+    }
+
+    private enum State {
+        SELECTED, NOT_SELECTED, OTHER;
+    };
+
+    private static class TristateCheckBox extends JCheckBox {
+
+        private final TristateDecorator model;
+
+        public TristateCheckBox() {
+            super(null, null);
+            model = new TristateDecorator(getModel());
+            setModel(model);
+            setState(State.OTHER);
+        }
+
+        /** No one may add mouse listeners, not even Swing! */
+        @Override
+        public void addMouseListener(MouseListener l) { }
+        /**
+         * Set the new state to either SELECTED, NOT_SELECTED or
+         * OTHER.
+         */
+        public void setState(State state) { model.setState(state); }
+        /** Return the current state, which is determined by the
+         * selection status of the model. */
+        public State getState() { return model.getState(); }
+        @Override
+        public void setSelected(boolean b) {
+            if (b) {
+                setState(State.SELECTED);
+            } else {
+                setState(State.NOT_SELECTED);
+            }
+        }
+        /**
+         * Exactly which Design Pattern is this?  Is it an Adapter,
+         * a Proxy or a Decorator?  In this case, my vote lies with the
+         * Decorator, because we are extending functionality and
+         * "decorating" the original model with a more powerful model.
+         */
+        private class TristateDecorator implements ButtonModel {
+            private final ButtonModel other;
+            private TristateDecorator(ButtonModel other) {
+                this.other = other;
+            }
+            private void setState(State state) {
+                if (state == State.NOT_SELECTED) {
+                    other.setArmed(false);
+                    setPressed(false);
+                    setSelected(false);
+                } else if (state == State.SELECTED) {
+                    other.setArmed(false);
+                    setPressed(false);
+                    setSelected(true);
+                } else { // either "null" or OTHER
+                    other.setArmed(true);
+                    setPressed(true);
+                    setSelected(true);
+                }
+            }
+            /**
+             * The current state is embedded in the selection / armed
+             * state of the model.
+             *
+             * We return the SELECTED state when the checkbox is selected
+             * but not armed, DONT_CARE state when the checkbox is
+             * selected and armed (grey) and NOT_SELECTED when the
+             * checkbox is deselected.
+             */
+            private State getState() {
+                if (isSelected() && !isArmed()) {
+                    // normal black tick
+                    return State.SELECTED;
+                } else if (isSelected() && isArmed()) {
+                    // don't care grey tick
+                    return State.OTHER;
+                } else {
+                    // normal deselected
+                    return State.NOT_SELECTED;
+                }
+            }
+            /** Filter: No one may change the armed status except us. */
+            public void setArmed(boolean b) {
+            }
+            /** We disable focusing on the component when it is not
+             * enabled. */
+            public void setEnabled(boolean b) {
+                setFocusable(b);
+                other.setEnabled(b);
+            }
+            /** All these methods simply delegate to the "other" model
+             * that is being decorated. */
+            public boolean isArmed() { return other.isArmed(); }
+            public boolean isSelected() { return other.isSelected(); }
+            public boolean isEnabled() { return other.isEnabled(); }
+            public boolean isPressed() { return other.isPressed(); }
+            public boolean isRollover() { return other.isRollover(); }
+            public void setSelected(boolean b) { other.setSelected(b); }
+            public void setPressed(boolean b) { other.setPressed(b); }
+            public void setRollover(boolean b) { other.setRollover(b); }
+            public void setMnemonic(int key) { other.setMnemonic(key); }
+            public int getMnemonic() { return other.getMnemonic(); }
+            public void setActionCommand(String s) {
+                other.setActionCommand(s);
+            }
+            public String getActionCommand() {
+                return other.getActionCommand();
+            }
+            public void setGroup(ButtonGroup group) {
+                other.setGroup(group);
+            }
+            public void addActionListener(ActionListener l) {
+                other.addActionListener(l);
+            }
+            public void removeActionListener(ActionListener l) {
+                other.removeActionListener(l);
+            }
+            public void addItemListener(ItemListener l) {
+                other.addItemListener(l);
+            }
+            public void removeItemListener(ItemListener l) {
+                other.removeItemListener(l);
+            }
+            public void addChangeListener(ChangeListener l) {
+                other.addChangeListener(l);
+            }
+            public void removeChangeListener(ChangeListener l) {
+                other.removeChangeListener(l);
+            }
+            public Object[] getSelectedObjects() {
+                return other.getSelectedObjects();
+            }
         }
     }
 
